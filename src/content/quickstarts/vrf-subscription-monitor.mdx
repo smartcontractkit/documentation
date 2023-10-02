@@ -1,16 +1,13 @@
 ---
-section: automation
-date: Last Modified
 title: "VRF Subscription Balance Monitor"
-whatsnext:
-  {
-    "Find the list of supported networks for Chainlink Automation": "/chainlink-automation/supported-networks",
-    "Find the list of supported networks for VRF": "/vrf/v2/subscription/supported-networks",
-    "FAQs": "/chainlink-automation/faqs",
-  }
+description: "Automatically top-up your VRF subscription balances using Chainlink Automation to ensure there is sufficient funding for requests."
+image: "QuickStarts-VRF-Balance-Subscription-Manager.webp"
+products: ["automation", "vrf"]
+time: "30 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 
 Automatically top-up your VRF subscription balances using Chainlink Automation to ensure there is sufficient funding for requests. [View the code on GitHub](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/VRFSubscriptionBalanceMonitor.sol).
 
@@ -45,7 +42,7 @@ Before you start this tutorial, complete the following items:
   instructions](/getting-started/intermediates-tutorial) and then return to this tutorial.
 </Aside>
 
-## Setup steps
+## Steps to implement
 
 This tutorial requires you to set up the following components in VRF before you use Automation to monitor VRF subscriptions:
 
@@ -54,7 +51,7 @@ This tutorial requires you to set up the following components in VRF before you 
 
 If you already have existing VRF subscriptions you would like to monitor, [skip to the next step](#deploy-the-subscription-balance-monitor-contract).
 
-### Create VRF subscriptions to monitor
+<Accordion title="Create VRF subscriptions to monitor" number={1}>
 
 If you don't already have existing VRF subscriptions you would like to monitor, create two VRF subscriptions for demo purposes. One subscription will be adequately funded, and the other subscription will be underfunded intentionally so that the subscription balance monitor contract can fund it.
 
@@ -72,7 +69,9 @@ If you don't already have existing VRF subscriptions you would like to monitor, 
    - Fund one subscription with 12 testnet LINK to serve as the adequately funded VRF subscription
    - Fund the other subscription with 1 testnet LINK to serve as the underfunded VRF subscription
 
-### Deploy VRF-compatible contracts as consumers
+</Accordion>
+
+<Accordion title="Deploy VRF-compatible contracts as consumers" number={2}>
 
 In this section, you will deploy the same VRF contract twice. Each deployed contract will serve as a consuming contract for one of your VRF subscriptions.
 
@@ -99,7 +98,9 @@ In this section, you will deploy the same VRF contract twice. Each deployed cont
 
 1. Once more, after the contract is deployed successfully, copy the second contract address from Remix. Navigate back to the VRF Subscription Manager and add this second contract address as a consumer for your intentionally underfunded subscription.
 
-## Deploy the subscription balance monitor contract
+</Accordion>
+
+<Accordion title="Deploy the subscription balance monitor contract" number={3}>
 
 In this section, you will deploy the subscription balance monitor contract, using the same address that is the admin owner for both of your VRF subscriptions. The contract will monitor any VRF subscriptions owned by this address, and fund any underfunded subscriptions using funds owned by this address.
 
@@ -141,7 +142,9 @@ For Sepolia, these values are all consolidated here:
 
 1. Copy the address of your newly deployed contract. You can find this in Sepolia Etherscan through the contract deployment transaction, or in Remix in the **Deployed Contracts** section.
 
-## Register the subscription balance monitor contract on Automation
+</Accordion>
+
+<Accordion title="Register the subscription balance monitor contract on Automation" number={4}>
 
 In this section, you will register an upkeep on Chainlink Automation to run the subscription balance monitor contract. This enables Automation to check whether you have any underfunded VRF subscriptions, and if so, top up their balances appropriately.
 
@@ -174,6 +177,8 @@ Registering an upkeep on Chainlink Automation creates a smart contract that will
    | `MINWAITPERIODSECONDS`  | <CopyText text="60" code/>                                         |
 
 1. Fund the upkeep with enough LINK to monitor your VRF subscriptions.
+
+</Accordion>
 
 ## Examine the code
 

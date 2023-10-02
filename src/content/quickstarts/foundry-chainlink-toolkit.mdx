@@ -1,9 +1,13 @@
 ---
-section: nodeOperator
 title: "Foundry Chainlink Toolkit"
+description: "Test smart contracts and local Chainlink nodes using Foundry."
+image: "QuickStarts-Foundry-Chainlink-Toolkit.webp"
+products: ["general"]
+time: "10 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside } from "@components"
+import { Accordion, Aside } from "@components"
 
 This toolkit makes spinning up, managing, and testing smart contracts and local Chainlink nodes easier using [Foundry](https://book.getfoundry.sh) to deploy and test smart contracts. It can be integrated into existing Foundry projects.
 
@@ -79,12 +83,14 @@ This project shows you how to install and run the simplify the development and t
    git submodule update
    ```
 
-## Set up environment variables
+## Steps to implement
+
+<Accordion title="Set up environment variables" number={1}>
 
 Use the `env.template` file, create or update an `.env` file in the root directory of your project.
 In most cases, you will not need to modify the default values specified in this file.
 
-Below are comments on some environment variables:
+The following environment variables are available:
 
 - `FCT_PLUGIN_PATH` - path to the Foundry-Chainlink toolkit root
 - `ETH_URL` - RPC node web socket used by the Chainlink node
@@ -94,8 +100,6 @@ Below are comments on some environment variables:
 - `CHAINLINK_CONTAINER_NAME` - Chainlink node container name for the possibility of automating communication with it
 - `COMPOSE_PROJECT_NAME` - Docker network project name for the possibility of automating communication with it. See the [Docker Documentation](https://docs.docker.com/compose/environment-variables/envvars/#compose_project_name) to learn more.
   If environment variables related to a Chainlink node, including a Link Token contract address, were changed during your work you should run the `make fct-run-nodes` command in order for them to be applied.
-
-## Configure your project
 
 1. Give Forge permission to read the output directory of the toolkit by adding this setting to the foundry.toml:
 
@@ -111,7 +115,9 @@ Below are comments on some environment variables:
    -include ${FCT_PLUGIN_PATH}/makefile-external
    ```
 
-## Set up chain RPC node
+</Accordion>
+
+<Accordion title="Set up chain RPC node" number={2}>
 
 In order for a Chainlink node to be able to interact with the blockchain, and to interact with the blockchain using the [Forge](https://book.getfoundry.sh/forge/), you have to know an RPC node http endpoint and web socket for a chosen network compatible with Chainlink.
 In addition to the networks listed in [this list](/chainlink-automation/supported-networks/), Chainlink is compatible with any EVM-compatible networks.
@@ -125,7 +131,9 @@ make fct-anvil
 
 If the local Ethereum node is restarted, [re-initialize the Chainlink cluster](#initialize-testing-environment) or perform a [clean spin-up of the Chainlink nodes](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#restart-a-chainlink-cluster) to avoid possible synchronization errors.
 
-## Run the example
+</Accordion>
+
+<Accordion title="Run the example" number={3}>
 
 Scripts for automating the initialization of the test environment and setting up Chainlink jobs will be described below.
 
@@ -137,7 +145,9 @@ make fct-help
 
 For a more detailed description of the available scripts, you can refer to [DOCUMENTATION.md](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md) in the repository.
 
-### Initialize testing environment
+</Accordion>
+
+<Accordion title="Initialize testing environment" number={4}>
 
 ```
 make fct-init
@@ -155,7 +165,9 @@ Once Chainlink cluster is launched, a Chainlink nodes' Operator GUI will be avai
 
 For authorization, you must use the credentials specified in the [chainlink_api_credentials](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/https://github.com/smartcontractkit/foundry-chainlink-toolkit/tree/main/chainlink/settings/chainlink_api_credentials).
 
-### Set up Chainlink Jobs
+</Accordion>
+
+<Accordion title="Set up Chainlink Jobs" number={5}>
 
 ```
 make fct-setup-job
@@ -204,6 +216,8 @@ make fct-setup-ocr-job
 ```
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-flux-job) automatically sets up an OCR job.
+
+</Accordion>
 
 ## Project Structure
 

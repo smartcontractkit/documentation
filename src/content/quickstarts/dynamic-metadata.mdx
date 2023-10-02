@@ -1,14 +1,18 @@
 ---
-section: automation
-date: Last Modified
-title: Dynamic Metadata with Automation
-whatsnext: { "FAQs": "/chainlink-automation/faqs" }
+title: "Dynamic Metadata with Automation"
+description: "Use Chainlink Automation to create NFTs that can change over time, based on user interaction, or any number of conditions."
+image: "QuickStarts-Dynamic-Metadata-with-Automation.webp"
+products: ["automation"]
+time: "60 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, ClickToZoom } from "@components"
+import { Accordion, Aside, ClickToZoom } from "@components"
 import { YouTube } from "@astro-community/astro-embed-youtube"
 
-Learn how to create NFTs that can change over time, based on user interaction, or any number of conditions by following along with this video tutorial:
+## Video
+
+Learn how to create dynamic NFTs by following along with this video tutorial:
 
 <YouTube id="https://www.youtube.com/watch?v=E7Rm1LUKhj4" />
 
@@ -16,16 +20,6 @@ Learn how to create NFTs that can change over time, based on user interaction, o
 <div class="remix-callout">
   <a href="https://github.com/smartcontractkit/smart-contract-examples/tree/main/dynamic-nft">See the code on GitHub</a>
 </div>
-
-<Aside type="caution" title="Disclaimer">
-  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
-  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
-  provided “AS IS” and “AS AVAILABLE” without warranties of any kind, has not been audited, and may be missing key
-  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
-  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
-  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
-  to errors in code.
-</Aside>
 
 ## Objective
 
@@ -47,7 +41,9 @@ Before you start this tutorial, complete the following items:
 - To deploy this contract on testnets, ensure the deployer account has testnet LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
 - Open a new [Remix](https://remix.ethereum.org/) project.
 
-## Run steps
+## Steps to implement
+
+<Accordion title="Compile and deploy your contract" number={1}>
 
 1. Open the `2_complete.sol` contract in Remix and rename the contract to `dynNFT.sol`.
 
@@ -65,6 +61,10 @@ Before you start this tutorial, complete the following items:
    />
 
 1. Ensure that the **CONTRACT** field displays `dynNFT`. Finally, for the **Deploy** value, you must enter a time interval value denoting when the dynamic NFT will change. For this demo, we have inputted 30, but you can change this value. Once you have entered your interval, click the orange **Deploy** button and follow the prompts to allow the transaction to be performed. This may take a few minutes depending on factors such as network traffic.
+
+</Accordion>
+
+<Accordion title="Mint an NFT" number={2}>
 
 1. Once the contract is deployed, you should be able to see more information under the **Deployed Contracts** section.
 
@@ -91,6 +91,10 @@ Before you start this tutorial, complete the following items:
      style="max-width: 70%;"
    />
 
+</Accordion>
+
+<Accordion title="Register an upkeep" number={3}>
+
 1. Copy the contract address and open the [Chainlink Automation Interface](https://automation.chain.link). Connect your wallet to the network and click the blue button **Register New Upkeep**. For the **Trigger** mechanism, select _Custom logic_. You will prompted to enter your contract address. Paste your address and click **Next**.
 
    <ClickToZoom
@@ -100,6 +104,10 @@ Before you start this tutorial, complete the following items:
    />
 
 1. You must fill out the prompts to finish registering upkeep. For the **Starting balance (LINK)**, enter 0.5 for this demo. After entering information, click **Register Upkeep**. It may take a few moments for this to complete.
+
+</Accordion>
+
+<Accordion title="Trigger the upkeep" number={4}>
 
 1. Navigate back to Remix. Under the **Deployed Contracts** section, enter `[]` in the **checkUpkeep** field and click the blue button. You may see the following text: `upkeepNeeded true`. This means that an upkeep will be performed.
 
@@ -125,6 +133,10 @@ Before you start this tutorial, complete the following items:
      style="max-width: 70%;"
    />
 
+</Accordion>
+
+<Accordion title="Check the NFT stage" number={5}>
+
 1. Once the upkeep has been performed, navigate to Remix and click **flowerStage** and **tokenURI** to see the most recent flower stage and corresponding URI. Navigate back to the information of your NFT on OpenSea. Click the button on the top right to refresh the metadata. You should see the NFT become a bloom.
 
    <ClickToZoom
@@ -140,6 +152,8 @@ Before you start this tutorial, complete the following items:
      alt="Dynamic Metadata Quickstart Step 12"
      style="max-width: 70%;"
    />
+
+</Accordion>
 
 ## Summary
 

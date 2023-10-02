@@ -1,16 +1,13 @@
 ---
-section: vrf
 title: "VRF-Enabled LootBox/Pack Contract"
-whatsnext:
-  {
-    "Review VRF best practices": "/vrf/v2/best-practices",
-    "Learn how to test VRF dApps locally using a mock contract": "/vrf/v2/direct-funding/examples/test-locally",
-    "Learn how to estimate VRF costs": "/vrf/v2/estimating-costs",
-    "See the list of supported networks for VRF": "/vrf/v2/direct-funding/supported-networks",
-  }
+description: "Build a pack contract using VRF."
+image: "QuickStarts-VRF-Enabled-LootBox-Pack-Contract.webp"
+products: ["vrf"]
+time: "90 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Accordion, Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
 The lootbox utility contract uses Chainlink VRF to determine a random reward that you can distribute as a [Loot Box](https://en.wikipedia.org/wiki/Loot_box) to users. This allows you to issue rewards fairly and transparently using verified randomness that the recipients can verify on-chain.
@@ -64,17 +61,9 @@ Your _deployer account_ is the main account that you will use to deploy the loot
 
 - [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the rewards as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the rewards that you want to distribute from the lootbox.
 
-## Setup the example
+## Steps to implement
 
-This tutorial requires several setup steps:
-
-1. [Clone the example repo and install dependencies](#clone-the-example-repo-and-install-dependencies)
-1. [Configure the Hardhat project](#configure-the-hardhat-project)
-1. [Set your contract parameters](#set-your-contract-parameters)
-1. [Define the rewards](#define-the-rewards)
-1. [Create an allowlist for private mints](#create-an-allowlist-for-private-mints)
-
-### Clone the example repo and install dependencies
+<Accordion title="Clone the example repo and install dependencies" number={1}>
 
 Clone the repo and install all dependencies.
 
@@ -101,7 +90,9 @@ yarn install
 </Fragment>
 </Tabs>
 
-### Configure your project
+</Accordion>
+
+<Accordion title="Configure your project" number={2}>
 
 Copy the `.env.example` file to `.env` and fill in the values.
 
@@ -109,7 +100,9 @@ Copy the `.env.example` file to `.env` and fill in the values.
 cp .env.example .env
 ```
 
-### Configure the Hardhat project
+</Accordion>
+
+<Accordion title="Configure the Hardhat project" number={3}>
 
 [Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract. You need the following information:
 
@@ -127,7 +120,9 @@ cp .env.example .env
 
 1. If you're using a deployment network other than Sepolia, Goerli, or Ethereum: configure your deployment network in both the `.env` file and in the [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts) file.
 
-### Set your contract parameters
+</Accordion>
+
+<Accordion title="Set your contract parameters" number={4}>
 
 In your `.env` file, fill in these values:
 
@@ -140,7 +135,9 @@ In your `.env` file, fill in these values:
 
 The `LOOTBOX_FEE_PER_OPEN` allows you to pass transaction and VRF costs to the user when they open the lootbox.
 
-### Define the rewards
+</Accordion>
+
+<Accordion title="Define the rewards" number={5}>
 
 You can distribute multiple types of in-game rewards using this lootbox contract. The lootbox contract supports any rewards of the following [token standards](https://ethereum.org/en/developers/docs/standards/tokens/):
 
@@ -195,15 +192,15 @@ There's an example configuration file in [`scripts/data/tokens.json`](https://gi
 </Fragment>
 </Tabs>
 
-### Create an allowlist for private mints
+</Accordion>
+
+<Accordion title="Create an allowlist for private mints" number={6}>
 
 The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the [private opening mode](#private-mode) is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
 For this tutorial, add the address for your secondary account that you'll use to receive the rewards when you test opening the lootbox.
 
 If you don't want to do a private mint, leave the `whitelist.json` file empty, and the contract will be initialized in [public opening mode](#public-mode).
-
-### Post-deployment configuration
 
 After deployment, you can optionally change some contract parameters by calling the following functions from the owner account:
 
@@ -212,16 +209,16 @@ After deployment, you can optionally change some contract parameters by calling 
 | `setWhitelistRoot` | Set new Merkle root for the allow list. | `whitelistRoot`      |
 | `setPrivateOpen`   | Enable/disable public opening mode.     | `privateOpenEnabled` |
 
-## Deploy and run the example lootbox contract
+</Accordion>
+
+<Accordion title="Deploy and run the example lootbox contract" number={7}>
 
 Now that your example is configured, you can test, deploy, and run the example. Then, switch accounts to act as a user who received the lootbox and receive the example rewards.
-
-### Deploy the example contract
 
 Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
 
 ```bash
-npx hardhat run scripts/deploy.js --network <network>
+npx hardhat run scripts/deploy.ts --network <network>
 ```
 
 The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) also completes the following actions:
@@ -252,7 +249,9 @@ The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob
 
 Next, switch accounts and open the lootbox as a user to test the contract.
 
-## Open the lootbox and claim rewards
+</Accordion>
+
+<Accordion title="Open the lootbox and claim rewards" number={8}>
 
 Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards users receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
 
@@ -272,11 +271,15 @@ Once the contract is deployed and the start timestamp is reached, users can star
 1. The rewards are ready to claim when the randomness result from VRF is ready. To check this, navigate to the **Read** tab, call the `canClaimRewards` function and pass in the opener address.
 1. When the rewards are ready, navigate to the **Write** tab, call the `claimRewards` function to claim the reward and pass in the opener address.
 
-## Access control
+</Accordion>
+
+## Reference
+
+### Access control
 
 You can control access to the lootbox with two modes: private and public. Use these modes to determine which users can open the lootbox. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the lootbox available to the public.
 
-### Private mode
+#### Private mode
 
 In this mode, the lootbox is only open to addresses on the allowlist by calling the `privateOpen` function and providing Merkle proof for the address. You can generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs):
 
@@ -286,11 +289,11 @@ merkleTree.getHexProof(keccak256(whitelistedUserAddress))
 
 The allowlist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
 
-### Public mode
+#### Public mode
 
 When the private mode is disabled, anyone can open the lootbox by calling the `publicOpen` function. It will do the same thing as the `privateOpen` function but without the Merkle proof.
 
-## Randomness
+### Randomness
 
 The contract uses [Chainlink VRF](https://vrf.chain.link) to generate randomness which is used to determine the rewards the user receives.
 
@@ -298,7 +301,7 @@ Because the randomness is generated off-chain, the contract will not be able to 
 
 The lootbox creator can also call the `claimRewards` function and improve the user experience by transferring the rewards to the user immediately. You can automate this further by using [Chainlink Automation](https://automation.chain.link/).
 
-## Claim rewards
+### Claim rewards
 
 The rewards for an open request can be claimed by calling the `claimRewards` function and passing the opener address as the parameter. This will transfer the rewards to the opener address.
 
@@ -306,7 +309,7 @@ The claim function can only be called after the randomness is fulfilled. To chec
 
 One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction reverts with a `PendingOpenRequest` error.
 
-## Withdraw funds
+### Withdraw funds
 
 At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
 

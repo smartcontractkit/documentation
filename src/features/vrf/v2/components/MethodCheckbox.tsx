@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import "./methodCheckbox.css"
 import { CHAINS } from "~/features/data/chains"

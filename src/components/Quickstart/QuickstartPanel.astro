@@ -1,0 +1,138 @@
+---
+import { MarkdownHeading } from "astro"
+import { QuickstartsFrontmatter, productsInfo } from "~/content/config"
+import * as CONFIG from "../../config"
+import TableOfContents from "./TableOfContents/TableOfContents"
+
+interface Props {
+  frontmatter: QuickstartsFrontmatter
+  headings: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+const currentPage = new URL(Astro.request.url).pathname
+const currentFile = `src/content${currentPage.replace(/\/$/, "")}.mdx`
+const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
+const products = frontmatter.products.map((p) => productsInfo[p])
+---
+
+<aside class="panel">
+  <img class="feature" src=`/images/quickstarts/feature/${frontmatter.image}` />
+  <div class="description">
+    <div><p>Chainlink Products:</p> <p>{products.map((p) => p.name).join(", ")}</p></div>
+    <div><p>Product Versions:</p> <p>{products.map((p) => p.name).join(", ")}</p></div>
+    <div><p>Required Time:</p> <p>{frontmatter.time}</p></div>
+    {
+      frontmatter.requires && (
+        <div>
+          <p>Requires: </p>
+          <p>{frontmatter.requires}</p>
+        </div>
+      )
+    }
+    <div>
+      <span>{""}</span>
+      <ul>
+        Docs references:
+        {
+          products.map((p) => (
+            <a href={`/${p.slug}`}>
+              <li>{p.name}</li>
+            </a>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+  <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
+  <TableOfContents client:only="preact" initialHeadings={headings} />
+</aside>
+
+<style>
+  .panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    max-width: 500px;
+    padding: var(--space-4x) var(--gutter) 0;
+  }
+
+  .panel * {
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  .panel > * {
+    margin-top: var(--space-8x);
+  }
+
+  .panel .description {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
+    align-items: flex-start;
+    gap: var(--space-5x);
+  }
+
+  .panel .description > div > :last-child {
+    font-weight: 500;
+    color: var(--text-common-color-text-heading, #1a2b6b);
+  }
+
+  .panel li {
+    list-style-position: inside;
+  }
+
+  img.feature {
+    width: 337px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid var(--gray-200, #ecedef);
+  }
+
+  a.button {
+    margin-top: var(--space-6x);
+    width: 100%;
+  }
+
+  a.button img {
+    height: var(--space-6x);
+    width: var(--space-6x);
+    filter: brightness(0) invert(1);
+  }
+
+  .panel .description span {
+    display: none;
+  }
+
+  @media (min-width: 50em) {
+    .panel {
+      padding: var(--space-4x) var(--space-6x) 0;
+    }
+
+    .panel .description {
+      border-top: 1px solid var(--gray-300, #ced0d5);
+      padding-top: var(--space-8x);
+      grid-template-columns: 1fr;
+      grid-auto-flow: row;
+    }
+
+    .panel .description > div {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: var(--space-2x);
+    }
+
+    .panel .description span {
+      display: initial;
+    }
+  }
+
+  @media (min-width: 72em) {
+    .panel {
+      padding: var(--space-4x) var(--space-12x) 0;
+    }
+  }
+</style>

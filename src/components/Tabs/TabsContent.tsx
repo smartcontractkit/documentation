@@ -3,7 +3,6 @@ import type { ComponentChild } from "preact"
 import { useRef } from "preact/hooks"
 import { useTabState } from "./useTabState"
 import styles from "./Tabs.module.css"
-import button from "@chainlink/design-system/button.module.css"
 import { clsx } from "~/lib"
 const tabSlotKey = "tab." as const
 const panelSlotKey = "panel." as const
@@ -64,7 +63,7 @@ export function TabsContent({ sharedStore, ...slots }: Props) {
   }
 
   return (
-    <div class={styles.contentContainer}>
+    <div className={styles.contentContainer}>
       <div role="tablist" onKeyDown={moveFocus}>
         {tabs.map(([key, content]) => (
           <button

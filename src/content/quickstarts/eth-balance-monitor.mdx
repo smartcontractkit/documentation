@@ -1,33 +1,19 @@
 ---
-section: automation
-date: Last Modified
 title: "Automate Contract Balance Top-up"
-whatsnext:
-  {
-    "Find the list of supported networks": "/chainlink-automation/supported-networks/",
-    "FAQs": "/chainlink-automation/faqs",
-  }
+description: "Automate the process of maintaining an Ethereum balance in your smart contract using Chainlink Automation."
+image: "QuickStarts-ETH-Balance-Monitor.webp"
+products: ["automation"]
+time: "30 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, CodeSample } from "@components"
-
-Some smart contract applications require you to maintain a certain Ethereum balance to ensure optimal operation. You can automate this process using Chainlink Automation. Use these smart contracts to monitor and top-up native token balances on your smart contracts.
-
-View the [EthBalanceMonitor.sol contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol) on GitHub.
-
-<Aside type="caution" title="Disclaimer">
-  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
-  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
-  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
-  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
-  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
-  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
-  to errors in code.
-</Aside>
+import { Accordion, Aside, CodeSample } from "@components"
 
 ## Objective
 
-This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. You will deploy this example monitor contract and use the [automation.chain.link](https://automation.chain.link/) interface to register an upkeep and run the contract. To learn the basics about Chainlink Automation, read the [Chainlink Automation Introduction](/chainlink-automation/introduction).
+Some smart contract applications require you to maintain a certain Ethereum balance to ensure optimal operation. You can automate this process using Chainlink Automation. Use these smart contracts to monitor and top-up native token balances on your smart contracts.
+
+This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. You will deploy this example monitor contract and use the [automation.chain.link](https://automation.chain.link/) interface to register an upkeep and run the contract. To learn the basics about Chainlink Automation, read the [Chainlink Automation Introduction](/chainlink-automation).
 
 For this example, use the Polygon Mumbai testnet to simplify access to testnet funds. You will top up an address with a specific amount of testnet MATIC. Later, you can use another EVM-compatible network of your choice.
 
@@ -41,17 +27,11 @@ Before you start this tutorial, complete the following items:
   - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
   - Get at least 2 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
 
-## Setup steps
+## Steps to implement
 
-Setting up the example requires the following steps:
+<Accordion title="Deploy the upkeep contract" number={1}>
 
-1. Deploy the upkeep contract.
-1. Configure the address watch list.
-1. Register the upkeep.
-
-### Deploy the upkeep contract
-
-1. Open the `EthBalanceMonitor.sol` example contract in Remix.
+1. Open the [`EthBalanceMonitor.sol` contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol) in Remix.
 
    {/* prettier-ignore */}
    <CodeSample src="samples/Automation/tutorials/EthBalanceMonitor.sol" showButtonOnly />
@@ -69,7 +49,9 @@ Setting up the example requires the following steps:
 
 1. Use metamask to Send 0.001 MATIC to your contract address. The funds are used to top-up other contracts with MATIC. See the [Fund Your Contracts](/resources/fund-your-contract?parent=automation) page to learn how to find your contract address and send funds to those contracts. For this example, 0.001 MATIC is sufficient for demonstration purposes. In a production environment, you might store a larger amount of funds in the contract so Chainlink Automation can automatically distribute them to several different addresses as they are needed over time.
 
-### Configure the address watch list
+</Accordion>
+
+<Accordion title="Configure the address watch list" number={2}>
 
 Before your contract will fund an address, you must set the `watchList` address array with `minBalancesWei` and `topUpAmmountsWei` variables. For this example on Polygon Mumbai, you are using testnet MATIC instead of wei (ETH). For demonstration purposes, you configure your own wallet as the top-up address. This makes it easy to see the MATIC being sent as part of the automated top-up function. After you complete this tutorial, you can configure any wallet or contract address that you want to keep funded.
 
@@ -85,7 +67,9 @@ Before your contract will fund an address, you must set the `watchList` address 
 
 1. In the functions list, click the `getWatchList` function to confirm your settings are correct.
 
-### Register the upkeep
+</Accordion>
+
+<Accordion title="Register the upkeep" number={3}>
 
 Now that the contract is deployed, funded, and configured, register the upkeep and Chainlink Automation will automatically run the example code.
 
@@ -107,7 +91,9 @@ Now that the contract is deployed, funded, and configured, register the upkeep a
 
 Now that you've registered the upkeep, Chainlink Automation handles the rest of the process.
 
-## Check your upkeeps
+</Accordion>
+
+<Accordion title="Check your upkeeps" number={4}>
 
 The upkeep runs the `checkUpkeep` function in your contract, which checks the balances of all addresses in the `watchList` against their defined limits. If any of the addresses are below their specified minimum balances, the upkeep runs the `topUp` function for that specific address, which distributes the MATIC in your contract to that address. Unless your wallet happens to have more than 100 testnet MATIC, you will receive MATIC in your wallet every 60 seconds as defined by `minWaitPeriodSeconds` in your contract. Check to make sure the example is running correctly:
 
@@ -117,9 +103,9 @@ The upkeep runs the `checkUpkeep` function in your contract, which checks the ba
 
 The example continues to run until your upkeep runs out of LINK, your contract runs out of MATIC, or until you manually pause or cancel the upkeep.
 
-## Clean up
-
 After you are done with this example, you can run the `withdraw` function on your contract to withdraw any remaining testnet MATIC so you can use it later. Also, you can cancel your upkeep in the Automation UI and withdraw any remaining unspent LINK.
+
+</Accordion>
 
 ## Examine the example code
 

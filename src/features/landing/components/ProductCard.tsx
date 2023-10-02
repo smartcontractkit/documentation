@@ -17,7 +17,7 @@ export type ProductCardProps = {
 
 export const ProductCard = (props: ProductCardProps) => {
   return (
-    <section class={clsx("card", productCard.productCard)}>
+    <div class={clsx("card", productCard.productCard)}>
       <div class={clsx(productCard.firstCol)}>
         <img src={props.image} width={64} height={64} alt={`Chainlink ${props.title}`} />
         <div class={productCard.ctaCol}>
@@ -58,6 +58,6 @@ export const ProductCard = (props: ProductCardProps) => {
           </div>
         </div>
       )}
-    </section>
+    </div>
   )
 }

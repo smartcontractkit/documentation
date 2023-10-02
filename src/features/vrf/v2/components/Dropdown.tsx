@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { RefObject } from "preact"

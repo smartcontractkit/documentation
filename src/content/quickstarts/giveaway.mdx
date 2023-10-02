@@ -1,0 +1,441 @@
+---
+title: "Giveaway Manager"
+description: "Build an app to manage distribution."
+image: "QuickStarts-Giveaway-Manager.webp"
+products: ["general"]
+time: "180 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside, ClickToZoom, CopyText } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+The Giveaway Manager app is a highly configurable proof of concept for provably-fair giveaways using Chainlink Automation and VRF. It is capable of drawing winners from a CSV list or onchain entries using VRF Direct Funding and Automation. Fulfillment is not included, and this app demonstrates provably fair selection only.
+
+![image](https://i.imgur.com/lCIAVrR.png)
+
+## Objective
+
+In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The UI was designed to run simple drawings and giveaways with just a CSV list of participants. Chainlink Automation provisioning and setup is also covered to enable timed-based, dynamic drawings.
+
+You can use this to run:
+
+- Static Giveaways: Fairly and transparently pick winners from a participant list in CSV format. Unique participant IDs can be anything (emails, numbers, addresses). They are hashed so no user data is stored on-chain.
+- Dynamic Giveaways: Create a giveaway that participants can enter on their own via tx, then fairly and transparently pick winners whenever you'd like. This allows participants to register over a set period of time without the admin needing a full participant list like a static giveaway.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided “AS IS” and “AS AVAILABLE” without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/getting-started/deploy-your-first-contract).
+</Aside>
+
+Before you start this tutorial, complete the following items:
+
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- Fund your wallet with the following testnet tokens:
+  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
+  - Request ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai). You will need [at least 5.1 LINK](#required-balance-amounts) to set up each giveaway with this app.
+
+## Steps to implement
+
+<Accordion title="Clone the repo" number={1}>
+
+- Run `git --version` to check your `git` installation. You should see an output similar to `git version x.x.x`. If not, install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+- Install [NodeJS](https://nodejs.org/)
+- Install [yarn](https://yarnpkg.com/)
+
+```bash
+git clone https://github.com/smartcontractkit/quickstart-giveaway.git
+```
+
+</Accordion>
+
+<Accordion title="Create a block explorer API key" number={2}>
+
+The recommended networks for this app are:
+
+- Ethereum mainnet and Goerli testnet (Sepolia is not supported)
+- Polygon mainnet and Mumbai testnet
+
+For demo purposes, use Polygon Mumbai for this tutorial. Create a block explorer API key to verify contracts on your preferred network:
+
+- [Polygonscan](https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics)
+- [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
+
+</Accordion>
+
+<Accordion title="Set contract environment variables" number={3}>
+
+1. Prepare the following values:
+
+   - The RPC URL for your deployment network, using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+   - The private key for your deployer account. If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+   - The block explorer API key from Etherscan or Polygonscan that you [created earlier](#create-a-block-explorer-api-key).
+
+   | Parameter         | Description                                                                             | Example                                                |
+   | ----------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.                                      | `https://polygon-mumbai.g.alchemy.com/v2/your-api-key` |
+   | `PRIVATE_KEY`     | The private key of the account you want to deploy from. <br/> Add `0x` before your key. | `0xabc123abc123abc123abc123abc123...`                  |
+   | `EXPLORER_KEY`    | The block explorer API key needed for contract verification.                            | `ABC123ABC123ABC123ABC123ABC123ABC1`                   |
+
+1. In the `contracts` directory, create a `.env` file for your contract environment variables:
+
+   ```bash
+   # <root>/contracts
+   $ touch .env
+   $ open .env
+   ```
+
+   If you're going to push this to your own repo, make sure this `.env` file is untracked, and consider using a secure env management package instead.
+
+1. Add this content to your file and fill in the values. Do not use quotation marks when filling in the values. Add `0x` to the beginning of your private key.
+
+   ```bash
+   # Do NOT use quotes to assign values!
+
+   # Network RPCs
+   export RPC_URL=
+
+   # Private key for contract deployment
+   export PRIVATE_KEY=
+
+   # Explorer API key used to verify contracts
+   export EXPLORER_KEY=
+   ```
+
+</Accordion>
+
+<Accordion title="Install Foundry" number={4}>
+
+Refer to the [Foundry installation instructions](https://book.getfoundry.sh/getting-started/installation).
+
+1. Download foundryup:
+
+   ```bash
+   # Download foundry
+   $ curl -L https://foundry.paradigm.xyz | bash
+   ```
+
+1. Restart your terminal session, then install Foundry by running:
+
+   ```bash
+   foundryup
+   ```
+
+   <Aside type="note" title="MacOS installation note">
+     You might see the following error on MacOS: `dyld: Library not loaded:
+     /usr/local/opt/libusb/lib/libusb-1.0.0.dylib`. To fix this, install libusb: `brew install libusb` See [installation
+     troubleshooting](https://github.com/foundry-rs/foundry/blob/master/README.md#troubleshooting-installation) for
+     details.
+   </Aside>
+
+</Accordion>
+
+<Accordion title="Install contract dependencies" number={5}>
+
+Install [GNU make](https://www.gnu.org/software/make/) if you do not already have it. The functionality of the project is wrapped in the [makefile](https://github.com/smartcontractkit/quickstarts-giveaway/blob/main/contracts/Makefile). Reference the below commands based on your OS or go to [Make documentation](https://www.gnu.org/software/make/manual/make.html).
+
+{/* prettier-ignore */}
+   <TabsContent sharedStore="osType" client:visible>
+   <Fragment slot="tab.1">macOS</Fragment>
+   <Fragment slot="tab.2">Windows</Fragment>
+   <Fragment slot="panel.1">
+   1. The Xcode command line tools include `make`. If you've previously installed Xcode, skip to step 2 to verify your installation. Otherwise, open a Terminal window and run:
+      ```sh
+      xcode-select --install
+      ```
+      Alternatively, if you prefer to [use Homebrew](https://formulae.brew.sh/formula/make), be aware that GNU `make` is installed as `gmake`.
+   1.  Verify your `make` installation:
+         ```sh
+         make
+         ```
+         If `make` is installed successfully, you will get the following output:
+         ```sh
+         make: *** No targets specified or no makefile found. Stop.
+         ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   1. If you're using WSL, open an Ubuntu terminal and run:
+      ```sh
+      sudo apt install make
+      ```
+   1. [Edit your path variable to include `make`](https://help.ubuntu.com/community/EnvironmentVariables#Persistent_environment_variables).
+   1. Verify your `make` installation:
+      ```sh
+      make
+      ```
+      If `make` is installed successfully, you will get the following output:
+      ```sh
+      make: *** No targets specified or no makefile found. Stop.
+      ```
+   </Fragment>
+   </TabsContent>
+
+Install contract dependencies if changes have been made to contracts:
+
+```bash
+# <root>/contracts
+$ make install
+```
+
+</Accordion>
+
+<Accordion title="Deploy contract" number={6}>
+
+```bash
+# <root>/contracts
+$ make deploy
+```
+
+Save the deployed contract address from your terminal output. This is the giveaway contract manager address that you will need when you [run the UI](#run-and-view-the-ui). Scroll up in the terminal output and look for your contract address, which appears shortly after the `Success` message:
+
+```shell
+##### mumbai
+✅  [Success]Hash: 0x6feb039ea7533c2ad1b385d73370a38ccb330f76360dfa1444b26c8ba57c6e0a
+Contract Address: 0x97fD95333b827dae8c58BC74394Cc8E7d83fDEbA
+Block: 40656570
+Paid: 0.01104793954 ETH (5469277 gas * 2.02 gwei)
+```
+
+</Accordion>
+
+<Accordion title="Install UI dependencies" number={7}>
+
+1. To install the UI dependencies, navigate to the `client` directory and run:
+
+   ```bash
+   # <root>/client
+   # (Mac) you may need to run 'source ~/.nvm/nvm.sh'
+   nvm use
+   ```
+
+   You may be prompted to install `nvm` and node v14.17.4. This process takes a few minutes.
+
+1. After your node version is set, run:
+
+   ```bash
+   yarn
+   ```
+
+</Accordion>
+
+<Accordion title="Run and view the UI" number={8}>
+
+Set environment variables to run the UI and then view it locally.
+
+1. Prepare your UI environment variables. These are needed for each time you want to run the UI:
+
+   | Item                                   | Value                                                                                                                                                                                                                                 |
+   | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS` | The address of the Giveaway Contract Manager contract that you [deployed earlier](#deploy-contract)                                                                                                                                   |
+   | `UI_LINK_TOKEN_CONTRACT_ADDRESS`       | For Polygon Mumbai: <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/> <br/> See all [LINK token contract addresses](/resources/link-token-contracts)                                                                 |
+   | `UI_KEEPER_REGISTRY_CONTRACT_ADDRESS`  | For Polygon Mumbai: <CopyText text="0x02777053d6764996e594c3E88AF1D58D5363a2e6" code/> <br/> This app currently supports Automation v1.2. See all [Automation registry contract addresses](/chainlink-automation/supported-networks/) |
+
+1. Navigate to the `/client/packages/ui` directory, and run these commands to set up your UI environment variables. Do not use quotes to assign values:
+   ```bash
+   # <root>/client/packages/ui
+   export UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS=
+   export UI_LINK_TOKEN_CONTRACT_ADDRESS=
+   export UI_KEEPER_REGISTRY_CONTRACT_ADDRESS=
+   ```
+1. After setting the environment variables, run the UI locally:
+   ```bash
+   yarn start
+   ```
+1. To view the UI, open your browser at [localhost:3005](localhost:3005).
+
+</Accordion>
+
+<Accordion title="Implement a static giveaway" number={9}>
+
+1. Navigate to http://localhost:3005/ in your browser.
+1. In the upper right corner, click **Connect wallet**. Connect your wallet and ensure the proper network is selected.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/1-ui-connect-wallet.png" alt="Connect wallet" />
+
+1. Click **Create giveaway**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/2-ui-create-giveaway.png" alt="Create giveaway" />
+
+1. Static giveaway is selected by default. Fill in the details to configure the giveaway:
+
+   - Create a CSV file with a list of giveaway participants. Below the **Participants** field, download the example CSV participant file and fill it in. For testing, you can use a list of dummy wallet addresses.
+   - Fill in the rest of the fields and upload your CSV list of participants, then **Create** and confirm the wallet transaction that pops up.
+
+   {" "}
+
+   <ClickToZoom src="/images/quickstarts/giveaway/3-ui-create-static-giveaway.png" alt="Create static giveaway" />
+
+1. After the transaction processes, you should get a "Giveaway successfully created" message. Click the UI card for the new giveaway you just created:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/4-ui-click-giveaway.png" alt="Click the newly created giveaway" />
+
+1. The details for your giveaway are displayed. Click **Pick Winners** and confirm the wallet transaction.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/5-ui-pick-winners.png" alt="Pick winners" />
+
+1. A "Pending Transaction" popup displays while the transaction is processing. Once the transaction is complete, you should see a "Successfully picked winners" message. Click **Close**.
+
+   - Optional: You can reference the "View VRF Request" link to help prove the giveaway was fair.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/6-ui-pick-winners-confirmation.png" alt="Pick winners confirmation" />
+
+1. At the bottom of the Giveaway page, upload your original participants (contestants) CSV again to see who won:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/7-ui-upload-contestants-csv.png" alt="Upload contestants CSV" />
+
+1. After you've uploaded the CSV, click **Check Winners**:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/8-ui-check-winners.png" alt="Check winners" />
+
+1. A **Giveaway winners** popup displays and shows the winners. This demo used a CSV of dummy wallet addresses. You can use whichever unique identifiers you want. Since the identifier is hashed before it's put on-chain, the data remains private and visible only to you as the admin.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/9-ui-giveaway-winners.png" alt="View winners" />
+
+   You can export a CSV list of all the winners and share the list with participants if you wish. You can also choose to provide the VRF transaction from Step 7 as evidence that Chainlink VRF was used for fairness.
+
+</Accordion>
+
+<Accordion title="Implement a dynamic giveaway" number={10}>
+
+1. Navigate to http://localhost:3005/ in your browser.
+1. In the upper right corner, click **Connect wallet**. Connect your wallet and ensure the proper network is selected.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/1-ui-connect-wallet.png" alt="Connect wallet" />
+
+1. Click **Create giveaway**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/2-ui-create-giveaway.png" alt="Create giveaway" />
+
+1. For the **Select giveaway type** field, click **Dynamic**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/10-ui-select-dynamic-type.png" alt="Select giveaway type" />
+
+1. Fill in the details to configure the giveaway:
+
+   - If you want the Giveaway to close automatically after a certain duration, click **Enable Automation** and enter the duration. If you don't do this, you must manually close the Giveaway before drawing.
+   - Click **Create** and confirm the wallet transaction that pops up.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/11-ui-create-dynamic-giveaway.png" alt="Create  dynamic giveaway" />
+
+1. After the transaction processes, you should get a "Giveaway successfully created" message. Click the UI card for the new giveaway you just created:
+
+   <ClickToZoom
+     src="/images/quickstarts/giveaway/12-ui-click-dynamic-giveaway.png"
+     alt="Click the newly created giveaway"
+   />
+
+1. The details for your giveaway are displayed. At the bottom, there are a few options:
+
+   - **Join Giveaway**: Allows the admin to submit a tx to join the giveaway (useful for some use cases)
+   - **Pick Winners**: You can pick the winners at any time, if you specified a duration it will automatically close the giveaway so that nobody can enter anymore. You'll still need to run this to pick the winners.
+   - **Cancel Giveaway**: Cancel the giveaway and prevent anyone from entering.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/13-ui-dynamic-giveaway-options.png" alt="Dynamic giveaway options" />
+
+1. If you enabled a duration for the giveaway, you'll see the status change to **Staged** after the duration is complete. This means nobody else can join the giveaway and you're ready to pick winners.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/14-ui-staged-status.png" alt="Staged status" />
+
+1. The details for your giveaway are displayed. Click **Pick Winners** and confirm the wallet transaction.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/15-ui-dynamic-pick-winners.png" alt="Pick winners" />
+
+1. A "Pending Transaction" popup displays while the transaction is processing. Once the transaction is complete, you should see a "Successfully picked winners" message. Click **Close**.
+
+   - Optional: You can reference the "View VRF Request" link to help prove the giveaway was fair.
+
+   <ClickToZoom
+     src="/images/quickstarts/giveaway/16-ui-pick-winners-confirmation.png"
+     alt="Pick winners confirmation"
+   />
+
+1. After the transaction is confirmed, the Giveaway status changes to Finish. Click **View Winners** to see the wallet addresses of those who won.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/17-ui-view-winners.png" alt="View winners" />
+
+   You can export a CSV list of all the winners and share the list with participants if you wish. You can also choose to provide the VRF transaction as evidence that Chainlink VRF was used for fairness.
+
+</Accordion>
+
+## Reference
+
+### Testing
+
+To test contracts, navigate to the `contracts` directory and run the following command:
+
+```bash
+# <root>/contracts
+make test-contracts-all
+```
+
+To test the UI, navigate to the `/client/packages/ui` directory and run the following commands:
+
+```bash
+# <root>/client/packages/ui
+$ yarn test
+$ yarn tsc
+$ yarn lint
+$ yarn prettier
+```
+
+### Required balance amounts
+
+As a creator of a giveaway, the minimum token requirements are needed to ensure that your giveaway is created and finished without issues. All unused LINK token amounts are able to be withdrawn after completion of giveaway.
+
+- 5.1 LINK
+  - 0.1 (VRF request)
+  - 5 (Automation subscription)
+
+### Giveaway Status
+
+After picking winners is initiated in the UI, the status of the giveaway is moved to `pending`. Each subsequent block is then checked to see if the VRF request has been finished and winners picked. Once found, the status is automatically moved to `finished`. The winners are then able to be viewed and leftover LINK is able to be withdrawn.
+
+### Developer Integration for Entering Dynamic Giveaway
+
+The Giveaway contract is able to be integrated with any application that is able to send a transaction to the contract. The user will need to call the `enterGiveaway` function with the following parameters:
+
+- `giveawayId` - The ID of the giveaway that the user is entering
+- `entries` - The amount of entries the user is purchasing
+- `proof` The merkle proof of the user's entry if the giveaway is permissioned
+
+This is how the UI in this repo calls the `enterGiveaway` function using `wagmi`:
+
+```javascript
+export const enterGiveaway = async (params: contracts.EnterGiveawayParams) => {
+  try {
+    const { id, proof, fee } = params
+    const config = await prepareWriteContract({
+      address: giveawayManagerContractAddress,
+      abi: giveawayManagerABI,
+      functionName: 'enterGiveaway',
+      overrides: {
+        value: ethers.utils.parseEther(fee)
+      },
+      args: [id, params.entries ? params.entries : 1, proof ? proof : []]
+    })
+    const data = await writeContract(config)
+    return data
+  } catch (error: any) {
+    throw new Error(`Error entering giveaway: ${error.message}`)
+  }
+}
+
+export interface EnterGiveawayParams {
+  id: number
+  entries?: number
+  proof?: string[]
+  fee: string
+}
+```

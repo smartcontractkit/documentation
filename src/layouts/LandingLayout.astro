@@ -3,25 +3,22 @@ import HeadCommon from "../components/HeadCommon.astro"
 import HeadSEO from "../components/HeadSEO.astro"
 import Header from "../components/Header/Header.astro"
 import * as CONFIG from "../config"
-import { NewsletterCTA } from "../components/Footer/NewsletterCTA.tsx"
+import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
 
-const { content = {} } = Astro.props
 const currentPage = new URL(Astro.request.url).pathname
 
-const formattedContentTitle = content.title
-  ? `${content.title} | ${CONFIG.SITE.title}`
-  : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
+const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 ---
 
-<html dir={content.dir ?? "ltr"} lang={content.lang ?? "en-us"} class="initial">
+<html dir="ltr" lang="en-us" class="initial">
   <head>
     <HeadCommon />
-    <HeadSEO {content} {canonicalURL} />
+    <HeadSEO {canonicalURL} />
     <title>{formattedContentTitle}</title>
     <style>
       body {
@@ -83,20 +80,6 @@ const canonicalURL = new URL(canonicalURLStr)
         width: 100%;
         height: 100%;
       }
-      .mobile-sidebar-toggle {
-        overflow: hidden;
-      }
-      .mobile-sidebar-toggle #grid-left {
-        display: block;
-        top: 2rem;
-      }
-      /** This is done to hide the search box in the homepage. CSSModules styles are taking precedence over other styles so !important was needed **/
-      @media (min-width: 50em) {
-        .search-item {
-          display: none !important;
-          visibility: hidden !important;
-        }
-      }
     </style>
   </head>
 </html>
@@ -105,7 +88,7 @@ const canonicalURL = new URL(canonicalURLStr)
   <Header />
   <main class="layout">
     <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
-      <LeftSidebar currentPage={currentPage} content={content} />
+      <LeftSidebar currentPage={currentPage} />
     </aside>
     <div id="grid-main">
       <slot />

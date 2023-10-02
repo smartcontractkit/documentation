@@ -1,34 +1,18 @@
 ---
-section: automation
-date: Last Modified
 title: "Time-based upkeeps"
-whatsnext:
-  {
-    "Find the list of supported networks": "/chainlink-automation/supported-networks/",
-    "FAQs": "/chainlink-automation/faqs",
-  }
+description: "Time-based upkeeps are contracts you set up on Chainlink Automation that allow you to run a smart contract function automatically according to a custom schedule that you define. Time-based upkeeps are similar to cron jobs."
+image: "QuickStarts-Time-based-upkeep.webp"
+products: ["automation"]
+time: "15 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, ClickToZoom, CodeSample } from "@components"
+import { Accordion, Aside, ClickToZoom, CodeSample } from "@components"
 import { TabsContent } from "@components/Tabs"
-
-Time-based upkeeps are contracts you set up on Chainlink Automation that allow you to run a smart contract function automatically according to a custom schedule that you define. Time-based upkeeps are similar to cron jobs.
-
-<Aside type="caution" title="Disclaimer">
-  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
-  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
-  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
-  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
-  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
-  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
-  to errors in code.
-</Aside>
 
 ## Objective
 
-In this tutorial, you will learn how to set up a time-based upkeep to automate a smart contract function using Chainlink Automation.
-
-You can use time-based upkeeps to:
+In this tutorial, you will learn how to set up a time-based upkeep to automate a smart contract function using Chainlink Automation. You can use time-based upkeeps to:
 
 - Schedule a rebalancing activity
 - Schedule a recurring payment
@@ -45,7 +29,7 @@ Before you start this tutorial, complete the following items:
   - The gas currency for the chain where your contract is deployed. For this example, get 0.5 Sepolia ETH from one of the available [public faucets](https://faucetlink.to/sepolia).
   - ERC-677 LINK. [Get 20 testnet LINK](https://faucets.chain.link/).
 
-## Deploy a smart contract
+<Accordion title="Deploy a smart contract to automate" number={1}>
 
 If you already have a deployed smart contract that you want to automate, make sure the contract has an external or public function that modifies the state of the contract on-chain. In Solidity, `pure` and `view` functions do not update the state, so even if these functions are public, you cannot automate them with Chainlink Automation.
 
@@ -78,7 +62,9 @@ If you do not already have a deployed contract, follow these instructions to dep
      alt="Confirm MetaMask contract deployment transaction"
    />
 
-## Provide contract information
+</Accordion>
+
+<Accordion title="Provide contract information" number={2}>
 
 If your smart contract is already verified on-chain, [skip to the next step](#register-a-new-upkeep).
 
@@ -117,7 +103,9 @@ If you do not want to verify the contract on chain, paste the contract's ABI int
 </Fragment>
 </TabsContent>
 
-## Register a new Upkeep
+</Accordion>
+
+<Accordion title="Register a new Upkeep" number={3}>
 
 <div class="remix-callout">
   <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
@@ -141,7 +129,9 @@ If you do not want to verify the contract on chain, paste the contract's ABI int
 
    Each time Automation triggers your function, based on the schedule you give it, it will run the `updateCounter` function which increments the `counter` variable using the value you enter for `updateAmount`.
 
-### Specifying the time schedule
+</Accordion>
+
+<Accordion title="Specify the time schedule" number={4}>
 
 After you enter the basic contract information, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own, or see the [format](#cron-format) and [examples](#cron-schedule-examples) below.
 
@@ -190,6 +180,10 @@ All times are in UTC
 | `0 */2 * * *`    | Every two hours                           |
 | `0 17 * * 0,2,4` | Sunday, Tuesday and Thursday at 17:00 UTC |
 
+</Accordion>
+
+<Accordion title="Specify the time schedule" number={5}>
+
 ### Entering upkeep details
 
 To complete the upkeep registration process, you must enter some information about your upkeep including its name, gas limit, starting balance LINK, and contact information.
@@ -203,7 +197,9 @@ To complete the upkeep registration process, you must enter some information abo
    - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. If you're using the `Counter` contract, 3 LINK is a sufficient starting balance. If your upkeep is underfunded after you create it, you can add more funds later.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
 
-### Check your counter variable
+</Accordion>
+
+<Accordion title="Check your counter variable" number={6}>
 
 You can check the value of the counter variable in your contract in Remix. If you verified your contract, you can also check it in Sepolia Etherscan.
 
@@ -223,7 +219,9 @@ If you verified the `Counter` contract, you can check the value of the counter v
 </Fragment>
 </TabsContent>
 
-## Manage your upkeep
+</Accordion>
+
+<Accordion title="Manage your upkeep" number={7}>
 
 You can manage your upkeep in the Chainlink Automation App, or by [directly using the registry contract functions](/chainlink-automation/manage-upkeeps#interacting-directly-with-the-chainlink-automation-registry).
 
@@ -239,3 +237,5 @@ To pause your upkeep, select **Pause upkeep**. Chainlink Automation App prompts 
 Pausing the upkeep can be useful for debugging. If you discover a problem with the contract you registered initially, you can pause the upkeep, update the upkeep to use a new contract, and then unpause the upkeep.
 
 For the upkeep to continue running, you must [maintain a minimum balance](/chainlink-automation/manage-upkeeps#maintain-a-minimum-balance). The upkeep stops running if it is underfunded. To [withdraw funds from an upkeep](/chainlink-automation/manage-upkeeps#withdraw-funds), you must cancel the upkeep.
+
+</Accordion>

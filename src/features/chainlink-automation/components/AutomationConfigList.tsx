@@ -10,11 +10,14 @@ export const AutomationConfigList = () => {
   return Object.keys(normalizedConfig).map((technology: SupportedTechnology) => {
     const config = normalizedConfig[technology]
     const technologyTitle = config?.title
+    const h3Slug = technologyTitle ? slugger.slug(technologyTitle) : ""
     return !technologyTitle ? (
       <p />
     ) : (
-      <div key={technology}>
-        <h3 id={slugger.slug(technologyTitle)}>{technologyTitle}</h3>
+      <>
+        <section key={technology} id={h3Slug}>
+          <h3 id={h3Slug}>{technologyTitle}</h3>
+        </section>
         {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
           const title = getTitle(supportedChain)
           const explorerUrl = getExplorer(supportedChain)
@@ -28,9 +31,11 @@ export const AutomationConfigList = () => {
             return null
           }
 
+          const h4Slug = slugger.slug(title)
+
           return (
-            <div key={supportedChain}>
-              <h4 id={slugger.slug(title)}>{title}</h4>
+            <section key={supportedChain} id={h4Slug}>
+              <h4 id={h4Slug}>{title}</h4>
               {
                 <AutomationConfig
                   config={config}
@@ -38,10 +43,10 @@ export const AutomationConfigList = () => {
                   getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
                 />
               }
-            </div>
+            </section>
           )
         })}
-      </div>
+      </>
     )
   })
 }
