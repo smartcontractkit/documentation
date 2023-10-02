@@ -333,7 +333,11 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
         <span class="label">ID:</span>
-        <a style="font-size: 0.75em;" class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.feedId)}>
+        <a
+          style="font-size: 0.75em;"
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.feedId)}
+        >
           {proxy.feedId}
         </a>
         <button
@@ -346,7 +350,11 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
       </div>
       <div className={tableStyles.assetAddress}>
         <span class="label">Verifier proxy address:</span>
-        <a style="font-size: 0.75em;" class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
+        <a
+          style="font-size: 0.75em;"
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+        >
           0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
         </a>
         <button
@@ -420,7 +428,9 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
               <dt>
                 <span class="label">Full name:</span>
               </dt>
-              <dd><span style="font-size: 0.9em;">{proxy.docs.clicProductName}</span></dd>
+              <dd>
+                <span style="font-size: 0.9em;">{proxy.docs.clicProductName}</span>
+              </dd>
             </div>
           ) : (
             ""
