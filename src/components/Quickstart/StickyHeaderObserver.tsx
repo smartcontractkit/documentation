@@ -3,105 +3,96 @@ import styles from "./stickyHeaderObserver.module.css"
 import { useNavBar } from "../Header/useNavBar/useNavBar"
 import { NavBarInfo } from "../Header/useNavBar/navBarStore"
 
-const rootMarginDown = "0% 0% -100% 0%"
-
 const StickyHeaderObserver: React.FC = () => {
   const { $navBarInfo } = useNavBar()
 
   // Using ref to access the most up to date value in observerCallback
-  const navBarInfo = React.useRef<NavBarInfo>()
-  navBarInfo.current = $navBarInfo
-
-  const ref = React.useRef<HTMLDivElement>(null)
+  const navBarRef = React.useRef<NavBarInfo>()
+  navBarRef.current = $navBarInfo
+  const thisRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     const article = document.getElementById("article")
-    const height = navBarInfo.current?.height
-    if (!article || !height || !ref.current) {
+    const height = navBarRef.current?.height
+    if (!article || !height || !thisRef.current) {
       return
     }
 
     // Allows us to extend the bar to the gutter padding
     const gridMain = document.getElementById("grid-main")
     if (gridMain) {
-      ref.current.style.width = `${gridMain.clientWidth}px`
-      ref.current.style.transform = "translateX(calc(-1 * var(--gutter)))"
+      thisRef.current.style.width = `${gridMain.clientWidth}px`
+      thisRef.current.style.transform = "translateX(calc(-1 * var(--gutter)))"
     } else {
-      ref.current.style.width = `${article.clientWidth}px`
+      thisRef.current.style.width = `${article.clientWidth}px`
     }
 
+    let topShow = "0%"
+    let bottomShow = "-94%"
+    if (window?.innerHeight) {
+      topShow = `-${height}px`
+      bottomShow = `-${window.innerHeight - height - 2}px`
+    }
+
+    const rootMarginHidden = "0% 0% -100% 0%"
+    const rootMarginShow = `${topShow} 0% ${bottomShow} 0%`
+
     const articleObserverCallback: IntersectionObserverCallback = (entries, observer) => {
-      if (!ref.current) return
-      const scroll = navBarInfo.current?.scrollDirection
-      if (
-        (scroll === "up" && observer.rootMargin !== rootMarginDown) ||
-        (scroll === "down" && observer.rootMargin === rootMarginDown)
-      ) {
+      if (!thisRef.current || !navBarRef.current) {
+        return
+      }
+      const hidden = navBarRef.current.hidden
+      if ((hidden && observer.rootMargin === rootMarginHidden) || (!hidden && observer.rootMargin === rootMarginShow)) {
         const article = entries[0]
-        ref.current.hidden = !article.isIntersecting
+        thisRef.current.hidden = !article.isIntersecting
+        console.log(thisRef.current.hidden)
       }
     }
 
     const headerObserverCallback: IntersectionObserverCallback = (entries, observer) => {
-      if (!ref.current) return
-      const scroll = navBarInfo.current?.scrollDirection
-      if (
-        (scroll === "up" && observer.rootMargin !== rootMarginDown) ||
-        (scroll === "down" && observer.rootMargin === rootMarginDown)
-      ) {
+      if (!thisRef.current || !navBarRef.current) {
+        return
+      }
+      const hidden = navBarRef.current.hidden
+      if ((hidden && observer.rootMargin === rootMarginHidden) || (!hidden && observer.rootMargin === rootMarginShow)) {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            ref.current.style.height = `${entry.target.clientHeight}px`
+            thisRef.current.style.height = `${entry.target.clientHeight}px`
           }
         }
       }
     }
 
-    let topUp = "0%"
-    let bottomUp = "-94%"
-    if (window?.innerHeight) {
-      topUp = `-${height}px`
-      bottomUp = `-${window.innerHeight - height - 2}px`
-    }
+    const articleObserverShow = new IntersectionObserver(articleObserverCallback, {
+      rootMargin: rootMarginShow,
+    })
+    const articleObserverHidden = new IntersectionObserver(articleObserverCallback, {
+      rootMargin: rootMarginHidden,
+    })
+    articleObserverShow.observe(article)
+    articleObserverHidden.observe(article)
 
-    const articleObserverUp = new IntersectionObserver(articleObserverCallback, {
-      rootMargin: `${topUp} 0% ${bottomUp} 0%`,
+    const headerObserverShow = new IntersectionObserver(headerObserverCallback, {
+      rootMargin: rootMarginShow,
     })
-    const articleObserverDown = new IntersectionObserver(articleObserverCallback, {
-      rootMargin: rootMarginDown,
-    })
-    articleObserverUp.observe(article)
-    articleObserverDown.observe(article)
-
-    const headerObserverUp = new IntersectionObserver(headerObserverCallback, {
-      rootMargin: `${topUp} 0% ${bottomUp} 0%`,
-    })
-    const headerObserverDown = new IntersectionObserver(headerObserverCallback, {
-      rootMargin: rootMarginDown,
+    const headerObserverHidden = new IntersectionObserver(headerObserverCallback, {
+      rootMargin: rootMarginHidden,
     })
     const stickyHeaders = document.body.querySelectorAll("article [data-sticky]")
     stickyHeaders.forEach((h) => {
-      headerObserverUp.observe(h)
-      headerObserverDown.observe(h)
+      headerObserverShow.observe(h)
+      headerObserverHidden.observe(h)
     })
 
     return () => {
-      articleObserverUp.disconnect()
-      articleObserverDown.disconnect()
-      headerObserverUp.disconnect()
-      headerObserverDown.disconnect()
+      articleObserverShow.disconnect()
+      articleObserverHidden.disconnect()
+      headerObserverShow.disconnect()
+      headerObserverHidden.disconnect()
     }
   }, [$navBarInfo.height])
 
-  React.useEffect(() => {
-    const { height, scrollDirection } = $navBarInfo
-    if (!height || !ref.current) {
-      return
-    }
-    ref.current.style.top = `${scrollDirection === "up" ? height : 0}px`
-  }, [$navBarInfo.scrollDirection, $navBarInfo.height])
-
-  return <div ref={ref} className={styles.stickyBar} />
+  return <div ref={thisRef} className={styles.stickyBar} data-sticky />
 }
 
 export default StickyHeaderObserver
