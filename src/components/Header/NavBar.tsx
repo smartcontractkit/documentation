@@ -1,18 +1,15 @@
 import React from "react"
 import { NavBar as Nav } from "@chainlink/components"
 import { Search } from "./AlgoSearch/Search"
-import { useScrollDirection } from "@chainlink/components/src/NavBar/useScrollDirection"
 import { useNavBar } from "./useNavBar/useNavBar"
-import { ScrollDirection } from "./useNavBar/navBarStore"
 import styles from "./scroll.module.css"
 
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
-  const scrollDirection = useScrollDirection() as ScrollDirection
   const navRef = React.useRef(null)
 
   const { setNavBarInfo } = useNavBar()
 
-  React.useEffect(() => {
+  const onHideChange = (hidden: boolean) => {
     if (navRef.current) {
       const height = (navRef.current as HTMLElement).clientHeight
       const elements = document.body.querySelectorAll("[data-sticky]")
@@ -20,14 +17,15 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
         if (!e.classList.contains(styles.animateTop)) {
           e.classList.add(styles.animateTop)
         }
-        e.style.top = `${scrollDirection === "up" ? height : 0}px`
+        e.style.top = `${hidden ? 0 : height}px`
       })
-      setNavBarInfo({ scrollDirection, height })
+      setNavBarInfo({ hidden, height })
     }
-  }, [scrollDirection])
+  }
+
   return (
     <span ref={navRef}>
-      <Nav app="Docs" path={path} searchTrigger={showSearch ? <Search /> : undefined} />
+      <Nav app="Docs" path={path} searchTrigger={showSearch ? <Search /> : undefined} onHideChange={onHideChange} />
     </span>
   )
 }
