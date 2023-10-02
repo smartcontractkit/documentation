@@ -7,7 +7,7 @@ time: "90 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 
 Circuit breakers are useful for pausing dApps and processes when adverse events are detected on-chain. These circuit breakers can prevent loss of assets during volatile market events, unstable network conditions, or if systems that your dApp relies on become compromised.
 
@@ -60,7 +60,7 @@ Before you start this tutorial, install the required tools:
   </a>
 - Add testnet funds to your wallet. You will need both ERC-677 LINK and the gas currency for the chain where your contract is deployed. For this example, use Avalanche Fuji and testnet LINK. You can get both at [faucets.chain.link](https://faucets.chain.link/fuji).
 
-## Setup the example
+<Accordion title="Setup the example" number={1}>
 
 To set up this example, clone the source and install the required packages.
 
@@ -79,11 +79,9 @@ To set up this example, clone the source and install the required packages.
 
    For this tutorial, disregard the resulting `npm` warnings.
 
-## Run the example
+</Accordion>
 
-In this section, you will deploy two contracts and then set up Chainlink Automation.
-
-### Deploy contracts
+<Accordion title="Deploy contracts" number={2}>
 
 1. Open the `ExampleImplementation.sol` contract in Remix:
 
@@ -133,7 +131,9 @@ Next, deploy the the `CircuitBreaker.sol` contract:
 1. On the **Deploy and run transactions** tab, select _Injected Provider - MetaMask_ for the **Environment** field. Make sure the `CircuitBreaker.sol` contract is selected in the **Contract** field.
 1. There are no constructor inputs for this contract. Click **Deploy** and confirm the transaction in your wallet.
 
-### Register and fund an upkeep
+</Accordion>
+
+<Accordion title="Register and fund an upkeep" number={3}>
 
 Registering an upkeep on Chainlink Automation creates a smart contract that will run your circuit breaker contract.
 
@@ -175,7 +175,9 @@ There may be a warning that says "Unable to verify if this is an Automation comp
 
 1. Click **Register upkeep** and confirm the transaction in your wallet.
 
-### Check emergency action
+</Accordion>
+
+<Accordion title=" Check emergency action" number={4}>
 
 Now the Chainlink Automation network will watch your contract for these trigger parameters. If the price from the feed you provided is above the `maxBalance` threshold that was specified, the `executeEmergencyAction()` function will trigger. As defined in `ExampleImplementation.sol`, the function increments a counter:
 
@@ -195,7 +197,9 @@ function executeEmergencyAction() external {
 1. If the counter was incremented once, you should see `0: uint256: 1` as the output:
    <ClickToZoom src="/images/quickstarts/circuit-breaker/check-counter.png" />
 
-### Update the example implementation contract
+</Accordion>
+
+<Accordion title="Update the example implementation contract" number={5}>
 
 If you want to update your `ExampleImplementation.sol` contract, you can redeploy it with updated values and then use the same Automation upkeep. For example, to update the `maxBalance`:
 
@@ -209,6 +213,8 @@ If you want to update your `ExampleImplementation.sol` contract, you can redeplo
    <ClickToZoom src="/images/quickstarts/circuit-breaker/automation-change-checkdata.png" />
 
 You can use the same process to make other changes to your example implementation contract, like changing the logic in `executeEmergencyAction()` or changing the price feed that you're monitoring.
+
+</Accordion>
 
 ## Cleanup
 

@@ -3,11 +3,11 @@ title: "Batch Collection Reveal"
 description: "Use Chainlink VRF and Automation in generative art collections."
 image: "QuickStarts-Batch-Collection-Reveal.webp"
 products: ["automation", "vrf"]
-time: "60 minutes"
+time: "180 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, CodeSample, ClickToZoom } from "@components"
+import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
 
 Using [Chainlink VRF](https://docs.chain.link/vrf/) in generative art collections is the standard approach for getting provably random source in smart contracts. By batching the reveal process, instead of making VRF calls for each NFT you can save cost up to 100x in a collection of 10,000 with batch size of 100.
@@ -46,7 +46,9 @@ Before you start this tutorial, complete the following items:
 - Set up a cryptocurrency wallet
 - To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
 
-## Run steps
+## Steps to implement
+
+<Accordion title="Enter your collection information" number={1}>
 
 1. Go to the [demo app](https://automation.chainlink-demo.app/) and connect to your wallet with the right network. Then click on the **Get Started** button.
 
@@ -56,13 +58,17 @@ Before you start this tutorial, complete the following items:
      style="max-width: 70%;"
    />
 
-1. Enter the basic information regarding your NFT collection. You can hover over the question mark icon to learn more about each field.
+1. Enter the basic information regarding your collection. You can hover over the question mark icon to learn more about each field.
 
    <ClickToZoom
      src="/images/automation/tutorials/batch-reveal2.png"
      alt="Batch Collection Quickstart Step 2"
      style="max-width: 70%;"
    />
+
+</Accordion>
+
+<Accordion title="Configure your VRF subscription" number={2}>
 
 1. At this stage, you will need to create a VRF subscription and fund it with LINK by visiting the [Chainlink VRF Subscription Manager](https://vrf.chain.link/). Follow the steps outlined in the interface to create a subscription. You will receive a confirmation message upon successful creation.
 
@@ -98,11 +104,19 @@ Before you start this tutorial, complete the following items:
   style="max-width: 70%;"
 />
 
+</Accordion>
+
+<Accordion title="Create an Automation Upkeep" number={3}>
+
 1. The next step is to register a new Upkeep using Chainlink Automation. Visit the [Chainlink Automation App](https://automation.chain.link/) to get started. Click the button **Register New Upkeep** and connect your wallet.
 
 1. You will be directed to a screen where you will choose your Trigger from a dropdown menu. Select **Custom logic**. Paste your address into the _Target contract address_ field. Then, click **Next**.
 
 1. You will be directed to a form to fill out more information on your upkeep. Fill out these details and set the gas limit to 200000 to ensure the Chainlink Automation network can perform the upkeep when the trigger conditions are met. Once all the information is filled in, click **Register Upkeep**. Wait until the upkeep has been registered and click **View Upkeep**. You'll be able to see all the details of your Upkeep.
+
+</Accordion>
+
+<Accordion title="Trigger the upkeep" number={4}>
 
 1. Navigate back to the demo app page. Check off both boxes and click **View Collection**. Your screen will look similar to this:
 
@@ -121,3 +135,5 @@ Before you start this tutorial, complete the following items:
   alt="Batch Collection Quickstart Step 8"
   style="max-width: 70%;"
 />
+
+</Accordion>
