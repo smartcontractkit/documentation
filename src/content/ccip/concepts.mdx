@@ -9,7 +9,7 @@ Before you explore how Chainlink CCIP works in the [architecture guide](/ccip/ar
 
 ## Prerequisites
 
-Prior to learning about Chainlink CCIP, you should understand these fundamental blockchain concepts.
+Before you learn about Chainlink CCIP, you should understand these fundamental blockchain concepts:
 
 - [Accounts](https://ethereum.org/en/developers/docs/accounts/): you should understand the differences between Externally-owned accounts (EOA) and Contract accounts.
 - [Smart Contracts](https://ethereum.org/en/developers/docs/smart-contracts/).
@@ -24,6 +24,8 @@ Cross-Chain Decentralized Applications (Cross-Chain dApps) are [decentralized ap
 ## Interoperability
 
 **Interoperability** is the ability to exchange information between different systems or networks, even if they are incompatible. Shared concepts on different networks ensure that each party understands and trusts the exchanged information. It also considers the concept of _finality_ to establish trust in the exchanged information by validating its accuracy and integrity.
+
+The [web3](https://chain.link/education/web3) ecosystem has become multi-chain, with the rise of layer-1 blockchains and layer-2 scaling solutions, where each network has its own approach to scalability, security, and trust. However, blockchains are isolated networks that operate independently and cannot communicate natively with traditional systems to make external API calls or interact with other blockchains. This limitation is known as the [oracle problem](https://blog.chain.link/what-is-the-blockchain-oracle-problem/). This limitation creates the need for blockchain interoperability protocols, which enable connectivity between different blockchain networks.
 
 CCIP uses interoperability to help web3 developers overcome blockchain restraints, enable specialization of web3 applications, and allow dApps to leverage the liquidity and benefits of multiple blockchain ecosystems.
 
@@ -41,7 +43,7 @@ A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination
 
 ## Decentralized Oracle Network (DON)
 
-Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](https://docs.chain.link/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ on-chain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
+Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ on-chain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
 
 ## Risk Management Network
 
@@ -65,9 +67,19 @@ The Risk Management Network has two main modes of operation:
 
 ### On-chain Risk Management contract
 
-There is one Risk Management contract for each supported destination chain. The Risk Management contract maintains a group of nodes authorized to participate in the Risk Management blessing/cursing. Each Risk Management node has five components: an address for voting to curse, an address for voting to bless, an address for withdrawing a vote to curse, a curse weight, and a blessing weight. The contract also maintains two thresholds to determine the quorum for blessing and cursing. There are two different voting logics depending on the mode:
+There is one Risk Management contract for each supported destination chain. The Risk Management contract maintains a group of nodes authorized to participate in the Risk Management blessing/cursing.
 
-- **Blessing voting procedure:** every time a Risk Management node blesses a Merkle root, the Risk Management contract adds the blessing weight for that node. If the sum exceeds the blessing threshold, the Risk Management contract considers the contract _blessed_.
+Each Risk Management node has five components:
+
+- An address for voting to curse
+- An address for voting to bless
+- An address for withdrawing a vote to curse
+- A curse weight
+- A blessing weight
+
+The contract also maintains two thresholds to determine the quorum for blessing and cursing. There are two different voting logics depending on the mode:
+
+- **Blessing voting procedure:** every time a Risk Management node blesses a Merkle root, the Risk Management contract adds the blessing weight for that node. If the sum of the weights of votes to bless exceeds the blessing threshold, the Risk Management contract considers the contract _blessed_.
 - **Cursing voting procedure:** a Risk Management node that sends a vote to curse assigns the vote a random 32-byte ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the Risk Management contract considers the node to have voted to curse. The Risk Management contract adds the cursing weight for that node. If the sum of the weights of votes to curse exceeds the curse threshold, the Risk Management contract considers the contract _cursed_.
 
 If the Risk Management contract is cursed, then the owner of the original contract must resolve any underlying issues the original contract might have. If the owner is satisfied that these issues have been resolved, they can revoke the cursing on behalf of Risk Management nodes.
