@@ -1,7 +1,4 @@
-/**
- *Submitted for verification at Arbiscan.io on 2023-09-21
- */
-
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
 interface StreamsLookupCompatibleInterface {
