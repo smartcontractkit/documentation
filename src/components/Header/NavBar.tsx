@@ -1,6 +1,7 @@
 import React from "react"
 import { NavBar as Nav } from "@chainlink/components"
 import { Search } from "./AlgoSearch/Search"
+import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
 
@@ -25,7 +26,13 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
 
   return (
     <span ref={navRef}>
-      <Nav app="Docs" path={path} searchTrigger={showSearch ? <Search /> : undefined} onHideChange={onHideChange} />
+      <Nav
+        app="Docs"
+        {...getNavigationProps(path)}
+        path={path}
+        searchTrigger={showSearch ? <Search /> : undefined}
+        onHideChange={onHideChange}
+      />
     </span>
   )
 }
