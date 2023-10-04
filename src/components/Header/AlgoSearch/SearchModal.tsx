@@ -52,6 +52,7 @@ export const SearchModal = ({ showModal, onClose }: { showModal: boolean; onClos
           endpoint="wss://chainlink-assistant.nevermined.app/chat_chainlink"
           basicSearchEndpoint="https://chainlink-assistant.nevermined.app/search"
           onClose={onClose}
+          apiKey=""
         />
       </div>
     </div>

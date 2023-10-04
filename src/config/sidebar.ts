@@ -328,6 +328,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/compatible-contracts",
         },
         {
+          title: "Using Data Streams with Automation",
+          url: "chainlink-automation/streams-lookup",
+        },
+        {
           title: "Register a Time-Based Upkeep",
           url: "chainlink-automation/job-scheduler",
         },
