@@ -1,46 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.16;
 
-interface StreamsLookupCompatibleInterface {
-    error StreamsLookup(
-        string feedParamKey,
-        string[] feeds,
-        string timeParamKey,
-        uint256 time,
-        bytes extraData
-    );
-
-    function checkCallback(
-        bytes[] memory values,
-        bytes memory extraData
-    ) external view returns (bool upkeepNeeded, bytes memory performData);
-}
-
-interface ILogAutomation {
-    function checkLog(
-        Log calldata log,
-        bytes memory checkData
-    ) external returns (bool upkeepNeeded, bytes memory performData);
-
-    function performUpkeep(bytes calldata performData) external;
-}
-
-struct Log {
-    uint256 index;
-    uint256 timestamp;
-    bytes32 txHash;
-    uint256 blockNumber;
-    bytes32 blockHash;
-    address source;
-    bytes32[] topics;
-    bytes data;
-}
-
-interface IVerifierProxy {
-    function verify(
-        bytes memory signedReport
-    ) external payable returns (bytes memory verifierResponse);
-}
+import "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
+import "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierProxy.sol";
 
 interface IReportHandler {
     function handleReport(bytes calldata report) external;
@@ -120,11 +83,10 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
 
         bytes memory bundledReport = bundleReport(report);
 
-        BasicReport memory unverifiedReport = _getReportData(report);
-
-        bytes memory verifiedReportData = verifier.verify{
-            value: unverifiedReport.nativeFee
-        }(bundledReport);
+        bytes memory verifiedReportData = verifier.verify(
+            report,
+            bundledReport
+        );
         BasicReport memory verifiedReport = abi.decode(
             verifiedReportData,
             (BasicReport)
@@ -157,18 +119,6 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
             abi.encode(quote)
         );
         return bundledReport;
-    }
-
-    function _getReportData(
-        bytes memory signedReport
-    ) internal pure returns (BasicReport memory) {
-        (, bytes memory reportData, , , ) = abi.decode(
-            signedReport,
-            (bytes32[3], bytes, bytes32[], bytes32[], bytes32)
-        );
-
-        BasicReport memory report = abi.decode(reportData, (BasicReport));
-        return report;
     }
 
     fallback() external payable {}
