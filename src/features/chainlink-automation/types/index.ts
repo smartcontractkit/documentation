@@ -15,6 +15,7 @@ type ConfigStructOutput = [
   number,
   number,
   number,
+  number,
   BigNumber,
   number,
   number,
@@ -26,6 +27,7 @@ type ConfigStructOutput = [
   paymentPremiumPPB: number
   flatFeeMicroLink: number
   blockCountPerTurn: string
+  maxCheckDataSize: number
   checkGasLimit: number
   stalenessSeconds: number
   gasCeilingMultiplier: number
@@ -52,7 +54,7 @@ export type ChainlinkAutomationAddresses = Partial<
 
 export type ChainlinkAutomationConfig = {
   paymentPremiumPPB: number
-  blockCountPerTurn: number
+  blockCountPerTurn: string
   maxCheckDataSize: number
   checkGasLimit: number
   gasCeilingMultiplier: number
