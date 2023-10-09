@@ -175,7 +175,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 <script>
   /**
    * Creates sticky headers which interact with
-   * intersection observers
+   * intersection observers for nested h3, h4 headers
    */
   const wrapHeaders = (start: Element, isParent?: boolean) => {
     const wrapper = document.createElement("section")
@@ -188,7 +188,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
         !next.hasChildNodes() || // Island doesn't have HTML content
         next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
         !next.children[0].id) && // Section does not have an id
-      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+      (!next.id || ["H5", "H6"].includes(next.nodeName) || (isParent && !["H1", "H2"].includes(next.nodeName)))
     ) {
       elements.push(next)
       next = next.nextElementSibling
