@@ -45,7 +45,6 @@ const StickyHeaderObserver: React.FC = () => {
       if ((hidden && observer.rootMargin === rootMarginHidden) || (!hidden && observer.rootMargin === rootMarginShow)) {
         const article = entries[0]
         thisRef.current.hidden = !article.isIntersecting
-        console.log(thisRef.current.hidden)
       }
     }
 
