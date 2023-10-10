@@ -103,7 +103,7 @@ export const FeedList = ({
 
   return (
     <section id={id}>
-      <h2 id={id}>
+      <h2 id={id} data-sticky>
         <a href={`#${id}`}>Networks</a>
       </h2>
       {!isDeprecating && (
