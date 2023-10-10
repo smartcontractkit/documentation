@@ -1,0 +1,49 @@
+---
+import alertIcon from "./Alert/Assets/alert-icon.svg"
+import infoIcon from "./Alert/Assets/info-icon.svg"
+import dangerIcon from "./Alert/Assets/danger-icon.svg"
+export type Props = {
+  type?: "note" | "tip" | "caution" | "danger" | "deprecated"
+}
+
+const { type = "note" } = Astro.props as Props
+
+// SVG icon paths based on GitHub Octicons
+const icons = {
+  note: infoIcon,
+  tip: infoIcon,
+  caution: alertIcon,
+  deprecated: alertIcon,
+  danger: dangerIcon,
+}
+---
+
+<span class="svg-icon" aria-label={type}>
+  <img class="svg-icon svg-baseline" src={icons[type]} />
+</span>
+
+<style is:inline>
+  .icon {
+    flex-shrink: 0;
+    position: inherit;
+  }
+
+  .icon svg {
+    vertical-align: text-bottom;
+    fill: currentcolor;
+  }
+
+  .svg-icon {
+    display: inline-flex;
+    align-self: center;
+  }
+
+  .svg-icon svg {
+    height: 1em;
+    width: 1em;
+  }
+  .svg-icon.svg-baseline svg {
+    top: 0.125em;
+    position: relative;
+  }
+</style>
