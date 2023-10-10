@@ -18,7 +18,7 @@ type ConfigStructOutput = [
   number,
   BigNumber,
   number,
-  number,
+  string,
   BigNumber,
   BigNumber,
   string,
@@ -33,7 +33,7 @@ type ConfigStructOutput = [
   gasCeilingMultiplier: number
   minUpkeepSpend: BigNumber
   maxPerformGas: number
-  maxPerformDataSize: number
+  maxPerformDataSize: string
   fallbackGasPrice: BigNumber
   fallbackLinkPrice: BigNumber
   transcoder: string
@@ -60,7 +60,7 @@ export type ChainlinkAutomationConfig = {
   gasCeilingMultiplier: number
   minUpkeepSpend: { type: "BigNumber"; hex: string }
   maxPerformGas: number
-  maxPerformDataSize: number
+  maxPerformDataSize: string
   fallbackGasPrice: { type: "BigNumber"; hex: string }
   fallbackLinkPrice: { type: "BigNumber"; hex: string }
   flatFeeMicroLink: number
