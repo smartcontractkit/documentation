@@ -99,7 +99,7 @@ export const FeedList = ({
   const id = "network-list"
 
   return (
-    <SectionWrapper depth={2} title="Networks" id={id} updateTOC={false}>
+    <SectionWrapper title="Networks" id={id} depth={2} updateTOC={false}>
       {!isDeprecating && (
         <>
           <div class={feedList.clChainnavProduct} role="tablist">
@@ -170,7 +170,7 @@ export const FeedList = ({
         .map((network: ChainNetwork) => {
           const slug = network.name.toLowerCase().split(" ").join("-")
           return (
-            <SectionWrapper key={network.name} depth={3} title={network.name} id={slug}>
+            <SectionWrapper title={network.name} id={slug} depth={3} key={network.name}>
               {network.networkType === "mainnet" ? (
                 <>
                   {!isStreams &&

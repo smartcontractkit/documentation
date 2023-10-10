@@ -15,7 +15,7 @@ export const AutomationConfigList = () => {
     return !technologyTitle ? (
       <p />
     ) : (
-      <SectionWrapper depth={3} title={technologyTitle} id={h3Slug} key={technology} updateTOC={false}>
+      <SectionWrapper title={technologyTitle} id={h3Slug} depth={3} updateTOC={false} key={technology}>
         {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
           const title = getTitle(supportedChain)
           const explorerUrl = getExplorer(supportedChain)
@@ -32,7 +32,7 @@ export const AutomationConfigList = () => {
           const h4Slug = slugger.slug(title)
 
           return (
-            <SectionWrapper depth={4} title={title} id={h4Slug} key={supportedChain} updateTOC={false}>
+            <SectionWrapper title={title} id={h4Slug} depth={4} updateTOC={false} key={supportedChain}>
               <AutomationConfig
                 config={config}
                 registryAddress={registryAddress}
