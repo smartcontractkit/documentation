@@ -305,7 +305,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
   </tr>
 )
 
-const StreamsTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const StreamsTHead = () => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Stream</th>
@@ -513,7 +513,7 @@ export const MainnetTable = ({
             </tr>
           ) : (
             <>
-              {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTHead />}
               {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
               {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
@@ -578,7 +578,7 @@ export const TestnetTable = ({
   return (
     <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
-        {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isStreams && <StreamsTHead />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
