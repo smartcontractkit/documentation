@@ -8,7 +8,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
-import SectionWrapper from "~/components/PageContent/SectionWrapper"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
 export const FeedList = ({

@@ -3,7 +3,7 @@ import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from
 import { SupportedChain, SupportedTechnology } from "@config"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
 import GithubSlugger from "github-slugger"
-import SectionWrapper from "~/components/PageContent/SectionWrapper"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
 export const AutomationConfigList = () => {
   const slugger = new GithubSlugger()
