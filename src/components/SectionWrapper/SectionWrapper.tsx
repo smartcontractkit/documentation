@@ -15,7 +15,7 @@ type Props = {
 
 /**
  * Use this component to wrap client-side components which feature section headers between h2 - h4.
- * Provides sticky functionality and updates table of contents as needed
+ * Provides sticky functionality, anchor tags and updates table of contents as needed
  */
 function SectionWrapper({ title, depth, id, children, updateTOC = true, key }: Props) {
   const headerRef = useRef<HTMLElement>(null)
