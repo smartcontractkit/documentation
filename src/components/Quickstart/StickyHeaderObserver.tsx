@@ -95,7 +95,7 @@ const StickyHeaderObserver: React.FC = () => {
     }
   }, [$navBarInfo.height])
 
-  return <div ref={thisRef} className={styles.stickyBar} hidden={true} data-sticky />
+  return <div ref={thisRef} className={styles.stickyBar} hidden={true} data-sticky></div>
 }
 
 export default StickyHeaderObserver
