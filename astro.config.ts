@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineConfig } from "astro/config"
 import preact from "@astrojs/preact"
 import react from "@astrojs/react"
@@ -22,13 +23,13 @@ export default defineConfig({
   ],
   markdown: {
     rehypePlugins: [
-      rehypeSlug,
+      rehypeSlug as any,
       [
         rehypeAutolinkHeadings,
         {
           behavior: "wrap",
         },
-      ],
+      ] as any,
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
     ],
