@@ -4,11 +4,12 @@ import { clsx } from "~/lib"
 import { VideoPlayerIcon } from "../assets/VideoPlayerIcon"
 import { LinkTuple } from "../types"
 import productCard from "./ProductCard.module.css"
+import { ImageMetadata } from "astro"
 
 export type ProductCardProps = {
   title: string
   description: string
-  image: string
+  image: ImageMetadata
   learnMorelink: string
   links: LinkTuple[]
   chains: { id: string; title: string }[]
@@ -19,7 +20,7 @@ export const ProductCard = (props: ProductCardProps) => {
   return (
     <div class={clsx("card", productCard.productCard)}>
       <div class={clsx(productCard.firstCol)}>
-        <img src={props.image} width={64} height={64} alt={`Chainlink ${props.title}`} />
+        <img src={props.image.src} width={64} height={64} alt={`Chainlink ${props.title}`} />
         <div class={productCard.ctaCol}>
           <h4>
             <a href={props.learnMorelink} class="product-card-title">
