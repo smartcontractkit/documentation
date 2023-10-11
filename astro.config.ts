@@ -10,10 +10,17 @@ import sitemap from "@astrojs/sitemap"
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
-  // trailingSlash: 'never',
-  integrations: [preact(), react(), sitemap({ changefreq: "daily" }), mdx()],
+  integrations: [
+    preact({
+      include: ["**/preact/*"],
+    }),
+    react({
+      include: ["**/react/*"],
+    }),
+    sitemap({ changefreq: "daily" }),
+    mdx(),
+  ],
   markdown: {
-    drafts: true,
     rehypePlugins: [
       rehypeSlug,
       [
@@ -27,6 +34,5 @@ export default defineConfig({
     ],
     syntaxHighlight: "prism",
     smartypants: false,
-    gfm: true,
   },
 })
