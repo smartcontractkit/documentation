@@ -23,16 +23,16 @@ export default defineConfig({
   ],
   markdown: {
     rehypePlugins: [
-      rehypeSlug as any,
+      rehypeSlug, // Required for autolink to work properly
       [
         rehypeAutolinkHeadings,
         {
           behavior: "wrap",
         },
-      ] as any,
+      ],
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
-    ],
+    ] as any[],
     syntaxHighlight: "prism",
     smartypants: false,
   },
