@@ -705,8 +705,8 @@ export const CostTable = ({ method, network }: Props) => {
         </div>
         {BigNumber.from(state.currentGasPrice).gt(BigNumber.from(state.currentGasLane)) && (
           <>
-            <Icon />
             <p>
+              <Icon />
               Warning: your chosen gas price is higher than the selected gas lane, which means that the request will not
               be fulfilled until the network gas price goes down to the maximum price for the selected gas lane. The
               estimated cost shown is for informational purposes only.
