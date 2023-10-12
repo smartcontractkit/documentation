@@ -277,6 +277,11 @@ export const CostTable = ({ method, network }: Props) => {
     fillInputs(network)
   }, [fillInputs])
 
+  useEffect(() => {
+    console.log(state.currentGasPrice)
+    console.log(state.currentGasLane)
+  }, [state])
+
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
   }
