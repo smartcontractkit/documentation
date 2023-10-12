@@ -703,7 +703,7 @@ export const CostTable = ({ method, network, icon }: Props) => {
             Calculate
           </button>
         </div>
-        {BigNumber.from(state.currentGasPrice).gt(BigNumber.from(state.currentGasLane)) && (
+        {BigNumber.from(state.currentGasPrice).toNumber() > state.currentGasLane && (
           <>
             <p>
               {icon} Warning: your chosen gas price is higher than the selected gas lane, which means that the request
