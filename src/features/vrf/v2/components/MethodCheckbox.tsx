@@ -6,10 +6,13 @@ import { CostTable } from "./CostTable"
 import { Dropdown } from "./Dropdown"
 import useQueryString from "~/hooks/useQueryString"
 
-export const MethodCheckbox = () => {
+interface Props {
+  icon?: HTMLElement | undefined
+}
+
+export const MethodCheckbox = ({ icon }: Props) => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
   const [network] = useQueryString("network", "")
-
   const handleChange = (event) => {
     setVrfMethodUsed(event.target.value)
   }
@@ -43,9 +46,8 @@ export const MethodCheckbox = () => {
           <label for="funding">Direct funding</label>
         </div>
       </div>
-
       <Dropdown options={options} />
-      {network && <CostTable method={vrfMethodUsed} network={network.toString()} />}
+      {network && <CostTable method={vrfMethodUsed} network={network.toString()} icon={icon} />}
     </div>
   )
 }
