@@ -277,11 +277,6 @@ export const CostTable = ({ method, network, icon }: Props) => {
     fillInputs(network)
   }, [fillInputs])
 
-  useEffect(() => {
-    console.log(state.currentGasPrice)
-    console.log(state.currentGasLane)
-  }, [state])
-
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
   }
@@ -703,15 +698,18 @@ export const CostTable = ({ method, network, icon }: Props) => {
             Calculate
           </button>
         </div>
-        {BigNumber.from(state.currentGasPrice).toNumber() > state.currentGasLane && (
-          <>
-            <p>
-              {icon} Warning: your chosen gas price is higher than the selected gas lane, which means that the request
-              will not be fulfilled until the network gas price goes down to the maximum price for the selected gas
-              lane. The estimated cost shown is for informational purposes only.
-            </p>
-          </>
-        )}
+        {method === "vrfSubscription" &&
+          (state.currentGasPrice === state.gasPrice
+            ? BigNumber.from(state.currentGasPrice).gt(utils.parseUnits(state.currentGasLane.toString(), "gwei"))
+            : parseFloat(state.currentGasPrice) > state.currentGasLane) && (
+            <>
+              <p>
+                {icon} Warning: your chosen gas price is higher than the selected gas lane, which means that the request
+                will not be fulfilled until the network gas price goes down to the maximum price for the selected gas
+                lane. The estimated cost shown is for informational purposes only.
+              </p>
+            </>
+          )}
         <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
         {method === "vrfSubscription" && (
