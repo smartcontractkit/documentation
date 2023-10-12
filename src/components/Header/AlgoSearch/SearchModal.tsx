@@ -27,6 +27,7 @@ export const SearchModal = ({ showModal, onClose }: { showModal: boolean; onClos
         onClick={(e) => e.stopPropagation()} // Stops us from closing modal when clicks are to AlgoveraSearch
       >
         <AlgoveraSearch
+          aiSearchEnabled={true}
           headerLogo={
             <img
               title="Chainlink Logo"

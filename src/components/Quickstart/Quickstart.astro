@@ -175,7 +175,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 <script>
   /**
    * Creates sticky headers which interact with
-   * intersection observers
+   * intersection observers for nested h3, h4 headers
    */
   const wrapHeaders = (start: Element, isParent?: boolean) => {
     const wrapper = document.createElement("section")
@@ -188,7 +188,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
         !next.hasChildNodes() || // Island doesn't have HTML content
         next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
         !next.children[0].id) && // Section does not have an id
-      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+      (!next.id || ["H5", "H6"].includes(next.nodeName) || (isParent && !["H1", "H2"].includes(next.nodeName)))
     ) {
       elements.push(next)
       next = next.nextElementSibling
@@ -202,8 +202,34 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
     return wrapper
   }
 
-  // Only get direct descendants of the article content
-  // Grabs mdx headers without getting nested headers in components
+  /**
+   * Only get direct descendants of the article content
+   * Grabs mdx headers without getting nested headers in components
+   */
   const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
   headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+
+  // Wrap "above the fold" (ATF) content that lives before first header
+  const wrapATF = (start: Element) => {
+    const wrapper = document.createElement("section")
+    const elements: Element[] = []
+    elements.push(start)
+    let next = start.nextElementSibling
+    while (
+      next && // Just bear with me
+      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
+        !next.hasChildNodes() || // Island doesn't have HTML content
+        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
+        !next.children[0].id) && // Section does not have an id
+      (!next.id || !["SECTION"].includes(next.nodeName))
+    ) {
+      elements.push(next)
+      next = next.nextElementSibling
+    }
+    start.parentNode!.insertBefore(wrapper, start)
+    elements.forEach((e) => wrapper.appendChild(e))
+  }
+
+  const firstElement = document.body.querySelector("article > :not(section)")
+  firstElement && wrapATF(firstElement)
 </script>
