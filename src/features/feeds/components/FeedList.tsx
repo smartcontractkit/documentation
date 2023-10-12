@@ -96,10 +96,9 @@ export const FeedList = ({
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
-  const id = "network-list"
 
   return (
-    <SectionWrapper title="Networks" id={id} depth={2} updateTOC={false}>
+    <SectionWrapper title="Networks" depth={2} updateTOC={false}>
       {!isDeprecating && (
         <>
           <div class={feedList.clChainnavProduct} role="tablist">
@@ -168,9 +167,8 @@ export const FeedList = ({
           return true
         })
         .map((network: ChainNetwork) => {
-          const slug = network.name.toLowerCase().split(" ").join("-")
           return (
-            <SectionWrapper title={network.name} id={slug} depth={3} key={network.name}>
+            <SectionWrapper title={network.name} depth={3} key={network.name}>
               {network.networkType === "mainnet" ? (
                 <>
                   {!isStreams &&
