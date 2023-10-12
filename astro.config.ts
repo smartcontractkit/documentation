@@ -2,6 +2,8 @@ import { defineConfig } from "astro/config"
 import preact from "@astrojs/preact"
 import react from "@astrojs/react"
 import mdx from "@astrojs/mdx"
+import rehypeSlug from "rehype-slug"
+import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
 
@@ -13,6 +15,13 @@ export default defineConfig({
   markdown: {
     drafts: true,
     rehypePlugins: [
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: "wrap",
+        },
+      ],
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
     ],
