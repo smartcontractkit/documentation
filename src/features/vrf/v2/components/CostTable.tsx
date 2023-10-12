@@ -4,6 +4,7 @@ import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
+import { Icon } from "~/components"
 
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
@@ -697,6 +698,16 @@ export const CostTable = ({ method, network }: Props) => {
             Calculate
           </button>
         </div>
+        {parseFloat(state.currentGasPrice) > state.currentGasLane && (
+          <>
+            <Icon type="caution" />
+            <p>
+              Warning: your chosen gas price is higher than the selected gas lane, which means that the request will not
+              be fulfilled until the network gas price goes down to the maximum price for the selected gas lane. The
+              estimated cost shown is for informational purposes only.
+            </p>
+          </>
+        )}
         <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
         {method === "vrfSubscription" && (
