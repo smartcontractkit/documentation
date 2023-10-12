@@ -703,7 +703,7 @@ export const CostTable = ({ method, network }: Props) => {
             Calculate
           </button>
         </div>
-        {parseFloat(state.currentGasPrice) > state.currentGasLane && (
+        {BigNumber.from(state.currentGasPrice).gt(BigNumber.from(state.currentGasLane)) && (
           <>
             <Icon type="caution" />
             <p>
