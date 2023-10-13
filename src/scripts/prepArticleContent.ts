@@ -1,6 +1,4 @@
 import GithubSlugger from "github-slugger"
-import { updateTableOfContents as updateDocsTableOfContents } from "~/components/TableOfContents/tocStore"
-import { updateTableOfContents as updateQSTableOfContents } from "~/components/Quickstart/TableOfContents/tocStore"
 
 const dontWrapBase: string[] = ["H1", "H2", "SECTION"]
 const dontWrapMap: Record<string, string[]> = {
@@ -100,15 +98,4 @@ export const prepareHeaders = (aboveTheFold?: boolean) => {
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("#article > :where(h1, h2, h3, h4)")
   prepareHeadersInternal(headers, aboveTheFold)
-}
-
-/**
- * Call this within client components (astro-island) once the DOM is updated with new headers
- */
-export const prepareClientHeaders = () => {
-  const headers = document.body.querySelectorAll("#article > astro-island > :where(h1, h2, h3, h4)")
-  prepareHeadersInternal(headers)
-  // TODO: Combine these two functions
-  updateDocsTableOfContents()
-  updateQSTableOfContents()
 }
