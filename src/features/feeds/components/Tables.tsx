@@ -162,9 +162,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
                 <dt>
                   <span class="label">Market hours:</span>
                 </dt>
-                <dd>
-                  {proxy.docs.feedType}
-                </dd>
+                <dd>{proxy.docs.feedType}</dd>
               </div>
             )}
           </dl>
@@ -265,9 +263,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
               <dt>
                 <span class="label">Market hours:</span>
               </dt>
-              <dd>
-                {proxy.docs.feedType}
-              </dd>
+              <dd>{proxy.docs.feedType}</dd>
             </div>
           )}
         </dl>
