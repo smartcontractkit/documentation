@@ -8,6 +8,7 @@ import button from "@chainlink/design-system/button.module.css"
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
   network: string
+  aside: HTMLElement | undefined
 }
 
 interface directFundingResponse {
@@ -176,7 +177,7 @@ export const getGasCalculatorUrl = ({
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
-export const CostTable = ({ method, network }: Props) => {
+export const CostTable = ({ method, network, aside }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
@@ -697,6 +698,12 @@ export const CostTable = ({ method, network }: Props) => {
             Calculate
           </button>
         </div>
+        {method === "vrfSubscription" &&
+          (state.currentGasPrice === state.gasPrice
+            ? BigNumber.from(state.currentGasPrice).gt(utils.parseUnits(state.currentGasLane.toString(), "gwei"))
+            : parseFloat(state.currentGasPrice) > state.currentGasLane) && (
+            <div className="warning-container">{aside}</div>
+          )}
         <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
         {method === "vrfSubscription" && (
