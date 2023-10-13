@@ -57,12 +57,8 @@ const StickyHeaderObserver: React.FC = () => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             thisRef.current.style.height = `${entry.target.clientHeight}px`
-            return
           }
         }
-        // If not currently intersecting a sticky header, set the height to 0px
-        // This fixes bug where ATF content shows the bar
-        thisRef.current.style.height = `0px`
       }
     }
 
