@@ -1,6 +1,6 @@
 import GithubSlugger from "github-slugger"
 
-const dontWrapBase: string[] = ["H1", "H2", "SECTION"]
+const dontWrapBase: string[] = ["H1", "H2"]
 const dontWrapMap: Record<string, string[]> = {
   H1: dontWrapBase,
   H2: dontWrapBase,
@@ -19,13 +19,14 @@ const wrapHeader = (start: Element) => {
   const depth = start.nodeName
   const dontWrap = dontWrapMap[depth] ?? [...dontWrapBase, "H3", "H4", "H5", "H6"]
   let next = start.nextElementSibling
-  while (
-    next &&
-    !dontWrap.includes(next.nodeName) && // Just bear with me
-    (next.nodeName !== "ASTRO-ISLAND" || // Not an island
-      !next.hasChildNodes() || // Island doesn't have HTML content
-      !dontWrap.includes(next.children[0].nodeName)) // First child of the island should not be wrapped
-  ) {
+  // Recursively check if we can wrap the node
+  const canWrap = (node: Element) => {
+    if (["ASTRO-ISLAND", "SECTION"].includes(node.nodeName) && node.hasChildNodes()) {
+      return canWrap(node.children[0])
+    }
+    return !dontWrap.includes(node.nodeName)
+  }
+  while (next && canWrap(next)) {
     elements.push(next)
     next = next.nextElementSibling
   }
