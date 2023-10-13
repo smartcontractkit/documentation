@@ -260,6 +260,16 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
+          {proxy.docs.marketHours && (
+            <div>
+              <dt>
+                <span class="label">Market hours:</span>
+              </dt>
+              <dd>
+                {proxy.docs.feedType}
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
