@@ -73,12 +73,12 @@ const prepareHeadersInternal = (headers: NodeListOf<Element>, aboveTheFold?: boo
     }
     if (!header.id) {
       header.id = slugger.slug(header.textContent)
-      if (header.firstChild?.nodeName !== "A") {
-        const anchor = document.createElement("a")
-        anchor.href = `#${header.id}`
-        anchor.textContent = header.textContent
-        header.replaceChildren(anchor)
-      }
+    }
+    if (header.firstChild?.nodeName !== "A") {
+      const anchor = document.createElement("a")
+      anchor.href = `#${header.id}`
+      anchor.textContent = header.textContent
+      header.replaceChildren(anchor)
     }
     wrapHeader(header)
   })
