@@ -7,10 +7,10 @@ import { Dropdown } from "./Dropdown"
 import useQueryString from "~/hooks/useQueryString"
 
 interface Props {
-  icon?: HTMLElement | undefined
+  aside?: HTMLElement | undefined
 }
 
-export const MethodCheckbox = ({ icon }: Props) => {
+export const MethodCheckbox = ({ aside }: Props) => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
   const [network] = useQueryString("network", "")
   const handleChange = (event) => {
@@ -47,7 +47,7 @@ export const MethodCheckbox = ({ icon }: Props) => {
         </div>
       </div>
       <Dropdown options={options} />
-      {network && <CostTable method={vrfMethodUsed} network={network.toString()} icon={icon} />}
+      {network && <CostTable method={vrfMethodUsed} network={network.toString()} aside={aside} />}
     </div>
   )
 }

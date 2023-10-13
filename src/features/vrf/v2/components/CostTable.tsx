@@ -8,7 +8,7 @@ import button from "@chainlink/design-system/button.module.css"
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
   network: string
-  icon: HTMLElement | undefined
+  aside: HTMLElement | undefined
 }
 
 interface directFundingResponse {
@@ -177,7 +177,7 @@ export const getGasCalculatorUrl = ({
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
-export const CostTable = ({ method, network, icon }: Props) => {
+export const CostTable = ({ method, network, aside }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
@@ -702,13 +702,7 @@ export const CostTable = ({ method, network, icon }: Props) => {
           (state.currentGasPrice === state.gasPrice
             ? BigNumber.from(state.currentGasPrice).gt(utils.parseUnits(state.currentGasLane.toString(), "gwei"))
             : parseFloat(state.currentGasPrice) > state.currentGasLane) && (
-            <>
-              <p>
-                {icon} Warning: your chosen gas price is higher than the selected gas lane, which means that the request
-                will not be fulfilled until the network gas price goes down to the maximum price for the selected gas
-                lane. The estimated cost shown is for informational purposes only.
-              </p>
-            </>
+            <div className="warning-container">{aside}</div>
           )}
         <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
