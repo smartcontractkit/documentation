@@ -8,7 +8,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
-import { prepareClientHeaders } from "~/scripts/prepArticleContent"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
 export const FeedList = ({
@@ -76,12 +76,6 @@ export const FeedList = ({
     }
   }, [chainMetadata.processedData, searchValue])
 
-  useEffect(() => {
-    if (chainMetadata.processedData && !chainMetadata.loading) {
-      prepareClientHeaders()
-    }
-  }, [chainMetadata.processedData])
-
   const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
     useEffect(() => {
       function handleClickOutside(event: MouseEvent) {
@@ -104,8 +98,7 @@ export const FeedList = ({
   let netCount = 0
 
   return (
-    <>
-      <h2>Networks</h2>
+    <SectionWrapper title="Networks" depth={2} updateTOC={false}>
       {!isDeprecating && (
         <>
           <div class={feedList.clChainnavProduct} role="tablist">
@@ -175,8 +168,7 @@ export const FeedList = ({
         })
         .map((network: ChainNetwork) => {
           return (
-            <>
-              <h3>{network.name}</h3>
+            <SectionWrapper title={network.name} depth={3} key={network.name}>
               {network.networkType === "mainnet" ? (
                 <>
                   {!isStreams &&
@@ -269,7 +261,7 @@ export const FeedList = ({
                   <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
                 </>
               )}
-            </>
+            </SectionWrapper>
           )
         })}
       {isDeprecating && netCount === 0 && (
@@ -277,6 +269,6 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
-    </>
+    </SectionWrapper>
   )
 }

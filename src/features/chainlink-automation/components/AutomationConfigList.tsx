@@ -2,8 +2,11 @@
 import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from "@features/chainlink-automation"
 import { SupportedChain, SupportedTechnology } from "@config"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
+import GithubSlugger from "github-slugger"
 
 export const AutomationConfigList = () => {
+  const slugger = new GithubSlugger()
   const normalizedConfig = normalizeConfig(chainlinkAutomationConfig)
   return Object.keys(normalizedConfig).map((technology: SupportedTechnology) => {
     const config = normalizedConfig[technology]
@@ -11,8 +14,13 @@ export const AutomationConfigList = () => {
     return !technologyTitle ? (
       <p />
     ) : (
-      <>
-        <h3>{technologyTitle}</h3>
+      <SectionWrapper
+        title={technologyTitle}
+        idOverride={slugger.slug(technologyTitle)}
+        depth={3}
+        updateTOC={false}
+        key={technology}
+      >
         {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
           const title = getTitle(supportedChain)
           const explorerUrl = getExplorer(supportedChain)
@@ -27,17 +35,22 @@ export const AutomationConfigList = () => {
           }
 
           return (
-            <>
-              <h4>{title}</h4>
+            <SectionWrapper
+              title={title}
+              idOverride={slugger.slug(title)}
+              depth={4}
+              updateTOC={false}
+              key={supportedChain}
+            >
               <AutomationConfig
                 config={config}
                 registryAddress={registryAddress}
                 getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
               />
-            </>
+            </SectionWrapper>
           )
         })}
-      </>
+      </SectionWrapper>
     )
   })
 }

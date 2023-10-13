@@ -95,7 +95,7 @@ const prepareHeadersInternal = (headers: NodeListOf<Element>, aboveTheFold?: boo
  *
  * This picks up any headers not already modified by rehypeSlug and rehypeAutolinkHeadings (anything besides markdown content)
  */
-export const prepareStaticHeaders = (aboveTheFold?: boolean) => {
+export const prepareHeaders = (aboveTheFold?: boolean) => {
   // Only get direct descendants of the article content
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("#article > :where(h1, h2, h3, h4)")
