@@ -16,15 +16,14 @@ const wrapHeader = (start: Element) => {
   const wrapper = document.createElement("section")
   const elements: Element[] = []
   elements.push(start)
-  const depth = start.nodeName
-  const dontWrap = dontWrapMap[depth] ?? [...dontWrapBase, "H3", "H4", "H5", "H6"]
+  const dontWrap = dontWrapMap[start.nodeName] ?? [...dontWrapBase, "H3", "H4", "H5", "H6"]
   let next = start.nextElementSibling
   // Recursively check if we can wrap the node
-  const canWrap = (node: Element) => {
-    if (["ASTRO-ISLAND", "SECTION"].includes(node.nodeName) && node.hasChildNodes()) {
-      return canWrap(node.children[0])
+  const canWrap = (element: Element) => {
+    if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
+      return canWrap(element.firstElementChild)
     }
-    return !dontWrap.includes(node.nodeName)
+    return !dontWrap.includes(element.nodeName)
   }
   while (next && canWrap(next)) {
     elements.push(next)
