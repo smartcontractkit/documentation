@@ -519,11 +519,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-use-secrets",
         },
         {
-          title: "Using User-hosted (gist) Secrets in Requests",
+          title: "Offchain secrets - Using Gists",
           url: "chainlink-functions/tutorials/api-use-secrets-gist",
         },
         {
-          title: "Using User-hosted Secrets in Requests",
+          title: "Offchain secrets - Other methods",
           url: "chainlink-functions/tutorials/api-use-secrets-offchain",
         },
         {
