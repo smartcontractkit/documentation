@@ -25,20 +25,20 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
-        bytes32 indexed messageId,
-        uint64 indexed destinationChainSelector,
-        address receiver,
-        string text,
-        address feeToken,
-        uint256 fees
+        bytes32 indexed messageId, // The unique ID of the CCIP message.
+        uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
+        address receiver, // The address of the receiver on the destination chain.
+        string text, // The text being sent.
+        address feeToken, // the token address used to pay CCIP fees.
+        uint256 fees // The fees paid for sending the CCIP message.
     );
 
     // Event emitted when a message is received from another chain.
     event MessageReceived(
-        bytes32 indexed messageId,
-        uint64 indexed sourceChainSelector,
-        address sender,
-        string text
+        bytes32 indexed messageId, // The unique ID of the CCIP message.
+        uint64 indexed sourceChainSelector, // The chain selector of the source chain.
+        address sender, // The address of the sender from the source chain.
+        string text // The text that was received.
     );
 
     bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
