@@ -16,12 +16,12 @@ import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-sol
 /// @title - A simple messenger contract for sending/receving string data across chains.
 contract Messenger is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
-    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees);
-    error NothingToWithdraw();
-    error FailedToWithdrawEth(address owner, address target, uint256 value);
-    error DestinationChainNotAllowlisted(uint64 destinationChainSelector);
-    error SourceChainNotAllowlisted(uint64 sourceChainSelector);
-    error SenderNotAllowlisted(address sender);
+    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
+    error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
+    error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
+    error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
+    error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
+    error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -41,8 +41,8 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         string text
     );
 
-    bytes32 private s_lastReceivedMessageId;
-    string private s_lastReceivedText;
+    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
+    string private s_lastReceivedText; // Store the last received text.
 
     // Mapping to keep track of allowlisted destination chains.
     mapping(uint64 => bool) public allowlistedDestinationChains;
