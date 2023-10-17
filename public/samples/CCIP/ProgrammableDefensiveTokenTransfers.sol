@@ -7,7 +7,6 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/utils/SafeERC20.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 import {EnumerableMap} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/utils/structs/EnumerableMap.sol";
 
 /**
@@ -26,9 +25,9 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
-    error DestinationChainNotWhitelisted(uint64 destinationChainSelector); // Used when the destination chain has not been whitelisted by the contract owner.
-    error SourceChainNotWhitelisted(uint64 sourceChainSelector); // Used when the source chain has not been whitelisted by the contract owner.
-    error SenderNotWhitelisted(address sender); // Used when the sender has not been whitelisted by the contract owner.
+    error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
+    error SourceChainNotAllowed(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
+    error SenderNotAllowed(address sender); // Used when the sender has not been allowlisted by the contract owner.
     error OnlySelf(); // Used when a function is called outside of the contract itself.
     error ErrorCase(); // Used when simulating a revert during message processing.
     error MessageNotFailed(bytes32 messageId);
@@ -66,21 +65,21 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     event MessageFailed(bytes32 indexed messageId, bytes reason);
     event MessageRecovered(bytes32 indexed messageId);
 
-    bytes32 private lastReceivedMessageId; // Store the last received messageId.
-    address private lastReceivedTokenAddress; // Store the last received token address.
-    uint256 private lastReceivedTokenAmount; // Store the last received amount.
-    string private lastReceivedText; // Store the last received text.
+    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
+    address private s_lastReceivedTokenAddress; // Store the last received token address.
+    uint256 private s_lastReceivedTokenAmount; // Store the last received amount.
+    string private s_lastReceivedText; // Store the last received text.
 
-    // Mapping to keep track of whitelisted destination chains.
-    mapping(uint64 => bool) public whitelistedDestinationChains;
+    // Mapping to keep track of allowlisted destination chains.
+    mapping(uint64 => bool) public allowlistedDestinationChains;
 
-    // Mapping to keep track of whitelisted source chains.
-    mapping(uint64 => bool) public whitelistedSourceChains;
+    // Mapping to keep track of allowlisted source chains.
+    mapping(uint64 => bool) public allowlistedSourceChains;
 
-    // Mapping to keep track of whitelisted senders.
-    mapping(address => bool) public whitelistedSenders;
+    // Mapping to keep track of allowlisted senders.
+    mapping(address => bool) public allowlistedSenders;
 
-    LinkTokenInterface linkToken;
+    IERC20 private s_linkToken;
 
     // The message contents of failed messages are stored here.
     mapping(bytes32 messageId => Client.Any2EVMMessage contents)
@@ -96,22 +95,24 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     /// @param _router The address of the router contract.
     /// @param _link The address of the link contract.
     constructor(address _router, address _link) CCIPReceiver(_router) {
-        linkToken = LinkTokenInterface(_link);
+        s_linkToken = IERC20(_link);
     }
 
-    /// @dev Modifier that checks if the chain with the given destinationChainSelector is whitelisted.
+    /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
     /// @param _destinationChainSelector The selector of the destination chain.
-    modifier onlyWhitelistedDestinationChain(uint64 _destinationChainSelector) {
-        if (!whitelistedDestinationChains[_destinationChainSelector])
-            revert DestinationChainNotWhitelisted(_destinationChainSelector);
+    modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
+        if (!allowlistedDestinationChains[_destinationChainSelector])
+            revert DestinationChainNotAllowlisted(_destinationChainSelector);
         _;
     }
 
-    /// @dev Modifier that checks if the chain with the given sourceChainSelector is whitelisted.
+    /// @dev Modifier that checks if the chain with the given sourceChainSelector is allowlisted and if the sender is allowlisted.
     /// @param _sourceChainSelector The selector of the destination chain.
-    modifier onlyWhitelistedSourceChain(uint64 _sourceChainSelector) {
-        if (!whitelistedSourceChains[_sourceChainSelector])
-            revert SourceChainNotWhitelisted(_sourceChainSelector);
+    /// @param _sender The address of the sender.
+    modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
+        if (!allowlistedSourceChains[_sourceChainSelector])
+            revert SourceChainNotAllowed(_sourceChainSelector);
+        if (!allowlistedSenders[_sender]) revert SenderNotAllowed(_sender);
         _;
     }
 
@@ -122,61 +123,34 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         _;
     }
 
-    /// @dev Modifier that checks if the chain with the given sourceChainSelector is whitelisted.
-    /// @param _sender The address of the sender.
-    modifier onlyWhitelistedSenders(address _sender) {
-        if (!whitelistedSenders[_sender]) revert SenderNotWhitelisted(_sender);
-        _;
-    }
-
-    /// @dev Whitelists a chain for transactions.
+    /// @dev Updates the allowlist status of a destination chain for transactions.
     /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be whitelisted.
-    function whitelistDestinationChain(
-        uint64 _destinationChainSelector
+    /// @param _destinationChainSelector The selector of the destination chain to be updated.
+    /// @param allowed The allowlist status to be set for the destination chain.
+    function allowlistDestinationChain(
+        uint64 _destinationChainSelector,
+        bool allowed
     ) external onlyOwner {
-        whitelistedDestinationChains[_destinationChainSelector] = true;
+        allowlistedDestinationChains[_destinationChainSelector] = allowed;
     }
 
-    /// @dev Denylists a chain for transactions.
+    /// @dev Updates the allowlist status of a source chain
     /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be denylisted.
-    function denylistDestinationChain(
-        uint64 _destinationChainSelector
+    /// @param _sourceChainSelector The selector of the source chain to be updated.
+    /// @param allowed The allowlist status to be set for the source chain.
+    function allowlistSourceChain(
+        uint64 _sourceChainSelector,
+        bool allowed
     ) external onlyOwner {
-        whitelistedDestinationChains[_destinationChainSelector] = false;
+        allowlistedSourceChains[_sourceChainSelector] = allowed;
     }
 
-    /// @dev Whitelists a chain for transactions.
+    /// @dev Updates the allowlist status of a sender for transactions.
     /// @notice This function can only be called by the owner.
-    /// @param _sourceChainSelector The selector of the source chain to be whitelisted.
-    function whitelistSourceChain(
-        uint64 _sourceChainSelector
-    ) external onlyOwner {
-        whitelistedSourceChains[_sourceChainSelector] = true;
-    }
-
-    /// @dev Denylists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _sourceChainSelector The selector of the source chain to be denylisted.
-    function denylistSourceChain(
-        uint64 _sourceChainSelector
-    ) external onlyOwner {
-        whitelistedSourceChains[_sourceChainSelector] = false;
-    }
-
-    /// @dev Whitelists a sender.
-    /// @notice This function can only be called by the owner.
-    /// @param _sender The address of the sender.
-    function whitelistSender(address _sender) external onlyOwner {
-        whitelistedSenders[_sender] = true;
-    }
-
-    /// @dev Denylists a sender.
-    /// @notice This function can only be called by the owner.
-    /// @param _sender The address of the sender.
-    function denySender(address _sender) external onlyOwner {
-        whitelistedSenders[_sender] = false;
+    /// @param _sender The address of the sender to be updated.
+    /// @param allowed The allowlist status to be set for the sender.
+    function allowlistSender(address _sender, bool allowed) external onlyOwner {
+        allowlistedSenders[_sender] = allowed;
     }
 
     /// @notice Sends data and transfer tokens to receiver on the destination chain.
@@ -197,7 +171,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedDestinationChain(_destinationChainSelector)
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -207,7 +181,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
             _text,
             _token,
             _amount,
-            address(linkToken)
+            address(s_linkToken)
         );
 
         // Initialize a router client instance to interact with cross-chain router
@@ -216,11 +190,11 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         // Get the fee required to send the CCIP message
         uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+        if (fees > s_linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
         // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        linkToken.approve(address(router), fees);
+        s_linkToken.approve(address(router), fees);
 
         // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
         IERC20(_token).approve(address(router), _amount);
@@ -236,7 +210,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
             _text,
             _token,
             _amount,
-            address(linkToken),
+            address(s_linkToken),
             fees
         );
 
@@ -262,7 +236,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedDestinationChain(_destinationChainSelector)
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -328,10 +302,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         )
     {
         return (
-            lastReceivedMessageId,
-            lastReceivedText,
-            lastReceivedTokenAddress,
-            lastReceivedTokenAmount
+            s_lastReceivedMessageId,
+            s_lastReceivedText,
+            s_lastReceivedTokenAddress,
+            s_lastReceivedTokenAmount
         );
     }
 
@@ -364,8 +338,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         external
         override
         onlyRouter
-        onlyWhitelistedSourceChain(any2EvmMessage.sourceChainSelector)
-        onlyWhitelistedSenders(abi.decode(any2EvmMessage.sender, (address))) // Make sure the sender is whitelisted
+        onlyAllowlisted(
+            any2EvmMessage.sourceChainSelector,
+            abi.decode(any2EvmMessage.sender, (address))
+        ) // Make sure the source chain and sender are allowlisted
     {
         try this.processMessage(any2EvmMessage) {} catch (bytes memory err) {
             // Could set different error codes based on the caught error. Each could be
@@ -392,8 +368,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     )
         external
         onlySelf
-        onlyWhitelistedSourceChain(any2EvmMessage.sourceChainSelector)
-        onlyWhitelistedSenders(abi.decode(any2EvmMessage.sender, (address))) // Make sure the sender is whitelisted
+        onlyAllowlisted(
+            any2EvmMessage.sourceChainSelector,
+            abi.decode(any2EvmMessage.sender, (address))
+        ) // Make sure the source chain and sender are allowlisted
     {
         // Simulate a revert for testing purposes
         if (s_simRevert) revert ErrorCase();
@@ -441,11 +419,11 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     ) internal override {
-        lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-        lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
+        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
         // Expect one token to be transferred at once, but you can transfer several tokens.
-        lastReceivedTokenAddress = any2EvmMessage.destTokenAmounts[0].token;
-        lastReceivedTokenAmount = any2EvmMessage.destTokenAmounts[0].amount;
+        s_lastReceivedTokenAddress = any2EvmMessage.destTokenAmounts[0].token;
+        s_lastReceivedTokenAmount = any2EvmMessage.destTokenAmounts[0].amount;
         emit MessageReceived(
             any2EvmMessage.messageId,
             any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
