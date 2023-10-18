@@ -4,18 +4,18 @@ date: Last Modified
 title: "Automation Interfaces"
 whatsnext:
   {
-    "Automation Contracts": "/chainlink-automation/automation-contracts",
-    "Troubleshooting and Debugging": "/chainlink-automation/debugging-errors",
+    "Automation Contracts": "/chainlink-automation/reference/automation-contracts",
+    "Troubleshooting and Debugging": "/chainlink-automation/reference/debugging-errors",
   }
 ---
 
 import { CodeSample } from "@components"
 
-Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/compatible-contracts).
+Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/guides/compatible-contracts).
 
 - If you want a log event to trigger your upkeep, use the [`ILogAutomation`](#ilogautomation) interface.
 - If you want to use on-chain state (excluding logs) in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](#automationcompatibleinterface) interface.
-- If you want to call a function just based on time, consider using a [time-based upkeep](/chainlink-automation/job-scheduler).
+- If you want to call a function just based on time, consider using a [time-based upkeep](/chainlink-automation/guides/job-scheduler).
 - If you want to use Automation with Data Streams, use [`StreamsLookupCompatibleInterface`](#streamslookupcompatibleinterface) interface.
 
 ## ILogAutomation
@@ -36,7 +36,7 @@ To use log triggers, you will need to implement the [`ILogAutomation.sol`](https
 | Variable Name | Type         | Description                                                                                                                                           | Permissible Values                                                                                                                                       |
 | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `log`         | struct `Log` | Struct log data of the log triggering the upkeep; Automation will form the triggering log into a struct so the user can query log data in `checkLog`. | `struct Log { uint256 index; uint256 timestamp; bytes32 txHash; uint256 blockNumber; bytes32 blockHash; address source; bytes32[] topics; bytes data; }` |
-| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at the time of registering the upkeep.                                            |                                                                                                                                                          |
+| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at the time of registering the upkeep.                                        |                                                                                                                                                          |
 
 #### Example
 
@@ -101,7 +101,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### checkData
 
-You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on a specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see our [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
+You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/guides/register-upkeep) to execute different code paths. For example, to check the balance on a specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see our [flexible upkeeps](/chainlink-automation/guides/flexible-upkeeps) page.
 
 <CodeSample src="snippets/Automation/checkData.sol" />
 
@@ -147,7 +147,7 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example of how to use this interface.
 
-To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/compatible-contracts) and include a `StreamsLookupCompatibleInterface` interface. This interface fetches and processes Data Streams reports.
+To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/guides/compatible-contracts) and include a `StreamsLookupCompatibleInterface` interface. This interface fetches and processes Data Streams reports.
 
 | Function Name          | Description                                                                                                               |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |

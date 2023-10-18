@@ -5,10 +5,10 @@ title: "Getting Started with Chainlink Automation"
 isMdx: true
 whatsnext:
   {
-    "Automation compatible contracts": "/chainlink-automation/compatible-contracts",
-    "Access Data Streams in Automation": "/chainlink-automation/streams-lookup",
-    "Automation architecture": "/chainlink-automation/automation-architecture/",
-    "Billing": "/chainlink-automation/automation-economics/",
+    "Automation compatible contracts": "/chainlink-automation/guides/compatible-contracts",
+    "Access Data Streams in Automation": "/chainlink-automation/guides/streams-lookup",
+    "Automation architecture": "/chainlink-automation/concepts/automation-architecture",
+    "Billing": "/chainlink-automation/overview/automation-economics",
   }
 ---
 
@@ -39,21 +39,21 @@ Chainlink Automation will reliably execute smart contract functions using a vari
 
 5. In the _Contract call_ section, enter `addInteger` under _Target function_. In the _Function inputs_ section, enter a number to increment by under _intToAdd_. Then click **Next**.
 
-   <ClickToZoom src="/images/automation/gs_tbu_contract_address.png" />
+   <ClickToZoom src="/images/automation/getting-started/gs_tbu_contract_address.png" />
 
 6. Now specify the time schedule, for example every 5 minutes. Paste the cron expression `*/5 * * * *` under _Cron expression_ or select one of the example timers. Then click **Next**.
 
-7. To learn more about CRON expressions, click [here](/chainlink-automation/job-scheduler#specifying-the-time-schedule).
+7. To learn more about CRON expressions, click [here](/chainlink-automation/guides/job-scheduler#specifying-the-time-schedule).
 
 8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
 
-   <ClickToZoom src="/images/automation/gs_tbu_upkeep_details.png" />
+   <ClickToZoom src="/images/automation/getting-started/gs_tbu_upkeep_details.png" />
 
 9. Click **Register Upkeep**.
 
 10. After the transaction has completed, you can view the performs for your upkeep in the upkeep details.
 
-You have successfully automated your first time-based upkeep. To learn more about creating time-based upkeeps, read [here](/chainlink-automation/job-scheduler).
+You have successfully automated your first time-based upkeep. To learn more about creating time-based upkeeps, read [here](/chainlink-automation/guides/job-scheduler).
 
 ## Custom logic trigger
 
@@ -67,7 +67,7 @@ You have successfully automated your first time-based upkeep. To learn more abou
 
 4. Under _Target contract address_, enter `0xC3d3656868594db09abD410821c9F9ab9812B4d1`. This contract uses logic stored on-chain and on-chain state to determine when to perform, which increments a counter. It is an example of an Automation-compatible contract and can be read [here](https://goerli.arbiscan.io/address/0xC3d3656868594db09abD410821c9F9ab9812B4d1#code). Click **Next**.
 
-   <ClickToZoom src="/images/automation/gs_clu_contract_address.png" />
+   <ClickToZoom src="/images/automation/getting-started/gs_clu_contract_address.png" />
 
 5. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
 
@@ -77,9 +77,9 @@ You have successfully automated your first time-based upkeep. To learn more abou
 
 8. After the transaction is complete, you can view the performs for your upkeep in the upkeep details. Your upkeep should perform once every minute and stop after 4 performs, as per the code.
 
-<ClickToZoom src="/images/automation/gs_clu_upkeep_details.png" />
+<ClickToZoom src="/images/automation/getting-started/gs_clu_upkeep_details.png" />
 
-You have successfully automated your first custom logic upkeep. To learn more about creating custom logic upkeeps, read [here](/chainlink-automation/register-upkeep).
+You have successfully automated your first custom logic upkeep. To learn more about creating custom logic upkeeps, read [here](/chainlink-automation/guides/register-upkeep).
 
 ## Log trigger
 
@@ -95,13 +95,13 @@ You have successfully automated your first custom logic upkeep. To learn more ab
 
 5. Under _Contract emitting logs_, enter `0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923`. This is the contract Automation will listen to for emitted logs. The code is [here](https://goerli.arbiscan.io/address/0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923#code). Click **Next**.
 
-   <ClickToZoom src="/images/automation/gs_ltu_log_trigger_details.png" />
+   <ClickToZoom src="/images/automation/getting-started/gs_ltu_log_trigger_details.png" />
 
 6. Under _Emitted log_ select **Bump** from the dropdown menu. This is the log signature Automation will look for.
 
 7. _Log index topic filters_ are optional filters to narrow the logs you want to trigger your upkeep. For our example enter your public key address under _addr_ and leave the _num_ field empty. Later when you call the _bump_ function to emit the log, your `msg.Sender` address will be emitted in the log, triggering your upkeep. Click **Next**.
 
-   <ClickToZoom src="/images/automation/gs_ltu_emit_log_details.png" />
+   <ClickToZoom src="/images/automation/getting-started/gs_ltu_emit_log_details.png" />
 
 8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
 
@@ -109,11 +109,11 @@ You have successfully automated your first custom logic upkeep. To learn more ab
 
 10. To trigger your upkeep call _bump_ on the trigger contract by navigating to the Arbitrum Goerli [scanner](https://goerli.arbiscan.io/address/0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923#writeContract), connecting your wallet and executing the bump function. You can observe your upkeep's perform in the Automation dashboard.
 
-You have sucessfully automated your first log trigger upkeep. To learn more about creating log trigger upkeeps, read [here](/chainlink-automation/log-trigger).
+You have sucessfully automated your first log trigger upkeep. To learn more about creating log trigger upkeeps, read [here](/chainlink-automation/guides/log-trigger).
 
 ## Supported networks and costs
 
-For a list of blockchains that are supported by Chainlink Automation, see the [Supported Networks](/chainlink-automation/supported-networks) page. To learn more about the cost of using Chainlink Automation, see the [Automation Economics](/chainlink-automation/automation-economics) page.
+For a list of blockchains that are supported by Chainlink Automation, see the [Supported Networks](/chainlink-automation/overview/supported-networks) page. To learn more about the cost of using Chainlink Automation, see the [Automation Economics](/chainlink-automation/overview/automation-economics) page.
 
 ## Contact us
 
