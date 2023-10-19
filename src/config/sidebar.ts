@@ -489,6 +489,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Billing",
           url: "chainlink-functions/resources/billing",
         },
+        {
+          title: "Release Notes",
+          url: "chainlink-functions/resources/release-notes",
+        },
       ],
     },
     {
