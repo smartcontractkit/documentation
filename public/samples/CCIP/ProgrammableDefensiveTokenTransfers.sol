@@ -343,7 +343,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
             abi.decode(any2EvmMessage.sender, (address))
         ) // Make sure the source chain and sender are allowlisted
     {
-        try this.processMessage(any2EvmMessage) {} catch (bytes memory err) {
+        /* solhint-disable no-empty-blocks */
+        try this.processMessage(any2EvmMessage) {
+            // Intentionally empty in this example; no action needed if processMessage succeeds
+        } catch (bytes memory err) {
             // Could set different error codes based on the caught error. Each could be
             // handled differently.
             s_failedMessages.set(
