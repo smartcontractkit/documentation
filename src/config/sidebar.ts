@@ -489,6 +489,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Billing",
           url: "chainlink-functions/resources/billing",
         },
+        {
+          title: "Release Notes",
+          url: "chainlink-functions/resources/release-notes",
+        },
       ],
     },
     {
@@ -834,6 +838,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Transfer Tokens With Data",
           url: "ccip/tutorials/programmable-token-transfers",
+        },
+        {
+          title: "Transfer Tokens With Data - Defensive Example",
+          url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
           title: "Transfer Tokens Between EOAs",
