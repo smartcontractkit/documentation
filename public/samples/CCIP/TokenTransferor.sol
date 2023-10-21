@@ -5,7 +5,6 @@ import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -19,7 +18,7 @@ contract TokenTransferor is OwnerIsCreator {
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
-    error DestinationChainNotWhitelisted(uint64 destinationChainSelector); // Used when the destination chain has not been whitelisted by the contract owner.
+    error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     // Event emitted when the tokens are transferred to an account on another chain.
     event TokensTransferred(
         bytes32 indexed messageId, // The unique ID of the message.
@@ -31,45 +30,38 @@ contract TokenTransferor is OwnerIsCreator {
         uint256 fees // The fees paid for sending the message.
     );
 
-    // Mapping to keep track of whitelisted destination chains.
-    mapping(uint64 => bool) public whitelistedChains;
+    // Mapping to keep track of allowlisted destination chains.
+    mapping(uint64 => bool) public allowlistedChains;
 
-    IRouterClient router;
+    IRouterClient private s_router;
 
-    LinkTokenInterface linkToken;
+    IERC20 private s_linkToken;
 
     /// @notice Constructor initializes the contract with the router address.
     /// @param _router The address of the router contract.
     /// @param _link The address of the link contract.
     constructor(address _router, address _link) {
-        router = IRouterClient(_router);
-        linkToken = LinkTokenInterface(_link);
+        s_router = IRouterClient(_router);
+        s_linkToken = IERC20(_link);
     }
 
-    /// @dev Modifier that checks if the chain with the given destinationChainSelector is whitelisted.
+    /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
     /// @param _destinationChainSelector The selector of the destination chain.
-    modifier onlyWhitelistedChain(uint64 _destinationChainSelector) {
-        if (!whitelistedChains[_destinationChainSelector])
-            revert DestinationChainNotWhitelisted(_destinationChainSelector);
+    modifier onlyAllowlistedChain(uint64 _destinationChainSelector) {
+        if (!allowlistedChains[_destinationChainSelector])
+            revert DestinationChainNotAllowlisted(_destinationChainSelector);
         _;
     }
 
-    /// @dev Whitelists a chain for transactions.
+    /// @dev Updates the allowlist status of a destination chain for transactions.
     /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be whitelisted.
-    function whitelistChain(
-        uint64 _destinationChainSelector
+    /// @param _destinationChainSelector The selector of the destination chain to be updated.
+    /// @param allowed The allowlist status to be set for the destination chain.
+    function allowlistDestinationChain(
+        uint64 _destinationChainSelector,
+        bool allowed
     ) external onlyOwner {
-        whitelistedChains[_destinationChainSelector] = true;
-    }
-
-    /// @dev Denylists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be denylisted.
-    function denylistChain(
-        uint64 _destinationChainSelector
-    ) external onlyOwner {
-        whitelistedChains[_destinationChainSelector] = false;
+        allowlistedChains[_destinationChainSelector] = allowed;
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
@@ -90,7 +82,7 @@ contract TokenTransferor is OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedChain(_destinationChainSelector)
+        onlyAllowlistedChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -99,23 +91,29 @@ contract TokenTransferor is OwnerIsCreator {
             _receiver,
             _token,
             _amount,
-            address(linkToken)
+            address(s_linkToken)
         );
 
         // Get the fee required to send the message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = s_router.getFee(
+            _destinationChainSelector,
+            evm2AnyMessage
+        );
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+        if (fees > s_linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
         // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        linkToken.approve(address(router), fees);
+        s_linkToken.approve(address(s_router), fees);
 
         // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
-        IERC20(_token).approve(address(router), _amount);
+        IERC20(_token).approve(address(s_router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+        messageId = s_router.ccipSend(
+            _destinationChainSelector,
+            evm2AnyMessage
+        );
 
         // Emit an event with message details
         emit TokensTransferred(
@@ -124,7 +122,7 @@ contract TokenTransferor is OwnerIsCreator {
             _receiver,
             _token,
             _amount,
-            address(linkToken),
+            address(s_linkToken),
             fees
         );
 
@@ -150,7 +148,7 @@ contract TokenTransferor is OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedChain(_destinationChainSelector)
+        onlyAllowlistedChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -163,16 +161,19 @@ contract TokenTransferor is OwnerIsCreator {
         );
 
         // Get the fee required to send the message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = s_router.getFee(
+            _destinationChainSelector,
+            evm2AnyMessage
+        );
 
         if (fees > address(this).balance)
             revert NotEnoughBalance(address(this).balance, fees);
 
         // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
-        IERC20(_token).approve(address(router), _amount);
+        IERC20(_token).approve(address(s_router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend{value: fees}(
+        messageId = s_router.ccipSend{value: fees}(
             _destinationChainSelector,
             evm2AnyMessage
         );
@@ -208,24 +209,24 @@ contract TokenTransferor is OwnerIsCreator {
         // Set the token amounts
         Client.EVMTokenAmount[]
             memory tokenAmounts = new Client.EVMTokenAmount[](1);
-        Client.EVMTokenAmount memory tokenAmount = Client.EVMTokenAmount({
+        tokenAmounts[0] = Client.EVMTokenAmount({
             token: _token,
             amount: _amount
         });
-        tokenAmounts[0] = tokenAmount;
+
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver), // ABI-encoded receiver address
-            data: "", // No data
-            tokenAmounts: tokenAmounts, // The amount and type of token being transferred
-            extraArgs: Client._argsToBytes(
-                // Additional arguments, setting gas limit to 0 as we are not sending any data and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 0, strict: false})
-            ),
-            // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
-            feeToken: _feeTokenAddress
-        });
-        return evm2AnyMessage;
+        return
+            Client.EVM2AnyMessage({
+                receiver: abi.encode(_receiver), // ABI-encoded receiver address
+                data: "", // No data
+                tokenAmounts: tokenAmounts, // The amount and type of token being transferred
+                extraArgs: Client._argsToBytes(
+                    // Additional arguments, setting gas limit to 0 as we are not sending any data and non-strict sequencing mode
+                    Client.EVMExtraArgsV1({gasLimit: 0, strict: false})
+                ),
+                // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
+                feeToken: _feeTokenAddress
+            });
     }
 
     /// @notice Fallback function to allow the contract to receive Ether.

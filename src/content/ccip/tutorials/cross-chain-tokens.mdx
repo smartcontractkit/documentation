@@ -29,7 +29,7 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens from a smart co
 
 ## Before you begin
 
-1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/getting-started/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
+1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 
 1. Your account must have some ETH and LINK tokens on _Ethereum Sepolia_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
 1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Ethereum Sepolia_ to _Polygon Mumbai_ so check the list of supported tokens [here](/ccip/supported-networks#ethereum-sepolia--polygon-mumbai-lane).
@@ -60,7 +60,7 @@ To use this contract:
 
 1. Enable your contract to transfer tokens to _Polygon Mumbai_:
    1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions for your smart contract deployed on _Ethereum Sepolia_.
-   1. Call the `whitelistChain` function with <CopyText text="12532609583862916517" code/> as the destination chain selector. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+   1. Call the `allowlistDestinationChain` function with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
 
 ### Transfer tokens and pay in LINK
 
@@ -212,7 +212,7 @@ The `transferTokensPayLINK` function undertakes six primary operations:
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
 1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend).
 
-**Note**: As a security measure, the `transferTokensPayLINK` function is protected by the `onlyWhitelistedChain` to ensure the contract owner has whitelisted a destination chain.
+**Note**: As a security measure, the `transferTokensPayLINK` function is protected by the `onlyAllowlistedChain` to ensure the contract owner has allowlisted a destination chain.
 
 ### Transferring tokens and pay in native
 
@@ -236,4 +236,4 @@ The `transferTokensPayNative` function undertakes five primary operations:
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
 1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
-**Note**: As a security measure, the `transferTokensPayNative` function is protected by the `onlyWhitelistedChain`, ensuring the contract owner has whitelisted a destination chain.
+**Note**: As a security measure, the `transferTokensPayNative` function is protected by the `onlyAllowlistedChain`, ensuring the contract owner has allowlisted a destination chain.

@@ -1,0 +1,223 @@
+---
+title: "Data Feed Circuit Breaker Using Chainlink Automation"
+description: "Build your own Data Feed Circuit Breaker Using Chainlink Automation."
+image: "QuickStarts-Circuit-Breaker.webp"
+products: ["automation", "feeds"]
+time: "90 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+
+## Overview
+
+Circuit breakers are useful for pausing dApps and processes when adverse events are detected on-chain. These circuit breakers can prevent loss of assets during volatile market events, unstable network conditions, or if systems that your dApp relies on become compromised.
+
+The example circuit breaker contract is a highly configurable proof of concept that can be used with [Data Feeds](/data-feeds). It is capable of emitting events or calling custom functions based on predefined conditions, and it comes with an interactive UI that allows users to easily configure and manage the contract.
+
+{/* prettier-ignore */}
+<div class="remix-callout">
+  <a href="https://github.com/smartcontractkit/quickstarts-circuitbreaker">See the code on GitHub</a>
+</div>
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Objective
+
+The [Circuit Breaker repository](https://github.com/smartcontractkit/quickstarts-circuitbreaker) contains an example implementation of a circuit breaker that can be used with any OCR price feed. You can monitor a given contract, specify the price when the circuit breaker will be triggered based on predefined conditions, and specify the underlying logic of what happens when the circuit breaker is triggered.
+
+## Before you begin
+
+<Aside type="note" title="New to smart contracts?">
+  This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract
+  development, deploy a VRF-compatible contract by [following these
+  instructions](/getting-started/intermediates-tutorial) and then return to this tutorial.
+</Aside>
+
+You can run this example on Linux, MacOS, or the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
+
+Before you start this tutorial, install the required tools:
+
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
+- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
+  - Run `node --version` to check the installation. You should see an output similar to `v16.x.x`.
+- Install and configure a cryptocurrency wallet like [MetaMask](https://metamask.io/).
+- Add the Avalanche Fuji testnet and LINK to your wallet:
+  {" "}
+  <a
+    class="erc-token-address"
+    id="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846"
+    href="/resources/link-token-contracts#fuji-testnet"
+  >
+    Avalanche Fuji testnet
+  </a>
+- Add testnet funds to your wallet. You will need both ERC-677 LINK and the gas currency for the chain where your contract is deployed. For this example, use Avalanche Fuji and testnet LINK. You can get both at [faucets.chain.link](https://faucets.chain.link/fuji).
+
+<Accordion title="Setup the example" number={1}>
+
+To set up this example, clone the source and install the required packages.
+
+1. Clone the [smartcontractkit/quickstarts-circuitbreaker](https://github.com/smartcontractkit/quickstarts-circuitbreaker) repository and change directories:
+
+   ```shell
+   git clone https://github.com/smartcontractkit/quickstarts-circuitbreaker.git && \
+   cd quickstarts-circuitbreaker
+   ```
+
+1. Install the `chainlink/contracts` npm package:
+
+   ```shell
+   npm install @chainlink/contracts@0.6.1 --save
+   ```
+
+   For this tutorial, disregard the resulting `npm` warnings.
+
+</Accordion>
+
+<Accordion title="Deploy contracts" number={2}>
+
+1. Open the `ExampleImplementation.sol` contract in Remix:
+
+   {/* prettier-ignore */}
+   <div class="remix-callout">
+     <a href="https://remix.ethereum.org#url=https://github.com/smartcontractkit/quickstarts-circuitbreaker/blob/main/ExampleImplementation.sol">Open in Remix</a>
+   </div>
+
+1. On the **Solidity compiler** tab, click **Compile `ExampleImplementation.sol`**.
+1. On the **Deploy and run transactions** tab, select _Injected Provider - MetaMask_ for the **Environment** field. Make sure the `ExampleImplementation.sol` contract is selected in the **Contract** field.
+1. Scroll down to the **Deploy** section:
+
+   {" "}
+
+   <ClickToZoom src="/images/quickstarts/circuit-breaker/example-implementation-deploy.png" />
+
+   Click the dropdown carat to expand the **Deploy** section:
+
+   {" "}
+
+   <ClickToZoom src="/images/quickstarts/circuit-breaker/example-implementation-deploy-expanded.png" />
+
+1. Enter the following input to the constructor:
+
+   | Item                 | Value                                                                                                     |
+   | -------------------- | --------------------------------------------------------------------------------------------------------- |
+   | `_MAXBALANCE`        | <CopyText text="2000000000000" code/>                                                                     |
+   | `_FEEDADDRESS`       | <Address contractUrl="https://testnet.snowtrace.io/address/0x31CF013A08c6Ac228C94551d535d5BAfE19c602a" /> |
+   | `_EMERGENCYPOSSIBLE` | <CopyText text="true" code/>                                                                              |
+
+   - The `maxBalance` in sats. For example, <CopyText text="2000000000000" code/> for a max balance of $20,000.
+   - The proxy contract address of the price feed. For example, the address for the BTC/USD price feed on Fuji is <Address contractUrl="https://testnet.snowtrace.io/address/0x31CF013A08c6Ac228C94551d535d5BAfE19c602a" />. Find other price feed addresses [here](/data-feeds/price-feeds/addresses).
+   - The `isEmergencyPossible` flag: set this to `true` if you want the circuit breaking condition to be checked. You can turn off this check by setting this value to `false`.
+
+1. Click **Deploy** and confirm the transaction in your wallet.
+
+Next, deploy the the `CircuitBreaker.sol` contract:
+
+1. Open the `CircuitBreaker.sol` contract in Remix:
+
+   {/* prettier-ignore */}
+   <div class="remix-callout">
+     <a href="https://remix.ethereum.org#url=https://github.com/smartcontractkit/quickstarts-circuitbreaker/blob/main/CircuitBreaker.sol">Open in Remix</a>
+   </div>
+
+1. On the **Solidity compiler** tab, click **Compile `CircuitBreaker.sol`**.
+1. On the **Deploy and run transactions** tab, select _Injected Provider - MetaMask_ for the **Environment** field. Make sure the `CircuitBreaker.sol` contract is selected in the **Contract** field.
+1. There are no constructor inputs for this contract. Click **Deploy** and confirm the transaction in your wallet.
+
+</Accordion>
+
+<Accordion title="Register and fund an upkeep" number={3}>
+
+Registering an upkeep on Chainlink Automation creates a smart contract that will run your circuit breaker contract.
+
+{/* prettier-ignore */}
+{" "}
+
+<div class="remix-callout">
+  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
+</div>
+
+1. Click **Register new Upkeep**.
+
+1. Select the _Custom logic_ trigger.
+
+1. For _Target contract address_, input the address of your deployed `CircuitBreaker.sol` contract. You can find this in your wallet's transaction history or copy it from Remix:
+
+{" "}
+
+<ClickToZoom src="/images/quickstarts/circuit-breaker/circuit-breaker-copy-address.png" />
+
+There may be a warning that says "Unable to verify if this is an Automation compatible contract." The `CircuitBreaker.sol` contract does implement the `AutomationCompatibleInterface` so you can disregard this warning. Click **Next**.
+
+1. For **Upkeep details**, add the following:
+
+   - A name for your upkeep
+   - A starting balance of 2 testnet LINK
+   - The admin address and gas limit are prefilled for you.
+   - Although the **Check data** field is marked optional, it is **required** for this tutorial. You'll fill this in during the next step.
+
+1. For your upkeep's **Check data** field, you need to ABI encode the address of your deployed `ExampleImplementation.sol` contract.
+
+   1. Navigate to the [HashEx Online ABI Encoder](https://abi.hashex.org/).
+   1. Click **Add argument** and select **Address** as the argument type from the dropdown menu. 1. Enter the address of your deployed `ExampleImplementation.sol` contract.
+
+      <ClickToZoom src="/images/quickstarts/circuit-breaker/hashex-abi-encoder-address.png" />
+
+   1. From the **Encoded data** field, copy the encoded address.
+   1. Navigate back to the Chainlink Automation app. In the **Check Data** field, enter `0x` and paste in the ABI encoded address of the `ExampleImplementation.sol` contract.
+
+1. Click **Register upkeep** and confirm the transaction in your wallet.
+
+</Accordion>
+
+<Accordion title=" Check emergency action" number={4}>
+
+Now the Chainlink Automation network will watch your contract for these trigger parameters. If the price from the feed you provided is above the `maxBalance` threshold that was specified, the `executeEmergencyAction()` function will trigger. As defined in `ExampleImplementation.sol`, the function increments a counter:
+
+```solidity
+/**
+ * executes emergency action
+ */
+function executeEmergencyAction() external {
+  counter += 1;
+  circuitbrokenflag = true;
+  emit emergencyActionPerformed(counter, feedAddress);
+}
+```
+
+1. Navigate to your upkeep in the Chainlink Automation app. If the `executeEmergencyAction()` function is triggered, you will see "Perform upkeep" logs listed in the **History** section.
+1. Navigate to Remix and expand the details for your deployed `ExampleImplementation.sol` contract. Click the **counter** button to view the value of the `counter` variable.
+1. If the counter was incremented once, you should see `0: uint256: 1` as the output:
+   <ClickToZoom src="/images/quickstarts/circuit-breaker/check-counter.png" />
+
+</Accordion>
+
+<Accordion title="Update the example implementation contract" number={5}>
+
+If you want to update your `ExampleImplementation.sol` contract, you can redeploy it with updated values and then use the same Automation upkeep. For example, to update the `maxBalance`:
+
+1. Redeploy the `ExampleImplementation.sol` contract with your updated `maxBalance` value.
+1. ABI encode the address of your newly deployed `ExampleImplementation.sol` contract.
+1. In the Chainlink Automation app, within the **Actions** menu for your existing upkeep, click **Edit check data**:
+
+   <ClickToZoom src="/images/quickstarts/circuit-breaker/automation-edit-checkdata.png" />
+
+1. Enter `0x`, paste the new ABI-encoded contract address, and click **Change check data**. MetaMask opens and prompts you to confirm the transaction.
+   <ClickToZoom src="/images/quickstarts/circuit-breaker/automation-change-checkdata.png" />
+
+You can use the same process to make other changes to your example implementation contract, like changing the logic in `executeEmergencyAction()` or changing the price feed that you're monitoring.
+
+</Accordion>
+
+## Cleanup
+
+If you want to experiment further with this tutorial, you can pause the Automation upkeep so that it stops running while you work on updating your example implementation contract. Otherwise, you can cancel the upkeep to reclaim any unused testnet LINK back to your wallet. Both options are located in the Chainlink Automation app within the **Actions** menu on your upkeep's details page.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 
 /**
  * @dev Example contract which perform most of the computation in `checkUpkeep`
@@ -104,19 +104,12 @@ contract BalancerOffChain is AutomationCompatibleInterface {
             performData,
             (uint256[], uint256[])
         );
-        // important to always check that the data provided by the Automation Node is not corrupted.
-        require(
-            indexes.length == increments.length,
-            "indexes and increments arrays' lengths not equal"
-        );
 
         uint256 _balance;
         uint256 _liquidity = liquidity;
 
         for (uint256 i = 0; i < indexes.length; i++) {
             _balance = balances[indexes[i]] + increments[i];
-            // important to always check that the data provided by the Automation Nodes is not corrupted. Here we check that after rebalancing, the balance of the element is equal to the LIMIT
-            require(_balance == LIMIT, "Provided increment not correct");
             _liquidity -= increments[i];
             balances[indexes[i]] = _balance;
         }

@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content"
+import QuickstartLayout from "~/layouts/QuickstartLayout.astro"
+import type { CollectionEntry } from "astro:content"
+
+interface Props {
+  entry: CollectionEntry<"quickstarts">
+}
+
+export async function getStaticPaths() {
+  const entries = await getCollection("quickstarts")
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }))
+}
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+---
+
+<QuickstartLayout frontmatter={entry.data} headings={headings}>
+  <Content />
+</QuickstartLayout>

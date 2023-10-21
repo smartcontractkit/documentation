@@ -22,7 +22,7 @@ In this tutorial, you will use Chainlink CCIP to send data between smart contrac
 
 ## Before you begin
 
-- You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/getting-started/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
+- You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 - Your account must have some ETH tokens on _Ethereum Sepolia_ and MATIC tokens on _Polygon Mumbai_.
 - Learn how to [Acquire testnet LINK](/resources/acquire-link) and [Fund your contract with LINK](/resources/fund-your-contract).
 
@@ -48,7 +48,7 @@ To use this contract:
       Note your contract address.
    1. Enable your contract to send CCIP messages to _Polygon Mumbai_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
-      1. Call the `whitelistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. Call the `allowlistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
 
 1. Deploy your receiver contract on _Polygon Mumbai_:
 
@@ -59,10 +59,10 @@ To use this contract:
       Note your contract address.
    1. Enable your contract to receive CCIP messages from _Ethereum Sepolia_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
-      1. Call the `whitelistSourceChain` with <CopyText text="16015286601757825753" code/> as the source chain selector. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. Call the `allowlistSourceChain` with <CopyText text="16015286601757825753" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
    1. Enable your contract to receive CCIP messages from the contract that you deployed on _Ethereum Sepolia_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
-      1. Call the `whitelistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_.
+      1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_, and <CopyText text="true" code/> as allowed.
 
 1. At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_. **Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
 
@@ -224,7 +224,7 @@ The `sendMessagePayLINK` function undertakes five primary operations:
 1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
 1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend).
 
-**Note**: As a security measure, the `sendMessagePayLINK` function is protected by the `onlyWhitelistedDestinationChain`, ensuring the contract owner has whitelisted a destination chain.
+**Note**: As a security measure, the `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
 ### Sending data and pay in native
 
@@ -246,7 +246,7 @@ The `sendMessagePayNative` function undertakes four primary operations:
 1. Ensures your contract balance in native gas is enough to cover the fees.
 1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
-**Note**: As a security measure, the `sendMessagePayNative` function is protected by the `onlyWhitelistedDestinationChain`, ensuring the contract owner has whitelisted a destination chain.
+**Note**: As a security measure, the `sendMessagePayNative` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
 ### Receiving data
 
@@ -260,5 +260,4 @@ On the destination blockchain, the router invokes the `ccipReceive` [function](/
 This example applies three important security measures:
 
 - `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/ccip-receiver#onlyrouter) for more information.
-- The modifier `onlyWhitelistedSourceChain` ensures that only a call from a whitelisted source chain is accepted.
-- The modifier `onlyWhitelistedSenders` ensures that only a call from a whitelisted sender is accepted.
+- The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender is accepted.

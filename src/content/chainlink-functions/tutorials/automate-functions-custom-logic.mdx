@@ -1,0 +1,165 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Automate your Functions (Custom Logic Automation)"
+---
+
+import { Aside, ClickToZoom, CopyText, CodeSample } from "@components"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+
+This tutorial shows you how to use [Chainlink Automation](/chainlink-automation) to automate your Chainlink Functions. Automation is essential when you want to trigger the same function regularly, such as fetching weather data daily or fetching an asset price on every block.
+
+Read the [Automate your Functions (Time-based Automation)](/chainlink-functions/tutorials/automate-functions) tutorial before you follow the steps in this example. This tutorial explains how to trigger your functions using an [Automation compatible contract](/chainlink-automation/guides/compatible-contracts).
+
+After you deploy and set up your contract, Chainlink Automation triggers your function on every block.
+
+<Aside type="caution">
+  Chainlink Functions is still in BETA. The use of secrets in your requests is an experimental feature that may not
+  operate as expected and is subject to change. Use of this feature is at your own risk and may result in unexpected
+  errors, possible revealing of the secret as new versions are released, or other issues.
+</Aside>
+
+<Aside type="note">
+  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+  Chainlink Functions account.
+</Aside>
+
+## Before you begin
+
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for this tutorial.
+
+1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls) guide.
+
+1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
+
+1. You can locate the scripts used in this tutorial in the [_examples/10-automate-functions_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions).
+
+1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
+
+1. Run `npx env-enc set` to add an encrypted `COINMARKETCAP_API_KEY` to your `.env.enc` file.
+
+   ```shell
+   npx env-enc set
+   ```
+
+## Tutorial
+
+<Aside type="note" title="Set up your environment variables">
+  This tutorial has some unique `.env.enc` setup steps. Make sure that you configured your `.env.enc` file with the
+  necessary variables in the [Before you begin](#before-you-begin) section.
+</Aside>
+
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources on every block. Read the [Examine the code](#examine-the-code) section for a detailed explanation of the code example.
+
+### Deploy an Automated Functions Consumer contract
+
+1. Deploy a Functions consumer contract on _Polygon Mumbai_:
+
+   1. Open the [CustomAutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol) in Remix.
+
+   {" "}
+
+   <CodeSample src="samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol" showButtonOnly={true} />
+
+   1. Compile the contract.
+   1. Open MetaMask and select the _Polygon Mumbai_ network.
+   1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
+   1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
+   1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+   1. After you confirm the transaction, the contract address appears in the Deployed Contracts list. Copy your contract address.
+
+1. Create a Chainlink Functions subscription and add your contract as an approved consumer contract. **Note**: If you followed the previous tutorials, then you can reuse your existing subscription.
+
+### Configure your Automation Consumer contract
+
+Configure the request details by calling the `updateRequest` function. This step stores the encoded request (source code, reference to encrypted secrets if any, arguments), gas limit, subscription ID, and job ID in the contract storage (see [Examine the code](#examine-the-code)). To do so, follow these steps:
+
+1.  On a terminal, go to the [_Functions tutorials_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/).
+1.  Open [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) and replace the consumer contract address and the subscription ID with your own values:
+
+    ```javascript
+    const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+    const subscriptionId = 3 // REPLACE this with your subscription ID
+    ```
+
+1.  Run the [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script to update your Functions consumer contract's request details.
+
+### Configure Chainlink Automation
+
+The consumer contract that you deployed is designed to be used with a **custom logic** automation. Follow the instructions in the [Register a Custom Logic Upkeep](/chainlink-automation/guides/register-upkeep) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
+
+- Trigger: Custom logic
+- Target contract address: The address of the Chainlink Functions consumer contract that you deployed
+- Check data: Leave this field blank
+- Gas limit: <CopyText text="1000000" code/>
+- Starting balance (LINK): <CopyText text="1" code/>
+
+You can leave the other settings at their default values for the example in this tutorial.
+
+At this stage, your Functions consumer contract is configured to get the median Bitcoin price on every block.
+
+<Aside type="note" title="Monitor your balances">
+There are two balances that you must monitor:
+
+- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions).
+- Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
+
+</Aside>
+
+### Check Result
+
+Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to Polygon Mumbai. Your upkeep will be listed under _My upkeeps_:
+
+<ClickToZoom src="/images/chainlink-functions/tutorials/automation/cl-automation-custom-home.jpg" />
+
+Click on your upkeep to fetch de details:
+
+<ClickToZoom src="/images/chainlink-functions/tutorials/automation/myupkeep-details-custom.jpg" />
+
+On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) to read the latest received response:
+
+    1.  Open `readLatest.js` and replace the consumer contract address with your own values:
+
+    ```javascript
+    const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+    ```
+
+    1. Run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script.
+
+      ```shell
+      node examples/10-automate-functions/readLatest.js
+      ```
+
+      Example:
+
+      ```text
+      $ node examples/10-automate-functions/readLatest.js
+      secp256k1 unavailable, reverting to browser version
+      Last request ID is 0x310d57a7af34ae4ce565f5745ff46fe2706e96b25b3172ada60cc60f4603b38e
+      ✅ Decoded response to uint256:  2625865n
+      ```
+
+### Clean up
+
+After you finish the guide, cancel your upkeep in the [Chainlink Automation App](https://automation.chain.link/) and withdraw the remaining funds. After you cancel the upkeep, there is a 50-block delay before you can withdraw the funds.
+
+## Examine the code
+
+### CustomAutomatedFunctionsConsumer.sol
+
+<ChainlinkFunctions section="custom-automated-functions-consumer" />
+
+### source.js
+
+The JavaScript code is similar to the one used in the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial.
+
+### updateRequest.js
+
+The JavaScript code is similar to the one used in the [Automate your Functions (Time-based Automation)](/chainlink-functions/tutorials/automate-functions) tutorial.
+
+### readLatest.js
+
+The JavaScript code is similar to the one used in the [Automate your Functions (Time-based Automation)](/chainlink-functions/tutorials/automate-functions) tutorial.

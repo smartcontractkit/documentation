@@ -3,6 +3,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
+import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
@@ -52,14 +53,50 @@ const feedCategories = {
   ),
 }
 
-const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
+  const pageNumbers: number[] = []
+
+  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
+    pageNumbers.push(i)
+  }
+
+  return (
+    <div class={tableStyles.pagination}>
+      {totalAddr !== 0 && (
+        <>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={currentPage === 1}
+            onClick={() => paginate(Number(currentPage) - 1)}
+          >
+            Prev
+          </button>
+          <p>
+            Showing {firstAddr + 1} to {lastAddr > totalAddr ? totalAddr : lastAddr} of {totalAddr} entries
+          </p>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={lastAddr >= totalAddr}
+            onClick={() => paginate(Number(currentPage) + 1)}
+          >
+            Next
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
+const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
-      <th>Address</th>
+      <th>Address and info</th>
     </tr>
   </thead>
 )
@@ -87,7 +124,6 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
@@ -99,20 +135,18 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
-      {!isTestnet ? (
+      {!isTestnet && (
         <div>
           <dl class={tableStyles.porDl}>
-            {proxy.docs.assetName ? (
+            {proxy.docs.assetName && (
               <div>
                 <dt>
                   <span class="label">Asset name:</span>
                 </dt>
                 <dd>{proxy.docs.assetName}</dd>
               </div>
-            ) : (
-              ""
             )}
-            {proxy.docs.feedType ? (
+            {proxy.docs.feedType && (
               <div>
                 <dt>
                   <span class="label">Asset type:</span>
@@ -122,25 +156,25 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
                   {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
-            ) : (
-              ""
+            )}
+            {proxy.docs.marketHours && (
+              <div>
+                <dt>
+                  <span class="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+                </dd>
+              </div>
             )}
           </dl>
         </div>
-      ) : (
-        ""
       )}
     </td>
   </tr>
 )
 
-const ProofOfReserveTHead = ({
-  showExtraDetails,
-  isTestnet = false,
-}: {
-  showExtraDetails: boolean
-  isTestnet?: boolean
-}) => (
+const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Proof of Reserve Feed</th>
@@ -152,7 +186,7 @@ const ProofOfReserveTHead = ({
   </thead>
 )
 
-const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
+const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       {feedItems.map((feedItem: FeedDataItem) => {
@@ -226,13 +260,23 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
+          {proxy.docs.marketHours && (
+            <div>
+              <dt>
+                <span class="label">Market hours:</span>
+              </dt>
+              <dd>
+                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
   </tr>
 )
 
-const NftFloorTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const NftFloorTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>NFT Floor Pricing Feed</th>
@@ -244,7 +288,7 @@ const NftFloorTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetai
     </tr>
   </thead>
 )
-const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
+const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -281,48 +325,243 @@ const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => 
   </tr>
 )
 
+const StreamsTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+  <thead>
+    <tr>
+      <th class={tableStyles.heading}>Stream</th>
+      <th>Stream info</th>
+    </tr>
+  </thead>
+)
+
+const StreamsTr = ({ network, proxy, showExtraDetails }) => (
+  <tr>
+    <td class={tableStyles.pairCol}>
+      <div className={tableStyles.assetPair}>
+        {feedCategories[proxy.docs.feedCategory] || ""}
+        {proxy.pair[0]}/{proxy.pair[1]}
+      </div>
+      {proxy.docs.shutdownDate && (
+        <div className={clsx(feedList.shutDate)}>
+          <hr />
+          Deprecating:
+          <br />
+          {proxy.docs.shutdownDate}
+        </div>
+      )}
+    </td>
+    <td style="width:80%;">
+      <div className={tableStyles.assetAddress}>
+        <span class="label">ID:</span>
+        <a
+          style="font-size: 0.75em;"
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.feedId)}
+        >
+          {proxy.feedId}
+        </a>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text={proxy.feedId}
+        >
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+        </button>
+      </div>
+      <div className={tableStyles.assetAddress}>
+        <span class="label">Verifier proxy address:</span>
+        <a
+          style="font-size: 0.75em;"
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+        >
+          0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
+        </a>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text="0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c"
+        >
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+        </button>
+      </div>
+      <div>
+        <dl class={tableStyles.porDl}>
+          {proxy.docs.schema ? (
+            <div>
+              <dt>
+                <span class="label">Report schema:</span>
+              </dt>
+              <dd>{proxy.docs.schema}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.productType ? (
+            <div>
+              <dt>
+                <span class="label">Data type:</span>
+              </dt>
+              <dd>
+                {proxy.docs.productType}
+                {proxy.docs.productSubType ? " - " + proxy.docs.productSubType : ""}
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.assetClass ? (
+            <div>
+              <dt>
+                <span class="label">Asset class:</span>
+              </dt>
+              <dd>
+                {proxy.docs.assetClass}
+                {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.quoteAsset ? (
+            <div aria-hidden={!showExtraDetails}>
+              <dt>
+                <span class="label">Quote asset:</span>
+              </dt>
+              <dd>{proxy.docs.quoteAsset}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.marketHours ? (
+            <div aria-hidden={!showExtraDetails}>
+              <dt>
+                <span class="label">Market hours:</span>
+              </dt>
+              <dd>
+                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.name ? (
+            <div>
+              <dt>
+                <span class="label">Full name:</span>
+              </dt>
+              <dd>
+                <span style="font-size: 0.9em;">{proxy.docs.clicProductName}</span>
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+        </dl>
+      </div>
+    </td>
+  </tr>
+)
+
 export const MainnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
   ecosystem,
+  selectedFeedCategories,
+  firstAddr,
+  lastAddr,
+  addrPerPage,
+  currentPage,
+  paginate,
+  searchValue,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
   ecosystem: string
+  selectedFeedCategories: string[]
+  firstAddr: number
+  lastAddr: number
+  addrPerPage: number
+  currentPage: number
+  paginate
+  searchValue: string
 }) => {
   if (!network.metadata) return null
-
   const isDeprecating = ecosystem === "deprecating"
+  const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isDefault = !isNftFloor && !isPor
+  const isDefault = !isNftFloor && !isPor && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isDeprecating) return !!chain.docs.shutdownDate
+      if (isStreams) return chain.contractType === "verifier"
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
+    .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
+    .filter(
+      (pair) =>
+        pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porAuditor
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+    )
+  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table class={tableStyles.table}>
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
-        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
-        <tbody>
-          {filteredMetadata.map((proxy) => (
+    <>
+      <div class={tableStyles.tableWrapper}>
+        <table class={tableStyles.table}>
+          {slicedFilteredMetadata.length === 0 ? (
+            <tr>
+              <td style={{ textAlign: "center" }}>
+                <img
+                  src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                  style={{ height: "160px" }}
+                />
+                <h4>No results found</h4>
+                <p>There are no data feeds in this category at the moment.</p>
+              </td>
+            </tr>
+          ) : (
             <>
-              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} />}
+              {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+              {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
+              <tbody>
+                {slicedFilteredMetadata.map((proxy) => (
+                  <>
+                    {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                  </>
+                ))}
+              </tbody>
             </>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          )}
+        </table>
+      </div>
+      <Pagination
+        addrPerPage={addrPerPage}
+        totalAddr={filteredMetadata.length}
+        currentPage={currentPage}
+        firstAddr={firstAddr}
+        lastAddr={lastAddr}
+        paginate={paginate}
+      />
+    </>
   )
 }
 
@@ -337,17 +576,20 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
+  const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isNftFloor && !isPor && !isRates
+  const isDefault = !isNftFloor && !isPor && !isRates && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
+      if (isStreams) return !!chain.contractType
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
+        !chain.feedId &&
         !chain.docs.nftFloorUnits &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
@@ -356,22 +598,20 @@ export const TestnetTable = ({
     })
 
   return (
-    <div>
+    <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
+        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isPor && (
-                <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
-              )}
+              {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
-              {isNftFloor && (
-                <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
-              )}
+              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
             </>
           ))}

@@ -1,0 +1,92 @@
+---
+interface Props {
+  title: string
+  number?: number
+}
+const { title, number } = Astro.props
+const id = title.toLowerCase().split(" ").join("-")
+---
+
+<astro-accordion>
+  <div class="header-wrapper-3" id={id} title={title}>
+    <details style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}>
+      <summary id={id} data-id={`${number}-${id}`}>
+        <span class="before">{number}</span>
+        {title}
+      </summary>
+      <div class="accordionContent">
+        <slot />
+      </div>
+    </details>
+  </div>
+</astro-accordion>
+
+<style>
+  details {
+    overflow: hidden;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  summary {
+    display: grid;
+    grid-template-columns: 0 1fr auto;
+    align-items: center;
+    gap: var(--space-8x);
+    cursor: pointer;
+    color: var(--blue-800, #1a2b6b);
+    font-size: 16px;
+    padding: var(--space-2x) 0px;
+  }
+
+  .header-wrapper-3 {
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  span.before {
+    font-size: inherit;
+    color: var(--gray-400, #b7bac0);
+    letter-spacing: -0.24px;
+  }
+
+  summary::after {
+    content: url(/images/quickstarts/arrow-down.svg);
+    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
+    -webkit-mask-size: var(--space-6x);
+    background-color: var(--gray-400, #b7bac0);
+    transition: 0.25s transform ease;
+  }
+
+  /* Using custom attribute 'expanded' (created by Accordion)
+  rather than 'open' since some browsers (Safari) have no respect for details attributes */
+  details[expanded] > summary::after {
+    transform: rotate(180deg);
+    background-color: #174cc2;
+  }
+
+  .accordionContent {
+    padding-left: var(--space-8x);
+    padding-bottom: var(--space-4x);
+  }
+
+  @media (min-width: 48em) {
+    summary {
+      font-size: 20px;
+      padding: var(--space-3x) 0px;
+    }
+  }
+</style>
+
+<style is:inline>
+  .accordionContent > :not(astro-slot, astro-island, ul, ol) {
+    margin-top: var(--space-4x);
+  }
+
+  .accordionContent > :first-child {
+    margin-top: 0;
+  }
+</style>
+
+<script>
+  import { Accordion } from "./util"
+  customElements.define("astro-accordion", Accordion)
+</script>

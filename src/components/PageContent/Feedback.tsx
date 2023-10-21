@@ -45,7 +45,7 @@ export const Feedback = () => {
     })
   }
 
-  function handleSubmit(e: any) {
+  function handleSubmit(e) {
     e.preventDefault()
     const formData = new FormData(e.target)
     const data = {
@@ -95,9 +95,9 @@ export const Feedback = () => {
         >
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
             <label htmlFor="name">Tell us more about your experience.</label>
-            <textarea name="msg" />
+            <textarea name="msg" style={{ resize: "none" }} />
             <button className={button.primary} disabled={isSubmitting}>
-              submit
+              Submit
             </button>
           </form>
         </section>

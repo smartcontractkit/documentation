@@ -1,8 +1,12 @@
 ---
 section: ccip
 date: Last Modified
-title: "CCIP Architecture and Billing"
-whatsnext: { "CCIP Best Practices": "/ccip/best-practices" }
+title: "CCIP Architecture"
+whatsnext:
+  {
+    "Learn CCIP best practices": "/ccip/best-practices",
+    "Find the list of supported networks, lanes, and rate limits on the CCIP Supported Networks page": "/ccip/supported-networks",
+  }
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -48,7 +52,7 @@ The figure below outlines the different components involved in a cross-chain tra
 - The contracts in dark blue are the CCIP interface ([Router](#router)). To use CCIP, users need only to understand how to interact with the router; they don't need to understand the whole CCIP architecture. **Note**: The CCIP interface is static and remains consistent over time to provide reliability and stability to the users.
 - The contracts in light blue are internal to the CCIP protocol and subject to change.
 
-<ClickToZoom src="/images/ccip/architecture.png" alt="Chainlink CCIP Detailed Architecture" />
+<ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Detailed Architecture" />
 
 ### On-chain components
 
@@ -70,7 +74,7 @@ One OnRamp contract per [lane](/ccip/concepts#lane) exists. This contract perfor
 - Checks destination-blockchain-specific validity such as validating account address syntax
 - Verifies the message size limit and gas limits
 - Keeps track of sequence numbers to preserve the sequence of messages for the receiver
-- Manages [billing](#ccip-billing)
+- Manages [billing](/ccip/billing)
 - Interacts with the [TokenPool](#token-pools) if the message includes a token transfer.
 - Emits an event monitored by the [committing DON](#committing-don)
 
@@ -129,23 +133,27 @@ Each node compares the committed Merkle roots with the transactions received by 
 
 Read the [Risk Management Network Concepts](/ccip/concepts#risk-management-network) section to learn more.
 
-## CCIP Billing
+## CCIP rate limits
 
-The CCIP billing model uses the `feeToken` specified in the message to pay a single fee on the source chain. CCIP uses a gas-locked fee payment mechanism, referred to as _Smart Execution_, to help ensure the reliable execution of cross-chain transactions regardless of destination chain gas spikes. For developers, this means you can simply pay on the source chain and CCIP will take care of execution on the destination chain.
+Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity.
 
-On each source chain, CCIP maintains a cache of destination gas prices, denominated in each `feeToken`. To prevent staleness, these prices are routinely updated by either piggybacking user messages or timeouts. CCIP supports fee payments in LINK and in alternative assets, which currently includes blockchain-native gas tokens and their ERC20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of chains over time.
+You can find the complete list of lanes and their rate limits on the [CCIP Supported Networks](/ccip/supported-networks) page.
 
-### Overheads and fees
+The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/errors#ratelimiter) page.
 
-Users should note that CCIP fees include both gas cost overhead and a flat/basis points premium as follows:
+### Token pool rate limit
 
-- **Destination gas overhead:** This is the average overhead incurred on the destination chain by CCIP to process the message and/or token transfer.
-- **Flat network premium for messages:** this fee is a static amount that users pay when sending cross-chain messages.
-- **Basis point based premium for tokens:** This is a percentage-based fee that users pay for cross-chain token transfers. It is calculated using the following expression: `tokenAmount x price x bps ratio`. `price` is initially denominated in USD and translated into the `feeToken`.
+For each supported token on each individual [lane](/ccip/concepts#lane), the token pool rate limit manages the total number of tokens that can be transferred within a given time. This limit is independent of the USD value of the token.
 
-Current CCIP premium fees are in line with industry standards within the cross-chain ecosystem, but these values are subject to change. The premium portion of fees paid in alternative assets will have a surcharge of 10% when compared to LINK payments. To understand service limits, read the [CCIP Service Limits](/ccip/supported-networks#service-limits) page.
+For example, the maximum capacity of the snxUSD token pool on the [Mainnet Ethereum → Optimism lane](/ccip/supported-networks#optimism-mainnet--ethereum-mainnet-lane) is 100,000 snxUSD. The refill rate is 167 snxUSD per second. If 100,000 snxUSD is transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 1670 snxUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 100,000 snxUSD every 10 minutes.
 
-### Execution latency
+### Aggregate rate limit
+
+Each [lane](/ccip/concepts#lane) also has an aggregate rate limit that limits the overall USD value that can be transferred on that lane across all supported tokens. To improve security, the aggregate rate limit for any given lane is always lower than the sum of all individual token pool rate limits for that lane.
+
+Consider an example where a lane has a maximum capacity of 100,000 USD, a refill rate of 167 USD per second, and several token transfers with a total value of 60,000 USD have been executed. In that example, the remaining available capacity is 40,000 USD. If a user intends to transfer tokens equating to 50,000 USD, they must wait at least 60 seconds for capacity to refill the additional 10,000 USD that is required. The maximum throughput in USD value on the lane is 100,000 USD every 10 minutes.
+
+## CCIP Execution latency
 
 Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source chain to reach [finality](/ccip/concepts#finality). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a chain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
 

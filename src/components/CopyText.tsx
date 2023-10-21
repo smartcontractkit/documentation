@@ -12,7 +12,7 @@ const CopyContainer = ({ text, code }: Props) => {
       {code ? <code>{text}</code> : text}
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
-        style={{ height: "16px", width: "16px" }}
+        style={{ height: "16px", width: "16px", minWidth: "12px" }}
         data-clipboard-text={text}
       >
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
@@ -20,7 +20,10 @@ const CopyContainer = ({ text, code }: Props) => {
 
       <style jsx>{`
         .copyContainer {
-          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-1x);
+          word-break: break-word;
         }
 
         .copyBtn {

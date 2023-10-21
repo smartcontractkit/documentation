@@ -1,0 +1,160 @@
+---
+title: "Dynamic Metadata with Automation"
+description: "Use Chainlink Automation to create NFTs that can change over time, based on user interaction, or any number of conditions."
+image: "QuickStarts-Dynamic-Metadata-with-Automation.webp"
+products: ["automation"]
+time: "60 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside, ClickToZoom } from "@components"
+import { YouTube } from "@astro-community/astro-embed-youtube"
+
+## Video
+
+Learn how to create dynamic NFTs by following along with this video tutorial:
+
+<YouTube id="https://www.youtube.com/watch?v=E7Rm1LUKhj4" />
+
+{/* prettier-ignore */}
+<div class="remix-callout">
+  <a href="https://github.com/smartcontractkit/smart-contract-examples/tree/main/dynamic-nft">See the code on GitHub</a>
+</div>
+
+## Objective
+
+In this tutorial, you will use the [Chainlink Automation Network](https://automation.chain.link) to help create a dynamic NFT by using the Automation-compatible smart contract provided in the repository.
+
+The demo includes:
+
+- Setting up and funding an upkeep on the Chainlink Automation Network
+- Setting up a dynamic NFT and viewing the progression of the NFT on [OpenSea](https://testnets.opensea.io/).
+
+You can use this example as a starting point for building your own dynamic NFTs and provide more interactive experiences with your collections.
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract).
+- Set up a cryptocurrency wallet
+- To deploy this contract on testnets, ensure the deployer account has testnet LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
+- Open a new [Remix](https://remix.ethereum.org/) project.
+
+## Steps to implement
+
+<Accordion title="Compile and deploy your contract" number={1}>
+
+1. Open the `2_complete.sol` contract in Remix and rename the contract to `dynNFT.sol`.
+
+   {/* prettier-ignore */}
+   <div class="remix-callout">
+     <a href="https://remix.ethereum.org/#url=https://github.com/smartcontractkit/smart-contract-examples/blob/main/dynamic-nft/2_complete.sol">Open in Remix</a>
+   </div>
+
+1. Compile the contract in Remix. Under the section titles **DEPLOY & RUN TRANSACTIONS** you will have to change some values in the dropdown menus. Under **ENVIRONMENT**, select _Injected Provider - MetaMask_ or _WalletConnect_ depending on the cryptocurrency wallet you are using. Selecting one of these options will prompt you to connect your wallet with Remix.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-1.png"
+     alt="Dynamic Metadata Quickstart Step 2"
+     style="max-width: 70%;"
+   />
+
+1. Ensure that the **CONTRACT** field displays `dynNFT`. Finally, for the **Deploy** value, you must enter a time interval value denoting when the dynamic NFT will change. For this demo, we have inputted 30, but you can change this value. Once you have entered your interval, click the orange **Deploy** button and follow the prompts to allow the transaction to be performed. This may take a few minutes depending on factors such as network traffic.
+
+</Accordion>
+
+<Accordion title="Mint an NFT" number={2}>
+
+1. Once the contract is deployed, you should be able to see more information under the **Deployed Contracts** section.
+
+   At this point, you can mint an NFT. In the field next to **safeMint** paste your wallet address. Then, click the orange **transact** button and follow the prompts to confirm the transaction.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-2.png"
+     alt="Dynamic Metadata Quickstart Step 4"
+     style="max-width: 70%;"
+   />
+
+1. After minting the NFT, you can look at the stage of the NFT based on the tokenURIs given in the contract. Enter `"0"` in the **flowerStage** field and click the blue **call** button. You should see the stage of the NFT.
+
+   Enter `0` in the **tokenURI** field and click the blue **call** button to see the corresponding URI for the NFT.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-3.png"
+     alt="Dynamic Metadata Quickstart Step 5.1"
+     style="max-width: 70%;"
+   />
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-4.png"
+     alt="Dynamic Metadata Quickstart Step 5.2"
+     style="max-width: 70%;"
+   />
+
+</Accordion>
+
+<Accordion title="Register an upkeep" number={3}>
+
+1. Copy the contract address and open the [Chainlink Automation Interface](https://automation.chain.link). Connect your wallet to the network and click the blue button **Register New Upkeep**. For the **Trigger** mechanism, select _Custom logic_. You will prompted to enter your contract address. Paste your address and click **Next**.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-5.png"
+     alt="Dynamic Metadata Quickstart Step 6"
+     style="max-width: 70%;"
+   />
+
+1. You must fill out the prompts to finish registering upkeep. For the **Starting balance (LINK)**, enter 0.5 for this demo. After entering information, click **Register Upkeep**. It may take a few moments for this to complete.
+
+</Accordion>
+
+<Accordion title="Trigger the upkeep" number={4}>
+
+1. Navigate back to Remix. Under the **Deployed Contracts** section, enter `[]` in the **checkUpkeep** field and click the blue button. You may see the following text: `upkeepNeeded true`. This means that an upkeep will be performed.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-10.png"
+     alt="Dynamic Metadata Quickstart Step 8"
+     style="max-width: 70%;"
+   />
+
+1. While waiting for the upkeep to be performed, copy the contract address to your clipboard and open OpenSea (https://testnets.opensea.io/). Paste your address in search bar at the top of the page. You should be directed to a page with the image of your minted NFT. Click the seed thumbnail to learn more about the NFT.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-6.png"
+     alt="Dynamic Metadata Quickstart Step 9"
+     style="max-width: 70%;"
+   />
+
+1. Navigate back to Remix. Enter `[]` in the **checkUpkeep** field and click the blue button. If this returns `upkeepNeeded false` your upkeep should have been performed. Navigate to the [Chainlink Automation Interface](https://automation.chain.link) and select your upkeep to view more details and to confirm that an upkeep was performed. If `upkeepNeeded false` is not returned in Remix, you may have to wait a few minutes and run the **checkUpkeep** function.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-7.png"
+     alt="Dynamic Metadata Quickstart Step 10"
+     style="max-width: 70%;"
+   />
+
+</Accordion>
+
+<Accordion title="Check the NFT stage" number={5}>
+
+1. Once the upkeep has been performed, navigate to Remix and click **flowerStage** and **tokenURI** to see the most recent flower stage and corresponding URI. Navigate back to the information of your NFT on OpenSea. Click the button on the top right to refresh the metadata. You should see the NFT become a bloom.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-8.png"
+     alt="Dynamic Metadata Quickstart Step 11"
+     style="max-width: 70%;"
+   />
+
+1. To see the NFT become a fully blossomed flower, you will have to wait another 30 seconds (or the amount of time you denoted when deploying your contract). After this interval, refresh the NFT's metadata again. You should see a fully blossomed flower. You have now completed the tutorial.
+
+   <ClickToZoom
+     src="/images/automation/qs-dynnft/dynnft-qs-9.png"
+     alt="Dynamic Metadata Quickstart Step 12"
+     style="max-width: 70%;"
+   />
+
+</Accordion>
+
+## Summary
+
+This tutorial used Chainlink Automation to create a dynamic NFT. This was done by deploying an Automation compatible contract in Remix and registering an Upkeep with the Chainlink Automation network. The NFT changed every 30 seconds based on the time interval we inputted when deploying the contract. The final NFT stage was a fully bloomed flower.

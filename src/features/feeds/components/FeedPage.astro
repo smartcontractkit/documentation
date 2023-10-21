@@ -1,14 +1,13 @@
 ---
 import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
-import { FeedList } from "./FeedList"
-import type { DataFeedType } from "./FeedList"
+import { FeedList, DataFeedType } from "./FeedList"
 import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
   dataFeedType?: DataFeedType
 }
-import { getServerSideChainMetadata } from "~/features/data//api/backend"
+import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { FeedDataItem, monitoredFeeds } from "~/features/data"
@@ -45,12 +44,12 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         they are deployed on.
       </p>
       <p>
-        Data Feeds without publicly known active users may be scheduled for deprecation. Doing so not only helps
-        preserve blockchains as public goods by optimizing blockspace usage, but it helps reduce unnecessary costs
-        incurred by Chainlink node operators. This process is part of a broader ecosystem shift towards Chainlink
-        Economics 2.0, designed to maximize the adoption of the Chainlink protocol while optimizing for cost-efficiency
-        and long-term economic sustainability. Over time, new Data Feeds may be launched or relocated to alternative{" "}
-        blockchains/layer-2s that better reflect current user demand.
+        Data Feeds with low or no usage or feeds that do not have a viable path to economic sustainability may be
+        scheduled for deprecation. Doing so helps preserve blockchains as public goods by optimizing blockspace usage.
+        It also helps to reduce unnecessary costs incurred by Chainlink node operators. This process is part of a
+        broader ecosystem shift towards Chainlink Economics 2.0, designed to maximize the adoption of the Chainlink
+        protocol while optimizing for cost-efficiency and long-term economic sustainability. Over time, new Data Feeds
+        may be launched or relocated to alternative blockchains/layer-2s that better reflect current user demand.
       </p>
       <p>
         For status updates regarding Data Feeds, users should join the official Chainlink Discord and subscribe to the{" "}
@@ -66,7 +65,22 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     </>
   ) : (
     <>
-      {dataFeedType === "nftFloor" ? (
+      {dataFeedType === "streams" ? (
+        <>
+          <p>
+            To learn how to use Data Streems, see the{" "}
+            <a href="/data-streams/getting-started">Data Streams Getting Started</a> page.
+          </p>
+          <p>
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+          </p>
+          <Aside type="note" title="Talk to an expert">
+            <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an
+            expert about integrating Chainlink Data Streams with your applications.
+          </Aside>
+        </>
+      ) : dataFeedType === "nftFloor" ? (
         <>
           <p>
             To learn how to use these feeds, see the{" "}
@@ -77,8 +91,10 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
-            Chainlink Data Feeds with your applications.
+            <p>
+              <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+              Chainlink Data Feeds with your applications.
+            </p>
           </Aside>
           <FeedsCommonCallout callout="quality" />
         </>
@@ -93,8 +109,10 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
-            Chainlink Data Feeds with your applications.
+            <p>
+              <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+              Chainlink Data Feeds with your applications.
+            </p>
           </Aside>
           <FeedsCommonCallout callout="porWalletAddressManager" />
           <FeedsCommonCallout callout="quality" />
@@ -119,8 +137,10 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
-            Chainlink Data Feeds with your applications.
+            <p>
+              <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+              Chainlink Data Feeds with your applications.
+            </p>
           </Aside>
 
           <FeedsCommonCallout callout="etfBestPractices" />
@@ -130,14 +150,6 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     </>
   )
 }
-
-<FeedList
-  client:idle
-  initialNetwork={initialNetwork ?? "ethereum"}
-  dataFeedType={dataFeedType ?? "default"}
-  ecosystem={ecosystem ?? ""}
-  initialCache={initialCache}
-/>
 
 {
   dataFeedType === "por" ? (
@@ -154,6 +166,8 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         </p>
       </Aside>
     </>
+  ) : dataFeedType === "streams" ? (
+    <> </>
   ) : (
     <>
       <Aside type="caution">
@@ -167,3 +181,11 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     </>
   )
 }
+
+<FeedList
+  client:idle
+  initialNetwork={initialNetwork ?? "ethereum"}
+  dataFeedType={dataFeedType ?? "default"}
+  ecosystem={ecosystem ?? ""}
+  initialCache={initialCache}
+/>

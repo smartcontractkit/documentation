@@ -1,15 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner"
 
-/*
- * Set this variable to null to hide the notification
- */
-
-// export const NotificationData: BannerContent | null = null
-
-export const NotificationData: BannerContent | null = {
-  description: "Join us at SmartCon 2023—where Web3 gets real.",
+export const NotificationData: BannerContent = {
+  description: "Chainlink Data Streams have officially launched on mainnet.",
   type: "info",
-  linkText: "Get your ticket.",
+  linkText: "Sign up for early access.",
   linkUrl:
-    "https://smartcon.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=smartcon-2023&agid=kgmdzq5cr7sn",
+    "https://chainlinkcommunity.typeform.com/datastreams?utm_medium=referral&utm_source=chainlink-docs&ref_id=chainlink-docs",
 }

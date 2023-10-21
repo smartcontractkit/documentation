@@ -14,6 +14,7 @@ export type SupportedTechnology =
   | "BASE"
   | "CELO"
   | "POLYGON_ZKEVM"
+  | "SCROLL"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -36,10 +37,12 @@ export type SupportedChain =
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
+  | "BASE_MAINNET"
   | "BASE_GOERLI"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
   | "POLYGON_ZKEVM_TESTNET"
+  | "SCROLL_SEPOLIA"
 
 export type Chains = Record<
   SupportedTechnology,

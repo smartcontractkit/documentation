@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -27,16 +27,16 @@ contract Sender is OwnerIsCreator {
         uint256 fees // The fees paid for sending the CCIP message.
     );
 
-    IRouterClient router;
+    IRouterClient private s_router;
 
-    LinkTokenInterface linkToken;
+    LinkTokenInterface private s_linkToken;
 
     /// @notice Constructor initializes the contract with the router address.
     /// @param _router The address of the router contract.
     /// @param _link The address of the link contract.
     constructor(address _router, address _link) {
-        router = IRouterClient(_router);
-        linkToken = LinkTokenInterface(_link);
+        s_router = IRouterClient(_router);
+        s_linkToken = LinkTokenInterface(_link);
     }
 
     /// @notice Sends data to receiver on the destination chain.
@@ -60,20 +60,23 @@ contract Sender is OwnerIsCreator {
                 Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
             ),
             // Set the feeToken  address, indicating LINK will be used for fees
-            feeToken: address(linkToken)
+            feeToken: address(s_linkToken)
         });
 
         // Get the fee required to send the message
-        uint256 fees = router.getFee(destinationChainSelector, evm2AnyMessage);
+        uint256 fees = s_router.getFee(
+            destinationChainSelector,
+            evm2AnyMessage
+        );
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+        if (fees > s_linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
         // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        linkToken.approve(address(router), fees);
+        s_linkToken.approve(address(s_router), fees);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend(destinationChainSelector, evm2AnyMessage);
+        messageId = s_router.ccipSend(destinationChainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         emit MessageSent(
@@ -81,7 +84,7 @@ contract Sender is OwnerIsCreator {
             destinationChainSelector,
             receiver,
             text,
-            address(linkToken),
+            address(s_linkToken),
             fees
         );
 

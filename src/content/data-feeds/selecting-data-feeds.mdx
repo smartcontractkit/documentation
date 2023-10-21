@@ -96,6 +96,29 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 These feeds are being deprecated. To find the deprecation dates for specific feeds, see the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page.
 
+#### Data Feed Shutdown Policy
+
+Data feeds managed by Chainlink Labs will be considered for deprecation if they pose a risk to the Chainlink Community and broader ecosystem, if the asset or assets on the feed have significantly deteriorated and no longer meet our Quality Assurance standards, or if the data feed has become financially unsustainable to support.
+
+Known users of these feeds will be contacted directly about the feeds' deprecation. Notifications will also be posted on the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page and on our [Discord channel](https://discord.com/channels/592041321326182401/991444378335838318) with 2 weeks of notice before they are shut down.
+
+## Market hours
+
+In addition to categories, be aware that markets for several assets are actively traded only during certain hours. Listed data feeds include an attribute describing their market hours. Chainlink Labs recommends using these feeds only during their specified hours:
+
+| Feed                            | Hours                                                                                                                                                                                                                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Crypto**                      | 24/7/365 - No market close.                                                                                                                                                                                                                                                     |
+| **US_Equities**                 | Standard US equity market hours: 09:30 - 16:00 ET M-F excluding US equity market holidays.                                                                                                                                                                                      |
+| **UK_ETF**                      | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                 |
+| **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday. <br/> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. |
+| **Precious_Metals**             | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br/> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day.                                                                    |
+| **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00. <br/> The feed also follows the NYMEX market holiday schedule.                                                                                                           |
+| **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br/> The feed also follows the COMEX market holiday schedule.                                                                                                            |
+| **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                              |
+| **MI_ETF**                      | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                           |
+| **XETRA_ETF**                   | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                     |
+
 ## Risk Mitigation
 
 As a development best practice, design your systems and smart contracts to be resilient and mitigate risk to your protocol and your users. Ensure that your systems can tolerate known and unknown exceptions that might occur. Some examples include but are not limited to volatile market conditions, the degraded performance of infrastructure, chains, or networks, and any other upstream outage related to data providers or node operators. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
@@ -104,7 +127,7 @@ To help you prepare for unforeseen market events, you should take additional ste
 
 Below are some examples of tooling that Chainlink users have put in place:
 
-- **Circuit breakers:** In the case of an extreme price event, the contract would pause operations for a limited period of time. [Chainlink Automation](/chainlink-automation/introduction) is able to monitor data feeds to identify unexpected events. If an event were to occur, the Automation network can send an on-chain transaction to pause or halt contract functionality.
+- **Circuit breakers:** In the case of an extreme price event, the contract would pause operations for a limited period of time. [Chainlink Automation](/chainlink-automation) is able to monitor data feeds to identify unexpected events. If an event were to occur, the Automation network can send an on-chain transaction to pause or halt contract functionality.
 - **Contract update delays:** Contracts would not update until the protocol had received a recent fresh input from the data feed.
 - **Manual kill switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
@@ -166,7 +189,7 @@ Sustaining data quality is dependent on data sources implementing the necessary 
 
 Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events, hacks, coordinated attacks, or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by centralized or decentralized exchanges, or the de-pegging of synthetic assets, stablecoins, and currencies from their intended exchange rates.
 
-Circuit breakers can be created using [Chainlink Automation](/chainlink-automation/introduction). Circuit breakers are safety measures that monitor data feeds for unexpected scenarios such as stale prices, drastic price changes, or prices approaching a predetermined min/max threshold. If an unexpected scenario occurs, the circuit breaker can send an on-chain transaction to pause or halt contract functionality.
+Circuit breakers can be created using [Chainlink Automation](/chainlink-automation). Circuit breakers are safety measures that monitor data feeds for unexpected scenarios such as stale prices, drastic price changes, or prices approaching a predetermined min/max threshold. If an unexpected scenario occurs, the circuit breaker can send an on-chain transaction to pause or halt contract functionality.
 
 ### Periods of High Network Congestion
 
@@ -210,3 +233,7 @@ The [Fast Gas Data Feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-g
   The best practices above are provided for informational purposes only. You are responsible for reviewing the quality
   of the data that you integrate into your smart contracts.
 </Aside>
+
+## Exchange Rate Feeds
+
+These feeds relay a value across blockchains from a specified contract. Chainlink Labs does not control this contract, and therefore, users are encouraged to research the originating contract and function and implement circuit breakers in case the reported value falls outside of expected bounds.

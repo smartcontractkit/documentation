@@ -7,6 +7,7 @@ interface Docs {
   feedType?: string
   hidden?: boolean
   porAuditor?: string
+  porSource?: string
   porType?: string
   productSubType?: string
   productType?: string
@@ -19,6 +20,7 @@ export interface ChainMetadata {
   contractVersion: number
   decimalPlaces: number | null
   ens: null | string
+  feedId: null | string
   formatDecimalPlaces: number | null
   healthPrice: string
   heartbeat: number

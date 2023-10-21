@@ -1,0 +1,241 @@
+---
+title: "Time-based upkeeps"
+description: "Time-based upkeeps are contracts you set up on Chainlink Automation that allow you to run a smart contract function automatically according to a custom schedule that you define. Time-based upkeeps are similar to cron jobs."
+image: "QuickStarts-Time-based-upkeep.webp"
+products: ["automation"]
+time: "15 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside, ClickToZoom, CodeSample } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+## Objective
+
+In this tutorial, you will learn how to set up a time-based upkeep to automate a smart contract function using Chainlink Automation. You can use time-based upkeeps to:
+
+- Schedule a rebalancing activity
+- Schedule a recurring payment
+- Schedule circuit breaker checks
+- Automate triggering of any smart contract function that needs to run on a certain time schedule, or at a certain time in the future
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract).
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- Fund your wallet with the following testnet tokens:
+  - The gas currency for the chain where your contract is deployed. For this example, get 0.5 Sepolia ETH from one of the available [public faucets](https://faucetlink.to/sepolia).
+  - ERC-677 LINK. [Get 20 testnet LINK](https://faucets.chain.link/).
+
+<Accordion title="Deploy a smart contract to automate" number={1}>
+
+If you already have a deployed smart contract that you want to automate, make sure the contract has an external or public function that modifies the state of the contract on-chain. In Solidity, `pure` and `view` functions do not update the state, so even if these functions are public, you cannot automate them with Chainlink Automation.
+
+If you do not already have a deployed contract, follow these instructions to deploy a simple counter contract. This contract has a public `counter` variable that you can update by adding the `updateAmount` value to it.
+
+1. Open the `Counter.sol` contract in Remix:
+
+   {/* prettier-ignore */}
+   <CodeSample src="samples/Automation/Counter.sol" />
+
+1. Under the _Solidity compiler_ tab, compile the contract:
+
+   <ClickToZoom src="/images/automation/qs-time-based-upkeep/compile-counter.png" alt="Compile contract" />
+
+1. Under the _Deploy and run transactions_ tab, select _Injected Provider - MetaMask_ for the **Environment** field.
+
+   <ClickToZoom src="/images/automation/qs-time-based-upkeep/injected-provider.png" alt="Remix Environment field" />
+
+1. Click **Deploy**. MetaMask opens and prompts you to confirm the contract deployment transaction:
+
+   <ClickToZoom
+     src="/images/automation/qs-time-based-upkeep/metamask-contract-deployment.png"
+     alt="Confirm MetaMask contract deployment transaction"
+   />
+
+1. Copy the address of your newly deployed contract. You can find this in Sepolia Etherscan through the contract deployment transaction, or in Remix in the **Deployed Contracts** section:
+
+   <ClickToZoom
+     src="/images/automation/qs-time-based-upkeep/metamask-contract-deployment.png"
+     alt="Confirm MetaMask contract deployment transaction"
+   />
+
+</Accordion>
+
+<Accordion title="Provide contract information" number={2}>
+
+If your smart contract is already verified on-chain, [skip to the next step](#register-a-new-upkeep).
+
+Chainlink Automation needs your smart contract's [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) in order to automate the public functions in your contract. If your smart contract is not verified on-chain, you must either provide your contract's ABI manually, or verify the contract on-chain.
+
+<TabsContent client:visible>
+<Fragment slot="tab.1">Verify your contract</Fragment>
+<Fragment slot="tab.2">Add the ABI manually</Fragment>
+<Fragment slot="panel.1">
+
+Verify your contract directly in the blockchain explorer by adding your contract's source code and other required information in the blockchain explorer UI. For example:
+
+- Verify contracts deployed to Sepolia on the [testnet version of Etherscan](https://sepolia.etherscan.io/verifyContract).
+- Verify contracts deployed to Polygon Mumbai testnet on the [testnet version of Polygonscan](https://mumbai.polygonscan.com/verifyContract).
+
+After you successfully verify your smart contract, the Chainlink Automation App fetches its ABI automatically when you [register an upkeep](#register-a-new-upkeep):
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/abi-fetched.png" alt="ABI fetched automatically" />
+
+</Fragment>
+<Fragment slot="panel.2">
+
+If you do not want to verify the contract on chain, paste the contract's ABI into the corresponding text box in the Chainlink Automation App while you are registering the upkeep.
+
+1.  In Remix, within the Solidity Compiler tab, copy the ABI here:
+
+    <ClickToZoom src="/images/automation/qs-time-based-upkeep/get-abi-remix.png" alt="Remix Copy ABI" />
+
+1.  In the Chainlink Automation App, paste the ABI into the ABI field:
+
+    <ClickToZoom
+      src="/images/automation/qs-time-based-upkeep/couldnt-fetch-abi-ui.png"
+      alt="Chainlink Automation App ABI field"
+    />
+
+</Fragment>
+</TabsContent>
+
+</Accordion>
+
+<Accordion title="Register a new Upkeep" number={3}>
+
+<div class="remix-callout">
+  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
+</div>
+
+1. **Click the Register New Upkeep button**
+
+   <ClickToZoom src="/images/automation/auto-ui-home.png" alt="Click Register New Upkeep" />
+
+1. **Connect your wallet** using the _Connect Wallet_ choose a network. For a list of supported networks, see the [Supported Blockchain Networks](/chainlink-automation/overview/supported-networks) section. The Chainlink Automation App also lists the currently supported networks.
+
+   <ClickToZoom src="/images/automation/auto-ui-wallet.png" alt="Connect With Metamask" />
+
+1. Select the time-based trigger.
+
+1. Provide the address of your deployed contract. If your contract is not verified, paste the ABI into the corresponding text box.
+
+1. If you're using the `Counter` contract, add a value for the function input in the Chainlink Automation App:
+
+   <ClickToZoom src="/images/automation/qs-time-based-upkeep/update-amount.png" alt="Function input" />
+
+   Each time Automation triggers your function, based on the schedule you give it, it will run the `updateCounter` function which increments the `counter` variable using the value you enter for `updateAmount`.
+
+</Accordion>
+
+<Accordion title="Specify the time schedule" number={4}>
+
+After you enter the basic contract information, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own, or see the [format](#cron-format) and [examples](#cron-schedule-examples) below.
+
+For the `Counter` contract, enter `*/5 * * * *` to run the `updateCounter` function every five minutes:
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/time-schedule.png" alt="Time schedule example" />
+
+The Chainlink Automation App displays the next five scheduled events to help you confirm that you have entered your desired schedule correctly.
+
+After you enter your cron expression, click **Next**.
+
+#### Cron format
+
+Cron jobs are interpreted according to this format:
+
+```
+  ┌───────────── minute (0 - 59)
+  │ ┌───────────── hour (0 - 23)
+  │ │ ┌───────────── day of the month (1 - 31)
+  │ │ │ ┌───────────── month (1 - 12)
+  │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+  │ │ │ │ │
+  │ │ │ │ │
+  │ │ │ │ │
+  * * * * *
+
+All times are in UTC
+
+- can be used for range e.g. "0 8-16 * * *"
+/ can be used for interval e.g. "0 */2 * * *"
+, can be used for list e.g. "0 17 * * 0,2,4"
+
+  Special limitations:
+    * there is no year field
+    * no special characters: ? L W #
+    * lists can have a max length of 26
+    * no words like JAN / FEB or MON / TUES
+```
+
+#### Cron schedule examples
+
+| Cron expression  | Schedule                                  |
+| ---------------- | ----------------------------------------- |
+| `* * * * *`      | Every minute                              |
+| `0 8-16 * * *`   | Every hour between 08:00-16:00 UTC        |
+| `0 */2 * * *`    | Every two hours                           |
+| `0 17 * * 0,2,4` | Sunday, Tuesday and Thursday at 17:00 UTC |
+
+</Accordion>
+
+<Accordion title="Specify the time schedule" number={5}>
+
+### Entering upkeep details
+
+To complete the upkeep registration process, you must enter some information about your upkeep including its name, gas limit, starting balance LINK, and contact information.
+
+![Automation Upkeep Details](/images/automation/automation-upkeep-details.png)
+
+1. **Complete the required details:**
+
+   - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
+   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This value defaults to 500000, which is sufficient for the simple `updateCounter` function in the `Counter` contract. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed.
+   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. If you're using the `Counter` contract, 3 LINK is a sufficient starting balance. If your upkeep is underfunded after you create it, you can add more funds later.
+   - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
+
+</Accordion>
+
+<Accordion title="Check your counter variable" number={6}>
+
+You can check the value of the counter variable in your contract in Remix. If you verified your contract, you can also check it in Sepolia Etherscan.
+
+<TabsContent sharedStore="remixOrEtherscan" client:visible>
+<Fragment slot="tab.1">Remix</Fragment>
+<Fragment slot="tab.2">Sepolia Etherscan (Verified contract only)</Fragment>
+<Fragment slot="panel.1">
+In the **Deployed Contracts** tab, click the **counter** button to check the value of the counter variable.
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/remix-check-counter.png" alt="Check counter variable" />
+
+</Fragment>
+<Fragment slot="panel.2">
+If you verified the `Counter` contract, you can check the value of the counter variable in Sepolia Etherscan to see that it has been updated after 5 minutes. For example, [this contract](https://sepolia.etherscan.io/address/0x1776d538436b476d9cbd7b30660bff3148831710#readContract) has the following value after being updated every 5 minutes for about one day:
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/check-counter.png" alt="Check counter variable" />
+</Fragment>
+</TabsContent>
+
+</Accordion>
+
+<Accordion title="Manage your upkeep" number={7}>
+
+You can manage your upkeep in the Chainlink Automation App, or by [directly using the registry contract functions](/chainlink-automation/guides/manage-upkeeps#interacting-directly-with-the-chainlink-automation-registry).
+
+In the Chainlink Automation App, within the **Details** page for each upkeep, you can find this **Actions** menu:
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/upkeep-actions-menu.png" alt="Upkeep actions menu" />
+
+To pause your upkeep, select **Pause upkeep**. Chainlink Automation App prompts you to approve the upkeep pause, while MetaMask opens and prompts you to confirm the "pause upkeep" transaction:
+
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/approve-upkeep-pause.png" alt="Approve upkeep pause" />
+<ClickToZoom src="/images/automation/qs-time-based-upkeep/metamask-pause-upkeep.png" alt="MetaMask pause upkeep" />
+
+Pausing the upkeep can be useful for debugging. If you discover a problem with the contract you registered initially, you can pause the upkeep, update the upkeep to use a new contract, and then unpause the upkeep.
+
+For the upkeep to continue running, you must [maintain a minimum balance](/chainlink-automation/guides/manage-upkeeps#maintain-a-minimum-balance). The upkeep stops running if it is underfunded. To [withdraw funds from an upkeep](/chainlink-automation/guides/manage-upkeeps#withdraw-funds), you must cancel the upkeep.
+
+</Accordion>

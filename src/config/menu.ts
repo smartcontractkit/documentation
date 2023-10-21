@@ -9,29 +9,9 @@ type MenuItems = Record<LanguageKey, MenuItem[]>
 export const MENU: MenuItems = {
   en: [
     {
-      text: "Getting Started",
-      link: "/getting-started/conceptual-overview",
-      section: "gettingStarted",
-    },
-    {
       text: "Data Feeds",
       link: "/data-feeds",
       section: "dataFeeds",
-    },
-    {
-      text: "VRF",
-      link: "/vrf/v2/introduction",
-      section: "vrf",
-    },
-    {
-      text: "Automation",
-      link: "/chainlink-automation/introduction",
-      section: "automation",
-    },
-    {
-      text: "CCIP",
-      link: "/ccip",
-      section: "ccip",
     },
     {
       text: "Functions",
@@ -39,9 +19,24 @@ export const MENU: MenuItems = {
       section: "chainlinkFunctions",
     },
     {
-      text: "Any API",
-      link: "/any-api/introduction",
-      section: "anyApi",
+      text: "CCIP",
+      link: "/ccip",
+      section: "ccip",
+    },
+    {
+      text: "Automation",
+      link: "/chainlink-automation",
+      section: "automation",
+    },
+    {
+      text: "VRF",
+      link: "/vrf",
+      section: "vrf",
+    },
+    {
+      text: "Data Streams",
+      link: "/data-streams",
+      section: "dataStreams",
     },
     {
       text: "Nodes",

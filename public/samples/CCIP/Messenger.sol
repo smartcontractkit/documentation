@@ -6,7 +6,6 @@ import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/O
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -20,9 +19,9 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
-    error DestinationChainNotWhitelisted(uint64 destinationChainSelector); // Used when the destination chain has not been whitelisted by the contract owner.
-    error SourceChainNotWhitelisted(uint64 sourceChainSelector); // Used when the source chain has not been whitelisted by the contract owner.
-    error SenderNotWhitelisted(address sender); // Used when the sender has not been whitelisted by the contract owner.
+    error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
+    error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
+    error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -42,98 +41,64 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         string text // The text that was received.
     );
 
-    bytes32 private lastReceivedMessageId; // Store the last received messageId.
-    string private lastReceivedText; // Store the last received text.
+    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
+    string private s_lastReceivedText; // Store the last received text.
 
-    // Mapping to keep track of whitelisted destination chains.
-    mapping(uint64 => bool) public whitelistedDestinationChains;
+    // Mapping to keep track of allowlisted destination chains.
+    mapping(uint64 => bool) public allowlistedDestinationChains;
 
-    // Mapping to keep track of whitelisted source chains.
-    mapping(uint64 => bool) public whitelistedSourceChains;
+    // Mapping to keep track of allowlisted source chains.
+    mapping(uint64 => bool) public allowlistedSourceChains;
 
-    // Mapping to keep track of whitelisted senders.
-    mapping(address => bool) public whitelistedSenders;
+    // Mapping to keep track of allowlisted senders.
+    mapping(address => bool) public allowlistedSenders;
 
-    LinkTokenInterface linkToken;
+    IERC20 private s_linkToken;
 
     /// @notice Constructor initializes the contract with the router address.
     /// @param _router The address of the router contract.
     /// @param _link The address of the link contract.
     constructor(address _router, address _link) CCIPReceiver(_router) {
-        linkToken = LinkTokenInterface(_link);
+        s_linkToken = IERC20(_link);
     }
 
-    /// @dev Modifier that checks if the chain with the given destinationChainSelector is whitelisted.
+    /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
     /// @param _destinationChainSelector The selector of the destination chain.
-    modifier onlyWhitelistedDestinationChain(uint64 _destinationChainSelector) {
-        if (!whitelistedDestinationChains[_destinationChainSelector])
-            revert DestinationChainNotWhitelisted(_destinationChainSelector);
+    modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
+        if (!allowlistedDestinationChains[_destinationChainSelector])
+            revert DestinationChainNotAllowlisted(_destinationChainSelector);
         _;
     }
 
-    /// @dev Modifier that checks if the chain with the given sourceChainSelector is whitelisted.
+    /// @dev Modifier that checks if the chain with the given sourceChainSelector is allowlisted and if the sender is allowlisted.
     /// @param _sourceChainSelector The selector of the destination chain.
-    modifier onlyWhitelistedSourceChain(uint64 _sourceChainSelector) {
-        if (!whitelistedSourceChains[_sourceChainSelector])
-            revert SourceChainNotWhitelisted(_sourceChainSelector);
+    /// @param _sender The address of the sender.
+    modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
+        if (!allowlistedSourceChains[_sourceChainSelector])
+            revert SourceChainNotAllowlisted(_sourceChainSelector);
+        if (!allowlistedSenders[_sender]) revert SenderNotAllowlisted(_sender);
         _;
     }
 
-    /// @dev Modifier that checks if the chain with the given sourceChainSelector is whitelisted.
-    /// @param _sender The address of the sender.
-    modifier onlyWhitelistedSenders(address _sender) {
-        if (!whitelistedSenders[_sender]) revert SenderNotWhitelisted(_sender);
-        _;
-    }
-
-    /// @dev Whitelists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be whitelisted.
-    function whitelistDestinationChain(
-        uint64 _destinationChainSelector
+    /// @dev Updates the allowlist status of a destination chain for transactions.
+    function allowlistDestinationChain(
+        uint64 _destinationChainSelector,
+        bool allowed
     ) external onlyOwner {
-        whitelistedDestinationChains[_destinationChainSelector] = true;
+        allowlistedDestinationChains[_destinationChainSelector] = allowed;
     }
 
-    /// @dev Denylists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be denylisted.
-    function denylistDestinationChain(
-        uint64 _destinationChainSelector
+    /// @dev Updates the allowlist status of a source chain for transactions.
+    function allowlistSourceChain(
+        uint64 _sourceChainSelector,
+        bool allowed
     ) external onlyOwner {
-        whitelistedDestinationChains[_destinationChainSelector] = false;
+        allowlistedSourceChains[_sourceChainSelector] = allowed;
     }
 
-    /// @dev Whitelists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _sourceChainSelector The selector of the source chain to be whitelisted.
-    function whitelistSourceChain(
-        uint64 _sourceChainSelector
-    ) external onlyOwner {
-        whitelistedSourceChains[_sourceChainSelector] = true;
-    }
-
-    /// @dev Denylists a chain for transactions.
-    /// @notice This function can only be called by the owner.
-    /// @param _sourceChainSelector The selector of the source chain to be denylisted.
-    function denylistSourceChain(
-        uint64 _sourceChainSelector
-    ) external onlyOwner {
-        whitelistedSourceChains[_sourceChainSelector] = false;
-    }
-
-    /// @dev Whitelists a sender.
-    /// @notice This function can only be called by the owner.
-    /// @param _sender The address of the sender.
-    function whitelistSender(address _sender) external onlyOwner {
-        whitelistedSenders[_sender] = true;
-    }
-
-    /// @dev Denylists a sender.
-    /// @notice This function can only be called by the owner.
-    /// @param _sender The address of the sender.
-    function denySender(address _sender) external onlyOwner {
-        whitelistedSenders[_sender] = false;
+    /// @dev Updates the allowlist status of a sender for transactions.
+    function allowlistSender(address _sender, bool allowed) external onlyOwner {
+        allowlistedSenders[_sender] = allowed;
     }
 
     /// @notice Sends data to receiver on the destination chain.
@@ -150,14 +115,14 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedDestinationChain(_destinationChainSelector)
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
             _receiver,
             _text,
-            address(linkToken)
+            address(s_linkToken)
         );
 
         // Initialize a router client instance to interact with cross-chain router
@@ -166,11 +131,11 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         // Get the fee required to send the CCIP message
         uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+        if (fees > s_linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
         // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        linkToken.approve(address(router), fees);
+        s_linkToken.approve(address(router), fees);
 
         // Send the CCIP message through the router and store the returned CCIP message ID
         messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
@@ -181,7 +146,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             _destinationChainSelector,
             _receiver,
             _text,
-            address(linkToken),
+            address(s_linkToken),
             fees
         );
 
@@ -203,7 +168,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     )
         external
         onlyOwner
-        onlyWhitelistedDestinationChain(_destinationChainSelector)
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -248,11 +213,13 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     )
         internal
         override
-        onlyWhitelistedSourceChain(any2EvmMessage.sourceChainSelector) // Make sure source chain is whitelisted
-        onlyWhitelistedSenders(abi.decode(any2EvmMessage.sender, (address))) // Make sure the sender is whitelisted
+        onlyAllowlisted(
+            any2EvmMessage.sourceChainSelector,
+            abi.decode(any2EvmMessage.sender, (address))
+        ) // Make sure source chain and sender are allowlisted
     {
-        lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-        lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
+        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
 
         emit MessageReceived(
             any2EvmMessage.messageId,
@@ -274,18 +241,18 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         address _feeTokenAddress
     ) internal pure returns (Client.EVM2AnyMessage memory) {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver), // ABI-encoded receiver address
-            data: abi.encode(_text), // ABI-encoded string
-            tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
-            extraArgs: Client._argsToBytes(
-                // Additional arguments, setting gas limit and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
-            ),
-            // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
-            feeToken: _feeTokenAddress
-        });
-        return evm2AnyMessage;
+        return
+            Client.EVM2AnyMessage({
+                receiver: abi.encode(_receiver), // ABI-encoded receiver address
+                data: abi.encode(_text), // ABI-encoded string
+                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+                extraArgs: Client._argsToBytes(
+                    // Additional arguments, setting gas limit and non-strict sequencing mode
+                    Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
+                ),
+                // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
+                feeToken: _feeTokenAddress
+            });
     }
 
     /// @notice Fetches the details of the last received message.
@@ -296,7 +263,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         view
         returns (bytes32 messageId, string memory text)
     {
-        return (lastReceivedMessageId, lastReceivedText);
+        return (s_lastReceivedMessageId, s_lastReceivedText);
     }
 
     /// @notice Fallback function to allow the contract to receive Ether.

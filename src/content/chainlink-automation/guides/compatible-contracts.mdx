@@ -1,0 +1,67 @@
+---
+section: automation
+date: Last Modified
+title: "Create Automation-compatible Contracts"
+isMdx: true
+whatsnext:
+  {
+    "Access Data Streams in Automation": "/chainlink-automation/guides/streams-lookup",
+    "Register a custom logic upkeep": "/chainlink-automation/guides/register-upkeep",
+    "Build flexible contracts": "/chainlink-automation/guides/flexible-upkeeps/",
+    "Manage your Upkeeps": "/chainlink-automation/guides/manage-upkeeps/",
+  }
+---
+
+import { Aside, CodeSample } from "@components"
+
+Learn how to make smart contracts that are compatible with `Automation`.
+
+<Aside type="tip" title="Considerations and Best Practices">
+
+Before you deploy contracts to use with Chainlink Automation, read the [Best Practices](/chainlink-automation/concepts/best-practice) guide. These best practices are important for using Chainlink Automation securely and reliably. You can also read more about the Chainlink Automation architecture [here](/chainlink-automation/concepts/automation-architecture).
+
+</Aside>
+
+## Automation Compatible Contracts
+
+A contract is Automation-compatible when it follows a specified interface that allows the Chainlink Automation Network to determine if, when, and how the contract should be automated.
+
+The interface you use will depend on the type of trigger you want to use:
+
+- If you want a log event to trigger your upkeep, use the [`ILogAutomation`](/chainlink-automation/reference/automation-interfaces/#ilogautomation) interface.
+- If you want to use on-chain state in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](/chainlink-automation/reference/automation-interfaces/#automationcompatibleinterface) interface.
+- If you want to call a function just based on time, you don't need an interface. Consider insteead usinga [time-based upkeep](/chainlink-automation/guides/job-scheduler).
+- If you want to use Automation with Data Streams, use [`StreamsLookupCompatibleInterface`](/chainlink-automation/reference/automation-interfaces/#streamslookupcompatibleinterface) interface.
+
+You can learn more about these interfaces [here](/chainlink-automation/reference/automation-interfaces).
+
+## Example Automation-compatible contract using custom logic trigger
+
+Custom logic Automation compatible contracts must meet the following requirements:
+
+- Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the [`AutomationCompatibleInterface`](/chainlink-automation/reference/automation-interfaces) from the library to ensure your `checkUpkeep` and `performUpkeep` function definitions match the definitions expected by the Chainlink Automation Network.
+- Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
+- Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`.
+
+Use these elements to create a compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network frequently simulates your `checkUpkeep` off-chain to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
+
+<CodeSample src="samples/Automation/AutomationCounter.sol" />
+
+Compile and deploy your own Automation Counter onto a [supported Testnet](/chainlink-automation/overview/supported-networks).
+
+1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
+1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
+1. After deployment is complete, copy the address of the deployed contract. This address is required to register your upkeep in the [Automation UI](https://automation.chain.link/). The example in this document uses [custom logic](/chainlink-automation/guides/register-upkeep) automation.
+
+To see more complex examples, go to the [Quick Starts](/quickstarts/eth-balance-monitor/) page.
+
+Now register your [upkeep](/chainlink-automation/guides/register-upkeep/).
+
+## Vyper example
+
+<Aside type="note" title="Note on arrays">
+  Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.
+</Aside>
+
+You can find a `KeepersConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/KeepersConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.

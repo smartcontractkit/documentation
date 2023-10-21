@@ -1,0 +1,148 @@
+---
+title: "Chainlink Demo App"
+description: "Run the Chainlink Demo App locally to learn how to develop your own applications."
+image: "QuickStarts-Chainlink-Demo-App.webp"
+products: ["automation", "vrf", "feeds"]
+time: "60 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside } from "@components"
+
+## Overview
+
+The Chainlink Demo App is an end-to-end implementation of several Chainlink services. It uses the Hardhat development environment and the Next.js frontend framework. This guide shows you how to deploy this app yourself and use it as a starting point for building your own decentralized applications.
+
+Try out the demo at [chainlink-demo.app](https://chainlink-demo.app).
+
+See the code on [GitHub](https://github.com/smartcontractkit/chainlink-fullstack).
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Objective
+
+This guide shows you how to deploy a demo app, which requires several steps common to Web3 apps. You will learn the basics for how to use the Hardhat development environment and the Next.js frontend framework.
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
+- [Install Node](https://nodejs.org/en/download/)
+- [Install Yarn](https://classic.yarnpkg.com/en/docs/install/#mac-stable)
+- [Install Git](https://git-scm.com/downloads)
+
+## Steps to implement
+
+<Accordion title="Configure your local files" number={1}>
+
+1. Clone the repo and change directories:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/chainlink-fullstack && cd chainlink-fullstack
+   ```
+
+1. Inititalize the submodule:
+
+   ```bash
+   git submodule init
+   ```
+
+1. Update the submodule:
+
+   ```bash
+   git submodule update
+   ```
+
+1. Install the dependencies:
+
+   ```bash
+   yarn install
+   ```
+
+1. Start up the local Hardhat network and deploy all contracts:
+
+   ```bash
+   yarn chain
+   ```
+
+1. In a second terminal start up the local development server run the front-end app:
+
+   ```bash
+   yarn dev
+   ```
+
+To interact with the local network, follow this step-by-step guide on how to use [MetaMask with a Hardhat node](https://support.chainstack.com/hc/en-us/articles/4408642503449-Using-MetaMask-with-a-Hardhat-node).
+
+If you've set the mnemonic from MetaMask the first 20 accounts will be funded with ETH.
+
+</Accordion>
+
+<Accordion title="Configure environment variables" number={2}>
+
+1. Use the `.env.example` file in the `hardhat` workspace. Copy it to new `.env` files and replace the values with the following values:
+
+   - `NETWORK_RPC_URL` - An RPC is required to deploy to public networks. You can obtain one from [Infura](https://infura.io).
+   - `MNEMONIC` - This is used to derive accounts from a wallet seed phrase from Metamask. The first account must have enough ETH to deploy the contracts as well as LINK which can be obtained from [Chainlink's faucets](https://faucets.chain.link).
+   - `PRIVATE_KEY` - This is an alternative to using the mnemonic. Some changes are required in `hardhat.config.js`
+   - `ETHERSCAN_API_KEY` - This can be obtained from an Etherscan account, and is used to verify your contract code on Etherscan.
+
+1. In the `frontend` workspace, configure a new `.env` file with the following value:
+
+   - `NEXT_PUBLIC_INFURA_KEY` - Used for read-only mode and WalletConnect.
+
+</Accordion>
+
+<Accordion title="Deploy the contracts" number={3}>
+
+1. Before deploying the `RandomSVG` contract on a public network, you need to [create and fund a VRF subscription](/vrf/v2/subscription/ui/).
+1. Set the ID of your VRF subscription in `./packages/hardhat/helper-hardhat-config.ts`.
+1. Deploy on a public network:
+
+   ```bash
+   yarn deploy --network sepolia
+   ```
+
+1. Confirm the contract onchain:
+
+   ```bash
+   npx hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
+   ```
+
+   example:
+
+   ```bash
+   npx hardhat verify --network sepolia 0x9279791897f112a41FfDa267ff7DbBC46b96c296 "0x9326BFA02ADD2366b30bacB125260Af641031331"
+   ```
+
+</Accordion>
+
+<Accordion title="Run the example" number={4}>
+
+Start the front end to test your deployed application.
+
+1. Change to the frontend directory.
+
+   ```bash
+   yarn start
+   ```
+
+1. Navigate to the locally hosted web server to interact with the app.
+
+When you are done, try making modifications to the code to improve it, redeploy the contract, and run the example again.
+
+</Accordion>
+
+## Examine the code
+
+You can learn how the frontend works with deployed contracts by analyzing the code on [GitHub](https://github.com/smartcontractkit/chainlink-fullstack).
