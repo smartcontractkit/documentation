@@ -113,11 +113,11 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
       }
     </style>
-    <script>
-      import "../scripts/index.ts"
-    </script>
     <script define:vars={{ includeLinkToWalletScript }}>
-      window.includeLinkToWalletScript = includeLinkToWalletScript
+      import "../scripts/index.ts"
+      if (includeLinkToWalletScript) {
+        import("../scripts/link-to-wallet.ts")
+      }
     </script>
   </head>
 
@@ -144,11 +144,5 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     </main>
     <NewsletterCTA client:visible />
     <Footer />
-
-    <script>
-      if (window.includeLinkToWalletScript) {
-        import("../scripts/link-to-wallet.ts")
-      }
-    </script>
   </body>
 </html>
