@@ -157,6 +157,16 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
                 </dd>
               </div>
             )}
+            {proxy.docs.marketHours && (
+              <div>
+                <dt>
+                  <span class="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
@@ -250,6 +260,16 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
+          {proxy.docs.marketHours && (
+            <div>
+              <dt>
+                <span class="label">Market hours:</span>
+              </dt>
+              <dd>
+                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
@@ -418,7 +438,9 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
               <dt>
                 <span class="label">Market hours:</span>
               </dt>
-              <dd>{proxy.docs.marketHours}</dd>
+              <dd>
+                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+              </dd>
             </div>
           ) : (
             ""
