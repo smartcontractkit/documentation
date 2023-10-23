@@ -11,12 +11,14 @@ type StateStructOutput = [number, BigNumber, BigNumber, BigNumber] & {
 type ConfigStructOutput = [
   number,
   number,
-  number,
+  number | "Not Applicable",
+  number | "Not Applicable",
   number,
   number,
   number,
   BigNumber,
   number,
+  number | "Not Applicable",
   BigNumber,
   BigNumber,
   string,
@@ -24,12 +26,14 @@ type ConfigStructOutput = [
 ] & {
   paymentPremiumPPB: number
   flatFeeMicroLink: number
-  blockCountPerTurn: number
+  blockCountPerTurn: number | "Not Applicable"
+  maxCheckDataSize: number | "Not Applicable"
   checkGasLimit: number
   stalenessSeconds: number
   gasCeilingMultiplier: number
   minUpkeepSpend: BigNumber
   maxPerformGas: number
+  maxPerformDataSize: number | "Not Applicable"
   fallbackGasPrice: BigNumber
   fallbackLinkPrice: BigNumber
   transcoder: string
@@ -50,11 +54,13 @@ export type ChainlinkAutomationAddresses = Partial<
 
 export type ChainlinkAutomationConfig = {
   paymentPremiumPPB: number
-  blockCountPerTurn: number
+  blockCountPerTurn: number | "Not Applicable"
+  maxCheckDataSize: number | "Not Applicable"
   checkGasLimit: number
   gasCeilingMultiplier: number
   minUpkeepSpend: { type: "BigNumber"; hex: string }
   maxPerformGas: number
+  maxPerformDataSize: number | "Not Applicable"
   fallbackGasPrice: { type: "BigNumber"; hex: string }
   fallbackLinkPrice: { type: "BigNumber"; hex: string }
   flatFeeMicroLink: number

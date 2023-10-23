@@ -15,10 +15,12 @@ export const AutomationConfig = ({
   const {
     paymentPremiumPPB,
     blockCountPerTurn,
+    maxCheckDataSize,
     checkGasLimit,
     gasCeilingMultiplier,
     minUpkeepSpend,
     maxPerformGas,
+    maxPerformDataSize,
     registrar,
   } = config
 
@@ -57,8 +59,12 @@ export const AutomationConfig = ({
             {!paymentPremiumPPB ? <td /> : <td>{Math.round(parseInt(paymentPremiumPPB.toString(), 10) / 10000000)}</td>}
           </tr>
           <tr>
-            <td>Block Count Per Turn</td>
+            <td>Block Count per Turn</td>
             {!blockCountPerTurn ? <td /> : <td>{blockCountPerTurn.toLocaleString()}</td>}
+          </tr>
+          <tr>
+            <td>Maximum Check Data Size</td>
+            {!maxCheckDataSize ? <td /> : <td>{maxCheckDataSize.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Check Gas Limit</td>
@@ -67,6 +73,10 @@ export const AutomationConfig = ({
           <tr>
             <td>Perform Gas Limit</td>
             {!maxPerformGas ? <td /> : <td>{maxPerformGas.toLocaleString()}</td>}
+          </tr>
+          <tr>
+            <td>Maximum Perform Data Size</td>
+            {!maxPerformDataSize ? <td /> : <td>{maxPerformDataSize.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Gas Ceiling Multiplier</td>

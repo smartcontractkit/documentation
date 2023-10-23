@@ -4,7 +4,7 @@ pragma solidity ^0.8.6;
 // UpkeepIDConsumerExamplev1.sol imports functions from both ./AutomationRegistryInterface1_2.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/automation/interfaces/v1_2/AutomationRegistryInterface1_2.sol";
+import {AutomationRegistryInterface, State} from "@chainlink/contracts/src/v0.8/automation/interfaces/v1_2/AutomationRegistryInterface1_2.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 /**
