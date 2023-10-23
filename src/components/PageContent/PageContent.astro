@@ -8,7 +8,7 @@ export type Props = {
 const { titleHeading } = Astro.props
 ---
 
-<article id="article" style="visibility: hidden">
+<article id="article">
   <Overview title={titleHeading} />
   <slot />
 </article>
@@ -209,12 +209,6 @@ const { titleHeading } = Astro.props
     // Grabs mdx headers without getting nested headers in components
     const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
     headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
-
-    // Prevent shifting elements
-    const article = document.getElementById("article")
-    if (article) {
-      article.style.visibility = "visible"
-    }
   }
 
   // Runs on initial navigation
