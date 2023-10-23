@@ -119,8 +119,12 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
   </style>
 
   <script define:vars={{ includeLinkToWalletScript }}>
+    window.includeLinkToWalletScript = includeLinkToWalletScript
+  </script>
+
+  <script>
     import "../scripts/index.ts"
-    if (includeLinkToWalletScript) {
+    if (window["includeLinkToWalletScript"]) {
       import("../scripts/link-to-wallet.ts")
     }
   </script>
