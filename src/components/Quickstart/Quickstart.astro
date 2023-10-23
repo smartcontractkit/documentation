@@ -3,7 +3,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 ---
 
 <StickyHeaderObserver client:media="(min-width: 50em)" />
-<article id="article">
+<article id="article" style="visibility: hidden">
   <slot />
 </article>
 
@@ -233,6 +233,12 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 
     const firstElement = document.body.querySelector("article > :not(section)")
     firstElement && wrapATF(firstElement)
+
+    // Prevent shifting elements
+    const article = document.getElementById("article")
+    if (article) {
+      article.style.visibility = "visible"
+    }
   }
 
   // Runs on initial navigation
