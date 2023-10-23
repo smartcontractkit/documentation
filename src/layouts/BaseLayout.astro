@@ -1,0 +1,29 @@
+---
+import HeadCommon from "~/components/HeadCommon.astro"
+import HeadSEO from "~/components/HeadSEO.astro"
+import Header from "~/components/Header/Header.astro"
+import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
+import Footer from "~/components/Footer/Footer.astro"
+import { Metadata } from "~/content/config"
+
+interface Props {
+  title: string
+  metadata?: Metadata
+}
+const { title, metadata } = Astro.props
+const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
+const canonicalURL = new URL(canonicalURLStr)
+---
+
+<html dir="ltr" lang="en-us" class="initial" transition:animate="none">
+  <head>
+    <HeadCommon {title} />
+    <HeadSEO metadata={metadata} {canonicalURL} />
+  </head>
+  <body>
+    <Header />
+    <slot />
+    <NewsletterCTA client:visible />
+    <Footer />
+  </body>
+</html>

@@ -1,15 +1,11 @@
 ---
-import HeadCommon from "../components/HeadCommon.astro"
-import HeadSEO from "../components/HeadSEO.astro"
-import Header from "../components/Header/Header.astro"
 import Quickstart from "../components/Quickstart/Quickstart.astro"
 import QuickstartOverview from "../components/Quickstart/QuickstartOverview.astro"
 import QuickstartPanel from "../components/Quickstart/QuickstartPanel.astro"
 import * as CONFIG from "../config"
-import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
-import Footer from "~/components/Footer/Footer.astro"
 import { QuickstartsFrontmatter } from "~/content/config"
 import { MarkdownHeading } from "astro"
+import BaseLayout from "./BaseLayout.astro"
 
 interface Props {
   frontmatter: QuickstartsFrontmatter
@@ -17,115 +13,98 @@ interface Props {
 }
 const { frontmatter, headings } = Astro.props
 
-const formattedContentTitle = frontmatter.title
-  ? `${frontmatter.title} | ${CONFIG.SITE.title}`
-  : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
-
-const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
-const canonicalURL = new URL(canonicalURLStr)
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 ---
 
-<html dir="ltr" lang="en-us" class="initial" transition:animate="none">
-  <head>
-    <HeadCommon title={formattedContentTitle} />
-    <HeadSEO
-      metadata={{
-        title: frontmatter.title,
-        description: frontmatter.description,
-        image: `/images/quickstarts/feature/${frontmatter.image}`,
-      }}
-      {canonicalURL}
-    />
-    <style>
-      html {
-        scroll-behavior: smooth;
-      }
-
-      main {
-        background: linear-gradient(180deg, rgba(245, 247, 253, 0.75) 0%, rgba(245, 247, 253, 0) 20%),
-          url("/images/quickstarts/cube.svg") top left no-repeat;
-        background-size: 100%;
-        margin-bottom: 0;
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(250px, 100%);
-        --gutter: var(--space-6x);
-        --doc-padding: 2rem;
-      }
-
-      #grid-top {
-        padding: var(--doc-padding) var(--gutter) 0;
-      }
-
-      #grid-main {
-        padding: 0 var(--gutter) var(--space-20x);
-        min-width: 0;
-      }
-
-      #grid-right {
-        margin: 0 auto;
-      }
-
-      @media (min-width: 50em) {
-        main {
-          display: grid;
-          grid-template-columns: auto fit-content(100%) auto;
-          background-size: 50%;
-        }
-        .layout {
-          max-width: var(--fullwidth-max-width);
-          grid-template-areas: "top main_content" "bottom main_content";
-          grid-template-columns: 2fr 1fr;
-          gap: 2em;
-        }
-
-        #right-bg {
-          background: var(--gray-100, #fafafb);
-        }
-
-        #grid-right {
-          grid-area: main_content;
-          background: var(--gray-100, #fafafb);
-        }
-
-        #grid-top {
-          width: 100%;
-          height: fit-content;
-          grid-area: top;
-        }
-
-        #grid-main {
-          grid-area: bottom;
-        }
-      }
-    </style>
-    <script>
-      import "../scripts/index.ts"
-    </script>
-  </head>
-
-  <body>
-    <Header />
-    <main>
-      <div></div>
-      <div class="layout">
-        <div id="grid-top">
-          <QuickstartOverview {frontmatter} />
-        </div>
-        <div id="grid-right">
-          <QuickstartPanel {frontmatter} {headings} />
-        </div>
-        <div id="grid-main">
-          <Quickstart>
-            <slot />
-          </Quickstart>
-        </div>
+<BaseLayout
+  title={formattedContentTitle}
+  metadata={{
+    title: frontmatter.title,
+    description: frontmatter.description,
+    image: `/images/quickstarts/feature/${frontmatter.image}`,
+  }}
+>
+  <main>
+    <div></div>
+    <div class="layout">
+      <div id="grid-top">
+        <QuickstartOverview {frontmatter} />
       </div>
-      <div id="right-bg"></div>
-    </main>
-    <NewsletterCTA client:visible />
-    <Footer />
-  </body>
-</html>
+      <div id="grid-right">
+        <QuickstartPanel {frontmatter} {headings} />
+      </div>
+      <div id="grid-main">
+        <Quickstart>
+          <slot />
+        </Quickstart>
+      </div>
+    </div>
+    <div id="right-bg"></div>
+  </main>
+</BaseLayout>
+
+<script>
+  import "../scripts/index.ts"
+</script>
+
+<style>
+  main {
+    background: linear-gradient(180deg, rgba(245, 247, 253, 0.75) 0%, rgba(245, 247, 253, 0) 20%),
+      url("/images/quickstarts/cube.svg") top left no-repeat;
+    background-size: 100%;
+    margin-bottom: 0;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(250px, 100%);
+    --gutter: var(--space-6x);
+    --doc-padding: 2rem;
+  }
+
+  #grid-top {
+    padding: var(--doc-padding) var(--gutter) 0;
+  }
+
+  #grid-main {
+    padding: 0 var(--gutter) var(--space-20x);
+    min-width: 0;
+  }
+
+  #grid-right {
+    margin: 0 auto;
+  }
+
+  @media (min-width: 50em) {
+    main {
+      display: grid;
+      grid-template-columns: auto fit-content(100%) auto;
+      background-size: 50%;
+    }
+    .layout {
+      max-width: var(--fullwidth-max-width);
+      grid-template-areas: "top main_content" "bottom main_content";
+      grid-template-columns: 2fr 1fr;
+      gap: 2em;
+    }
+
+    #right-bg {
+      background: var(--gray-100, #fafafb);
+    }
+
+    #grid-right {
+      grid-area: main_content;
+      background: var(--gray-100, #fafafb);
+    }
+
+    #grid-top {
+      width: 100%;
+      height: fit-content;
+      grid-area: top;
+    }
+
+    #grid-main {
+      grid-area: bottom;
+    }
+  }
+</style>
