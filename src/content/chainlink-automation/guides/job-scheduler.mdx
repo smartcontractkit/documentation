@@ -36,7 +36,7 @@ If you do not already have a wallet connected with the Chainlink Automation netw
 
 ## Trigger Selection
 
-Select the time-based trigger.
+Select **Time-based** trigger.
 
 <ClickToZoom src="/images/automation/ui_select_trigger.png" />
 
@@ -48,7 +48,7 @@ When you select the time-based trigger, you are prompted to enter a _contract ad
 
 ### Specifying the Time Schedule
 
-After you have successfully entered your contract address and ABI, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. You can the provided example buttons in the Automation app to experiment with different schedules. Then, create your own time schedule.
+After you have successfully entered your contract address and ABI, specify your time schedule in the form of a CRON expression. CRON expressions provide a shorthand way of creating a time schedule. You can use the provided example buttons in the Automation app to experiment with different schedules. Then, create your own time schedule.
 
 ```
 Cron jobs are interpreted according to this format:
@@ -63,17 +63,17 @@ Cron jobs are interpreted according to this format:
   │ │ │ │ │
   * * * * *
 
-All times are in UTC
+All times are in UTC.
 
 - can be used for range e.g. "0 8-16 * * *"
 / can be used for interval e.g. "0 */2 * * *"
 , can be used for list e.g. "0 17 * * 0,2,4"
 
-  Special limitations:
-    * there is no year field
-    * no special characters: ? L W #
-    * lists can have a max length of 26
-    * no words like JAN / FEB or MON / TUES
+Special limitations:
+  * there is no year field
+  * no special characters: ? L W #
+  * lists can have a max length of 26
+  * no words like JAN / FEB or MON / TUES
 ```
 
 After entering your CRON expression, click **Next**.
@@ -82,27 +82,28 @@ After entering your CRON expression, click **Next**.
 
 ## Entering Upkeep Details
 
-Complete the required details:
+Provide the following information in the Automation app:
 
     - **Upkeep name**: This will be visible in the Chainlink Automation app.
     - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/overview/supported-networks/#configurations).
 
     <Aside type="note" title="Job Scheduler Gas requirements">
 
-When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the
-[CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/d5a253fb6959104844eda8479c08909a76a6fea7/contracts/src/v0.8/automation/upkeeps/CronUpkeepFactory.sol)
-to manage your time schedule and ensure that it is compatible. Because this contract uses roughly 110K gas per call, it is
-recommended to add 150K additional gas to the gas limit of the function you would like to automate.
+    When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the
+    [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/d5a253fb6959104844eda8479c08909a76a6fea7/contracts/src/v0.8/automation/upkeeps/CronUpkeepFactory.sol)
+    to manage your time schedule and ensure that it is compatible. Because this contract uses roughly 110K gas per call, it is
+    recommended to add 150K additional gas to the gas limit of the function you would like to automate.
 
-</Aside>
+    </Aside>
     - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
 
     <Aside type="tip" title="ERC-677 Link">
 
-For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts) page to determine where
-to acquire mainnet LINK, or visit [faucets.chain.link](https://faucets.chain.link/) to request testnet LINK.
+      For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts) page to determine where
+      to acquire mainnet LINK, or visit [faucets.chain.link](https://faucets.chain.link/) to request testnet LINK.
 
-</Aside>
+    </Aside>
+    - **Your email address (optional)**: This email address will be used to send you an email notification when your upkeep is underfunded.
 
 <ClickToZoom src="/images/automation/automation-upkeep-details.png" />
 
