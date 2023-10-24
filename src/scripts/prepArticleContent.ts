@@ -8,28 +8,31 @@ const dontWrapMap: Record<string, string[]> = {
   H4: [...dontWrapBase, "H3", "H4"],
 }
 
+// Recursively check if we can wrap the node
+const canWrap = (element: Element, dontWrap: string[]) => {
+  if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
+    return canWrap(element.firstElementChild, dontWrap)
+  }
+  return !dontWrap.includes(element.nodeName)
+}
+
 /**
  * Creates section wrappers around headers which interact with
  * intersection observers and TOC
  */
-const wrapHeader = (start: Element) => {
+const wrapSection = (start: Element) => {
   const wrapper = document.createElement("section")
   const elements: Element[] = []
   elements.push(start)
-  const dontWrap = dontWrapMap[start.nodeName] ?? [...dontWrapBase, "H3", "H4", "H5", "H6"]
+  const dontWrap = dontWrapMap[start.nodeName] ?? [...dontWrapBase, "H3", "H4"]
   let next = start.nextElementSibling
-  // Recursively check if we can wrap the node
-  const canWrap = (element: Element) => {
-    if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
-      return canWrap(element.firstElementChild)
-    }
-    return !dontWrap.includes(element.nodeName)
-  }
-  while (next && canWrap(next)) {
+  while (next && canWrap(next, dontWrap)) {
     elements.push(next)
     next = next.nextElementSibling
   }
-  wrapper.id = start.id
+  if (start.id) {
+    wrapper.id = start.id
+  }
   start.parentNode?.insertBefore(wrapper, start)
   elements.forEach((e) => wrapper.appendChild(e))
 }
@@ -44,23 +47,10 @@ const wrapATF = () => {
   if (!start) {
     return
   }
-  const wrapper = document.createElement("section")
-  const elements: Element[] = []
-  elements.push(start)
-  let next = start.nextElementSibling
-  while (
-    next &&
-    next.nodeName !== "SECTION" &&
-    (next.nodeName !== "ASTRO-ISLAND" || !next.hasChildNodes() || next.children[0].nodeName !== "SECTION")
-  ) {
-    elements.push(next)
-    next = next.nextElementSibling
-  }
-  start.parentNode?.insertBefore(wrapper, start)
-  elements.forEach((e) => wrapper.appendChild(e))
+  wrapSection(start)
 }
 
-const prepareHeadersInternal = (headers: NodeListOf<Element>, aboveTheFold?: boolean) => {
+const prepareSectionsInternal = (headers: NodeListOf<Element>, aboveTheFold?: boolean) => {
   const slugger = new GithubSlugger()
   headers.forEach((header) => {
     if (!header.textContent) {
@@ -78,12 +68,9 @@ const prepareHeadersInternal = (headers: NodeListOf<Element>, aboveTheFold?: boo
       anchor.textContent = header.textContent
       header.replaceChildren(anchor)
     }
-    wrapHeader(header)
+    wrapSection(header)
   })
-
-  if (aboveTheFold) {
-    wrapATF()
-  }
+  aboveTheFold && wrapATF()
 }
 
 /**
@@ -93,9 +80,9 @@ const prepareHeadersInternal = (headers: NodeListOf<Element>, aboveTheFold?: boo
  *
  * This picks up any headers not already modified by rehypeSlug and rehypeAutolinkHeadings (anything besides markdown content)
  */
-export const prepareHeaders = (aboveTheFold?: boolean) => {
+export const prepareSections = (aboveTheFold?: boolean) => {
   // Only get direct descendants of the article content
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("#article > :where(h1, h2, h3, h4)")
-  prepareHeadersInternal(headers, aboveTheFold)
+  prepareSectionsInternal(headers, aboveTheFold)
 }
