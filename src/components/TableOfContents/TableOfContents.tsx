@@ -23,11 +23,6 @@ const TableOfContents: FunctionalComponent<{
     const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
     const newHeadings: MarkdownHeading[] = []
 
-    // If there are no new headers in the DOM, return
-    if (elements.length === headings.length) {
-      return
-    }
-
     elements.forEach((e) => {
       const depth = Number(e.nodeName.at(1))
       const slug = e.id

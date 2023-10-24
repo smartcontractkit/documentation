@@ -8,7 +8,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
-import { updateTableOfContents } from "~/components/TableOfContents/tocStore"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
 export const FeedList = ({
@@ -64,9 +64,6 @@ export const FeedList = ({
   }
 
   useEffect(() => {
-    if (chainMetadata.processedData) {
-      updateTableOfContents()
-    }
     if (searchValue === "") {
       const searchParams = new URLSearchParams(window.location.search)
       searchParams.delete("search")
@@ -99,13 +96,9 @@ export const FeedList = ({
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
-  const id = "network-list"
 
   return (
-    <section id={id}>
-      <h2 id={id}>
-        <a href={`#${id}`}>Networks</a>
-      </h2>
+    <SectionWrapper title="Networks" depth={2} updateTOC={false}>
       {!isDeprecating && (
         <>
           <div class={feedList.clChainnavProduct} role="tablist">
@@ -174,14 +167,10 @@ export const FeedList = ({
           return true
         })
         .map((network: ChainNetwork) => {
-          const slug = network.name.toLowerCase().split(" ").join("-")
           return (
-            <section key={network.name} id={slug}>
+            <SectionWrapper title={network.name} depth={3} key={network.name}>
               {network.networkType === "mainnet" ? (
                 <>
-                  <h3 id={slug}>
-                    <a href={`#${slug}`}>{network.name}</a>
-                  </h3>
                   {!isStreams &&
                     (selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
                       <p>
@@ -256,9 +245,6 @@ export const FeedList = ({
                 </>
               ) : (
                 <>
-                  <h3 id={slug}>
-                    <a href={`#${slug}`}>{network.name}</a>
-                  </h3>
                   <label>
                     <input
                       type="checkbox"
@@ -271,7 +257,7 @@ export const FeedList = ({
                   <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
                 </>
               )}
-            </section>
+            </SectionWrapper>
           )
         })}
       {isDeprecating && netCount === 0 && (
@@ -279,6 +265,6 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
-    </section>
+    </SectionWrapper>
   )
 }
