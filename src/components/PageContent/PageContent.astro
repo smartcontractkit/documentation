@@ -29,6 +29,19 @@ const { titleHeading } = Astro.props
     padding-top: var(--space-5x);
   }
 
+  /* 
+    This is a bit of trickery that keeps the content
+    from shifting in the time between the DOM hydrating and the
+    wrapper script finishing. The margin is supplemented
+    by the section padding once the wrapper is created
+
+    This also keeps the spacing intact
+    in case JS isn't loading on the page
+  */
+  article > :where(h1, h2) {
+    margin-top: var(--space-5x) !important;
+  }
+
   article * {
     max-width: 100%;
     margin-bottom: 0;
@@ -54,6 +67,10 @@ const { titleHeading } = Astro.props
 
   :where(article, article section, article astro-slot, article astro-island) > :not(section, astro-slot, astro-island) {
     margin-top: var(--space-5x);
+  }
+
+  :where(article, article section, article astro-slot, article astro-island) > pre {
+    margin-top: var(--space-2x);
   }
 
   :where(article, article section) > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
