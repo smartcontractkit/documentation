@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineConfig } from "astro/config"
 import preact from "@astrojs/preact"
 import react from "@astrojs/react"
@@ -7,6 +6,7 @@ import rehypeSlug from "rehype-slug"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
+import { RehypePlugins } from "@astrojs/markdown-remark"
 
 // https://astro.build/config
 export default defineConfig({
@@ -32,7 +32,7 @@ export default defineConfig({
       ],
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
-    ] as any[],
+    ] as RehypePlugins,
     syntaxHighlight: "prism",
     smartypants: false,
   },
