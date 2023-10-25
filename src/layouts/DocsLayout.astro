@@ -28,11 +28,11 @@ const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const currentFile = `src/content${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
+const currentFile = `src/content${currentPage.replace(/\/$/, "")}${frontmatter.isIndex ? "/index" : ""}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
-const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWallet
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
@@ -53,7 +53,6 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         <RightSidebar {githubEditUrl} headings={initialHeadings} />
       </aside>
     </div>
-    <div hidden="true"></div>
   </main>
 
   <style>
@@ -97,17 +96,13 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         background: #fafbfd;
       }
 
-      #grid-left {
+      #grid-left,
+      #grid-right {
         display: flex;
-        justify-content: flex-end;
       }
 
       #grid-main {
         padding: 0 0 var(--doc-padding) 0;
-      }
-
-      #grid-right {
-        display: flex;
       }
     }
 
@@ -119,7 +114,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
   </style>
 
   <script define:vars={{ includeLinkToWalletScript }}>
-    window.includeLinkToWalletScript = includeLinkToWalletScript
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
   </script>
 
   <script>
