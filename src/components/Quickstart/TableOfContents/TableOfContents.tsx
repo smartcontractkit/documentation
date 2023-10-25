@@ -30,11 +30,6 @@ const TableOfContents: FunctionalComponent<{
     const elements = document.querySelectorAll(query)
     const newHeadings: MarkdownHeading[] = []
 
-    // If there are no new headers in the DOM, return
-    if (elements.length === headings.length) {
-      return
-    }
-
     elements.forEach((e) => {
       const depth = Number(e.nodeName.at(1)) || wrapperDepthMap[e.className.split(" ")[0]]
       const slug = e.id
