@@ -35,15 +35,19 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
     margin-top: var(--space-5x);
   }
 
-  article section > h2 + :not(section, astro-slot, astro-island) {
+  :where(article, article section) > :not(astro-accordion, h1, h2, h3, h4):has(+ astro-accordion) {
+    margin-bottom: var(--space-5x);
+  }
+
+  :where(article, article section) > h2 + :not(section, astro-slot, astro-island) {
     margin-top: 0 !important;
   }
 
-  article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+  :where(article, article section) > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
     margin-top: var(--space-5x) !important;
   }
 
-  article section > :is(h1, h2, h3, h4, h5, h6) {
+  :where(article, article section) > :is(h1, h2, h3, h4, h5, h6) {
     margin-top: 0;
   }
 
@@ -51,18 +55,18 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
     word-break: break-word;
   }
 
-  article section > :is(h1, h2, h3, h4, h5, h6) > a {
+  :where(article, article section) > :is(h1, h2, h3, h4, h5, h6) > a {
     display: inline-block;
     color: inherit;
     width: 100%;
   }
 
-  article section > :is(h2, h3, h4, h5, h6) {
+  :where(article, article section) > :is(h2, h3, h4, h5, h6) {
     color: black;
     margin-top: 0;
   }
 
-  article section > h2 {
+  :where(article, article section) > h2 {
     font-size: 24px;
     top: 0;
     position: sticky;
@@ -73,7 +77,7 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
     padding-bottom: var(--space-5x);
   }
 
-  article section > h2 > a {
+  :where(article, article section) > h2 > a {
     overflow: hidden;
     text-overflow: ellipsis;
     line-clamp: 3;
@@ -82,13 +86,16 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
     -webkit-box-orient: vertical;
   }
 
-  article section > h3 {
+  :where(article, article section) > h3 {
     padding-top: var(--space-6x);
     font-size: 20px;
   }
 
-  article section > :is(h4, h5, h6) {
+  :where(article, article section) > h4 {
     padding-top: var(--space-6x);
+  }
+
+  :where(article, article section) > :is(h4, h5, h6) {
     font-size: 16px;
   }
 
@@ -142,30 +149,34 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
       margin-top: var(--space-6x);
     }
 
-    article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+    :where(article, article section) > :not(astro-accordion, h1, h2, h3, h4):has(+ astro-accordion) {
+      margin-bottom: var(--space-6x);
+    }
+
+    :where(article, article section) > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
       margin-top: var(--space-5x) !important;
     }
 
-    article section > :is(h2, h3, h4, h5, h6) {
+    :where(article, article section) > :is(h2, h3, h4, h5, h6) {
       color: var(--blue-800, #1a2b6b);
     }
 
-    article section > h2 {
+    :where(article, article section) > h2 {
       font-size: 28px;
       padding-bottom: var(--space-5x);
     }
 
-    article section > h3 {
+    :where(article, article section) > h3 {
       font-size: 24px;
     }
 
-    article section > :is(h4, h5, h6) {
+    :where(article, article section) > :is(h4, h5, h6) {
       font-size: 20px;
     }
   }
 
   @media (min-width: 50em) {
-    article section > h2 {
+    :where(article, article section) > h2 {
       background: none;
       padding-top: var(--space-5x);
     }
@@ -173,63 +184,6 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 </style>
 
 <script>
-  /**
-   * Creates sticky headers which interact with
-   * intersection observers for nested h3, h4 headers
-   */
-  const wrapHeaders = (start: Element, isParent?: boolean) => {
-    const wrapper = document.createElement("section")
-    const elements: Element[] = []
-    elements.push(start)
-    let next = start.nextElementSibling
-    while (
-      next && // Just bear with me
-      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
-        !next.hasChildNodes() || // Island doesn't have HTML content
-        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
-        !next.children[0].id) && // Section does not have an id
-      (!next.id || ["H5", "H6"].includes(next.nodeName) || (isParent && !["H1", "H2"].includes(next.nodeName)))
-    ) {
-      elements.push(next)
-      next = next.nextElementSibling
-    }
-    wrapper.id = start.id
-    start.parentNode!.insertBefore(wrapper, start)
-    if (isParent) {
-      start.setAttribute("data-sticky", "")
-    }
-    elements.forEach((e) => wrapper.appendChild(e))
-    return wrapper
-  }
-
-  /**
-   * Only get direct descendants of the article content
-   * Grabs mdx headers without getting nested headers in components
-   */
-  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
-  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
-
-  // Wrap "above the fold" (ATF) content that lives before first header
-  const wrapATF = (start: Element) => {
-    const wrapper = document.createElement("section")
-    const elements: Element[] = []
-    elements.push(start)
-    let next = start.nextElementSibling
-    while (
-      next && // Just bear with me
-      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
-        !next.hasChildNodes() || // Island doesn't have HTML content
-        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
-        !next.children[0].id) && // Section does not have an id
-      (!next.id || !["SECTION"].includes(next.nodeName))
-    ) {
-      elements.push(next)
-      next = next.nextElementSibling
-    }
-    start.parentNode!.insertBefore(wrapper, start)
-    elements.forEach((e) => wrapper.appendChild(e))
-  }
-
-  const firstElement = document.body.querySelector("article > :not(section)")
-  firstElement && wrapATF(firstElement)
+  import { prepareSections } from "../../scripts/prepArticleContent"
+  prepareSections()
 </script>
