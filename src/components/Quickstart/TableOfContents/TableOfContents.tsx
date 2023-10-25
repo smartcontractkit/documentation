@@ -19,7 +19,7 @@ const TableOfContents: FunctionalComponent<{
   const $shouldUpdateToc = useStore(shouldUpdateToc)
 
   const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
-  const [currentIds, setCurrentIds] = useState<Record<string, boolean>>({})
+  const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
@@ -43,12 +43,16 @@ const TableOfContents: FunctionalComponent<{
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
-      setCurrentIds((currentIds) => {
-        const newIds: Record<string, boolean> = { ...currentIds }
+      setActiveIds((activeIds) => {
+        const newIds = new Set(activeIds)
         for (const entry of entries) {
           const { isIntersecting, target } = entry
           const { id } = target
-          newIds[id] = isIntersecting
+          if (isIntersecting) {
+            newIds.add(id)
+          } else {
+            newIds.delete(id)
+          }
         }
         return newIds
       })
@@ -65,7 +69,7 @@ const TableOfContents: FunctionalComponent<{
       }
     })
     return () => elementObserver.disconnect()
-  }, [$shouldUpdateToc, headings])
+  }, [headings])
 
   return (
     <nav className={styles.toc} data-sticky>
@@ -76,7 +80,7 @@ const TableOfContents: FunctionalComponent<{
             const className = clsx(
               styles.headerLink,
               h.depth > 2 && styles[`depth-${h.depth}`],
-              currentIds[h.slug] && styles.active
+              activeIds.has(h.slug) && styles.active
             )
             return (
               <li key={h.slug}>

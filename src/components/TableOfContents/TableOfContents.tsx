@@ -6,17 +6,15 @@ import styles from "./tableOfContents.module.css"
 import { shouldUpdateToc } from "./tocStore"
 import { clsx } from "~/lib"
 import { useStore } from "@nanostores/preact"
-import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
-  updateSticky?: boolean
-}> = ({ initialHeadings, updateSticky }) => {
+  onUpdateActiveTitle?: (title: string) => void
+}> = ({ initialHeadings, onUpdateActiveTitle }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
-  const { setStickyHeader } = useStickyHeader()
 
   const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
-  const [currentIds, setCurrentIds] = useState<Record<string, boolean>>({})
+  const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
@@ -41,38 +39,28 @@ const TableOfContents: FunctionalComponent<{
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
-      setCurrentIds((currentIds) => {
-        const newIds: Record<string, boolean> = { ...currentIds }
-        for (const entry of entries) {
-          const { isIntersecting, target } = entry
-          const { id } = target
-          newIds[id] = isIntersecting
-        }
-        return newIds
-      })
-    }
-
-    const observerCallbackSticky: IntersectionObserverCallback = (entries) => {
-      setCurrentIds((currentIds) => {
-        let stickyHeaderSet = false
-        const newIds: Record<string, boolean> = { ...currentIds }
+      setActiveIds((activeIds) => {
+        const newIds = new Set(activeIds)
         for (const entry of entries) {
           const { isIntersecting, target } = entry
           const { id, firstElementChild: first } = target
-          newIds[id] = isIntersecting
-          if (!stickyHeaderSet && isIntersecting && first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
-            stickyHeaderSet = true
-            setStickyHeader(first.id === "overview" ? "Overview" : first.textContent)
+          if (isIntersecting) {
+            newIds.add(id)
+            if (onUpdateActiveTitle && first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
+              onUpdateActiveTitle(first.id === "overview" ? "Overview" : first.textContent)
+            }
+          } else {
+            newIds.delete(id)
           }
         }
-        if (Object.values(newIds).every((v) => !v)) {
-          setStickyHeader("")
+        if (onUpdateActiveTitle && newIds.size === 0) {
+          onUpdateActiveTitle("")
         }
         return newIds
       })
     }
 
-    const sectionsObserver = new IntersectionObserver(updateSticky ? observerCallbackSticky : observerCallback, {
+    const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-15% 0% -85%",
     })
 
@@ -92,7 +80,7 @@ const TableOfContents: FunctionalComponent<{
           const className = clsx(
             styles.headerLink,
             h.depth > 2 && styles[`depth-${h.depth}`],
-            currentIds[h.slug] && styles.active
+            activeIds.has(h.slug) && styles.active
           )
           return (
             <li key={h.slug}>
