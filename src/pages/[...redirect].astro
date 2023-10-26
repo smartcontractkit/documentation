@@ -4,11 +4,13 @@ import redirects from "../features/redirects/redirects.json"
 
 export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   const sanitizeSource = (source: string) => {
-    let newSource = source
-    if (newSource[newSource.length - 1] === "/") {
-      newSource = newSource.slice(0, newSource.length - 1)
+    if (source.endsWith("/")) {
+      source = source.slice(0, -1)
     }
-    return newSource[0] === "/" ? newSource.slice(1, newSource.length) : newSource
+    if (source.startsWith("/")) {
+      source = source.slice(1)
+    }
+    return source
   }
 
   return redirects.redirects.map((entry) => {
