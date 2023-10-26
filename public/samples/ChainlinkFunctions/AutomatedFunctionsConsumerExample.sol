@@ -14,7 +14,7 @@ contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
     bytes public request;
     uint64 public subscriptionId;
     uint32 public gasLimit;
-    bytes32 public jobId;
+    bytes32 public donID;
     bytes32 public s_lastRequestId;
     bytes public s_lastResponse;
     bytes public s_lastError;
@@ -52,17 +52,17 @@ contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
     /// @param _request The new encoded CBOR request to be set. The request is encoded off-chain
     /// @param _subscriptionId The new subscription ID to be set
     /// @param _gasLimit The new gas limit to be set
-    /// @param _jobId The new job ID to be set
+    /// @param _donID The new job ID to be set
     function updateRequest(
         bytes memory _request,
         uint64 _subscriptionId,
         uint32 _gasLimit,
-        bytes32 _jobId
+        bytes32 _donID
     ) external onlyOwner {
         request = _request;
         subscriptionId = _subscriptionId;
         gasLimit = _gasLimit;
-        jobId = _jobId;
+        donID = _donID;
     }
 
     /**
@@ -78,7 +78,7 @@ contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
             request,
             subscriptionId,
             gasLimit,
-            jobId
+            donID
         );
         return s_lastRequestId;
     }
