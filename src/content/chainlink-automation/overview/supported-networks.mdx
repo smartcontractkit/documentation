@@ -1,0 +1,61 @@
+---
+section: automation
+date: Last Modified
+title: "Supported Blockchain Networks"
+isMdx: true
+whatsnext:
+  {
+    "Register Time-based Upkeeps": "/chainlink-automation/guides/job-scheduler",
+    "Register Custom Logic Upkeeps": "/chainlink-automation/guides/register-upkeep",
+    "Register Log Trigger Upkeeps": "/chainlink-automation/guides/log-trigger",
+    "Create Automation-Compatible Contracts": "/chainlink-automation/guides/compatible-contracts",
+    "Automation Billing and Costs": "/chainlink-automation/overview/automation-economics",
+  }
+---
+
+import { AutomationConfigList } from "@features/chainlink-automation"
+import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
+
+Chainlink Automation is available on the following networks. All networks operate on v2.0 unless specified otherwise:
+
+- [Ethereum](#ethereum):
+  - Mainnet
+  - Sepolia testnet
+  - Goerli testnet (being deprecated and only Automation v1.2)
+- [BNB Chain](#bnb-chain):
+  - Mainnet
+  - Testnet
+- [Polygon (Matic)](#polygon-matic):
+  - Mainnet
+  - Mumbai testnet
+- [Avalanche](#avalanche-mainnet):
+  - Mainnet
+  - Fuji testnet
+- [Fantom](#fantom):
+  - Mainnet (Automation v1.2)
+  - Testnet (Automation v1.2)
+- [Arbitrum](#arbitrum)
+  - Mainnet
+  - Goerli testnet
+- [Optimism](#optimism)
+  - Mainnet
+  - Goerli testnet
+
+If you are interested in using Chainlink Automation but need it on a different blockchain or network, [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) and let us know.
+
+## Parameters
+
+- **Payment Premium %** (`paymentPremiumPPB`): This percentage premium compensates the Chainlink Automation Network for monitoring and performing your upkeep. Every time a transaction is submitted for your upkeep, your LINK balance is reduced by the transaction cost plus this percentage premium.
+- **Flat Fee Micro Link** (`flatFeeMicroLink`): A flat fee charged per transaction on all testnets and Optimism Mainnet.
+- **Maximum Check Data Size** (`maxCheckDataSize`): The maximum size, in bytes, that can be sent to your `checkUpkeep` function.
+- **Check Gas Limit** (`checkGasLimit`): The maximum amount of gas that can be used by your `checkUpkeep` function for off-chain computation.
+- **Perform Gas Limit** (`performGasLimit`): The maximum amount of gas that can be used by the client contract's `performUpkeep` function for the on-chain transaction. You can set an upper limit on your upkeep during registration, but this number must not exceed the `maxPerformGas` on the `Registry`.
+- **maximum Perform Data Size** (`maxPerformDataSize`): The maximum size in bytes that can be sent to your `performUpkeep` function.
+- **Gas Ceiling Multiplier** (`gasCeilingMultiplier`): Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+- **Minimum Upkeep Spend (LINK)**: The minimum amount of LINK an upkeep must spend over its lifetime. If the lifetime (or total) upkeep spend is below this amount, then at cancellation this amount will be held back.
+
+## Configurations
+
+<ResourcesCallout callout="bridgeRisks" />
+
+<AutomationConfigList />

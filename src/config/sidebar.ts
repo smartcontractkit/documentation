@@ -308,15 +308,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Getting Started",
-          url: "chainlink-automation/getting-started",
+          url: "chainlink-automation/overview/getting-started",
+        },
+        {
+          title: "Billing and Costs",
+          url: "chainlink-automation/overview/automation-economics",
         },
         {
           title: "Supported Networks",
-          url: "chainlink-automation/supported-networks",
+          url: "chainlink-automation/overview/supported-networks",
+        },
+        {
+          title: "Billing",
+          url: "chainlink-automation/overview/automation-economics",
         },
         {
           title: "Release Notes",
-          url: "chainlink-automation/automation-release-notes",
+          url: "chainlink-automation/overview/automation-release-notes",
         },
       ],
     },
@@ -324,40 +332,40 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
-          title: "Create Automation-compatible Contracts",
-          url: "chainlink-automation/compatible-contracts",
+          title: "Create Automation-Compatible Contracts",
+          url: "chainlink-automation/guides/compatible-contracts",
         },
         {
-          title: "Using Data Streams with Automation",
-          url: "chainlink-automation/streams-lookup",
+          title: "Access Data Streams Using Automation",
+          url: "chainlink-automation/guides/streams-lookup",
         },
         {
-          title: "Register a Time-Based Upkeep",
-          url: "chainlink-automation/job-scheduler",
+          title: "Register Time-Based Upkeeps",
+          url: "chainlink-automation/guides/job-scheduler",
         },
         {
-          title: "Register a Custom Logic Upkeep",
-          url: "chainlink-automation/register-upkeep",
+          title: "Register Custom Logic Upkeeps",
+          url: "chainlink-automation/guides/register-upkeep",
         },
         {
-          title: "Register a Log Trigger Upkeep",
-          url: "chainlink-automation/log-trigger",
+          title: "Register Log Trigger Upkeeps",
+          url: "chainlink-automation/guides/log-trigger",
         },
         {
           title: "Register Upkeeps Programmatically",
-          url: "chainlink-automation/register-upkeep-in-contract",
+          url: "chainlink-automation/guides/register-upkeep-in-contract",
         },
         {
           title: "Secure Upkeeps Using the Forwarder",
-          url: "chainlink-automation/forwarder",
+          url: "chainlink-automation/guides/forwarder",
         },
         {
-          title: "Create Flexible Upkeeps",
-          url: "chainlink-automation/flexible-upkeeps",
+          title: "Create Flexible, Secure, and Low-Cost Smart Contracts",
+          url: "chainlink-automation/guides/flexible-upkeeps",
         },
         {
           title: "Manage your Upkeeps",
-          url: "chainlink-automation/manage-upkeeps",
+          url: "chainlink-automation/guides/manage-upkeeps",
         },
       ],
     },
@@ -366,15 +374,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Concepts",
-          url: "chainlink-automation/automation-concepts",
+          url: "chainlink-automation/concepts/automation-concepts",
         },
         {
           title: "Architecture",
-          url: "chainlink-automation/automation-architecture",
+          url: "chainlink-automation/concepts/automation-architecture",
         },
         {
           title: "Best Practices",
-          url: "chainlink-automation/compatible-contract-best-practice",
+          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
@@ -383,24 +391,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Contracts",
-          url: "chainlink-automation/automation-contracts",
+          url: "chainlink-automation/reference/automation-contracts",
         },
         {
           title: "Interfaces",
-          url: "chainlink-automation/automation-interfaces",
+          url: "chainlink-automation/reference/automation-interfaces",
         },
         {
           title: "Troubleshooting and Debugging",
-          url: "chainlink-automation/debugging-errors",
-        },
-      ],
-    },
-    {
-      section: "Economics",
-      contents: [
-        {
-          title: "Billing",
-          url: "chainlink-automation/automation-economics",
+          url: "chainlink-automation/reference/debugging-errors",
         },
       ],
     },
@@ -490,6 +489,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Service Responsibility",
           url: "chainlink-functions/service-responsibility",
         },
+        {
+          title: "Billing",
+          url: "chainlink-functions/resources/billing",
+        },
+        {
+          title: "Release Notes",
+          url: "chainlink-functions/resources/release-notes",
+        },
       ],
     },
     {
@@ -516,11 +523,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-use-secrets",
         },
         {
-          title: "Using User-hosted (gist) Secrets in Requests",
+          title: "Offchain secrets - Using Gists",
           url: "chainlink-functions/tutorials/api-use-secrets-gist",
         },
         {
-          title: "Using User-hosted Secrets in Requests",
+          title: "Offchain secrets - Other methods",
           url: "chainlink-functions/tutorials/api-use-secrets-offchain",
         },
         {
@@ -559,10 +566,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
-        },
-        {
-          title: "Billing",
-          url: "chainlink-functions/resources/billing",
         },
         {
           title: "Service Limits",
@@ -674,7 +677,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/best-practices",
         },
         {
-          title: "Estimating Costs",
+          title: "Billing",
           url: "vrf/v2/estimating-costs",
         },
       ],
@@ -820,6 +823,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/supported-networks",
         },
         {
+          title: "Billing",
+          url: "ccip/billing",
+        },
+        {
           title: "Release Notes",
           url: "ccip/release-notes",
         },
@@ -835,6 +842,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Transfer Tokens With Data",
           url: "ccip/tutorials/programmable-token-transfers",
+        },
+        {
+          title: "Transfer Tokens With Data - Defensive Example",
+          url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
           title: "Transfer Tokens Between EOAs",
@@ -858,12 +869,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/concepts",
         },
         {
-          title: "Architecture and Billing",
+          title: "Architecture",
           url: "ccip/architecture",
         },
         {
           title: "Best Practices",
           url: "ccip/best-practices",
+        },
+        {
+          title: "Service Limits",
+          url: "ccip/service-limits",
         },
       ],
     },

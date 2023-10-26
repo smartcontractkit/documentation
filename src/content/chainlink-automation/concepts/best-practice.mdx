@@ -1,0 +1,39 @@
+---
+section: automation
+date: Last Modified
+title: "Automation Best Practices"
+isMdx: true
+whatsnext:
+  {
+    "Build Flexible Smart Contracts Using Automation": "/chainlink-automation/guides/flexible-upkeeps",
+    "Manage your Upkeeps": "/chainlink-automation/guides/manage-upkeeps",
+  }
+---
+
+This guide outlines the best practices when using Chainlink Automation. These best practices are important for using Chainlink Automation securely and reliably when you [create Automation-compatible contracts](/chainlink-automation/guides/compatible-contracts).
+
+### Use Automation 2.0
+
+To get the best reliability and security guarantees for your upkeep we recommend that you use [Automation 2.0](/chainlink-automation/overview/automation-release-notes/#2023-10-02---v20-release). Consider migrating upkeeps to Automation 2.0 if you have upkeeps on an earlier version.
+
+### Use the Forwarder
+
+If your upkeep performs **sensitive** functions in your protocol, consider using the [`Forwarder`](/chainlink-automation/overview/automation-release-notes) to lock it down so `performUpkeep` can only be called by the `Forwarder`. Add other permissible addresses if you need to call it yourself. Note the forwarder is only determined after registration so make this a mutable variable and ensure you add a setter function with permissions for you to set it.
+
+### Verify Data Streams reports fetched with StreamsLookup
+
+If your upkeep uses [StreamsLookup](/chainlink-automation/reference/automation-interfaces#streamslookupcompatibleinterface), ensure you use the [verification interface](/data-streams/reference/interfaces) to verify your reports on-chain.
+
+### Avoid "flickering" custom logic upkeeps
+
+The Automation DON will evaluate your upkeep regularly and will try to perform it when eligible. However, if the state on chain changes and makes your upkeep ineligible before execution happens, the upkeep might not get performed. For best results, ensure the `checkUpkeep` remains true until execution.
+
+### Always test your contracts
+
+As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure the compatible contract operates within the parameters of the `Registry`.
+
+Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Automation Network will continue to operate under stress, but so should your contract. For a list of supported testnet blockchains, please review the [supported networks page](/chainlink-automation/overview/supported-networks).
+
+### Using ERC-677 Tokens
+
+For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](/resources/link-token-contracts) for the testnet that you want to use from our faucet.
