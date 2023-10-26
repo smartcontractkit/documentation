@@ -10,6 +10,7 @@ whatsnext:
 ---
 
 import { CodeSample } from "@components"
+import ChainlinkAutomation from "@features/chainlink-automation/common/ChainlinkAutomation.astro"
 
 Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/guides/compatible-contracts).
 
@@ -20,54 +21,7 @@ Your Automation-compatible contracts may use the following interfaces. You can f
 
 ## ILogAutomation
 
-To use log triggers, you will need to implement the [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) interface in your smart contract. Click on the functions below to understand the parameters:
-
-| Function Name   | Description                                                                            |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `checkLog`      | Simulates off-chain once a log that matches log specifications is emitted.             |
-| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns `true`. |
-
-### checkLog function
-
-`checkLog` is a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
-
-#### Parameters
-
-| Variable Name | Type         | Description                                                                                                                                           | Permissible Values                                                                                                                                       |
-| ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `log`         | struct `Log` | Struct log data of the log triggering the upkeep; Automation will form the triggering log into a struct so the user can query log data in `checkLog`. | `struct Log { uint256 index; uint256 timestamp; bytes32 txHash; uint256 blockNumber; bytes32 blockHash; address source; bytes32[] topics; bytes data; }` |
-| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at the time of registering the upkeep.                                        |                                                                                                                                                          |
-
-#### Example
-
-```solidity
-struct Log {
-  uint256 index;
-  uint256 timestamp;
-  bytes32 txHash;
-  uint256 blockNumber;
-  bytes32 blockHash;
-  address source;
-  bytes32[] topics;
-  bytes data;
-}
-...
-function checkLog(
-    Log calldata log,
-    bytes memory checkData
-  ) external returns (bool upkeepNeeded, bytes memory performData);
-  {...}
-```
-
-### performUpkeep function for log triggers
-
-This function contains the code that will be executed on-chain to finalize the trade.
-
-#### Parameters
-
-| Variable Name | Type    | Description                                                                                | Permissible Values |
-| ------------- | ------- | ------------------------------------------------------------------------------------------ | ------------------ |
-| `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function on-chain | bytes              |
+{/* <ChainlinkAutomation section="ilogautomation" /> */}
 
 ## AutomationCompatibleInterface
 
@@ -145,52 +99,4 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 ## StreamsLookupCompatibleInterface
 
-See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example of how to use this interface.
-
-To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/guides/compatible-contracts) and include a `StreamsLookupCompatibleInterface` interface. This interface fetches and processes Data Streams reports.
-
-| Function Name          | Description                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `StreamsLookup` revert | Triggers the retrieval of specified reports.                                                                              |
-| `checkCallback`        | Simulates off-chain to receive signed reports and conduct final parsing before sending data on-chain via `performUpkeep`. |
-
-### StreamsLookup revert
-
-Automation network will use this revert to trigger fetching of the specified reports.
-
-#### Parameters
-
-| Variable Name  | Type       | Description                                                             | Permissible Values                                      |
-| -------------- | ---------- | ----------------------------------------------------------------------- | ------------------------------------------------------- |
-| `feedParamKey` | `String`   | Specify the feed identifiers that will be provided                      | `"feedIDs"`                                             |
-| `feeds`        | `String[]` | String list of feed identifiers                                         | e.g. `["feedID1","feedID2",..]` with a maximum of 5 IDs |
-| `timeParamKey` | `String`   | Specify query type                                                      | `"timestamp"`                                           |
-| `time`         | `uint256`  | Specify query value                                                     | `block.timestamp`                                       |
-| `extraData`    | `bytes`    | Any extra data user wants to receive in callback, alongside API bytes[] | log data                                                |
-
-#### Outputs
-
-The fetched signed reports will be provided to the user in [`checkCallback`](#checkcallback-function). This is an off-chain compute that the user can use to structure data as needed before performing the on-chain confirmation and validation transactions.
-
-| Variable Name | Type      | Description                                                    | Usage examples                                                                 |
-| ------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `values`      | `bytes[]` | List of signed reports fetched from API                        | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
-| `extraData`   | `bytes`   | Bytes data sent as part of original MercuryLookup revert error | e.g. can send log data if you want to decode to use                            |
-
-### checkCallback function
-
-This is a `view` function that will be simulated off-chain to receive the signed reports and conduct any final parsing before sending data on-chain via `performUpkeep`. Inputs will match outputs of the `oracleLookup` revert.
-
-#### Parameters
-
-| Variable Name | Type      | Description                                                    | Permissible Values                                                             |
-| ------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `values`      | `bytes[]` | List of signed reports fetched from API                        | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
-| `extraData`   | `bytes`   | Bytes data sent as part of original MercuryLookup revert error | e.g. can send log data if you want to decode to use                            |
-
-#### Outputs
-
-| Variable Name  | Type      | Description                                                                                                                                      | Permissible Values |
-| -------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| `performData`  | `bytes`   | Data encoded in the `oracleCallback` function that will be used to execute function on-chain, e.g. encode signed reports and log data if need be | `bytes`            |
-| `upkeepNeeded` | `boolean` | When set to `true` this will trigger the `performUpkeep` function to be executed on-chain                                                        | `true` of `false`  |
+<ChainlinkAutomation section="streamslookup" />
