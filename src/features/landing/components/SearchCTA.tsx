@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react"
+import { useState, useCallback } from "react"
 import "./Search.css"
 
 import { SearchModal } from "~/components/Header/AlgoSearch/SearchModal"

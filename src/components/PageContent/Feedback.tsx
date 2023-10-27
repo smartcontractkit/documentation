@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import button from "@chainlink/design-system/button.module.css"
 
