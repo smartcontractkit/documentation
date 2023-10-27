@@ -83,7 +83,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
 
         .layout {
-          grid-template-columns: 260px auto 283px;
+          grid-template-columns: auto auto auto;
           gap: var(--gutter);
           max-width: 1440px;
         }
@@ -103,31 +103,38 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
 
         #grid-left {
+          width: 260px;
           padding-left: var(--space-8x);
         }
 
         #grid-right {
-          padding-right: var(--space-4x);
+          width: 0;
+          padding-right: 0;
+          transition: 300ms ease-in-out;
+          transition-property: width padding-right;
         }
       }
 
       @media (min-width: 992px) {
         .layout {
-          grid-template-columns: 285px auto 315px;
           gap: var(--doc-padding);
         }
 
         #grid-left {
+          width: 285px;
           padding-left: var(--space-16x);
         }
+      }
 
+      @media (min-width: 1200px) {
         #grid-right {
+          width: 315px;
           padding-right: var(--space-16x);
         }
       }
     </style>
     <script>
-      import "../scripts/index.ts"
+      import "../scripts/index"
     </script>
     <script define:vars={{ includeLinkToWalletScript }}>
       window.includeLinkToWalletScript = includeLinkToWalletScript
@@ -159,8 +166,8 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <Footer />
 
     <script>
-      if (window.includeLinkToWalletScript) {
-        import("../scripts/link-to-wallet.ts")
+      if (window["includeLinkToWalletScript"]) {
+        import("../scripts/link-to-wallet")
       }
     </script>
   </body>
