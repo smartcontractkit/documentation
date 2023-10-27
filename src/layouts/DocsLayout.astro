@@ -62,12 +62,11 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         margin-bottom: 0;
       }
 
-      #grid-left,
-      #grid-right {
+      #grid-left {
         display: none;
       }
 
-      #grid-main {
+      #grid-right {
         padding: var(--doc-padding) var(--gutter);
         display: flex;
         flex-direction: column;
@@ -83,7 +82,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
 
         .layout {
-          grid-template-columns: 260px auto 283px;
+          grid-template-columns: auto auto;
           gap: var(--gutter);
           max-width: 1440px;
         }
@@ -98,36 +97,40 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
           display: flex;
         }
 
-        #grid-main {
-          padding: 0 0 var(--doc-padding) 0;
-        }
-
         #grid-left {
+          width: 260px;
           padding-left: var(--space-8x);
         }
 
         #grid-right {
+          /* width: 283px; */
           padding-right: var(--space-4x);
+          /* opacity: 0;
+          transform: translateX(100%);
+          transition: transform 400ms ease-in-out, opacity 400ms ease-in-out; */
         }
       }
 
       @media (min-width: 992px) {
         .layout {
-          grid-template-columns: 285px auto 315px;
           gap: var(--doc-padding);
         }
 
         #grid-left {
+          width: 285px;
           padding-left: var(--space-16x);
         }
 
         #grid-right {
+          /* width: 315px; */
           padding-right: var(--space-16x);
+          /* opacity: 1;
+          transform: translate(0); */
         }
       }
     </style>
     <script>
-      import "../scripts/index.ts"
+      import "../scripts/index"
     </script>
     <script define:vars={{ includeLinkToWalletScript }}>
       window.includeLinkToWalletScript = includeLinkToWalletScript
@@ -140,18 +143,16 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <main>
       <div id="left-bg"></div>
       <div class="layout">
-        <aside id="grid-left" title="Site Navigation">
+        <aside id="grid-left" aria-labelledby="grid-left" title="Site Navigation">
           <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
         </aside>
-        <div id="grid-main">
+        <div id="grid-right" aria-labelledby="grid-right" title="Page Contents">
+          <RightSidebar {githubEditUrl} headings={initialHeadings} />
           <PageContent {titleHeading}>
             <slot />
           </PageContent>
           {whatsNext && <WhatsNext content={whatsNext} />}
         </div>
-        <aside id="grid-right" title="Table of Contents">
-          <RightSidebar {githubEditUrl} headings={initialHeadings} />
-        </aside>
       </div>
       <div hidden="true"></div>
     </main>
@@ -159,8 +160,8 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <Footer />
 
     <script>
-      if (window.includeLinkToWalletScript) {
-        import("../scripts/link-to-wallet.ts")
+      if (window["includeLinkToWalletScript"]) {
+        import("../scripts/link-to-wallet")
       }
     </script>
   </body>

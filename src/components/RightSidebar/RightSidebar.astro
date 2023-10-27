@@ -11,24 +11,47 @@ export type Props = {
 const { githubEditUrl, headings } = Astro.props
 ---
 
-<section class="sidebar-nav" aria-labelledby="grid-right" data-sticky>
-  <h2 class="heading">On this page</h2>
-  <div class="toc-wrapper">
-    <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
-  </div>
-  <MoreMenu editHref={githubEditUrl} />
-  <h2 class="heading feedback-title">Feedback</h2>
-  <div class="feedback-wrapper">
-    <Feedback client:idle />
-  </div>
-</section>
+<div id="sidebar-container" data-sticky>
+  <div id="sidebar-toggle">{"<"}</div>
+  <aside id="sidebar-nav" hidden="true">
+    <h2 class="heading">On this page</h2>
+    <div class="toc-wrapper">
+      <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
+    </div>
+    <MoreMenu editHref={githubEditUrl} />
+    <h2 class="heading feedback-title">Feedback</h2>
+    <div class="feedback-wrapper">
+      <Feedback client:idle />
+    </div>
+  </aside>
+</div>
 
 <style>
-  .sidebar-nav {
+  #sidebar-container {
+    display: flex;
+    width: fit-content;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 5;
+    background: white;
+  }
+
+  #sidebar-toggle {
+    display: flex;
+    align-self: center;
+    font-size: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+    cursor: pointer;
+    /* content: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
+    width: var(--space-6x);
+    height: var(--space-6x); */
+  }
+  #sidebar-nav {
     height: fit-content;
     padding: var(--doc-padding) 0 calc(2 * var(--doc-padding)) 0;
-    position: sticky;
-    top: 0;
   }
 
   .heading {
@@ -52,4 +75,22 @@ const { githubEditUrl, headings } = Astro.props
     padding: 0;
     margin-bottom: var(--space-8x);
   }
+
+  @media (max-width: 50em) {
+    #sidebar-container,
+    #sidebar-nav {
+      display: none;
+    }
+  }
 </style>
+
+<script>
+  const c = document.getElementById("sidebar-container")
+  const t = document.getElementById("sidebar-toggle")
+  const nav = document.getElementById("sidebar-nav")
+  if (c && t && nav) {
+    t.onclick = (e) => {
+      nav.hidden = !nav.hidden
+    }
+  }
+</script>
