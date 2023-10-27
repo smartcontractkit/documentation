@@ -181,11 +181,7 @@ export const FeedList = ({
                     )}
                   <div className={feedList.tableFilters}>
                     <details class={feedList.filterDropdown_details}>
-                      <summary
-                        class={feedList.filterDropdown_details}
-                        className="text-200"
-                        onClick={() => setShowCategoriesDropdown((prev) => !prev)}
-                      >
+                      <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
                         Data Feed Categories
                       </summary>
                       <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
