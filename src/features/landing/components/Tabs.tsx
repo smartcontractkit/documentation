@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import { clsx } from "~/lib"
 import tabs from "./Tabs.module.css"
 import { ProductCard } from "./ProductCard"
 import { evmProducts } from "../data"

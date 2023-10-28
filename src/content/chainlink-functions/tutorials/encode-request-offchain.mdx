@@ -102,7 +102,7 @@ To run the example:
 
    ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693899379, success: true }
 
-   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60 -  Request id is 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20. Waiting for a response...
+   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60. Waiting for a response...
    See your request in the explorer https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60
 
    ✅ Request 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20 fulfilled with code: 0. Cost is 0.000039224977086446 LINK. Complete response:  {
@@ -191,7 +191,7 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
    - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
    - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
 
-1. Encode the request data off-chain using the `buildRequestCBOR` function fomr the Functions NPM package.
+1. Encode the request data off-chain using the `buildRequestCBOR` function from the Functions NPM package.
 
 1. Making a Chainlink Functions request:
 
@@ -201,5 +201,5 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 
 1. Waiting for the response:
 
-   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
    - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).

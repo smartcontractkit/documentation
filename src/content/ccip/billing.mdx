@@ -1,0 +1,28 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Billing"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note" title="Prerequisites">
+  Read the CCIP [Introduction](/ccip) and [Concepts](/ccip/concepts) to understand all the concepts discussed on this
+  page.
+</Aside>
+
+The CCIP billing model uses the `feeToken` specified in the [message](/ccip/api-reference/client#evm2anymessage) to pay a single fee on the source chain. CCIP uses a gas-locked fee payment mechanism, referred to as _Smart Execution_, to help ensure the reliable execution of cross-chain transactions regardless of destination chain gas spikes. For developers, this means you can simply pay on the source chain and CCIP will take care of execution on the destination chain.
+
+On each source chain, CCIP maintains a cache of destination gas prices, denominated in each `feeToken`. To prevent staleness, these prices are routinely updated by either piggybacking user messages or timeouts. CCIP supports fee payments in LINK and in alternative assets, which currently includes blockchain-native gas tokens and their ERC20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of chains over time.
+
+## Overheads and fees
+
+Users should note that CCIP fees include both gas cost overhead and a flat/basis points premium as follows:
+
+- **Destination gas overhead:** This is the average overhead incurred on the destination chain by CCIP to process the message and/or token transfer.
+- **Flat network premium for messages:** this fee is a static amount that users pay when sending cross-chain messages.
+- **Basis point based premium for tokens:** This is a percentage-based fee that users pay for cross-chain token transfers. It is calculated using the following expression: `tokenAmount x price x bps ratio`. `price` is initially denominated in USD and translated into the `feeToken`.
+
+Current CCIP premium fees are in line with industry standards within the cross-chain ecosystem, but these values are subject to change. The premium portion of fees paid in alternative assets will have a surcharge of 10% when compared to LINK payments. To understand service limits, read the [CCIP Service Limits](/ccip/service-limits) page.
+
+Aside from billing, overhead costs, and fees, remember to [carefully estimate the `gasLimit` that you set](/ccip/best-practices#setting-gaslimit) for your destination contract so CCIP can have enough gas to execute `ccipReceive()`, if applicable. Any unspent gas from this user-set limit is not refunded.
