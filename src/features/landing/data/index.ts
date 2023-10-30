@@ -2,14 +2,14 @@ import ccipLogo from "../assets/ccip-logo.svg"
 import vrfLogo from "../assets/vrf-logo.svg"
 import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
-import dataLogo from "../assets/data-feeds-logo.svg"
-import generalLogo from "../assets/general-logo.svg"
+import dataFeedsLogo from "../assets/data-feeds-logo.svg"
+import nodeLogo from "../assets/node-logo.svg"
 import ccipShape from "../assets/ccip-shape.svg"
 import vrfShape from "../assets/vrf-shape.svg"
 import functionsShape from "../assets/functions-shape.svg"
 import automationShape from "../assets/automation-shape.svg"
-import dataShape from "../assets/data-feeds-shape.svg"
-import generalShape from "../assets/general-shape.svg"
+import dataFeedShape from "../assets/data-feeds-shape.svg"
+import nodeShape from "../assets/node-shape.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
@@ -22,11 +22,28 @@ const baseChains = [
 
 export const evmProducts = [
   {
-    title: "Data",
-    description: "Decentralized and high-quality feeds for DeFi, sports, weather, and more.",
+    title: "CCIP",
+    description:
+      "Connect decentralized applications and transfer tokens across chains using the Chainlink Cross-Chain Interoperability Protocol (CCIP)",
+    learnMorelink: "ccip",
+    image: ccipLogo,
+    shape: ccipShape,
+    chains: [
+      { id: "ethereum", title: "Ethereum" },
+      { id: "polygon", title: "Polygon" },
+      { id: "avalanche", title: "Avalanche" },
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "bnb-chain", title: "BNB Chain" },
+      { id: "base", title: "BASE" },
+    ],
+  },
+  {
+    title: "Market and Data Feeds",
+    description: "Decentralized and high-quality data for DeFi, sports, weather, and more.",
     learnMorelink: "data-feeds",
-    image: dataLogo,
-    shape: dataShape,
+    image: dataFeedsLogo,
+    shape: dataFeedShape,
     chains: [
       ...baseChains,
       { id: "arbitrum", title: "Arbitrum" },
@@ -43,10 +60,12 @@ export const evmProducts = [
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
+    video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
   },
   {
-    title: "Functions",
-    description: "Serverless developer platform that can fetch data from any API and run custom compute.",
+    title: "Chainlink Functions",
+    description:
+      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
     learnMorelink: "chainlink-functions",
     image: functionsLogo,
     shape: functionsShape,
@@ -57,43 +76,29 @@ export const evmProducts = [
     ],
   },
   {
-    title: "CCIP",
-    description: "Global standard for building secure cross-chain applications.",
-    learnMorelink: "ccip",
-    image: ccipLogo,
-    shape: ccipShape,
-    chains: [
-      { id: "ethereum", title: "Ethereum" },
-      { id: "polygon", title: "Polygon" },
-      { id: "avalanche", title: "Avalanche" },
-      { id: "arbitrum", title: "Arbitrum" },
-      { id: "optimism", title: "Optimism" },
-      { id: "bnb-chain", title: "BNB Chain" },
-      { id: "base", title: "BASE" },
-    ],
-  },
-  {
-    title: "Automation",
-    description: "Reliable, high-performance, decentralized automation for smart contracts.",
+    title: "Automate Contracts",
+    description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
     learnMorelink: "chainlink-automation",
     image: automationLogo,
     shape: automationShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "optimism", title: "Optimism" }],
+    video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
     title: "VRF",
-    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFTs.",
+    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
     learnMorelink: "/vrf",
     image: vrfLogo,
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
   {
-    title: "General",
-    description: "The industry-standard Web3 services platform connecting people, businesses, and data.",
-    learnMorelink: "data-streams",
-    image: generalLogo,
-    shape: generalShape,
-    chains: [],
+    title: "Nodes",
+    description: "Securing the Chainlink Network, giving developers access to real-world data and services.",
+    learnMorelink: "chainlink-nodes",
+    image: nodeLogo,
+    shape: nodeShape,
+    chains: [{ id: "arbitrum", title: "Arbitrum" }],
   },
 ] as ProductCardProps[]
