@@ -3,9 +3,9 @@ import PageContent from "~/components/PageContent/PageContent.astro"
 import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
 import RightSidebar from "~/components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "~/config"
-import { BaseFrontmatter } from "~/content/config"
+import type { BaseFrontmatter } from "~/content/config"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
-import { MarkdownHeading } from "astro"
+import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
 
@@ -56,6 +56,10 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
   </main>
 
   <style>
+    main {
+      margin-bottom: 0 !important;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: auto;
@@ -81,14 +85,12 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       main {
         display: grid;
         grid-template-columns: auto fit-content(100%) auto;
-        margin-bottom: 0 !important;
       }
 
       .layout {
-        grid-template-columns: auto 2fr 1fr;
+        grid-template-columns: auto auto auto;
         gap: var(--gutter);
-        max-width: var(--fullwidth-max-width);
-        align-self: center;
+        max-width: 1440px;
       }
 
       #grid-left,
@@ -104,11 +106,35 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       #grid-main {
         padding: 0 0 var(--doc-padding) 0;
       }
+
+      #grid-left {
+        width: 260px;
+        padding-left: var(--space-8x);
+      }
+
+      #grid-right {
+        width: 0;
+        padding-right: 0;
+        transition: 300ms ease-in-out;
+        transition-property: width padding-right;
+      }
     }
 
-    @media (min-width: 72em) {
+    @media (min-width: 992px) {
       .layout {
         gap: var(--doc-padding);
+      }
+
+      #grid-left {
+        width: 285px;
+        padding-left: var(--space-16x);
+      }
+    }
+
+    @media (min-width: 1200px) {
+      #grid-right {
+        width: 315px;
+        padding-right: var(--space-16x);
       }
     }
   </style>
