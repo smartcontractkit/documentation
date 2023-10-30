@@ -99,6 +99,6 @@ export const evmProducts = [
     learnMorelink: "chainlink-nodes",
     image: nodeLogo,
     shape: nodeShape,
-    chains: [{ id: "arbitrum", title: "Arbitrum" }],
+    chains: [],
   },
 ] as ProductCardProps[]
