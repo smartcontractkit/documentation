@@ -311,6 +311,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/getting-started",
         },
         {
+          title: "Billing and Costs",
+          url: "chainlink-automation/overview/automation-economics",
+        },
+        {
           title: "Supported Networks",
           url: "chainlink-automation/overview/supported-networks",
         },
@@ -328,23 +332,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
-          title: "Create Automation-compatible Contracts",
+          title: "Create Automation-Compatible Contracts",
           url: "chainlink-automation/guides/compatible-contracts",
         },
         {
-          title: "Using Data Streams with Automation",
+          title: "Access Data Streams Using Automation",
           url: "chainlink-automation/guides/streams-lookup",
         },
         {
-          title: "Register a Time-Based Upkeep",
+          title: "Register Time-Based Upkeeps",
           url: "chainlink-automation/guides/job-scheduler",
         },
         {
-          title: "Register a Custom Logic Upkeep",
+          title: "Register Custom Logic Upkeeps",
           url: "chainlink-automation/guides/register-upkeep",
         },
         {
-          title: "Register a Log Trigger Upkeep",
+          title: "Register Log Trigger Upkeeps",
           url: "chainlink-automation/guides/log-trigger",
         },
         {
@@ -356,7 +360,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/forwarder",
         },
         {
-          title: "Create Flexible, Secure, and Low-cost Smart Contracts",
+          title: "Create Flexible, Secure, and Low-Cost Smart Contracts",
           url: "chainlink-automation/guides/flexible-upkeeps",
         },
         {
