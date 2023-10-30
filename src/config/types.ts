@@ -13,6 +13,7 @@ export type SupportedTechnology =
   | "METIS"
   | "BASE"
   | "CELO"
+  | "LINEA"
   | "SCROLL"
 
 export type SupportedChain =
@@ -41,6 +42,8 @@ export type SupportedChain =
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
   | "SCROLL_SEPOLIA"
+  | "LINEA_MAINNET"
+  | "LINEA_GOERLI_TESTNET"
 
 export type Chains = Record<
   SupportedTechnology,
