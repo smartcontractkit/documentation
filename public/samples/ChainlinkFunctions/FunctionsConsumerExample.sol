@@ -44,7 +44,7 @@ contract FunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
         bytes[] memory bytesArgs,
         uint64 subscriptionId,
         uint32 gasLimit,
-        bytes32 jobId
+        bytes32 donID
     ) external onlyOwner returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
         req.initializeRequestForInlineJavaScript(source);
@@ -62,7 +62,7 @@ contract FunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
             req.encodeCBOR(),
             subscriptionId,
             gasLimit,
-            jobId
+            donID
         );
         return s_lastRequestId;
     }
@@ -72,20 +72,20 @@ contract FunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
      * @param request CBOR-encoded request data
      * @param subscriptionId Billing ID
      * @param gasLimit The maximum amount of gas the request can consume
-     * @param jobId ID of the job to be invoked
+     * @param donID ID of the job to be invoked
      * @return requestId The ID of the sent request
      */
     function sendRequestCBOR(
         bytes memory request,
         uint64 subscriptionId,
         uint32 gasLimit,
-        bytes32 jobId
+        bytes32 donID
     ) external onlyOwner returns (bytes32 requestId) {
         s_lastRequestId = _sendRequest(
             request,
             subscriptionId,
             gasLimit,
-            jobId
+            donID
         );
         return s_lastRequestId;
     }
