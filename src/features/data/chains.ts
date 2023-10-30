@@ -381,6 +381,31 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "linea",
+    label: "Linea",
+    title: "Linea Data Feeds",
+    img: "/assets/chains/linea.svg",
+    networkStatusUrl: "https://linea.statuspage.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Linea Mainnet",
+        explorerUrl: "https://lineascan.build/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
+        queryString: "linea-mainnet",
+      },
+      {
+        name: "Linea Goerli testnet",
+        explorerUrl: "https://goerli.lineascan.build/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-linea-1.json",
+        queryString: "linea-goerli-testnet",
+      },
+    ],
+  },
+  {
     page: "starknet",
     label: "StarkNet",
     title: "StarkNet Data Feeds",

@@ -40,6 +40,7 @@ export const evmProducts = [
       { id: "base", title: "BASE" },
       { id: "celo", title: "Celo" },
       { id: "scroll", title: "Scroll" },
+      { id: "linea", title: "Linea" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
