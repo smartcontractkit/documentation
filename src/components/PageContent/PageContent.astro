@@ -10,7 +10,7 @@ const { titleHeading } = Astro.props
 
 <BackButton />
 <article id="article">
-  <h1 id="overview">{titleHeading.text}</h1>
+  <h1 id={titleHeading.slug}>{titleHeading.text}</h1>
   <slot />
 </article>
 
@@ -82,11 +82,7 @@ const { titleHeading } = Astro.props
     margin-top: var(--space-3x) !important;
   }
 
-  :where(article, article section, article astro-slot) > :is(h1, h2) {
-    margin: 0;
-  }
-
-  :where(article, article section, article astro-slot) > :is(h3, h4, h5, h6, li) {
+  :where(article, article section, article astro-slot) > :is(h1, h2, h3, h4, h5, h6, li) {
     margin-top: 0;
   }
 
@@ -95,12 +91,13 @@ const { titleHeading } = Astro.props
   }
 
   :where(article, article section, article astro-slot) > h2 {
-    font-size: 28px;
     padding-top: var(--space-6x);
+    font-size: 28px;
   }
 
   :where(article, article section, article astro-slot) > h3 {
     padding-top: var(--space-8x);
+    font-size: 24px;
   }
 
   :where(article, article section, article astro-slot) > h4 {
