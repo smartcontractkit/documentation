@@ -23,8 +23,7 @@ const baseChains = [
 export const evmProducts = [
   {
     title: "CCIP",
-    description:
-      "Connect decentralized applications and transfer tokens across chains using the Chainlink Cross-Chain Interoperability Protocol (CCIP)",
+    description: "Global standard for building secure cross-chain applications.",
     learnMorelink: "ccip",
     image: ccipLogo,
     shape: ccipShape,
@@ -63,9 +62,8 @@ export const evmProducts = [
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
   },
   {
-    title: "Chainlink Functions",
-    description:
-      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
+    title: "Functions",
+    description: "Serverless developer platform that can fetch data from any API and run custom compute.",
     learnMorelink: "chainlink-functions",
     image: functionsLogo,
     shape: functionsShape,
@@ -76,8 +74,8 @@ export const evmProducts = [
     ],
   },
   {
-    title: "Automate Contracts",
-    description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
+    title: "Automation",
+    description: "Reliable, high-performance, decentralized automation for smart contracts.",
     learnMorelink: "chainlink-automation",
     image: automationLogo,
     shape: automationShape,
@@ -86,7 +84,7 @@ export const evmProducts = [
   },
   {
     title: "VRF",
-    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
+    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFTs.",
     learnMorelink: "/vrf",
     image: vrfLogo,
     shape: vrfShape,
