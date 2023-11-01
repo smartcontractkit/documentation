@@ -184,10 +184,17 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 </style>
 
 <script>
-  const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
-  if (parentSection) {
-    for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
-      elem.setAttribute("aria-hidden", "false")
+  const attachContentScripts = () => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
+    if (parentSection) {
+      for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
+        elem.setAttribute("aria-hidden", "false")
+      }
     }
   }
+
+  // Runs on initial navigation
+  attachContentScripts()
+  // Runs on view transitions navigation
+  document.addEventListener("astro:after-swap", attachContentScripts)
 </script>
