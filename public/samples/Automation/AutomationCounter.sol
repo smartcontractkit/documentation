@@ -15,15 +15,15 @@ contract Counter is AutomationCompatibleInterface {
     /**
      * Public counter variable
      */
-    uint public counter;
+    uint256 public counter;
 
     /**
      * Use an interval in seconds and a timestamp to slow execution of Upkeep
      */
-    uint public immutable interval;
-    uint public lastTimeStamp;
+    uint256 public immutable interval;
+    uint256 public lastTimeStamp;
 
-    constructor(uint updateInterval) {
+    constructor(uint256 updateInterval) {
         interval = updateInterval;
         lastTimeStamp = block.timestamp;
 
@@ -43,7 +43,6 @@ contract Counter is AutomationCompatibleInterface {
     }
 
     function performUpkeep(bytes calldata /* performData */) external override {
-        //We highly recommend revalidating the upkeep in the performUpkeep function
         if ((block.timestamp - lastTimeStamp) > interval) {
             lastTimeStamp = block.timestamp;
             counter = counter + 1;
