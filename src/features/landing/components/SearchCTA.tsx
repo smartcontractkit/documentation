@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react"
 import "./Search.css"
-
 import { SearchModal } from "~/components/Header/AlgoSearch/SearchModal"
 
 export function SearchCTA() {
