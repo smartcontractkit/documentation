@@ -24,80 +24,84 @@ Create powerful automation for your smart contract using time schedules without 
   contract and test your upkeep on a testnet before deploying it to a mainnet.
 </Aside>
 
+Click on the tabs below to view instructions on registering time-based upkeeps using the Chainlink Automation app or programmatically in your smart contract:
+
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.timebasedUI">Automation App</Fragment>
   <Fragment slot="tab.timebasedProgram">Programmatically</Fragment>
   <Fragment slot="panel.timebasedUI">
+
+    ### Start the Registration Process
     In the [Chainlink Automation App](https://automation.chain.link/), click the blue **Register new Upkeep** button.
 
-{" "}
+    {" "}
 
-<ClickToZoom src="/images/automation/auto-ui-home.png" />
+    <ClickToZoom src="/images/automation/auto-ui-home.png" />
 
-### Connecting your Wallet
+    ### Connecting your Wallet
 
-If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to one of the [Automation supported blockchain networks](/chainlink-automation/overview/supported-networks).
+    If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to one of the [Automation supported blockchain networks](/chainlink-automation/overview/supported-networks).
 
-{" "}
+    {" "}
 
-<ClickToZoom src="/images/automation/auto-ui-wallet.png" />
+    <ClickToZoom src="/images/automation/auto-ui-wallet.png" />
 
-## Trigger Selection
+    ## Trigger Selection
 
-Select **Time-based** trigger.
+    Select **Time-based** trigger.
 
-{" "}
+    {" "}
 
-<ClickToZoom src="/images/automation/ui_select_trigger.png" />
+    <ClickToZoom src="/images/automation/ui_select_trigger.png" />
 
-## Using Time-Based Triggers
+    ## Using Time-Based Triggers
 
-When you select the time-based trigger, you are prompted to enter a _contract address_. Provide the address of the contract you want to automate. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](/chainlink-automation/guides/register-upkeep)
+    When you select the time-based trigger, you are prompted to enter a _contract address_. Provide the address of the contract you want to automate. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](/chainlink-automation/guides/register-upkeep)
 
-{" "}
+    {" "}
 
-<ClickToZoom src="/images/automation/automation-time-based-trigger.png" />
+    <ClickToZoom src="/images/automation/automation-time-based-trigger.png" />
 
-### Specifying the Time Schedule
+    ### Specifying the Time Schedule
 
-After you have successfully entered your contract address and ABI, specify your time schedule in the form of a [CRON expression](https://en.wikipedia.org/wiki/Cron). CRON expressions provide a shorthand way of creating a time schedule. You can use the provided example buttons in the Automation app to experiment with different schedules. Then, create your own time schedule.
+    After you have successfully entered your contract address and ABI, specify your time schedule in the form of a [CRON expression](https://en.wikipedia.org/wiki/Cron). CRON expressions provide a shorthand way of creating a time schedule. You can use the provided example buttons in the Automation app to experiment with different schedules. Then, create your own time schedule.
 
-```
-Cron jobs are interpreted according to this format:
+    ```
+    Cron jobs are interpreted according to this format:
 
-  ┌───────────── minute (0 - 59)
-  │ ┌───────────── hour (0 - 23)
-  │ │ ┌───────────── day of the month (1 - 31)
-  │ │ │ ┌───────────── month (1 - 12)
-  │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
-  │ │ │ │ │
-  │ │ │ │ │
-  │ │ │ │ │
-  * * * * *
+      ┌───────────── minute (0 - 59)
+      │ ┌───────────── hour (0 - 23)
+      │ │ ┌───────────── day of the month (1 - 31)
+      │ │ │ ┌───────────── month (1 - 12)
+      │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+      │ │ │ │ │
+      │ │ │ │ │
+      │ │ │ │ │
+      * * * * *
 
-All times are in UTC.
+    All times are in UTC.
 
-- can be used for range e.g. "0 8-16 * * *"
-/ can be used for interval e.g. "0 */2 * * *"
-, can be used for list e.g. "0 17 * * 0,2,4"
+    - can be used for range e.g. "0 8-16 * * *"
+    / can be used for interval e.g. "0 */2 * * *"
+    , can be used for list e.g. "0 17 * * 0,2,4"
 
-Special limitations:
-  * there is no year field
-  * no special characters: ? L W #
-  * lists can have a max length of 26
-  * no words like JAN / FEB or MON / TUES
-```
+    Special limitations:
+      * there is no year field
+      * no special characters: ? L W #
+      * lists can have a max length of 26
+      * no words like JAN / FEB or MON / TUES
+    ```
 
-After entering your CRON expression, click **Next**.
+    After entering your CRON expression, click **Next**.
 
-{" "}
+    {" "}
 
-<ClickToZoom src="/images/automation/automation-cron-expression.png" />
+    <ClickToZoom src="/images/automation/automation-cron-expression.png" />
 
-## Entering Upkeep Details
+    ## Entering Upkeep Details
 
-Provide the following information in the Automation app:
+    Provide the following information in the Automation app:
 
     - **Upkeep name**: This will be visible in the Chainlink Automation app.
     - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/overview/supported-networks/#configurations).
@@ -133,5 +137,3 @@ Provide the following information in the Automation app:
   <Fragment slot="panel.timebasedProgram">
   </Fragment>
 </Tabs>
-
-## Using the Chainlink Automation app
