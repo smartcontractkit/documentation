@@ -163,7 +163,7 @@ const { titleHeading } = Astro.props
     }
 
     article section > :is(section, h5, h6):target {
-      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-24x));
+      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-20x));
     }
 
     :where(article, article section, article astro-slot) > h3 {
@@ -191,6 +191,10 @@ const { titleHeading } = Astro.props
 </style>
 
 <script>
-  import { prepareSections } from "../../scripts/prepArticleContent"
+  import { prepareSections } from "~/scripts/prepArticleContent"
+
+  // Runs on initial navigation
   prepareSections()
+  // Runs on view transitions navigation
+  document.addEventListener("astro:after-swap", () => prepareSections())
 </script>

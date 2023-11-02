@@ -61,7 +61,7 @@ const TableOfContents: FunctionalComponent<{
     }
 
     const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-15% 0% -85%",
+      rootMargin: "-20% 0% -80%",
     })
 
     headings.forEach((h) => {

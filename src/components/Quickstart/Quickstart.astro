@@ -1,8 +1,3 @@
----
-import StickyHeaderObserver from "./StickyHeaderObserver"
----
-
-<StickyHeaderObserver client:media="(min-width: 50em)" />
 <article id="article">
   <slot />
 </article>
@@ -193,13 +188,16 @@ import StickyHeaderObserver from "./StickyHeaderObserver"
 
   @media (min-width: 50em) {
     :where(article, article section) > h2 {
-      background: none;
       padding-top: var(--space-5x);
     }
   }
 </style>
 
 <script>
-  import { prepareSections } from "../../scripts/prepArticleContent"
+  import { prepareSections } from "~/scripts/prepArticleContent"
+
+  // Runs on initial navigation
   prepareSections()
+  // Runs on view transitions navigation
+  document.addEventListener("astro:after-swap", () => prepareSections())
 </script>

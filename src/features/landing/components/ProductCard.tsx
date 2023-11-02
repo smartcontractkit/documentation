@@ -2,12 +2,13 @@
 import { clsx } from "~/lib"
 
 import productCard from "./ProductCard.module.css"
+import { ImageMetadata } from "astro"
 
 export type ProductCardProps = {
   title: string
   description: string
-  image: string
-  shape: string
+  image: ImageMetadata
+  shape: ImageMetadata
   learnMorelink: string
   chains: { id: string; title: string }[]
 }
