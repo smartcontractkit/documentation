@@ -119,4 +119,135 @@ Chainlink Functions is capable of much more than just computation. Try one of th
 
 ## Examine the code
 
+### Solidity code
+
 <CodeSample src="samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol" />
+
+- To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol) and [FunctionsRequest.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/libraries/FunctionsRequest.sol). You can read the API references: [FunctionsClient](/chainlink-functions/api-reference/functions-client) and [FunctionsRequest](/chainlink-functions/api-reference/functions-request).
+
+  These contracts are available in an NPM package so that you can import them from within your project.
+
+  ```
+  import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+  import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
+  ```
+
+- Use the FunctionsRequest.sol library to get all the functions needed for building a Chainlink Functions request.
+
+  ```
+  using FunctionsRequest for FunctionsRequest.Request;
+  ```
+
+- The latest request ID, latest received response, and latest received error (if any) are defined as state variables:
+
+  ```
+  bytes32 public s_lastRequestId;
+  bytes public s_lastResponse;
+  bytes public s_lastError;
+  ```
+
+- We define the `Response` event that your smart contract will emit during the callback
+
+  ```
+  event Response(bytes32 indexed requestId, string character, bytes response, bytes err);
+  ```
+
+- The Chainlink Functions router address and donID are hardcoded for Polygon Mumbai. Check the [supported networks page](/chainlink-functions/supported-networks) to try the code sample on another testnet.
+
+- The `gasLimit` is hardcoded to `300000`, the amount of gas that Chainlink Functions will use to fulfill your request.
+
+- The JavaScript source code is hardcoded in the `source` state variable. For more explanation, read the [JavaScript code section](#javascript-code).
+
+- Pass the router address for your network when you deploy the contract:
+
+  ```
+  constructor() FunctionsClient(router)
+  ```
+
+- The two remaining functions are:
+
+  - `sendRequest` for sending a request. It receives the subscription ID and list of arguments to pass to the source code. Then:
+
+    - It uses the `FunctionsRequest` library to initialize the request and add the source code and arguments. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/functions-request/#initializerequestforinlinejavascript) and [adding arguments](/chainlink-functions/api-reference/functions-request/#setargs).
+
+      ```
+      FunctionsRequest.Request memory req;
+      req.initializeRequestForInlineJavaScript(source);
+      if (args.length > 0) req.setArgs(args);
+      ```
+
+    - It sends the request to the router by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functions-client/#_sendrequest). Finally, it stores the request id in `s_lastRequestId` and returns it.
+
+      ```
+      s_lastRequestId = _sendRequest(
+          req.encodeCBOR(),
+          subscriptionId,
+          gasLimit,
+          jobId
+      );
+      return s_lastRequestId;
+      ```
+
+      **Note**: `_sendRequest` accepts requests encoded in `bytes`. Therefore, you must encode it using [encodeCBOR](/chainlink-functions/api-reference/functions-request/#encodecbor).
+
+- `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError`, parses the `response` from `bytes` to `string` to fetch the character name before emitting the `Response` event.
+
+  ```
+  s_lastResponse = response;
+  character = string(response);
+  s_lastError = err;
+  emit Response(requestId, s_lastResponse, s_lastError);
+  ```
+
+### JavaScript code
+
+<CodeSample lang="javascript" src="samples/ChainlinkFunctions/starwars-api.js" />
+
+This JavaScript source code uses [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) to make HTTP requests. The source code calls the `https://swapi.dev/` API to request a Star Wars character name. If you read the [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) documentation and the [Star Wars API documentation](https://swapi.dev/documentation#people), you notice that URL has the following format (where `${characterId}` is provided as parameter when making the HTTP request):
+
+- `url`: `https://swapi.dev/api/people/${characterId}/`
+
+To check the expected API response for the first character, you can directly paste the following URL in your browser `https://swapi.dev/api/people/1/` or run the `curl` command in your terminal:
+
+```bash
+curl -X 'GET' \
+  'https://swapi.dev/api/people/1/' \
+  -H 'accept: application/json'
+```
+
+The response should be similar to the following example:
+
+```json
+{
+  "name": "Luke Skywalker",
+  "height": "172",
+  "mass": "77",
+  "hair_color": "blond",
+  "skin_color": "fair",
+  "eye_color": "blue",
+  "birth_year": "19BBY",
+  "gender": "male",
+  "homeworld": "https://swapi.dev/api/planets/1/",
+  "films": [
+    "https://swapi.dev/api/films/1/",
+    "https://swapi.dev/api/films/2/",
+    "https://swapi.dev/api/films/3/",
+    "https://swapi.dev/api/films/6/"
+  ],
+  "species": [],
+  "vehicles": ["https://swapi.dev/api/vehicles/14/", "https://swapi.dev/api/vehicles/30/"],
+  "starships": ["https://swapi.dev/api/starships/12/", "https://swapi.dev/api/starships/22/"],
+  "created": "2014-12-09T13:50:51.644000Z",
+  "edited": "2014-12-20T21:17:56.891000Z",
+  "url": "https://swapi.dev/api/people/1/"
+}
+```
+
+Now that you understand the structure of the API. Let's delve into the JavaScript code. The main steps are:
+
+- Fetch `characterId` from `args`. Args is an array. The `characterId` is located in the first element.
+- Make the HTTP call using `Functions.makeHttpRequest` and store the response in `apiResponse`.
+- Throw an error if the call is not successful.
+- The API response is located at `data`.
+- Read the name from the API response `data.name` and return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeString` helper function. Because the `name` is a `string`, we use `encodeString`. For other data types, you can use different [data encoding functions](/chainlink-functions/api-reference/javascript-source#data-encoding-functions).
+  **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
