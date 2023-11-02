@@ -352,10 +352,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/log-trigger",
         },
         {
-          title: "Register Upkeeps Programmatically",
-          url: "chainlink-automation/guides/register-upkeep-in-contract",
-        },
-        {
           title: "Secure Upkeeps Using the Forwarder",
           url: "chainlink-automation/guides/forwarder",
         },
