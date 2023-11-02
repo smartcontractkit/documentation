@@ -20,49 +20,57 @@ Create powerful smart contracts that use log data as both trigger and input. Thi
   your upkeep on a testnet before deploying it to a mainnet.
 </Aside>
 
-## Using the Chainlink Automation App
+Click on the tabs below to view instructions on registering time-based upkeeps using the Chainlink Automation app or programmatically in your smart contract:
 
-<div class="remix-callout">
-  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
-</div>
+{/* prettier-ignore */}
+<Tabs client:visible>
+  <Fragment slot="tab.logtriggerUI">Automation App</Fragment>
+  <Fragment slot="tab.logtriggerProgram">Programmatically</Fragment>
+  <Fragment slot="panel.logtriggerUI">
 
-**Click the Register New Upkeep button.**
+    ### Start the Registration Process
 
-    <ClickToZoom src="/images/automation/auto-ui-home.png" />
+    <div class="remix-callout">
+      <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
+    </div>
 
-### Connecting your Wallet
+    **Click the Register New Upkeep button.**
 
-If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to one of the [Automation supported blockchain networks](/chainlink-automation/overview/supported-networks).
+        <ClickToZoom src="/images/automation/auto-ui-home.png" />
 
-<ClickToZoom src="/images/automation/auto-ui-wallet.png" />
+    ### Connecting your Wallet
 
-## Trigger Selection
+    If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to one of the [Automation supported blockchain networks](/chainlink-automation/overview/supported-networks).
 
-Select **Log Trigger**.
+    <ClickToZoom src="/images/automation/auto-ui-wallet.png" />
 
-    <ClickToZoom src="/images/automation/ui_select_trigger.png" />
+    ## Trigger Selection
 
-## Using Log Triggers
+    Select **Log Trigger**.
 
-<Aside type="tip" title="Reorg protection">
-  Your upkeeps will be protected against logs that are emitted during a reorg.
-</Aside>
+        <ClickToZoom src="/images/automation/ui_select_trigger.png" />
 
-1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). This ensures Automation nodes can interact with your contract as expected.
+    ## Using Log Triggers
 
-   <ClickToZoom src="/images/automation/log_trig_1_upkeep_address.png" />
+    <Aside type="tip" title="Reorg protection">
+      Your upkeeps will be protected against logs that are emitted during a reorg.
+    </Aside>
 
-1. **Provide the address of the contract that will be emitting the log** If the contract is not validated you will need to provide the ABI.
+    1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). This ensures Automation nodes can interact with your contract as expected.
 
-   <ClickToZoom src="/images/automation/log_trig_2_emitter_address.png" />
+      <ClickToZoom src="/images/automation/log_trig_1_upkeep_address.png" />
 
-1. **Use the dropdown to select the triggering event.** You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
+    1. **Provide the address of the contract that will be emitting the log** If the contract is not validated you will need to provide the ABI.
 
-   <ClickToZoom src="/images/automation/log_trig_3_logsig_filter_populated.png" />
+      <ClickToZoom src="/images/automation/log_trig_2_emitter_address.png" />
 
-## Entering Upkeep Details
+    1. **Use the dropdown to select the triggering event.** You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
 
-Provide the following information in the Automation app:
+      <ClickToZoom src="/images/automation/log_trig_3_logsig_filter_populated.png" />
+
+    ## Entering Upkeep Details
+
+    Provide the following information in the Automation app:
 
     - **Upkeep name**: This will be visible in the Chainlink Automation app.
     - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/overview/supported-networks/#configurations).
@@ -91,9 +99,14 @@ Provide the following information in the Automation app:
     - **Check data**: Optional input field that you may use depending on whether you are using it in your contract.
     - **Your email address (optional)**: This email address will be used to send you an email notification when your upkeep is underfunded.
 
-## Complete Upkeep Regsitration
+    ## Complete Upkeep Registration
 
-Click **Register upkeep** and confirm the transaction in MetaMask.
-![Upkeep Registration Success Message](/images/automation/automation-registration-submitted.png)
+    Click **Register upkeep** and confirm the transaction in MetaMask.
+    ![Upkeep Registration Success Message](/images/automation/automation-registration-submitted.png)
 
-Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/guides/manage-upkeeps) to learn how to manage your upkeeps.
+    Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/guides/manage-upkeeps) to learn how to manage your upkeeps.
+
+  </Fragment>
+  <Fragment slot="panel.logtriggerProgram">
+  </Fragment>
+</Tabs>
