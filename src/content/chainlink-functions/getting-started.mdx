@@ -11,7 +11,7 @@ whatsnext:
   }
 ---
 
-import { Aside, CopyText, CodeSample } from "@components"
+import { Aside, CopyText, CodeSample, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
@@ -29,15 +29,36 @@ Learn how to integrate the [Chainlink Functions NPM package](https://github.com/
 - Simulate a Chainlink Functions request on your local machine.
 - Send a Chainlink Functions request to the DON.
 
-## Set up your environment
+## Example
 
-You must provide the private key from a testnet wallet to run the examples in this documentation. Install a Web3 wallet, configure [Node.js](https://nodejs.org/en/download/), clone the [smartcontractkit/smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples.git) repository, and configure a `.env.enc` file with the required environment variables.
+This guide shows you how to:
 
-Install and configure your Web3 wallet for Polygon Mumbai:
+- Send a JavaScript source code from your smart contract to Chainlink Functions. The JavaScript source code makes an API call to the [Star Wars API](https://swapi.dev/) and fetches the name of a given character.
+- Receive the response from Chainlink Functions and parse the result.
 
-1. [Install Deno](https://deno.land/manual/getting_started/installation) so you can compile and simulate your Functions source code on your local machine.
+Read the [Examine the code](#examine-the-code) section for a detailed explanation of the code example.
 
-1. [Install the MetaMask wallet](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum Web3 wallet.
+### Simulation
+
+Before making a Chainlink Functions request from your smart contract, it is always a good practice to simulate the source code off-chain to make any adjustments or corrections.
+
+1. Open the [Functions playground](https://functions.chain.link/playground).
+1. Copy and paste the following source code into the playground's code block.
+
+   <CodeSample lang="javascript" src="samples/ChainlinkFunctions/starwars-api.js" />
+
+1. Under _Argument_, set the first argument to <CopyText text="1" code/>. You are going to fetch the name of the first Star Wars character.
+1. Click on _Run code_. Under _Output_, you should see _Luke Skywalker_.
+
+   <ClickToZoom src="/images/chainlink-functions/getting-started/simulation.jpg" />
+
+### Configure your resources
+
+#### Configure your wallet
+
+You will test on Polygon Mumbai, so you must have an Ethereum web3 wallet with enough MATIC and LINK tokens. MATIC is the native gas fee token on Polygon. You will use MATIC tokens to pay for gas whenever you make a transaction on Polygon Mumbai. On the other hand, you will use LINK tokens to pay the Chainlink Functions Decentralized Oracles Network (DON) for processing your request.
+
+1. [Install the MetaMask wallet](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum web3 wallet.
 
 1. Set the network for your wallet to the Polygon Mumbai testnet. If you need to add Mumbai to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#mumbai-testnet) page.
 
@@ -53,174 +74,182 @@ Install and configure your Web3 wallet for Polygon Mumbai:
 
 1. Request testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
 
-Install the required frameworks and dependencies:
+#### Deploy a Functions consumer contract on _Polygon Mumbai_
 
-1. [Install the latest release of Node.js 18](https://nodejs.org/en/download/). Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions with `nvm use 18`.
+1. Open the [GettingStartedFunctionsConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol) contract in Remix.
 
-   **Note**: To ensure you are running the correct version in a terminal, type `node -v`.
-
-   ```shell
-   node -v
-   ```
-
-   ```shell
-   $ node -v
-   v18.18.0
-   ```
-
-1. In a terminal, clone the [smart-contract examples](https://github.com/smartcontractkit/smart-contract-examples.git) repository and change directories. This example repository imports the [Chainlink Functions Toolkit NPM package](https://www.npmjs.com/package/@chainlink/functions-toolkit). You can import this package to your own projects to enable them to work with Chainlink Functions.
-
-   ```shell
-   git clone https://github.com/smartcontractkit/smart-contract-examples.git && \
-   cd ./smart-contract-examples/functions-examples/
-   ```
-
-1. Run `npm install` to install the dependencies.
-
-   ```shell
-   npm install
-   ```
-
-1. For higher security, the examples repository encrypts your environment variables at rest.
-
-   1. Set an encryption password for your environment variables.
-
-      ```shell
-      npx env-enc set-pw
-      ```
-
-   1. Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Polygon Mumbai network.
-
-      - `POLYGON_MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
-
-      - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note**: Your private key is needed to sign any transactions you make such as making requests.
-
-      ```shell
-      npx env-enc set
-      ```
-
-## Configure your on-chain resources
-
-After you configure your local environment, configure some on-chain resources to process your requests, receive the responses, and pay for the work done by the DON.
-
-### Deploy a Functions consumer contract on _Polygon Mumbai_
-
-1. [Open the FunctionsConsumerExample.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol) in Remix.
-
-   <CodeSample src="samples/ChainlinkFunctions/FunctionsConsumerExample.sol" showButtonOnly={true} />
+   <CodeSample src="samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol" showButtonOnly={true} />
 
 1. Compile the contract.
 1. Open MetaMask and select the _Polygon Mumbai_ network.
 1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
-1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
+
+   <ClickToZoom src="/images/chainlink-functions/getting-started/injected-provider.jpg" />
+
 1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+
+   <ClickToZoom src="/images/chainlink-functions/getting-started/deploy.jpg" />
+
 1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address.
 
-### Create a subscription
+   <ClickToZoom src="/images/chainlink-functions/getting-started/deployed-contracts.jpg" />
+
+#### Create a subscription
 
 Follow the [Managing Functions Subscriptions](/chainlink-functions/resources/subscriptions#create-a-subscription) guide to accept the Chainlink Functions Terms of Service (ToS), create a subscription, fund it, then add your consumer contract address to it.
 
-You can find the Chainlink Functions UI at [functions.chain.link](https://functions.chain.link/).
+You can find the Chainlink Functions Subscription Manager at [functions.chain.link](https://functions.chain.link/).
 
-## Run the example
+### Run the example
 
-The example in this guide gets the sum of a list of numbers `1,2,3,4,5,6,7,8,9`. Read the [Examine the code](#examine-the-code) section for a detailed description of all of the components.
+The example is hardcoded to communicate with Chainlink Functions on Polygon Mumbai. Read the [Examine the code](#examine-the-code) section for a detailed description of all components.
 
 To run the example:
 
-1. Open the file `getting-started.js`, which is located in the `examples` folder.
-1. Replace the consumer contract address and the subscription ID with your own values.
-
-   ```javascript
-   const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
-   const subscriptionId = 3 // REPLACE this with your subscription ID
-   ```
-
-1. Make a request:
-
-   ```shell
-   node examples/getting-started.js
-   ```
-
-   Example:
-
-   ```text
-   $ node examples/getting-started.js
-   secp256k1 unavailable, reverting to browser version
-
-   Make a Chainlink Functions request...
-
-   ✅ Functions request sent! Transaction hash 0x3926c468bd3add2bfbae24abc488927497424c30a0229a3fa2af44465dafe398. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x3926c468bd3add2bfbae24abc488927497424c30a0229a3fa2af44465dafe398
-
-   ✅ Request 0x2648e1085699fa111cc2b48b59b1aa209cb2f9947d873d522792adb94e1134dd fulfilled with code: 0. Cost is 0.00003738791938044 LINK. Complete response:  {
-     requestId: '0x2648e1085699fa111cc2b48b59b1aa209cb2f9947d873d522792adb94e1134dd',
-     subscriptionId: 3,
-     totalCostInJuels: 37387919380440n,
-     responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000000000000002d',
-     errorString: '',
-     returnDataBytesHexstring: '0x',
-     fulfillmentCode: 0
-   }
-
-   ✅ Decoded response to int256:  45n
-   ```
-
-   The output of the example gives you the following information:
-
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x3926c468bd3add2bfbae24abc488927497424c30a0229a3fa2af44465dafe398](https://mumbai.polygonscan.com/tx/0x3926c468bd3add2bfbae24abc488927497424c30a0229a3fa2af44465dafe398).
-   - The request ID is `0x2648e1085699fa111cc2b48b59b1aa209cb2f9947d873d522792adb94e1134dd`.
-
-   - The DON successfully fulfilled your request. The total cost was: `0.00003738791938044 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x000000000000000000000000000000000000000000000000000000000000002d`. Decoding it off-chain to `int256` give you a result: `45` (1+2+3+4+5+6+7+8+9).
+1.  In Remix under the **Deploy & Run Transactions** tab, expand your contract in the **Deployed Contracts** section.
+1.  Expand the `sendRequest` function to display its parameters.
+1.  Fill in the `subscriptionId` with your subscription ID and `args` with `[1]`.
+    <ClickToZoom src="/images/chainlink-functions/getting-started/send-request.jpg" />
+1.  Wait for the request to be fulfilled. You can monitor the status of your request on the Chainlink Functions Subscription Manager.
+    <ClickToZoom src="/images/chainlink-functions/getting-started/request-fulfilled.jpg" />
+1.  Once the status is _Success_, check the character name: In Remix, under the **Deploy & Run Transactions** tab, click on the `character` function, and you'll get the name of your character.
+    <ClickToZoom src="/images/chainlink-functions/getting-started/character.jpg" />
 
 Chainlink Functions is capable of much more than just computation. Try one of the [Tutorials](/chainlink-functions/tutorials) to see examples that can GET and POST to public APIs, securely handle API secrets, handle custom responses, and query multiple APIs.
 
 ## Examine the code
 
-### FunctionsConsumerExample.sol
+### Solidity code
 
-<ChainlinkFunctions section="functions-consumer" />
+<CodeSample src="samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol" />
 
-### getting-started.js
+- To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol) and [FunctionsRequest.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/libraries/FunctionsRequest.sol). You can read the API references: [FunctionsClient](/chainlink-functions/api-reference/functions-client) and [FunctionsRequest](/chainlink-functions/api-reference/functions-request).
 
-This explanation focuses on the [getting-started.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/getting-started.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+  These contracts are available in an NPM package so that you can import them from within your project.
 
-The script imports:
+  ```
+  import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+  import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
+  ```
 
-- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
-- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
-- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
-- `../abi/functionsClient.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+- Use the FunctionsRequest.sol library to get all the functions needed for building a Chainlink Functions request.
 
-The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+  ```
+  using FunctionsRequest for FunctionsRequest.Request;
+  ```
 
-```javascript
-const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
-const subscriptionId = 3 // REPLACE this with your subscription ID
+- The latest request ID, latest received response, and latest received error (if any) are defined as state variables:
+
+  ```
+  bytes32 public s_lastRequestId;
+  bytes public s_lastResponse;
+  bytes public s_lastError;
+  ```
+
+- We define the `Response` event that your smart contract will emit during the callback
+
+  ```
+  event Response(bytes32 indexed requestId, string character, bytes response, bytes err);
+  ```
+
+- The Chainlink Functions router address and donID are hardcoded for Polygon Mumbai. Check the [supported networks page](/chainlink-functions/supported-networks) to try the code sample on another testnet.
+
+- The `gasLimit` is hardcoded to `300000`, the amount of gas that Chainlink Functions will use to fulfill your request.
+
+- The JavaScript source code is hardcoded in the `source` state variable. For more explanation, read the [JavaScript code section](#javascript-code).
+
+- Pass the router address for your network when you deploy the contract:
+
+  ```
+  constructor() FunctionsClient(router)
+  ```
+
+- The two remaining functions are:
+
+  - `sendRequest` for sending a request. It receives the subscription ID and list of arguments to pass to the source code. Then:
+
+    - It uses the `FunctionsRequest` library to initialize the request and add the source code and arguments. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/functions-request/#initializerequestforinlinejavascript) and [adding arguments](/chainlink-functions/api-reference/functions-request/#setargs).
+
+      ```
+      FunctionsRequest.Request memory req;
+      req.initializeRequestForInlineJavaScript(source);
+      if (args.length > 0) req.setArgs(args);
+      ```
+
+    - It sends the request to the router by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functions-client/#_sendrequest). Finally, it stores the request id in `s_lastRequestId` and returns it.
+
+      ```
+      s_lastRequestId = _sendRequest(
+          req.encodeCBOR(),
+          subscriptionId,
+          gasLimit,
+          jobId
+      );
+      return s_lastRequestId;
+      ```
+
+      **Note**: `_sendRequest` accepts requests encoded in `bytes`. Therefore, you must encode it using [encodeCBOR](/chainlink-functions/api-reference/functions-request/#encodecbor).
+
+- `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError`, parses the `response` from `bytes` to `string` to fetch the character name before emitting the `Response` event.
+
+  ```
+  s_lastResponse = response;
+  character = string(response);
+  s_lastError = err;
+  emit Response(requestId, s_lastResponse, s_lastError);
+  ```
+
+### JavaScript code
+
+<CodeSample lang="javascript" src="samples/ChainlinkFunctions/starwars-api.js" />
+
+This JavaScript source code uses [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) to make HTTP requests. The source code calls the `https://swapi.dev/` API to request a Star Wars character name. If you read the [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) documentation and the [Star Wars API documentation](https://swapi.dev/documentation#people), you notice that URL has the following format where `${characterId}` is provided as parameter when making the HTTP request:
+
+```
+url: `https://swapi.dev/api/people/${characterId}/`
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function can be broken into three main parts:
+To check the expected API response for the first character, you can directly paste the following URL in your browser `https://swapi.dev/api/people/1/` or run the `curl` command in your terminal:
 
-1. Define the necessary identifiers:
+```bash
+curl -X 'GET' \
+  'https://swapi.dev/api/people/1/' \
+  -H 'accept: application/json'
+```
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
-   - `source`: The javascript source code that will send in your request. This code calculates the sum of an array of integers provided as input arguments. It performs input validation to ensure that the arguments are numbers and throws errors if not. The final sum is then returned as a 32-bytes buffer using the `Functions.encodeInt256` helper function. Here are the supported return types:
-     - `Functions.encodeUint256`: Takes a positive JavaScript integer number and returns a Buffer of 32 bytes representing a uint256 type in Solidity.
-     - `Functions.encodeInt256`: Takes a JavaScript integer number and returns a Buffer of 32 bytes representing an int256 type in Solidity.
-     - `Functions.encodeString`: Takes a JavaScript string and returns a Buffer representing a string type in Solidity.
-   - `args`: During the execution of your function, These arguments are passed to the source code.
-   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+The response should be similar to the following example:
 
-1. Making a request to Chainlink Functions:
+```json
+{
+  "name": "Luke Skywalker",
+  "height": "172",
+  "mass": "77",
+  "hair_color": "blond",
+  "skin_color": "fair",
+  "eye_color": "blue",
+  "birth_year": "19BBY",
+  "gender": "male",
+  "homeworld": "https://swapi.dev/api/planets/1/",
+  "films": [
+    "https://swapi.dev/api/films/1/",
+    "https://swapi.dev/api/films/2/",
+    "https://swapi.dev/api/films/3/",
+    "https://swapi.dev/api/films/6/"
+  ],
+  "species": [],
+  "vehicles": ["https://swapi.dev/api/vehicles/14/", "https://swapi.dev/api/vehicles/30/"],
+  "starships": ["https://swapi.dev/api/starships/12/", "https://swapi.dev/api/starships/22/"],
+  "created": "2014-12-09T13:50:51.644000Z",
+  "edited": "2014-12-20T21:17:56.891000Z",
+  "url": "https://swapi.dev/api/people/1/"
+}
+```
 
-   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
-   - Initialization of your functions consumer contract using the contract address, abi, and ethers signer.
-   - Call the `sendRequest` function of your consumer contract.
+Now that you understand the structure of the API. Let's delve into the JavaScript code. The main steps are:
 
-1. Await the response:
-
-   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
-   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.int256` in this example).
+- Fetch `characterId` from `args`. Args is an array. The `characterId` is located in the first element.
+- Make the HTTP call using `Functions.makeHttpRequest` and store the response in `apiResponse`.
+- Throw an error if the call is not successful.
+- The API response is located at `data`.
+- Read the name from the API response `data.name` and return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeString` helper function. Because the `name` is a `string`, we use `encodeString`. For other data types, you can use different [data encoding functions](/chainlink-functions/api-reference/javascript-source#data-encoding-functions).
+  **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
