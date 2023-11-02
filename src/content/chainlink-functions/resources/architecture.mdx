@@ -52,7 +52,7 @@ Chainlink Functions do not require your consumer contracts to hold LINK tokens a
 ### Concepts
 
 - Terms of service (ToS): Before interacting with Chainlink Functions, users must agree to the terms of service. Once signed, the accounts that can manage subscriptions are added to the `allowedSenders` in the [ToS allow list contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
-- Frontend: A user interface that allows users to agree to the sign Terms of service and interact with the FunctionsRouter to manage subscriptions.
+- Chainlink Functions Subscription Manager: A user interface that allows users to agree to the sign Terms of service and interact with the FunctionsRouter to manage subscriptions.
 - Subscription account: An account that holds LINK tokens and makes them available to fund requests to Chainlink DON. A _Subscription ID_ uniquely identifies each account.
 - Subscription ID: 64-bit unsigned integer representing the unique identifier of the _Subscription account_.
 - Subscription owner: The wallet address that creates and manages a _Subscription account_. Any account can add LINK tokens to the subscription balance. Still, only the owner can add consumer contracts to the subscription, remove consumer contracts from the subscription, withdraw funds, or transfer a subscription. Only the subscription owner can generate encrypted secrets for requests that use their _Subscription ID_.
@@ -67,7 +67,7 @@ To ensure compliance and governance, Chainlink Functions mandates that any accou
 
 <ClickToZoom src="/images/chainlink-functions/subscription/acceptToSEOA.png" />
 
-The acceptance process is initiated via the Chainlink Functions frontend. After a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
+The acceptance process is initiated via the Chainlink Functions Subscription Manager. After a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
 
 ### Create Subscription
 
@@ -83,8 +83,8 @@ After the ToS is accepted, EOAs can create subscriptions. Upon creation, the [Fu
 
 You must fund your subscription accounts with enough LINK tokens:
 
-1. Connect your EOA to the Chainlink Functions frontend.
-1. Fund your subscription account. The Chainlink Functions frontend abstracts the following:
+1. Connect your EOA to the Chainlink Functions Subscription Manager.
+1. Fund your subscription account. The Chainlink Functions Subscription Manager abstracts the following:
    1. Call `transferAndCall` on the LINK token contract, transferring LINK tokens along with the _Subscription ID_ in the payload.
    1. The FunctionsRouter contract implements `onTokenTransfer`: It parses the _Subscription ID_ from the payload and funds the subscription account with the transferred LINK amount.
 
@@ -96,9 +96,9 @@ You must fund your subscription accounts with enough LINK tokens:
 
 You must allowlist your consumers' contracts on your subscription account before they can make Chainlink Functions requests:
 
-1. Connect your EOA to the Chainlink Functions frontend.
+1. Connect your EOA to the Chainlink Functions Subscription Manager.
 1. Add the address of the consumer contract to the subscription account.
-1. The Chainlink Functions frontend interacts with the FunctionsRouter contract to register the consumer contract address to the subscription account.
+1. The Chainlink Functions Subscription Manager interacts with the FunctionsRouter contract to register the consumer contract address to the subscription account.
 
 **Note**: EOAs can directly interact with the FunctionsRouter contract using a web3 library, such as web3.js or ethers.js.
 
@@ -108,9 +108,9 @@ You must allowlist your consumers' contracts on your subscription account before
 
 To prevent further Chainlink Functions requests from a given consumer contract, you must remove it from your subscription account:
 
-1. Connect your EOA to the Chainlink Functions frontend.
+1. Connect your EOA to the Chainlink Functions Subscription Manager.
 1. Remove the address of the consumer contract from the subscription account.
-1. The Chainlink Functions frontend communicates with the FunctionsRouter contract to remove the consumer contract address from the subscription account.
+1. The Chainlink Functions Subscription Manager communicates with the FunctionsRouter contract to remove the consumer contract address from the subscription account.
 
 **Note**: You can still remove consumers from your subscription even if in-flight requests exist. The consumer contract will still receive a callback, and your _Subscription Account_ will be charged.
 
@@ -122,8 +122,8 @@ To prevent further Chainlink Functions requests from a given consumer contract, 
 
 To cancel a subscription:
 
-1. Connect your EOA to the Chainlink Functions frontend.
-1. Cancel your subscription, providing the _Subscription Balance_ receiver account address. The Chainlink Functions frontend handles the following processes:
+1. Connect your EOA to the Chainlink Functions Subscription Manager.
+1. Cancel your subscription, providing the _Subscription Balance_ receiver account address. The Chainlink Functions Subscription Manager handles the following processes:
    1. Invokes the `cancelSubscription` function on the FunctionsRouter contract, deleting the _Subscription ID_ and removing all associated consumers.
    1. Transfers the remaining _Subscription Balance_ to the specified receiver account.
 
@@ -139,4 +139,4 @@ Transferring ownership is currently only supported using the [Functions Hardhat 
 1. As a prerequisite, the prospective owner must be part of the `allowedSenders` registry within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol). This verifies their acceptance of the Chainlink Functions' Terms of Service (ToS).
 1. The prospective owner should use the [Functions Hardhat Starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) and run the `functions-sub-accept` command to confirm the ownership transfer.
 
-**Note**: This guide will be updated as soon as the Chainlink Functions frontend supports ownership transfers.
+**Note**: This guide will be updated as soon as the Chainlink Functions Subscription Manager supports ownership transfers.
