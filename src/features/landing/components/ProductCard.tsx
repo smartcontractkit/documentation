@@ -24,7 +24,7 @@ export const ProductCard = (props: ProductCardProps) => {
       <a href={props.learnMorelink} class={productCardClasses}>
         <img
           loading="lazy"
-          src={props.image}
+          src={props.image.src}
           class={productCard.logo}
           width={64}
           height={64}
