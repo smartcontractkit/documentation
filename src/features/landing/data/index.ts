@@ -10,6 +10,7 @@ import functionsShape from "../assets/functions-shape.svg"
 import automationShape from "../assets/automation-shape.svg"
 import dataFeedShape from "../assets/data-feeds-shape.svg"
 import nodeShape from "../assets/node-shape.svg"
+import dataStreamsLogo from "../assets/data-streams-logo.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
@@ -38,7 +39,7 @@ export const evmProducts = [
     ],
   },
   {
-    title: "Market and Data Feeds",
+    title: "Data Feeds",
     description: "Decentralized and high-quality data for DeFi, sports, weather, and more.",
     learnMorelink: "data-feeds",
     image: dataFeedsLogo,
@@ -60,6 +61,22 @@ export const evmProducts = [
       { id: "solana", title: "Solana" },
     ],
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
+  },
+  {
+    title: "Data Streams",
+    description:
+      "Secure and reliable high-frequency market data for ultra-fast derivatives products powered by decentralized and transparent infrastructure.",
+    learnMorelink: "data-streams",
+    image: dataStreamsLogo,
+    shape: dataFeedShape,
+    links: [
+      ["Introduction", "data-streams"],
+      ["Getting Started", "data-streams/getting-started"],
+      ["Stream IDs", "data-streams/stream-ids"],
+      ["Available Schemas", "data-streams/reference/report-schema"],
+      ["Interface Reference", "data-streams/reference/interfaces"],
+    ],
+    chains: [{ id: "arbitrum", title: "Arbitrum" }],
   },
   {
     title: "Functions",
