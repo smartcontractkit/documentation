@@ -44,7 +44,7 @@ export const ProductCard = (props: ProductCardProps) => {
             </div>
           )}
         </div>
-        <img loading="lazy" src={props.shape} alt="" width={24} height={24} class={productCard.backgroundShape} />
+        <img loading="lazy" src={props.shape.src} alt="" width={24} height={24} class={productCard.backgroundShape} />
       </a>
     </div>
   )
