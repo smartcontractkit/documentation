@@ -6,7 +6,7 @@ isMdx: true
 whatsnext:
   {
     "Register Log Trigger Upkeeps": "/chainlink-automation/guides/log-trigger/",
-    "Register Upkeeps Programmatically": "/chainlink-automation/guides/register-upkeep-in-contract/",
+    "Register Custom Logic Upkeeps": "/chainlink-automation/guides/register-upkeep/",
     "Automation Interfaces": "/chainlink-automation/reference/automation-interfaces",
     "Automation Architecture": "/chainlink-automation/concepts/automation-architecture/",
   }
@@ -32,12 +32,12 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
   <Fragment slot="tab.customUI">Automation App</Fragment>
   <Fragment slot="tab.customProgram">Programmatically</Fragment>
   <Fragment slot="panel.customUI">
-    ## Before you begin
+    ### Before you begin
 
     1. Make sure you have deployed a contract you would like to automate.
     1. Copy the address of the contract to use during the registration process.
 
-    ## Start the registration process
+    ### Start the registration process
 
     <div class="remix-callout">
       <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
@@ -55,7 +55,7 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
 
     <ClickToZoom src="/images/automation/auto-ui-wallet.png" />
 
-    ## Trigger selection
+    ### Trigger selection
 
     Select **Custom Logic** trigger.
 
@@ -63,11 +63,11 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
 
     <ClickToZoom src="/images/automation/ui_select_trigger.png" />
 
-    ## Using custom logic triggers
+    ### Using custom logic triggers
 
     Provide the address of your [compatible contract](/chainlink-automation/guides/compatible-contracts). You do not need to verify the contract on-chain, but it must be [compatible](/chainlink-automation/guides/compatible-contracts) with the `AutomationCompatibleInterface` contract.
 
-    ## Entering upkeep details
+    ### Entering upkeep details
 
     Provide the following information in the Automation app:
 
@@ -97,7 +97,7 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
     - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](/chainlink-automation/guides/flexible-upkeeps) guide.
     - **Your email address (optional)**: This email address will be used to send you an email notification when your upkeep is underfunded.
 
-    ## Complete upkeep registration
+    ### Complete upkeep registration
 
     Click **Register upkeep** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/automation/automation-registration-submitted.png)
@@ -107,7 +107,7 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
   </Fragment>
   <Fragment slot="panel.customProgram">
 
-    ## Before you begin
+    ### Before you begin
 
     Before registering your upkeep, complete the following tasks:
 
@@ -118,12 +118,12 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
     1. The interface for LINK and Registrar for registration, interface for Registry for subsequent actions
     1. Interface is like the API specification of interacting with the contract.
 
-    ## Start the registration process
+    ### Start the registration process
 
     1. Call the LINK token to allow the Automation registrar to use the amount of LINK you will fund your upkeep with at registration time.
     1. Call `registerUpkeep` on the Registrar contract using the `RegistrationParams` struct. You will receive the `upkeepID` if successful. The parameters below outline the values you will need to successfully register your upkeep.
 
-    ## Registration parameters
+    ### Registration parameters
 
     | Var type | Var Name       | Example value       | Description                                                                                                                                                                                                                                      |
     | -------- | -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -138,7 +138,7 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
     | bytes    | offchainConfig | 0x                  | Leave as `0x`                                                                                                                                                              |
     | uint96   | amount         | 1000000000000000000 | Ensure this is less than or equal to the allowance just given, and needs to be in WEI.                                                                                                                                                           |
 
-    ## Custom logic upkeep parameters
+    ### Custom logic upkeep parameters
 
     Depending on the trigger you are using, the `triggerConfig` will be different. View the code sample below to understand the `triggerConfig` for custom logic triggers
 
