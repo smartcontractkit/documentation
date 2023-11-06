@@ -32,5 +32,5 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
   CELO_ALFAJORES: () => new providers.JsonRpcProvider("https://forno.celo.org"),
   LINEA_MAINNET: () => new providers.JsonRpcProvider("https://rpc.linea.build	"),
-  LINEA_GOERLI_TESTNET: () => new providers.JsonRpcProvider("https://rpc.goerli.linea.build"),
+  LINEA_GOERLI: () => new providers.JsonRpcProvider("https://rpc.goerli.linea.build"),
 }

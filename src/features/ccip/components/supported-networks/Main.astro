@@ -1,0 +1,45 @@
+---
+import { Accordion, Aside } from "@components"
+import { loadReferenceData } from "@config/data/ccip/"
+import { directoryToSupportedChain, getTitle } from "@features/utils"
+import ChainConfig from "./ChainConfig.astro"
+
+const { environment } = Astro.props
+
+const chainsReferenceData = loadReferenceData(environment).chainsReferenceData
+---
+
+<Aside type="note" title="Early Access">
+  <p>
+    Chainlink CCIP is in the “Early Access” stage of development, which means that Chainlink CCIP currently has
+    functionality which is under development and may be changed in later versions. There is no guarantee any of the
+    contemplated features of Chainlink CCIP or the Chainlink Network will be implemented as specified. Chainlink CCIP is
+    a messaging protocol. Chainlink does not hold or transfer any assets. Please review the <a
+      href="https://chain.link/terms">Chainlink Terms of Service</a
+    > which provides important information and disclosures. By using Chainlink CCIP, you expressly acknowledge and agree
+    to accept these terms.
+  </p>
+</Aside>
+
+<br />
+
+{
+  Object.entries(chainsReferenceData).map(([chainRefId, chainConfig], index) => {
+    const chainKey = directoryToSupportedChain(chainRefId)
+    const chainTitle = getTitle(chainKey)
+    if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
+    const id = chainKey.replace(/_/g, "-").toLowerCase()
+    return (
+      <>
+        <Accordion title={chainTitle} contentReference={id}>
+          <ChainConfig
+            chainConfig={chainConfig}
+            sourceChain={chainKey}
+            sourceChainRefId={chainRefId}
+            environment={environment}
+          />
+        </Accordion>
+      </>
+    )
+  })
+}

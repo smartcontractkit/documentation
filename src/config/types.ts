@@ -43,7 +43,7 @@ export type SupportedChain =
   | "CELO_ALFAJORES"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
-  | "LINEA_GOERLI_TESTNET"
+  | "LINEA_GOERLI"
 
 export type Chains = Record<
   SupportedTechnology,
@@ -56,6 +56,11 @@ export type Chains = Record<
           chainId: number
           title: string
           explorer: string
+          nativeCurrency: {
+            name: string
+            symbol: string
+            decimals: number
+          }
         }
       >
     >
