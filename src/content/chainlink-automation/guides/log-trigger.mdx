@@ -33,6 +33,7 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
 
     1. Make sure you have deployed a contract you would like to automate.
     1. Copy the address of the contract to use during the registration process.
+    1. Make sure you have an active cryptocurrency wallet such as [Metamask](https://metamask.io/).
 
     ### Start the Registration Process
 
@@ -122,14 +123,20 @@ Click on the tabs below to view instructions on registering time-based upkeeps u
 
     ### Before you begin
 
-    1. Open Counter_Emit_Log.sol in Remix. Deploy and confirm transaction.
-    1. Find the address of contract in Etherscan. Read Write contract in Etherscan
-    1. Connect wallet to Etherscan.
-    1. Emit log from wallet
-    1. Should see in Events tab. May need to wait.
-    1. can see log index_topic_1 = msg.sender it's what we're automation
-    1. Counter_Log. Struct for log structure and interface for log automation. Two function: one for check Log and one for performUpkeep.
-    1. Our contract is ILogInterface. Has event CountedBy. Show who counted. Counted variable will be incremented.
+    1. Open `CountEmitLog.sol` in Remix. This contract contains an event `WantsToCount` that keeps track of the address of the message sender. The function `emitCountLog` emits this event.
+
+      <CodeSample src="samples/Automation/CountEmitLog.sol" showButtonOnly />
+
+    1. Under _Environment_, select the option **Injected Provider** to connect to your cryptocurrency wallet.
+    1. Deploy the contract and confirm the transaction.
+    1. You can view the contract on Etherscan by clicking the message in the terminal. You an view the address of the created contract and the original contract in Etherscan.
+    1. Navigate back to Remix. Under the _Deployed Contracts_ section, click the **emitCountLog** button to emit a log. Confirm the transaction in you cryptocurrency wallet.
+    1. Navigate back to Etherscan and locate the _Events_ tab. You should see the event of emitting a log recorded in this section.
+    1. Open `CountWithLog.sol` in Remix. This contract contains a struct to account for the log structure and uses the [ILogAutomation interface](chainlink-automation/reference/automation-interfaces#ilogautomation) for log automation. The interface contains the `checkLog` and `performUpkeep` functions. The contract contains an event `CountedBy`. The `counted` variable will be incremented when `performUpkeep` is called.
+
+      <CodeSample src="samples/Automation/CountWithLog.sol" showButtonOnly />
+
+    1. Deploy the contract and confirm your transaction.
 
   </Fragment>
 </Tabs>
