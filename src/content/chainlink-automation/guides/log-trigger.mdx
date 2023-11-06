@@ -26,13 +26,16 @@ Create powerful smart contracts that use log data as both trigger and input. Thi
 
 {" "}
 
-<CodeSample src="samples/Automation/CountEmitLog.sol" showButtonOnly />
+<CodeSample src="samples/Automation/CountEmitLog.sol" />
 
 1. Under _Environment_, select the option **Injected Provider** to connect to your cryptocurrency wallet.
 1. Deploy the contract and confirm the transaction.
 1. You can view the contract on Etherscan by clicking the message in the terminal. You an view the address of the created contract and the original contract in Etherscan.
-1. Navigate back to Remix. Under the _Deployed Contracts_ section, click the **emitCountLog** button to emit a log. Confirm the transaction in you cryptocurrency wallet.
+   <ClickToZoom src="/images/automation/log-trig-addresses.png" />
+1. Navigate to the _Contract_ tab. If the contract is already verified, you will see options to **Read Contract** and **Write Contract**. If your contract isn't verified, follow the prompts in Etherscan to verify the contract.
+1. Click **Write Contract** and click the **emitCountLog** button to emit a log.
 1. Navigate back to Etherscan and locate the _Events_ tab. You should see the event of emitting a log recorded in this section.
+   <ClickToZoom src="/images/automation/log-trig-event.png" />
 
 ## Using `ILogAutomation` Interface
 
@@ -40,10 +43,11 @@ Create powerful smart contracts that use log data as both trigger and input. Thi
 
 {" "}
 
-<CodeSample src="samples/Automation/CountWithLog.sol" showButtonOnly />
+<CodeSample src="samples/Automation/CountWithLog.sol" />
 
 1. Deploy the contract and confirm your transaction.
 1. Under _Deployed Contracts_, expand `CountWithLog`. Click the **count** button to view the value of the count variable. It should be 0.
+   <ClickToZoom src="/images/automation/log-trig-count-0.png" />
 1. Copy the address of this contract either via Remix or Etherscan to register it on the Chainlink Automation app.
 
 ## Using the Chainlink Automation App
@@ -78,9 +82,13 @@ Select **Log Trigger**.
 
    <ClickToZoom src="/images/automation/log_trig_1_upkeep_address.png" />
 
-1. **Provide the address of the contract that will be emitting the log.** In this case, this is the address of `CountEmitLog.sol`. If the contract is not validated you will need to provide the ABI. To find the ABI of your contract in Remix, navigate to the Compiler view using the left side icons. Then, copy the ABI to your clipboard using the button at the bottom of the panel.
+1. **Provide the address of the contract that will be emitting the log.** In this case, this is the address of `CountEmitLog.sol`. If the contract is not validated you will need to provide the ABI.
 
    <ClickToZoom src="/images/automation/log_trig_2_emitter_address.png" />
+
+   To find the ABI of your contract in Remix, navigate to the Compiler view using the left side icons. Then, copy the ABI to your clipboard using the button at the bottom of the panel.
+
+   <ClickToZoom src="/images/automation/log-trig-ebi.png" />
 
 1. **Use the dropdown to select the triggering event.** This is **WantsToCount**. You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
 
@@ -124,6 +132,8 @@ Click **Register upkeep** and confirm the transaction in MetaMask.
 
 Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/guides/manage-upkeeps) to learn how to manage your upkeeps.
 
+<ClickToZoom src="/images/automation/log-trig-config.png" />
+
 ## Emitting a Log
 
-Navigate back to Remix. Under _Deployed Contracts_, expand the details for `CountEmitLog.sol`. Click the button to **emitCountLog**. Refresh the upkeep details page. You may have to wait a few moments. Under _History_, you should see the upkeep has been performed.
+Navigate back to the Etherscan page for `CountEmitLog.sol`. Under _Write Contract_, click the button to **emitCountLog**. Refresh the upkeep details page. You may have to wait a few moments. Under _History_, you should see the upkeep has been performed.
