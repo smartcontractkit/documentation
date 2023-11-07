@@ -11,6 +11,7 @@ import automationShape from "../assets/automation-shape.svg"
 import dataFeedShape from "../assets/data-feeds-shape.svg"
 import nodeShape from "../assets/node-shape.svg"
 import dataStreamsLogo from "../assets/data-streams-logo.svg"
+import dataStreamsShape from "../assets/data-streams-shape.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
@@ -68,7 +69,7 @@ export const evmProducts = [
       "Secure and reliable high-frequency market data for ultra-fast derivatives products powered by decentralized and transparent infrastructure.",
     learnMorelink: "data-streams",
     image: dataStreamsLogo,
-    shape: dataFeedShape,
+    shape: dataStreamsShape,
     links: [
       ["Introduction", "data-streams"],
       ["Getting Started", "data-streams/getting-started"],
