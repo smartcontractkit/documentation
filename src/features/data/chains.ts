@@ -367,10 +367,17 @@ export const CHAINS: Chain[] = [
     label: "Scroll",
     title: "Scroll Data Feeds",
     img: "/assets/chains/scroll.svg",
-    networkStatusUrl: "https://sepolia-blockscout.scroll.io/",
+    networkStatusUrl: "https://status.scroll.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
+      {
+        name: "Scroll Mainnet",
+        explorerUrl: "https://scrollscan.com/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
+        queryString: "scroll-mainnet",
+      },
       {
         name: "Scroll Sepolia testnet",
         explorerUrl: "https://sepolia-blockscout.scroll.io/address/%s",
