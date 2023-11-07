@@ -20,6 +20,36 @@ Create powerful smart contracts that use log data as both trigger and input. Thi
   your upkeep on a testnet before deploying it to a mainnet.
 </Aside>
 
+## Emit a Log
+
+1. Open `CountEmitLog.sol` in Remix. This contract contains an event `WantsToCount` that keeps track of the address of the message sender. The function `emitCountLog` emits this event.
+
+{" "}
+
+<CodeSample src="samples/Automation/CountEmitLog.sol" />
+
+1. Under _Environment_, select the option **Injected Provider** to connect to your cryptocurrency wallet.
+1. Deploy the contract and confirm the transaction.
+1. You can view the contract on Etherscan by clicking the message in the terminal. You an view the address of the created contract and the original contract in Etherscan.
+   <ClickToZoom src="/images/automation/log-trig-addresses.png" />
+1. Navigate to the _Contract_ tab. If the contract is already verified, you will see options to **Read Contract** and **Write Contract**. If your contract isn't verified, follow the prompts in Etherscan to verify the contract.
+1. Click **Write Contract** and click the **emitCountLog** button to emit a log.
+1. Navigate back to Etherscan and locate the _Events_ tab. You should see the event of emitting a log recorded in this section.
+   <ClickToZoom src="/images/automation/log-trig-event.png" />
+
+## Using `ILogAutomation` Interface
+
+1. Open `CountWithLog.sol` in Remix. This contract contains a struct to account for the log structure and uses the [ILogAutomation interface](/chainlink-automation/reference/automation-interfaces#ilogautomation) for log automation. The interface contains the `checkLog` and `performUpkeep` functions. The contract contains an event `CountedBy`. The `counted` variable will be incremented when `performUpkeep` is called.
+
+{" "}
+
+<CodeSample src="samples/Automation/CountWithLog.sol" />
+
+1. Deploy the contract and confirm your transaction.
+1. Under _Deployed Contracts_, expand `CountWithLog`. Click the **count** button to view the value of the count variable. It should be 0.
+   <ClickToZoom src="/images/automation/log-trig-count-0.png" />
+1. Copy the address of this contract either via Remix or Etherscan to register it on the Chainlink Automation app.
+
 ## Using the Chainlink Automation App
 
 <div class="remix-callout">
@@ -48,15 +78,19 @@ Select **Log Trigger**.
   Your upkeeps will be protected against logs that are emitted during a reorg.
 </Aside>
 
-1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). This ensures Automation nodes can interact with your contract as expected.
+1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. In this case, we will paste the address of `CountWithLog.sol`. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) to ensure Automation nodes can interact with your contract as expected.
 
    <ClickToZoom src="/images/automation/log_trig_1_upkeep_address.png" />
 
-1. **Provide the address of the contract that will be emitting the log** If the contract is not validated you will need to provide the ABI.
+1. **Provide the address of the contract that will be emitting the log.** In this case, this is the address of `CountEmitLog.sol`. If the contract is not validated you will need to provide the ABI.
 
    <ClickToZoom src="/images/automation/log_trig_2_emitter_address.png" />
 
-1. **Use the dropdown to select the triggering event.** You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
+   To find the ABI of your contract in Remix, navigate to the Compiler view using the left side icons. Then, copy the ABI to your clipboard using the button at the bottom of the panel.
+
+   <ClickToZoom src="/images/automation/log-trig-ebi.png" />
+
+1. **Use the dropdown to select the triggering event.** This is **WantsToCount**. You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
 
    <ClickToZoom src="/images/automation/log_trig_3_logsig_filter_populated.png" />
 
@@ -91,9 +125,15 @@ Provide the following information in the Automation app:
     - **Check data**: Optional input field that you may use depending on whether you are using it in your contract.
     - **Your email address (optional)**: This email address will be used to send you an email notification when your upkeep is underfunded.
 
-## Complete Upkeep Regsitration
+## Complete Upkeep Registration
 
 Click **Register upkeep** and confirm the transaction in MetaMask.
 ![Upkeep Registration Success Message](/images/automation/automation-registration-submitted.png)
 
 Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/guides/manage-upkeeps) to learn how to manage your upkeeps.
+
+<ClickToZoom src="/images/automation/log-trig-config.png" />
+
+## Performing Upkeep
+
+Navigate back to the Etherscan page for `CountEmitLog.sol`. Under _Write Contract_, click the button to **emitCountLog**. Refresh the upkeep details page. You may have to wait a few moments. Under _History_, you should see the upkeep has been performed.
