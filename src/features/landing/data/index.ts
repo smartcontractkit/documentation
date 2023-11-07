@@ -3,13 +3,11 @@ import vrfLogo from "../assets/vrf-logo.svg"
 import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
 import dataFeedsLogo from "../assets/data-feeds-logo.svg"
-import nodeLogo from "../assets/node-logo.svg"
 import ccipShape from "../assets/ccip-shape.svg"
 import vrfShape from "../assets/vrf-shape.svg"
 import functionsShape from "../assets/functions-shape.svg"
 import automationShape from "../assets/automation-shape.svg"
 import dataFeedShape from "../assets/data-feeds-shape.svg"
-import nodeShape from "../assets/node-shape.svg"
 import dataStreamsLogo from "../assets/data-streams-logo.svg"
 import dataStreamsShape from "../assets/data-streams-shape.svg"
 import { ProductCardProps } from "../components/ProductCard"
@@ -108,13 +106,5 @@ export const evmProducts = [
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
-  },
-  {
-    title: "Nodes",
-    description: "Securing the Chainlink Network, giving developers access to real-world data and services.",
-    learnMorelink: "chainlink-nodes",
-    image: nodeLogo,
-    shape: nodeShape,
-    chains: [],
   },
 ] as ProductCardProps[]
