@@ -319,10 +319,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/supported-networks",
         },
         {
-          title: "Billing",
-          url: "chainlink-automation/overview/automation-economics",
-        },
-        {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
