@@ -676,6 +676,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Billing",
           url: "vrf/v2/estimating-costs",
         },
+        {
+          title: "Release Notes",
+          url: "vrf/release-notes",
+        },
       ],
     },
     {
