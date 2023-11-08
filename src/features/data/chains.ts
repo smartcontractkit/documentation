@@ -374,7 +374,7 @@ export const CHAINS: Chain[] = [
       {
         name: "Scroll Mainnet",
         explorerUrl: "https://scrollscan.com/address/%s",
-        networkType: "testnet",
+        networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
         queryString: "scroll-mainnet",
       },
