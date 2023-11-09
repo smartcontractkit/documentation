@@ -1,54 +1,41 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.16;
 
-interface StreamsLookupCompatibleInterface {
-    error StreamsLookup(
-        string feedParamKey,
-        string[] feeds,
-        string timeParamKey,
-        uint256 time,
-        bytes extraData
-    );
+import {Common} from "@chainlink/contracts/src/v0.8/libraries/Common.sol";
+import {StreamsLookupCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
+import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IRewardManager.sol";
+import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/interfaces/IERC20.sol";
 
-    function checkCallback(
-        bytes[] memory values,
-        bytes memory extraData
-    ) external view returns (bool upkeepNeeded, bytes memory performData);
-}
-
-interface ILogAutomation {
-    function checkLog(
-        Log calldata log,
-        bytes memory checkData
-    ) external returns (bool upkeepNeeded, bytes memory performData);
-
-    function performUpkeep(bytes calldata performData) external;
-}
-
-struct Log {
-    uint256 index;
-    uint256 timestamp;
-    bytes32 txHash;
-    uint256 blockNumber;
-    bytes32 blockHash;
-    address source;
-    bytes32[] topics;
-    bytes data;
-}
-
+// Custom interfaces for IVerifierProxy and IFeeManager
 interface IVerifierProxy {
     function verify(
-        bytes memory signedReport
+        bytes calldata payload,
+        bytes calldata parameterPayload
     ) external payable returns (bytes memory verifierResponse);
+
+    function s_feeManager() external view returns (IVerifierFeeManager);
 }
 
-interface IReportHandler {
-    function handleReport(bytes calldata report) external;
+interface IFeeManager {
+    function getFeeAndReward(
+        address subscriber,
+        bytes memory report,
+        address quoteAddress
+    ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+    function i_linkAddress() external view returns (address);
+
+    function i_nativeAddress() external view returns (address);
+
+    function i_rewardManager() external view returns (address);
 }
 
-contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
-    IVerifierProxy public verifier;
-
+contract StreamsLookupChainlinkAutomation is
+    ILogAutomation,
+    StreamsLookupCompatibleInterface
+{
     struct BasicReport {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
@@ -75,28 +62,28 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
         address quoteAddress;
     }
 
-    event ReportVerified(BasicReport indexed report);
-    event PriceUpdate(int192 price);
+    event PriceUpdate(int192 indexed price);
 
-    address public immutable FEE_ADDRESS;
+    IVerifierProxy public verifier;
+
+    address public FEE_ADDRESS;
     string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDs";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "timestamp";
-    string[] public feedsHex = [
-        "0x00023496426b520583ae20a66d80484e0fc18544866a5b0bfee15ec771963274"
+    string[] public feedIds = [
+        "0x00029584363bcf642315133c335b3646513c20f049602fc7d933be0d3f6360d3" // Ex. Basic ETH/USD price report
     ];
 
-    constructor(address _feeAddress, address _verifier) {
-        verifier = IVerifierProxy(_verifier); //0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
-        FEE_ADDRESS = _feeAddress; // 0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3 (WETH)
+    constructor(address _verifier) {
+        verifier = IVerifierProxy(_verifier);
     }
 
     function checkLog(
         Log calldata log,
         bytes memory
-    ) external view returns (bool upkeepNeeded, bytes memory performData) {
+    ) external returns (bool upkeepNeeded, bytes memory performData) {
         revert StreamsLookup(
             STRING_DATASTREAMS_FEEDLABEL,
-            feedsHex,
+            feedIds,
             STRING_DATASTREAMS_QUERYLABEL,
             log.timestamp,
             ""
@@ -110,7 +97,9 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
         return (true, abi.encode(values, extraData));
     }
 
-    function performUpkeep(bytes calldata performData) external override {
+    // function will be performed on-chain
+    function performUpkeep(bytes calldata performData) external {
+        // Decode incoming performData
         (bytes[] memory signedReports, bytes memory extraData) = abi.decode(
             performData,
             (bytes[], bytes)
@@ -118,57 +107,38 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
 
         bytes memory report = signedReports[0];
 
-        bytes memory bundledReport = bundleReport(report);
+        (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
 
-        BasicReport memory unverifiedReport = _getReportData(report);
+        // Billing
+        IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
+        IRewardManager rewardManager = IRewardManager(
+            address(feeManager.i_rewardManager())
+        );
 
-        bytes memory verifiedReportData = verifier.verify{
-            value: unverifiedReport.nativeFee
-        }(bundledReport);
+        address feeTokenAddress = feeManager.i_linkAddress();
+        (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
+            address(this),
+            reportData,
+            feeTokenAddress
+        );
+
+        // Approve fee spend
+        IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
+
+        // Verify the report
+        bytes memory verifiedReportData = verifier.verify(
+            report,
+            abi.encode(feeTokenAddress)
+        );
+
+        // Decode verified report data into BasicReport struct
         BasicReport memory verifiedReport = abi.decode(
             verifiedReportData,
             (BasicReport)
         );
 
+        // Log price from report
         emit PriceUpdate(verifiedReport.price);
-    }
-
-    function bundleReport(
-        bytes memory report
-    ) internal view returns (bytes memory) {
-        Quote memory quote;
-        quote.quoteAddress = FEE_ADDRESS;
-        (
-            bytes32[3] memory reportContext,
-            bytes memory reportData,
-            bytes32[] memory rs,
-            bytes32[] memory ss,
-            bytes32 raw
-        ) = abi.decode(
-                report,
-                (bytes32[3], bytes, bytes32[], bytes32[], bytes32)
-            );
-        bytes memory bundledReport = abi.encode(
-            reportContext,
-            reportData,
-            rs,
-            ss,
-            raw,
-            abi.encode(quote)
-        );
-        return bundledReport;
-    }
-
-    function _getReportData(
-        bytes memory signedReport
-    ) internal pure returns (BasicReport memory) {
-        (, bytes memory reportData, , , ) = abi.decode(
-            signedReport,
-            (bytes32[3], bytes, bytes32[], bytes32[], bytes32)
-        );
-
-        BasicReport memory report = abi.decode(reportData, (BasicReport));
-        return report;
     }
 
     fallback() external payable {}
