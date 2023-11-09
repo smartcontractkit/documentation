@@ -7,9 +7,8 @@ import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 import { clsx } from "~/lib"
 
-type HeaderWrapperClass = "header-wrapper-2" | "header-wrapper-3"
+type HeaderWrapperClass = "header-wrapper-3"
 const wrapperDepthMap: Record<HeaderWrapperClass, number> = {
-  "header-wrapper-2": 2,
   "header-wrapper-3": 3,
 }
 

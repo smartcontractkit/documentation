@@ -7,6 +7,11 @@ import { shouldUpdateToc } from "./tocStore"
 import { clsx } from "~/lib"
 import { useStore } from "@nanostores/preact"
 
+type HeaderWrapperClass = "header-wrapper-3"
+const wrapperDepthMap: Record<HeaderWrapperClass, number> = {
+  "header-wrapper-3": 3,
+}
+
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
   onUpdateActiveTitle?: (title: string) => void
@@ -18,14 +23,18 @@ const TableOfContents: FunctionalComponent<{
 
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
-    const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
+    const query = `article :where(
+      section > :where(h1, h2, h3, h4),
+       .${Object.keys(wrapperDepthMap).join(", .")}
+    )`
+    const elements = document.querySelectorAll(query)
     const newHeadings: MarkdownHeading[] = []
 
     elements.forEach((e) => {
-      const depth = Number(e.nodeName.at(1))
+      const depth = Number(e.nodeName.at(1)) || wrapperDepthMap[e.className.split(" ")[0]]
       const slug = e.id
-      const text = e.textContent
-      if (text) {
+      const text = e.getAttribute("title") || e.textContent
+      if (depth && slug && text) {
         newHeadings.push({
           depth,
           slug,
@@ -33,7 +42,6 @@ const TableOfContents: FunctionalComponent<{
         })
       }
     })
-
     setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
