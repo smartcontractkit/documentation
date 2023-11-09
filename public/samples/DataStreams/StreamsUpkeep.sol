@@ -9,6 +9,7 @@ import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/inter
 import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/interfaces/IERC20.sol";
 
 // Custom interfaces for IVerifierProxy and IFeeManager
+
 interface IVerifierProxy {
     function verify(
         bytes calldata payload,

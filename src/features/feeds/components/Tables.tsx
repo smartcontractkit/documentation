@@ -353,13 +353,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
         <span class="label">ID:</span>
-        <a
-          style="font-size: 0.75em;"
-          class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.feedId)}
-        >
-          {proxy.feedId}
-        </a>
+        {proxy.feedId}
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
@@ -373,7 +367,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
         <a
           style="font-size: 0.75em;"
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+          href={network.explorerUrl.replace("%s", "0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c")}
         >
           0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
         </a>
