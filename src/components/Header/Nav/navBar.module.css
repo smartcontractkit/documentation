@@ -1,0 +1,89 @@
+.header {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+}
+
+.navBar {
+  position: fixed;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.container {
+  composes: container from global;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding-block: var(--space-4x);
+  height: var(--space-16x);
+  gap: var(--space-3x);
+}
+
+.headerPlaceholder {
+  height: var(--space-16x);
+  visibility: hidden;
+}
+
+.headerHidden {
+  transform: translateY(-100%);
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3x);
+}
+
+:is(.button, .iconButton) {
+  display: none;
+}
+
+.searchInput {
+  display: none;
+}
+
+@media screen and (min-width: 768px) {
+  :is(.button, .iconButton) {
+    display: flex;
+    height: var(--space-10x);
+    gap: var(--space-2x);
+    padding: 0 var(--space-4x);
+    line-height: var(--space-4x);
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius-primary);
+    color: var(--blue-700);
+    border: var(--border-width-primary) solid transparent;
+    transition: opacity 300ms ease-out, background-color 300ms ease-out,
+      border 300ms ease-out, border-radius 300ms ease-out;
+    opacity: 1;
+  }
+
+  :is(.button, .iconButton):hover {
+    border-radius: var(--border-radius-primary);
+    border: var(--border-width-primary) solid var(--blue-200);
+    background: var(--background-color-background-primary);
+    opacity: 0.9;
+  }
+
+  .iconButton {
+    padding: var(--space-2x);
+  }
+
+  :is(.button) :is(svg, img) {
+    width: var(--space-4x);
+    height: var(--space-4x);
+    min-width: var(--space-4x);
+    min-height: var(--space-4x);
+    fill: var(--color-text-primary);
+  }
+
+  .searchInput {
+    display: flex;
+  }
+}

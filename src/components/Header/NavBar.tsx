@@ -1,5 +1,5 @@
 import React from "react"
-import { NavBar as Nav } from "@chainlink/components"
+import { Nav } from "./Nav/Nav"
 import { Search } from "./AlgoSearch/Search"
 import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"

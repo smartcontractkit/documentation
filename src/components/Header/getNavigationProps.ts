@@ -1,3 +1,5 @@
+const devHubProductsUrl = "https://dev.chain.link/products/"
+
 const devHubCategories = [
   {
     label: "Products",
@@ -5,32 +7,32 @@ const devHubCategories = [
       {
         label: "CCIP",
         icon: "ccip",
-        href: "https://dev.chain.link/products/ccip",
+        href: devHubProductsUrl + "ccip",
       },
       {
         label: "Data",
         icon: "data",
-        href: "https://dev.chain.link/products/data",
+        href: devHubProductsUrl + "data",
       },
       {
         label: "Functions",
         icon: "functions",
-        href: "https://dev.chain.link/products/functions",
+        href: devHubProductsUrl + "functions",
       },
       {
         label: "Automation",
         icon: "automation",
-        href: "https://dev.chain.link/products/automation",
+        href: devHubProductsUrl + "automation",
       },
       {
         label: "VRF",
         icon: "vrf",
-        href: "https://dev.chain.link/products/vrf",
+        href: devHubProductsUrl + "vrf",
       },
       {
         label: "General",
         icon: "general",
-        href: "https://dev.chain.link/products/general",
+        href: devHubProductsUrl + "general",
       },
     ],
   },
@@ -84,30 +86,30 @@ const docsSubProductsNav = {
     },
   ],
 }
-const devHubResourcesUrl = "https://dev.chain.link/resources"
+const devHubResourcesUrl = "https://dev.chain.link/resources/"
 
 const quickStartsSubProductsNav = {
   label: "QuickStarts",
   items: [
     {
       label: "All Resources",
-      href: devHubResourcesUrl + "/",
+      href: devHubResourcesUrl,
     },
     {
       label: "Guides",
-      href: devHubResourcesUrl + "/guides",
+      href: devHubResourcesUrl + "guides",
     },
     {
       label: "Courses",
-      href: devHubResourcesUrl + "/courses",
+      href: devHubResourcesUrl + "courses",
     },
     {
       label: "Beginner Tutorials",
-      href: devHubResourcesUrl + "/beginner-tutorials",
+      href: devHubResourcesUrl + "beginner-tutorials",
     },
     {
       label: "Tech Talks",
-      href: devHubResourcesUrl + "/tech-talks",
+      href: devHubResourcesUrl + "tech-talks",
     },
     {
       label: "Documentation",
@@ -115,19 +117,19 @@ const quickStartsSubProductsNav = {
     },
     {
       label: "QuickStarts",
-      href: devHubResourcesUrl + "/quickstarts",
+      href: devHubResourcesUrl + "quickstarts",
     },
     {
       label: "Case Studies",
-      href: devHubResourcesUrl + "/case-studies",
+      href: devHubResourcesUrl + "case-studies",
     },
     {
       label: "Blogs",
-      href: devHubResourcesUrl + "/blogs",
+      href: devHubResourcesUrl + "blogs",
     },
     {
       label: "Videos",
-      href: devHubResourcesUrl + "/videos",
+      href: devHubResourcesUrl + "videos",
     },
     {
       label: "QuickStarts",
