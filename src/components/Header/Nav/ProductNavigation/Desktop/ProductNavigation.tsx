@@ -58,6 +58,18 @@ export const ProductNavigation = ({
               <ProductContent categories={productsNav.categories} />
             </RadixContent>
           </Item>
+
+          <Indicator className={styles.indicator}>
+            <div className={styles.arrow} />
+          </Indicator>
+        </List>
+
+        <div className={styles.viewportPosition}>
+          <Viewport className={styles.navigationViewport} />
+        </div>
+      </Root>
+      <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
+        <List style={{ display: "flex", listStyle: "none" }}>
           <Divider />
           <Item>
             <NavigationMenu.Link href="https://github.com/radix-ui">
