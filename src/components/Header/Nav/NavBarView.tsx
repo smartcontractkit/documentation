@@ -5,7 +5,7 @@ import { getIconUrl } from "./utils"
 import { config } from "./config"
 import { getDevHubPageHref } from "./getDevHubPageHref"
 import { Logo } from "./Logo"
-import { NavBarProps } from "./NavBar"
+import { NavBarProps } from "./Nav"
 import styles from "./navBar.module.css"
 import { NavTabs } from "./NavTabs/NavTabs"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
@@ -93,6 +93,7 @@ export const NavBarView = ({
               <ExternalLink className={styles.iconButton} href={getDevHubPageHref(app)}>
                 <img src={getIconUrl("docs")} />
               </ExternalLink>
+              <div id="weglot"></div>
               {walletSection && walletSection}
               {appConfig.actionButton && (
                 <ExternalLink href={appConfig.actionButton.href} className={styles.button}>
