@@ -1,9 +1,8 @@
-import React from 'react'
-import { AppName, ProductsNav } from '../config'
-import { SubProductsNav } from '../config'
-import { SearchInput } from '../NavBar'
-import { ProductNavigation as Desktop } from './Desktop/ProductNavigation'
-import { ProductNavigation as Mobile } from './Mobile/ProductNavigation'
+import { AppName, ProductsNav } from "../config"
+import { SubProductsNav } from "../config"
+import { SearchInput } from "../Nav"
+import { ProductNavigation as Desktop } from "./Desktop/ProductNavigation"
+import { ProductNavigation as Mobile } from "./Mobile/ProductNavigation"
 
 type Props = {
   app: AppName

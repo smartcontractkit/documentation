@@ -1,13 +1,15 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
 import React from "react"
 import { extendRadixComponent } from "../../extendRadixComponent"
-import { clsx } from "../../utils"
+import { clsx, getImageUrl } from "../../utils"
 import { AppName, config, ProductsNav, SubProductsNav } from "../../config"
 import { isMatchedPath } from "../../isMatchedPath"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
+import trigger from "./trigger.module.css"
 import { SubProductContent } from "./SubProductContent"
 import { Trigger } from "./Trigger"
+import { Divider } from "../../Divider"
 
 type Props = {
   app: AppName
@@ -45,38 +47,47 @@ export const ProductNavigation = ({
   const subProductTrigger = subProductsNav?.items.find(({ href }) => isMatchedPath(path, href))
 
   return (
-    <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
-      <List className={styles.list}>
-        <Item>
-          <RadixTrigger className="nav-product" ref={productMenuRef}>
-            <Trigger
-              icon={!subProductTrigger?.icon ? productsNav.trigger.icon : undefined}
-              label={productsNav.trigger.label}
-            />
-          </RadixTrigger>
-          <RadixContent className={styles.content}>
-            <ProductContent categories={productsNav.categories} />
-          </RadixContent>
-        </Item>
-        {subProductTrigger && subProductsNav && (
+    <>
+      <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
+        <List className={styles.list}>
           <Item>
-            <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
-              <Trigger icon={subProductTrigger.icon} label={subProductTrigger.label} />
+            <RadixTrigger className="nav-product" ref={productMenuRef}>
+              <Trigger icon={!subProductTrigger?.icon ? productsNav.trigger.icon : undefined} label={"Developer Hub"} />
             </RadixTrigger>
             <RadixContent className={styles.content}>
-              <SubProductContent {...subProductsNav} />
+              <ProductContent categories={productsNav.categories} />
             </RadixContent>
           </Item>
-        )}
+          <Divider />
+          <Item>
+            <NavigationMenu.Link href="https://github.com/radix-ui">
+              <div className={trigger.trigger}>
+                <img height={20} width={20} src={getImageUrl(`/docs-navbar-icon.svg`)} />
+                Docs
+              </div>
+            </NavigationMenu.Link>
+          </Item>
 
-        <Indicator className={styles.indicator}>
-          <div className={styles.arrow} />
-        </Indicator>
-      </List>
+          {subProductTrigger && subProductsNav && (
+            <Item>
+              <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
+                <Trigger icon={subProductTrigger.icon} label={subProductTrigger.label} />
+              </RadixTrigger>
+              <RadixContent className={styles.content}>
+                <SubProductContent {...subProductsNav} />
+              </RadixContent>
+            </Item>
+          )}
 
-      <div className={styles.viewportPosition}>
-        <Viewport className={styles.navigationViewport} />
-      </div>
-    </Root>
+          <Indicator className={styles.indicator}>
+            <div className={styles.arrow} />
+          </Indicator>
+        </List>
+
+        <div className={styles.viewportPosition}>
+          <Viewport className={styles.navigationViewport} />
+        </div>
+      </Root>
+    </>
   )
 }

@@ -93,7 +93,7 @@ export const NavBarView = ({
               <ExternalLink className={styles.iconButton} href={getDevHubPageHref(app)}>
                 <img src={getIconUrl("docs")} />
               </ExternalLink>
-              <div id="weglot"></div>
+              {/* <div id="weglot"></div> */}
               {walletSection && walletSection}
               {appConfig.actionButton && (
                 <ExternalLink href={appConfig.actionButton.href} className={styles.button}>

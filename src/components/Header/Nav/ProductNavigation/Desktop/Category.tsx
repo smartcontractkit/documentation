@@ -7,7 +7,7 @@ import styles from "./category.module.css"
 type ListItemProps = SubProductsNavItem & { className?: string }
 
 type CategoryProps = {
-  label: string
+  label?: string
   items: ListItemProps[]
   className?: string
 }
@@ -25,7 +25,7 @@ Item.displayName = "Item"
 
 export const Category = ({ label, items, className }: CategoryProps) => (
   <li className={styles.item}>
-    <span style={{ paddingInline: "var(--space-2x)" }}>{label}</span>
+    {label && <span style={{ paddingInline: "var(--space-2x)" }}>{label}</span>}
     {items
       .filter((item) => !item.hideFromDropdown)
       .map((item) => (

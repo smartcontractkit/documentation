@@ -1,23 +1,33 @@
-import React from 'react'
-import { SubProductsNav } from '../../config'
-import { Category } from './Category'
+import * as NavigationMenu from "@radix-ui/react-navigation-menu"
+import { clsx } from "../../utils"
+import { SubProductsNav } from "../../config"
+import styles from "./subProductContent.module.css"
 
-export const SubProductContent = ({ label, items }: SubProductsNav) => (
+export const SubProductContent = ({ items }: SubProductsNav) => (
   <ul
     style={{
-      display: 'flex',
-      flexDirection: 'column',
-      margin: '0',
-      listStyle: 'none',
-      padding: 'var(--space-6x)',
-      width: '323px',
+      display: "flex",
+      flexDirection: "column",
+      margin: "0",
+      listStyle: "none",
+      padding: "var(--space-2x)",
+      width: "240px",
     }}
   >
-    <Category
-      key={label}
-      label={label}
-      items={items}
-      className="subproduct-link"
-    />
+    <li className={styles.item}>
+      {items
+        .filter((item) => !item.hideFromDropdown)
+        .map((item) => (
+          <NavigationMenu.Link asChild>
+            <a
+              className={clsx(styles.link, "subproduct-link")}
+              href={item.href}
+              // ref={item.forwardedRef}
+            >
+              {item.label}
+            </a>
+          </NavigationMenu.Link>
+        ))}
+    </li>
   </ul>
 )
