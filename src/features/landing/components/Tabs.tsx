@@ -7,13 +7,9 @@ export const Tabs = () => {
   return (
     <>
       <div class={tabs.tabContent}>
-        <div>
-          {evmProducts.map((props) => (
-            <div class={tabs.tabElement}>
-              <ProductCard {...props} />
-            </div>
-          ))}
-        </div>
+        {evmProducts.map((props) => (
+          <ProductCard {...props} />
+        ))}
       </div>
     </>
   )

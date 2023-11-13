@@ -41,6 +41,7 @@ export type SupportedChain =
   | "BASE_GOERLI"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
+  | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
   | "LINEA_GOERLI"
