@@ -16,6 +16,7 @@ PRs are welcome! We try to keep a clean commit history, so we'll follow a standa
   - Changes are often formatted like `add doc X`, `fix page Y`, `improve docs for Z`.
   - Example: "`update contract addresses for BNB Chain`".
 - If you touch any infrastructure, make sure it builds with `yarn build`
+  - If you haven't already, `npm -g install astro`
 - Trust the autoformatter (prettier)
 - Make sure images are optimized and compressed
 - Keep images < 20kb whenever possible to keep the site fast and the repo small (try [trimage](https://trimage.org/))
