@@ -63,8 +63,7 @@ export const evmProducts = [
   },
   {
     title: "Data Streams",
-    description:
-      "Secure and reliable high-frequency market data for ultra-fast derivatives products powered by decentralized and transparent infrastructure.",
+    description: "Secure and reliable high-frequency market data for ultra-fast derivatives products.",
     learnMorelink: "data-streams",
     image: dataStreamsLogo,
     shape: dataStreamsShape,

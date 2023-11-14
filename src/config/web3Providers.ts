@@ -17,6 +17,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   FANTOM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/fantom"),
   FANTOM_TESTNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/fantom_testnet"),
   ARBITRUM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/arbitrum"),
+  ARBITRUM_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia-rollup.arbitrum.io/rpc"),
   ARBITRUM_GOERLI: () =>
     new providers.JsonRpcProvider("https://arb-goerli.g.alchemy.com/v2/AwZE27jvfRidiu-6FFunBzP3Bff0XFNx"),
   OPTIMISM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/optimism"),
