@@ -9,6 +9,7 @@ import {
   getExplorerAddressUrl,
   getNativeCurrency,
   directoryToSupportedChain,
+  getChainIcon,
 } from "@features/utils"
 import LaneConfig from "./LaneConfig.astro"
 
@@ -93,12 +94,29 @@ const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sour
   Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
     const chainKey = directoryToSupportedChain(destinationChainRefId)
     const chainTitle = getTitle(chainKey)
-    const sourceChainTitle = getTitle(directoryToSupportedChain(sourceChainRefId))
     if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
+    const chainIcon = getChainIcon(chainKey)
+    if (!chainIcon) throw Error(`Icon not found for chain ${chainKey}`)
+    const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
+    const sourceChainTitle = getTitle(sourceChainKey)
+    if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
+    const sourceChainIcon = getChainIcon(sourceChainKey)
+    if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
     const id = `${sourceChain}-${chainKey}`.replace(/_/g, "-").toLowerCase()
     return (
       <>
         <Accordion title={`From ${sourceChainTitle} to ${chainTitle}`} contentReference={id}>
+          <div slot="title" style="display: flex; align-items: center;">
+            <div class="logo-title-container">
+              <img src={sourceChainIcon} class="logo-image" />
+              <span>{sourceChainTitle}</span>
+            </div>
+            <span class="arrow">➡️</span>
+            <div class="logo-title-container">
+              <img src={chainIcon} class="logo-image" />
+              <span>{chainTitle}</span>
+            </div>
+          </div>
           <LaneConfig
             laneConfig={laneConfig}
             sourceChain={sourceChain}
@@ -110,3 +128,21 @@ const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sour
     )
   })
 }
+
+<style>
+  .logo-title-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .arrow {
+    margin: 0 5px;
+    font-size: 15px;
+  }
+
+  .logo-image {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+  }
+</style>

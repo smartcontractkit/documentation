@@ -51,6 +51,7 @@ export type Chains = Record<
   SupportedTechnology,
   {
     title: string
+    icon: string
     chains: Partial<
       Record<
         SupportedChain,

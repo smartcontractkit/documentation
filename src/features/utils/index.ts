@@ -28,6 +28,12 @@ export const getTitle = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.title
 }
 
+export const getChainIcon = (supportedChain: SupportedChain) => {
+  const technology = chainToTechnology[supportedChain]
+  if (!technology) return
+  return chains[technology].icon
+}
+
 type NormalizedConfig<T> = Partial<
   Record<
     SupportedTechnology,

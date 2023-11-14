@@ -1,7 +1,7 @@
 ---
 import { Accordion, Aside } from "@components"
 import { loadReferenceData } from "@config/data/ccip/"
-import { directoryToSupportedChain, getTitle } from "@features/utils"
+import { directoryToSupportedChain, getTitle, getChainIcon } from "@features/utils"
 import ChainConfig from "./ChainConfig.astro"
 
 const { environment } = Astro.props
@@ -28,10 +28,16 @@ const chainsReferenceData = loadReferenceData(environment).chainsReferenceData
     const chainKey = directoryToSupportedChain(chainRefId)
     const chainTitle = getTitle(chainKey)
     if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
+    const chainIcon = getChainIcon(chainKey)
+    if (!chainIcon) throw Error(`Icon not found for chain ${chainKey}`)
     const id = chainKey.replace(/_/g, "-").toLowerCase()
     return (
       <>
         <Accordion title={chainTitle} contentReference={id}>
+          <div slot="title" class="logo-title-container">
+            <img src={chainIcon} class="logo-image" />
+            <span>{chainTitle}</span>
+          </div>
           <ChainConfig
             chainConfig={chainConfig}
             sourceChain={chainKey}
@@ -43,3 +49,16 @@ const chainsReferenceData = loadReferenceData(environment).chainsReferenceData
     )
   })
 }
+
+<style>
+  .logo-title-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo-image {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+  }
+</style>
