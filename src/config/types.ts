@@ -45,12 +45,13 @@ export type SupportedChain =
   | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
-  | "LINEA_GOERLI_TESTNET"
+  | "LINEA_GOERLI"
 
 export type Chains = Record<
   SupportedTechnology,
   {
     title: string
+    icon: string
     chains: Partial<
       Record<
         SupportedChain,
@@ -58,6 +59,11 @@ export type Chains = Record<
           chainId: number
           title: string
           explorer: string
+          nativeCurrency: {
+            name: string
+            symbol: string
+            decimals: number
+          }
         }
       >
     >

@@ -4,11 +4,17 @@ export class Accordion extends HTMLElement {
   animation: Animation | null
   isClosing = false
   isExpanding = false
+  contentReference: string | null = null
+
   constructor() {
     super()
     this.details = this.querySelector("details") as HTMLDetailsElement
     this.summary = this.details.querySelector("summary") as HTMLElement
     this.summary.addEventListener("click", (e: MouseEvent) => this.onClick(e))
+  }
+
+  connectedCallback() {
+    this.contentReference = this.getAttribute("contentReference")
   }
 
   cancelIfAnimating() {
@@ -68,7 +74,7 @@ export class Accordion extends HTMLElement {
       },
       { duration, easing: "ease-out" }
     )
-    this.animation.onfinish = () => this.onAnimationFinish(true)
+    this.animation.onfinish = () => this.finishAnimationAndUpdateHash()
     this.animation.oncancel = () => (this.isExpanding = false)
   }
 
@@ -77,5 +83,31 @@ export class Accordion extends HTMLElement {
     this.animation = null
     this.isClosing = this.isExpanding = false
     this.details.style.height = ""
+  }
+
+  finishAnimationAndUpdateHash() {
+    this.onAnimationFinish(true)
+
+    if (this.contentReference) {
+      const newHash = `#${this.contentReference}`
+      if (window.location.hash !== newHash) {
+        window.location.hash = newHash
+
+        // this will scroll to the content but should be adjusted due to the fixed navbar
+        setTimeout(() => {
+          const targetElement = document.getElementById(this.contentReference as string)
+          if (targetElement) {
+            const offset = 150
+            const elementPosition = targetElement.getBoundingClientRect().top
+            const offsetPosition = elementPosition + window.pageYOffset - offset
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: "smooth",
+            })
+          }
+        }, 0)
+      }
+    }
   }
 }
