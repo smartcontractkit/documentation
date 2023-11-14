@@ -1,5 +1,43 @@
 import chains from "../../../scripts/reference/chains.json"
 import { utils } from "ethers"
+import { ChainsConfig, LanesConfig, TokensConfig } from "./types"
+
+// For mainnet
+import chainsMainnet from "@config/data/ccip/mainnet/chains.json"
+import lanesMainnet from "@config/data/ccip/mainnet/lanes.json"
+import tokensMainnet from "@config/data/ccip/mainnet//tokens.json"
+
+// For testnet
+
+import chainsTestnet from "@config/data/ccip/testnet/chains.json"
+import lanesTestnet from "@config/data/ccip/testnet/lanes.json"
+import tokensTestnet from "@config/data/ccip/testnet/tokens.json"
+
+export enum Environment {
+  Mainnet = "mainnet",
+  Testnet = "testnet",
+}
+export const loadReferenceData = (environment: Environment) => {
+  let chainsReferenceData: ChainsConfig, lanesReferenceData: LanesConfig, tokensReferenceData: TokensConfig
+  switch (
+    environment // Make sure to use the parameter 'environment', not the type 'Environment'
+  ) {
+    case Environment.Mainnet:
+      chainsReferenceData = chainsMainnet as unknown as ChainsConfig
+      lanesReferenceData = lanesMainnet as unknown as LanesConfig
+      tokensReferenceData = tokensMainnet as unknown as TokensConfig
+      break
+    case Environment.Testnet:
+      chainsReferenceData = chainsTestnet as unknown as ChainsConfig
+      lanesReferenceData = lanesTestnet as unknown as LanesConfig
+      tokensReferenceData = tokensTestnet as unknown as TokensConfig
+      break
+    default:
+      throw Error(`Wrong environment ${environment}`)
+  }
+
+  return { chainsReferenceData, lanesReferenceData, tokensReferenceData }
+}
 
 interface CCIPTokenParams {
   type: string

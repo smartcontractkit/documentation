@@ -1,0 +1,148 @@
+---
+import { ChainConfig } from "@config/data/ccip/types"
+import { loadReferenceData, Environment } from "@config/data/ccip/"
+import { SupportedChain } from "@config"
+import { Address, CopyText, Accordion } from "@components"
+import {
+  getTitle,
+  getExplorer,
+  getExplorerAddressUrl,
+  getNativeCurrency,
+  directoryToSupportedChain,
+  getChainIcon,
+} from "@features/utils"
+import LaneConfig from "./LaneConfig.astro"
+
+type ConfigProps = {
+  chainConfig: ChainConfig
+  sourceChain: SupportedChain // key in SupportedChain
+  sourceChainRefId: string // id in reference directory
+  environment: Environment
+}
+
+const { chainConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
+const { router, chainSelector, feeTokens } = chainConfig
+const explorerUrl = getExplorer(sourceChain)
+if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
+const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router)
+const nativeCurrency = getNativeCurrency(sourceChain)
+if (!nativeCurrency) throw Error(`Native currency not found for ${sourceChain}`)
+// sort tokens - LINK first
+feeTokens.sort((feeToken1, feeToken2) => {
+  if (feeToken1 === "LINK") {
+    return -1
+  } else if (feeToken2 === "LINK") {
+    return 1
+  } else {
+    return 0
+  }
+})
+
+let tokensReferenceData
+try {
+  tokensReferenceData = loadReferenceData(environment).tokensReferenceData
+} catch (error) {
+  console.error(error)
+  throw Error(`Error while loading CCIP reference data`)
+}
+const feeTokensWithAddresses = feeTokens.map((feeToken) => {
+  const tokenAddress = tokensReferenceData[feeToken][sourceChainRefId].tokenAddress
+  return {
+    token: feeToken,
+    address: tokenAddress,
+  }
+})
+
+const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sourceChainRefId]
+---
+
+<table>
+  <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Router address</td>
+      <td><Address contractUrl={routerExplorerUrl} /></td>
+    </tr>
+    <tr>
+      <td>Chain Selector</td>
+      <td><CopyText text={chainSelector} code /></td>
+    </tr>
+    <tr>
+      <td>Supported Fee tokens</td>
+      <td>
+        <ul>
+          {
+            feeTokensWithAddresses.map((feeTokenWithAddress) => (
+              <li>
+                {feeTokenWithAddress.token}{" "}
+                <Address contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)} endLength={7} />
+              </li>
+            ))
+          }
+          <li>{nativeCurrency.symbol}</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br />
+<p>
+  <strong>Lanes:</strong>
+</p>
+<br />
+{
+  Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
+    const chainKey = directoryToSupportedChain(destinationChainRefId)
+    const chainTitle = getTitle(chainKey)
+    if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
+    const chainIcon = getChainIcon(chainKey)
+    if (!chainIcon) throw Error(`Icon not found for chain ${chainKey}`)
+    const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
+    const sourceChainTitle = getTitle(sourceChainKey)
+    if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
+    const sourceChainIcon = getChainIcon(sourceChainKey)
+    if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
+    const id = `${sourceChain}-${chainKey}`.replace(/_/g, "-").toLowerCase()
+    return (
+      <>
+        <Accordion title={`From ${sourceChainTitle} to ${chainTitle}`} contentReference={id}>
+          <div slot="title" style="display: flex; align-items: center;">
+            <div class="logo-title-container">
+              <img src={sourceChainIcon} class="logo-image" />
+              <span>{sourceChainTitle}</span>
+            </div>
+            <span class="arrow">➡️</span>
+            <div class="logo-title-container">
+              <img src={chainIcon} class="logo-image" />
+              <span>{chainTitle}</span>
+            </div>
+          </div>
+          <LaneConfig
+            laneConfig={laneConfig}
+            sourceChain={sourceChain}
+            sourceChainRefId={sourceChainRefId}
+            environment={environment}
+          />
+        </Accordion>
+      </>
+    )
+  })
+}
+
+<style>
+  .logo-title-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .arrow {
+    margin: 0 5px;
+    font-size: 15px;
+  }
+
+  .logo-image {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+  }
+</style>

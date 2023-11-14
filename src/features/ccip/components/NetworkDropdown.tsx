@@ -5,7 +5,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import { ethers, Contract } from "ethers"
 import { burnMintAbi } from "~/features/abi"
-import { CCIPNetworkOptions, getchainByChainId } from "../data/data"
+import { CCIPNetworkOptions, getchainByChainId } from "@config/data/ccip"
 import { Toast } from "./Toast"
 
 enum LoadingState {

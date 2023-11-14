@@ -821,6 +821,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "ccip/supported-networks",
+          children: [
+            {
+              title: "Mainnet",
+              url: "ccip/supported-networks/mainnet",
+            },
+            {
+              title: "Testnet",
+              url: "ccip/supported-networks/testnet",
+            },
+          ],
         },
         {
           title: "Billing",
