@@ -145,14 +145,16 @@ if (supportedTokens) {
       ) : null}
       <>
         <p>
-          <strong>Supported tokens:</strong>
+          <strong>Supported tokens</strong>
         </p>
         <table>
           <thead>
             <tr>
               <th>Symbol</th>
               <th>Token Address</th>
-              <th>Attributes</th>
+              <th>Decimals</th>
+              <th>Rate Limit Capacity</th>
+              <th>Rate Limit Refill Rate</th>
             </tr>
           </thead>
           <tbody>
@@ -163,39 +165,30 @@ if (supportedTokens) {
                   <td>
                     <Address
                       contractUrl={getExplorerAddressUrl(explorerUrl)(tokenWithExtraInfo.address)}
-                      endLength={7}
+                      endLength={4}
                     />
                   </td>
+                  <td>{tokenWithExtraInfo.decimals}</td>
                   <td>
-                    <ul>
-                      <li>
-                        <strong>Decimals: </strong>
-                        {tokenWithExtraInfo.decimals}
-                      </li>
-                      {tokenWithExtraInfo.rateLimiterConfig?.isEnabled && (
-                        <>
-                          <li>
-                            <strong>Rate limit capacity: </strong>
-                            {display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
-                              " " +
-                              tokenWithExtraInfo.token}
-                          </li>
-                          <li>
-                            <strong>Rate limit refill rate: </strong>
-                            {displayRate(
-                              tokenWithExtraInfo.rateLimiterConfig.capacity,
-                              tokenWithExtraInfo.rateLimiterConfig.rate,
-                              tokenWithExtraInfo.token,
-                              tokenWithExtraInfo.decimals
-                            )}
-                          </li>
-                        </>
-                      )}
-                    </ul>
+                    {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
+                      ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
+                        " " +
+                        tokenWithExtraInfo.token
+                      : "N/A"}
+                  </td>
+                  <td>
+                    {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
+                      ? displayRate(
+                          tokenWithExtraInfo.rateLimiterConfig.capacity,
+                          tokenWithExtraInfo.rateLimiterConfig.rate,
+                          tokenWithExtraInfo.token,
+                          tokenWithExtraInfo.decimals
+                        )
+                      : "N/A"}
                   </td>
                 </tr>
               )
-            })}{" "}
+            })}
           </tbody>
         </table>
       </>
