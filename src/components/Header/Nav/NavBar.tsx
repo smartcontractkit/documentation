@@ -25,6 +25,7 @@ export const NavBar = (props: NavBarProps) => {
       onHideChange={onHideChange}
       productsNav={props.productsNav}
       subProductsNav={props.subProductsNav}
+      languageSelector={<div id="weglot"></div>}
     />
   )
 }
