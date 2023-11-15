@@ -1,10 +1,9 @@
 .root {
   position: relative;
   display: none;
-  justify-content: center;
+  /* justify-content: left; */
   width: fit-content;
   z-index: 1;
-  margin-left: var(--space-1x);
 }
 
 @media screen and (min-width: 768px) {
@@ -22,11 +21,43 @@
   align-items: center;
   list-style: none;
   margin: 0;
+  /* gap: var(--space-2x); */
+}
+
+.productTrigger {
+  margin-left: var(--space-2x);
+}
+
+.logo {
+  padding-block: var(--space-1x);
+  display: block;
+}
+
+:is(.logo, .button):focus-visible {
+  outline: 0;
+  box-shadow: 0px 0px 0px 4px var(--color-border-interactive-focus), 0px 12px 32px -12px rgba(12, 22, 44, 0.32);
+}
+
+.button {
+  composes: text-300 from global;
+  line-height: 1.5rem;
+  padding-block: var(--space-2x);
+  outline: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  width: fit-content;
+  color: var(--blue-800);
+}
+
+.button:hover {
+  color: var(--blue-600);
 }
 
 .content {
   position: absolute;
-  top: 12;
+  top: 0;
   animation-duration: 250ms;
   animation-timing-function: ease;
   display: flex;
@@ -38,16 +69,16 @@
   max-width: 90dvw;
 }
 
-.content[data-motion='from-start'] {
+.content[data-motion="from-start"] {
   animation-name: enterFromLeft;
 }
-.content[data-motion='from-end'] {
+.content[data-motion="from-end"] {
   animation-name: enterFromRight;
 }
-.content[data-motion='to-start'] {
+.content[data-motion="to-start"] {
   animation-name: exitToLeft;
 }
-.content[data-motion='to-end'] {
+.content[data-motion="to-end"] {
   animation-name: exitToRight;
 }
 
@@ -65,10 +96,10 @@
   z-index: 1;
   transition: width, transform 250ms ease;
 }
-.indicator[data-state='visible'] {
+.indicator[data-state="visible"] {
   animation: fadeIn 200ms ease;
 }
-.indicator[data-state='hidden'] {
+.indicator[data-state="hidden"] {
   animation: fadeOut 200ms ease;
 }
 
@@ -92,10 +123,10 @@
   height: var(--radix-navigation-menu-viewport-height);
   transition: width, height, 300ms ease;
 }
-.navigationViewport[data-state='open'] {
+.navigationViewport[data-state="open"] {
   animation: scaleIn 200ms ease;
 }
-.navigationViewport[data-state='closed'] {
+.navigationViewport[data-state="closed"] {
   animation: scaleOut 200ms ease;
 }
 
@@ -191,4 +222,8 @@
   to {
     opacity: 0;
   }
+}
+
+.divider {
+  margin-inline: var(--space-4x);
 }

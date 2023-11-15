@@ -1,64 +1,37 @@
-import React from "react"
-import { clsx, getIconUrl } from "../../utils"
-import { AppName } from "../../config"
-import { getDevHubPageHref } from "../../getDevHubPageHref"
-import { ResourcesIcon } from "../../ResourcesIcon"
-import { BackArrowIcon } from "./BackArrowIcon"
-import styles from "./bottomBar.module.css"
+import React from 'react'
+import { ResourcesIcon } from '../../ResourcesIcon'
+import styles from './bottomBar.module.css'
 
-type Props = {
-  app: AppName
-  setShowSearch: React.Dispatch<React.SetStateAction<boolean>>
-  showSearch?: boolean
-  searchInput: boolean
-}
-
-const SearchButton = ({ showSearch, setShowSearch }: Props) => (
-  <button
-    data-testid="search-submenu-trigger"
-    className={clsx(showSearch === true && styles.back)}
-    onClick={() => setShowSearch(showSearch ? false : true)}
+const ResourcesButton = () => (
+  <a
+    rel="noreferrer"
+    target="_blank"
+    className="nav-cta"
+    href="https://github.com/smartcontractkit/documentation"
   >
-    {showSearch ? (
-      <>
-        <BackArrowIcon />
-        Back
-      </>
-    ) : (
-      <>
-        <img src={getIconUrl("search")} />
-        Search
-      </>
-    )}
-    <div className={styles.divider} />
-  </button>
-)
-
-const ResourcesButton = ({ app }: { app: AppName }) => (
-  <a target="blank" rel="noreferrer" className="nav-cta" href={getDevHubPageHref(app)}>
     <ResourcesIcon />
-    <span
-      style={{
-        color: "var(--color-text-primary)", // Yes, this is necessary
-      }}
-    >
-      Resources
-    </span>
+    <span>GitHub</span>
+
+    {/* 
+      This divider should be added for the 2nd and 3rd buttons
+        <div className={styles.divider} /> 
+    */}
   </a>
 )
 
-export const BottomBar = (props: Props) => {
-  const showSearchButtom = Boolean(props.searchInput)
-
+export const BottomBar = () => {
+  // Additional buttons should be added to this array in order to have the right number of columns in the layout
+  const buttons = [ResourcesButton]
   return (
     <div
       className={styles.bottomBar}
       style={{
-        gridTemplateColumns: `repeat(${showSearchButtom ? "2" : "1"}, 1fr)`,
+        gridTemplateColumns: `repeat(${buttons.length}, 1fr)`,
       }}
     >
-      {showSearchButtom && <SearchButton {...props} />}
-      <ResourcesButton app={props.app} />
+      {buttons.map((ButtonComponent, index) => (
+        <ButtonComponent key={index} />
+      ))}
     </div>
   )
 }

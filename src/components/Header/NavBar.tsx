@@ -1,5 +1,5 @@
 import React from "react"
-import { Nav } from "./Nav/Nav"
+import { NavBar as Nav } from "./Nav"
 import { Search } from "./AlgoSearch/Search"
 import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
@@ -27,7 +27,6 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
   return (
     <span ref={navRef}>
       <Nav
-        app="Docs"
         {...getNavigationProps(path)}
         path={path}
         searchTrigger={showSearch ? <Search /> : undefined}

@@ -1,7 +1,7 @@
-import React from "react"
-import { clsx } from "../../utils"
-import { BackArrowIcon } from "./BackArrowIcon"
-import styles from "./subProductContent.module.css"
+import React from 'react'
+import { clsx } from '../../utils'
+import { BackArrowIcon } from './BackArrowIcon'
+import styles from './subProductContent.module.css'
 
 type Props = {
   onSubproductClick: () => void
@@ -13,7 +13,10 @@ type Props = {
     | undefined
 }
 
-export const SubProductContent = ({ subProducts, onSubproductClick }: Props) => {
+export const SubProductContent = ({
+  subProducts,
+  onSubproductClick,
+}: Props) => {
   if (!subProducts) return null
   return (
     <>
@@ -23,14 +26,18 @@ export const SubProductContent = ({ subProducts, onSubproductClick }: Props) => 
       </button>
       <span
         style={{
-          color: "var(--gray-400",
-          margin: "var(--space-3x) var(--space-0x)",
+          color: 'var(--gray-400',
+          margin: 'var(--space-3x) var(--space-0x)',
         }}
       >
-        / {subProducts.label} /
+        {subProducts.label}
       </span>
       {subProducts.items.map(({ label, href }) => (
-        <a key={label} className={clsx(styles.link, "subproduct-link")} href={href}>
+        <a
+          key={label}
+          className={clsx(styles.link, 'subproduct-link')}
+          href={href}
+        >
           {label}
         </a>
       ))}

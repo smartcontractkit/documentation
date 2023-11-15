@@ -1,7 +1,8 @@
 import React from 'react'
 
-export const Divider = () => (
+export const Divider = ({ className }: { className?: string }) => (
   <div
+    className={className}
     style={{
       backgroundColor: 'var(--blue-200)',
       width: '1px',
