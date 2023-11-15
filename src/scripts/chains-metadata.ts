@@ -56,7 +56,7 @@ const compareChainsMetadata = async () => {
 
 compareChainsMetadata().then(async (res) => {
   if (!res.isEqual) {
-    const chainsTobePath = normalize("./scripts/reference/chainsToBe.json")
+    const chainsTobePath = normalize("./src/scripts/reference/chainsToBe.json")
     await writeFile(
       chainsTobePath,
       format(JSON.stringify(res.toBeChainsMetadata), {
