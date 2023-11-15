@@ -1,9 +1,9 @@
-import React from 'react'
-import { ProductItem } from '../../config'
-import { clsx, getImageUrl } from '../../utils'
-import { CaretRightIcon } from './CaretRightIcon'
-import styles from './category.module.css'
-import { SubProducts } from './ProductNavigation'
+import React from "react"
+import { ProductItem } from "../../config"
+import { clsx, getImageUrl } from "../../utils"
+import { CaretRightIcon } from "./CaretRightIcon"
+import styles from "./category.module.css"
+import { SubProducts } from "./ProductNavigation"
 
 type ListItemProps = {
   item: ProductItem
@@ -11,28 +11,19 @@ type ListItemProps = {
 }
 
 const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
-  (
-    { item: { label, icon, href, subProducts }, onProductClick },
-    forwardedRef,
-  ) => {
+  ({ item: { label, icon, href, subProducts }, onProductClick }, forwardedRef) => {
     const itemComponent = (
       <>
-        {icon && (
-          <img
-            height={24}
-            width={24}
-            src={getImageUrl(`/${icon}-navbar-icon.svg`)}
-          />
-        )}
-        <span style={{ flex: 1, textAlign: 'start' }} className="text-300">
+        {icon && <img height={24} width={24} src={getImageUrl(`/${icon}-navbar-icon.svg`)} />}
+        <span style={{ flex: 1, textAlign: "start" }} className="text-300">
           {label}
         </span>
       </>
     )
     return subProducts ? (
       <button
-        className={clsx(styles.link, 'product-link')}
-        style={{ marginTop: 'var(--space-0x)' }}
+        className={clsx(styles.link, "product-link")}
+        style={{ marginTop: "var(--space-0x)" }}
         onClick={() => onProductClick(subProducts)}
         data-testid="sub-product-navigation-trigger-mobile"
       >
@@ -40,18 +31,14 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
         <CaretRightIcon />
       </button>
     ) : (
-      <a
-        className={clsx(styles.link, 'product-link')}
-        href={href}
-        ref={forwardedRef}
-      >
+      <a className={clsx(styles.link, "product-link")} href={href} ref={forwardedRef}>
         {itemComponent}
       </a>
     )
-  },
+  }
 )
 
-Item.displayName = 'Item'
+Item.displayName = "Item"
 
 type CategoryProps = {
   label?: string

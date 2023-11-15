@@ -34,7 +34,7 @@ export type AppConfig = {
   logo: {
     productIcon: string
     href: string
-    ecosystemIcon: 'chainlink' | 'developerHub'
+    ecosystemIcon: "chainlink" | "developerHub"
   }
   productsNav: ProductsNav
   subProductsNav?: SubProductsNav
@@ -44,64 +44,64 @@ export const devHubCategories = [
   {
     items: [
       {
-        label: 'Home',
-        icon: 'home',
-        href: 'https://dev.chain.link/',
+        label: "Home",
+        icon: "home",
+        href: "https://dev.chain.link/",
         subMenu: {
           label: "Home's subproducts",
           items: [
-            { label: 'Subproduct 1', href: 'https://...' },
+            { label: "Subproduct 1", href: "https://..." },
             {
-              label: 'Subproduct 2',
-              href: 'https://',
+              label: "Subproduct 2",
+              href: "https://",
             },
           ],
         },
       },
       {
-        label: 'Docs',
-        icon: 'docs',
-        href: 'https://docs.chain.link',
+        label: "Docs",
+        icon: "docs",
+        href: "https://docs.chain.link",
       },
       {
-        label: 'All Resources',
-        icon: 'resources',
-        href: 'https://dev.chain.link/resources',
+        label: "All Resources",
+        icon: "resources",
+        href: "https://dev.chain.link/resources",
       },
     ],
   },
   {
-    label: 'Product Resources',
+    label: "Product Resources",
     items: [
       {
-        label: 'CCIP',
-        icon: 'ccip',
-        href: 'https://dev.chain.link/products/ccip',
+        label: "CCIP",
+        icon: "ccip",
+        href: "https://dev.chain.link/products/ccip",
       },
       {
-        label: 'Data',
-        icon: 'data',
-        href: 'https://dev.chain.link/products/data',
+        label: "Data",
+        icon: "data",
+        href: "https://dev.chain.link/products/data",
       },
       {
-        label: 'Functions',
-        icon: 'functions',
-        href: 'https://dev.chain.link/products/functions',
+        label: "Functions",
+        icon: "functions",
+        href: "https://dev.chain.link/products/functions",
       },
       {
-        label: 'Automation',
-        icon: 'automation',
-        href: 'https://dev.chain.link/products/automation',
+        label: "Automation",
+        icon: "automation",
+        href: "https://dev.chain.link/products/automation",
       },
       {
-        label: 'VRF',
-        icon: 'vrf',
-        href: 'https://dev.chain.link/products/vrf',
+        label: "VRF",
+        icon: "vrf",
+        href: "https://dev.chain.link/products/vrf",
       },
       {
-        label: 'General',
-        icon: 'general',
-        href: 'https://dev.chain.link/products/general',
+        label: "General",
+        icon: "general",
+        href: "https://dev.chain.link/products/general",
       },
     ],
   },

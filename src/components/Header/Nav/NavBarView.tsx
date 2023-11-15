@@ -1,10 +1,10 @@
-import React from 'react'
-import { NavBarProps } from './NavBar'
-import styles from './navBar.module.css'
-import { ProductNavigation } from './ProductNavigation/ProductNavigation'
-import { useScrollDirection } from './useScrollDirection'
-import { useScrollPosition } from './useScrollPosition'
-import { clsx, getIconUrl } from './utils'
+import React from "react"
+import { NavBarProps } from "./NavBar"
+import styles from "./navBar.module.css"
+import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
+import { useScrollDirection } from "./useScrollDirection"
+import { useScrollPosition } from "./useScrollPosition"
+import { clsx, getIconUrl } from "./utils"
 
 type Props = NavBarProps & {
   isMenuOpen: boolean
@@ -30,7 +30,7 @@ export const NavBarView = ({
 
   let shouldHideHeader = false
 
-  if (scrollDirection === 'down') {
+  if (scrollDirection === "down") {
     shouldHideHeader = true
   }
 
@@ -55,12 +55,7 @@ export const NavBarView = ({
   return (
     <>
       <header className={styles.header}>
-        <div
-          className={clsx(
-            styles.navBar,
-            shouldHideHeader && styles.headerHidden,
-          )}
-        >
+        <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
           <div className={styles.container}>
             <div className={styles.section}>
               <ProductNavigation
@@ -72,9 +67,7 @@ export const NavBarView = ({
               />
             </div>
             <div className={styles.section}>
-              {searchTrigger && (
-                <div className={styles.searchTrigger}>{searchTrigger}</div>
-              )}
+              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               {!!languageSelector && languageSelector}
               <a
                 rel="noreferrer"
@@ -82,7 +75,7 @@ export const NavBarView = ({
                 className={clsx(styles.iconButton)}
                 href="https://github.com/smartcontractkit/documentation"
               >
-                <img src={getIconUrl('github')} />
+                <img src={getIconUrl("github")} />
               </a>
             </div>
           </div>

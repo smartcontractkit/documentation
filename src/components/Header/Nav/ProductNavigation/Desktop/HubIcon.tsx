@@ -1,13 +1,7 @@
-import React from 'react'
+import React from "react"
 
 export const HubIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g filter="url(#filter0_i_2566_16224)">
       <path
         d="M9.74045 22.4001C7.66266 22.1186 5.70488 21.2621 4.08796 19.9272C2.47104 18.5922 1.25933 16.832 0.589517 14.8451C-0.0802961 12.8582 -0.181557 10.7237 0.297159 8.68228C0.775874 6.64089 1.81552 4.77388 3.2988 3.29189C4.78209 1.80989 6.64999 0.771871 8.6918 0.29493C10.7336 -0.182011 12.8681 -0.0788948 14.8544 0.592645C16.8407 1.26418 18.5999 2.47743 19.9334 4.0955C21.2669 5.71358 22.1217 7.6721 22.4014 9.75014"
@@ -53,10 +47,7 @@ export const HubIcon = () => (
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    <path
-      d="M13.9624 0.329102C15.256 2.51337 16.0443 4.95951 16.2694 7.4881L13.9624 0.329102Z"
-      fill="#FAFAFB"
-    />
+    <path d="M13.9624 0.329102C15.256 2.51337 16.0443 4.95951 16.2694 7.4881L13.9624 0.329102Z" fill="#FAFAFB" />
     <path
       d="M13.9624 0.329102C15.256 2.51337 16.0443 4.95951 16.2694 7.4881"
       stroke="#375BD2"
@@ -88,12 +79,7 @@ export const HubIcon = () => (
         colorInterpolationFilters="sRGB"
       >
         <feFlood floodOpacity="0" result="BackgroundImageFix" />
-        <feBlend
-          mode="normal"
-          in="SourceGraphic"
-          in2="BackgroundImageFix"
-          result="shape"
-        />
+        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"
@@ -102,15 +88,8 @@ export const HubIcon = () => (
         />
         <feOffset dx="-3" dy="1" />
         <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0.87451 0 0 0 0 0.905882 0 0 0 0 0.984314 0 0 0 1 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="shape"
-          result="effect1_innerShadow_2566_16224"
-        />
+        <feColorMatrix type="matrix" values="0 0 0 0 0.87451 0 0 0 0 0.905882 0 0 0 0 0.984314 0 0 0 1 0" />
+        <feBlend mode="normal" in2="shape" result="effect1_innerShadow_2566_16224" />
       </filter>
     </defs>
   </svg>

@@ -1,14 +1,14 @@
-import * as NavigationMenu from '@radix-ui/react-navigation-menu'
-import React from 'react'
-import { ProductsNav, SubProductsNav } from '../../config'
-import { Divider } from '../../Divider'
-import { isMatchedPath } from '../../isMatchedPath'
-import { clsx, getIconUrl } from '../../utils'
-import { extendRadixComponent } from '../extendRadixComponent'
-import { ProductContent } from './ProductContent'
-import styles from './productNavigation.module.css'
-import { SubProductContent } from './SubProductContent'
-import { Trigger } from './Trigger'
+import * as NavigationMenu from "@radix-ui/react-navigation-menu"
+import React from "react"
+import { ProductsNav, SubProductsNav } from "../../config"
+import { Divider } from "../../Divider"
+import { isMatchedPath } from "../../isMatchedPath"
+import { clsx, getIconUrl } from "../../utils"
+import { extendRadixComponent } from "../extendRadixComponent"
+import { ProductContent } from "./ProductContent"
+import styles from "./productNavigation.module.css"
+import { SubProductContent } from "./SubProductContent"
+import { Trigger } from "./Trigger"
 
 type Props = {
   path: string
@@ -25,62 +25,36 @@ const Viewport = extendRadixComponent(NavigationMenu.Viewport)
 const RadixTrigger = extendRadixComponent(NavigationMenu.Trigger)
 const RadixContent = extendRadixComponent(NavigationMenu.Content)
 
-export const ProductNavigation = ({
-  path,
-  setNavMenuOpen,
-  productsNav,
-  subProductsNav,
-}: Props) => {
+export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProductsNav }: Props) => {
   const productMenuRef = React.useRef<HTMLButtonElement>(null)
   const productMenuDataset = productMenuRef.current?.dataset ?? {}
-  const productMenuOpen = React.useMemo(
-    () => productMenuDataset.state === 'open',
-    [productMenuDataset.state],
-  )
+  const productMenuOpen = React.useMemo(() => productMenuDataset.state === "open", [productMenuDataset.state])
   const subProductMenuRef = React.useRef<HTMLButtonElement>(null)
   const subProductMenuDataset = subProductMenuRef.current?.dataset ?? {}
-  const subProductMenuOpen = React.useMemo(
-    () => subProductMenuDataset.state === 'open',
-    [subProductMenuDataset.state],
-  )
+  const subProductMenuOpen = React.useMemo(() => subProductMenuDataset.state === "open", [subProductMenuDataset.state])
 
-  React.useEffect(
-    () => setNavMenuOpen(productMenuOpen || subProductMenuOpen),
-    [productMenuOpen, subProductMenuOpen],
-  )
+  React.useEffect(() => setNavMenuOpen(productMenuOpen || subProductMenuOpen), [productMenuOpen, subProductMenuOpen])
 
-  const subProductTrigger = subProductsNav?.find(({ href }) =>
-    isMatchedPath(path, href),
-  )
+  const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
   return (
     <>
-      <Root
-        className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}
-      >
+      <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
         <List className={styles.list}>
           <Item>
-            <a
-              rel="noreferrer"
-              target="_blank"
-              className={clsx('home-logo', styles.logo)}
-              href="https://chain.link/"
-            >
+            <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
               <img
                 alt="Chainlink Home"
                 title="Chainlink Home"
-                style={{ display: 'flex' }}
-                src={getIconUrl('logo-chainlink')}
+                style={{ display: "flex" }}
+                src={getIconUrl("logo-chainlink")}
                 height={28}
               />
             </a>
           </Item>
           <Item>
             <RadixTrigger className="nav-product" ref={productMenuRef}>
-              <Trigger
-                className={styles.productTrigger}
-                label="Developer Hub"
-              />
+              <Trigger className={styles.productTrigger} label="Developer Hub" />
             </RadixTrigger>
             <RadixContent className={styles.content}>
               <ProductContent categories={productsNav.categories} />
@@ -102,7 +76,7 @@ export const ProductNavigation = ({
         <List className={styles.list}>
           <Item>
             <NavigationMenu.Link className={styles.button} href="/">
-              <img src={getIconUrl('documentation')} />
+              <img src={getIconUrl("documentation")} />
               Docs
             </NavigationMenu.Link>
           </Item>
@@ -110,10 +84,7 @@ export const ProductNavigation = ({
             <>
               <Divider className={styles.divider} />
               <Item>
-                <RadixTrigger
-                  className="nav-subproduct"
-                  ref={subProductMenuRef}
-                >
+                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
                   <Trigger label={subProductTrigger.label} />
                 </RadixTrigger>
                 <RadixContent className={styles.content}>

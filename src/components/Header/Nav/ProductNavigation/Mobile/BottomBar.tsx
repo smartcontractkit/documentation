@@ -1,14 +1,9 @@
-import React from 'react'
-import { ResourcesIcon } from '../../ResourcesIcon'
-import styles from './bottomBar.module.css'
+import React from "react"
+import { ResourcesIcon } from "../../ResourcesIcon"
+import styles from "./bottomBar.module.css"
 
 const ResourcesButton = () => (
-  <a
-    rel="noreferrer"
-    target="_blank"
-    className="nav-cta"
-    href="https://github.com/smartcontractkit/documentation"
-  >
+  <a rel="noreferrer" target="_blank" className="nav-cta" href="https://github.com/smartcontractkit/documentation">
     <ResourcesIcon />
     <span>GitHub</span>
 

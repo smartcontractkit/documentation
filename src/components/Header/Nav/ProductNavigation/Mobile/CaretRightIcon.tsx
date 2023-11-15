@@ -1,13 +1,7 @@
-import React from 'react'
+import React from "react"
 
 export const CaretRightIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M11.3638 16.9479C10.9733 17.3384 10.3402 17.3384 9.94963 16.9479C9.55911 16.5574 9.55911 15.9242 9.94963 15.5337L14.1923 11.2911C14.5828 10.9005 15.216 10.9005 15.6065 11.2911C15.997 11.6816 15.997 12.3148 15.6065 12.7053L11.3638 16.9479Z"
       fill="#B7BAC0"

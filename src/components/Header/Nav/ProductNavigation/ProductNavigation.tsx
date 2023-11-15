@@ -1,8 +1,8 @@
-import React from 'react'
-import { SubProductsNav, ProductsNav } from '../config'
-import { SearchTrigger } from '../NavBar'
-import { ProductNavigation as Desktop } from './Desktop/ProductNavigation'
-import { ProductNavigation as Mobile } from './Mobile/ProductNavigation'
+import React from "react"
+import { SubProductsNav, ProductsNav } from "../config"
+import { SearchTrigger } from "../NavBar"
+import { ProductNavigation as Desktop } from "./Desktop/ProductNavigation"
+import { ProductNavigation as Mobile } from "./Mobile/ProductNavigation"
 
 type Props = {
   path: string
@@ -15,9 +15,6 @@ type Props = {
 export const ProductNavigation = (props: Props) => (
   <>
     <Desktop {...props} />
-    <Mobile
-      searchTrigger={props.searchTrigger}
-      productsNav={props.productsNav}
-    />
+    <Mobile searchTrigger={props.searchTrigger} productsNav={props.productsNav} />
   </>
 )

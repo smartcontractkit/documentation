@@ -1,10 +1,10 @@
-export const IMGIX_URL = 'https://smartcontract.imgix.net'
+export const IMGIX_URL = "https://smartcontract.imgix.net"
 
 type DPR = 1 | 2 | 3 | 4 | 5
 
 type SearchParams = {
   border?: string
-  'border-radius'?: number
+  "border-radius"?: number
   txt?: string
   w?: number
   h?: number
@@ -13,13 +13,13 @@ type SearchParams = {
   auto?: string
   pad?: number
   txt64?: string
-  'txt-font'?: string
-  'txt-color'?: string
-  'txt-align'?: string
-  'txt-size'?: string
-  'txt-fit'?: string
-  fit?: 'fillmax'
-  fill?: 'solid'
+  "txt-font"?: string
+  "txt-color"?: string
+  "txt-align"?: string
+  "txt-size"?: string
+  "txt-fit"?: string
+  fit?: "fillmax"
+  fill?: "solid"
   trim?: string
 }
 
@@ -37,7 +37,7 @@ export function buildUrl(baseUrl: string, params: SearchParams = {}) {
 
 export function getImageUrl(imagePath: string, params?: SearchParams) {
   return buildUrl(`${IMGIX_URL}${imagePath}`, {
-    auto: 'compress,format',
+    auto: "compress,format",
     ...params,
   })
 }
@@ -52,28 +52,21 @@ export function getIconUrl(iconName: string) {
  * https://github.com/lukeed/clsx/blob/master/src/index.js
  */
 
-type ClassValue =
-  | ClassValue[]
-  | Record<string, boolean>
-  | string
-  | number
-  | null
-  | boolean
-  | undefined
+type ClassValue = ClassValue[] | Record<string, boolean> | string | number | null | boolean | undefined
 
 function toVal(mix: ClassValue) {
-  let k,
-    y,
-    str = ''
+  let k
+  let y
+  let str = ""
 
-  if (typeof mix === 'string' || typeof mix === 'number') {
+  if (typeof mix === "string" || typeof mix === "number") {
     str += mix
-  } else if (typeof mix === 'object') {
+  } else if (typeof mix === "object") {
     if (Array.isArray(mix)) {
       for (k = 0; k < mix.length; k++) {
         if (mix[k]) {
           if ((y = toVal(mix[k]))) {
-            str && (str += ' ')
+            str && (str += " ")
             str += y
           }
         }
@@ -81,7 +74,7 @@ function toVal(mix: ClassValue) {
     } else {
       for (k in mix) {
         if (mix && mix[k]) {
-          str && (str += ' ')
+          str && (str += " ")
           str += k
         }
       }
@@ -92,15 +85,15 @@ function toVal(mix: ClassValue) {
 }
 
 export function clsx(...classes: ClassValue[]) {
-  let i = 0,
-    tmp,
-    x,
-    str = ''
+  let i = 0
+  let tmp
+  let x
+  let str = ""
 
   while (i < classes.length) {
     if ((tmp = classes[i++])) {
       if ((x = toVal(tmp))) {
-        str && (str += ' ')
+        str && (str += " ")
         str += x
       }
     }
@@ -116,19 +109,16 @@ export function ellipsizeString(
   }: {
     start?: number
     end?: number
-  } = {},
+  } = {}
 ) {
   return address.length <= start + end + 1
     ? address
-    : address.substring(0, start) +
-        '...' +
-        address.substring(address.length - end)
+    : address.substring(0, start) + "..." + address.substring(address.length - end)
 }
 
 export function getPortalRootContainer() {
   // We look for storybook's root element
-  const storybookRoot =
-    typeof window !== 'undefined' && document.getElementById('storybook-root')
+  const storybookRoot = typeof window !== "undefined" && document.getElementById("storybook-root")
 
   // If 'storybook-root' exists, return an object with it as the container property
   // Otherwise return an empty object, resulting in the default behavior of the portal being appended to the body
