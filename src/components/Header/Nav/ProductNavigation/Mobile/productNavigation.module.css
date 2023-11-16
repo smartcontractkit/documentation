@@ -1,0 +1,95 @@
+.root {
+  display: initial;
+}
+
+.logo {
+  margin-right: var(--space-2x);
+}
+
+.menuContent {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--white);
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  width: 100dvw;
+  display: flex;
+  overflow: hidden;
+  z-index: 11;
+}
+
+.content {
+  width: 200vw;
+  display: flex;
+  transition: transform 0.3s;
+}
+
+.main {
+  transform: translateX(0vw);
+}
+
+.submenu {
+  transform: translateX(-100vw);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--space-6x);
+  right: var(--space-8x);
+  z-index: 12;
+}
+
+.productContent,
+.subProductContent {
+  overflow: scroll;
+  padding: var(--space-6x) var(--space-8x);
+  list-style: none;
+  width: 100vw;
+  padding-bottom: 56px;
+}
+.subProductContent {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.menuContent[data-state="open"] {
+  animation: slideFromLeft 0.3s forwards;
+}
+
+.menuContent[data-state="closed"] {
+  animation: slideToLeft 0.3s forwards;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2x);
+}
+
+@media screen and (min-width: 768px) {
+  .logo,
+  .trigger {
+    display: none;
+  }
+}
