@@ -8,7 +8,7 @@ const hotKeysMap = {
   ctrlK: "ctrl+k",
 }
 
-export const Search = () => {
+export const Search = ({ variant = "default" }: { variant?: "default" | "bottomBar" }) => {
   const [showModal, setShowModal] = React.useState(false)
 
   const hotkeyHandlers = {
@@ -18,7 +18,7 @@ export const Search = () => {
 
   return (
     <GlobalHotKeys keyMap={hotKeysMap} handlers={hotkeyHandlers}>
-      <SearchButton onClickHandler={() => setShowModal(true)} />
+      <SearchButton variant={variant} onClickHandler={() => setShowModal(true)} />
       <SearchModal showModal={showModal} onClose={() => setShowModal(false)} />
     </GlobalHotKeys>
   )

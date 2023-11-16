@@ -1,5 +1,5 @@
-import * as linkNameSymbol from "./reference/linkNameSymbol.json"
-import * as currentChainsMetadata from "./reference/chains.json"
+import linkNameSymbol from "./reference/linkNameSymbol.json"
+import currentChainsMetadata from "./reference/chains.json"
 import fetch from "node-fetch"
 import { isEqual } from "lodash"
 import { writeFile } from "fs/promises"
@@ -56,7 +56,7 @@ const compareChainsMetadata = async () => {
 
 compareChainsMetadata().then(async (res) => {
   if (!res.isEqual) {
-    const chainsTobePath = normalize("./scripts/reference/chainsToBe.json")
+    const chainsTobePath = normalize("./src/scripts/reference/chainsToBe.json")
     await writeFile(
       chainsTobePath,
       format(JSON.stringify(res.toBeChainsMetadata), {
