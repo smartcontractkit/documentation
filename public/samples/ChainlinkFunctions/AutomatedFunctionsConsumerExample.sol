@@ -7,6 +7,7 @@ import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/Confir
 /**
  * @title Functions contract used for Automation.
  * @notice This contract is a demonstration of using Functions and Automation.
+ * @notice You may need to add a Forwarder for additional security.
  * @notice NOT FOR PRODUCTION USE
  */
 contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
