@@ -1,5 +1,4 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
-import React from "react"
 import { SubProductsNav } from "../../config"
 import { clsx } from "../../utils"
 import styles from "./subProductContent.module.css"

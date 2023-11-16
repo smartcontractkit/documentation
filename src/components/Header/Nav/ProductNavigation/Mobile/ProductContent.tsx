@@ -1,4 +1,3 @@
-import React from "react"
 import { ProductsNav } from "../../config"
 import { Category } from "./Category"
 import { SubProducts } from "./ProductNavigation"

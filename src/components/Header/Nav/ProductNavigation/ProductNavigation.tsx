@@ -1,4 +1,3 @@
-import React from "react"
 import { SubProductsNav, ProductsNav } from "../config"
 import { SearchTrigger } from "../NavBar"
 import { ProductNavigation as Desktop } from "./Desktop/ProductNavigation"
