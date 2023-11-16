@@ -16,7 +16,7 @@ The environment variables listed here are explicitly supported and current as of
 
 ### TOML Configuration
 
-TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config FILENAME.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -272,7 +272,7 @@ _none_ - Disables backups.
 `lite` - Dumps small tables including configuration and keys that are essential for the node to function, which excludes historical data like job runs, transaction history, etc.
 `full` - Dumps the entire database.
 
-It will write to a file like `$ROOT/backup/cl_backup_<VERSION>.dump`. There is one backup dump file per version of the Chainlink node. If you upgrade the node, it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
+It will write to a file like `$ROOT/backup/cl_backup_VERSION.dump`. There is one backup dump file per version of the Chainlink node. If you upgrade the node, it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
 
 ### DATABASE_BACKUP_URL
 
@@ -383,9 +383,11 @@ The `AUDIT_LOGGER_*` environment variables configure this optional audit log HTT
 - Default: _none_
 
 An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGGER_FORWARD_TO_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example:
+
 `AUDIT_LOGGER_HEADERS="Authorization||{token}"`
 
-Header keys and values are delimited on `||`, and multiple headers can be added with a forward slash delimiter (`\`). An example of multiple key value pairs:
+Header keys and values are delimited on ||, and multiple headers can be added with a forward slash delimiter (`\`). An example of multiple key value pairs:
+
 `AUDIT_LOGGER_HEADERS="Authorization||{token}\Some-Other-Header||{token2}"`
 
 ### AUDIT_LOGGER_JSON_WRAPPER_KEY
@@ -1016,8 +1018,8 @@ If you are using FixedPriceEstimator:
 
 If you are using BlockHistoryEstimator (default for most chains):
 
-- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=<calculated using past blocks>`
-- With gas bumping enabled (default for most chains) it will submit all transactions initially with `feecap=current block base fee * (1.125 ^ N)` where N is configurable by setting BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS but defaults to `gas bump threshold+1` and `tipcap=<calculated using past blocks>`
+- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=CALCULATED_USING_PAST_BLOCKS`
+- With gas bumping enabled (default for most chains) it will submit all transactions initially with `feecap=current block base fee * (1.125 ^ N)` where N is configurable by setting BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS but defaults to `gas bump threshold+1` and `tipcap=CALCULATED_USING_PAST_BLOCKS`
 
 Bumping works as follows:
 
