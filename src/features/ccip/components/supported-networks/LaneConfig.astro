@@ -3,8 +3,10 @@ import { LaneConfig } from "@config/data/ccip/types"
 import { loadReferenceData, Environment } from "@config/data/ccip/"
 import { SupportedChain } from "@config"
 import { Address, Aside } from "@components"
-import { BigNumber, BigNumberish, utils } from "ethers"
+import BigNumber from "bignumber.js"
+import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
+import { Tooltip } from "@features/common/Tooltip"
 
 type ConfigProps = {
   laneConfig: LaneConfig
@@ -17,55 +19,60 @@ const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-s
 const { laneConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
 const { rateLimiterConfig, supportedTokens } = laneConfig
 
-const normalizeNumber = (bigNum: BigNumberish, decimals: number = 18) => {
-  const bigNumberValue = BigNumber.from(bigNum)
-  return bigNumberValue.div(BigNumber.from(10).pow(decimals))
+const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
+  const divisor = new BigNumber(10).pow(decimals)
+  const normalized = bigNum.dividedBy(divisor)
+
+  return normalized.toNumber()
 }
-const display = (bigNum: BigNumberish, decimals: number = 18) => {
-  const numberWithoutDecimals = normalizeNumber(bigNum, decimals).toString()
+
+const display = (bigNum: string, decimals: number = 18) => {
+  const numberWithoutDecimals = normalizeNumber(new BigNumber(bigNum), decimals).toString()
   return utils.commify(numberWithoutDecimals)
 }
 
-const displayRate = (capacity: BigNumberish, rate: BigNumberish, symbol: string, decimals: number = 18) => {
-  const rateBN = BigNumber.from(rate)
-  const capacityBN = normalizeNumber(capacity, decimals) // normalize capacity
+const formatTime = (seconds: number) => {
+  const minute = 60
+  const hour = 3600 // 60*60
 
-  const units = [
-    { unit: "second", factor: BigNumber.from(1) },
-    { unit: "10 minutes", factor: BigNumber.from(600) },
-    { unit: "30 minutes", factor: BigNumber.from(1800) },
-    { unit: "hour", factor: BigNumber.from(3600) },
-    { unit: "2 hours", factor: BigNumber.from(7200) },
-    { unit: "3 hours", factor: BigNumber.from(10800) },
-    { unit: "6 hours", factor: BigNumber.from(21600) },
-    { unit: "12 hours", factor: BigNumber.from(43200) },
-    { unit: "24 hours", factor: BigNumber.from(86400) },
-  ]
+  if (seconds < minute) {
+    return `${seconds} second${seconds > 1 ? "s" : ""}`
+  } else if (seconds < hour && hour - seconds > 300) {
+    // if the difference less than 5 minutes(300 seconds), round to hours
+    const minutes = Math.round(seconds / minute)
+    return `${minutes} minute${minutes > 1 ? "s" : ""}`
+  } else {
+    let hours = Math.floor(seconds / hour)
+    let remainingSeconds = seconds % hour
 
-  let result = ""
-  let unit = ""
+    // Determine the nearest 5-minute interval
+    let minutes = Math.round(remainingSeconds / minute / 5) * 5
 
-  for (const { unit: currentUnit, factor } of units) {
-    const tempResult = rateBN.mul(factor)
-    const formattedResult = normalizeNumber(tempResult, decimals)
-
-    if (formattedResult.gt(capacityBN)) {
-      break
+    // Round up to the next hour if minutes are 60
+    if (minutes === 60) {
+      hours += 1
+      minutes = 0
     }
-    if (!formattedResult.isZero()) {
-      result = formattedResult.toString()
-      unit = currentUnit
-      break
-    }
-  }
 
-  if (result === "") {
-    throw new Error(
-      `Error while displaying rate ${rate} using ${decimals} decimals. The rate is too small to display with the provided units.`
-    )
+    return `${hours}${
+      minutes > 0
+        ? ` hour${hours > 1 ? "s" : ""} and ${minutes} minute${minutes > 1 ? "s" : ""}`
+        : ` hour${hours > 1 ? "s" : ""}`
+    }`
   }
+}
 
-  return `${utils.commify(result)} ${symbol}/${unit}`
+const displayRate = (capacity: string, rate: string, symbol: string, decimals: number = 18) => {
+  const capacityNormalized = normalizeNumber(new BigNumber(capacity), decimals) // normalize capacity
+  const rateNormalized = normalizeNumber(new BigNumber(rate), decimals) // normalize capacity
+
+  const totalRefillTime = capacityNormalized / rateNormalized // in seconds
+  const displayTime = `every ${formatTime(totalRefillTime)}`
+
+  return {
+    rateSecond: `${rateNormalized} ${symbol}/second`,
+    maxThroughput: `up to ${utils.commify(capacity)} ${displayTime}}`,
+  }
 }
 
 const explorerUrl = getExplorer(sourceChain)
@@ -178,12 +185,16 @@ if (supportedTokens) {
                   </td>
                   <td>
                     {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                      ? displayRate(
-                          tokenWithExtraInfo.rateLimiterConfig.capacity,
-                          tokenWithExtraInfo.rateLimiterConfig.rate,
-                          tokenWithExtraInfo.token,
-                          tokenWithExtraInfo.decimals
-                        )
+                      ? (() => {
+                          const { rateSecond, maxThroughput } = displayRate(
+                            tokenWithExtraInfo.rateLimiterConfig.capacity,
+                            tokenWithExtraInfo.rateLimiterConfig.rate,
+                            tokenWithExtraInfo.token,
+                            tokenWithExtraInfo.decimals
+                          )
+
+                          return <Tooltip tip={maxThroughput} label={rateSecond} />
+                        })()
                       : "N/A"}
                   </td>
                 </tr>
