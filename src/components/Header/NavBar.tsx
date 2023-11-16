@@ -5,6 +5,8 @@ import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
 
+declare const Weglot: any
+
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
   const navRef = React.useRef(null)
 
