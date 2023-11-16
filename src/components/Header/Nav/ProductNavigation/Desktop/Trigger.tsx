@@ -1,4 +1,3 @@
-import React from "react"
 import { CaretIcon } from "../../CaretIcon"
 import { getImageUrl } from "../../utils"
 import styles from "./trigger.module.css"

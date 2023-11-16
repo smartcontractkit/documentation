@@ -49,7 +49,7 @@ type CategoryProps = {
 export const Category = ({ label, items, onProductClick }: CategoryProps) => {
   return (
     <li className={styles.category}>
-      {label && <span className={styles.label}>{label}</span>}
+      {label && <p className={styles.label}>{label}</p>}
       {items.map((item) => (
         <Item key={item.label} {...{ item, onProductClick }} />
       ))}

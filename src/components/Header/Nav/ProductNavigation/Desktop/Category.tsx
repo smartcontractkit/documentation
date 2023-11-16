@@ -25,7 +25,7 @@ Item.displayName = "Item"
 
 export const Category = ({ label, items, className }: CategoryProps) => (
   <li className={styles.item}>
-    {label && <span style={{ paddingInline: "var(--space-2x)" }}>{label}</span>}
+    {label && <p className="paragraph-100">{label}</p>}
     {items
       .filter((item) => !item.hideFromDropdown)
       .map((item) => (

@@ -3,7 +3,7 @@ import React from "react"
 import { CaretIcon } from "../../CaretIcon"
 import { ProductsNav } from "../../config"
 import { SearchTrigger } from "../../NavBar"
-import { clsx, getIconUrl, getPortalRootContainer } from "../../utils"
+import { clsx, getIconUrl } from "../../utils"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
@@ -23,6 +23,7 @@ type Props = {
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
+const Root = extendRadixComponent(Dialog.Root)
 
 export function ProductNavigation({ productsNav }: Props) {
   const [open, setOpen] = React.useState(false)
@@ -48,15 +49,29 @@ export function ProductNavigation({ productsNav }: Props) {
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-      <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
+    <Root open={open} onOpenChange={handleOpenChange}>
+      <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
         <img
-          alt={`Chainlink Documentation`}
-          title={`Chainlink Documentation`}
+          alt="Chainlink Home"
+          title="Chainlink Home"
           style={{ display: "flex" }}
-          srcSet={getIconUrl(`logo-developerHub`)}
+          src={getIconUrl("chainlink")}
           height={24}
+          width={24}
         />
+      </a>
+      <Trigger
+        onPointerMove={(event) => event.preventDefault()}
+        onPointerLeave={(event) => event.preventDefault()}
+        data-testid="product-navigation-trigger-mobile"
+        className={styles.trigger}
+      >
+        <span
+          className={"text-300"}
+          style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
+        >
+          Developer Hub
+        </span>
         <CaretIcon
           style={{
             color: "gray",
@@ -67,9 +82,13 @@ export function ProductNavigation({ productsNav }: Props) {
         />
       </Trigger>
 
-      <Portal {...getPortalRootContainer()}>
+      <Portal>
         <Dialog.Overlay />
-        <Dialog.Content className={clsx(styles.menuContent)}>
+        <Dialog.Content
+          onPointerMove={(event) => event.preventDefault()}
+          onPointerLeave={(event) => event.preventDefault()}
+          className={clsx(styles.menuContent)}
+        >
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{
@@ -96,7 +115,7 @@ export function ProductNavigation({ productsNav }: Props) {
           <BottomBar />
         </Dialog.Content>
       </Portal>
-    </Dialog.Root>
+    </Root>
   )
 }
 

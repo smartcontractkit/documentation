@@ -1,73 +1,5 @@
 const devHubProductsUrl = "https://dev.chain.link/products/"
 
-const devHubCategories = [
-  {
-    label: "Developer Hub",
-    items: [
-      {
-        label: "Home",
-        icon: "ccip",
-        href: "https://dev.chain.link/",
-      },
-      {
-        label: "Docs",
-        icon: "docs",
-        href: "https://docs.chain.link",
-      },
-      {
-        label: "All Resources",
-        icon: "resources",
-        href: "https://dev.chain.link/resources",
-      },
-    ],
-  },
-  {
-    label: "Product Resources",
-    items: [
-      {
-        label: "CCIP",
-        icon: "ccip",
-        href: devHubProductsUrl + "ccip",
-      },
-      {
-        label: "Data",
-        icon: "data",
-        href: devHubProductsUrl + "data",
-      },
-      {
-        label: "Functions",
-        icon: "functions",
-        href: devHubProductsUrl + "functions",
-      },
-      {
-        label: "Automation",
-        icon: "automation",
-        href: devHubProductsUrl + "automation",
-      },
-      {
-        label: "VRF",
-        icon: "vrf",
-        href: devHubProductsUrl + "vrf",
-      },
-      {
-        label: "General",
-        icon: "general",
-        href: devHubProductsUrl + "general",
-      },
-    ],
-  },
-]
-
-const quickStartsProductsNav = {
-  trigger: { label: "All Resources", icon: "resources" },
-  categories: devHubCategories,
-}
-
-const docsProductsNav = {
-  trigger: { label: "Docs", icon: "docs" },
-  categories: devHubCategories,
-}
-
 const docsSubProductsNav = [
   {
     label: "Data Feeds",
@@ -153,6 +85,78 @@ const quickStartsSubProductsNav = [
     hideFromDropdown: true,
   },
 ]
+
+const devHubCategories = [
+  {
+    label: "Developer Hub",
+    items: [
+      {
+        label: "Home",
+        icon: "home",
+        href: "https://dev.chain.link/",
+      },
+      {
+        label: "Docs",
+        icon: "documentation",
+        href: "https://docs.chain.link",
+        subProducts: {
+          label: "Docs",
+          items: docsSubProductsNav,
+        },
+      },
+      {
+        label: "All Resources",
+        icon: "resources",
+        href: "https://dev.chain.link/resources",
+      },
+    ],
+  },
+  {
+    label: "Product Resources",
+    items: [
+      {
+        label: "CCIP",
+        icon: "ccip",
+        href: devHubProductsUrl + "ccip",
+      },
+      {
+        label: "Data",
+        icon: "data",
+        href: devHubProductsUrl + "data",
+      },
+      {
+        label: "Functions",
+        icon: "functions",
+        href: devHubProductsUrl + "functions",
+      },
+      {
+        label: "Automation",
+        icon: "automation",
+        href: devHubProductsUrl + "automation",
+      },
+      {
+        label: "VRF",
+        icon: "vrf",
+        href: devHubProductsUrl + "vrf",
+      },
+      {
+        label: "General",
+        icon: "general",
+        href: devHubProductsUrl + "general",
+      },
+    ],
+  },
+]
+
+const quickStartsProductsNav = {
+  trigger: { label: "All Resources", icon: "resources" },
+  categories: devHubCategories,
+}
+
+const docsProductsNav = {
+  trigger: { label: "Docs", icon: "docs" },
+  categories: devHubCategories,
+}
 
 const quickStartsProps = { productsNav: quickStartsProductsNav, subProductsNav: quickStartsSubProductsNav }
 const docsProps = { productsNav: docsProductsNav, subProductsNav: docsSubProductsNav }

@@ -100,27 +100,3 @@ export function clsx(...classes: ClassValue[]) {
   }
   return str
 }
-
-export function ellipsizeString(
-  address: string,
-  {
-    start = 6,
-    end = 4,
-  }: {
-    start?: number
-    end?: number
-  } = {}
-) {
-  return address.length <= start + end + 1
-    ? address
-    : address.substring(0, start) + "..." + address.substring(address.length - end)
-}
-
-export function getPortalRootContainer() {
-  // We look for storybook's root element
-  const storybookRoot = typeof window !== "undefined" && document.getElementById("storybook-root")
-
-  // If 'storybook-root' exists, return an object with it as the container property
-  // Otherwise return an empty object, resulting in the default behavior of the portal being appended to the body
-  return storybookRoot ? { container: storybookRoot } : {}
-}

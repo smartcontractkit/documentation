@@ -57,7 +57,7 @@ export const NavBarView = ({
       <header className={styles.header}>
         <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
           <div className={styles.container}>
-            <div className={styles.section}>
+            <div className={styles.leftSection}>
               <ProductNavigation
                 path={path}
                 searchTrigger={searchTrigger}
@@ -66,7 +66,7 @@ export const NavBarView = ({
                 subProductsNav={subProductsNav}
               />
             </div>
-            <div className={styles.section}>
+            <div className={styles.rightSection}>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               {!!languageSelector && languageSelector}
               <a

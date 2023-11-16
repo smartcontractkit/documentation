@@ -1,4 +1,3 @@
-import React from "react"
 import { clsx } from "../../utils"
 import { BackArrowIcon } from "./BackArrowIcon"
 import styles from "./subProductContent.module.css"

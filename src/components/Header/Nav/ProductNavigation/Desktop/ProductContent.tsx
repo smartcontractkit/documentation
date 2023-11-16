@@ -1,4 +1,3 @@
-import React from "react"
 import { ProductItem } from "../../config"
 import { Category } from "./Category"
 import styles from "./productContent.module.css"

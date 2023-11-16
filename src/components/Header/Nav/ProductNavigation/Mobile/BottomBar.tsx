@@ -5,7 +5,13 @@ import styles from "./bottomBar.module.css"
 const ResourcesButton = () => (
   <a rel="noreferrer" target="_blank" className="nav-cta" href="https://github.com/smartcontractkit/documentation">
     <ResourcesIcon />
-    <span>GitHub</span>
+    <span
+      style={{
+        color: "var(--color-text-primary)", // Yes, this is necessary
+      }}
+    >
+      GitHub
+    </span>
 
     {/* 
       This divider should be added for the 2nd and 3rd buttons
