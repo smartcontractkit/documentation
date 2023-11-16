@@ -86,7 +86,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     ];
 
     constructor(address _feeAddress, address _verifier) {
-        verifier = IVerifierProxy(_verifier); //0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
+        verifier = IVerifierProxy(_verifier); //0x2ff010DEbC1297f19579B4246cad07bd24F2488A
         FEE_ADDRESS = _feeAddress; // 0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3 (WETH)
     }
 
