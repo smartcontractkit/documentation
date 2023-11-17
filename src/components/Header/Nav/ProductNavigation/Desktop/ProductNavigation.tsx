@@ -54,19 +54,10 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
           </Item>
           <Divider className={styles.divider} />
           <Item>
-            <RadixTrigger
-              onPointerMove={(event) => event.preventDefault()}
-              onPointerLeave={(event) => event.preventDefault()}
-              className="nav-product"
-              ref={productMenuRef}
-            >
+            <RadixTrigger className="nav-product" ref={productMenuRef}>
               <Trigger className={styles.productTrigger} label="Developer Hub" />
             </RadixTrigger>
-            <RadixContent
-              onPointerMove={(event) => event.preventDefault()}
-              onPointerLeave={(event) => event.preventDefault()}
-              className={styles.content}
-            >
+            <RadixContent className={styles.content}>
               <ProductContent categories={productsNav.categories} />
             </RadixContent>
           </Item>
@@ -93,19 +84,10 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
             <>
               <Divider className={styles.divider} />
               <Item>
-                <RadixTrigger
-                  onPointerMove={(event) => event.preventDefault()}
-                  onPointerLeave={(event) => event.preventDefault()}
-                  className="nav-subproduct"
-                  ref={subProductMenuRef}
-                >
+                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
                   <Trigger label={subProductTrigger.label} />
                 </RadixTrigger>
-                <RadixContent
-                  onPointerMove={(event) => event.preventDefault()}
-                  onPointerLeave={(event) => event.preventDefault()}
-                  className={styles.content}
-                >
+                <RadixContent className={styles.content}>
                   <SubProductContent subProductsNav={subProductsNav} />
                 </RadixContent>
               </Item>
