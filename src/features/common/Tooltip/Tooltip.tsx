@@ -1,6 +1,13 @@
 import { Tooltip as ChainlinkToolTip } from "@chainlink/components"
 
-export const Tooltip = ({ label, tip, imgURL, width = 12, height = 12 }) => {
+export const Tooltip = ({
+  label,
+  tip,
+  imgURL = "https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat",
+  width = 12,
+  height = 12,
+  style = {},
+}) => {
   // setting default width and height
   const containerStyle = {
     display: "flex",
@@ -12,7 +19,7 @@ export const Tooltip = ({ label, tip, imgURL, width = 12, height = 12 }) => {
   }
 
   return (
-    <div>
+    <div {...(!(Object.keys(style).length === 0) && { style })}>
       <span style={containerStyle}>
         <span style={textStyle}>{label}</span>
         <ChainlinkToolTip tip={tip}>
