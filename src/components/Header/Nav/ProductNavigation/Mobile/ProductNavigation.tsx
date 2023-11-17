@@ -60,12 +60,7 @@ export function ProductNavigation({ productsNav }: Props) {
           width={24}
         />
       </a>
-      <Trigger
-        onPointerMove={(event) => event.preventDefault()}
-        onPointerLeave={(event) => event.preventDefault()}
-        data-testid="product-navigation-trigger-mobile"
-        className={styles.trigger}
-      >
+      <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
         <span
           className={"text-300"}
           style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
@@ -84,11 +79,7 @@ export function ProductNavigation({ productsNav }: Props) {
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content
-          onPointerMove={(event) => event.preventDefault()}
-          onPointerLeave={(event) => event.preventDefault()}
-          className={clsx(styles.menuContent)}
-        >
+        <Dialog.Content className={clsx(styles.menuContent)}>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{

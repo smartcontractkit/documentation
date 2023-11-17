@@ -39,19 +39,18 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
 
   return (
     <>
+      <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
+        <img
+          alt="Chainlink Home"
+          title="Chainlink Home"
+          style={{ display: "flex" }}
+          src={getIconUrl("logo-chainlink")}
+          height={28}
+        />
+      </a>
       <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
         <List className={styles.list}>
-          <Item>
-            <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
-              <img
-                alt="Chainlink Home"
-                title="Chainlink Home"
-                style={{ display: "flex" }}
-                src={getIconUrl("logo-chainlink")}
-                height={28}
-              />
-            </a>
-          </Item>
+          <Item></Item>
           <Divider className={styles.divider} />
           <Item>
             <RadixTrigger className="nav-product" ref={productMenuRef}>
