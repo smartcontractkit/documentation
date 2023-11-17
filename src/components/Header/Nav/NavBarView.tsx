@@ -23,7 +23,6 @@ export const NavBarView = ({
   onHideChange,
   productsNav,
   subProductsNav,
-  languageSelector,
 }: Props) => {
   const scrollDirection = useScrollDirection()
   const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
@@ -68,14 +67,14 @@ export const NavBarView = ({
             </div>
             <div className={styles.rightSection}>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
-              {!!languageSelector && languageSelector}
+              <div id="weglot" />
               <a
                 rel="noreferrer"
                 target="_blank"
-                className={clsx(styles.iconButton)}
+                className={clsx(styles.button)}
                 href="https://github.com/smartcontractkit/documentation"
               >
-                <img src={getIconUrl("github")} />
+                <img width={"24px"} height={"24px"} src={getIconUrl("github")} />
               </a>
             </div>
           </div>

@@ -46,9 +46,10 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
               <img
                 alt="Chainlink Home"
                 title="Chainlink Home"
-                style={{ display: "flex" }}
+                // style={{ display: "flex" }}
                 src={getIconUrl("logo-chainlink")}
                 height={28}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </a>
           </Item>
