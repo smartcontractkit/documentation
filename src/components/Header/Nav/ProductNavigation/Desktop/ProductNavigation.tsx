@@ -50,7 +50,6 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
       </a>
       <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
         <List className={styles.list}>
-          <Item></Item>
           <Divider className={styles.divider} />
           <Item>
             <RadixTrigger className="nav-product" ref={productMenuRef}>
