@@ -74,10 +74,8 @@ export function ProductNavigation({ productsNav }: Props) {
         </span>
         <CaretIcon
           style={{
-            color: "gray",
-            fill: "gray",
-            width: "var(--space-4x)",
-            height: "var(--space-4x)",
+            color: "var(--color-text-primary)",
+            fill: "var(--color-text-primary)",
           }}
         />
       </Trigger>
