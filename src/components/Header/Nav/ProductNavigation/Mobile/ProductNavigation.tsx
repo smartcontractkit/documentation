@@ -55,7 +55,7 @@ export function ProductNavigation({ productsNav }: Props) {
           alt="Chainlink Home"
           title="Chainlink Home"
           style={{ display: "flex" }}
-          src="assets/icons/chainlink.svg"
+          src="/assets/icons/chainlink.svg"
           height={24}
           width={24}
         />
@@ -98,7 +98,7 @@ export function ProductNavigation({ productsNav }: Props) {
             </div>
           </div>
           <Close ref={closeButtonRef} className={styles.closeButton}>
-            <img src="assets/icons/close.svg" />
+            <img src="/assets/icons/close.svg" />
           </Close>
 
           <BottomBar />

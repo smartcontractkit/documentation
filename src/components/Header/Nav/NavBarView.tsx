@@ -74,7 +74,7 @@ export const NavBarView = ({
                 className={clsx(styles.button)}
                 href="https://github.com/smartcontractkit/documentation"
               >
-                <img width="24px" height="24px" src="assets/github.svg" />
+                <img width="24px" height="24px" src="/assets/github.svg" />
               </a>
             </div>
           </div>
