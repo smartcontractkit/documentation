@@ -52,10 +52,19 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
         <List className={styles.list}>
           <Divider className={styles.divider} />
           <Item>
-            <RadixTrigger className="nav-product" ref={productMenuRef}>
+            <RadixTrigger
+              onPointerMove={(event) => event.preventDefault()}
+              onPointerLeave={(event) => event.preventDefault()}
+              className="nav-product"
+              ref={productMenuRef}
+            >
               <Trigger className={styles.productTrigger} label="Developer Hub" />
             </RadixTrigger>
-            <RadixContent className={styles.content}>
+            <RadixContent
+              onPointerMove={(event) => event.preventDefault()}
+              onPointerLeave={(event) => event.preventDefault()}
+              className={styles.content}
+            >
               <ProductContent categories={productsNav.categories} />
             </RadixContent>
           </Item>
@@ -82,10 +91,19 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
             <>
               <Divider className={styles.divider} />
               <Item>
-                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
+                <RadixTrigger
+                  onPointerMove={(event) => event.preventDefault()}
+                  onPointerLeave={(event) => event.preventDefault()}
+                  className="nav-subproduct"
+                  ref={subProductMenuRef}
+                >
                   <Trigger label={subProductTrigger.label} />
                 </RadixTrigger>
-                <RadixContent className={styles.content}>
+                <RadixContent
+                  onPointerMove={(event) => event.preventDefault()}
+                  onPointerLeave={(event) => event.preventDefault()}
+                  className={styles.content}
+                >
                   <SubProductContent subProductsNav={subProductsNav} />
                 </RadixContent>
               </Item>
