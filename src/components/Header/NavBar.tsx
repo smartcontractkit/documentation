@@ -5,6 +5,8 @@ import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
 
+declare const Weglot: any
+
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
   const navRef = React.useRef(null)
 
@@ -23,6 +25,42 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
       setNavBarInfo({ hidden, height })
     }
   }
+
+  React.useEffect(() => {
+    if (
+      // !window.location.hostname.includes("localhost") &&
+      !window.location.hostname.includes("documentation-private-git-")
+    ) {
+      const script = document.createElement("script")
+      script.src = "https://cdn.weglot.com/weglot.min.js"
+      script.async = true
+      script.onload = () => {
+        Weglot.initialize({
+          api_key: "wg_bc56a95905bfa8990f449554339e82be8",
+          switchers: [
+            {
+              button_style: {
+                full_name: false,
+                with_name: true,
+                is_dropdown: true,
+                with_flags: true,
+                flag_type: "circle",
+              },
+              location: {
+                target: "#weglot",
+                sibling: null,
+              },
+            },
+          ],
+        })
+      }
+      document.body.appendChild(script)
+
+      return () => {
+        document.body.removeChild(script)
+      }
+    }
+  }, [])
 
   return (
     <span ref={navRef}>
