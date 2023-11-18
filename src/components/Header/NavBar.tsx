@@ -28,7 +28,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
 
   React.useEffect(() => {
     if (
-      // !window.location.hostname.includes("localhost") &&
+      !window.location.hostname.includes("localhost") &&
       !window.location.hostname.includes("documentation-private-git-")
     ) {
       const script = document.createElement("script")
