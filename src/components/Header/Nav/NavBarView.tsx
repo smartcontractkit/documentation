@@ -4,7 +4,7 @@ import styles from "./navBar.module.css"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
 import { useScrollDirection } from "./useScrollDirection"
 import { useScrollPosition } from "./useScrollPosition"
-import { clsx, getIconUrl } from "./utils"
+import { clsx } from "./utils"
 
 type Props = NavBarProps & {
   isMenuOpen: boolean
@@ -74,7 +74,7 @@ export const NavBarView = ({
                 className={clsx(styles.button)}
                 href="https://github.com/smartcontractkit/documentation"
               >
-                <img width={"24px"} height={"24px"} src={getIconUrl("github")} />
+                <img width="24px" height="24px" src="assets/github.svg" />
               </a>
             </div>
           </div>

@@ -1,9 +1,9 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React from "react"
-import { CaretIcon } from "../../CaretIcon"
 import { ProductsNav } from "../../config"
 import { SearchTrigger } from "../../NavBar"
-import { clsx, getIconUrl } from "../../utils"
+import { clsx } from "../../utils"
+import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
@@ -55,7 +55,7 @@ export function ProductNavigation({ productsNav }: Props) {
           alt="Chainlink Home"
           title="Chainlink Home"
           style={{ display: "flex" }}
-          src={getIconUrl("chainlink")}
+          src="assets/icons/chainlink.svg"
           height={24}
           width={24}
         />
@@ -98,7 +98,7 @@ export function ProductNavigation({ productsNav }: Props) {
             </div>
           </div>
           <Close ref={closeButtonRef} className={styles.closeButton}>
-            <img src={getIconUrl("Close_gray")} />
+            <img src="assets/icons/close.svg" />
           </Close>
 
           <BottomBar />

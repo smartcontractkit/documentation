@@ -3,7 +3,7 @@ import React from "react"
 import { ProductsNav, SubProductsNav } from "../../config"
 import { Divider } from "../../Divider"
 import { isMatchedPath } from "../../isMatchedPath"
-import { clsx, getIconUrl } from "../../utils"
+import { clsx } from "../../utils"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
@@ -44,7 +44,7 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
           alt="Chainlink Home"
           title="Chainlink Home"
           style={{ display: "flex" }}
-          src={getIconUrl("logo-chainlink")}
+          src="assets/icons/chainlink-logo.svg"
           height={28}
         />
       </a>
