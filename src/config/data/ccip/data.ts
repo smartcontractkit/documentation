@@ -165,22 +165,6 @@ export const supportedNetworks: CCIPNetworkOptions[] = [
     },
   },
   {
-    name: "Arbitrum Goerli",
-    chainId: "0x66eed",
-    icon: "/assets/chains/arbitrum.svg",
-    BnM: {
-      params: {
-        type: "ERC20",
-        options: {
-          address: "0x0579b4c1C8AcbfF13c6253f1B10d66896Bf399Ef",
-          symbol: "CCIP-BnM",
-          decimals: 18,
-          image: CCIPTokenImage,
-        },
-      },
-    },
-  },
-  {
     name: "BNB Chain testnet",
     chainId: "0x61",
     icon: "/assets/chains/bnb-chain.svg",
