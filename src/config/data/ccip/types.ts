@@ -51,3 +51,8 @@ export type LanesConfig = {
 export type TokensConfig = {
   [token: string]: PoolInfo
 }
+
+export enum Environment {
+  Mainnet = "mainnet",
+  Testnet = "testnet",
+}
