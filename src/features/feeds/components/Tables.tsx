@@ -369,12 +369,12 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           class={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", "0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c")}
         >
-          0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
+          0x2ff010DEbC1297f19579B4246cad07bd24F2488A
         </a>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
-          data-clipboard-text="0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c"
+          data-clipboard-text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>

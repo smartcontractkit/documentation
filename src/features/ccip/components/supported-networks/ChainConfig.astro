@@ -70,26 +70,30 @@ const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sour
     <tr>
       <td>Supported Fee tokens</td>
       <td>
-        <ul>
-          {
-            feeTokensWithAddresses.map((feeTokenWithAddress) => (
-              <li>
-                {feeTokenWithAddress.token}{" "}
-                <Address contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)} endLength={7} />
-              </li>
-            ))
-          }
-          <li>{nativeCurrency.symbol}</li>
-        </ul>
+        <table>
+          <tbody>
+            {
+              feeTokensWithAddresses.map((feeTokenWithAddress) => (
+                <tr>
+                  <td>{feeTokenWithAddress.token}</td>
+                  <td>
+                    <Address
+                      contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)}
+                      endLength={7}
+                    />
+                  </td>
+                </tr>
+              ))
+            }
+            <tr><td>{nativeCurrency.symbol}</td></tr>
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
 </table>
 <br />
-<p>
-  <strong>Lanes:</strong>
-</p>
-<br />
+
 {
   Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
     const chainKey = directoryToSupportedChain(destinationChainRefId)

@@ -1,0 +1,170 @@
+.root {
+  position: relative;
+  display: none;
+  width: fit-content;
+  z-index: 1;
+}
+
+.logo {
+  display: none;
+}
+
+@media screen and (min-width: 768px) {
+  .root {
+    display: flex;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    padding-block: var(--space-1x);
+    display: block;
+  }
+}
+
+.root.alignLeft {
+  justify-content: flex-start;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+}
+
+.button {
+  composes: text-300 from global;
+  line-height: 1.5rem;
+  padding-block: var(--space-2x);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  width: fit-content;
+  color: var(--blue-800);
+}
+
+.button:hover {
+  color: var(--blue-600);
+}
+
+.content {
+  position: absolute;
+  top: 0;
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  display: flex;
+  overflow: auto;
+  /* NavBar container height is var(--space-16x) */
+  max-height: calc(90vh - var(--space-16x));
+  max-height: calc(90dvh - var(--space-16x));
+  max-width: 90vw;
+  max-width: 90dvw;
+}
+
+.content li {
+  list-style: none;
+}
+
+.productTrigger span {
+  font-weight: var(--font-weight-medium);
+}
+
+.indicator {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 10px;
+  top: 100%;
+  overflow: hidden;
+  z-index: 1;
+  transition: width, transform 250ms ease;
+}
+.indicator[data-state="visible"] {
+  animation: fadeIn 200ms ease;
+}
+.indicator[data-state="hidden"] {
+  animation: fadeOut 200ms ease;
+}
+
+.viewportPosition {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  top: 100%;
+}
+
+.navigationViewport {
+  position: relative;
+  transform-origin: top center;
+  margin-top: 10px;
+  width: var(--radix-navigation-menu-viewport-width);
+  background-color: var(--white);
+  border-radius: var(--border-radius-secondary);
+  overflow: hidden;
+  box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.15);
+  height: var(--radix-navigation-menu-viewport-height);
+  transition: width, height, 300ms ease;
+}
+.navigationViewport[data-state="open"] {
+  animation: scaleIn 200ms ease;
+}
+.navigationViewport[data-state="closed"] {
+  animation: scaleOut 200ms ease;
+}
+
+.arrow {
+  position: absolute;
+  top: 70%;
+  background-color: var(--white);
+  width: 10px;
+  height: 10px;
+  right: var(--space-1x);
+  transform: rotate(45deg);
+  border-top-left-radius: 2px;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: rotateX(-30deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.divider {
+  margin-inline: var(--space-4x);
+}
