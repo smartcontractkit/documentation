@@ -3,10 +3,18 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks"
 import styles from "./networkDropdown.module.css"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
-import { ethers, Contract } from "ethers"
-import { burnMintAbi } from "~/features/abi"
-import { CCIPNetworkOptions, getchainByChainId } from "@config/data/ccip"
+import { ethers, Contract, utils } from "ethers"
+import { burnMintAbi } from "@features/abi"
+import { SupportedChain } from "@config"
+import { allChains, getBnMParams, getLnMParams, isBnMOrLnMRdd, isLnM, isBnM, isBnMOrLnM } from "@config/data/ccip"
 import { Toast } from "./Toast"
+import {
+  directoryToSupportedChain,
+  getTitle,
+  getChainIcon,
+  getEthereumChainParameter,
+  getChainId,
+} from "@features/utils"
 
 enum LoadingState {
   "START",
@@ -16,7 +24,6 @@ enum LoadingState {
 }
 
 interface Props {
-  options: CCIPNetworkOptions[]
   userAddress: string
 }
 
@@ -26,8 +33,8 @@ interface SwitchNetworkError {
   stack: string
 }
 
-export const NetworkDropdown = ({ options, userAddress }: Props) => {
-  const [activeNetwork, setActiveNetwork] = useState<CCIPNetworkOptions | undefined>(undefined)
+export const NetworkDropdown = ({ userAddress }: Props) => {
+  const [activeChain, setActiveChain] = useState<SupportedChain | undefined>(undefined)
   const [isNetworkChangePending, setIsNetworkChangePending] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<LoadingState>(LoadingState.START)
   const [toastMessage, setToastMessage] = useState<string>("")
@@ -41,21 +48,33 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
     detailsElementRef.current.open = false
   }, [detailsElementRef])
 
+  const supportedChains = allChains.map((element) => directoryToSupportedChain(element))
+
+  const supportedChainFromHexChainId = (chainHexId: string) => {
+    const supportedChain = supportedChains.find((supportedChain) => {
+      const chainId = getChainId(supportedChain)
+      if (!chainId) throw Error(`No chainId found for supported chain ${supportedChain}`)
+      return utils.hexValue(chainId) === chainHexId
+    })
+
+    return supportedChain
+  }
+
   useEffect(() => {
-    const handleChainChanged = (chainId: string) => {
-      setActiveNetwork(options.find((option) => option.chainId === chainId))
+    const handleChainChanged = (chainHexId: string) => {
+      setActiveChain(supportedChainFromHexChainId(chainHexId))
       setIsLoading(LoadingState.START)
     }
     const refElement = detailsElementRef?.current
 
     const getCurrentChain = async () => {
-      const chainId = await window.ethereum.request({
+      const chainHexId = await window.ethereum.request({
         method: "eth_chainId",
         params: [],
       })
       window.ethereum.on("chainChanged", handleChainChanged)
-      const currentOption = options.find((option) => option.chainId === chainId)
-      return currentOption
+      const currentChain = supportedChainFromHexChainId(chainHexId)
+      return currentChain
     }
 
     const onClick = (event: MouseEvent) => {
@@ -67,15 +86,15 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       closeDropdown()
     }
 
-    getCurrentChain().then((option) => {
-      setActiveNetwork(option)
+    getCurrentChain().then((chain) => {
+      setActiveChain(chain)
     })
 
     document.body.addEventListener("mouseup", onClick)
     return () => {
       document.body.removeEventListener("mouseup", onClick)
     }
-  }, [activeNetwork])
+  }, [activeChain])
   const dropdownDisabled = !window.ethereum.isConnected || isNetworkChangePending
 
   const isSwitchNetworkError = (error: unknown): error is SwitchNetworkError => {
@@ -86,7 +105,10 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
     return !!(isCode && isMessage && isStack)
   }
 
-  const handleNetworkChange = async (option: CCIPNetworkOptions) => {
+  const handleNetworkChange = async (chain: SupportedChain) => {
+    const chainId = getChainId(chain)
+    if (!chainId) throw Error(`chainId not found for ${chain}`)
+    const chainHexId = utils.hexValue(chainId)
     if (!window.ethereum.isConnected) return
     setIsNetworkChangePending(true)
     try {
@@ -94,26 +116,16 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         method: "wallet_switchEthereumChain",
         params: [
           {
-            chainId: option.chainId,
+            chainId: chainHexId,
           },
         ],
       })
     } catch (switchError: unknown) {
       if (isSwitchNetworkError(switchError) && switchError.code === 4902) {
-        const chainInfo = getchainByChainId(option.chainId)
-        if (!chainInfo) return
-        const { nativeCurrency, rpc, explorers } = chainInfo
+        const params = getEthereumChainParameter(chainHexId)
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: option.chainId,
-              chainName: option.name,
-              nativeCurrency,
-              rpcUrls: rpc,
-              blockExplorerUrls: explorers ? [explorers[0].url] : null,
-            },
-          ],
+          params: [params],
         })
       } else {
         Promise.reject(switchError)
@@ -122,7 +134,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
 
     setIsNetworkChangePending(false)
     localStorage.setItem("isNetworkChangePending", "false")
-    setActiveNetwork(option)
+    setActiveChain(chain)
     setIsLoading(LoadingState.START)
     closeDropdown()
   }
@@ -134,60 +146,52 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   }
 
   const addBnMAssetToWallet = async () => {
-    if (!activeNetwork?.BnM) return
-    const { type, options } = activeNetwork.BnM.params
+    if (!activeChain) return
+
+    const params = getBnMParams(activeChain)
+    if (!params) return
     validateEthereumApi(window.ethereum)
     const success = await window.ethereum.request({
       method: "wallet_watchAsset",
-      params: {
-        type,
-        options: {
-          address: options.address,
-          symbol: options.symbol,
-          decimals: options.decimals,
-          image: options.image,
-        },
-      },
+      params,
     })
 
     if (success) {
-      console.log(`${options.symbol} of address ${options.address} successfully added to the wallet`)
+      console.log(`${params.options.symbol} of address ${params.options.address} successfully added to the wallet`)
     } else {
-      throw new Error(`Something went wrong. ${options.symbol} of address ${options.address} not added to the wallet`)
+      throw new Error(
+        `Something went wrong. ${params.options.symbol} of address ${params.options.address} not added to the wallet`
+      )
     }
   }
 
   const addLnMAssetToWallet = async () => {
-    if (!activeNetwork?.LnM || activeNetwork.name !== "Ethereum Sepolia") {
-      return
-    }
-    const { type, options } = activeNetwork.LnM.params
+    if (!activeChain) return
+    const params = getLnMParams(activeChain)
+    if (!params) return
     validateEthereumApi(window.ethereum)
     const success = await window.ethereum.request({
       method: "wallet_watchAsset",
-      params: {
-        type,
-        options: {
-          address: options.address,
-          symbol: options.symbol,
-          decimals: options.decimals,
-          image: options.image,
-        },
-      },
+      params,
     })
 
     if (success) {
-      console.log(`${options.symbol} of address ${options.address} successfully added to the wallet`)
+      console.log(`${params.options.symbol} of address ${params.options.address} successfully added to the wallet`)
     } else {
-      throw new Error(`Something went wrong. ${options.symbol} of address ${options.address} not added to the wallet`)
+      throw new Error(
+        `Something went wrong. ${params.options.symbol} of address ${params.options.address} not added to the wallet`
+      )
     }
   }
 
   const mintBnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintBnMTokenButtonDisabled(true)
-    if (!activeNetwork?.BnM) return
-    const { address: ccipBNMContractAddress } = activeNetwork.BnM.params.options
+    if (!activeChain) return
+
+    const params = getBnMParams(activeChain)
+    if (!params) return
+    const { address: ccipBNMContractAddress } = params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
     const mintTokensContract = new Contract(ccipBNMContractAddress, burnMintAbi, signer)
@@ -223,8 +227,11 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   const mintLnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintLnMTokenButtonDisabled(true)
-    if (!activeNetwork?.LnM) return
-    const { address: ccipLNMContractAddress } = activeNetwork.LnM.params.options
+    if (!activeChain) return
+
+    const params = getLnMParams(activeChain)
+    if (!params) return
+    const { address: ccipLNMContractAddress } = params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
     const mintTokensContract = new Contract(ccipLNMContractAddress, burnMintAbi, signer)
@@ -275,9 +282,9 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
               <>
                 <img
                   src={
-                    activeNetwork === undefined
+                    activeChain === undefined
                       ? "https://smartcontract.imgix.net/icons/alert.svg"
-                      : activeNetwork?.icon
+                      : getChainIcon(activeChain)
                   }
                   style={{ marginRight: "var(--space-2x)" }}
                 />
@@ -293,9 +300,9 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
               <>
                 <img
                   src={
-                    activeNetwork === undefined
+                    activeChain === undefined
                       ? "https://smartcontract.imgix.net/icons/alert.svg"
-                      : activeNetwork?.icon
+                      : getChainIcon(activeChain)
                   }
                   style={{ marginRight: "var(--space-2x)", minHeight: "1.2em", minWidth: "1.2em" }}
                 />
@@ -304,7 +311,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                     color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
                   }}
                 >
-                  {activeNetwork?.name ?? "Unknown network"}
+                  {activeChain ? getTitle(activeChain) : "Unknown network"}
                 </span>
               </>
             )}
@@ -312,21 +319,24 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
           </div>
         </summary>
         <div className={styles["dropdown-container"]}>
-          {activeNetwork ? (
+          {activeChain ? (
             <ul style={{ listStyle: "none" }}>
-              {options.map((option) => {
-                if (option.BnM || option.LnM) {
+              {allChains.map((chainRdd) => {
+                if (isBnMOrLnMRdd(chainRdd)) {
+                  const supportedChain = directoryToSupportedChain(chainRdd)
+                  const supportedChainTitle = getTitle(supportedChain)
+                  const activeChainTitle = getTitle(activeChain)
                   return (
                     <li
-                      className={option.name === activeNetwork.name ? styles["selected-option"] : styles.option}
-                      key={option.name}
+                      className={supportedChainTitle === activeChainTitle ? styles["selected-option"] : styles.option}
+                      key={supportedChainTitle}
                     >
-                      <button onClick={() => handleNetworkChange(option)} className="text-200">
+                      <button onClick={() => handleNetworkChange(supportedChain)} className="text-200">
                         <span>
-                          <img src={option.icon} style={{ minHeight: "1em", minWidth: "1em" }} />
-                          {option.name}
+                          <img src={getChainIcon(supportedChain)} style={{ minHeight: "1em", minWidth: "1em" }} />
+                          {supportedChainTitle}
                         </span>
-                        {option.name === activeNetwork.name && (
+                        {supportedChainTitle === activeChainTitle && (
                           <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
                         )}
                       </button>
@@ -369,11 +379,11 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
           )}
         </div>
       </details>
-      {activeNetwork !== undefined ? (
-        activeNetwork.BnM || activeNetwork.LnM ? (
+      {activeChain !== undefined ? (
+        isBnMOrLnM(activeChain) ? (
           <>
             <div className="add-asset-button-container">
-              {activeNetwork && activeNetwork.BnM && (
+              {activeChain && isBnM(activeChain) && (
                 <div class="add-to-wallet-button">
                   <button
                     className={button.secondary}
@@ -389,7 +399,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                   </button>
                 </div>
               )}
-              {activeNetwork && activeNetwork.LnM && (
+              {activeChain && isLnM(activeChain).supported && (
                 <div class="add-to-wallet-button">
                   <hr />
                   <button
@@ -401,9 +411,11 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                   >
                     Add CCIP-LnM to wallet
                   </button>
-                  <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
-                    {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
-                  </button>
+                  {isLnM(activeChain).supportedChainForLock === activeChain ? (
+                    <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
+                      {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>
@@ -420,8 +432,11 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         <>
           <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
           <ul style={{ marginTop: "1.5rem" }}>
-            {options.map((option: CCIPNetworkOptions) => {
-              if (option.BnM || option.LnM) {
+            {allChains.map((chainRdd) => {
+              if (isBnMOrLnMRdd(chainRdd)) {
+                const supportedChain = directoryToSupportedChain(chainRdd)
+                const supportedChainTitle = getTitle(supportedChain)
+                const chainIcon = getChainIcon(supportedChain)
                 return (
                   <li style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
@@ -431,15 +446,15 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                           height: "var(--space-4x)",
                           marginRight: "var(--space-3x)",
                         }}
-                        src={option.icon}
+                        src={chainIcon}
                         alt="chain icon"
                       />
-                      {option.name}
+                      {supportedChainTitle}
                     </div>
                     <button
                       className={button.secondary}
                       onClick={async () => {
-                        await handleNetworkChange(option)
+                        await handleNetworkChange(supportedChain)
                       }}
                     >
                       Switch to Network
