@@ -1,9 +1,9 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React from "react"
-import { CaretIcon } from "../../CaretIcon"
 import { ProductsNav } from "../../config"
 import { SearchTrigger } from "../../NavBar"
-import { clsx, getIconUrl } from "../../utils"
+import { clsx } from "../../utils"
+import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
@@ -55,17 +55,12 @@ export function ProductNavigation({ productsNav }: Props) {
           alt="Chainlink Home"
           title="Chainlink Home"
           style={{ display: "flex" }}
-          src={getIconUrl("chainlink")}
+          src="/assets/icons/chainlink.svg"
           height={24}
           width={24}
         />
       </a>
-      <Trigger
-        onPointerMove={(event) => event.preventDefault()}
-        onPointerLeave={(event) => event.preventDefault()}
-        data-testid="product-navigation-trigger-mobile"
-        className={styles.trigger}
-      >
+      <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
         <span
           className={"text-300"}
           style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
@@ -74,21 +69,15 @@ export function ProductNavigation({ productsNav }: Props) {
         </span>
         <CaretIcon
           style={{
-            color: "gray",
-            fill: "gray",
-            width: "var(--space-4x)",
-            height: "var(--space-4x)",
+            color: "var(--color-text-primary)",
+            fill: "var(--color-text-primary)",
           }}
         />
       </Trigger>
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content
-          onPointerMove={(event) => event.preventDefault()}
-          onPointerLeave={(event) => event.preventDefault()}
-          className={clsx(styles.menuContent)}
-        >
+        <Dialog.Content className={clsx(styles.menuContent)}>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{
@@ -109,7 +98,7 @@ export function ProductNavigation({ productsNav }: Props) {
             </div>
           </div>
           <Close ref={closeButtonRef} className={styles.closeButton}>
-            <img src={getIconUrl("Close_gray")} />
+            <img src="/assets/icons/close.svg" />
           </Close>
 
           <BottomBar />

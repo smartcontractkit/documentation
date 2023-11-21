@@ -1,5 +1,4 @@
-import { CaretIcon } from "../../CaretIcon"
-import { getImageUrl } from "../../utils"
+import { CaretIcon } from "../CaretIcon"
 import styles from "./trigger.module.css"
 
 type Props = {
@@ -10,7 +9,7 @@ type Props = {
 export const Trigger = ({ icon, label, className }: Props) => (
   <div style={{ display: "flex" }} className={className}>
     <span className={styles.trigger}>
-      {icon && <img height={20} width={20} src={getImageUrl(`/${icon}-navbar-icon.svg`)} />}
+      {icon && <img height={20} width={20} src={`assets/isonc/${icon}-navbar-icon.svg`} />}
       {label}
       <div className={styles.caretContainer}>
         <CaretIcon aria-hidden />
