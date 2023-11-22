@@ -1,5 +1,5 @@
-import { ResourcesIcon } from "../../ResourcesIcon"
 import styles from "./bottomBar.module.css"
+import { ResourcesIcon } from "./ResourcesIcon"
 import { Search } from "../../../AlgoSearch/Search"
 
 const ResourcesButton = () => (

@@ -3,7 +3,7 @@ import React from "react"
 import { ProductsNav, SubProductsNav } from "../../config"
 import { Divider } from "../../Divider"
 import { isMatchedPath } from "../../isMatchedPath"
-import { clsx, getIconUrl } from "../../utils"
+import { clsx } from "../../utils"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
@@ -39,34 +39,23 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
 
   return (
     <>
+      <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
+        <img
+          alt="Chainlink Home"
+          title="Chainlink Home"
+          style={{ display: "flex" }}
+          src="/assets/icons/chainlink-logo.svg"
+          height={28}
+        />
+      </a>
       <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
         <List className={styles.list}>
-          <Item>
-            <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
-              <img
-                alt="Chainlink Home"
-                title="Chainlink Home"
-                style={{ display: "flex" }}
-                src={getIconUrl("logo-chainlink")}
-                height={28}
-              />
-            </a>
-          </Item>
           <Divider className={styles.divider} />
           <Item>
-            <RadixTrigger
-              onPointerMove={(event) => event.preventDefault()}
-              onPointerLeave={(event) => event.preventDefault()}
-              className="nav-product"
-              ref={productMenuRef}
-            >
+            <RadixTrigger className="nav-product" ref={productMenuRef}>
               <Trigger className={styles.productTrigger} label="Developer Hub" />
             </RadixTrigger>
-            <RadixContent
-              onPointerMove={(event) => event.preventDefault()}
-              onPointerLeave={(event) => event.preventDefault()}
-              className={styles.content}
-            >
+            <RadixContent className={styles.content}>
               <ProductContent categories={productsNav.categories} />
             </RadixContent>
           </Item>
@@ -93,19 +82,10 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
             <>
               <Divider className={styles.divider} />
               <Item>
-                <RadixTrigger
-                  onPointerMove={(event) => event.preventDefault()}
-                  onPointerLeave={(event) => event.preventDefault()}
-                  className="nav-subproduct"
-                  ref={subProductMenuRef}
-                >
+                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
                   <Trigger label={subProductTrigger.label} />
                 </RadixTrigger>
-                <RadixContent
-                  onPointerMove={(event) => event.preventDefault()}
-                  onPointerLeave={(event) => event.preventDefault()}
-                  className={styles.content}
-                >
+                <RadixContent className={styles.content}>
                   <SubProductContent subProductsNav={subProductsNav} />
                 </RadixContent>
               </Item>
