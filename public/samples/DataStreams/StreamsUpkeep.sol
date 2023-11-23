@@ -119,10 +119,8 @@ contract StreamsLookupChainlinkAutomation is
 
         bytes memory unverifiedReport = signedReports[0];
 
-        (, bytes memory reportData) = abi.decode(
-            unverifiedReport,
-            (bytes32[3], bytes)
-        );
+        (, /* bytes32[3] reportContextData */ bytes memory reportData) = abi
+            .decode(unverifiedReport, (bytes32[3], bytes));
 
         // Report verification fees
         IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
