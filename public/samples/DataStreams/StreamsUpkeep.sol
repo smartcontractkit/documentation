@@ -68,8 +68,8 @@ contract StreamsLookupChainlinkAutomation is
     IVerifierProxy public verifier;
 
     address public FEE_ADDRESS;
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDs";
-    string public constant STRING_DATASTREAMS_QUERYLABEL = "timestamp";
+    string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
+    string public constant DATASTREAMS_QUERYLABEL = "timestamp";
     string[] public feedIds = [
         "0x00029584363bcf642315133c335b3646513c20f049602fc7d933be0d3f6360d3" // Ex. Basic ETH/USD price report
     ];
@@ -83,9 +83,9 @@ contract StreamsLookupChainlinkAutomation is
         bytes memory
     ) external returns (bool upkeepNeeded, bytes memory performData) {
         revert StreamsLookup(
-            STRING_DATASTREAMS_FEEDLABEL,
+            DATASTREAMS_FEEDLABEL,
             feedIds,
-            STRING_DATASTREAMS_QUERYLABEL,
+            DATASTREAMS_QUERYLABEL,
             log.timestamp,
             ""
         );
@@ -110,7 +110,7 @@ contract StreamsLookupChainlinkAutomation is
 
         (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
 
-        // Billing
+        // Report verification fees
         IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
         IRewardManager rewardManager = IRewardManager(
             address(feeManager.i_rewardManager())
