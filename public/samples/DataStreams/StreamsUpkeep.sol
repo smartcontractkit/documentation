@@ -8,8 +8,12 @@ import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces
 import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierFeeManager.sol";
 import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/interfaces/IERC20.sol";
 
-// Custom interfaces for IVerifierProxy and IFeeManager
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
 
+// Custom interfaces for IVerifierProxy and IFeeManager
 interface IVerifierProxy {
     function verify(
         bytes calldata payload,
@@ -33,10 +37,7 @@ interface IFeeManager {
     function i_rewardManager() external view returns (address);
 }
 
-contract StreamsLookupChainlinkAutomation is
-    ILogAutomation,
-    StreamsLookupCompatibleInterface
-{
+contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     struct BasicReport {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
