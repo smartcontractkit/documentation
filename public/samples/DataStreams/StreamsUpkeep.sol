@@ -22,7 +22,7 @@ interface IVerifierProxy {
 interface IFeeManager {
     function getFeeAndReward(
         address subscriber,
-        bytes memory report,
+        bytes memory unverifiedReport,
         address quoteAddress
     ) external returns (Common.Asset memory, Common.Asset memory, uint256);
 
@@ -70,8 +70,11 @@ contract StreamsLookupChainlinkAutomation is
     address public FEE_ADDRESS;
     string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
     string public constant DATASTREAMS_QUERYLABEL = "timestamp";
+
+    // This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
+    // Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
     string[] public feedIds = [
-        "0x00029584363bcf642315133c335b3646513c20f049602fc7d933be0d3f6360d3" // Ex. Basic ETH/USD price report
+        "0x00029584363bcf642315133c335b3646513c20f049602fc7d933be0d3f6360d3"
     ];
 
     constructor(address _verifier) {
@@ -91,6 +94,11 @@ contract StreamsLookupChainlinkAutomation is
         );
     }
 
+    // The Data Streams report bytes is passed here.
+    // extraData is context data from feed lookup process.
+    // Your contract may include logic to further process this data.
+    // This method is intended only to be simulated off-chain by Automation.
+    // The data returned will then be passed by Automation into performUpkeep
     function checkCallback(
         bytes[] calldata values,
         bytes calldata extraData
@@ -106,9 +114,12 @@ contract StreamsLookupChainlinkAutomation is
             (bytes[], bytes)
         );
 
-        bytes memory report = signedReports[0];
+        bytes memory unverifiedReport = signedReports[0];
 
-        (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
+        (, bytes memory reportData) = abi.decode(
+            unverifiedReport,
+            (bytes32[3], bytes)
+        );
 
         // Report verification fees
         IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
@@ -123,12 +134,12 @@ contract StreamsLookupChainlinkAutomation is
             feeTokenAddress
         );
 
-        // Approve fee spend
+        // Approve rewardManager to spend this contract's balance in fees
         IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
 
         // Verify the report
         bytes memory verifiedReportData = verifier.verify(
-            report,
+            unverifiedReport,
             abi.encode(feeTokenAddress)
         );
 
