@@ -70,6 +70,7 @@ contract StreamsLookupChainlinkAutomation is
     address public FEE_ADDRESS;
     string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
     string public constant DATASTREAMS_QUERYLABEL = "timestamp";
+    int192 public last_retrieved_price;
 
     // This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
     // Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
@@ -152,6 +153,9 @@ contract StreamsLookupChainlinkAutomation is
 
         // Log price from report
         emit PriceUpdate(verifiedReport.price);
+
+        // Store the price from the report
+        last_retrieved_price = verifiedReport.price;
     }
 
     fallback() external payable {}
