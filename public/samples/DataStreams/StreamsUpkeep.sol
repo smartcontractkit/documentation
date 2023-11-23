@@ -81,6 +81,8 @@ contract StreamsLookupChainlinkAutomation is
         verifier = IVerifierProxy(_verifier);
     }
 
+    // This function uses revert to convey call information.
+    // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
     function checkLog(
         Log calldata log,
         bytes memory
@@ -108,7 +110,8 @@ contract StreamsLookupChainlinkAutomation is
 
     // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
-        // Decode incoming performData
+        // Decode the performData bytes passed in by CL Automation.
+        // This contains the data returned by your implementation in checkCallback().
         (bytes[] memory signedReports, bytes memory extraData) = abi.decode(
             performData,
             (bytes[], bytes)
