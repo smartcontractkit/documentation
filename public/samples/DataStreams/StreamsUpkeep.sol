@@ -76,7 +76,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     // This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
     // Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
     string[] public feedIds = [
-        "0x00029584363bcf642315133c335b3646513c20f049602fc7d933be0d3f6360d3"
+        "0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b"
     ];
 
     constructor(address _verifier) {
