@@ -24,7 +24,9 @@ contract CustomAutomatedFunctionsConsumerExample is
     bytes32 public s_lastRequestId;
     bytes public s_lastResponse;
     bytes public s_lastError;
+    uint256 public s_upkeepCounter;
     uint256 public s_requestCounter;
+    uint256 public s_responseCounter;
 
     error UnexpectedRequestID(bytes32 requestId);
 
@@ -60,6 +62,8 @@ contract CustomAutomatedFunctionsConsumerExample is
      */
     function performUpkeep(bytes calldata /* performData */) external override {
         if (block.number - lastBlockNumber > 0) {
+            lastBlockNumber = block.number;
+            s_upkeepCounter = s_upkeepCounter + 1;
             try
                 i_router.sendRequest(
                     subscriptionId,
@@ -71,7 +75,7 @@ contract CustomAutomatedFunctionsConsumerExample is
             returns (bytes32 requestId) {
                 s_lastRequestId = requestId;
                 s_requestCounter = s_requestCounter + 1;
-                lastBlockNumber = block.number;
+                emit RequestSent(requestId);
             } catch Error(string memory reason) {
                 emit RequestRevertedWithErrorMsg(reason);
             } catch (bytes memory data) {
@@ -116,6 +120,7 @@ contract CustomAutomatedFunctionsConsumerExample is
         }
         s_lastResponse = response;
         s_lastError = err;
+        s_responseCounter = s_responseCounter + 1;
         emit Response(requestId, s_lastResponse, s_lastError);
     }
 }
