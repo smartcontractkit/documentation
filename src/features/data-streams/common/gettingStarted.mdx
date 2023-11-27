@@ -26,7 +26,7 @@ Read data from a Data Stream and validate the answer on-chain. This example uses
 
 ## Deploy the Chainlink Automation upkeep
 
-Deploy an upkeep that is enabled to retrieve data from Data Streams. For this example, you will read from the ETH/USD stream with ID `0x00023496426b520583ae20a66d80484e0fc18544866a5b0bfee15ec771963274` on Arbitrum Sepolia. For a complete list of available assets, IDs, and verifier proxy addresses, see the [Stream Identifiers](/data-streams/stream-ids) page.
+Deploy an upkeep that is enabled to retrieve data from Data Streams. For this example, you will read from the ETH/USD stream with ID `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` on Arbitrum Sepolia. For a complete list of available assets, IDs, and verifier proxy addresses, see the [Stream Identifiers](/data-streams/stream-ids) page.
 
 1. Select the Arbitrum Sepolia network in MetaMask.
 
@@ -34,14 +34,16 @@ Deploy an upkeep that is enabled to retrieve data from Data Streams. For this ex
 
    <CodeSample src="samples/DataStreams/StreamsUpkeep.sol" showButtonOnly />
 
-1. Compile the contract.
+1. In the **Solidity Compiler** tab, select the `0.8.16` Solidity compiler and the `StreamsUpkeep` contract.
+
+1. Compile the contract. You can ignore the warning messages for this example.
 
 1. In the **Deploy & Run** tab, select **Injected Provider** as your Environment. For this example, you should be using Arbitrum Sepolia.
 
 1. Deploy the contract with the following constructor variables:
 
    - **FeeAddress (WETH)**: `0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3`
-   - **VerifierAddress**: `0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c`
+   - **VerifierAddress**: `0x2ff010DEbC1297f19579B4246cad07bd24F2488A`
 
 1. Record the contract address.
 
@@ -87,34 +89,26 @@ Now you can use your emitter contract to emit a log and initiate the upkeep, whi
 
 1. Go to [sepolia.arbiscan.io](https://sepolia.arbiscan.io/).
 
-1. Use the search to find your emitter contract using the address you saved earlier.
+1. Under the **Deployed Contracts** list, click the **emitLog** button to run the function and emit a log. MetaMask prompts you to accept the transaction.
 
-1. Click the **Contract** tab to view the contract.
+After the transaction is complete, the log is emitted and the upkeep is triggered. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia). Check to make sure the transaction is successful.
 
-1. Click the **Write Contract** button to find the `emitLog` function.
+## View the retrieved price
 
-1. Click **Connect to Web3** to connect your wallet to Arbiscan. This allows you to run write functions in Arbiscan. MetaMask will prompt you to accept the connection.
+The retrieved price is stored as a variable in the contract and is also emitted in the logs.
 
-1. Click the `emitLog` function to expand the function details.
+1. In Remix, go to the **Deploy & Run** tab.
 
-1. Click the **Write** button to execute the function that will emit the log. MetaMask prompts you to accept the transaction.
+1. Under the **Deployed Contracts**, find the deployed upkeep contract and view the variables.
 
-After the transaction is complete, the log is emitted and the upkeep is triggered. You can see the retrieved data on your upkeep.
+1. Click the `last_retrieved_price` variable to view the retrieved price.
 
-## View the upkeep
-
-View the upkeep and check the on-chain verification.
-
-1. Go to the [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) for Arbitrum Sepolia.
-
-1. On your list of upkeeps, click the upkeep that you crated for this guide. The upkeep details open with a list of upkeeps that were performed. You should see your log triggered upkeep on this list.
-
-1. Click the transaction hash for the upkeep to view the transaction in Arbiscan.
-
-1. On the **Logs** tab for your transaction, you will see that the `performUpkeep` function emitted the price from the verified report.
+Alternatively, you can view the price emitted in the logs for your upkeep transaction. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) and view the logs in the explorer.
 
 ## Examine the code
 
 The example code that you deployed has all of the interfaces and functions required to work with Chainlink Automation as an upkeep contract. It follows a similar flow to the trading flow in the [Architecture](/data-streams#example-trading-flow) documentation, but uses a basic log emitter to simulate the client contract that would initiate a `StreamsLookup`. After the contract receives and verifies the report, `performUpkeep` emits a `PriceUpdate` log message with the price. You could modify this to use the data in a way that works for your specific use case and application.
+
+The code example uses `revert` with `StreamsLookup` to convey call information about what streams to retrieve. See the [eip-3668 rationale](https://eips.ethereum.org/EIPS/eip-3668#rationale) for more information on the use of `revert` in this way.
 
 <CodeSample src="samples/DataStreams/StreamsUpkeep.sol" />
