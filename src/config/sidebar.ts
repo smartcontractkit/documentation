@@ -886,6 +886,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
+          title: "Manual execution",
+          url: "ccip/tutorials/manual-execution",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },
@@ -895,12 +899,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Concept Overview",
+          title: "Conceptual Overview",
           url: "ccip/concepts",
         },
         {
           title: "Architecture",
           url: "ccip/architecture",
+        },
+        {
+          title: "Manual execution",
+          url: "ccip/concepts/manual-execution",
         },
         {
           title: "Best Practices",
