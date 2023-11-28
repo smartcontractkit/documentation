@@ -16,6 +16,7 @@ type ConfigProps = {
 }
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
+const arbMsgDocUrl = "/ccip/tutorials/send-arbitrary-data"
 const { laneConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
 const { rateLimiterConfig, supportedTokens } = laneConfig
 
@@ -167,6 +168,11 @@ if (supportedTokens) {
       <>
         <p>
           <strong>Supported tokens</strong>
+          <Aside>
+            Only these listed CCIP test tokens are currently supported. Custom testnet tokens are not supported. You can
+            mint CCIP test tokens <a href="/ccip/test-tokens#mint-test-tokens">in the documentation</a> or on a block
+            explorer.
+          </Aside>
         </p>
         <table>
           <thead>
@@ -236,8 +242,9 @@ if (supportedTokens) {
     </>
   ) : (
     <Aside>
-      No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
-      their token listed.
+      No tokens are currently listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have their
+      token listed. Custom tokens are not supported. You can send data on this lane by using
+      <a href={arbMsgDocUrl}>arbitrary messaging</a>.
     </Aside>
   )
 }
