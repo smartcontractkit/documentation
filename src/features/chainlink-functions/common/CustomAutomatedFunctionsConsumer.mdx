@@ -36,6 +36,13 @@ import { CodeSample } from "@components"
   event Response(bytes32 indexed requestId, bytes response, bytes err);
   ```
 
+- We define two events that your smart contract emits when sending a request to Chainlink Functions fails:
+
+  ```
+  event RequestRevertedWithErrorMsg(string reason);
+  event RequestRevertedWithoutErrorMsg(bytes data);
+  ```
+
 - Pass the router address for your network when you deploy the contract:
 
   ```
@@ -46,12 +53,13 @@ import { CodeSample } from "@components"
 
   - `checkUpkeep` for checking off-chain if `performUpkeep` should be executed. `performUpkeep` should only be executed if the current block number is higher than the block number of the last execution.
 
-  - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function.
+  - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function. **Note**: We use _try and catch_ to gracefully handle reverts of `i_router.sendRequest` by emitting an event. We also update the `lastBlockNumber`, even when `i_router.sendRequest` is unsuccessful.
 
-  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError` before emitting the `Response` event.
+  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError`, then increments the response counter `s_responseCounter` before emitting the `Response` event.
 
     ```
     s_lastResponse = response;
     s_lastError = err;
+    s_responseCounter = s_responseCounter + 1;
     emit Response(requestId, s_lastResponse, s_lastError);
     ```
