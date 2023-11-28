@@ -228,7 +228,7 @@ export const CHAINS: Chain[] = [
         name: "Harmony Mainnet",
         explorerUrl: "https://explorer.harmony.one/#/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory-hm5y6e743-chainlinklabs.vercel.app/feeds-harmony-mainnet-0.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-harmony-mainnet-0.json",
         queryString: "harmony-mainnet",
       },
     ],
