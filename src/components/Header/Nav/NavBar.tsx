@@ -49,7 +49,6 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
             <div className={styles.rightSection}>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" />
-              <img width="24px" height="24px" src="/assets/icons/localization.svg" />
               <a
                 rel="noreferrer"
                 target="_blank"
