@@ -17,6 +17,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   FANTOM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/fantom"),
   FANTOM_TESTNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/fantom_testnet"),
   ARBITRUM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/arbitrum"),
+  ARBITRUM_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia-rollup.arbitrum.io/rpc"),
   ARBITRUM_GOERLI: () =>
     new providers.JsonRpcProvider("https://arb-goerli.g.alchemy.com/v2/AwZE27jvfRidiu-6FFunBzP3Bff0XFNx"),
   OPTIMISM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/optimism"),
@@ -28,8 +29,11 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),
   BASE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.base.org"),
   BASE_GOERLI: () => new providers.JsonRpcProvider("https://goerli.base.org"),
+  SCROLL_MAINNET: () => new providers.JsonRpcProvider("https://rpc.scroll.io"),
   SCROLL_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia-rpc.scroll.io"),
   CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
   CELO_ALFAJORES: () => new providers.JsonRpcProvider("https://forno.celo.org"),
   POLYGON_ZKEVM_TESTNET: () => new providers.JsonRpcProvider("https://rpc.public.zkevm-test.net"),
+  LINEA_MAINNET: () => new providers.JsonRpcProvider("https://rpc.linea.build	"),
+  LINEA_GOERLI: () => new providers.JsonRpcProvider("https://rpc.goerli.linea.build"),
 }

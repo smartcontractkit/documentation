@@ -3,7 +3,6 @@ import detectEthereumProvider from "@metamask/detect-provider"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import { useEffect, useState } from "preact/hooks"
-import { supportedNetworks } from "../data/data"
 import { NetworkDropdown } from "./NetworkDropdown"
 import { InjectedProvider, checkConnection } from "../../utils/getInjectedProvider"
 import "./container.css"
@@ -142,7 +141,7 @@ export const MintTokenButton = () => {
       )}
       {userAddress && (
         <>
-          <NetworkDropdown options={supportedNetworks} userAddress={userAddress} />
+          <NetworkDropdown userAddress={userAddress} />
         </>
       )}
     </div>

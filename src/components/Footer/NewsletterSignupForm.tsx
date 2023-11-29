@@ -72,7 +72,7 @@ export const NewsletterSignupForm = () => {
             <input
               id="subscribe-button"
               type="submit"
-              value={isLoading ? "Please Wait..." : "Sign up"}
+              value={isLoading ? "Please Wait..." : "Subscribe now"}
               disabled={isLoading}
               className={clsx(button.secondary, "text-300")}
             />

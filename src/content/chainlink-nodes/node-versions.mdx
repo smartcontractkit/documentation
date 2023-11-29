@@ -12,6 +12,54 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.7.1 nodes
+
+**[v2.7.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.7.1)**
+
+### Fixed
+
+- Fixed a bug that causes the node to shutdown if all configured RPC's are unreachable during startup.
+
+## Changes in v2.7.0 nodes
+
+**[v2.7.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.7.0)**
+
+### Added
+
+- Added new configuration field named `LeaseDuration` for `EVM.NodePool` that will periodically check if internal subscriptions are connected to the "best" (as defined by the `SelectionMode`) node and switch to it if necessary. Setting this value to `0s` will disable this feature.
+
+- Added multichain telemetry support. Each network/chainID pair must be configured using the new fields:
+
+  ```toml
+  [[TelemetryIngress.Endpoints]]
+  Network = '...' # e.g. EVM. Solana, Starknet, Cosmos
+  ChainID = '...' # e.g. 1, 5, devnet, mainnet-beta
+  URL = '...'
+  ServerPubKey = '...'
+  ```
+
+  These will eventually replace `TelemetryIngress.URL` and `TelemetryIngress.ServerPubKey`. Setting `TelemetryIngress.URL` and `TelemetryIngress.ServerPubKey` alongside `[[TelemetryIngress.Endpoints]]` will prevent the node from booting. Only one way of configuring telemetry endpoints is supported.
+
+- Added bridge_name label to `pipeline_tasks_total_finished` prometheus metric. This should make it easier to see directly what bridge was failing out from the CL NODE perspective.
+
+- LogPoller will now use finality tags to dynamically determine finality on evm chains if `UseFinalityTags=true`, rather than the fixed `FinalityDepth` specified in toml config
+
+### Changed
+
+- `P2P.V1` is now disabled (`Enabled = false`) by default. It must be explicitly enabled with `true` to be used. However, it is deprecated and will be removed in the future.
+- `P2P.V2` is now enabled (`Enabled = true`) by default.
+
+### Upcoming Required Configuration Changes
+
+Starting in `v2.9.0`:
+
+- `TelemetryIngress.URL` and `TelemetryIngress.ServerPubKey` will no longer be allowed. Any TOML configuration that sets this fields will prevent the node from booting. These fields will be replaced by `[[TelemetryIngress.Endpoints]]`
+- `P2P.V1` will no longer be supported and must not be set in TOML configuration in order to boot. Use `P2P.V2` instead. If you are using both, `V1` can simply be removed.
+
+### Removed
+
+- Removed the ability to set a next nonce value for an address through CLI
+
 ## Changes in v2.6.0 nodes
 
 **[v2.6.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.6.0)**
@@ -135,7 +183,7 @@ Node operators may wish to add alerting based around these metrics.
 ### Changed
 
 - Assumption violations for MaxFeePerGas >= BaseFeePerGas and MaxFeePerGas >= MaxPriorityFeePerGas in EIP-1559 effective gas price calculation will now use a gas price if specified
-- Config validation now enforces protection against duplicate chain ids and node fields per provided TOML file. Duplicates accross multiple configuration files are still valid. If you have specified duplicate chain ids or nodes in a given configuration file, this change will error out of all `node` subcommands.
+- Config validation now enforces protection against duplicate chain ids and node fields per provided TOML file. Duplicates across multiple configuration files are still valid. If you have specified duplicate chain ids or nodes in a given configuration file, this change will error out of all `node` subcommands.
 - Restricted scope of the `Evm.GasEstimator.LimitJobType.OCR`, `OCR.DefaultTransactionQueueDepth`, and `OCR.SimulateTransactions` settings so they
   apply only to OCR. Previously these settings would apply to OCR2 as well as OCR. You must use the OCR2 equivalents added above if you
   want your settings to apply to OCR2.

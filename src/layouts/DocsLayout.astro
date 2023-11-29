@@ -1,17 +1,13 @@
 ---
-import HeadCommon from "~/components/HeadCommon.astro"
-import HeadSEO from "~/components/HeadSEO.astro"
-import Header from "~/components/Header/Header.astro"
 import PageContent from "~/components/PageContent/PageContent.astro"
 import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
 import RightSidebar from "~/components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "~/config"
-import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
-import Footer from "~/components/Footer/Footer.astro"
-import { BaseFrontmatter } from "~/content/config"
+import type { BaseFrontmatter } from "~/content/config"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
-import { MarkdownHeading } from "astro"
+import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "./BaseLayout.astro"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -32,124 +28,125 @@ const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const currentFile = `src/content${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
+const currentFile = `src/content${currentPage.replace(/\/$/, "")}${frontmatter.isIndex ? "/index" : ""}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
-const formattedContentTitle = frontmatter.title
-  ? `${frontmatter.title} | ${CONFIG.SITE.title}`
-  : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
-const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
-const canonicalURL = new URL(canonicalURLStr)
-
-const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWallet
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 ---
 
-<html dir="ltr" lang="en-us" class="initial">
-  <head>
-    <HeadCommon />
-    <HeadSEO metadata={frontmatter.metadata} {canonicalURL} />
-    <title>{formattedContentTitle}</title>
-    <style>
-      html {
-        scroll-behavior: smooth;
+<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <main>
+    <div id="left-bg"></div>
+    <div class="layout">
+      <aside id="grid-left" title="Site Navigation">
+        <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
+      </aside>
+      <div id="grid-main">
+        <PageContent {titleHeading}>
+          <slot />
+        </PageContent>
+        {whatsNext && <WhatsNext content={whatsNext} />}
+      </div>
+      <aside id="grid-right" title="Table of Contents">
+        <RightSidebar {githubEditUrl} headings={initialHeadings} />
+      </aside>
+    </div>
+  </main>
+
+  <style>
+    main {
+      margin-bottom: 0 !important;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: auto;
+      --gutter: var(--space-6x);
+      --doc-padding: 2rem;
+      margin-bottom: 0;
+    }
+
+    #grid-left,
+    #grid-right {
+      display: none;
+    }
+
+    #grid-main {
+      padding: var(--doc-padding) var(--gutter);
+      display: flex;
+      flex-direction: column;
+      margin-bottom: var(--space-10x);
+      min-width: 0;
+    }
+
+    @media (min-width: 50em) {
+      main {
+        display: grid;
+        grid-template-columns: auto fit-content(100%) auto;
       }
 
       .layout {
-        display: grid;
-        grid-template-columns: auto;
-        --gutter: var(--space-6x);
-        --doc-padding: 2rem;
-        margin-bottom: 0;
+        grid-template-columns: auto auto auto;
+        gap: var(--gutter);
+        max-width: 1440px;
+      }
+
+      #grid-left,
+      #left-bg {
+        background: #fafbfd;
       }
 
       #grid-left,
       #grid-right {
-        display: none;
+        display: flex;
       }
 
       #grid-main {
-        padding: var(--doc-padding) var(--gutter);
-        display: flex;
-        flex-direction: column;
-        margin-bottom: var(--space-10x);
-        min-width: 0;
+        padding: 0 0 var(--doc-padding) 0;
       }
 
-      @media (min-width: 50em) {
-        main {
-          display: grid;
-          grid-template-columns: auto fit-content(100%) auto;
-          margin-bottom: 0 !important;
-        }
-
-        .layout {
-          grid-template-columns: auto 2fr 1fr;
-          gap: var(--gutter);
-          max-width: var(--fullwidth-max-width);
-          align-self: center;
-        }
-
-        #grid-left,
-        #left-bg {
-          background: #fafbfd;
-        }
-
-        #grid-left {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        #grid-main {
-          padding: 0 0 var(--doc-padding) 0;
-        }
-
-        #grid-right {
-          display: flex;
-        }
+      #grid-left {
+        width: 260px;
+        padding-left: var(--space-8x);
       }
 
-      @media (min-width: 72em) {
-        .layout {
-          gap: var(--doc-padding);
-        }
+      #grid-right {
+        width: 0;
+        padding-right: 0;
+        transition: 300ms ease-in-out;
+        transition-property: width padding-right;
       }
-    </style>
-    <script>
-      import "../scripts/index.ts"
-    </script>
-    <script define:vars={{ includeLinkToWalletScript }}>
-      window.includeLinkToWalletScript = includeLinkToWalletScript
-    </script>
-  </head>
+    }
 
-  <body>
-    <Header section={frontmatter.section} />
-    <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
-    <main>
-      <div id="left-bg"></div>
-      <div class="layout">
-        <aside id="grid-left" title="Site Navigation">
-          <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
-        </aside>
-        <div id="grid-main">
-          <PageContent {titleHeading}>
-            <slot />
-          </PageContent>
-          {whatsNext && <WhatsNext content={whatsNext} />}
-        </div>
-        <aside id="grid-right" title="Table of Contents">
-          <RightSidebar {githubEditUrl} headings={initialHeadings} />
-        </aside>
-      </div>
-      <div hidden="true"></div>
-    </main>
-    <NewsletterCTA client:visible />
-    <Footer />
-
-    <script>
-      if (window.includeLinkToWalletScript) {
-        import("../scripts/link-to-wallet.ts")
+    @media (min-width: 992px) {
+      .layout {
+        gap: var(--doc-padding);
       }
-    </script>
-  </body>
-</html>
+
+      #grid-left {
+        width: 285px;
+        padding-left: var(--space-16x);
+      }
+    }
+
+    @media (min-width: 1200px) {
+      #grid-right {
+        width: 315px;
+        padding-right: var(--space-16x);
+      }
+    }
+  </style>
+
+  <script define:vars={{ includeLinkToWalletScript }}>
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
+  </script>
+
+  <script>
+    import "~/scripts"
+    if (window["includeLinkToWalletScript"]) {
+      import("~/scripts/link-to-wallet")
+    }
+  </script>
+</BaseLayout>

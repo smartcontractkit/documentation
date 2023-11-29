@@ -178,11 +178,11 @@ const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvide
     method: "wallet_addEthereumChain",
     params: [params, signerAddress],
   })
-  console.log(`Chains ${chainId} of params ${JSON.stringify(params)} succesfully added to wallet`)
+  console.log(`Chains ${chainId} of params ${JSON.stringify(params)} successfully added to wallet`)
 }
 
 /**
- * Functions which validates the format of Link address and interfacs with the contract to make sure
+ * Functions which validates the format of Link address and interface with the contract to make sure
  * its metadata (e.g.: symbol) is valid
  * @param address
  * @param provider

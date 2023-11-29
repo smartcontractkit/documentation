@@ -6,6 +6,12 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 /**
+ * @dev Example contract, use the Forwarder as needed for additional security.
+ *
+ * @notice important to implement {AutomationCompatibleInterface}
+ */
+
+/**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
@@ -15,15 +21,15 @@ contract Counter is AutomationCompatibleInterface {
     /**
      * Public counter variable
      */
-    uint public counter;
+    uint256 public counter;
 
     /**
      * Use an interval in seconds and a timestamp to slow execution of Upkeep
      */
-    uint public immutable interval;
-    uint public lastTimeStamp;
+    uint256 public immutable interval;
+    uint256 public lastTimeStamp;
 
-    constructor(uint updateInterval) {
+    constructor(uint256 updateInterval) {
         interval = updateInterval;
         lastTimeStamp = block.timestamp;
 
@@ -43,7 +49,6 @@ contract Counter is AutomationCompatibleInterface {
     }
 
     function performUpkeep(bytes calldata /* performData */) external override {
-        //We highly recommend revalidating the upkeep in the performUpkeep function
         if ((block.timestamp - lastTimeStamp) > interval) {
             lastTimeStamp = block.timestamp;
             counter = counter + 1;

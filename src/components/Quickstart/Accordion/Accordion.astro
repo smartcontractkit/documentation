@@ -2,19 +2,20 @@
 interface Props {
   title: string
   number?: number
+  contentReference?: string
 }
-const { title, number } = Astro.props
+const { title, number, contentReference } = Astro.props
 const id = title.toLowerCase().split(" ").join("-")
 ---
 
-<astro-accordion>
+<astro-accordion {...contentReference && { contentReference }}>
   <div class="header-wrapper-3" id={id} title={title}>
     <details style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}>
       <summary id={id} data-id={`${number}-${id}`}>
         <span class="before">{number}</span>
-        {title}
+        <slot name="title">{title}</slot>
       </summary>
-      <div class="accordionContent">
+      <div class="accordionContent" {...contentReference && { id: contentReference }}>
         <slot />
       </div>
     </details>
@@ -39,7 +40,7 @@ const id = title.toLowerCase().split(" ").join("-")
   }
 
   .header-wrapper-3 {
-    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-16x));
   }
 
   span.before {

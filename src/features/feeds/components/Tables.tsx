@@ -325,7 +325,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
   </tr>
 )
 
-const StreamsTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const StreamsTHead = () => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Stream</th>
@@ -353,13 +353,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
         <span class="label">ID:</span>
-        <a
-          style="font-size: 0.75em;"
-          class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.feedId)}
-        >
-          {proxy.feedId}
-        </a>
+        {proxy.feedId}
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
@@ -373,14 +367,14 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
         <a
           style="font-size: 0.75em;"
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+          href={network.explorerUrl.replace("%s", "0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c")}
         >
-          0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
+          0x2ff010DEbC1297f19579B4246cad07bd24F2488A
         </a>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
-          data-clipboard-text="0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c"
+          data-clipboard-text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
@@ -535,7 +529,7 @@ export const MainnetTable = ({
             </tr>
           ) : (
             <>
-              {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTHead />}
               {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
               {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
@@ -600,7 +594,7 @@ export const TestnetTable = ({
   return (
     <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
-        {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isStreams && <StreamsTHead />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}

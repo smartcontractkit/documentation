@@ -1,63 +1,51 @@
 /** @jsxImportSource preact */
 import { clsx } from "~/lib"
 
-import { VideoPlayerIcon } from "../assets/VideoPlayerIcon"
-import { LinkTuple } from "../types"
 import productCard from "./ProductCard.module.css"
+import { ImageMetadata } from "astro"
 
 export type ProductCardProps = {
   title: string
   description: string
-  image: string
+  image: ImageMetadata
+  shape: ImageMetadata
   learnMorelink: string
-  links: LinkTuple[]
   chains: { id: string; title: string }[]
-  video: string
 }
 
 export const ProductCard = (props: ProductCardProps) => {
+  const productCardClasses = clsx({
+    [productCard.productCard]: true,
+    [productCard.productCardWithTransition]: props.chains.length > 0,
+  })
+
   return (
-    <div class={clsx("card", productCard.productCard)}>
-      <div class={clsx(productCard.firstCol)}>
-        <img src={props.image} width={64} height={64} alt={`Chainlink ${props.title}`} />
-        <div class={productCard.ctaCol}>
-          <h4>
-            <a href={props.learnMorelink} class="product-card-title">
-              {props.title}
-            </a>
-          </h4>
-          <p>{props.description}</p>
-        </div>
-      </div>
-      <div class={productCard.linksWrapper}>
-        <div class={productCard.links}>
-          {props.links.map((link) => (
-            <div>
-              <a href={link[1]}>{link[0]}</a>
-            </div>
-          ))}
-          <div class={productCard.separator} />
-          {props.video && (
-            <div>
-              <a href={props.video} target="_blank">
-                <VideoPlayerIcon /> Video tutorials
-              </a>
+    <div class={productCard.productCardWrapper}>
+      <a href={props.learnMorelink} class={productCardClasses}>
+        <img
+          loading="lazy"
+          src={props.image.src}
+          class={productCard.logo}
+          width={64}
+          height={64}
+          alt={`Chainlink ${props.title}`}
+        />
+        <div class={productCard.content}>
+          <h3 class={productCard.heading}>{props.title}</h3>
+          <p class={productCard.paragraph}>{props.description}</p>
+          {props.chains.length > 0 && (
+            <div class={productCard.chains}>
+              <div class={productCard.chainsSupported}>Chains supported</div>
+              <div class={productCard.chainsWrap}>
+                {props.chains.map((chain) => (
+                  <img src={`/assets/chains/${chain.id}.svg`} class={productCard.chainsLogo} title={chain.title} />
+                ))}
+              </div>
             </div>
           )}
         </div>
-      </div>
-      {props.chains && (
-        <div>
-          <div class={productCard.networks}>
-            <h6 class="paragraph-100-bold">Available on:</h6>
-            <div class={productCard.chainsWrapper}>
-              {props.chains.map((chain) => (
-                <img src={`/assets/chains/${chain.id}.svg`} class={productCard.chainIcon} title={chain.title} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+        <img loading="lazy" src={props.shape.src} alt="" width={24} height={24} class={productCard.backgroundShape} />
+      </a>
     </div>
   )
 }

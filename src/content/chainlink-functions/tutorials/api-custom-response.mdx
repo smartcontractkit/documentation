@@ -22,17 +22,13 @@ In this tutorial, you send a request to a Decentralized Oracle Network to call t
   that you can return is 256 bytes.
 </Aside>
 
-## Before you begin
-
-1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
-
-1. Make sure your subscription has enough LINK to pay for your requests. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
-
-1. You can locate the scripts used in this tutorial in the [_examples/3-custom-response_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/3-custom-response).
+<ChainlinkFunctions section="prerequisites-guides" />
 
 ## Tutorial
 
 This tutorial is configured to get the `ETH/USD`, daily volume, and market in a single request. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
+
+You can locate the scripts used in this tutorial in the [_examples/3-custom-response_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/3-custom-response).
 
 To run the example:
 
@@ -75,7 +71,7 @@ To run the example:
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x99b70944262ff2f0f8c4c98eaa9927c3519267522fd82d5442a5cfcc6cf913d4 -  Request id is 0x121db06a58c4646ca9282520b6a526d83bf84831647bb2c7fc99e36cbd343aa4. Waiting for a response...
+   ✅ Functions request sent! Transaction hash 0x99b70944262ff2f0f8c4c98eaa9927c3519267522fd82d5442a5cfcc6cf913d4. Waiting for a response...
    See your request in the explorer https://mumbai.polygonscan.com/tx/0x99b70944262ff2f0f8c4c98eaa9927c3519267522fd82d5442a5cfcc6cf913d4
 
    ✅ Request 0x121db06a58c4646ca9282520b6a526d83bf84831647bb2c7fc99e36cbd343aa4 fulfilled with code: 0. Cost is 0.00003809801507364 LINK. Complete response:  {
@@ -98,7 +94,9 @@ To run the example:
    - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x99b70944262ff2f0f8c4c98eaa9927c3519267522fd82d5442a5cfcc6cf913d4](https://mumbai.polygonscan.com/tx/0x99b70944262ff2f0f8c4c98eaa9927c3519267522fd82d5442a5cfcc6cf913d4) and the request ID is `0x121db06a58c4646ca9282520b6a526d83bf84831647bb2c7fc99e36cbd343aa4`.
 
    - The DON successfully fulfilled your request. The total cost was: `0.00003809801507364 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x7b227072696365223a22313633322e3634222c22766f6c756d65223a2235373637332e3336222c226c6173744d61726b6574223a224269747374616d70227d`. Decoding it off-chain to `string` gives you a result: `{"price":"1632.64","volume":"57673.36","lastMarket":"Bitstamp"}`
+   - The consumer contract received a response in `bytes` with a value of `0x7b227072696365223a22313633322e3634222c22766f6c756d65223a2235373637332e3336222c226c6173744d61726b6574223a224269747374616d70227d`. Decoding it off-chain to `string` gives you a result:
+
+     `{"price":"1632.64","volume":"57673.36","lastMarket":"Bitstamp"}`
 
 ## Examine the code
 
@@ -223,10 +221,9 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 1. Making a Chainlink Functions request:
 
    - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
-   - Make a [static call](https://docs.ethers.org/v5/api/contract/contract/#contract-callStatic) to the `sendRequest` function of your consumer contract to return the request ID that Chainlink Functions will generate.
    - Call the `sendRequest` function of your consumer contract.
 
 1. Waiting for the response:
 
-   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
    - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.string` in this example).

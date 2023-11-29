@@ -1,0 +1,33 @@
+import { CodeSample } from "@components"
+
+To use log triggers, you will need to implement the [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) interface in your smart contract. Click on the functions below to understand the parameters:
+
+| Function Name   | Description                                                                            |
+| --------------- | -------------------------------------------------------------------------------------- |
+| `checkLog`      | Simulates off-chain once a log that matches log specifications is emitted.             |
+| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns `true`. |
+
+### checkLog function
+
+`checkLog` is a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
+
+#### Parameters
+
+| Variable Name | Type         | Description                                                                                                                                           | Permissible Values                                                                                                                                       |
+| ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `log`         | struct `Log` | Struct log data of the log triggering the upkeep; Automation will form the triggering log into a struct so the user can query log data in `checkLog`. | `struct Log { uint256 index; uint256 timestamp; bytes32 txHash; uint256 blockNumber; bytes32 blockHash; address source; bytes32[] topics; bytes data; }` |
+| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at the time of registering the upkeep.                                        |                                                                                                                                                          |
+
+#### Example
+
+<CodeSample src="snippets/Automation/ILogAutomation.sol" />
+
+### performUpkeep function for log triggers
+
+This function contains the code that will be executed on-chain to finalize the trade.
+
+#### Parameters
+
+| Variable Name | Type    | Description                                                                                | Permissible Values |
+| ------------- | ------- | ------------------------------------------------------------------------------------------ | ------------------ |
+| `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function on-chain | bytes              |

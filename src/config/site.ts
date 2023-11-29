@@ -20,5 +20,8 @@ export const OPEN_GRAPH = {
 // Uncomment this to add an "Edit this page" button to every page of documentation.
 export const GITHUB_EDIT_URL = `https://github.com/smartcontractkit/documentation/tree/main/`
 
+// Uncomment this to add an "Edit this page" button to every page of documentation.
+export const TRANSLATION_FEEDBACK_URL = `https://chainlinkcommunity.typeform.com/to/bV6ux9R7/`
+
 // Uncomment this to add an "Join our Community" button to every page of documentation.
 export const COMMUNITY_INVITE_URL = `https://discord.com/invite/aSK4zew`

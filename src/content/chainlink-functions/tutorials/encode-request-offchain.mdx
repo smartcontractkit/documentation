@@ -34,13 +34,15 @@ Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multipl
   Chainlink Functions account.
 </Aside>
 
-## Before you begin
+<ChainlinkFunctions section="prerequisites-guides" />
 
-1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
+## Tutorial
 
-1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
 
-1. You can locate the scripts used in this tutorial in the [_examples/9-send-cbor_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/9-send-cbor).
+You can locate the scripts used in this tutorial in the [_examples/9-send-cbor_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/9-send-cbor).
+
+1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
 
@@ -49,15 +51,6 @@ Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multipl
    ```shell
    npx env-enc set
    ```
-
-## Tutorial
-
-<Aside type="note" title="Set up your environment variables">
-  This tutorial has some unique `.env.enc` setup steps. Make sure that you configured your `.env.enc` file with the
-  necessary variables in the [Before you begin](#before-you-begin) section.
-</Aside>
-
-This tutorial is configured to get the median `BTC/USD` price from multiple data sources. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
 
 To run the example:
 
@@ -102,7 +95,7 @@ To run the example:
 
    ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693899379, success: true }
 
-   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60 -  Request id is 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20. Waiting for a response...
+   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60. Waiting for a response...
    See your request in the explorer https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60
 
    ✅ Request 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20 fulfilled with code: 0. Cost is 0.000039224977086446 LINK. Complete response:  {
@@ -191,7 +184,7 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
    - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
    - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
 
-1. Encode the request data off-chain using the `buildRequestCBOR` function fomr the Functions NPM package.
+1. Encode the request data off-chain using the `buildRequestCBOR` function from the Functions NPM package.
 
 1. Making a Chainlink Functions request:
 
@@ -201,5 +194,5 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 
 1. Waiting for the response:
 
-   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
    - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).

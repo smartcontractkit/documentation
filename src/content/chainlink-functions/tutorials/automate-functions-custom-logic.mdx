@@ -27,15 +27,17 @@ After you deploy and set up your contract, Chainlink Automation triggers your fu
   Chainlink Functions account.
 </Aside>
 
-## Before you begin
+<ChainlinkFunctions section="prerequisites-guides" />
 
-1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for this tutorial.
+## Tutorial
+
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources on every block. Read the [Examine the code](#examine-the-code) section for a detailed explanation of the code example.
+
+You can locate the scripts used in this tutorial in the [_examples/10-automate-functions_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions).
 
 1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls) guide.
 
-1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
-
-1. You can locate the scripts used in this tutorial in the [_examples/10-automate-functions_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions).
+1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
 
@@ -45,16 +47,13 @@ After you deploy and set up your contract, Chainlink Automation triggers your fu
    npx env-enc set
    ```
 
-## Tutorial
-
-<Aside type="note" title="Set up your environment variables">
-  This tutorial has some unique `.env.enc` setup steps. Make sure that you configured your `.env.enc` file with the
-  necessary variables in the [Before you begin](#before-you-begin) section.
-</Aside>
-
-This tutorial is configured to get the median `BTC/USD` price from multiple data sources on every block. Read the [Examine the code](#examine-the-code) section for a detailed explanation of the code example.
-
 ### Deploy an Automated Functions Consumer contract
+
+<Aside type="caution">
+  When using Chainlink Automation, developers should be mindful of the risks of Automation attempting to perform upkeeps
+  indefinitely if a previous upkeep fails to update due to reversion. To learn more, read the [Automation best
+  practices](/chainlink-automation/concepts/best-practice).
+</Aside>
 
 1. Deploy a Functions consumer contract on _Polygon Mumbai_:
 
@@ -104,7 +103,7 @@ At this stage, your Functions consumer contract is configured to get the median 
 <Aside type="note" title="Monitor your balances">
 There are two balances that you must monitor:
 
-- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions).
+- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions).
 - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
 
 </Aside>

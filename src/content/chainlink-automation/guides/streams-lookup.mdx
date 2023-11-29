@@ -1,81 +1,23 @@
 ---
 section: automation
 date: Last Modified
-title: "Using Data Streams with Automation"
+title: "Access Data Streams Using Automation"
 isMdx: true
-whatsnext: { "Automation-compatible Interfaces": "/chainlink-automation/reference/automation-interfaces" }
+whatsnext: { "Troubleshoot and Debug Upkeeps": "/chainlink-automation/reference/debugging-errors",
+"Automation Interfaces": "/chainlink-automation/reference/automation-interfaces",
+"Automation Contracts": "/chainlink-automation/reference/automation-contracts" }
 ---
 
 import { Aside, CodeSample } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <Aside type="note" title="Early Access">
-  Data Streams is available on Arbitrum Mainnet and Arbitrum Goerli in Early Access.{" "}
+  Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia in Early Access.{" "}
   <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-You can access reports from Data Streams in Automation using `StreamsLookup`. StreamsLookup is available on chains where Data Streams is available. You can find a list of available networks and stream IDs on the [Data Feeds Stream IDs](/data-streams/stream-ids) page.
-
-## StreamsLookup interface
-
-To get started you need to follow the `StreamsLookup` [interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol). You can use `StreamsLookup` with both log trigger and custom logic trigger upkeeps.
-
-## Using the StreamsLookup interface
-
-To request data you need to use the `StreamsLookup` revert statement, following the error specification in the interface, in your `checkUpkeep` or `checkLog` function. The `StreamsLookup` error contains the details of the reports you wish to fetch from Data Streams.
-
-You also need to add a `checkCallback` function. `checkCallback` is an additional function where you can post process fetched reports using verifiable off-chain compute in the Automation Network, before performing on-chain.
-
-You can find the `StreamsLookupCompatibleInterface.sol` contract on [GitHub](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol).
-
-### StreamsLookup revert
-
-Here is a snippet of the `StreamsLookup` revert error used with a log trigger upkeep:
-
-```solidity
-revert StreamsLookup(feedParamKey,feeds,timeParamKey,log.timestamp,extraData);
-```
-
-The `feedParamKey` parameter can only take the string value `feedIDs` and `timeParamKey` parameter can only take the string value `timestamp` and these are case-sensitive.
-
-You specify the feeds you want to request by using the string list variable `feeds`. For example `feeds = ["0x0...","0x..."]`. Data Stream feed IDs can be found [here](/data-streams/stream-ids).
-
-The parameter `timestamp` specifies the timestamp of the report you will be requesting. Requesting the report for a future timestamp will not return anything, similarly historical reports are only stored as indicated in Data Streams, one month at time of writing.
-
-`extraData` is a variable you can use to send data to the `checkCallback` function. It can be empty e.g. "".
-
-<Aside type="tip" title="Data Streams">
-  For more details on Data Streams and to request access please read [here](/data-streams/getting-started). Once you
-  have registered your upkeep contract in Automation and have an `upkeepID` you will need to ask the Data Streams team
-  to allow list your upkeep.
-</Aside>
-
-### checkCallback
-
-The `checkCallback` function is an extra verifiable off-chain compute function that the nodes will simulate after fetching your Data Streams report(s). Here you can process the fetched data and create the `performData` that you want to execute on-chain.
-
-```solidity
-function checkCallback(
-  bytes[] memory values,
-  bytes memory extraData
-) external view returns (bool upkeepNeeded, bytes memory performData);
-```
-
-The `values` variable is a returned array of bytes containing the reports fetched from Data Streams for each of the feeds requested. `extraData` is the data you sent from the checkUpkeep or checkLog function where you performed the `StreamsLookup` revert.
-
-By setting `upkeepNeeded` equal to `true` the Network will proceed to execute your `performUpkeep` function on chain and you can use `performData` to provide calldata into your perform.
-
-## Example StreamsLookup
-
-Here is a simple example of fetching Data Streams reports using `StreamsLookup` and verifying the report. Data Streams is available in Early Access. [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
-
-This code example has some slight differences from the example in the [Data Streams Getting Started](/data-streams/getting-started) guide for an example.
-
-<CodeSample src="/samples/DataStreams/StreamsUpkeep.sol" />
-
-## Validating Data Streams reports
-
-To ensure there is a cryptographic audit trail on-chain for your users, validate your reports on-chain. See the [Data Streams Getting Started](/data-streams/getting-started) guide for an example.
+<DataStreams section="gettingStarted" />
 
 ## Debugging StreamsLookup
 

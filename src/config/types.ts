@@ -14,6 +14,7 @@ export type SupportedTechnology =
   | "BASE"
   | "CELO"
   | "POLYGON_ZKEVM"
+  | "LINEA"
   | "SCROLL"
 
 export type SupportedChain =
@@ -30,6 +31,7 @@ export type SupportedChain =
   | "FANTOM_MAINNET"
   | "FANTOM_TESTNET"
   | "ARBITRUM_MAINNET"
+  | "ARBITRUM_SEPOLIA"
   | "ARBITRUM_GOERLI"
   | "OPTIMISM_MAINNET"
   | "OPTIMISM_GOERLI"
@@ -42,12 +44,16 @@ export type SupportedChain =
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
   | "POLYGON_ZKEVM_TESTNET"
+  | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
+  | "LINEA_MAINNET"
+  | "LINEA_GOERLI"
 
 export type Chains = Record<
   SupportedTechnology,
   {
     title: string
+    icon: string
     chains: Partial<
       Record<
         SupportedChain,
@@ -55,6 +61,11 @@ export type Chains = Record<
           chainId: number
           title: string
           explorer: string
+          nativeCurrency: {
+            name: string
+            symbol: string
+            decimals: number
+          }
         }
       >
     >

@@ -1,6 +1,6 @@
 ---
-import Overview from "./Overview.astro"
 import { MarkdownHeading } from "astro"
+import BackButton from "./BackButton.astro"
 
 export type Props = {
   titleHeading: MarkdownHeading
@@ -8,8 +8,9 @@ export type Props = {
 const { titleHeading } = Astro.props
 ---
 
+<BackButton />
 <article id="article">
-  <Overview title={titleHeading} />
+  <h1 id={titleHeading.slug}>{titleHeading.text}</h1>
   <slot />
 </article>
 
@@ -25,8 +26,21 @@ const { titleHeading } = Astro.props
   }
 
   /* Using padding instead of margin so intersection observers work without spaces */
-  article > section {
+  :where(article, astro-island, astro-slot) > section {
     padding-top: var(--space-5x);
+  }
+
+  /* 
+    This is a bit of trickery that keeps the content
+    from shifting in the time between the DOM hydrating and the
+    wrapper script finishing. The margin is supplemented
+    by the section padding once the wrapper is created
+
+    This also keeps the spacing intact
+    in case JS isn't loading on the page
+  */
+  article > :where(h1, h2) {
+    margin-top: var(--space-5x) !important;
   }
 
   article * {
@@ -52,45 +66,46 @@ const { titleHeading } = Astro.props
     gap: var(--space-2x);
   }
 
-  article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island) {
+  :where(article, article section, article astro-slot, article astro-island) > :not(section, astro-slot, astro-island) {
     margin-top: var(--space-5x);
   }
 
-  article section > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
+  :where(article, article section, article astro-slot, article astro-island) > pre {
+    margin-top: var(--space-2x);
+  }
+
+  :where(article, article section) > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
     margin-top: var(--space-5x) !important;
   }
 
-  article section > :is(h4, h5, h6) + :not(section, astro-slot, astro-island) {
+  :where(article, article section) > :is(h4, h5, h6) + :not(section, astro-slot, astro-island) {
     margin-top: var(--space-3x) !important;
   }
 
-  article :where(section, astro-slot) > :is(h1, h2) {
-    margin: 0;
-  }
-
-  article :where(section, astro-slot) > :is(h3, h4, h5, h6, li) {
+  :where(article, article section, article astro-slot) > :is(h1, h2, h3, h4, h5, h6, li) {
     margin-top: 0;
   }
 
-  article :where(section, astro-slot) > h1 {
+  :where(article, article section, article astro-slot) > h1 {
     font-size: 32px;
   }
 
-  article :where(section, astro-slot) > h2 {
-    font-size: 28px;
+  :where(article, article section, article astro-slot) > h2 {
     padding-top: var(--space-6x);
+    font-size: 28px;
   }
 
-  article :where(section, astro-slot) > h3 {
+  :where(article, article section, article astro-slot) > h3 {
     padding-top: var(--space-8x);
+    font-size: 24px;
   }
 
-  article :where(section, astro-slot) > h4 {
+  :where(article, article section, article astro-slot) > h4 {
     padding-top: var(--space-5x);
     font-size: 20px;
   }
 
-  article :where(section, astro-slot) > :is(h5, h6) {
+  :where(article, article section, article astro-slot) > :is(h5, h6) {
     padding-top: var(--space-4x);
     font-size: 16px;
   }
@@ -138,7 +153,7 @@ const { titleHeading } = Astro.props
   }
 
   @media (min-width: 50em) {
-    article :where(section, astro-slot) > :is(h1, h2) {
+    :where(article, article section, article astro-slot) > :is(h1, h2) {
       position: sticky;
       top: 0;
       z-index: 3;
@@ -147,66 +162,39 @@ const { titleHeading } = Astro.props
       padding: var(--space-6x) 0;
     }
 
-    section > :is(section, h5, h6):target {
-      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-24x));
+    article section > :is(section, h5, h6):target {
+      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-20x));
     }
 
-    article :where(section, astro-slot) > h3 {
+    :where(article, article section, article astro-slot) > h3 {
       padding-top: var(--space-8x);
     }
 
-    article :where(section, astro-slot) > h4 {
+    :where(article, article section, article astro-slot) > h4 {
       padding-top: var(--space-6x);
     }
   }
 
   @media (min-width: 72em) {
-    article :where(section, astro-slot) > h1 {
+    :where(article, article section, article astro-slot) > h1 {
       font-size: 40px;
     }
 
-    article :where(section, astro-slot) > h2 {
+    :where(article, article section, article astro-slot) > h2 {
       font-size: 32px;
     }
 
-    article :where(section, astro-slot) > h3 {
+    :where(article, article section, article astro-slot) > h3 {
       font-size: 28px;
     }
   }
 </style>
 
 <script>
-  /**
-   * Creates sticky headers which interact with
-   * intersection observers for nested h3, h4 headers
-   */
-  const wrapHeaders = (start: Element, isParent?: boolean) => {
-    const wrapper = document.createElement("section")
-    const elements: Element[] = []
-    elements.push(start)
-    let next = start.nextElementSibling
-    while (
-      next && // Just bear with me
-      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
-        !next.hasChildNodes() || // Island doesn't have HTML content
-        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
-        !next.children[0].id) && // Section does not have an id
-      (!next.id || ["H5", "H6"].includes(next.nodeName) || (isParent && !["H1", "H2"].includes(next.nodeName)))
-    ) {
-      elements.push(next)
-      next = next.nextElementSibling
-    }
-    wrapper.id = start.id
-    start.parentNode!.insertBefore(wrapper, start)
-    if (isParent) {
-      start.setAttribute("data-sticky", "")
-    }
-    elements.forEach((e) => wrapper.appendChild(e))
-    return wrapper
-  }
+  import { prepareSections } from "~/scripts/prepArticleContent"
 
-  // Only get direct descendants of the article content
-  // Grabs mdx headers without getting nested headers in components
-  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
-  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+  // Runs on initial navigation
+  prepareSections()
+  // Runs on view transitions navigation
+  document.addEventListener("astro:after-swap", () => prepareSections())
 </script>

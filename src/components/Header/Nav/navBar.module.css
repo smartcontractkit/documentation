@@ -1,0 +1,152 @@
+.header {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+}
+
+.navBar {
+  position: fixed;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.container {
+  composes: container from global;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding-block: var(--space-4x);
+  height: var(--space-16x);
+  gap: var(--space-3x);
+}
+
+.headerPlaceholder {
+  height: var(--space-16x);
+  visibility: hidden;
+}
+
+.headerHidden {
+  transform: translateY(-100%);
+}
+
+.leftSection,
+.rightSection {
+  display: flex;
+  align-items: center;
+}
+
+.rightSection {
+  flex-direction: row-reverse;
+  gap: var(--space-2x);
+}
+
+:is(.button, .iconButton) {
+  display: none;
+}
+
+:global(.wg-drop.country-selector .wgcurrent.wg-li) {
+  border: none;
+  background: none;
+  display: flex;
+  height: var(--space-10x);
+  padding: var(--space-2x) var(--space-2x) var(--space-2x) 0;
+  line-height: var(--space-4x);
+  justify-content: center;
+  align-items: center;
+  color: var(--blue-700);
+  border: var(--border-width-primary) solid transparent;
+  border-radius: var(--border-radius-primary);
+  transition: background-color 300ms ease-out, border 300ms ease-out, border-radius 300ms ease-out;
+}
+
+:global(.wg-drop.country-selector .wgcurrent.wg-li):hover {
+  border: var(--border-width-primary) solid var(--blue-200);
+  background: var(--background-color-background-primary);
+}
+
+:global(.wg-drop.country-selector) {
+  background: none !important;
+}
+
+:global(.weglot-container div:before) {
+  content: url(/assets/icons/ecology-globe-message-1.svg);
+  padding-left: 0.5rem;
+  padding-top: 0.2rem;
+}
+
+:global(.wg-drop.country-selector .wg-current a) {
+  padding-left: 0 !important;
+  padding-right: 24px !important;
+  color: var(--color-text-primary) !important;
+}
+
+:global(#weglot-listbox) {
+  border-radius: var(--border-radius-primary);
+  color: var(--color-text-primary) !important;
+}
+
+:global(.country-selector a) {
+  color: var(--color-text-primary) !important;
+  padding-right: 24px !important;
+}
+:global(.country-selector .wgcurrent:hover a),
+:global(.country-selector :not(.wgcurrent) a:hover) {
+  color: var(--color-text-link) !important;
+}
+
+:global(.wg-drop.country-selector .wgcurrent:after) {
+  background-image: url("/assets/icons/caret.svg") !important;
+}
+
+:global(.wg-drop.country-selector .wgcurrent:hover:after) {
+  background-image: url("/assets/icons/caret-blue.svg") !important;
+}
+
+:global(.wg-drop.country-selector.closed .wgcurrent:after) {
+  transform: rotate(0deg) !important;
+}
+
+:global(.wg-drop.country-selector.open .wgcurrent:after) {
+  transform: rotate(-180deg) !important;
+}
+
+@media screen and (min-width: 768px) {
+  :is(.button) {
+    display: flex;
+    height: var(--space-10x);
+    gap: var(--space-2x);
+    padding: var(--space-2x);
+    line-height: var(--space-4x);
+    justify-content: center;
+    align-items: center;
+    color: var(--blue-700);
+    border: var(--border-width-primary) solid transparent;
+    transition: background-color 300ms ease-out, border 300ms ease-out, border-radius 300ms ease-out;
+  }
+
+  :is(.button):hover {
+    border-radius: var(--border-radius-primary);
+    border: var(--border-width-primary) solid var(--blue-200);
+    background: var(--background-color-background-primary);
+  }
+
+  :is(.button) :is(svg, img) {
+    width: var(--space-5x);
+    height: var(--space-5x);
+    min-width: var(--space-5x);
+    min-height: var(--space-5x);
+    fill: var(--color-text-primary);
+  }
+
+  .searchTrigger {
+    display: initial;
+  }
+
+  .rightSection {
+    flex-direction: row;
+  }
+}

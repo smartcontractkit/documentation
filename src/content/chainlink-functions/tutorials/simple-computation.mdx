@@ -17,17 +17,13 @@ import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFu
 
 This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts) completes off-chain computation and aggregation, it returns the result to your smart contract.
 
-## Before you begin
-
-1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
-
-1. Make sure your subscription has enough LINK to pay for your requests. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
-
-1. You can locate the scripts used in this tutorial in the [_examples/1-simple-computation_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/1-simple-computation).
+<ChainlinkFunctions section="prerequisites-guides" />
 
 ## Tutorial
 
 This tutorial is configured to get the average (geometric mean) from a list of numbers `1,2,3,4,5,6,7,8,9,10`. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
+
+You can locate the scripts used in this tutorial in the [_examples/1-simple-computation_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/1-simple-computation).
 
 To run the example:
 
@@ -69,7 +65,7 @@ To run the example:
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b -  Request id is 0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe. Waiting for a response...
+   ✅ Functions request sent! Transaction hash 0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b. Waiting for a response...
    See your request in the explorer https://mumbai.polygonscan.com/tx/0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b
 
    ✅ Request 0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe fulfilled with code: 0. Cost is 0.000038017374812478 LINK. Complete response:  {
@@ -162,10 +158,9 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 1. Making a Chainlink Functions request:
 
    - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
-   - Make a [static call](https://docs.ethers.org/v5/api/contract/contract/#contract-callStatic) to the `sendRequest` function of your consumer contract to return the request ID that Chainlink Functions will generate.
    - Call the `sendRequest` function of your consumer contract.
 
 1. Waiting for the response:
 
-   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
    - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).

@@ -1,9 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "Chainlink Data Streams have officially launched on mainnet.",
+  description: "Priority Migration for Chainlink Staking v0.2 is now live.",
   type: "info",
-  linkText: "Sign up for early access.",
-  linkUrl:
-    "https://chainlinkcommunity.typeform.com/datastreams?utm_medium=referral&utm_source=chainlink-docs&ref_id=chainlink-docs",
+  linkText: "Migrate your LINK today.",
+  linkUrl: "https://staking.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=staking-v02",
 }

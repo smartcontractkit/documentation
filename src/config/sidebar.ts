@@ -311,12 +311,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/getting-started",
         },
         {
-          title: "Supported Networks",
-          url: "chainlink-automation/overview/supported-networks",
+          title: "Billing and Costs",
+          url: "chainlink-automation/overview/automation-economics",
         },
         {
-          title: "Billing",
-          url: "chainlink-automation/overview/automation-economics",
+          title: "Supported Networks",
+          url: "chainlink-automation/overview/supported-networks",
         },
         {
           title: "Release Notes",
@@ -328,23 +328,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
-          title: "Create Automation-compatible Contracts",
+          title: "Create Automation-Compatible Contracts",
           url: "chainlink-automation/guides/compatible-contracts",
         },
         {
-          title: "Using Data Streams with Automation",
+          title: "Access Data Streams Using Automation",
           url: "chainlink-automation/guides/streams-lookup",
         },
         {
-          title: "Register a Time-Based Upkeep",
+          title: "Register Time-Based Upkeeps",
           url: "chainlink-automation/guides/job-scheduler",
         },
         {
-          title: "Register a Custom Logic Upkeep",
+          title: "Register Custom Logic Upkeeps",
           url: "chainlink-automation/guides/register-upkeep",
         },
         {
-          title: "Register a Log Trigger Upkeep",
+          title: "Register Log Trigger Upkeeps",
           url: "chainlink-automation/guides/log-trigger",
         },
         {
@@ -356,7 +356,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/forwarder",
         },
         {
-          title: "Create Flexible, Secure, and Low-cost Smart Contracts",
+          title: "Create Flexible, Secure, and Low-Cost Smart Contracts",
           url: "chainlink-automation/guides/flexible-upkeeps",
         },
         {
@@ -676,6 +676,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Billing",
           url: "vrf/v2/estimating-costs",
         },
+        {
+          title: "Release Notes",
+          url: "vrf/release-notes",
+        },
       ],
     },
     {
@@ -817,6 +821,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "ccip/supported-networks",
+          children: [
+            {
+              title: "Mainnet",
+              url: "ccip/supported-networks/mainnet",
+            },
+            {
+              title: "Testnet",
+              url: "ccip/supported-networks/testnet",
+            },
+          ],
         },
         {
           title: "Billing",
