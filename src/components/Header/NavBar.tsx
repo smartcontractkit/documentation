@@ -43,8 +43,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
                 full_name: false,
                 with_name: true,
                 is_dropdown: true,
-                with_flags: true,
-                flag_type: "circle",
+                with_flags: false,
               },
               location: {
                 target: "#weglot",
