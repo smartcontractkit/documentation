@@ -216,24 +216,6 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
-    page: "harmony",
-    label: "Harmony",
-    title: "Harmony Data Feeds",
-    img: "/assets/chains/harmony.svg",
-    networkStatusUrl: "https://status.harmony.one/",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Harmony Mainnet",
-        explorerUrl: "https://explorer.harmony.one/#/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory-hm5y6e743-chainlinklabs.vercel.app/feeds-harmony-mainnet-0.json",
-        queryString: "harmony-mainnet",
-      },
-    ],
-  },
-  {
     page: "optimism",
     label: "Optimism",
     title: "Optimism Data Feeds",
@@ -519,13 +501,6 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-      },
-      {
-        name: "Harmony Mainnet",
-        explorerUrl: "https://explorer.harmony.one/#/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory-hm5y6e743-chainlinklabs.vercel.app/feeds-harmony-mainnet-0.json",
-        queryString: "harmony-mainnet",
       },
       {
         name: "Optimism Mainnet",
