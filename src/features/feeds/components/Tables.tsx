@@ -366,40 +366,40 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
         <span class="label">Verifier proxy address:</span>
 
         {proxy.docs.blockchainName === "Arbitrum" ? (
-            <div>
-              <a
-                style="font-size: 0.75em;"
-                class={tableStyles.addressLink}
-                href={network.explorerUrl.replace("%s", "0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6")}
-              >
-                0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6
-              </a>
-              <button
-                class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                style={{ height: "16px", width: "16px" }}
-                data-clipboard-text="0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6"
-              >
-                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-              </button>
-            </div>
-          ) : (
-            <div>
-              <a
-                style="font-size: 0.75em;"
-                class={tableStyles.addressLink}
-                href={network.explorerUrl.replace("%s", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A")}
-              >
-                0x2ff010DEbC1297f19579B4246cad07bd24F2488A
-              </a>
-              <button
-                class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                style={{ height: "16px", width: "16px" }}
-                data-clipboard-text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
-              >
-                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-              </button>
-            </div>
-          )}
+          <div>
+            <a
+              style="font-size: 0.75em;"
+              class={tableStyles.addressLink}
+              href={network.explorerUrl.replace("%s", "0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6")}
+            >
+              0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6
+            </a>
+            <button
+              class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+              style={{ height: "16px", width: "16px" }}
+              data-clipboard-text="0x87a7bCE07847D7257Ca718B2Cd854252b48F46d6"
+            >
+              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+            </button>
+          </div>
+        ) : (
+          <div>
+            <a
+              style="font-size: 0.75em;"
+              class={tableStyles.addressLink}
+              href={network.explorerUrl.replace("%s", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A")}
+            >
+              0x2ff010DEbC1297f19579B4246cad07bd24F2488A
+            </a>
+            <button
+              class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+              style={{ height: "16px", width: "16px" }}
+              data-clipboard-text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
+            >
+              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+            </button>
+          </div>
+        )}
       </div>
       <div>
         <dl class={tableStyles.porDl}>
