@@ -202,7 +202,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-hxhhhcqju-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+          "https://reference-data-directory-5fakca15c-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
         tags: ["nftFloorPrice", "streams"],
       },
