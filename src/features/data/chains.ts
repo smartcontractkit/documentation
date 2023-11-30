@@ -201,9 +201,10 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+        rddUrl:
+          "https://reference-data-directory-hxhhhcqju-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["nftFloorPrice"],
+        tags: ["nftFloorPrice", "streams"],
       },
       {
         name: "Arbitrum Sepolia",
