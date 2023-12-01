@@ -23,7 +23,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   OPTIMISM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/optimism"),
   OPTIMISM_GOERLI: () =>
     new providers.JsonRpcProvider("https://opt-goerli.g.alchemy.com/v2/5lHtpzqF7gxVKsSfpyoUbisei8OwoIRS"),
-  HARMONY_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/harmony"),
   MOONRIVER_MAINNET: () => new providers.JsonRpcProvider("https://rpc.api.moonriver.moonbeam.network"),
   MOONBEAM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/moonbeam"),
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),

@@ -48,7 +48,6 @@ export const evmProducts = [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "optimism", title: "Optimism" },
       { id: "gnosis-chain", title: "Gnosis Chain" },
-      { id: "harmony", title: "Harmony" },
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
