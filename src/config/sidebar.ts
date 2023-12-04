@@ -823,12 +823,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/supported-networks",
           children: [
             {
-              title: "Mainnet",
-              url: "ccip/supported-networks/mainnet",
+              title: "Mainnet v1.0.0",
+              url: "ccip/supported-networks/v1_0_0/mainnet",
             },
             {
-              title: "Testnet",
-              url: "ccip/supported-networks/testnet",
+              title: "Testnet v1.2.0",
+              url: "ccip/supported-networks/v1_2_0/testnet",
+            },
+            {
+              title: "Testnet v1.0.0 (Deprecated)",
+              url: "ccip/supported-networks/v1_0_0/testnet",
             },
           ],
         },
