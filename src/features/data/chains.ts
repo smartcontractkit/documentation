@@ -114,7 +114,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
         queryString: "polygon-mumbai",
-        tags: ["nftFloorPrice", "rates"],
+        tags: ["proofOfReserve", "nftFloorPrice", "rates"],
       },
     ],
   },
