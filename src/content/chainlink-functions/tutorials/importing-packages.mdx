@@ -1,0 +1,149 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Using Imports with Functions"
+metadata:
+  linkToWallet: true
+whatsnext:
+  {
+    "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials",
+    "Read the Architecture to understand how Chainlink Functions operates": "/chainlink-functions/resources/architecture",
+  }
+---
+
+import { Aside, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+
+This tutorial demonstrates different ways to import packages and use them to modify data before storing it on-chain. After [OCR](/chainlink-functions/resources/concepts) completes the off-chain processes, it returns the result to your smart contract.
+
+<ChainlinkFunctions section="prerequisites-guides" />
+
+## Tutorial
+
+This tutorial demonstrates different ways to use imported packages in your Functions source code. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
+
+You can locate the scripts used in this tutorial in the [_examples/11-package-imports_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/11-package-imports).
+
+To run the example:
+
+1. Open the file `request.js`, which is located in the `11-package-imports` folder.
+1. Replace the consumer contract address and the subscription ID with your own values.
+
+   ```javascript
+   const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+   const subscriptionId = 3 // REPLACE this with your subscription ID
+   ```
+
+1. Make a request:
+
+   ```shell
+   node examples/11-package-imports/request.js
+   ```
+
+   The script runs your function in a sandbox environment before making an on-chain transaction:
+
+   ```text
+   $ node examples/11-package-imports/request.js
+   secp256k1 unavailable, reverting to browser version
+   Start simulation...
+   Simulation result {
+   capturedTerminalOutput: 'Concatenated array: Hello, ,World,!\n' +
+      'Joined string: Hello, ,World,!\n' +
+      'Escaped string: Hello\\/ \\/World\\/\\x21\n',
+   responseBytesHexstring: '0x48656c6c6f5c2f205c2f576f726c645c2f5c783231'
+   }
+   ✅ Decoded response to string:  Hello\/ \/World\/\x21
+
+   Estimate request costs...
+   Fulfillment cost estimated to 0.21366112757772 LINK
+
+   Make request...
+
+   ✅ Functions request sent! Transaction hash 0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82. Waiting for a response...
+   See your request in the explorer https://mumbai.polygonscan.com/tx/0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82
+
+   ✅ Request 0x3e51d48dae3443c81e6bb8e5220028db1fe24aacd73460a613a073325d2329e8 fulfilled with code: 0. Cost is 0.200435783655508510 LINK. Complete response:  {
+     requestId: '0x3e51d48dae3443c81e6bb8e5220028db1fe24aacd73460a613a073325d2329e8',
+     subscriptionId: 3,
+     totalCostInJuels: 200435783655508510n,
+     responseBytesHexstring: '0x48656c6c6f5c2f205c2f576f726c645c2f5c783231',
+     errorString: '',
+     returnDataBytesHexstring: '0x',
+     fulfillmentCode: 0
+   }
+
+   ✅ Decoded response to string:  Hello\/ \/World\/\x21
+   ```
+
+   The output of the example gives you the following information:
+
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The fulfillment costs are estimated before making the request.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82` and the request ID is `0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82`.
+
+   - The DON successfully fulfilled your request. The total cost was: `0.200435783655508510 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x48656c6c6f5c2f205c2f576f726c645c2f5c783231`. Decoding it off-chain to `string` gives you a result: `Hello\/ \/World\/\x21`.
+
+## Examine the code
+
+### FunctionsConsumerExample.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### JavaScript example
+
+#### source.js
+
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: It is important to note that the custom source code you want to execute in a Functions request can use vanilla [Deno](https://deno.land/) but cannot use any require statements.
+
+#### request.js
+
+This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/functionsClient.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+const subscriptionId = 3 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `makeRequestMumbai`. This function can be broken into five main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
+   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a local sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+
+1. Estimating the costs:
+
+   - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost`.
+   - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
+
+1. Making a Chainlink Functions request:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Call the `sendRequest` function of your consumer contract.
+
+1. Waiting for the response:
+
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
