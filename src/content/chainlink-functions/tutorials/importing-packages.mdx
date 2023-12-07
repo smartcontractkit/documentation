@@ -112,6 +112,41 @@ To run the example:
 
 The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: It is important to note that the custom source code you want to execute in a Functions request can use vanilla [Deno](https://deno.land/) but cannot use any require statements. Imported modules are supported only on testnets at this time.
 
+The example `source.js` file uses an Ethers JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds). The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be modified to handle the request asynchronously.
+
+```javascript
+// Chainlink Functions compatible Ethers JSON RPC provider class
+// (this is required for making Ethers RPC calls with Chainlink Functions)
+class FunctionsJsonRpcProvider extends ethers.JsonRpcProvider {
+  constructor(url) {
+    super(url)
+    this.url = url
+  }
+  async _send(payload: ethers.JsonRpcPayload | Array<ethers.JsonRpcPayload>): Promise<Array<ethers.JsonRpcResult>> {
+    let resp = await fetch(this.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    return resp.json()
+  }
+}
+```
+
+After the class is extended, you can initialize the provider object and await the response.
+
+```javascript
+const provider = new FunctionsJsonRpcProvider(RPC_URL)
+const dataFeedContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider)
+const dataFeedResponse = await dataFeedContract.latestRoundData()
+```
+
+In this example, the contract returns an `int256` value. Encode the value so request.js can properly decode it.
+
+```javascript
+return Functions.encodeInt256(dataFeedResponse.answer)
+```
+
 #### request.js
 
 This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
@@ -146,7 +181,7 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 1. Simulating your request in a local sandbox environment:
 
    - Use `simulateScript` from the Chainlink Functions NPM package.
-   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.int256` in this example).
 
 1. Estimating the costs:
 
@@ -161,4 +196,4 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 1. Waiting for the response:
 
    - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
-   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.int256` in this example).
