@@ -15,13 +15,30 @@ import { Aside, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-This tutorial demonstrates different ways to import packages and use them to modify data before storing it on-chain. After [OCR](/chainlink-functions/resources/concepts) completes the off-chain processes, it returns the result to your smart contract.
+This tutorial demonstrates how to import modules and use them with your Functions source code. Modules that are imported into Functions source code must meet the following requirements:
+
+- Each import must be 10 MB or less in size.
+- Up to 20 imports total are supported.
+- Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatability List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
+- Third-party modules are imported at runtime, so import statements must use asynchronous logic like the following examples:
+  - Importing from `demo.land`: `const { escape } = await import("https://deno.land/std/regexp/mod.ts");`
+  - ESM-compatible packages: `const { format } = await import("npm:date-fns");`
+  - Standard Node modules: `const path = await import("node:path");`
+  - CDN imports: `const lodash = await import("http://cdn.skypack.dev/lodash");`
+- Imported modules abide by all sandbox restrictions and do not have access to the file system, environment variables, or any other Deno permissions.
+
+<Aside type="caution">
+  Using module imports as part of your Functions source code is supported only on testnets at this time. Running the same code on mainnet will not succeed.
+
+Users are fully responsible for any code that they import. Chainlink Functions provides no guarantees of the validity, availability, or security of any code that a user chooses to import. For any use cases seeking to secure value, fully vet any dependencies that are being used or completely avoid importing dependencies to avoid risk from a compromised dependency or repository.
+
+</Aside>
 
 <ChainlinkFunctions section="prerequisites-guides" />
 
 ## Tutorial
 
-This tutorial demonstrates different ways to use imported packages in your Functions source code. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
+This example imports [ethers](https://www.npmjs.com/package/ethers) and demonstrates how to call a smart contract functions using a JSON RPC provider to call an on-chain function. In this example, the source code calls the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) from the `AggregatorV3Interface`. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
 
 You can locate the scripts used in this tutorial in the [_examples/11-package-imports_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/11-package-imports).
 
