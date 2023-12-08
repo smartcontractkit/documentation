@@ -199,7 +199,7 @@ The `transferTokensPayLINK` function undertakes six primary operations:
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
    - The `tokenAmounts` is an array, with each element comprising a [`EVMTokenAmount` struct](/ccip/api-reference/client#evmtokenamount) that contains the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
-   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain, along with a `strict` parameter. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain. The `strict` parameter is set to `false`. **Note**: If `strict` is true and `ccipReceive` reverts on the destination blockchain, subsequent messages from the same sender will be blocked by CCIP until the reverted message can be executed.
+   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
      {" "}
@@ -223,8 +223,7 @@ The `transferTokensPayNative` function undertakes five primary operations:
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
    - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
-   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain, along with a `strict` parameter. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain. The `strict` parameter is set to `false`.
-     **Note**: If `strict` is true and `ccipReceive` reverts on the destination blockchain, subsequent messages from the same sender will be blocked by CCIP until the reverted message can be executed.
+   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
      {" "}
