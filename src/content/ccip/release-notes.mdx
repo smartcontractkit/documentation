@@ -12,7 +12,10 @@ import { Aside } from "@components"
   CCIP v1.0.0 has been deprecated on testnet. You must use the new router addresses mentioned in the [CCIP v1.2.0
   configuration page](/ccip/supported-networks/v1_2_0/testnet) **before January 31st, 2024**. Please note that there is
   no change to the router interface. The CCIP v1.0.0 testnet routers will continue to function in parallel **until
-  January 31st, 2024**, but we highly recommend switching to the v1.2.0 routers as soon as possible.
+  January 31st, 2024**, but we highly recommend switching to the v1.2.0 routers as soon as possible. If you currently
+  use CCIP v1.0.0, use the [@chainlink/contracts-ccip npm package version
+  0.7.6](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/0.7.6). To migrate to v1.2.0, use [version 1.2.1 of
+  the npm package](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.2.1) or later.
 </Aside>
 
 - There is no change to the router interface, but you must use the new router addresses mentioned in the [CCIP v1.2.0
@@ -28,25 +31,11 @@ import { Aside } from "@components"
 
   Refer to the [Supported Networks](/ccip/supported-networks/v1_2_0/testnet) to get a specific lane's token addresses and rate limits.
 
-- We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag. This change affects how messages are processed when using the [extraArgs](/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](/ccip/api-reference/client#evm2anymessage).
+- We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag from the [extraArgs](/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](/ccip/api-reference/client#evm2anymessage).
 
-  - Previous behavior (v1.0.0):
+- The gas limit and maximum message data length for CCIP messages have been adjusted on testnets. These changes are detailed in the [Service Limits](/ccip/service-limits) documentation.
 
-    CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will prevent any following messages from the same sender from being processed until the current message is successfully executed.
-    With this update, the 'strict' flag option is no longer available.
-
-  - Current behavior (v1.2.0):
-
-    CCIP will now always process messages, irrespective of the success or failure of individual messages. This means that even if a `ccipReceive` fails (reverts) on the destination chain for a given message, subsequent messages will still be processed without interruption.
-
-- The gas limit and maximum message data length for CCIP messages have been adjusted on testnets. These changes are detailed below and in the updated [Service Limits](/ccip/service-limits) documentation.
-
-  - Gas Limit:
-    - In v1.0.0, the gas limit is 2,000,000.
-    - For v1.2.0, this has been increased to 3,000,000.
-  - Maximum Message Data Length:
-    - In v1.0.0, the maximum message data length is 50 kilobytes.
-    - In v1.2.0, this has been adjusted to 30 kilobytes.
+- To interact with CCIP v1.2.0 , use the [@chainlnk/contract-ccip](https://www.npmjs.com/package/@chainlink/contracts-ccip) npm package.
 
 ## Arbitrum Goerli - 2023-11-17
 
