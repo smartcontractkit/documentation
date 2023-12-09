@@ -8,7 +8,12 @@ import { Aside } from "@components"
 
 ## v1.2.0 release on testnet - 2023-12-08
 
-### Updates
+<Aside type="caution" title="Deprecation Notice for CCIP v1.0.0 on Testnet">
+  CCIP v1.0.0 has been deprecated on testnet. Users must use the new router addresses mentioned in the [CCIP v1.2.0
+  configuration page](/ccip/supported-networks/v1_2_0/testnet) **before January 31st, 2024**. Please note that there is
+  no change to the router interface. The CCIP v1.0 testnet routers will continue to function in parallel **until January
+  31st, 2024**, but we highly recommend switching to the v1.2 routers as soon as possible.
+</Aside>
 
 - Added support for USDC transfers. USDC transfers are currently supported on the following lanes:
 
@@ -21,6 +26,14 @@ import { Aside } from "@components"
 
   Refer to the [Supported Networks](/ccip/supported-networks/v1_2_0/testnet) to get a specific lane's token addresses and rate limits.
 
+- We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag. This change affects how messages are processed when using the [extraArgs](/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](/ccip/api-reference/client#evm2anymessage).Key Changes:
+  Previous behavior (v1.0.0):
+
+  - CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will prevent any following messages from the same sender from being processed until the current message is successfully executed.
+    With this update, the 'strict' flag option is no longer available.
+  - Current behavior (v1.2.0):
+    CCIP will now always process messages, irrespective of the success or failure of individual messages. This means that even if a `ccipReceive` fails (reverts) on the destination chain for a given message, subsequent messages will still be processed without interruption.
+
 - The gas limit and maximum message data length for CCIP messages have been adjusted on testnets. These changes are detailed below and in the updated [Service Limits](/ccip/service-limits) documentation.
 
   - Gas Limit:
@@ -29,13 +42,6 @@ import { Aside } from "@components"
   - Maximum Message Data Length:
     - In v1.0.0, the maximum message data length is 50 kilobytes.
     - In v1.2.0, this has been adjusted to 30 kilobytes.
-
-### Notices
-
-- CCIP v1.0.0 has been deprecated on testnet. Users must use the new router addresses mentioned in the [CCIP v1.2.0
-  configuration page](/ccip/supported-networks/v1_2_0/testnet) **before January 31st, 2024**. Please note that there is
-  no change to the router interface. The CCIP v1.0 testnet routers will continue to function in parallel **until January
-  31st, 2024**, but we highly recommend switching to the v1.2 routers as soon as possible.
 
 ## Arbitrum Goerli - 2023-11-17
 
