@@ -26,12 +26,15 @@ import { Aside } from "@components"
 
   Refer to the [Supported Networks](/ccip/supported-networks/v1_2_0/testnet) to get a specific lane's token addresses and rate limits.
 
-- We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag. This change affects how messages are processed when using the [extraArgs](/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](/ccip/api-reference/client#evm2anymessage).Key Changes:
-  Previous behavior (v1.0.0):
+- We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag. This change affects how messages are processed when using the [extraArgs](/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](/ccip/api-reference/client#evm2anymessage).
 
-  - CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will prevent any following messages from the same sender from being processed until the current message is successfully executed.
+  - Previous behavior (v1.0.0):
+
+    CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will prevent any following messages from the same sender from being processed until the current message is successfully executed.
     With this update, the 'strict' flag option is no longer available.
+
   - Current behavior (v1.2.0):
+
     CCIP will now always process messages, irrespective of the success or failure of individual messages. This means that even if a `ccipReceive` fails (reverts) on the destination chain for a given message, subsequent messages will still be processed without interruption.
 
 - The gas limit and maximum message data length for CCIP messages have been adjusted on testnets. These changes are detailed below and in the updated [Service Limits](/ccip/service-limits) documentation.
