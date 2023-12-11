@@ -408,7 +408,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-e0bzr73ff-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
       },
       {
@@ -416,7 +416,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://goerli.explorer.zksync.io/address/%s",
         networkType: "testnet",
         rddUrl:
-          "https://reference-data-directory-e0bzr73ff-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
         queryString: "zksync-goerli-testnet",
       },
     ],
