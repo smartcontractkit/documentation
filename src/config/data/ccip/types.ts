@@ -56,3 +56,8 @@ export enum Environment {
   Mainnet = "mainnet",
   Testnet = "testnet",
 }
+
+export enum Version {
+  V1_0_0 = "1.0.0",
+  V1_2_0 = "1.2.0",
+}
