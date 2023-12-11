@@ -9,6 +9,13 @@ import { Aside } from "@components"
 
 Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
 
+<Aside type="note" title="Interfaces and Applications">
+  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
+</Aside>
+
 ## Verify destination chain
 
 Before calling the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
@@ -44,23 +51,7 @@ To estimate the accurate gas limit for your destination contract, consider the f
 
 The purpose of `extraArgs` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand.
 
-If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with no strict sequencing.
-
-## Sequencing
-
-<Aside type="caution" title="Experimental Feature">
-  This feature is currently experimental. While we're actively evaluating its performance and usefulness, we do not
-  guarantee its maintenance or further development in the future.
-</Aside>
-
-CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will **_prevent any following messages from the same sender from being processed until the current message is successfully executed_**.
-
-You should be very careful when using this feature to avoid unintentionally stopping messages from the sender from being processed. If you use `strict: true`, you should foresee the following mitigations:
-
-- On the Receiver contract: You should be able to change the state of the dApp by taking out some restricting action, allowing for successful manual execution of the message. For example, you can implement a function enabling you to "skip" a specific message so that the rest of the messages can proceed.
-- On the Sender contract: Give up on the messages that are in progress from the sender by upgrading the Sender contract.
-
-The sender must make sure that the receiver is the correct one. Test without using `strict: true` first before setting it.
+If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set.
 
 ## Evaluate the security and reliability of the networks that you use
 
