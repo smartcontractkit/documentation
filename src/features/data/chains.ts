@@ -399,15 +399,24 @@ export const CHAINS: Chain[] = [
     label: "Polygon zkEVM",
     title: "Polygon zkEVM",
     img: "/assets/chains/polygonzkevm.svg",
-    networkStatusUrl: "https://testnet-zkevm.polygonscan.com/",
+    networkStatusUrl: "https://polygonscan.freshstatus.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Polygon zkEVM Mainnet",
+        explorerUrl: "https://zkevm.polygonscan.com/address/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-fnuvca8vd-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-mainnet",
+      },
+      {
         name: "Polygon zkEVM testnet",
         explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-zkevm-testnet.json",
+        rddUrl:
+          "https://reference-data-directory-fnuvca8vd-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-testnet",
       },
     ],
