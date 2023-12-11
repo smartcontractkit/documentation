@@ -590,8 +590,16 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-kw1iv3zar-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
+      },
+      {
+        name: "zkSync Goerli testnet",
+        explorerUrl: "https://goerli.explorer.zksync.io/address/%s",
+        networkType: "testnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
+        queryString: "zksync-goerli-testnet",
       },
       {
         name: "Solana Mainnet",
