@@ -1,6 +1,6 @@
 ---
 import { ChainConfig } from "@config/data/ccip/types"
-import { loadReferenceData, Environment } from "@config/data/ccip/"
+import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { SupportedChain } from "@config"
 import { Address, CopyText, Accordion } from "@components"
 import {
@@ -18,9 +18,10 @@ type ConfigProps = {
   sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
   environment: Environment
+  version: Version
 }
 
-const { chainConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
+const { chainConfig, sourceChain, environment, sourceChainRefId, version } = Astro.props as ConfigProps
 const { router, chainSelector, feeTokens } = chainConfig
 const explorerUrl = getExplorer(sourceChain)
 if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
@@ -40,7 +41,7 @@ feeTokens.sort((feeToken1, feeToken2) => {
 
 let tokensReferenceData
 try {
-  tokensReferenceData = loadReferenceData(environment).tokensReferenceData
+  tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
 } catch (error) {
   console.error(error)
   throw Error(`Error while loading CCIP reference data`)
@@ -53,7 +54,7 @@ const feeTokensWithAddresses = feeTokens.map((feeToken) => {
   }
 })
 
-const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sourceChainRefId]
+const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
 ---
 
 <table>
@@ -126,6 +127,7 @@ const laneReferenceData = loadReferenceData(environment).lanesReferenceData[sour
             sourceChain={sourceChain}
             sourceChainRefId={sourceChainRefId}
             environment={environment}
+            version={version}
           />
         </Accordion>
       </>

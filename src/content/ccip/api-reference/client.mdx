@@ -5,14 +5,27 @@ title: "Client Library API Reference"
 ---
 
 import { Aside, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
 
 <Aside type="note" title="Add Chainlink CCIP to your project">
    If you need to integrate Chainlink CCIP into your project, install the [@chainlink/contracts-ccip NPM package](https://www.npmjs.com/package/@chainlink/contracts-ccip).
 
-- If you use [NPM](https://www.npmjs.com/): <CopyText text="npm install @chainlink/contracts-ccip --save" code/>
-
-- If you use [Yarn](https://yarnpkg.com/): <CopyText text="yarn add @chainlink/contracts-ccip" code/>
-
+   <Tabs sharedStore="package" client:visible>
+   <Fragment slot="tab.1">npm</Fragment>
+   <Fragment slot="tab.2">yarn</Fragment>
+   <Fragment slot="panel.1">
+   If you use [NPM](https://www.npmjs.com/):
+   ```shell
+   npm install @chainlink/contracts-ccip --save
+   ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   If you use [Yarn](https://yarnpkg.com/):
+   ```shell
+   yarn add @chainlink/contracts-ccip
+   ```
+   </Fragment>
+   </Tabs>
 </Aside>
 
 CCIP senders and receivers use the _CCIP Client Library_ to build CCIP messages.
@@ -94,19 +107,12 @@ bytes4 EVM_EXTRA_ARGS_V1_TAG
 ```solidity
 struct EVMExtraArgsV1 {
   uint256 gasLimit;
-  bool strict;
 }
 ```
 
 | Name     | Type    | Description                                                                                                                                                                                                             |
 | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | gasLimit | uint256 | specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. Read [Setting gasLimit](/ccip/best-practices#setting-gaslimit) for more details. |
-| strict   | bool    | Used for strict sequencing. Read [Sequencing](/ccip/best-practices#sequencing) for more details                                                                                                                         |
-
-<Aside type="caution" title="Experimental Feature">
-  **Strict sequencing**: This feature is currently experimental. While we're actively evaluating its performance and
-  usefulness, we do not guarantee its maintenance or further development in the future.
-</Aside>
 
 ## Functions
 
