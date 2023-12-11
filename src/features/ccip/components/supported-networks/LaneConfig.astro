@@ -1,6 +1,6 @@
 ---
 import { LaneConfig } from "@config/data/ccip/types"
-import { loadReferenceData, Environment } from "@config/data/ccip/"
+import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { SupportedChain } from "@config"
 import { Address, Aside } from "@components"
 import BigNumber from "bignumber.js"
@@ -13,10 +13,11 @@ type ConfigProps = {
   sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
   environment: Environment
+  version: Version
 }
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
-const { laneConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
+const { laneConfig, sourceChain, environment, sourceChainRefId, version } = Astro.props as ConfigProps
 const { rateLimiterConfig, supportedTokens } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
@@ -87,7 +88,7 @@ let tokensWithExtraInfo: {
   decimals: number
 }[] = []
 
-const tokensReferenceData = loadReferenceData(environment).tokensReferenceData
+const tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
 if (supportedTokens) {
   tokensWithExtraInfo = Object.keys(supportedTokens)
     .filter((supportedToken) => {
