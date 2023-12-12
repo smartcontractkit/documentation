@@ -408,7 +408,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://zkevm.polygonscan.com/address/%s",
         networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-fnuvca8vd-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-mainnet",
       },
       {
@@ -416,7 +416,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl:
-          "https://reference-data-directory-fnuvca8vd-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-testnet",
       },
     ],
