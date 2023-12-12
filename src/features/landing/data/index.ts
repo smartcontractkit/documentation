@@ -55,6 +55,7 @@ export const evmProducts = [
       { id: "celo", title: "Celo" },
       { id: "scroll", title: "Scroll" },
       { id: "linea", title: "Linea" },
+      { id: "zksync", title: "zkSync" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],

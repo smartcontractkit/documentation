@@ -32,6 +32,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   SCROLL_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia-rpc.scroll.io"),
   CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
   CELO_ALFAJORES: () => new providers.JsonRpcProvider("https://forno.celo.org"),
-  LINEA_MAINNET: () => new providers.JsonRpcProvider("https://rpc.linea.build	"),
+  LINEA_MAINNET: () => new providers.JsonRpcProvider("https://rpc.linea.build"),
   LINEA_GOERLI: () => new providers.JsonRpcProvider("https://rpc.goerli.linea.build"),
+  ZKSYNC_MAINNET: () => new providers.JsonRpcProvider("https://testnet.era.zksync.dev"),
+  ZKSYNC_GOERLI: () => new providers.JsonRpcProvider("https://mainnet.era.zksync.io"),
 }
