@@ -41,13 +41,14 @@ export type SupportedChain =
   | "BASE_GOERLI"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
-  | "POLYGON_ZKEVM_TESTNET"
   | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
   | "LINEA_GOERLI"
   | "ZKSYNC_MAINNET"
   | "ZKSYNC_GOERLI"
+  | "POLYGON_ZKEVM_MAINNET"
+  | "POLYGON_ZKEVM_TESTNET"
 
 export type Chains = Record<
   SupportedTechnology,
