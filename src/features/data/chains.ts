@@ -395,6 +395,33 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "zksync",
+    label: "zkSync",
+    title: "zkSync Data Feeds",
+    img: "/assets/chains/zksync.svg",
+    networkStatusUrl: "https://uptime.com/statuspage/zkSync",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "zkSync Era Mainnet",
+        explorerUrl: "https://explorer.zksync.io/address/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+        queryString: "zksync-mainnet",
+      },
+      {
+        name: "zkSync Goerli testnet",
+        explorerUrl: "https://goerli.explorer.zksync.io/address/%s",
+        networkType: "testnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
+        queryString: "zksync-goerli-testnet",
+      },
+    ],
+  },
+  {
     page: "polygonzkevm",
     label: "Polygon zkEVM",
     title: "Polygon zkEVM",
@@ -562,19 +589,7 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://basescan.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
-      },
-      {
-        name: "Celo Mainnet",
-        explorerUrl: "https://explorer.celo.org/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
-      },
-      {
-        name: "Solana Mainnet",
-        explorerUrl: "https://solscan.io/account/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
-        queryString: "solana-mainnet",
+        queryString: "base-mainnet",
       },
       {
         name: "Celo Mainnet",
@@ -582,6 +597,43 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
         queryString: "celo-mainnet",
+      },
+      {
+        name: "Scroll Mainnet",
+        explorerUrl: "https://scrollscan.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
+        queryString: "scroll-mainnet",
+      },
+      {
+        name: "Linea Mainnet",
+        explorerUrl: "https://lineascan.build/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
+        queryString: "linea-mainnet",
+      },
+      {
+        name: "zkSync Era Mainnet",
+        explorerUrl: "https://explorer.zksync.io/address/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+        queryString: "zksync-mainnet",
+      },
+      {
+        name: "Polygon zkEVM Mainnet",
+        explorerUrl: "https://zkevm.polygonscan.com/address/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-mainnet",
+      },
+      {
+        name: "Solana Mainnet",
+        explorerUrl: "https://solscan.io/account/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
+        queryString: "solana-mainnet",
       },
     ],
     label: "All",

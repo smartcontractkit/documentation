@@ -46,6 +46,8 @@ export type SupportedChain =
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
   | "LINEA_GOERLI"
+  | "ZKSYNC_MAINNET"
+  | "ZKSYNC_GOERLI"
 
 export type Chains = Record<
   SupportedTechnology,

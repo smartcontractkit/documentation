@@ -56,6 +56,7 @@ export const evmProducts = [
       { id: "polygonzkevm", title: "Polgyon zkEVM" },
       { id: "scroll", title: "Scroll" },
       { id: "linea", title: "Linea" },
+      { id: "zksync", title: "zkSync" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
