@@ -21,7 +21,7 @@ This tutorial demonstrates how to import modules and use them with your Function
 - Up to 20 imports total are supported.
 - Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatability List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
 - Third-party modules are imported at runtime, so import statements must use asynchronous logic like the following examples:
-  - Importing from `demo.land`: `const { escape } = await import("https://deno.land/std/regexp/mod.ts");`
+  - Importing from `deno.land`: `const { escape } = await import("https://deno.land/std/regexp/mod.ts");`
   - ESM-compatible packages: `const { format } = await import("npm:date-fns");`
   - Standard Node modules: `const path = await import("node:path");`
   - CDN imports: `const lodash = await import("http://cdn.skypack.dev/lodash");`
@@ -110,7 +110,7 @@ To run the example:
 
 #### source.js
 
-The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: It is important to note that the custom source code you want to execute in a Functions request can use vanilla [Deno](https://deno.land/) but cannot use any require statements. Imported modules are supported only on testnets at this time.
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: Functions requests with custom source code can use vanilla [Deno](https://deno.land/) but cannot use any require statements. Import statements and imported modules are supported only on testnets.
 
 The example `source.js` file uses an Ethers JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds). The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be modified to handle the request asynchronously.
 
