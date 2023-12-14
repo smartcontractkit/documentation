@@ -21,10 +21,31 @@ This tutorial demonstrates how to import modules and use them with your Function
 - Up to 20 imports total are supported.
 - Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatability List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
 - Third-party modules are imported at runtime, so import statements must use asynchronous logic like the following examples:
-  - Importing from `deno.land`: `const { escape } = await import("https://deno.land/std/regexp/mod.ts");`
-  - ESM-compatible packages: `const { format } = await import("npm:date-fns");`
-  - Standard Node modules: `const path = await import("node:path");`
-  - CDN imports: `const lodash = await import("http://cdn.skypack.dev/lodash");`
+
+  - Importing from `deno.land`:
+
+    ```javascript
+    const { escape } = await import("https://deno.land/std/regexp/mod.ts")
+    ```
+
+  - ESM-compatible packages:
+
+    ```javascript
+    const { format } = await import("npm:date-fns")
+    ```
+
+  - Standard Node modules:
+
+    ```javascript
+    const path = await import("node:path")
+    ```
+
+  - CDN imports:
+
+    ```javascript
+    const lodash = await import("http://cdn.skypack.dev/lodash")
+    ```
+
 - Imported modules abide by all sandbox restrictions and do not have access to the file system, environment variables, or any other Deno permissions.
 
 <Aside type="caution">
@@ -110,7 +131,9 @@ To run the example:
 
 #### source.js
 
-The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: Functions requests with custom source code can use vanilla [Deno](https://deno.land/) but cannot use any require statements. Import statements and imported modules are supported only on testnets.
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps.
+
+<ChainlinkFunctions section="deno-importe-notes" />
 
 The example `source.js` file uses an Ethers JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds). The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be modified to handle the request asynchronously.
 
@@ -122,7 +145,7 @@ class FunctionsJsonRpcProvider extends ethers.JsonRpcProvider {
     super(url)
     this.url = url
   }
-  async _send(payload: ethers.JsonRpcPayload | Array<ethers.JsonRpcPayload>): Promise<Array<ethers.JsonRpcResult>> {
+  async _send(payload) {
     let resp = await fetch(this.url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -162,8 +185,8 @@ The script imports:
 The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
 
 ```javascript
-const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
-const subscriptionId = 3 // REPLACE this with your subscription ID
+const consumerAddress = "0x91257aa1c6b7f382759c357fbc53c565c80f7fee" // REPLACE this with your Functions consumer address
+const subscriptionId = 38 // REPLACE this with your subscription ID
 ```
 
 The primary function that the script executes is `makeRequestMumbai`. This function can be broken into five main parts:
