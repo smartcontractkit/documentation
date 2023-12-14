@@ -12,6 +12,7 @@ export type SupportedTechnology =
   | "METIS"
   | "BASE"
   | "CELO"
+  | "POLYGON_ZKEVM"
   | "LINEA"
   | "SCROLL"
 
@@ -46,6 +47,8 @@ export type SupportedChain =
   | "LINEA_GOERLI"
   | "ZKSYNC_MAINNET"
   | "ZKSYNC_GOERLI"
+  | "POLYGON_ZKEVM_MAINNET"
+  | "POLYGON_ZKEVM_TESTNET"
 
 export type Chains = Record<
   SupportedTechnology,
