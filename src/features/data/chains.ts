@@ -422,6 +422,33 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "polygonzkevm",
+    label: "Polygon zkEVM",
+    title: "Polygon zkEVM",
+    img: "/assets/chains/polygonzkevm.svg",
+    networkStatusUrl: "https://polygonscan.freshstatus.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Polygon zkEVM Mainnet",
+        explorerUrl: "https://zkevm.polygonscan.com/address/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-mainnet",
+      },
+      {
+        name: "Polygon zkEVM testnet",
+        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
+        networkType: "testnet",
+        rddUrl:
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-testnet",
+      },
+    ],
+  },
+  {
     page: "starknet",
     label: "StarkNet",
     title: "StarkNet Data Feeds",
@@ -594,12 +621,12 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "zksync-mainnet",
       },
       {
-        name: "zkSync Goerli testnet",
-        explorerUrl: "https://goerli.explorer.zksync.io/address/%s",
-        networkType: "testnet",
+        name: "Polygon zkEVM Mainnet",
+        explorerUrl: "https://zkevm.polygonscan.com/address/%s",
+        networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
-        queryString: "zksync-goerli-testnet",
+          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-mainnet",
       },
       {
         name: "Solana Mainnet",
