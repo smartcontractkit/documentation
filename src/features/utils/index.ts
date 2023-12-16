@@ -114,6 +114,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ARBITRUM_MAINNET"
     case "ethereum-testnet-goerli-arbitrum-1":
       return "ARBITRUM_GOERLI"
+    case "ethereum-testnet-sepolia-arbitrum-1":
+      return "ARBITRUM_SEPOLIA"
     case "matic-mainnet":
       return "POLYGON_MAINNET"
     case "matic-testnet":
@@ -147,6 +149,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-goerli-optimism-1"
     case "ARBITRUM_MAINNET":
       return "ethereum-mainnet-arbitrum-1"
+    case "ARBITRUM_SEPOLIA":
+      return "ethereum-testnet-sepolia-arbitrum-1"
     case "ARBITRUM_GOERLI":
       return "ethereum-testnet-goerli-arbitrum-1"
     case "POLYGON_MAINNET":
