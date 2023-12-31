@@ -87,6 +87,7 @@ export const evmProducts = [
       { id: "ethereum", title: "Ethereum" },
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "arbitrum", title: "Arbitrum" },
     ],
   },
   {
@@ -95,7 +96,12 @@ export const evmProducts = [
     learnMorelink: "chainlink-automation",
     image: automationLogo,
     shape: automationShape,
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "optimism", title: "Optimism" }],
+    chains: [
+      ...baseChains,
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "base", title: "BASE" },
+    ],
     video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {

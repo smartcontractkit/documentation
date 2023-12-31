@@ -47,6 +47,9 @@ try {
   throw Error(`Error while loading CCIP reference data`)
 }
 const feeTokensWithAddresses = feeTokens.map((feeToken) => {
+  if (!tokensReferenceData[feeToken]) throw Error(`Fee token ${feeToken} not defined`)
+  if (!tokensReferenceData[feeToken][sourceChainRefId])
+    throw Error(`Fee token ${feeToken} not defined for chain ${sourceChainRefId}`)
   const tokenAddress = tokensReferenceData[feeToken][sourceChainRefId].tokenAddress
   return {
     token: feeToken,
