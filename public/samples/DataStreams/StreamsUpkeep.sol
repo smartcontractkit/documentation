@@ -44,7 +44,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
         uint32 observationsTimestamp; // Latest timestamp for which price is applicable
         uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native token (WETH/ETH)
         uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK
-        uint32 expiresAt; // Latest timestamp where the report can be verified on-chain
+        uint32 expiresAt; // Latest timestamp where the report can be verified onchain
         int192 price; // DON consensus median price, carried to 8 decimal places
     }
 
@@ -54,7 +54,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
         uint32 observationsTimestamp; // Latest timestamp for which price is applicable
         uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native token (WETH/ETH)
         uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK
-        uint32 expiresAt; // Latest timestamp where the report can be verified on-chain
+        uint32 expiresAt; // Latest timestamp where the report can be verified onchain
         int192 price; // DON consensus median price, carried to 8 decimal places
         int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation
         int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation
@@ -101,7 +101,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     // The Data Streams report bytes is passed here.
     // extraData is context data from feed lookup process.
     // Your contract may include logic to further process this data.
-    // This method is intended only to be simulated off-chain by Automation.
+    // This method is intended only to be simulated offchain by Automation.
     // The data returned will then be passed by Automation into performUpkeep
     function checkCallback(
         bytes[] calldata values,
@@ -110,7 +110,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
         return (true, abi.encode(values, extraData));
     }
 
-    // function will be performed on-chain
+    // function will be performed onchain
     function performUpkeep(bytes calldata performData) external {
         // Decode the performData bytes passed in by CL Automation.
         // This contains the data returned by your implementation in checkCallback().
