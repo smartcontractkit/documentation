@@ -79,7 +79,7 @@ We are going to use the [`@chainlink/env-enc`](https://www.npmjs.com/package/@ch
 npx env-enc set-pw
 ```
 
-2. Now set the following environment variables: `PRIVATE_KEY`, Source Blockchain RPC URL, Destination Blockchain RPC URL. You can see available options in the `.env.example` file:
+1. Now set the following environment variables: `PRIVATE_KEY`, Source Blockchain RPC URL, Destination Blockchain RPC URL. You can see available options in the `.env.example` file:
 
 ```shell
 ETHEREUM_SEPOLIA_RPC_URL=""
@@ -103,7 +103,7 @@ Please enter the variable value (input will be hidden):
 Would you like to set another variable? Please enter the variable name (or press ENTER to finish): 
 ```
 
-After you are done, the `.env.enc` file will be automatically generated.
+After you are done, the `.env.enc` file is automatically generated.
 
 If you want to validate your inputs, run the next command:
 
@@ -120,7 +120,7 @@ npx hardhat deploy-destination-minter
 --router <routerAddress> # Optional
 ```
 
-For example, if you want to mint NFTs on avalancheFuji, run:
+For example, if you want to mint NFTs on Avalanche Fuji, run:
 
 ```shell
 npx hardhat deploy-destination-minter --network avalancheFuji
@@ -134,13 +134,13 @@ npx hardhat deploy-source-minter
 --link <linkTokenAddress> # Optional
 ```
 
-For example, if you want to mint NFTs on avalancheFuji by sending requests from ethereumSepolia, run:
+For example, if you want to mint NFTs on Avalanche Fuji by sending requests from Ethereum Sepolia, run:
 
 ```shell
 npx hardhat deploy-source-minter --network ethereumSepolia
 ```
 
-### Fee Management
+### Fee management
 
 Fund the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract with tokens for CCIP fees. You can use either native tokens or LINK tokens:
 
@@ -201,17 +201,22 @@ The [`DestinationMinter.sol`](https://github.com/smartcontractkit/ccip-cross-cha
 
 ```shell
 npx hardhat cross-chain-mint
---source-minter <sourceMinterAddress>
---source-blockchain <sourceBlockchain>
---destination-blockchain <destinationBlockchain>
---destination-minter <destinationMinterAddress>
---pay-fees-in <Native | LINK>
+--source-minter [sourceMinterAddress]
+--source-blockchain [sourceBlockchain]
+--destination-blockchain [destinationBlockchain]
+--destination-minter [destinationMinterAddress]
+--pay-fees-in [Native | LINK]
 ```
 
 For example, if you want to mint NFTs on Avalanche Fuji by sending requests from Ethereum Sepolia, run:
 
 ```shell
-npx hardhat cross-chain-mint --source-minter <SOURCE_MINTER_ADDRESS> --source-blockchain ethereumSepolia --destination-blockchain avalancheFuji --destination-minter <DESTNATION_MINTER_ADDRESS> --pay-fees-in Native
+npx hardhat cross-chain-mint
+--source-minter SOURCE_MINTER_ADDRESS
+--source-blockchain ethereumSepolia 
+--destination-blockchain avalancheFuji
+--destination-minter DESTINATION_MINTER_ADDRESS
+--pay-fees-in Native
 ```
 
 5. Once the CCIP message is finalized on the destination blockchain, you can query the MyNFTs balance of your account, using the `balance-of` task:
@@ -220,41 +225,43 @@ npx hardhat cross-chain-mint --source-minter <SOURCE_MINTER_ADDRESS> --source-bl
 
 ```shell
 npx hardhat balance-of
---my-nft <myNftContractAddress>
---blockchain <destinationBlockchain>
---owner <theAccountToCheckBalanceOf>
+--my-nft [myNftContractAddress]
+--blockchain [destinationBlockchain]
+--owner [theAccountToCheckBalanceOf]
 ```
 
 For example, to verify that the new MyNFT was minted, type:
 
 ```shell
-npx hardhat balance-of --my-nft <MY_NFT_CONTRACT_ADDRESS> --blockchain avalancheFuji --owner <PUT_YOUR_EOA_ADDRESS_HERE>
+npx hardhat balance-of --my-nft MY_NFT_CONTRACT_ADDRESS --blockchain avalancheFuji --owner PUT_YOUR_EOA_ADDRESS_HERE
 ```
 
 Of course, you can see your newly minted NFT on popular NFT Marketplaces, like OpenSea for instance:
 
 <ClickToZoom src="/images/quickstarts/cross-chain-nft/opensea.png" />
 
-6. You can always withdraw tokens for Chainlink CCIP fees from the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract using the `withdraw` task. Note that the `--token-address` flag is optional. If not provided, native coins will be withdrawn.
+## Withdrawing fee tokens
+
+You can always withdraw tokens for Chainlink CCIP fees from the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract using the `withdraw` task. Note that the `--token-address` flag is optional. If not provided, native coins will be withdrawn.
 
 ```shell
 npx hardhat withdraw
---beneficiary <withdrawTo>
---blockchain <sourceMinterBlockchain>
---from <sourceMinterAddress>
---token-address <tokensToWithdraw> # Optional, if left empty native coins will be withdrawn
+--beneficiary [withdrawTo]
+--blockchain [sourceMinterBlockchain]
+--from [sourceMinterAddress]
+--token-address [tokensToWithdraw] # Optional, if left empty native coins will be withdrawn
 ```
 
 For example, to withdraw tokens previously sent for Chainlink CCIP fees, run:
 
 ```shell
-npx hardhat withdraw --beneficiary <BENEFICIARY_ADDRESS> --blockchain ethereumSepolia --from <SOURCE_MINTER_ADDRESS>
+npx hardhat withdraw --beneficiary BENEFICIARY_ADDRESS --blockchain ethereumSepolia --from SOURCE_MINTER_ADDRESS
 ```
 
 or
 
 ```shell
-npx hardhat withdraw --beneficiary <BENEFICIARY_ADDRESS> --blockchain ethereumSepolia --from <SOURCE_MINTER_ADDRESS> --token-address 0x779877A7B0D9E8603169DdbD7836e478b4624789
+npx hardhat withdraw --beneficiary BENEFICIARY_ADDRESS --blockchain ethereumSepolia --from SOURCE_MINTER_ADDRESS --token-address 0x779877A7B0D9E8603169DdbD7836e478b4624789
 ```
 
 depending on whether you filled the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) contract with `Native` or `LINK` in step number 3.
