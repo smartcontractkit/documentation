@@ -33,7 +33,7 @@ To learn more, read about [blockchain interoperability](https://chain.link/educa
 
 ## Finality
 
-**Finality** is the assurance that past transactions included on-chain are extremely difficult or impossible to revert. If the parameters for finality are properly set, the likelihood of reversibility is extremely low. For CCIP, source chain finality is the main factor that determines the end-to-end elapsed time for CCIP to send a message from one chain to another.
+**Finality** is the assurance that past transactions included onchain are extremely difficult or impossible to revert. If the parameters for finality are properly set, the likelihood of reversibility is extremely low. For CCIP, source chain finality is the main factor that determines the end-to-end elapsed time for CCIP to send a message from one chain to another.
 
 Finality varies across different networks. Some networks offer instant finality and others require multiple confirmations. These time differences are set to ensure the security of CCIP and its users. Finality is crucial for token transfers because funds are locked and not reorganized once they are released onto the destination chain. In this scenario, finality ensures that funds on the destination chain are available only after they have been successfully committed on the source chain.
 
@@ -43,16 +43,16 @@ A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination
 
 ## Decentralized Oracle Network (DON)
 
-Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ on-chain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
+Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ onchain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
 
 ## Risk Management Network
 
-The Risk Management Network is built using off-chain and on-chain components:
+The Risk Management Network is built using offchain and onchain components:
 
-- **[Off-chain](#off-chain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
-- **[On-chain](#on-chain-risk-management-contract):** One Risk Management contract per supported CCIP chain
+- **[Offchain](#offchain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
+- **[onchain](#onchain-risk-management-contract):** One Risk Management contract per supported CCIP chain
 
-### Off-chain Risk Management node
+### Offchain Risk Management node
 
 The Risk Management Network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
 The Risk Management Network has two main modes of operation:
@@ -65,7 +65,7 @@ The Risk Management Network has two main modes of operation:
 
   - **Execution safety violation:** A message is executed on the destination chain without any matching transaction being on the source chain. Double executions fall into this category since the executing DON can only execute a message once.
 
-### On-chain Risk Management contract
+### Onchain Risk Management contract
 
 There is one Risk Management contract for each supported destination chain. The Risk Management contract maintains a group of nodes authorized to participate in the Risk Management blessing/cursing.
 
