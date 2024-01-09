@@ -28,7 +28,7 @@ This project demonstrates how to mint an NFT on one blockchain from another bloc
 
 Imagine that you want to go to a conference that sells tickets as NFTs on one chain, but you have funds on some other chain. You will need to bridge your tokens to that chain where the NFT contract exists, to mint the NFT, and optionally bridge funds back.
 
-We are building the cross-chain NFT minting system. This project aims to mint an NFT on the destination blockchain by sending the `to` address from the source blockchain. It is extremely simple so we can understand the basic concepts, but you can expand it to accept payment for minting on the source blockchain, add extra features, etc.
+In this tutorial, you are building an cross-chain NFT minting system. This project aims to mint an NFT on the destination blockchain by sending the `to` address from the source blockchain. This tutorial uses a relatively simple example so you can understand a basic cross-chain message, but you can expand it to accept payment for minting on the source blockchain, add extra features, and more.
 
 The basic architecture diagram of what we want to accomplish looks like this:
 
@@ -55,23 +55,23 @@ and
 npm -v
 ```
 
-1. Install packages
+1. Install the packages:
 
 ```
 npm install
 ```
 
-1. Compile contracts
+1. Compile the contracts:
 
 ```
 npx hardhat compile
 ```
 
-### Configuration
+### Configure environment variables
 
 There are several Hardhat tasks available for deployment and interaction with this project. But before that, you need to set up some environment variables.
 
-We are going to use the [`@chainlink/env-enc`](https://www.npmjs.com/package/@chainlink/env-enc) package for extra security. It encrypts sensitive data instead of storing them as plain text in the `.env` file, by creating a new, `.env.enc` file. Although it's not recommended to push this file online, if that accidentally happens your secrets will still be encrypted.
+We are going to use the [`@chainlink/env-enc`](https://www.npmjs.com/package/@chainlink/env-enc) package for extra security. Instead of storing environment variables as plain text in the `.env` file, the `env-enc` package encrypts this sensitive data by creating a new `.env.enc` file. Although it's not recommended to push this file online, if that accidentally happens your secrets will still be encrypted.
 
 1. Set a password for encrypting and decrypting the environment variable file. You can change it later by typing the same command.
 
@@ -88,6 +88,8 @@ ARBITRUM_TESTNET_RPC_URL=""
 AVALANCHE_FUJI_RPC_URL=""
 POLYGON_MUMBAI_RPC_URL=""
 ```
+
+You specify which blockchain is the source and which one is the destination during [contract deployment](#deployment). For now, set the environment variable for each supported blockchain you're using.
 
 To set these variables, type the following command and follow the instructions in the terminal:
 
@@ -117,7 +119,7 @@ npx env-enc view
 
 ```shell
 npx hardhat deploy-destination-minter
---router <routerAddress> # Optional
+--router [routerAddress] # Optional
 ```
 
 For example, if you want to mint NFTs on Avalanche Fuji, run:
@@ -130,8 +132,8 @@ npx hardhat deploy-destination-minter --network avalancheFuji
 
 ```shell
 npx hardhat deploy-source-minter
---router <routerAddress> # Optional
---link <linkTokenAddress> # Optional
+--router [routerAddress] # Optional
+--link [linkTokenAddress] # Optional
 ```
 
 For example, if you want to mint NFTs on Avalanche Fuji by sending requests from Ethereum Sepolia, run:
@@ -157,16 +159,16 @@ Alternatively, you can execute the `fill-sender` task by running:
 
 ```shell
 npx hardhat fill-sender
---sender-address <sourceMinterAddress>
---blockchain <blockchain>
---amount <amountToSend>
---pay-fees-in <Native>
+--sender-address [sourceMinterAddress]
+--blockchain [blockchain]
+--amount [amountToSend]
+--pay-fees-in Native
 ```
 
 For example, if you want to fund it with 0.01 Sepolia ETH, run:
 
 ```shell
-npx hardhat fill-sender --sender-address <SOURCE_MINTER_ADDRESS> --blockchain ethereumSepolia --amount 10000000000000000 --pay-fees-in Native
+npx hardhat fill-sender --sender-address [SOURCE_MINTER_ADDRESS] --blockchain ethereumSepolia --amount 10000000000000000 --pay-fees-in Native
 ```
 </Fragment>
 <Fragment slot="panel.2">
@@ -178,16 +180,16 @@ Alternatively, you can execute the `fill-sender` task by running:
 
 ```shell
 npx hardhat fill-sender
---sender-address <sourceMinterAddress>
---blockchain <blockchain>
---amount <amountToSend>
---pay-fees-in <LINK>
+--sender-address [sourceMinterAddress]
+--blockchain [blockchain]
+--amount [amountToSend]
+--pay-fees-in LINK
 ```
 
 For example, if you want to fund it with 0.001 Sepolia LINK, run:
 
 ```shell
-npx hardhat fill-sender --sender-address <SOURCE_MINTER_ADDRESS> --blockchain ethereumSepolia --amount 1000000000000000 --pay-fees-in LINK
+npx hardhat fill-sender --sender-address [SOURCE_MINTER_ADDRESS] --blockchain ethereumSepolia --amount 1000000000000000 --pay-fees-in LINK
 ```
 </Fragment>
 </TabsContent>
