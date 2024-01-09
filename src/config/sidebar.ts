@@ -560,8 +560,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/resources/secrets",
         },
         {
-          title: "Functions playground",
-          url: "chainlink-functions/resources/playground",
+          title: "Simulate your Functions",
+          url: "chainlink-functions/resources/simulation",
         },
         {
           title: "Managing Subscriptions",
