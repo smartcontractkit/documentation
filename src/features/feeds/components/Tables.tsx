@@ -9,7 +9,7 @@ import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
 const verifierProxies = new Map<string, string>([
   ["0x534a7FF707Bc862cAB0Dda546F1B817Be5235b66", "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C"],
-  ["0xA403a4a521be034B4A0D54019aF469A207094246", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"]
+  ["0xA403a4a521be034B4A0D54019aF469A207094246", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"],
 ])
 
 const feedItems = monitoredFeeds.mainnet
