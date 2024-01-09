@@ -3,7 +3,7 @@
 // Expects a different consumer contract than FunctionsConsumer.sol.
 // Modify your consumer contract before using this example.
 
-// Arguments can be provided when a request is initiated on-chain and used in the request source code as shown below
+// Arguments can be provided when a request is initiated onchain and used in the request source code as shown below
 const coinGeckoCoinId = args[0]
 const coinPaprikaCoinId = args[1]
 const badApiCoinId = args[2]
