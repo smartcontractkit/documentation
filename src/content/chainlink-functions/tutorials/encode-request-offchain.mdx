@@ -1,13 +1,13 @@
 ---
 section: chainlinkFunctions
 date: Last Modified
-title: "Encode request data off-chain"
+title: "Encode request data offchain"
 ---
 
 import { Aside } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes off-chain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
+This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
 
 This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets) guides before you follow the example in this document.
 To build a decentralized asset price, send a request to the DON to fetch the price from many different API providers. Then, calculate the median price. The API providers in this example are:
@@ -18,7 +18,7 @@ To build a decentralized asset price, send a request to the DON to fetch the pri
 
 Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial before you follow the steps in this example. This tutorial uses the same example but with a slightly different process:
 
-- Instead of sending the request data (source code, encrypted secrets reference, and arguments) in the request, you will first encode it off-chain and then send the encoded request. Encoding the request off-chain (e.g., from your front end or a server) rather than on-chain (from your smart contract) helps save gas.
+- Instead of sending the request data (source code, encrypted secrets reference, and arguments) in the request, you will first encode it offchain and then send the encoded request. Encoding the request offchain from your front end or a server rather than onchain from your smart contract. This helps save gas.
 
 <Aside type="caution">
   Chainlink Functions is still in BETA. The use of secrets in your requests is an experimental feature that may not
@@ -68,7 +68,7 @@ To run the example:
    node examples/9-send-cbor/request.js
    ```
 
-   The script runs your function in a sandbox environment before making an on-chain transaction:
+   The script runs your function in a sandbox environment before making an onchain transaction:
 
    ```text
    $ node examples/9-send-cbor/request.js
@@ -119,7 +119,7 @@ To run the example:
    - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60](https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60) and the request ID is `0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20`.
 
    - The DON successfully fulfilled your request. The total cost was: `0.000039224977086446 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000273c48`. Decoding it off-chain to `uint256` gives you a result: `2571336`. The median BTC price is 25713.36 USD.
+   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000273c48`. Decoding it offchain to `uint256` gives you a result: `2571336`. The median BTC price is 25713.36 USD.
 
 ## Examine the code
 
@@ -184,7 +184,7 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
    - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
    - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
 
-1. Encode the request data off-chain using the `buildRequestCBOR` function from the Functions NPM package.
+1. Encode the request data offchain using the `buildRequestCBOR` function from the Functions NPM package.
 
 1. Making a Chainlink Functions request:
 
