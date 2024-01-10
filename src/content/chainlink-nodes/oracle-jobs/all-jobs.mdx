@@ -166,7 +166,7 @@ Using an _existing_ Oracle Job makes your smart contract code more succinct. Let
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
 
-- An occasional poll, which must show that there has been sufficient deviation from an off-chain data source before a new result is submitted
+- An occasional poll, which must show that there has been sufficient deviation from an offchain data source before a new result is submitted
 - New rounds initiated by other oracles on the feeds. If another oracle notices sufficient deviation, all other oracles will submit their current observations as well.
 - A heartbeat, which ensures that even if no deviation occurs, we submit a new result to prove liveness. This can take one of two forms:
   - The "idle timer", which begins counting down each time a round is started
@@ -218,13 +218,13 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 ### Unique fields
 
 - `contractAddress`: the address of the FluxAggregator contract that manages the feed.
-- `threshold`: the percentage threshold of deviation from the previous on-chain answer that must be observed before a new set of observations are submitted to the contract.
-- `absoluteThreshold`: the absolute numerical deviation that must be observed from the previous on-chain answer before a new set of observations are submitted to the contract. This is primarily useful with data that can legitimately sometimes hit 0, as it's impossible to calculate a percentage deviation from 0.
-- `idleTimerPeriod`: the amount of time (after the start of the last round) after which a new round will be automatically initiated, regardless of any observed off-chain deviation.
+- `threshold`: the percentage threshold of deviation from the previous onchain answer that must be observed before a new set of observations are submitted to the contract.
+- `absoluteThreshold`: the absolute numerical deviation that must be observed from the previous onchain answer before a new set of observations are submitted to the contract. This is primarily useful with data that can legitimately sometimes hit 0, as it's impossible to calculate a percentage deviation from 0.
+- `idleTimerPeriod`: the amount of time (after the start of the last round) after which a new round will be automatically initiated, regardless of any observed offchain deviation.
 - `idleTimerDisabled`: whether the idle timer is used to trigger new rounds.
 - `drumbeatEnabled`: whether the drumbeat is used to trigger new rounds.
 - `drumbeatSchedule`: the cron schedule of the drumbeat. This field supports the same syntax as the cron job type (see the [cron library documentation](https://pkg.go.dev/github.com/robfig/cron?utm_source=godoc) for details). CRON_TZ is required.
-- `pollTimerPeriod`: the frequency with which the off-chain data source is checked for deviation against the previously submitted on-chain answer.
+- `pollTimerPeriod`: the frequency with which the offchain data source is checked for deviation against the previously submitted onchain answer.
 - `pollTimerDisabled`: whether the occasional deviation check is used to trigger new rounds.
 - **Notes:**
   - For duration parameters, the maximum unit of time is `h` (hour). Durations of a day or longer must be expressed in hours.
@@ -239,7 +239,7 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Keeper jobs
 
-Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some on-chain action to be performed. When it's ready, the job executes that on-chain action.
+Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some onchain action to be performed. When it's ready, the job executes that onchain action.
 
 Examples:
 
@@ -271,11 +271,11 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 - `fromAddress`: The Oracle node address from which to send updates
 - `externalJobID`: This is an optional field. When omitted it will be generated
 
-## Off-chain reporting jobs
+## Offchain reporting jobs
 
-OCR jobs (off-chain reporting jobs) are used very similarly to Flux Monitor jobs. They update data feeds with aggregated data from many Chainlink oracle nodes. However, they do this aggregation using a cryptographically-secure off-chain protocol that makes it possible for only a single node to submit all answers from all participating nodes during each round (with proofs that the other nodes' answers were legitimately provided by those nodes), which saves a significant amount of gas.
+Offchain Reporting (OCR) jobs are used very similarly to Flux Monitor jobs. They update data feeds with aggregated data from many Chainlink oracle nodes. However, they do this aggregation using a cryptographically-secure offchain protocol that makes it possible for only a single node to submit all answers from all participating nodes during each round (with proofs that the other nodes' answers were legitimately provided by those nodes), which saves a significant amount of gas.
 
-Off-chain reporting jobs require the `FEATURE_OFFCHAIN_REPORTING=true` environment variable.
+Offchain reporting jobs require the `FEATURE_OFFCHAIN_REPORTING=true` environment variable.
 
 ### Bootstrap node
 
@@ -384,11 +384,11 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 - `keyBundleID`: The hash of the OCR key bundle to be used by this node. The Chainlink node keystore manages these key bundles. Use the node **Key Management** UI or the `chainlink keys ocr` sub-commands in the CLI to create and manage key bundles.
 - `monitoringEndpoint`: The URL of the telemetry endpoint to send OCR metrics to.
 - `transmitterAddress`: The Ethereum address from which to send aggregated submissions to the OCR contract.
-- `observationTimeout`: The maximum duration to wait before an off-chain request for data is considered to be failed/unfulfillable.
-- `blockchainTimeout`: The maximum duration to wait before an on-chain request for data is considered to be failed/unfulfillable.
-- `contractConfigTrackerSubscribeInterval`: The interval at which to retry subscribing to on-chain config changes if a subscription has not yet successfully been made.
-- `contractConfigTrackerPollInterval`: The interval at which to proactively poll the on-chain config for changes.
-- `contractConfigConfirmations`: The number of blocks to wait after an on-chain config change before considering it worthy of acting upon.
+- `observationTimeout`: The maximum duration to wait before an offchain request for data is considered to be failed/unfulfillable.
+- `blockchainTimeout`: The maximum duration to wait before an onchain request for data is considered to be failed/unfulfillable.
+- `contractConfigTrackerSubscribeInterval`: The interval at which to retry subscribing to onchain config changes if a subscription has not yet successfully been made.
+- `contractConfigTrackerPollInterval`: The interval at which to proactively poll the onchain config for changes.
+- `contractConfigConfirmations`: The number of blocks to wait after an onchain config change before considering it worthy of acting upon.
 
 #### Job type specific pipeline variables
 

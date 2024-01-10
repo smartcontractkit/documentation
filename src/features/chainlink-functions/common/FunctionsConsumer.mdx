@@ -72,7 +72,7 @@ import { CodeSample } from "@components"
 
       **Note**: `_sendRequest` accepts requests encoded in `bytes`. Therefore, you must encode it using [encodeCBOR](/chainlink-functions/api-reference/functions-request/#encodecbor).
 
-  - `sendRequestCBOR` for sending a request already encoded in `bytes`. It receives the request object encoded in `bytes`, subscription id, and callback gas limit as parameters. Then, it sends the request to the router by calling the `FunctionsClient` `sendRequest` function. **Note**: This function is helpful if you want to encode a request off-chain before sending it, saving gas when submitting the request.
+  - `sendRequestCBOR` for sending a request already encoded in `bytes`. It receives the request object encoded in `bytes`, subscription id, and callback gas limit as parameters. Then, it sends the request to the router by calling the `FunctionsClient` `sendRequest` function. **Note**: This function is helpful if you want to encode a request offchain before sending it, saving gas when submitting the request.
 
 - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError` before emitting the `Response` event.
 
