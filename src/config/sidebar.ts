@@ -874,6 +874,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
+          title: "Transfer USDC and Data Across Chains",
+          url: "ccip/tutorials/usdc",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },
