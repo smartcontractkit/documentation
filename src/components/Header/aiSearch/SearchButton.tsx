@@ -24,15 +24,9 @@ const searchIcon = (
   </svg>
 )
 
-export const SearchButton = ({
-  onClickHandler,
-  variant,
-}: {
-  onClickHandler: () => void
-  variant: "default" | "bottomBar"
-}) => {
+export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) => {
   return variant === "default" ? (
-    <button className={clsx(styles.default, "search-widget-trigger-navbar")} onClick={onClickHandler}>
+    <button className={clsx(styles.default, "search-widget-trigger")}>
       <svg
         className={styles.icon}
         xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +51,7 @@ export const SearchButton = ({
       <div className={styles.shortcut}>⌘K</div>
     </button>
   ) : (
-    <button className={clsx(styles.bottomBar, "search-widget-trigger-bottom-bar")} onClick={onClickHandler}>
+    <button className={clsx(styles.bottomBar, "search-widget-trigger")}>
       {searchIcon}
       <span
         style={{
