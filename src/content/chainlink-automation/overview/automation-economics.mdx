@@ -9,21 +9,33 @@ whatsnext: { "Automation Architecture": "/chainlink-automation/concepts/automati
 
 ## Cost of using Chainlink Automation
 
-Chainlink Automation only requires an execution fee for transactions on-chain. This fee includes the transaction cost, a node operator percentage fee (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The percentage fee compensates the Automation Network for monitoring and performing your upkeep. The Automation percentage fee varies by chain and is listed on our [Supported Networks](/chainlink-automation/overview/supported-networks) page.
+Chainlink Automation only requires an execution fee for transactions onchain. This fee includes the transaction cost, a node operator percentage fee (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The percentage fee compensates the Automation Network for monitoring and performing your upkeep. The Automation percentage fee varies by chain and is listed on our [Supported Networks](/chainlink-automation/overview/supported-networks) page.
 
-![Automation Pricing Formula](/images/automation/automation-pricing.png)
+**Formula for Registry v1.2**
 
-There is no registration fee or other fees for any off-chain computation.
+Fee<sub>LINK</sub> = [tx.gasPrice<sub>Native WEI</sub> * (gasUsed + gasOverhead) * (1 + premium%)]/[LINK/Native<sub>Rate in WEI</sub>]
 
-**Example**: An upkeep transaction was [performed](https://polygonscan.com/tx/0x19309782e15952c90dcadcc02cbf34f331daaeee369d3e3acca43bade02af105) on _Polygon mainnet_. It used _110,051_ gas at a gas price of _182,723,799,380 wei_. The node operator percentage on Polygon was _70%_ at the time of this transaction, and this fee [varies by network](/chainlink-automation/overview/supported-networks). The LINK/MATIC exchange rate for this transaction was _7,308,290,731,273,610,000 wei_. The upkeep's LINK balance was reduced by a fee of _0.008077 LINK_.
+There is no registration fee or other fees for any offchain computation.
 
-![Automation Pricing Example](/images/automation/automation-pricing-example.png)
+### Fee Calculation Example
+
+An upkeep transaction was [performed](https://polygonscan.com/tx/0x19309782e15952c90dcadcc02cbf34f331daaeee369d3e3acca43bade02af105) on _Polygon mainnet_. It used _110,051_ gas at a gas price of _182,723,799,380 wei_. The node operator percentage on Polygon was _70%_ at the time of this transaction, and this fee [varies by network](/chainlink-automation/overview/supported-networks). The LINK/MATIC exchange rate for this transaction was _7,308,290,731,273,610,000 wei_. The upkeep's LINK balance was reduced by a fee of _0.008077 LINK_. The preceding information and calculation can be found in the table below:
+
+| Variable                          | Description                                                                                                                       | Value                     |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| tx.gasPrice<sub>Native WEI</sub>  | Gas price of the transaction                                                                                                      | 182, 723, 799,380         |
+| gasUsed                           | Gas used for performUpkeep calculated in solidity                                                                                 | 110,051                   |
+| gasOverhead                       | Fixed gas amount used for transaction call from node to Registry                                                                  | 80,000                    |
+| premium%                          | Current premium on Polygon which can be found on the [Supported Networks page](/chainlink-automation/overview/supported-networks) | 70%                       |
+| LINK/Native<sub>Rate in WEI</sub> | Exchange rate fetched from Chainlink Oracle                                                                                       | 7,308,290,731,273,610,000 |
+
+0.008077 = [182,723,799,380 * (110,051 + 80,000) * (1 + 70%)]/[7,308,290,731,273,610,000]
 
 ## How funding works
 
-Upkeeps have a LINK (ERC-677) balance. Every time an on-chain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee.
+Upkeeps have a LINK (ERC-677) balance. Every time an onchain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee.
 
-Your upkeep's balance must exceed the [minimum balance](#minimum-balance). If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+Your upkeep's balance must exceed the [minimum balance](#minimum-balance). If this requirement is not met, the Automation Network will not perform onchain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
 ## Withdrawing funds
 

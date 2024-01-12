@@ -5,7 +5,7 @@
 
 // Refer to https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
 
-// Arguments can be provided when a request is initated on-chain and used in the request source code as shown below
+// Arguments can be provided when a request is initated onchain and used in the request source code as shown below
 const fromSymbol = args[0]
 const toSymbol = args[1]
 

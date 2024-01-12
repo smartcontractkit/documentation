@@ -16,7 +16,7 @@ import ChainlinkAutomation from "@features/chainlink-automation/common/Chainlink
 Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/guides/compatible-contracts).
 
 - If you want a log event to trigger your upkeep, use the [`ILogAutomation`](#ilogautomation) interface.
-- If you want to use on-chain state (excluding logs) in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](#automationcompatibleinterface) interface.
+- If you want to use onchain state (excluding logs) in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](#automationcompatibleinterface) interface.
 - If you want to call a function just based on time, consider using a [time-based upkeep](/chainlink-automation/guides/job-scheduler).
 - If you want to use Automation with Data Streams, use [`StreamsLookupCompatibleInterface`](#streamslookupcompatibleinterface) interface.
 
@@ -28,14 +28,14 @@ Your Automation-compatible contracts may use the following interfaces. You can f
 
 Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) interface. Click on one of the functions below to understand its parameters and limits.
 
-| Function Name   | Description                                                                            |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `checkUpkeep`   | Runs off-chain to determine if the `performUpkeep` function should be called on-chain. |
-| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.   |
+| Function Name   | Description                                                                          |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `checkUpkeep`   | Runs offchain to determine if the `performUpkeep` function should be called onchain. |
+| `performUpkeep` | Contains the logic that should be executed onchain when `checkUpkeep` returns true.  |
 
 ### checkUpkeep function
 
-This view function contains the logic that runs off-chain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed on-chain. To reduce on-chain gas usage, attempt to do your gas intensive calculations off-chain in `checkUpkeep` and pass the result to `performUpkeep` on-chain. It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+This view function contains the logic that runs offchain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed onchain. To reduce onchain gas usage, attempt to do your gas intensive calculations offchain in `checkUpkeep` and pass the result to `performUpkeep` onchain. It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(
@@ -51,7 +51,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 **Return Values:**
 
-- `upkeepNeeded`: Boolean that when True will trigger the on-chain `performUpkeep` call.
+- `upkeepNeeded`: Boolean that when True will trigger the onchain `performUpkeep` call.
 - `performData`: Bytes that will be used as input parameter when calling `performUpkeep`. If you would like to encode data to decode later, try `abi.encode`.
 
 #### checkData
@@ -62,7 +62,7 @@ You can pass information into your `checkUpkeep` function from your [upkeep regi
 
 Tips on using `checkData`:
 
-- **Managing unbounded upkeeps**: Limit the problem set of your on-chain execution by creating a range bound for your upkeep to check and perform. This allows you to keep within predefined gas limits, which creates a predictable upper bound gas cost on your transactions. Break apart your problem into multiple upkeep registrations to limit the scope of work.
+- **Managing unbounded upkeeps**: Limit the problem set of your onchain execution by creating a range bound for your upkeep to check and perform. This allows you to keep within predefined gas limits, which creates a predictable upper bound gas cost on your transactions. Break apart your problem into multiple upkeep registrations to limit the scope of work.
 
   **Example**: You could create an upkeep for each subset of addresses that you want to service. The ranges could be 0 to 49, 50 to 99, and 100 to 149.
 
@@ -72,13 +72,13 @@ Tips on using `checkData`:
 
 #### performData
 
-The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and gas intensive calculations as a simulation off-chain and only pass the needed data on-chain.
+The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and gas intensive calculations as a simulation offchain and only pass the needed data onchain.
 
-You can create a highly flexible off-chain computation infrastructure that can perform precise actions on-chain by using `checkData` and `performData`. Both of these computations are entirely programmable.
+You can create a highly flexible offchain computation infrastructure that can perform precise actions onchain by using `checkData` and `performData`. Both of these computations are entirely programmable.
 
 ### performUpkeep function for custom logic triggers
 
-When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
+When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function onchain with `performData` as an input.
 
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always check conditions for your upkeep at the start of your `performUpkeep` function.
 
@@ -92,9 +92,9 @@ function performUpkeep(bytes calldata performData) external override;
 
 #### performData
 
-You can perform complex and broad off-chain computation, then execute on-chain state changes on a subset that meets your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your on-chain gas usage by narrowing the scope of work intelligently in your own Solidity code.
+You can perform complex and broad offchain computation, then execute onchain state changes on a subset that meets your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your onchain gas usage by narrowing the scope of work intelligently in your own Solidity code.
 
-- **Identify a list of addresses that require work**: You might have a number of addresses that you are validating for conditions before your contract takes an action. Doing this on-chain can be expensive. Filter the list of addresses by validating the necessary conditions within your `checkUpkeep` function. Then, pass the addresses that meet the condition through the `performData` function.
+- **Identify a list of addresses that require work**: You might have a number of addresses that you are validating for conditions before your contract takes an action. Doing this onchain can be expensive. Filter the list of addresses by validating the necessary conditions within your `checkUpkeep` function. Then, pass the addresses that meet the condition through the `performData` function.
   For example, if you have a "top up" contract that ensures several hundred account balances never decrease below a threshold, pass the list of accounts that meet the conditions so that the `performUpkeep` function validates and tops up only a small subset of the accounts.
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
