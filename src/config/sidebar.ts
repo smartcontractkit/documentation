@@ -94,11 +94,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/solana",
         },
         {
-          title: "Using Data Feeds Off-Chain",
+          title: "Using Data Feeds Offchain",
           url: "data-feeds/solana/using-data-feeds-off-chain",
         },
         {
-          title: "Using Data Feeds On-Chain",
+          title: "Using Data Feeds Onchain",
           url: "data-feeds/solana/using-data-feeds-solana",
         },
       ],
@@ -171,7 +171,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
             },
           ],
@@ -278,7 +278,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=dataStreams",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=dataStreams",
             },
           ],
@@ -445,7 +445,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=automation",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=automation",
             },
           ],
@@ -560,8 +560,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/resources/secrets",
         },
         {
-          title: "Functions playground",
-          url: "chainlink-functions/resources/playground",
+          title: "Simulate your Functions",
+          url: "chainlink-functions/resources/simulation",
         },
         {
           title: "Managing Subscriptions",
@@ -636,7 +636,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
             },
           ],
@@ -790,7 +790,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=vrf",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=vrf",
             },
           ],
@@ -976,7 +976,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model?parent=ccip",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting?parent=ccip",
             },
           ],
@@ -1277,7 +1277,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "architecture-overview/architecture-decentralized-model",
             },
             {
-              title: "Off-Chain Reporting",
+              title: "Offchain Reporting",
               url: "architecture-overview/off-chain-reporting",
             },
           ],
