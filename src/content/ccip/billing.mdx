@@ -4,25 +4,87 @@ date: Last Modified
 title: "CCIP Billing"
 ---
 
-import { Aside, ClickToZoom } from "@components"
+import { Aside } from "@components"
+import Billing from "@features/ccip/components/Billing.astro"
 
 <Aside type="note" title="Prerequisites">
   Read the CCIP [Introduction](/ccip) and [Concepts](/ccip/concepts) to understand all the concepts discussed on this
   page.
 </Aside>
 
-The CCIP billing model uses the `feeToken` specified in the [message](/ccip/api-reference/client#evm2anymessage) to pay a single fee on the source chain. CCIP uses a gas-locked fee payment mechanism, referred to as _Smart Execution_, to help ensure the reliable execution of cross-chain transactions regardless of destination chain gas spikes. For developers, this means you can simply pay on the source chain and CCIP will take care of execution on the destination chain.
+The CCIP billing model uses the `feeToken` specified in the [message](/ccip/api-reference/client#evm2anymessage) to pay a single fee on the source blockchain. CCIP uses a gas-locked fee payment mechanism, referred to as _Smart Execution_, to help ensure the reliable execution of cross-chain transactions regardless of destination blockchain gas spikes. For developers, this means you can simply pay on the source blockchain and CCIP will take care of execution on the destination blockchain.
 
-On each source chain, CCIP maintains a cache of destination gas prices, denominated in each `feeToken`. To prevent staleness, these prices are routinely updated by either piggybacking user messages or timeouts. CCIP supports fee payments in LINK and in alternative assets, which currently includes blockchain-native gas tokens and their ERC20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of chains over time.
+CCIP supports fee payments in LINK and in alternative assets, which currently includes blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of blockchains over time.
 
-## Overheads and fees
+Aside from billing, remember to [carefully estimate the `gasLimit` that you set](/ccip/best-practices#setting-gaslimit) for your destination contract so CCIP can have enough gas to execute `ccipReceive()`, if applicable. Any unspent gas from this user-set limit is not refunded.
 
-Users should note that CCIP fees include both gas cost overhead and a flat/basis points premium as follows:
+## Billing mechanism
 
-- **Destination gas overhead:** This is the average overhead incurred on the destination chain by CCIP to process the message and/or token transfer.
-- **Flat network premium for messages:** this fee is a static amount that users pay when sending cross-chain messages.
-- **Basis point based premium for tokens:** This is a percentage-based fee that users pay for cross-chain token transfers. It is calculated using the following expression: `tokenAmount x price x bps ratio`. `price` is initially denominated in USD and translated into the `feeToken`.
+The fee is calculated by the following formula:
 
-Current CCIP premium fees are in line with industry standards within the cross-chain ecosystem, but these values are subject to change. The premium portion of fees paid in alternative assets will have a surcharge of 10% when compared to LINK payments. To understand service limits, read the [CCIP Service Limits](/ccip/service-limits) page.
+    ```
+    fee = message fee + network fee
+    ```
 
-Aside from billing, overhead costs, and fees, remember to [carefully estimate the `gasLimit` that you set](/ccip/best-practices#setting-gaslimit) for your destination contract so CCIP can have enough gas to execute `ccipReceive()`, if applicable. Any unspent gas from this user-set limit is not refunded.
+Where:
+
+    - `fee`: The total fee for processing a [CCIP message](/ccip/api-reference/client#evm2anymessage). **Note:** Users can call the [getFee](/ccip/api-reference/i-router-client#getfee) function to estimate the fee.
+    - `message fee`: This represents an estimation of the gas cost the node operators will pay to deliver the CCIP message to the destination blockchain.
+    - `network fee`: Premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network).
+
+### Message fee
+
+The message fee is calculated by the following formula:
+
+    ```
+    message fee = execution cost + data availability cost
+    ```
+
+#### Execution cost
+
+The execution cost is directly correlated with the estimated gas usage to execute the transaction on the destination blockchain:
+
+    ```
+    execution cost = gas price * gas usage * gas multiplier
+    ```
+
+Where:
+
+    - `gas price`: The destination gas price. CCIP maintains a cache of destination gas prices on each source blockchain, denominated in each `feeToken`.
+    - `gas multiplier`: Scaling factor for _Smart Execution_. This multiplier ensures the reliable execution of transactions regardless of destination blockchain gas spikes.
+    - `gas usage`:
+
+        ```
+        gas usage = gas limit + destination gas overhead + destination gas per payload + gas for token transfers`
+        ```
+
+        Where:
+
+        - `gas limit`: This specifies the maximum amount of gas CCIP can consume to execute [ccipReceive()](/ccip/api-reference/ccip-receiver#ccipreceive) on the receiver contract located on the destination blockchain. Users set the gas limit in the [extra argument field](/ccip/api-reference/client#evmextraargsv1) of the CCIP message. **Note:** Remember to [carefully estimate the `gasLimit` that you set](/ccip/best-practices#setting-gaslimit) for your destination contract so CCIP can have enough gas to execute `ccipReceive()`. Any unspent gas from this user-set limit is not refunded.
+        - `destination gas overhead`: This is the fixed gas cost incurred on the destination blockchain by CCIP (Committing DON + Executing DON) and Risk Management Network.
+        - `destination gas per payload`: This variable gas depends on the length of the data field in the [CCIP message](/ccip/api-reference/client#evm2anymessage). If there is no payload (CCIP only transfers tokens), the value is `0`.
+        - `gas for token transfers`: This variable gas cost is for transferring tokens onto the destination blockchain. If there are no token transfers, the value is `0`.
+
+#### Data availability cost
+
+This cost is only relevant if the destination blockchain is a [L2 layer](https://chain.link/education-hub/what-is-layer-2). Some L2s charge fees for [data availability](https://ethereum.org/en/developers/docs/data-availability). For instance, [optimistic rollups](https://ethereum.org/en/developers/docs/scaling/optimistic-rollups/) process the transactions offchain then post the transaction data to Ethereum as calldata, which costs additional gas.
+
+### Network fee
+
+The premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network) is calculated as follows:
+
+- For token transfers or programmable transfers (token + data), the fee uses a percentage-based premium. For each token, the premium is calculated using the following expression:
+
+  ```
+  tokenAmount * price * percentage
+  ```
+
+  Where:
+
+  - `tokenAmount`: The amount of tokens.
+  - `price`: Initially denominated in USD and translated into the `feeToken`.
+  - `percentage`: The values are listed in the table below.
+
+- For messaging (only data): The fee is a static amount. The values denominated in USD are listed in the table below.
+
+<Billing />
