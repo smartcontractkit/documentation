@@ -27,16 +27,17 @@ The diagram below shows that the USDC token pools and Executing DON handle the i
 The following describes the operational process:
 
 1. On the source blockchain:
-   1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP's contract and specifies the USDC token pool address on the destination chain.
-   1. CCTP burns the specified USDC tokens and emits a burn event.
+   1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP’s contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
+   1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
 1. Offchain:
-   1. Circle attestation service listens to CCTP burn events and generates attestations. An attestation is a signed authorization to mint the specified amount of USDC for a given receiver address on the destination blockchain.
-   1. The [Executing DON](/ccip/architecture#executing-don) listens for the CCTP burn event and then calls the Circle attestation service to fetch the attestation.
+   1. Circle attestation service listens to CCTP events on the source blockchain.
+   1. CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
 1. On the destination blockchain:
    1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
-   1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted and the Circle attestation. If there is data in the CCIP message, then the OffRamp contract transmits the CCIP message to the [Router](/ccip/architecture#router) contract.
-   1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature, the USDC amount, and the USDC token pool address before minting the specified USDC amount for the USDC token pool.
+   1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted and the Circle attestation.
+   1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the CCIP receiver.
    1. The USDC token pool transfers the specified USDC amount to the CCIP receiver.
+   1. If there is data in the CCIP message, then the OffRamp contract transmits the CCIP message to the [Router](/ccip/architecture#router) contract.
 
 ## Example
 
