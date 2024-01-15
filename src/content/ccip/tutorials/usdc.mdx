@@ -34,10 +34,9 @@ The following describes the operational process:
    1. CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
 1. On the destination blockchain:
    1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
-   1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted and the Circle attestation.
-   1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the CCIP receiver.
-   1. The USDC token pool transfers the specified USDC amount to the CCIP receiver.
-   1. If there is data in the CCIP message, then the OffRamp contract transmits the CCIP message to the [Router](/ccip/architecture#router) contract.
+   1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted, the Receiver address, and the Circle attestation.
+   1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the Receiver.
+   1. If there is data in the CCIP message and the Receiver is not an EOA, then the OffRamp contract transmits the CCIP message via the [Router](/ccip/architecture#router) contract to the Receiver.
 
 ## Example
 

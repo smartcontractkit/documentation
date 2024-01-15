@@ -874,12 +874,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/cross-chain-tokens-from-eoa",
         },
         {
-          title: "Send Arbitrary Data",
-          url: "ccip/tutorials/send-arbitrary-data",
-        },
-        {
           title: "Transfer USDC with Data",
           url: "ccip/tutorials/usdc",
+        },
+        {
+          title: "Send Arbitrary Data",
+          url: "ccip/tutorials/send-arbitrary-data",
         },
         {
           title: "Acquire Test Tokens",
