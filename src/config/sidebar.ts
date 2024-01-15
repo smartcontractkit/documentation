@@ -862,20 +862,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/cross-chain-tokens",
         },
         {
-          title: "Transfer Tokens With Data",
+          title: "Transfer Tokens with Data",
           url: "ccip/tutorials/programmable-token-transfers",
         },
         {
-          title: "Transfer Tokens With Data - Defensive Example",
+          title: "Transfer Tokens with Data - Defensive Example",
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Transfer Tokens Between EOAs",
+          title: "Transfer Tokens between EOAs",
           url: "ccip/tutorials/cross-chain-tokens-from-eoa",
         },
         {
           title: "Send Arbitrary Data",
           url: "ccip/tutorials/send-arbitrary-data",
+        },
+        {
+          title: "Transfer USDC with Data",
+          url: "ccip/tutorials/usdc",
         },
         {
           title: "Acquire Test Tokens",
