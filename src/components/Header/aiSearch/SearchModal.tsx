@@ -72,5 +72,4 @@ export const SearchModal = () => {
   }, [])
 
   return <div ref={scriptContainerRef} className={styles.searchWrapper} />
-
 }
