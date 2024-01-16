@@ -1,4 +1,5 @@
 import React from "react"
+import styles from "./searchModal.module.css"
 
 export const SearchModal = () => {
   const scriptContainerRef = React.useRef<HTMLDivElement>(null)
@@ -70,5 +71,6 @@ export const SearchModal = () => {
     }
   }, [])
 
-  return <div ref={scriptContainerRef} />
+  return <div ref={scriptContainerRef} className={styles.searchWrapper} />
+
 }
