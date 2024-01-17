@@ -1,7 +1,7 @@
 ---
 section: global
 date: Last Modified
-title: "Off-Chain Reporting"
+title: "Offchain Reporting"
 whatsnext: { "Using Data Feeds": "/data-feeds/price-feeds/" }
 metadata:
   image: "/files/fb73165-cl.png"
@@ -9,11 +9,11 @@ metadata:
 
 import { Aside } from "@components"
 
-Off-Chain Reporting (OCR) is a significant step towards increasing the decentralization and scalability of Chainlink networks. See the [OCR Protocol Paper](https://research.chain.link/ocr.pdf) for a technical deep dive.
+Offchain Reporting (OCR) is a significant step towards increasing the decentralization and scalability of Chainlink networks. See the [OCR Protocol Paper](https://research.chain.link/ocr.pdf) for a technical deep dive.
 
-For Off-Chain Reporting aggregators, all nodes communicate using a peer to peer network. During the communication process, a lightweight consensus algorithm runs where each node reports its data observation and signs it. A single aggregate transaction is then transmitted, which saves a significant amount of gas.
+For Offchain Reporting aggregators, all nodes communicate using a peer to peer network. During the communication process, a lightweight consensus algorithm runs where each node reports its data observation and signs it. A single aggregate transaction is then transmitted, which saves a significant amount of gas.
 
-The report contained in the aggregate transaction is signed by a quorum of oracles and contains all oracles' observations. By validating the report on-chain and checking the quorum's signatures on-chain, we preserve the trustlessness properties of Chainlink oracle networks.
+The report contained in the aggregate transaction is signed by a quorum of oracles and contains all oracles' observations. By validating the report onchain and checking the quorum's signatures onchain, we preserve the trustlessness properties of Chainlink oracle networks.
 
 ## What is OCR?
 
@@ -25,18 +25,18 @@ The report contained in the aggregate transaction is signed by a quorum of oracl
   fees and all effort the carrier associates with transporting 9 fewer boxes.
 </Aside>
 
-The OCR protocol allows nodes to aggregate their observations into a single report off-chain using a secure P2P network. A single node then submits a transaction with the aggregated report to the chain. Each report consists of many nodes' observations and has to be signed by a quorum of nodes. These signatures are verified on-chain.
+The OCR protocol allows nodes to aggregate their observations into a single report offchain using a secure P2P network. A single node then submits a transaction with the aggregated report to the chain. Each report consists of many nodes' observations and has to be signed by a quorum of nodes. These signatures are verified onchain.
 
 Submitting only one transaction per round achieves the following benefits:
 
 - Overall network congestion from Chainlink oracle networks is reduced dramatically
 - Individual node operators spend far less on gas costs
 - Node networks are more scalable because data feeds can accommodate more nodes
-- Data feeds can be updated in a more timely manner since each round needn't wait for multiple transactions to be confirmed before a price is confirmed on-chain.
+- Data feeds can be updated in a more timely manner since each round needn't wait for multiple transactions to be confirmed before a price is confirmed onchain.
 
 ## How does OCR work?
 
-Protocol execution happens mostly off-chain over a peer to peer network between Chainlink nodes. The nodes regularly elect a new leader node that drives the rest of the protocol.
+Protocol execution happens mostly offchain over a peer to peer network between Chainlink nodes. The nodes regularly elect a new leader node that drives the rest of the protocol.
 
 The leader regularly requests followers to provide freshly signed observations and aggregates them into a report. It then sends this report back to the followers and asks them to verify the report's validity. If a quorum of followers approves the report by sending a signed copy back to the leader, the leader assembles a final report with the quorum's signatures and broadcasts it to all followers.
 

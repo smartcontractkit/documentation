@@ -5,7 +5,7 @@ title: "Decentralized Data Model"
 whatsnext:
   {
     "Using Data Feeds": "/data-feeds/price-feeds/",
-    "Off-Chain Reporting": "/architecture-overview/off-chain-reporting/",
+    "Offchain Reporting": "/architecture-overview/off-chain-reporting/",
   }
 metadata:
   title: "Chainlink Decentralised Data Model"
@@ -19,9 +19,9 @@ This page describes how data aggregation is applied to produce Chainlink Data Fe
 
 ## Data Aggregation
 
-Each data feed is updated by multiple, independent Chainlink oracle operators. The [AccessControlledOffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/AccessControlledOffchainAggregator.sol) aggregates the data on-chain.
+Each data feed is updated by multiple, independent Chainlink oracle operators. The [AccessControlledOffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/AccessControlledOffchainAggregator.sol) aggregates the data onchain.
 
-Off-Chain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Off-Chain Reporting](/architecture-overview/off-chain-reporting) page.
+Offchain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Offchain Reporting](/architecture-overview/off-chain-reporting) page.
 
 <ClickToZoom src="/images/contract-devs/price-aggr.png" />
 
@@ -56,21 +56,21 @@ AggregatorV3Interface feed = AggregatorV3Interface(address);
 return feed.latestRoundData();
 ```
 
-Off-chain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](/data-feeds/price-feeds) page to learn more.
+Offchain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](/data-feeds/price-feeds) page to learn more.
 
 ### Proxy
 
-Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts.
+Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts.
 
 Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
 
 ### Aggregator
 
-An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction.
+An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction.
 
 You can access this data using the Data Feed address and the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol).
 
 Aggregators receive updates from the oracle network only when the **Deviation Threshold** or **Heartbeat Threshold** triggers an update during an aggregation round. The first condition that is met triggers an update to the data.
 
-- Deviation Threshold: A new aggregation round starts when a node identifies that the off-chain values deviate by more than the defined deviation threshold from the on-chain value. Individual nodes monitor one or more data providers for each feed.
+- Deviation Threshold: A new aggregation round starts when a node identifies that the off-chain values deviate by more than the defined deviation threshold from the onchain value. Individual nodes monitor one or more data providers for each feed.
 - Heartbeat Threshold: A new aggregation round starts after a specified amount of time from the last update.

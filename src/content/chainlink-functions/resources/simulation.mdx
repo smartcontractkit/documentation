@@ -1,0 +1,78 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Simulate your Functions"
+---
+
+import { ClickToZoom, Aside } from "@components"
+
+Before making a Chainlink Functions request from your smart contract, it is always a good practice to simulate the source code off-chain to make any adjustments or corrections.
+
+Currently, there are several options for simulating a request:
+
+- [Chainlink Functions playground](https://functions.chain.link/playground).
+
+- [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit): Use the `npx hardhat functions-simulate-script` command to simulate your Functions JavaScript source code.
+
+- [Chainlink Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit): Import this NPM package into your JavaScript/TypeScript project, then use the `simulateScript` function to simulate your Functions JavaScript source code.
+
+## Chainlink Functions playground
+
+<Aside type="caution">
+  The Chainlink Functions playground can simulate Chainlink Functions within the browser. There may be differences to
+  the real Chainlink Functions environment. For instance, you are limited to vanilla JavaScript and cannot use all the
+  features of Chainlink Functions, such as imports of external modules. To access all the features, use the [Chainlink
+  Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) or [Chainlink
+  Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit).
+</Aside>
+
+To use the [Chainlink Functions
+Playground](https://functions.chain.link/playground), enter any source code, arguments, and secrets you would like to use. Click the **Run code** button to view the output.
+
+<ClickToZoom src="/images/chainlink-functions/functions-playground.png" />
+
+## Chainlink Functions Hardhat Starter Kit
+
+This repository comes preconfigured with [Hardhat](https://hardhat.org/) and the [Chainlink Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit), allowing you to quickly get started with Functions.
+
+To simulate:
+
+1.  In a terminal, clone the [functions-hardhat-starter-kit repository](https://github.com/smartcontractkit/functions-hardhat-starter-kit) and change to the `functions-hardhat-starter-kit` directory.
+
+    ```shell
+    git clone https://github.com/smartcontractkit/functions-hardhat-starter-kit && \
+    cd functions-hardhat-starter-kit
+    ```
+
+1.  Run `npm install` to install the dependencies.
+
+    ```shell
+    npm install
+    ```
+
+1.  For simulation, you don't need to set up the environment variables. Run `npx hardhat functions-simulate-script` to simulate the [calculation-example.js](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/calculation-example.js) JavaScript source code. **Note:** This example calculates the continuously compounding interest for a given principal amount over one month. It takes the principal amount and annual percentage yield (APY) as input arguments and uses [Euler's number](https://www.investopedia.com/terms/e/eulers-constant.asp) to compute the total amount after interest.
+
+    ```shell
+    npx hardhat functions-simulate-script
+    ```
+
+    Result:
+
+    ```text
+    secp256k1 unavailable, reverting to browser version
+
+
+    Response returned by script during local simulation: 1003757
+    ```
+
+<Aside type="note">
+  The JavaScript source code is set up in the
+  [Functions-request-config.js](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/Functions-request-config.js)
+  file. To simulate your own JavaScript source code, modify `source` to replace `./calculation-example.js` with the
+  relative path to your file.
+</Aside>
+
+## Chainlink Functions Toolkit NPM package
+
+Follow the [Simple Computation](/chainlink-functions/tutorials/simple-computation) guide to learn how to import the [Chainlink Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit) into your JavaScript project to simulate and execute a Functions request.
+You can read the [Examine the code section](/chainlink-functions/tutorials/simple-computation#javascript-example) for a detailed description of the code example.
