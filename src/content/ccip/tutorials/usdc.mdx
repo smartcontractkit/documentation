@@ -1,0 +1,155 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer USDC with Data"
+---
+
+import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+
+USDC is a digital dollar backed 100% and is always redeemable 1:1 for US dollars. The [stablecoin](https://chain.link/education-hub/stablecoins) is issued by [Circle](https://www.circle.com/en/usdc) on multiple blockchain platforms.
+
+This guide will first explain how Chainlink CCIP enables native USDC transfers under the hood by leveraging [Circle's Cross-Chain Transfer Protocol (CCTP)](https://www.circle.com/en/cross-chain-transfer-protocol). Then, you will learn how to use Chainlink CCIP to transfer USDC and arbitrary data from a smart contract on _Avalanche Fuji_ to a smart contract on _Polygon Mumbai_.
+**Note**: In addition to programmable token transfers, you can also use CCIP to transfer USDC tokens without data. Check the [Mainnets](/ccip/supported-networks/mainnet) and [Testnets](/ccip/supported-networks/testnet) configuration pages to learn on which blockchains CCIP supports USDC transfers.
+
+## Architecture
+
+Fundamentally the [architecture](/ccip/architecture#detailed-architecture) of CCIP and [API](/ccip/api-reference/i-router-client) are unchanged:
+
+- The sender has to interact with the CCIP router to initiate a cross-chain transaction, similar to the process for any other token transfers. See the [Transfer Tokens](/ccip/tutorials/cross-chain-tokens) guide to learn more.
+- The process uses the same onchain components including the Router, OnRamp, Commit Store, OffRamp, and Token Pool.
+- The process uses the same offchain components including the Committing DON, Executing DON, and the Risk Management Network.
+- USDC transfers also benefit from CCIP additional security provided by the [Risk Management Network](/ccip/concepts#risk-management-network).
+
+The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle’s contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/architecture#detailed-architecture).
+
+<ClickToZoom src="/images/ccip/usdc-diagram.png" alt="Chainlink CCIP Detailed Architecture" />
+
+The following describes the operational process:
+
+1. On the source blockchain:
+   1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP’s contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
+   1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
+1. Offchain:
+   1. Circle attestation service listens to CCTP events on the source blockchain.
+   1. CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
+1. On the destination blockchain:
+   1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
+   1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted, the Receiver address, and the Circle attestation.
+   1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the Receiver.
+   1. If there is data in the CCIP message and the Receiver is not an EOA, then the OffRamp contract transmits the CCIP message via the [Router](/ccip/architecture#router) contract to the Receiver.
+
+## Example
+
+In this tutorial, you will send a _string_ text and USDC tokens from a smart contract on _Avalanche Fuji_ to a smart contract on _Polygon Mumbai_. You will pay CCIP fees in LINK.
+For simplicity, we will use the same contract example as the [Transfer Tokens with Data](/ccip/tutorials/programmable-token-transfers#tutorial) tutorial but for production code, we recommend to apply defensive coding (read the [Transfer Tokens With Data - Defensive Example](/ccip/tutorials/programmable-token-transfers-defensive) tutorial to learn more).
+
+### Before you begin
+
+1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
+1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_ and MATIC tokens on _Polygon Mumbai_. You can use the [Chainlink faucet](https://faucets.chain.link/) to acquire testnet tokens.
+1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that USDC are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Polygon Mumbai_ so check the list of supported tokens [here](/ccip/supported-networks/v1_2_0/testnet#avalanche-fuji-polygon-mumbai).
+1. Use the [Circle faucet](https://faucet.circle.com/) to acquire USDC tokens on _Avalanche Fuji_.
+1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC-20 tokens as long as they appear in the list of tokens in MetaMask.
+
+### Tutorial
+
+<CodeSample src="samples/CCIP/ProgrammableTokenTransfers.sol" />
+
+#### Deploy your contracts
+
+To use this contract:
+
+1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/ProgrammableTokenTransfers.sol).
+
+1. Compile your contract.
+1. Deploy, fund your sender contract on _Avalanche Fuji_ and enable sending messages to _Polygon Mumbai_:
+
+   1. Open MetaMask and select the network _Avalanche Fuji_.
+   1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_, the router address is <CopyText text="0xf694e193200268f9a4868e4aa017a0118c9a8177" code/> and the LINK contract address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
+   1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
+      Note your contract address.
+   1. Open MetaMask and fund your contract with USDC tokens. You can transfer <CopyText text="1" code/> _USDC_ to your contract.
+   1. Fund your contract with LINK tokens. You can transfer <CopyText text="0.5" code/> _LINK_ to your contract. In this example, LINK is used to pay the CCIP fees.
+   1. Enable your contract to send CCIP messages to _Polygon Mumbai_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
+      1. Call the `allowlistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+
+1. Deploy your receiver contract on _Polygon Mumbai_ and enable receiving messages from the sender contract:
+
+   1. Open MetaMask and select the network _Polygon Mumbai_.
+   1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Polygon Mumbai_, the router address is <CopyText text="0x1035cabc275068e0f4b745a29cedf38e13af41b1" code/> and the LINK contract address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>.
+   1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
+      Note your contract address.
+   1. Enable your contract to receive CCIP messages from _Avalanche Fuji_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+      1. Call the `allowlistSourceChain` with <CopyText text="14767482510784806043" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+   1. Enable your contract to receive CCIP messages from the contract that you deployed on _Avalanche Fuji_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+      1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Avalanche Fuji_, and <CopyText text="true" code/> as allowed.
+
+At this point, you have one _sender_ contract on _Avalanche Fuji_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Avalanche Fuji_.
+
+#### Transfer and Receive tokens and data and pay in LINK
+
+You will transfer _1 USDC_ and a text. The CCIP fees for using CCIP will be paid in LINK.
+
+1.  Send a string data with tokens from _Avalanche Fuji_:
+
+    1.  Open MetaMask and select the network _Avalanche Fuji_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
+    1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
+
+        <br />
+
+        | Argument                   | Value and Description                                                                                                                                                                                                                                                                 |
+        | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+        | \_destinationChainSelector | <CopyText text="12532609583862916517" code/> <br /> CCIP Chain identifier of the destination blockchain (_Polygon Mumbai_ in this example). You can find each chain selector on the [supported networks page](/ccip/supported-networks).                                              |
+        | \_receiver                 | Your receiver contract address at _Polygon Mumbai_. <br /> The destination contract address.                                                                                                                                                                                          |
+        | \_text                     | <CopyText text="Hello World!" code/><br />Any `string`                                                                                                                                                                                                                                |
+        | \_token                    | <CopyText text="0x5425890298aed601595a70AB815c96711a31Bc65" code/><br /> The _USDC_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [supported networks page](/ccip/supported-networks). |
+        | \_amount                   | <CopyText text="1000000" code/> <br /> The token amount (_1 USDC_).                                                                                                                                                                                                                   |
+
+    1.  Click on `transact` and confirm the transaction on MetaMask.
+    1.  After the transaction is successful, record the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x6d54c98bb5b2892b78cbbc29967f4c0384d10dfc168755a4cf14489a02c11c65) of a transaction on _Avalanche Fuji_.
+
+    <Aside type="note">
+      During gas price spikes, your transaction might fail, requiring more than _0.5 LINK_ to proceed. If your
+      transaction fails, fund your contract with more _LINK_ tokens and try again.
+    </Aside>
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-usdc-message-pay-link-tx-details.jpg"
+            alt="Chainlink CCIP Explorer transaction details"
+          />
+
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x083a235e1b723b9a304cb50d837ad704bfc824a0ef4b8174560fcd85d7af31fc_.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-usdc-message-pay-link-tx-details-success.jpg"
+            alt="Chainlink CCIP Explorer transaction details success"
+          />
+
+1.  Check the receiver contract on the destination chain:
+
+    1.  Open MetaMask and select the network _Polygon Mumbai_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+    1.  Call the `getLastReceivedMessageDetails` function.
+
+        <br />
+
+        <ClickToZoom
+          src="/images/ccip/tutorials/mumbai-usdc-messagedetails-pay-link.jpg"
+          alt="Chainlink CCIP Mumbai message details"
+        />
+
+    1.  Notice the received messageId is _0x083a235e1b723b9a304cb50d837ad704bfc824a0ef4b8174560fcd85d7af31fc_, the received text is _Hello World!_, the token address is _0x9999f7Fea5938fD3b1E26A12c3f2fb024e194f97_ (USDC token address on _Polygon Mumbai_) and the token amount is 1000000 (1 USDC).
+
+**Note**: These example contracts are designed to work bi-directionally. You can use them as an exercise to transfer tokens with data from _Avalanche Fuji_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Avalanche Fuji_. Always ensure the sender contract on the source chain is funded with enough fee tokens.
