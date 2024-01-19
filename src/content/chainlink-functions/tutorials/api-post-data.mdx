@@ -7,7 +7,7 @@ title: "POST Data to an API"
 import { Aside } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/architecture) completes off-chain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
 
 <Aside type="note">
   Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
@@ -25,9 +25,9 @@ This tutorial shows you how to send a request to a Decentralized Oracle Network 
 <Aside type="caution" title="Side effects">
   Building non-idempotent requests, such as sending an email or storing data on the cloud, is currently not recommended.
   An HTTP method is idempotent if the intended effect on the server when you make a single request is the same as the
-  effect when you make several identical requests. Each oracle node runs the same computation in the [Off-chain
-  Reporting protocol](/architecture-overview/off-chain-reporting). If your Chainlink Function makes non-idempotent
-  requests, it will cause redundant requests such as sending multiple emails or storing the same data multiple times.
+  effect when you make several identical requests. Each oracle node runs the same computation in the [Offchain Reporting
+  protocol](/architecture-overview/off-chain-reporting). If your Chainlink Function makes non-idempotent requests, it
+  will cause redundant requests such as sending multiple emails or storing the same data multiple times.
 </Aside>
 
 <ChainlinkFunctions section="prerequisites-guides" />
@@ -54,7 +54,7 @@ To run the example:
    node examples/4-post-data/request.js
    ```
 
-   The script runs your function in a sandbox environment before making an on-chain transaction:
+   The script runs your function in a sandbox environment before making an onchain transaction:
 
    ```text
    $ node examples/4-post-data/request.js
@@ -103,7 +103,7 @@ To run the example:
    - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3](https://mumbai.polygonscan.com/tx/0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3) and the request ID is `0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3`.
 
    - The DON successfully fulfilled your request. The total cost was: `0.000035602577256 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it off-chain to `string` gives you a result:
+   - The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it offchain to `string` gives you a result:
 
      `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
 

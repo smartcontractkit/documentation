@@ -1,7 +1,7 @@
 ---
 section: ccip
 date: Last Modified
-title: "Transfer Tokens and Data Across Chains - Defensive Example"
+title: "Transfer Tokens with Data - Defensive Example"
 whatsnext:
   {
     "Transfer Tokens Between EOAs": "/ccip/tutorials/cross-chain-tokens-from-eoa",
@@ -34,7 +34,7 @@ This tutorial extends the [programmable token transfers example](/ccip/tutorials
 1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Ethereum Sepolia_ to _Polygon Mumbai_ so check the list of supported tokens [here](/ccip/supported-networks/v1_2_0/testnet#ethereum-sepolia-polygon-mumbai).
 1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
-1. Follow the previous tutorial: [_Transfer Tokens and Data Across Chains_](/ccip/tutorials/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
+1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
 
 ## Tutorial
 
@@ -49,7 +49,7 @@ To use this contract:
 1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/ProgrammableDefensiveTokenTransfers.sol).
 
 1. Compile your contract.
-1. Deploy and fund your sender contract on _Ethereum Sepolia_:
+1. Deploy, fund your sender contract on _Ethereum Sepolia_ and enable sending messages to _Polygon Mumbai_:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Ethereum Sepolia_.
@@ -61,7 +61,7 @@ To use this contract:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
       1. Call the `allowlistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
 
-1. Deploy your receiver contract on _Polygon Mumbai_:
+1. Deploy your receiver contract on _Polygon Mumbai_ and enable receiving messages from your sender contract:
 
    1. Open MetaMask and select the network _Polygon Mumbai_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
@@ -76,9 +76,9 @@ To use this contract:
       1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_, and <CopyText text="true" code/> as allowed.
    1. Call the `setSimRevert` function, passing `true` as a parameter, then wait for the transaction to confirm. Setting `s_simRevert` to true simulates a failure when processing the received message. Read the [explanation](#explanation) section for more details.
 
-1. At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_. The receiver contract cannot process the message, and therefore, instead of throwing an exception, it will lock the received tokens, enabling the owner to recover them.
+At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_. The receiver contract cannot process the message, and therefore, instead of throwing an exception, it will lock the received tokens, enabling the owner to recover them.
 
-   **Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
+**Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
 
 ### Recover the locked tokens
 
@@ -166,11 +166,11 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
             alt="Chainlink CCIP retry failed message - tokens transferred"
           />
 
-**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens and data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
+**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens with data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
 
 ## Explanation
 
-The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens and Data Across Chains_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/programmable-token-transfers#explanation). We will only explain the processing of received messages.
+The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/programmable-token-transfers#explanation). We will only explain the processing of received messages.
 
 ### Receiving and processing messages
 

@@ -17,10 +17,10 @@ The most common use case for Data Feeds is to [Get the Latest Data](/data-feeds/
 
 There are two parameters that can cause Chainlink nodes to update:
 
-| Name                | Description                                                                                                                                     |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Deviation Threshold | Chainlink nodes are monitoring data off-chain. The deviation of the real-world data beyond a certain interval triggers all the nodes to update. |
-| Heartbeat Threshold | If the data values stay within the deviation parameters, it will only trigger an update every _X_ minutes / hours.                              |
+| Name                | Description                                                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deviation Threshold | Chainlink nodes are monitoring data offchain. The deviation of the real-world data beyond a certain interval triggers all the nodes to update. |
+| Heartbeat Threshold | If the data values stay within the deviation parameters, it will only trigger an update every _X_ minutes / hours.                             |
 
 You can find these parameters at [data.chain.link](https://data.chain.link/) on an example like [ETH / USD](https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd).
 
@@ -67,7 +67,7 @@ where:
 When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the [`latestRoundData` function](/data-feeds/api-reference/#latestrounddata) of the [LINK / USD Price Feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
 - `phaseId = 92233720368547771158 >> 64`: Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: `phaseId = 92233720368547771158/ 2^64 = 5`. The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
-- `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this off-chain, you can use the following JavaScript example:
+- `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this offchain, you can use the following JavaScript example:
 
 ```javascript
 // First parse to BigInt to perform computation with big integers
@@ -83,7 +83,7 @@ Using _13078_ as the current aggregator's round, get its historical data by loop
 - Start from the first round: _92233720368547758081_ (result of _92233720368547771158 - 13078 + 1_)
 - Continue until the current round: _92233720368547771158_
 
-To get the historical data for previous aggregators, decrement the `phaseId` and start from round _1_. For phase _4_, get the starting `roundId` off-chain using the following JavaScript example:
+To get the historical data for previous aggregators, decrement the `phaseId` and start from round _1_. For phase _4_, get the starting `roundId` offchain using the following JavaScript example:
 
 ```javascript
 const phaseId = BigInt("4")
@@ -94,9 +94,9 @@ roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 
 Loop over the [`getRoundData` function](/data-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
-<Aside type="caution" title="Looping on-chain">
-  The examples showed how to loop off-chain to fetch all historical data from a given proxy. You could also write a
-  similar code on-chain, but be aware that this could cause **very high gas prices** if a state is changed within the
+<Aside type="caution" title="Looping onchain">
+  The examples showed how to loop offchain to fetch all historical data from a given proxy. You could also write a
+  similar code onchain, but be aware that this could cause **very high gas prices** if a state is changed within the
   same function.
 </Aside>
 

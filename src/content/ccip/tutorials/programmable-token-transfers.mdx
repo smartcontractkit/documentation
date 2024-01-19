@@ -1,7 +1,7 @@
 ---
 section: ccip
 date: Last Modified
-title: "Transfer Tokens and Data Across Chains"
+title: "Transfer Tokens with Data"
 whatsnext:
   {
     "Learn how to handle errors gracefully when making CCIP transactions": "/ccip/tutorials/programmable-token-transfers-defensive",
@@ -35,7 +35,7 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary d
 1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Ethereum Sepolia_ to _Polygon Mumbai_ so check the list of supported tokens [here](/ccip/supported-networks/v1_2_0/testnet#ethereum-sepolia-polygon-mumbai).
 1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
-1. Follow the previous tutorial: [_Transfer tokens between chains_](/ccip/tutorials/cross-chain-tokens).
+1. Follow the previous tutorial: [_Transfer tokens_](/ccip/tutorials/cross-chain-tokens).
 
 ## Tutorial
 
@@ -50,7 +50,7 @@ To use this contract:
 1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/ProgrammableTokenTransfers.sol).
 
 1. Compile your contract.
-1. Deploy and fund your sender contract on _Ethereum Sepolia_:
+1. Deploy, fund your sender contract on _Ethereum Sepolia_ and enable sending messages to _Polygon Mumbai_:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Ethereum Sepolia_.
@@ -60,9 +60,9 @@ To use this contract:
    1. Open MetaMask and fund your contract with CCIP-BnM tokens. You can transfer <CopyText text="0.002" code/> _CCIP-BnM_ to your contract.
    1. Enable your contract to send CCIP messages to _Polygon Mumbai_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
-      1. Call the `allowlistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. Call the `allowlistDestinationChain`, setting the destination chain selector to <CopyText text="12532609583862916517" code/> and setting `allowed` to <CopyText text="true" code/>. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
 
-1. Deploy your receiver contract on _Polygon Mumbai_:
+1. Deploy your receiver contract on _Polygon Mumbai_ and enable receiving messages from your sender contract:
 
    1. Open MetaMask and select the network _Polygon Mumbai_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
@@ -76,9 +76,9 @@ To use this contract:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
       1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_, and <CopyText text="true" code/> as allowed.
 
-1. At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_.
+At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_.
 
-   **Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
+**Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
 
 ### Transfer and Receive tokens and data and pay in LINK
 
@@ -143,7 +143,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
     1.  Notice the received messageId is _0x1d49f223a33de970e98d05124223860b4bb0ca23cd93971aa3697bd203eb37f3_, the received text is _Hello World!_, the token address is _0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40_ (CCIP-BnM token address on _Polygon Mumbai_) and the token amount is 1000000000000000 (0.001 CCIP-BnM).
 
-**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens and data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
+**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens with data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
 
 ### Transfer and Receive tokens and data and pay in native
 
@@ -208,7 +208,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
     1.  Notice the received messageId is _0x83b396df0fd6fac599459bc68003c8721ee2c191f98ea8222cea19af62b9a3ef_, the received text is _Hello World!_, the token address is _0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40_ (CCIP-BnM token address on _Polygon Mumbai_) and the token amount is 1000000000000000 (0.001 CCIP-BnM).
 
-**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens and data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
+**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens with data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
 
 ## Explanation
 
@@ -235,7 +235,7 @@ The `sendMessagePayLINK` function undertakes six primary operations:
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayLINK` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
@@ -259,7 +259,7 @@ The `sendMessagePayNative` function undertakes five primary operations:
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayNative` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 

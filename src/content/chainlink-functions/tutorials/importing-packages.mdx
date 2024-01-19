@@ -49,17 +49,18 @@ This tutorial demonstrates how to import modules and use them with your Function
 - Imported modules abide by all sandbox restrictions and do not have access to the file system, environment variables, or any other Deno permissions.
 
 <Aside type="caution">
-  Using module imports as part of your Functions source code is supported only on testnets at this time. Running the same code on mainnet will not succeed.
-
-Users are fully responsible for any code that they import. Chainlink Functions provides no guarantees of the validity, availability, or security of any code that a user chooses to import. For any use cases seeking to secure value, fully vet any dependencies that are being used or completely avoid importing dependencies to avoid risk from a compromised dependency or repository.
-
+  Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
+  for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
+  user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
+  fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
+  library or a compromised repository from which the dependency is downloaded.
 </Aside>
 
 <ChainlinkFunctions section="prerequisites-guides" />
 
 ## Tutorial
 
-This example imports [ethers](https://www.npmjs.com/package/ethers) and demonstrates how to call a smart contract functions using a JSON RPC provider to call an on-chain function. In this example, the source code calls the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) from the `AggregatorV3Interface`. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
+This example imports [ethers](https://www.npmjs.com/package/ethers) and demonstrates how to call a smart contract functions using a JSON RPC provider to call an onchain function. In this example, the source code calls the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) from the `AggregatorV3Interface`. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
 
 You can locate the scripts used in this tutorial in the [_examples/11-package-imports_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/11-package-imports).
 
@@ -79,7 +80,7 @@ To run the example:
    node examples/11-package-imports/request.js
    ```
 
-   The script runs your function in a sandbox environment before making an on-chain transaction:
+   The script runs your function in a sandbox environment before making an onchain transaction:
 
    ```text
    $ node examples/11-package-imports/request.js
@@ -119,7 +120,7 @@ To run the example:
    - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3` and the request ID is `0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82`.
 
    - The DON successfully fulfilled your request. The total cost was: `0.200435783655508510 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef`. Decoding it off-chain to `int256` gives you a result: `4367193987453`.
+   - The consumer contract received a response in `bytes` with a value of `0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef`. Decoding it offchain to `int256` gives you a result: `4367193987453`.
 
 ## Examine the code
 
@@ -135,7 +136,9 @@ The Decentralized Oracle Network will run the [JavaScript code](https://github.c
 
 <ChainlinkFunctions section="deno-importe-notes" />
 
-The example `source.js` file uses an Ethers JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds). The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be modified to handle the request asynchronously.
+The example `source.js` file uses a JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds).
+
+The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be inherited to override the JsonRpcProvider [`_send` method](https://docs.ethers.org/v6/api/providers/jsonrpc/#JsonRpcProvider). This customization is necessary because Deno does not natively support Node.js modules like [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html). We override the `_send` method to use the [fetch API](https://deno.land/api@v1.39.2?s=fetch), which is the standard way to make HTTP(s) requests in Deno. **Note**: The `url` passed in the constructor is the URL of the JSON RPC provider.
 
 ```javascript
 // Chainlink Functions compatible Ethers JSON RPC provider class
@@ -156,7 +159,7 @@ class FunctionsJsonRpcProvider extends ethers.JsonRpcProvider {
 }
 ```
 
-After the class is extended, you can initialize the provider object and await the response.
+After the class is extended, you can initialize the provider object with the `RPC_URL` and await the response.
 
 ```javascript
 const provider = new FunctionsJsonRpcProvider(RPC_URL)
