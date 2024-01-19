@@ -5,7 +5,7 @@ title: "Consuming Data Feeds"
 excerpt: "Smart Contracts and Chainlink"
 whatsnext:
   {
-    "See examples for how to read feeds on-chain and off-chain": "/data-feeds/using-data-feeds",
+    "See examples for how to read feeds onchain and offchain": "/data-feeds/using-data-feeds",
     "Learn how to retrieve Historical Price Data": "/data-feeds/historical-data",
     "Read the Data Feeds API Reference": "/data-feeds/api-reference",
   }
@@ -17,9 +17,9 @@ metadata:
 
 import { Aside, CodeSample } from "@components"
 
-You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
+You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide shows you how to read Data Feeds and store the value on-chain using Solidity. To learn how to read feeds off-chain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
+This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
 
 The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
@@ -42,7 +42,7 @@ This example contract obtains the latest price answer from the [BTC / USD feed](
 
 The contract has the following components:
 
-- The `import` line imports an interface named `AggregatorV3Interface`. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. In this case, `AggregatorV3Interface` defines that all v3 Aggregators have the function `latestRoundData`. You can [see the complete code](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) for the `AggregatorV3Interface` on GitHub.
+- The `import` line imports an interface named `AggregatorV3Interface`. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. In this case, `AggregatorV3Interface` defines that all v3 Aggregators have the function `latestRoundData`. You can [see the complete code](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) for the `AggregatorV3Interface` on GitHub.
 
 - The `constructor() {}` initializes an interface object named `dataFeed` that uses `AggregatorV3Interface` and connects specifically to a proxy aggregator contract that is already deployed at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`. The interface allows your contract to run functions on that deployed aggregator contract.
 

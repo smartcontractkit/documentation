@@ -2,14 +2,14 @@ import { CodeSample } from "@components"
 
 To use log triggers, you will need to implement the [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) interface in your smart contract. Click on the functions below to understand the parameters:
 
-| Function Name   | Description                                                                            |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `checkLog`      | Simulates off-chain once a log that matches log specifications is emitted.             |
-| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns `true`. |
+| Function Name   | Description                                                                           |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `checkLog`      | Simulates offchain once a log that matches log specifications is emitted.             |
+| `performUpkeep` | Contains the logic that should be executed onchain when `checkUpkeep` returns `true`. |
 
 ### checkLog function
 
-`checkLog` is a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
+`checkLog` is a `view` function that will be simulated offchain once a log that matches your `LogTriggerConfig` has been emitted. You should parse the log data and the check if something needs to happen onchain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
 
 #### Parameters
 
@@ -24,10 +24,10 @@ To use log triggers, you will need to implement the [`ILogAutomation.sol`](https
 
 ### performUpkeep function for log triggers
 
-This function contains the code that will be executed on-chain to finalize the trade.
+This function contains the code that will be executed onchain to finalize the trade.
 
 #### Parameters
 
-| Variable Name | Type    | Description                                                                                | Permissible Values |
-| ------------- | ------- | ------------------------------------------------------------------------------------------ | ------------------ |
-| `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function on-chain | bytes              |
+| Variable Name | Type    | Description                                                                               | Permissible Values |
+| ------------- | ------- | ----------------------------------------------------------------------------------------- | ------------------ |
+| `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function onchain | bytes              |

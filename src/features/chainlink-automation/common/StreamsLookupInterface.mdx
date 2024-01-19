@@ -2,10 +2,10 @@ See the [Data Streams Getting Started](/data-streams/getting-started) guide to s
 
 To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/guides/compatible-contracts) and include a `StreamsLookupCompatibleInterface` interface. This interface fetches and processes Data Streams reports.
 
-| Function Name          | Description                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `StreamsLookup` revert | Triggers the retrieval of specified reports.                                                                              |
-| `checkCallback`        | Simulates off-chain to receive signed reports and conduct final parsing before sending data on-chain via `performUpkeep`. |
+| Function Name          | Description                                                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `StreamsLookup` revert | Triggers the retrieval of specified reports.                                                                            |
+| `checkCallback`        | Simulates offchain to receive signed reports and conduct final parsing before sending data onchain via `performUpkeep`. |
 
 ### StreamsLookup revert
 
@@ -23,7 +23,7 @@ Automation network will use this revert to trigger fetching of the specified rep
 
 #### Outputs
 
-The fetched signed reports will be provided to the user in [`checkCallback`](#checkcallback-function). This is an off-chain compute that the user can use to structure data as needed before performing the on-chain confirmation and validation transactions.
+The fetched signed reports will be provided to the user in [`checkCallback`](#checkcallback-function). This is an offchain compute that the user can use to structure data as needed before performing the onchain confirmation and validation transactions.
 
 | Variable Name | Type      | Description                                                    | Usage examples                                                                 |
 | ------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -32,7 +32,7 @@ The fetched signed reports will be provided to the user in [`checkCallback`](#ch
 
 ### checkCallback function
 
-This is a `view` function that will be simulated off-chain to receive the signed reports and conduct any final parsing before sending data on-chain via `performUpkeep`. Inputs will match outputs of the `oracleLookup` revert.
+This is a `view` function that will be simulated offchain to receive the signed reports and conduct any final parsing before sending data onchain via `performUpkeep`. Inputs will match outputs of the `oracleLookup` revert.
 
 #### Parameters
 
@@ -43,7 +43,7 @@ This is a `view` function that will be simulated off-chain to receive the signed
 
 #### Outputs
 
-| Variable Name  | Type      | Description                                                                                                                                      | Permissible Values |
-| -------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| `performData`  | `bytes`   | Data encoded in the `oracleCallback` function that will be used to execute function on-chain, e.g. encode signed reports and log data if need be | `bytes`            |
-| `upkeepNeeded` | `boolean` | When set to `true` this will trigger the `performUpkeep` function to be executed on-chain                                                        | `true` of `false`  |
+| Variable Name  | Type      | Description                                                                                                                                     | Permissible Values |
+| -------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `performData`  | `bytes`   | Data encoded in the `oracleCallback` function that will be used to execute function onchain, e.g. encode signed reports and log data if need be | `bytes`            |
+| `upkeepNeeded` | `boolean` | When set to `true` this will trigger the `performUpkeep` function to be executed onchain                                                        | `true` of `false`  |

@@ -1,0 +1,225 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Using Imports with Functions"
+metadata:
+  linkToWallet: true
+whatsnext:
+  {
+    "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials",
+    "Read the Architecture to understand how Chainlink Functions operates": "/chainlink-functions/resources/architecture",
+  }
+---
+
+import { Aside, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+
+This tutorial demonstrates how to import modules and use them with your Functions source code. Modules that are imported into Functions source code must meet the following requirements:
+
+- Each import must be 10 MB or less in size.
+- Up to 100 imports total are supported.
+- Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatability List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
+- Third-party modules are imported at runtime, so import statements must use asynchronous logic like the following examples:
+
+  - Importing from `deno.land`:
+
+    ```javascript
+    const { escape } = await import("https://deno.land/std/regexp/mod.ts")
+    ```
+
+  - ESM-compatible packages:
+
+    ```javascript
+    const { format } = await import("npm:date-fns")
+    ```
+
+  - Standard Node modules:
+
+    ```javascript
+    const path = await import("node:path")
+    ```
+
+  - CDN imports:
+
+    ```javascript
+    const lodash = await import("http://cdn.skypack.dev/lodash")
+    ```
+
+- Imported modules abide by all sandbox restrictions and do not have access to the file system, environment variables, or any other Deno permissions.
+
+<Aside type="caution">
+  Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
+  for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
+  user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
+  fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
+  library or a compromised repository from which the dependency is downloaded.
+</Aside>
+
+<ChainlinkFunctions section="prerequisites-guides" />
+
+## Tutorial
+
+This example imports [ethers](https://www.npmjs.com/package/ethers) and demonstrates how to call a smart contract functions using a JSON RPC provider to call an onchain function. In this example, the source code calls the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) from the `AggregatorV3Interface`. Read the [Examine the code](#examine-the-code) section for a detailed description of the code example.
+
+You can locate the scripts used in this tutorial in the [_examples/11-package-imports_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/11-package-imports).
+
+To run the example:
+
+1. Open the file `request.js`, which is located in the `11-package-imports` folder.
+1. Replace the consumer contract address and the subscription ID with your own values.
+
+   ```javascript
+   const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+   const subscriptionId = 3 // REPLACE this with your subscription ID
+   ```
+
+1. Make a request:
+
+   ```shell
+   node examples/11-package-imports/request.js
+   ```
+
+   The script runs your function in a sandbox environment before making an onchain transaction:
+
+   ```text
+   $ node examples/11-package-imports/request.js
+   secp256k1 unavailable, reverting to browser version
+   Start simulation...
+   Simulation result {
+   capturedTerminalOutput: 'Fetched BTC / USD price: 4367193987453\n',
+   responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003f8d10bd97d'
+   }
+   ✅ Decoded response to int256:  4367193987453n
+
+   Estimate request costs...
+   Fulfillment cost estimated to 0.20243353895715 LINK
+
+   Make request...
+
+   ✅ Functions request sent! Transaction hash 0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3. Waiting for a response...
+   See your request in the explorer https://mumbai.polygonscan.com/tx/0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3
+
+   ✅ Request 0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef successfully fulfilled. Cost is 0.200014890551438381 LINK.Complete reponse:  {
+   requestId: '0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef',
+   subscriptionId: 38,
+   totalCostInJuels: 200014890551438381n,
+   responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003f8d10bd97d',
+   errorString: '',
+   returnDataBytesHexstring: '0x',
+   fulfillmentCode: 0
+   }
+
+   ✅ Decoded response to int256:  4367193987453n
+   ```
+
+   The output of the example gives you the following information:
+
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The fulfillment costs are estimated before making the request.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3` and the request ID is `0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82`.
+
+   - The DON successfully fulfilled your request. The total cost was: `0.200435783655508510 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef`. Decoding it offchain to `int256` gives you a result: `4367193987453`.
+
+## Examine the code
+
+### FunctionsConsumerExample.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### JavaScript example
+
+#### source.js
+
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js). The code is self-explanatory and has comments to help you understand all the steps.
+
+<ChainlinkFunctions section="deno-importe-notes" />
+
+The example `source.js` file uses a JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds).
+
+The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be inherited to override the JsonRpcProvider [`_send` method](https://docs.ethers.org/v6/api/providers/jsonrpc/#JsonRpcProvider). This customization is necessary because Deno does not natively support Node.js modules like [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html). We override the `_send` method to use the [fetch API](https://deno.land/api@v1.39.2?s=fetch), which is the standard way to make HTTP(s) requests in Deno. **Note**: The `url` passed in the constructor is the URL of the JSON RPC provider.
+
+```javascript
+// Chainlink Functions compatible Ethers JSON RPC provider class
+// (this is required for making Ethers RPC calls with Chainlink Functions)
+class FunctionsJsonRpcProvider extends ethers.JsonRpcProvider {
+  constructor(url) {
+    super(url)
+    this.url = url
+  }
+  async _send(payload) {
+    let resp = await fetch(this.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    return resp.json()
+  }
+}
+```
+
+After the class is extended, you can initialize the provider object with the `RPC_URL` and await the response.
+
+```javascript
+const provider = new FunctionsJsonRpcProvider(RPC_URL)
+const dataFeedContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider)
+const dataFeedResponse = await dataFeedContract.latestRoundData()
+```
+
+In this example, the contract returns an `int256` value. Encode the value so request.js can properly decode it.
+
+```javascript
+return Functions.encodeInt256(dataFeedResponse.answer)
+```
+
+#### request.js
+
+This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/11-package-imports/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/functionsClient.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x91257aa1c6b7f382759c357fbc53c565c80f7fee" // REPLACE this with your Functions consumer address
+const subscriptionId = 38 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `makeRequestMumbai`. This function can be broken into five main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
+   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a local sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.int256` in this example).
+
+1. Estimating the costs:
+
+   - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost`.
+   - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
+
+1. Making a Chainlink Functions request:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Call the `sendRequest` function of your consumer contract.
+
+1. Waiting for the response:
+
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.int256` in this example).

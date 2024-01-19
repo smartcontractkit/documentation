@@ -7,7 +7,7 @@ title: "Return Custom Data Types"
 import { Aside } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-In this tutorial, you send a request to a Decentralized Oracle Network to call the [Cryptocompare GET /data/pricemultifull API](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint). After [OCR](/chainlink-functions/resources/architecture) completes off-chain computation and aggregation, it returns several responses to your smart contract. The response includes an asset price, daily volume, and market name to your smart contract. The example uses query parameters to specify the ETH/USD asset pair, but you can configure HTTP query parameters to make requests for different assets.
+In this tutorial, you send a request to a Decentralized Oracle Network to call the [Cryptocompare GET /data/pricemultifull API](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns several responses to your smart contract. The response includes an asset price, daily volume, and market name to your smart contract. The example uses query parameters to specify the ETH/USD asset pair, but you can configure HTTP query parameters to make requests for different assets.
 
 <Aside type="note">
   Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
@@ -46,7 +46,7 @@ To run the example:
    node examples/3-custom-response/request.js
    ```
 
-   The script runs your function in a sandbox environment before making an on-chain transaction:
+   The script runs your function in a sandbox environment before making an onchain transaction:
 
    ```text
    $ node examples/3-custom-response/request.js
@@ -108,7 +108,9 @@ To run the example:
 
 #### source.js
 
-The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/3-custom-response/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: The custom source code you want to execute in a Functions request can use vanilla [deno](https://deno.land/) but cannot use any require statements or imported modules.
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/3-custom-response/source.js). The code is self-explanatory and has comments to help you understand all the steps.
+
+<ChainlinkFunctions section="deno-importe-notes" />
 
 This JavaScript source code uses [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) to make HTTP requests. To request the `ETH/USD` price, the source code calls the `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD` URL. If you read the [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) documentation, you see that you must provide the following parameters:
 

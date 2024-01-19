@@ -1,6 +1,10 @@
 import { ChainsConfig, LanesConfig, TokensConfig, Environment, Version } from "./types"
 
 // For mainnet
+import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
+import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json"
+import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json"
+
 import chainsMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/chains.json"
 import lanesMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/lanes.json"
 import tokensMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/tokens.json"
@@ -22,7 +26,11 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
   let lanesReferenceData: LanesConfig
   let tokensReferenceData: TokensConfig
 
-  if (environment === Environment.Mainnet && version === Version.V1_0_0) {
+  if (environment === Environment.Mainnet && version === Version.V1_2_0) {
+    chainsReferenceData = chainsMainnetv120 as unknown as ChainsConfig
+    lanesReferenceData = lanesMainnetv120 as unknown as LanesConfig
+    tokensReferenceData = tokensMainnetv120 as unknown as TokensConfig
+  } else if (environment === Environment.Mainnet && version === Version.V1_0_0) {
     chainsReferenceData = chainsMainnetv100 as unknown as ChainsConfig
     lanesReferenceData = lanesMainnetv100 as unknown as LanesConfig
     tokensReferenceData = tokensMainnetv100 as unknown as TokensConfig
@@ -52,6 +60,9 @@ export const getAllChains = ({
   let chainsTestnetKeys: string[] = []
 
   switch (mainnetVersion) {
+    case Version.V1_2_0:
+      chainsMainnetKeys = Object.keys(chainsMainnetv120)
+      break
     case Version.V1_0_0:
       chainsMainnetKeys = Object.keys(chainsMainnetv100)
       break
