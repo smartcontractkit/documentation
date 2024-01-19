@@ -157,7 +157,17 @@ if (supportedTokens) {
                         client:load
                       />
                     </td>
-                    <td>{display(rateLimiterConfig.rate)} USD/second</td>
+                    <td>
+                      {(() => {
+                        const { rateSecond, maxThroughput } = displayRate(
+                          rateLimiterConfig.capacity,
+                          rateLimiterConfig.rate,
+                          "USD"
+                        )
+
+                        return <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
+                      })()}
+                    </td>
                   </>
                 </tr>
               </>

@@ -6,7 +6,7 @@ whatsnext:
   {
     "Make a GET Request": "/any-api/get-request/introduction/",
     "Decentralized Data Model": "/architecture-overview/architecture-decentralized-model/",
-    "Off-Chain Reporting": "/architecture-overview/off-chain-reporting/",
+    "Offchain Reporting": "/architecture-overview/off-chain-reporting/",
   }
 metadata:
   title: "Chainlink Basic Request Model"
@@ -36,7 +36,7 @@ Learn more about [ERC-677 and the LINK token](/resources/link-token-contracts).
 
 ### Oracle Contract
 
-[`Oracle` contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Oracle.sol) are owned by oracle node operators, which run alongside off-chain oracle nodes.
+[`Oracle` contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Oracle.sol) are owned by oracle node operators, which run alongside offchain oracle nodes.
 
 #### Request
 
@@ -48,15 +48,15 @@ The client contract that initiates this cycle must create a request with the fol
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle).
 
-Oracle contracts are responsible for handling on-chain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the off-chain oracle node which acts upon it.
+Oracle contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
 
 #### Fulfillment
 
 For fulfillment, the oracle contract has a `fulfillOracleRequest` function which is used by the node to fulfill a request once it has the result of the job. This function returns the result to the `ChainlinkClient` using the callback function defined in the original request.
 
-### Off-Chain Oracle Node
+### Offchain Oracle Node
 
-The off-chain oracle node is responsible for listening for events emitted by its corresponding on-chain smart contract. Once it detects an `OracleRequest` event, it uses the data emitted to perform a job.
+The offchain oracle node is responsible for listening for events emitted by its corresponding onchain smart contract. Once it detects an `OracleRequest` event, it uses the data emitted to perform a job.
 
 The most common job type for a Node is to make a GET request to an API, retrieve some data from it, parse the response, convert the result into blockchain compatible data, then submit it in a transaction back to the oracle contract, using the `fulfillOracleRequest` function.
 

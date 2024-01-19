@@ -6,7 +6,7 @@ title: "VRF Security Considerations"
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 
-Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
+Gaining access to high quality randomness onchain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
 - [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
@@ -19,7 +19,7 @@ Gaining access to high quality randomness on-chain requires a solution like Chai
 
 If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF fulfillments arrive cannot be used to manipulate your contract's user-significant behavior.
 
-Blockchain miners/validators can control the order in which your requests appear on-chain, and hence the order in which your contract responds to them.
+Blockchain miners/validators can control the order in which your requests appear onchain, and hence the order in which your contract responds to them.
 
 For example, if you made randomness requests `A`, `B`, `C` in short succession, there is no guarantee that the associated randomness fulfillments will also be in order `A`, `B`, `C`. The randomness fulfillments might just as well arrive at your contract in order `C`, `A`, `B` or any other order.
 
@@ -35,7 +35,7 @@ You must choose an appropriate confirmation time for the randomness requests you
 
 Any re-request of randomness is an incorrect use of VRFv2. Doing so would give the VRF service provider the option to withhold a VRF fulfillment if the outcome is not favorable to them and wait for the re-request in the hopes that they get a better outcome, similar to the considerations with block confirmation time.
 
-Re-requesting randomness is easily detectable on-chain and should be avoided for use cases that want to be considered as using VRFv2 correctly.
+Re-requesting randomness is easily detectable onchain and should be avoided for use cases that want to be considered as using VRFv2 correctly.
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 

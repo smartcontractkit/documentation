@@ -1,6 +1,6 @@
 import styles from "./bottomBar.module.css"
 import { ResourcesIcon } from "./ResourcesIcon"
-import { Search } from "../../../AlgoSearch/Search"
+import { Search } from "../../../aiSearch/Search"
 
 const ResourcesButton = () => (
   <a rel="noreferrer" target="_blank" className="nav-cta" href="https://github.com/smartcontractkit/documentation">
