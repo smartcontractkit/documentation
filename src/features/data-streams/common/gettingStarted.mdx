@@ -1,6 +1,6 @@
 import { Aside, CodeSample, CopyText, ClickToZoom } from "@components"
 
-This guide shows you how to read data from a Data Stream and validate and store the answer onchain. This example uses a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Engine, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
+This guide shows you how to read data from a Data Stream, validate the answer, and store the answer onchain. This example uses a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Engine, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
 
 <Aside type="caution" title="Disclaimer">
   This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
@@ -79,7 +79,7 @@ Deploy an upkeep contract that is enabled to retrieve data from Data Streams. Fo
 
 ## Deploy the emitter contract
 
-This contract emits logs that trigger the upkeep. This code can be part of your dApp. For example, you might emit log triggers when your users initiate a trade or other action requiring data retrieval. For this Getting Started guide, we will use a very simple emitter so you can test the upkeep and data retrieval.
+This contract emits logs that trigger the upkeep. This code can be part of your dApp. For example, you might emit log triggers when your users initiate a trade or other action requiring data retrieval. For this Getting Started guide, use a very simple emitter so you can test the upkeep and data retrieval.
 
 1. [Open the LogEmitter.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataStreams/LogEmitter.sol) contract in Remix.
 
@@ -95,7 +95,7 @@ This contract emits logs that trigger the upkeep. This code can be part of your 
 
 1. Open MetaMask and make sure the network is still set to _Arbitrum Sepolia_.
 
-1. In Remix, under the **Deploy & Run Transactions** tab, ensure the **Environment** is still set to _Injected Provider - MetaMask_.
+1. On the **Deploy & Run Transactions** tab in Remix, ensure the **Environment** is still set to _Injected Provider - MetaMask_.
 
    <ClickToZoom
      src="/images/data-streams/getting-started/injected-provider.webp"
@@ -175,7 +175,7 @@ Now, you can use your emitter contract to emit a log and initiate the upkeep, wh
 
 1. Click the `emitLog` button to call the function and emit a log. MetaMask prompts you to accept the transaction.
 
-After the transaction is complete, the log is emitted, and the upkeep is triggered. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia). Check to make sure the transaction is successful.
+After the transaction is complete, the log is emitted, and the upkeep is triggered. You can find the upkeep transaction hash in the [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia). Check to make sure the transaction is successful.
 
     <ClickToZoom src="/images/data-streams/getting-started/request-fulfilled.webp" />
 
@@ -183,7 +183,7 @@ After the transaction is complete, the log is emitted, and the upkeep is trigger
 
 The retrieved price is stored as a variable in the contract and emitted in the logs.
 
-1. In Remix, under the **Deploy & Run Transactions** tab, expand your upkeep contract in the **Deployed Contracts** section.
+1. On the **Deploy & Run Transactions** tab in Remix, expand the details of your upkeep contract in the **Deployed Contracts** section.
 
 1. Click the `last_retrieved_price` getter function to view the retrieved price. The answer on the ETH/USD feed uses 18 decimal places, so an answer of `248412100000000000` indicates an ETH/USD price of 2484.121. Each feed uses a different number of decimal places for answers. See the [Stream IDs](/data-streams/stream-ids) page for more information.
 
@@ -193,12 +193,12 @@ The retrieved price is stored as a variable in the contract and emitted in the l
      style="max-width: 70%;"
    />
 
-Alternatively, you can view the price emitted in the logs for your upkeep transaction. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) and view the logs in the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/).
+Alternatively, you can view the price emitted in the logs for your upkeep transaction. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) and view the transaction logs in the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/).
 
 ## Examine the code
 
 The example code you deployed has all the interfaces and functions required to work with Chainlink Automation as an upkeep contract. It follows a similar flow to the trading flow in the [Architecture](/data-streams#example-trading-flow) documentation but uses a basic log emitter to simulate the client contract that would initiate a `StreamsLookup`. After the contract receives and verifies the report, `performUpkeep` stores the price from the report in the `last_retrieved_price` and emits a `PriceUpdate` log message with the price. You could modify this to use the data in a way that works for your specific use case and application.
 
-The code example uses `revert` with `StreamsLookup` to convey call information about what streams to retrieve. See the [eip-3668 rationale](https://eips.ethereum.org/EIPS/eip-3668#rationale) for more information on `revert` use in this way.
+The code example uses `revert` with `StreamsLookup` to convey call information about what streams to retrieve. See the [EIP-3668 rationale](https://eips.ethereum.org/EIPS/eip-3668#rationale) for more information about how to use `revert` in this way.
 
 <CodeSample src="samples/DataStreams/StreamsUpkeep.sol" />
