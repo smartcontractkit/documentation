@@ -232,6 +232,13 @@ export const CHAINS: Chain[] = [
         queryString: "optimism-mainnet",
       },
       {
+        name: "Optimism Sepolia",
+        explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-optimism-1.json",
+        queryString: "optimism-sepolia",
+      },
+      {
         name: "Optimism Goerli",
         explorerUrl: "https://goerli-optimism.etherscan.io/address/%s",
         networkType: "testnet",
