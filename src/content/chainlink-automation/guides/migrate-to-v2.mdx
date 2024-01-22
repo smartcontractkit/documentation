@@ -5,23 +5,21 @@ title: "Migrate to V2"
 ---
 import { Aside } from "@components"
 
-Chainlink Automation v2.0 is a consensus-driven Automation solution that allows you to cut onchain gas costs by leveraging cryptographically verified offchain compute. Automation 2.0 provides more offchain compute (10M gas) than earlier versions with increased reliability and performance. Additionally, it offers new features including Log triggers and StreamsLookup.
+Chainlink Automation 2.0 is a consensus-driven Automation solution that allows you to cut onchain gas costs by leveraging cryptographically verified offchain compute. Automation 2.0 provides more offchain compute (10M gas) than earlier versions with increased reliability and performance. Additionally, it offers new features including Log triggers and StreamsLookup.
 
-Migrating existing upkeeps from v1.2 registries and onwards can be done with the click of a button in the UI[link] or using a chain scanner[link]. Before you migrate, please familiarize yourself with our [migration checklist](#migration-checklist) to maximize your benefits from Automation 2.0. When you migrate upkeeps through the registry you retain the UpkeepID.
+You can migrate most upkeeps (on registry versions 1.2 and later) by using a simple migration process in the [Chainlink Automation App](https://automation.chain.link/) or [within the block scanner](#migrating-upkeeps-using-block-scanner). When you migrate upkeeps through the registry you retain the UpkeepID. Before you migrate, please familiarize yourself with our [migration checklist](#migration-checklist) to maximize your benefits from Automation 2.0.
 
-For upkeeps on older registry versions 1.0 (Ethereum Mainnet), and v1.1 (BNB Mainnet, and Polygon Mainnet), you must migrate manually by cancelling and re-registering your upkeep in the UI. We have streamlined the process from v1.2 onwards, so this should be the last time you have to cancel and recreate an upkeep to migrate.
+For upkeeps on older registry versions 1.0 (Ethereum Mainnet), and v1.1 (BNB Mainnet, and Polygon Mainnet), you must migrate manually by cancelling and re-registering your upkeep in the Chainlink Automation App. After you do this manual migration, future migrations will be eligible for the simpler migration process.
 
 <Aside type="caution" title="Deprecation date">
   Please ensure you migrate your upkeeps by 31 March 2024. We will start deprecating earlier registries after this date. Please reach out if you have questions or concerns after reading our documentation.
 </Aside>
 
-## Migrating using the UI
+## Migrating using the Chainlink Automation App
 
-The Automation UI offers a streamlined migration process for upkeeps using registry versions 1.2 and later. To migrate upkeeps with older versions, follow the [manual migration process](#migrating-older-upkeeps-manually) instead. 
+The Chainlink Automation App offers a streamlined migration process for upkeeps using registry versions 1.2 and later. To migrate upkeeps with older versions, follow the [manual migration process](#migrating-older-upkeeps-manually) instead.
 
-In the UI, you can migrate one upkeep at a time. Alternatively, you can [migrate multiple upkeeps at once](#migrating-multiple-upkeeps) by using the block scanner.
-
-1. Navigate to the Chainlink Automation UI and connect your wallet. (Note that Automation 2.0 runs on registry version 2.1. This discrepancy will be reconciled in a future version). 
+1. Navigate to the Chainlink Automation App and connect your wallet. (Note that Automation 2.0 runs on registry version 2.1. This discrepancy will be reconciled in a future version). 
 {Image/versions_landing_page.png}
 
 1. Select your upkeep. In the details page, select **Migrate Upkeep**.
@@ -39,33 +37,41 @@ When the migration is complete:
 - The new upkeep details page will show the updated registry address and a forwarder address. The forwarder address is a new unique forwarder to increase security for your upkeep. This address will be the unique `msg.sender` for your upkeep. If your upkeep is restricted to a single address calling it, ensure you give permission to the Forwarder address or your function will stop
 {image/details_with_forwarder.png}
 
-## Migrating multiple upkeeps
+## Migrating upkeeps using block scanner
 
-To migrate multiple upkeeps simultaneously using the scanner:
+To migrate one or more upkeeps using the scanner:
 
-1. Navigate to the blockscanner for the desired chain to the Automation registry containing your upkeeps. The registry address is visible in the Automation UI under Upkeep details. 
+1. Navigate to the blockscanner for the desired chain to the Automation registry containing your upkeeps. The registry address is visible in the Chainlink Automation App under **Upkeep details**. 
 
-1. Under Contract/Write contract expand the `migrateUpkeeps` function.
-Enter a list of upkeepIDs e.g. [99297446083125056953495436926707926113001699970195513612134585638496630959874,63026166139768298778579034679995711427803187091626268721992534052921779884688]
+1. Under **Contract/Write contract** expand the `migrateUpkeeps` function.
+Enter a list of upkeepIDs e.g. `[99297446083125056953495436926707926113001699970195513612134585638496630959874,63026166139768298778579034679995711427803187091626268721992534052921779884688]`.
 
-1. Enter the destination registry address, which is the latest registry address on this chain. You can find this address in the [Supported Networks](/chainlink-automation/overview/supported-networks) page, or on the Automation UI for the desired chain. 
+1. Enter the destination registry address, which is the latest registry address on this chain. You can find this address in the [Supported Networks](/chainlink-automation/overview/supported-networks) page, or at the top of the Chainlink Automation App with the desired chain selected.
 
 1. Execute the `migrateUpkeeps` function and confirm it. When this transaction is confirmed, your upkeeps will be migrated to the latest registry, and each upkeep will have a unique forwarder address.
 
 ## Migrating older upkeeps manually
 For upkeeps on registry versions 1.0 and 1.1, you must migrate upkeeps manually:
 
-1. Navigate to the Upkeep in the Automation UI and under Actions select Cancel Upkeep. When this transaction is confirmed, you have to wait 50 blocks before you can withdraw funds.
-1. You can then go back to the Automation UI landing page and register a new upkeep providing the Upkeep Address of your old upkeep. The interface remained the same and this upkeep will now be on Automation v2.0 and come with easy migration in future.
+1. Navigate to the Upkeep in the [Chainlink Automation App](https://automation.chain.link/). 
+1. In the **Details** section, navigate to the center **Upkeep** card. Copy the **Upkeep address** - you need this for Step 5.
+1. Expand the **Actions** menu and select **Cancel Upkeep**. 
+1. Approve the transaction in your wallet. When this transaction is confirmed, you must wait 50 blocks before you can withdraw funds.
+1. Return to the main [Chainlink Automation App](https://automation.chain.link/) landing page. Register a new upkeep, providing the **Upkeep Address** of your old upkeep. 
+
+After migration, you have a new upkeep on Automation 2.0 with the same interface as your old upkeep. Future migrations are eligible for the simpler migration process.
 
 ## Migration checklist
 Please take note of these important changes.
 
 ### Unique Forwarder
-Automation 2.0 Upkeeps are called from a unique forwarder per upkeep, and not the registry. Thus if your upkeep restricts `msg.sender` to the previous registry address, please update it to the newly created Forwarder Address[link]. The forwarder will only be known once the upkeep has been migrated. The Forwarder will remain constant in future migrations to the next version of Automation.  
+Automation 2.0 Upkeeps are called from a unique forwarder per upkeep, and not the registry. If your upkeep restricts `msg.sender` to the previous registry address, you must update it to the newly created Forwarder Address[link]. The forwarder will only be known once the upkeep has been migrated. The forwarder will remain constant in future migrations to the next version of Automation.  
 
 ### Programmatic Upkeeps will be impacted
-Please note that migration moves upkeeps from one registry to another. Thus if you are interacting with your upkeep via solidity or other interfaces, please update the registry and registrar address that you interact with and ensure you use the latest version of the ABI for the registry and registrar.
+Please note that migration moves upkeeps from one registry to another. If you interact with your upkeep programatically via Solidity or other interfaces, you must update your code to make sure that you are referencing the correct registry and registrar for your migrated upkeeps:
+
+- Update the registry and registrar addresses.
+- Ensure you use the latest version of the ABI for the registry and registrar.
 
 ### Get the latest ABI
 For Automation 2.0 ABI, please use IKeeperRegistryMaster.json in /@chainlink/contracts/abi/v0.8/ in the @chainlink NPM package .  Registrar: @chainlink/contracts/abi/v0.8/AutomationRegistrar2_1.json
@@ -78,4 +84,4 @@ Ensure that your function calls to the registry from your upkeep contract (if an
 Your LINK funding will be automatically moved from one registry to the next when you migrate.
 
 ## Migration questions and feedback
-For any questions please reach out on our Discord.
+For any questions please reach out on [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in the [Chainlink Discord server](https://discord.gg/qj9qarT),
