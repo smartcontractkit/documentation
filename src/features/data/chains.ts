@@ -233,7 +233,7 @@ export const CHAINS: Chain[] = [
       },
       {
         name: "Optimism Sepolia",
-        explorerUrl: "https://https://sepolia-optimism.etherscan.io//address/%s",
+        explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-optimism-1.json",
         queryString: "optimism-sepolia",
