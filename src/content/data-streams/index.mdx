@@ -13,13 +13,13 @@ whatsnext:
 import { Aside, ClickToZoom } from "@components"
 import button from "@chainlink/design-system/button.module.css"
 
-<Aside type="note" title="Early Access">
-  Data Streams is available on Arbitrum Mainnet and Arbitrum Goerli in Early Access.{" "}
+<Aside type="note" title="Mainnet Early Access">
+  Chainlink Data Streams is available on Arbitrum Sepolia and in Early Access on Arbitrum Mainnet.{" "}
   <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Data Streams provides low-latency delivery of market data offchain that you can verify onchain. With Chainlink Data Streams, decentralized applications (dApps) now have on-demand access to high-frequency market data backed by decentralized and transparent infrastructure. When combined with [Chainlink Automation](/chainlink-automation/introduction), Data Streams allows decentralized applications to automate trade execution and mitigate frontrunning.
+Chainlink Data Streams provides low-latency delivery of market data offchain that you can verify onchain. With Chainlink Data Streams, decentralized applications (dApps) now have on-demand access to high-frequency market data backed by decentralized and transparent infrastructure. When combined with [Chainlink Automation](/chainlink-automation/introduction), Chainlink Data Streams allows decentralized applications to automate trade execution, mitigate frontrunning, and limit bias or adverse incentives in executing non-user-triggered orders.
 
 <ClickToZoom src="/images/data-streams/data-streams-architecture.webp" />
 
@@ -68,8 +68,8 @@ One example of how to use Data Streams is in a decentralized exchange. An exampl
 1. A user initiates a trade by confirming an `initiateTrade` transaction in their wallet.
 1. The onchain contract for the decentralized exchange responds by emitting a Log Trigger event.
 1. The Chainlink Automation upkeep monitors the contract for the event. When Automation detects the event, it runs the `checkLog` function specified in the upkeep contract. The upkeep is defined by the decentralized exchange.
-1. The `checkLog` function emits an event called `StreamsLookup`.
-1. Data Streams detects the `StreamsLookup` event and returns the requested report in the `checkCallback` function for Chainlink Automation.
+1. The `checkLog` function uses a `revert` with a custom error type called `StreamsLookup`. This approach, aligning with [EIP-3668](https://eips.ethereum.org/EIPS/eip-3668#use-of-revert-to-convey-call-information), conveys necessary information through the data in the `revert` custom error.
+1. Upon detecting the `StreamsLookup` custom error, Chainlink Data Streams processes the offchain data request and returns the requested signed report in the `checkCallback` function for Chainlink Automation.
 1. Chainlink Automation passes the report to the Automation Registry, which executes the `performUpkeep` function defined by the decentralized exchange. The report is included as a variable in the `performUpkeep` function.
 1. The `performUpkeep` function calls the `verify` function on the Data Streams onchain verifier contract and passes the report as a variable.
 1. The verifier contract returns a `verifierResponse` bytes value to the upkeep.
