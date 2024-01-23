@@ -48,7 +48,7 @@ The flowchart presented below provides a visual guide through the process of a c
 
 As described above, a CCIP message becomes eligible for manual execution for various reasons. Manual execution means that a user has to manually trigger the execution of the destination transaction after the issue that caused manual execution has been resolved.
 
-When a CCIP message is eligible for manual execution, the [CCIP explorer](https://ccip.chain.link/) shows this clearly with a “Trigger Manual Execution” status.
+When a CCIP message is eligible for manual execution, the [CCIP explorer](https://ccip.chain.link/) shows this clearly with a _Trigger Manual Execution_ status.
 
 <br />
 
@@ -68,7 +68,7 @@ When manual execution is initiated, a Merkle proof is generated for the message 
 
    Yes, any EOA can manually execute a CCIP message that is eligible for manual execution. However, the executing account must have sufficient native gas tokens (such as ETH on Ethereum or MATIC on Polygon) to cover the gas costs associated with the delivery of the CCIP message.
 
-1. If a user sends multiple messages and the first message isn’t successfully delivered and goes into a “manual execution” mode, does that mean all subsequent messages from the user will also be stuck?
+1. If a user sends multiple messages and the first message isn’t successfully delivered and goes into a _manual execution_ mode, does that mean all subsequent messages from the user will also be stuck?
 
    It depends. If a message goes into manual execution mode due to receiver errors (unhandled exceptions or gas limit issues), subsequent messages don’t get stuck. However, suppose a message goes into manual execution mode after the smart execution time frame (currently 8 hrs). In that case, subsequent messages must wait for the first message to be processed to maintain the default sequence.
 
@@ -86,7 +86,7 @@ When manual execution is initiated, a Merkle proof is generated for the message 
 
 1. How do I know if my receiver error is due to a gas limit issue or an unhandled exception?
 
-   If you see a “ReceiverError” with a revert reason as empty (0x), this is likely due to a gas limit issue. You can look at the transaction trace for the destination transaction on a tool such as [tenderly](https://tenderly.co/), and you will likely see an “out of gas” condition mentioned in such cases. Determine the gas limit that would work for your transaction and manually override it. Read the [manual execution](/ccip/tutorials/manual-execution) tutorial to analyze an example of an exception due to a low gas limit.
+   If you see a _ReceiverError_ with a revert reason as empty (0x), this is likely due to a gas limit issue. You can look at the transaction trace for the destination transaction on a tool such as [tenderly](https://tenderly.co/), and you will likely see an _out of gas_ reason mentioned in such cases. Determine the gas limit that would work for your transaction and manually override it. Read the [manual execution](/ccip/tutorials/manual-execution) tutorial to analyze an example of an exception due to a low gas limit.
 
 1. How can I write contracts that avoid manual execution situations in the first place?
 
