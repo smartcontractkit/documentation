@@ -245,15 +245,17 @@ export const FeedList = ({
                 </>
               ) : (
                 <>
-                  <label>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />{" "}
-                    Show more details
-                  </label>
+                  {!isStreams && (
+                    <label>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;"
+                        checked={showExtraDetails}
+                        onChange={() => setShowExtraDetails((old) => !old)}
+                      />{" "}
+                      Show more details
+                    </label>
+                  )}
                   <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
                 </>
               )}
