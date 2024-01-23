@@ -56,7 +56,7 @@ When a CCIP message is eligible for manual execution, the [CCIP explorer](https:
 
 Depending on the situation, you can take one of the following steps:
 
-- Insufficient gas limit: The executor (after connecting their wallet) can override the gas limit parameter (i.e., increase it for this particular execution) and trigger a manual execution. If this new gas limit override is sufficient, the transaction will go through successfully. Note that this only applies to this transaction. If subsequent messages involve the same gas limit, they all may fail. So, ensure you update the gas limit on future messages for this application to avoid more manual execution situations.
+- Insufficient gas limit: The executor (after connecting their wallet) can override the gas limit parameter (i.e., increase it for this particular execution) and trigger a manual execution. If this new gas limit override is sufficient, the transaction will go through successfully. **Note:** This only applies to this transaction. If subsequent messages involve the same gas limit, they all may fail. So, ensure you update the gas limit on future messages for this application to avoid more manual execution situations.
 - Unhandled exception (logical error) in the receiver contract: If the receiver contract is [upgradeable](https://blog.chain.link/upgradable-smart-contracts/), developers must correct the logic, re-deploy the logic contract, and then manually execute the same transaction. If the receiver contract is not upgradeable, developers must deploy a new receiver contract, and then users can send a new CCIP message. Non-upgradable contracts will not benefit from manual execution.
 - If the issue was due to extreme gas spikes/ network conditions, and CCIP was not able to successfully transfer the message despite gas bumping for the entire duration of the Smart Execution timeframe (currently 8 hrs), then you can try manual execution.
 
@@ -65,23 +65,27 @@ When manual execution is initiated, a Merkle proof is generated for the message 
 ## Frequently Asked Questions
 
 1. Can anyone execute a transaction on the CCIP explorer even if they are not the initiator of the transaction?
+
    Yes, any EOA can manually execute a CCIP message that is eligible for manual execution. However, the executing account must have sufficient native gas tokens (such as ETH on Ethereum or MATIC on Polygon) to cover the gas costs associated with the delivery of the CCIP message.
 
 1. If a user sends multiple messages and the first message isn’t successfully delivered and goes into a “manual execution” mode, does that mean all subsequent messages from the user will also be stuck?
 
-It depends. If a message goes into manual execution mode due to receiver errors (unhandled exceptions or gas limit issues), subsequent messages don’t get stuck. However, suppose a message goes into manual execution mode after the smart execution time frame (currently 8 hrs). In that case, subsequent messages must wait for the first message to be processed to maintain the default sequence.
+   It depends. If a message goes into manual execution mode due to receiver errors (unhandled exceptions or gas limit issues), subsequent messages don’t get stuck. However, suppose a message goes into manual execution mode after the smart execution time frame (currently 8 hrs). In that case, subsequent messages must wait for the first message to be processed to maintain the default sequence.
 
 1. If the maximum gas limit is 2M (2,000,000) on mainnet, but it turns out that the destination blockchain requires more than that, will an override of > 2M work even though the max gas limit is 2M?
 
-Yes, but only for this execution. This works because the gas limit for this execution instance isn’t passing through the CCIP validation for the gas limit, for which the CCIP executing DON pays the gas. However, if you consistently need more than 2M for your use case, please reach out to us and let us know.
+   Yes, but only for this execution. This works because the gas limit for this execution instance isn’t passing through the CCIP validation for the gas limit, for which the CCIP executing DON pays the gas. However, if you consistently need more than 2M for your use case, please reach out to us and let us know.
 
 1. Will Chainlink Labs reimburse us for manual execution fees?
+
    Since most manual execution situations are due to insufficient gas limit or an unhandled exception in the receiver contract, Chainlink Labs does not reimburse these fees. If you are a dApp developer, please ensure you test thoroughly to avoid manual execs to the extent possible.
 
 1. Do I have to manually execute via the CCIP explorer? Are there any other ways to do this?
+
    The CCIP explorer provides the easiest way to execute manually. It handles all the complexity of submitting the Merkle proof needed for successful transaction execution.
 
 1. How do I know if my receiver error is due to a gas limit issue or an unhandled exception?
+
    If you see a “ReceiverError” with a revert reason as empty (0x), this is likely due to a gas limit issue. You can look at the transaction trace for the destination transaction on a tool such as [tenderly](https://tenderly.co/), and you will likely see an “out of gas” condition mentioned in such cases. Determine the gas limit that would work for your transaction and manually override it. Read the [manual execution](/ccip/tutorials/manual-execution) tutorial to analyze an example of an exception due to a low gas limit.
 
 1. How can I write contracts that avoid manual execution situations in the first place?
@@ -91,4 +95,5 @@ Yes, but only for this execution. This works because the gas limit for this exec
    - Refer to the [Defensive example](/ccip/tutorials/programmable-token-transfers-defensive) tutorial for an example of how to design a programmable token transfer that handles errors gracefully.
 
 1. My transaction meets one of the conditions to trigger manual execution, but I do not see this option on the CCIP explorer. How am I supposed to execute this manually?
+
    This should not happen, but in the unlikely scenario that this does happen, please reach out to Chainlink Labs.
