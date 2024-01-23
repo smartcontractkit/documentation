@@ -13,16 +13,14 @@ import { Aside, ClickToZoom } from "@components"
   discussed on this page.
 </Aside>
 
-CCIP messages are eligible for manual execution if either of these conditions is met:
+In general, messages are successfully delivered and processed via CCIP, as detailed in the [Architecture](/ccip/architecture) page. As described in the [CCIP Execution latency](/ccip/architecture#ccip-execution-latency) section, CCIP has an inbuilt gas bumping mechanism called _Smart Execution_ to ensure users’ messages are reliably delivered to the destination blockchain.
+However, some exceptional conditions may require users to manually execute the transaction on the destination blockchain:
 
-- Execution of the CCIP message on the destination blockchain has failed, either due to a smart contract revert or insufficient gasLimit that was set.
-- Execution of the CCIP message on the destination blockchain could not be completed within the designated Smart Execution timeframe (currently set to 8 hours). This scenario may arise during periods of extreme network congestion and resulting gas spikes, where even CCIP Smart Execution (using gas bumping) could not successfully execute the message within the allotted time frame.
+     - The receiver contract on the destination blockchain reverted due to an unhandled exception (for example, a logical error).
+     - The receiver contract on the destination blockchain reverted due to the gas limit being insufficient to execute the triggered function (Note: The gas limit value is set in the [extraArgs](/ccip/api-reference/client#evmextraargsv1) param of the message).
+     - The message couldn’t be delivered to the destination chain by CCIP’s smart execution within the smart execution time frame, currently set to 8 hours. This could happen, for example, during extreme network congestion and resulting gas spikes.
 
-      <Aside type="note">
-      In the rare event that a CCIP message is not executed on the destination blockchain within the designated Smart Execution timeframe, it is essential to understand the impact on subsequent messages. Subsequent messages originating from the same sender on the same lane are put on hold. Once manual execution has been completed, CCIP resumes processing the subsequent messages. This approach ensures the sequential order of message processing.
-      </Aside>
-
-The flowchart presented below provides a visual guide through the process of a cross-chain transaction, emphasizing the steps involved in the manual execution:
+The flowchart presented below provides a visual guide through the process of a cross-chain transaction, detailing the steps involved in the manual execution:
 
 <br />
 
@@ -35,40 +33,67 @@ The flowchart presented below provides a visual guide through the process of a c
 1. Post finality, the [CCIP Committing DON](/ccip/architecture#committing-don) assembles a batch of eligible transactions, computes a Merkle root, and records it to the [CommitStore contract](/ccip/architecture#commit-store) on the destination blockchain.
 1. Upon successful verification, the [Risk Management Network](/ccip/concepts#risk-management-network) blesses the committed Merkle root.
 1. Once the committed Merkle root is blessed, the [CCIP Executing DON](/ccip/architecture#executing-don) proceeds with the execution on the destination blockchain:
-   1. If the CCIP message remains unexecuted within the designated Smart Execution timeframe (currently set to 8 hours), the Executing DON assesses and, if necessary, adjusts the gas price (a process known as gas bumping) to facilitate successful transaction execution on the destination blockchain as part of the Smart Execution process.
-   1. If the Smart Execution timeframe has passed and the CCIP message has not yet been executed, then Manual Execution is enabled (Read [below](/ccip/concepts/manual-execution#manual-execution)).
+   1. During the smart execution timeframe, the Executing DON assesses and, if necessary, adjusts the gas price (a process known as gas bumping) to facilitate successful transaction execution on the destination blockchain as part of the smart execution process.
+   1. If the smart execution timeframe has passed and the CCIP message has still not yet been executed, then Manual Execution is enabled (Read [below](/ccip/concepts/manual-execution#manual-execution)).
 1. The execution on the destination blockchain works as follows:
 
-   1. The CCIP initially determines whether the message involves token transfers. If affirmative, the tokens are transferred to the receiver address to facilitate programmable transfers ahead of contract logic execution.
-   1. For an EOA, the CCIP transaction is completed successfully.
-   1. If the receiver is a contract, its [ccipReceive](/ccip/api-reference/ccip-receiver#ccipreceive) function is invoked.
+   1. If the message involves token transfers, the tokens are first transferred to the receiver.
 
-   **Note:** The execution of the CCIP message is atomic, meaning that it will either fully succeed, with all steps completed, or fail entirely, with none of the steps taking effect. If the transaction fails, the **manual execution is enabled** (Read [below](/ccip/concepts/manual-execution#manual-execution)).
+      1. If the receiver is an EOA, then this transaction is considered complete, with no further processing.
+      1. If the receiver is a smart contract, the ccipReceive function is invoked after the token transfer. The ccipReceive function processes the CCIP message and any user-specified logic in the receiver contract. The execution of the CCIP message is atomic (all/none). If the ccipReceive function successfully executes, then all aspects of the transaction are complete, and there is no revert. If, however, there is an issue in the receiver execution due to insufficient gas limit or unhandled exceptions, the attempted token transfer will also revert. The transaction then becomes eligible for manual execution.
+
+   1. If the message does not involve token transfers and only arbitrary messaging, then if the receiver execution fails due to gas limit/ unhandled exceptions, the transaction becomes eligible for manual execution.
 
 ## Manual execution
 
-In instances where the execution of a CCIP message on the destination blockchain has failed (reverted) or could not be completed within the Smart Execution timeframe, you can refer to the procedure below. **Note:** Any account can manually execute a CCIP message that is eligible for manual execution, but the executing account must have sufficient native gas tokens (such as ETH on Ethereum or MATIC on Polygon) to cover the gas costs associated with the delivery of the CCIP message.
+As described above, a CCIP message becomes eligible for manual execution for various reasons. Manual execution means that a user has to manually trigger the execution of the destination transaction after the issue that caused manual execution has been resolved.
 
-1. Use the [CCIP explorer](https://ccip.chain.link/) to retry the transaction execution on the destination blockchain manually.
+When a CCIP message is eligible for manual execution, the [CCIP explorer](https://ccip.chain.link/) shows this clearly with a “Trigger Manual Execution” button.
 
-   <Aside type="note">
-     Manual execution is expected to be available. If it is unavailable, please get in touch with Chainlink Labs Support
-     for assistance.
-   </Aside>
+<br />
 
-1. Manual execution via the CCIP explorer is enabled under two conditions:
+<ClickToZoom src="/images/ccip/manual-execution-status.jpg" alt="Chainlink CCIP manual execution status" />
 
-   - If execution of the CCIP message has not occurred within the Smart Execution timeframe, users must manually initiate execution through the CCIP explorer.
-   - If execution on the destination blockchain failed due to:
+<Aside type="note">
+  Manual execution is expected to be available. If it is unavailable, please contact Chainlink Labs Support for
+  assistance.
+</Aside>
 
-     - Insufficient [gas limit](/ccip/api-reference/client#evmextraargsv1): Users should increase the gas limit in the CCIP explorer before manually triggering execution.
-     - Receiver logic error: The failure was due to an implementation error in the receiver contract. Developers must fix the implementation and then deploy a new version. Afterward, they can trigger manual execution in the CCIP explorer. **Note:** This corrective measure only applies if the receiver contract is upgradeable and uses the [proxy pattern](https://blog.openzeppelin.com/proxy-patterns). Non-upgradable contracts will not benefit from manual execution in this context.
+Depending on the situation, you can take one of the following steps:
 
-     <Aside type="note" title="Recommendation">
-       An important best practice is to separate the reception of CCIP messages from the core business logic of the
-       contract. Implementing 'escape hatches' or fallback mechanisms is recommended to gracefully manage situations
-       where the business logic encounters issues. To explore this concept further, refer to the [Defensive
-       example](/ccip/tutorials/programmable-token-transfers-defensive).
-     </Aside>
+- Insufficient gas limit: The executor (after connecting their wallet) can override the gas limit parameter (i.e., increase it for this particular execution) and trigger a manual execution. If this new gas limit override is sufficient, the transaction will go through successfully. Note that this only applies to this transaction. If subsequent messages involve the same gas limit, they all may fail. So, ensure you update the gas limit on future messages for this application to avoid more manual execution situations.
+- Unhandled exception (logical error) in the receiver contract: If the receiver contract is [upgradeable](https://blog.chain.link/upgradable-smart-contracts/), developers must correct the logic, re-deploy the logic contract, and then manually execute the same transaction. If the receiver contract is not upgradeable, developers must deploy a new receiver contract, and then users can send a new CCIP message. Non-upgradable contracts will not benefit from manual execution.
+- If the issue was due to extreme gas spikes/ network conditions, and CCIP was not able to successfully transfer the message despite gas bumping for the entire duration of the Smart Execution timeframe (currently 8 hrs), then you can try manual execution.
 
-1. When manual execution is initiated, a Merkle proof is generated for the message to be executed. During execution, The CCIP explorer submits the Merkle proof and the new gas limit (if the initial failure was due to a low gas limit). This Merkle proof is verified by the [OffRamp contract](/ccip/architecture#offramp) against the Merkle root in the [CommitStore contract](/ccip/architecture#commit-store), and that was blessed by the [Risk Management Network](/ccip/architecture#risk-management-network). This mirrors the automated execution performed by the [CCIP Executing DON](/ccip/architecture#executing-don), with the addition that the user-provided gas limit is used for the resubmission.
+When manual execution is initiated, a Merkle proof is generated for the message to be executed. During execution, The CCIP explorer submits the Merkle proof and the new gas limit (if the initial failure was due to a low gas limit). This Merkle proof is verified by the [OffRamp contract](/ccip/architecture#offramp) against the Merkle root in the [CommitStore contract](/ccip/architecture#commit-store), and that was blessed by the [Risk Management Network](/ccip/architecture#risk-management-network). This mirrors the automated execution performed by the [CCIP Executing DON](/ccip/architecture#executing-don), with the addition that the user-provided gas limit is used for the resubmission.
+
+## Frequently Asked Questions
+
+1. Can anyone execute a transaction on the CCIP explorer even if they are not the initiator of the transaction?
+   Yes, any EOA can manually execute a CCIP message that is eligible for manual execution. However, the executing account must have sufficient native gas tokens (such as ETH on Ethereum or MATIC on Polygon) to cover the gas costs associated with the delivery of the CCIP message.
+
+1. If a user sends multiple messages and the first message isn’t successfully delivered and goes into a “manual execution” mode, does that mean all subsequent messages from the user will also be stuck?
+
+It depends. If a message goes into manual execution mode due to receiver errors (unhandled exceptions or gas limit issues), subsequent messages don’t get stuck. However, suppose a message goes into manual execution mode after the smart execution time frame (currently 8 hrs). In that case, subsequent messages must wait for the first message to be processed to maintain the default sequence.
+
+1. If the maximum gas limit is 2M (2,000,000) on mainnet, but it turns out that the destination blockchain requires more than that, will an override of > 2M work even though the max gas limit is 2M?
+
+Yes, but only for this execution. This works because the gas limit for this execution instance isn’t passing through the CCIP validation for the gas limit, for which the CCIP executing DON pays the gas. However, if you consistently need more than 2M for your use case, please reach out to us and let us know.
+
+1. Will Chainlink Labs reimburse us for manual execution fees?
+   Since most manual execution situations are due to insufficient gas limit or an unhandled exception in the receiver contract, Chainlink Labs does not reimburse these fees. If you are a dApp developer, please ensure you test thoroughly to avoid manual execs to the extent possible.
+
+1. Do I have to manually execute via the CCIP explorer? Are there any other ways to do this?
+   The CCIP explorer provides the easiest way to execute manually. It handles all the complexity of submitting the Merkle proof needed for successful transaction execution.
+
+1. How do I know if my receiver error is due to a gas limit issue or an unhandled exception?
+   If you see a “ReceiverError” with a revert reason as empty (0x), this is likely due to a gas limit issue. You can look at the transaction trace for the destination transaction on a tool such as [tenderly](https://tenderly.co/), and you will likely see an “out of gas” condition mentioned in such cases. Determine the gas limit that would work for your transaction and manually override it. Read the [manual execution](/ccip/tutorials/manual-execution) tutorial to analyze an example of an exception due to a low gas limit.
+
+1. How can I write contracts that avoid manual execution situations in the first place?
+
+   - Test thoroughly to ensure logical conditions for all paths are gracefully handled in your receiver contract.
+   - Set a gas limit that works for complex execution paths, not just the simplest ones. Read the [best practices](/ccip/best-practices#setting-gaslimit) for gas estimation.
+   - Refer to the [Defensive example](/ccip/tutorials/programmable-token-transfers-defensive) tutorial for an example of how to design a programmable token transfer that handles errors gracefully.
+
+1. My transaction meets one of the conditions to trigger manual execution, but I do not see this option on the CCIP explorer. How am I supposed to execute this manually?
+   This should not happen, but in the unlikely scenario that this does happen, please reach out to Chainlink Labs.
