@@ -451,6 +451,16 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           ) : (
             ""
           )}
+          {proxy.decimals ? (
+            <div>
+              <dt>
+                <span class="label">Decimals:</span>
+              </dt>
+              <dd>{proxy.decimals}</dd>
+            </div>
+          ) : (
+            ""
+          )}
         </dl>
       </div>
     </td>
