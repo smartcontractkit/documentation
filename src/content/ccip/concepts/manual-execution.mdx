@@ -33,14 +33,14 @@ The flowchart presented below provides a visual guide through the process of a c
 1. Post finality, the [CCIP Committing DON](/ccip/architecture#committing-don) assembles a batch of eligible transactions, computes a Merkle root, and records it to the [CommitStore contract](/ccip/architecture#commit-store) on the destination blockchain.
 1. Upon successful verification, the [Risk Management Network](/ccip/concepts#risk-management-network) blesses the committed Merkle root.
 1. Once the committed Merkle root is blessed, the [CCIP Executing DON](/ccip/architecture#executing-don) proceeds with the execution on the destination blockchain:
-   1. During the smart execution timeframe, the Executing DON assesses and, if necessary, adjusts the gas price (a process known as gas bumping) to facilitate successful transaction execution on the destination blockchain as part of the smart execution process.
-   1. If the smart execution timeframe has passed and the CCIP message has still not yet been executed, then Manual Execution is enabled (Read [below](/ccip/concepts/manual-execution#manual-execution)).
+   - During the smart execution timeframe, the Executing DON assesses and, if necessary, adjusts the gas price (a process known as gas bumping) to facilitate successful transaction execution on the destination blockchain as part of the smart execution process.
+   - If the smart execution timeframe has passed and the CCIP message has still not yet been executed, then Manual Execution is enabled (Read [below](/ccip/concepts/manual-execution#manual-execution)).
 1. The execution on the destination blockchain works as follows:
 
    1. If the message involves token transfers, the tokens are first transferred to the receiver.
 
-      1. If the receiver is an EOA, then this transaction is considered complete, with no further processing.
-      1. If the receiver is a smart contract, the ccipReceive function is invoked after the token transfer. The ccipReceive function processes the CCIP message and any user-specified logic in the receiver contract. The execution of the CCIP message is atomic (all/none). If the ccipReceive function successfully executes, then all aspects of the transaction are complete, and there is no revert. If, however, there is an issue in the receiver execution due to insufficient gas limit or unhandled exceptions, the attempted token transfer will also revert. The transaction then becomes eligible for manual execution.
+      - If the receiver is an EOA, then this transaction is considered complete, with no further processing.
+      - If the receiver is a smart contract, the [ccipReceive](/ccip/api-reference/ccip-receiver#ccipreceive) function is invoked after the token transfer. The ccipReceive function processes the CCIP message and any user-specified logic in the receiver contract. The execution of the CCIP message is atomic (all/none). If the ccipReceive function successfully executes, then all aspects of the transaction are complete, and there is no revert. If, however, there is an issue in the receiver execution due to insufficient gas limit or unhandled exceptions, the attempted token transfer will also revert. The transaction then becomes eligible for manual execution.
 
    1. If the message does not involve token transfers and only arbitrary messaging, then if the receiver execution fails due to gas limit/ unhandled exceptions, the transaction becomes eligible for manual execution.
 
@@ -48,16 +48,11 @@ The flowchart presented below provides a visual guide through the process of a c
 
 As described above, a CCIP message becomes eligible for manual execution for various reasons. Manual execution means that a user has to manually trigger the execution of the destination transaction after the issue that caused manual execution has been resolved.
 
-When a CCIP message is eligible for manual execution, the [CCIP explorer](https://ccip.chain.link/) shows this clearly with a “Trigger Manual Execution” button.
+When a CCIP message is eligible for manual execution, the [CCIP explorer](https://ccip.chain.link/) shows this clearly with a “Trigger Manual Execution” status.
 
 <br />
 
 <ClickToZoom src="/images/ccip/manual-execution-status.jpg" alt="Chainlink CCIP manual execution status" />
-
-<Aside type="note">
-  Manual execution is expected to be available. If it is unavailable, please contact Chainlink Labs Support for
-  assistance.
-</Aside>
 
 Depending on the situation, you can take one of the following steps:
 
