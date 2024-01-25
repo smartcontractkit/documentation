@@ -71,7 +71,7 @@ export const FeedList = ({
       window.history.replaceState({ path: newUrl }, "", newUrl)
       const inputElement = document.getElementById("search") as HTMLInputElement
       if (inputElement) {
-        inputElement.placeholder = "Search price feeds"
+        inputElement.placeholder = !isStreams ? "Search price feeds" : "Search data streams"
       }
     }
   }, [chainMetadata.processedData, searchValue])
@@ -182,7 +182,7 @@ export const FeedList = ({
                   <div className={feedList.tableFilters}>
                     <details class={feedList.filterDropdown_details}>
                       <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                        Data Feed Categories
+                        {!isStreams ? "Data Feed Categories" : "Data Streams Categories"}
                       </summary>
                       <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
                         <ul>
@@ -206,22 +206,24 @@ export const FeedList = ({
                       <input
                         id="search"
                         class={feedList.filterDropdown_searchInput}
-                        placeholder="Search price feeds"
+                        placeholder={!isStreams ? "Search price feeds" : "Search data streams"}
                         onInput={(event) => {
                           setSearchValue((event.target as HTMLInputElement).value)
                           setCurrentPage("1")
                         }}
                       />
                     </form>
-                    <label class={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        style="width:15px;height:15px;display:inline;"
-                        checked={showExtraDetails}
-                        onChange={() => setShowExtraDetails((old) => !old)}
-                      />
-                      Show more details
-                    </label>
+                    {!isStreams && (
+                      <label class={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          style="width:15px;height:15px;display:inline;"
+                          checked={showExtraDetails}
+                          onChange={() => setShowExtraDetails((old) => !old)}
+                        />
+                        Show more details
+                      </label>
+                    )}
                   </div>
                   <MainnetTable
                     selectedFeedCategories={
