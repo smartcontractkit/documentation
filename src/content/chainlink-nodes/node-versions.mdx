@@ -12,6 +12,102 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.7.2 nodes - 2024-01-24
+
+### Added
+
+- Added distributed tracing in the OpenTelemetry trace format to the node, currently focused at the LOOPP Plugin development effort. This includes a new set of `Tracing` TOML configurations. The default for collecting traces is off - you must explicitly enable traces and setup a valid OpenTelemetry collector. Refer to the [README](https://github.com/smartcontractkit/chainlink/blob/v2.8.0/README.md) for more details.
+
+- Added a new, optional WebServer authentication option that supports LDAP as a user identity provider. This enables user login access and user roles to be managed and provisioned via a centralized remote server that supports the LDAP protocol, which can be helpful when running multiple nodes. See the documentation for more information and config setup instructions. There is a new `[WebServer].AuthenticationMethod` config option, when set to `ldap` requires the new `[WebServer.LDAP]` config section to be defined, see the reference `docs/core.toml`.
+
+- New prom metrics for mercury transmit queue:
+  `mercury_transmit_queue_delete_error_count`
+  `mercury_transmit_queue_insert_error_count`
+  `mercury_transmit_queue_push_error_count`
+  Nops should consider alerting on these.
+
+- Mercury now implements a local cache for fetching prices for fees, which ought to reduce latency and load on the mercury server, as well as increasing performance. It is enabled by default and can be configured with the following new config variables:
+
+  ```
+  [Mercury]
+
+  # Mercury.Cache controls settings for the price retrieval cache querying a mercury server
+  [Mercury.Cache]
+  # LatestReportTTL controls how "stale" we will allow a price to be e.g. if
+  # set to 1s, a new price will always be fetched if the last result was
+  # from 1 second ago or older.
+  #
+  # Another way of looking at it is such: the cache will _never_ return a
+  # price that was queried from now-LatestReportTTL or before.
+  #
+  # Setting to zero disables caching entirely.
+  LatestReportTTL = "1s" # Default
+  # MaxStaleAge is that maximum amount of time that a value can be stale
+  # before it is deleted from the cache (a form of garbage collection).
+  #
+  # This should generally be set to something much larger than
+  # LatestReportTTL. Setting to zero disables garbage collection.
+  MaxStaleAge = "1h" # Default
+  # LatestReportDeadline controls how long to wait for a response from the
+  # mercury server before retrying. Setting this to zero will wait indefinitely.
+  LatestReportDeadline = "5s" # Default
+  ```
+
+- New prom metrics for the mercury cache:
+  `mercury_cache_fetch_failure_count`
+  `mercury_cache_hit_count`
+  `mercury_cache_wait_count`
+  `mercury_cache_miss_count`
+
+- Added new `EVM.OCR` TOML config fields `DeltaCOverride` and `DeltaCJitterOverride` for overriding the config DeltaC.
+
+- Mercury v0.2 has improved consensus around current block that uses the most recent 5 blocks instead of only the latest one
+
+- Two new prom metrics for mercury, nops should consider adding alerting on these:
+  - `mercury_insufficient_blocks_count`
+  - `mercury_zero_blocks_count`
+
+### Changed
+
+- `PromReporter` no longer directly reads txm related status from the db, and instead uses the txStore API.
+- `L2Suggested` mode is now called `SuggestedPrice`
+- Console logs will now escape (non-whitespace) control characters
+- Following EVM Pool metrics were renamed:
+  - `evm_pool_rpc_node_states` &rarr; `multi_node_states`
+  - `evm_pool_rpc_node_num_transitions_to_alive` &rarr; `pool_rpc_node_num_transitions_to_alive`
+  - `evm_pool_rpc_node_num_transitions_to_in_sync` &rarr; `pool_rpc_node_num_transitions_to_in_sync`
+  - `evm_pool_rpc_node_num_transitions_to_out_of_sync` &rarr; `pool_rpc_node_num_transitions_to_out_of_sync`
+  - `evm_pool_rpc_node_num_transitions_to_unreachable` &rarr; `pool_rpc_node_num_transitions_to_unreachable`
+  - `evm_pool_rpc_node_num_transitions_to_invalid_chain_id` &rarr; `pool_rpc_node_num_transitions_to_invalid_chain_id`
+  - `evm_pool_rpc_node_num_transitions_to_unusable` &rarr; `pool_rpc_node_num_transitions_to_unusable`
+  - `evm_pool_rpc_node_highest_seen_block` &rarr; `pool_rpc_node_highest_seen_block`
+  - `evm_pool_rpc_node_num_seen_blocks` &rarr; `pool_rpc_node_num_seen_blocks`
+  - `evm_pool_rpc_node_polls_total` &rarr; `pool_rpc_node_polls_total`
+  - `evm_pool_rpc_node_polls_failed` &rarr; `pool_rpc_node_polls_failed`
+  - `evm_pool_rpc_node_polls_success` &rarr; `pool_rpc_node_polls_success`
+
+### Removed
+
+- Removed `Optimism2` as a supported gas estimator mode
+
+### Fixed
+
+- Corrected Ethereum Sepolia `LinkContractAddress` to `0x779877A7B0D9E8603169DdbD7836e478b4624789`
+- Fixed a bug that caused the Telemetry Manager to report incorrect health
+
+### Upcoming Required Configuration Changes
+
+Starting in `v2.9.0`:
+
+- `TelemetryIngress.URL` and `TelemetryIngress.ServerPubKey` will no longer be allowed. Any TOML configuration that sets this fields will prevent the node from booting. These fields will be replaced by `[[TelemetryIngress.Endpoints]]`
+- `P2P.V1` will no longer be supported and must not be set in TOML configuration in order to boot. Use `P2P.V2` instead. If you are using both, `V1` can simply be removed.
+
+## Changes in v2.7.2 nodes - 2023-12-14
+
+### Fixed
+
+- Fixed a bug that caused nodes without OCR or OCR2 enabled to fail config validation if `P2P.V2` was not explicitly disabled. With this fix, NOPs will not have to make changes to their config.
+
 ## Changes in v2.7.1 nodes
 
 **[v2.7.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.7.1)**
@@ -253,7 +349,7 @@ Node operators may wish to add alerting based around these metrics.
 
 ### TOML Configuration
 
-TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config FILENAME.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config FILENAME.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### Added
 
@@ -300,15 +396,15 @@ TOML configuration for Chainlink nodes is stable and recommended for mainnet dep
 
 ### Added
 
-- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/chainlink-nodes/v1/configuration#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
-- Added the [`NODE_SYNC_THRESHOLD` environment variable](/chainlink-nodes/v1/configuration#node_sync_threshold) to ensure that live nodes do not lag too far behind.
-- Added the [`BRIDGE_CACHE_TTL` environment variable](/chainlink-nodes/v1/configuration#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
+- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/chainlink-nodes/v1/configuration). Use `TotalDifficulty` to select the node with the greatest total difficulty.
+- Added the [`NODE_SYNC_THRESHOLD` environment variable](/chainlink-nodes/v1/configuration) to ensure that live nodes do not lag too far behind.
+- Added the [`BRIDGE_CACHE_TTL` environment variable](/chainlink-nodes/v1/configuration) which caches bridge responses for a specified amount of time.
 - Add the prometheus metrics labelled by bridge name for monitoring external adapter queries. The following metrics are included:
   - `bridge_latency_seconds`
   - `bridge_errors_total`
   - `bridge_cache_hits_total`
   - `bridge_cache_errors_total`
-- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config FILENAME.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
+- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config FILENAME.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### Fixed
 
@@ -325,18 +421,18 @@ TOML configuration for Chainlink nodes is stable and recommended for mainnet dep
 ### Added
 
 - Added an optional external logger `AUDIT_LOGS_FORWARDER_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
-  - [AUDIT_LOGGER_FORWARD_TO_URL](/chainlink-nodes/v1/configuration#audit_logger_forward_to_url)
-  - [AUDIT_LOGGER_HEADERS](/chainlink-nodes/v1/configuration#audit_logger_headers)
-  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/v1/configuration#audit_logger_json_wrapper_key)
+  - [AUDIT_LOGGER_FORWARD_TO_URL](/chainlink-nodes/v1/configuration)
+  - [AUDIT_LOGGER_HEADERS](/chainlink-nodes/v1/configuration)
+  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/v1/configuration)
 - Added [automatic connectivity detection](#automatic-connectivity-detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
 
 ### Changed
 
 - The default maximum gas price on most networks is now effectively unlimited.
   - Chainlink will bump as high as necessary to get a transaction included. [Automatic connectivity detection](#automatic-connectivity-detection) prevents excessive bumping when there is a connectivity failure.
-  - If you want to change this, manually set the [`ETH_MAX_GAS_PRICE_WEI` environment variable](/chainlink-nodes/v1/configuration/#eth_max_gas_price_wei).
+  - If you want to change this, manually set the [`ETH_MAX_GAS_PRICE_WEI` environment variable](/chainlink-nodes/v1/configuration).
 - If the `EVMChainID` is not set explicitly in the job spec for a new OCR job, the field is now automatically added with a default chain ID.
-  - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/chainlink-nodes/v1/configuration/#eth_chain_id) is set to (or the first chain if it is not set). This can be changed after a restart.
+  - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/chainlink-nodes/v1/configuration) is set to (or the first chain if it is not set). This can be changed after a restart.
   - Newly created OCR jobs run only on a single fixed chain and are unaffected by changes to `ETH_CHAIN_ID` after the job is added.
   - It should no longer be possible to end up with multiple OCR jobs for a single contract running on the same chain. Only one job per contract per chain is allowed.
   - If there are any existing duplicate jobs per contract and per chain, all but the jobs with the latest creation date will be pruned during the upgrade.
@@ -388,7 +484,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/all-tasks/#hex-encode-task) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/all-tasks/#base64-encode-task) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
-- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/v1/configuration/#node_selection_mode), which controls node picking strategy. Supported values are:
+- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/v1/configuration), which controls node picking strategy. Supported values are:
   - `HighestHead` is the default mode, which picks a node that has the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
   - `RoundRobin` mode iterates among available alive nodes. This was the default behavior prior to this release.
 - New `evm keys chain` command. This can also be accessed at `/v2/keys/evm/chain`. This command has the following uses:
@@ -422,7 +518,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 ### Added
 
-- `p2pv2Bootstrappers` is added as a new optional property of OCR1 job specs. The default can still be specified with the [`P2PV2_BOOTSTRAPPERS` environment variable](/chainlink-nodes/v1/configuration/#p2pv2_bootstrappers).
+- `p2pv2Bootstrappers` is added as a new optional property of OCR1 job specs. The default can still be specified with the [`P2PV2_BOOTSTRAPPERS` environment variable](/chainlink-nodes/v1/configuration).
 
 - Added official support for the [Sepolia testnet](https://sepolia.dev) on Chainlink nodes.
 
@@ -445,11 +541,11 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
   1. The job-spec attribute `gasLimit` applies only to a specific job spec.
   1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
 
-     - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/chainlink-nodes/v1/configuration/#eth_gas_limit_ocr_job_type)
-     - [ETH_GAS_LIMIT_DR_JOB_TYPE](/chainlink-nodes/v1/configuration/#eth_gas_limit_dr_job_type)
-     - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/chainlink-nodes/v1/configuration/#eth_gas_limit_vrf_job_type)
-     - [ETH_GAS_LIMIT_FM_JOB_TYPE](/chainlink-nodes/v1/configuration/#eth_gas_limit_fm_job_type)
-     - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/chainlink-nodes/v1/configuration/#eth_gas_limit_keeper_job_type)
+     - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/chainlink-nodes/v1/configuration)
+     - [ETH_GAS_LIMIT_DR_JOB_TYPE](/chainlink-nodes/v1/configuration)
+     - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/chainlink-nodes/v1/configuration)
+     - [ETH_GAS_LIMIT_FM_JOB_TYPE](/chainlink-nodes/v1/configuration)
+     - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/chainlink-nodes/v1/configuration)
 
   1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
 
@@ -500,7 +596,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 ### Added
 
-- Added the [`ETH_USE_FORWARDERS` config](/chainlink-nodes/v1/configuration/#eth_use_forwarders) option to enable transactions forwarding contracts.
+- Added the [`ETH_USE_FORWARDERS` config](/chainlink-nodes/v1/configuration) option to enable transactions forwarding contracts.
 
 - In the `directrequest` job pipeline, three new block variables are available:
 
@@ -535,7 +631,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 - The `Optimism` OVM 1.0 `GAS_ESTIMATOR_MODE` has been removed and the `Optimism2` `GAS_ESTIMATOR_MODE` has been renamed to `L2Suggested`.
 
-- `MIN_OUTGOING_CONFIRMATIONS` has been removed and no longer has any effect. The [`ETH_FINALITY_DEPTH` environment variable](/chainlink-nodes/v1/configuration/#eth_finality_depth) is now used as the default for `ethtx` confirmations instead. You can override this on a per-task basis by setting `minConfirmations` in the task definition. For example, `foo [type=ethtx minConfirmations=42 ...]`.
+- `MIN_OUTGOING_CONFIRMATIONS` has been removed and no longer has any effect. The [`ETH_FINALITY_DEPTH` environment variable](/chainlink-nodes/v1/configuration) is now used as the default for `ethtx` confirmations instead. You can override this on a per-task basis by setting `minConfirmations` in the task definition. For example, `foo [type=ethtx minConfirmations=42 ...]`.
 
   This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/chainlink-nodes/resources/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
 
@@ -560,12 +656,12 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 **[v1.3.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.3.0)**
 
-- Added disk rotating logs. See the [Node Logging](/chainlink-nodes/v1/configuration/#logging) and [LOG_FILE_MAX_SIZE](/chainlink-nodes/v1/configuration/#log_file_max_size) documentation for details.
+- Added disk rotating logs. See the [Node Logging](/chainlink-nodes/v1/configuration) and [LOG_FILE_MAX_SIZE](/chainlink-nodes/v1/configuration) documentation for details.
 - Added support for the `force` flag on the `chainlink blocks replay` CLI command. If set to true, already consumed logs that would otherwise be skipped will be rebroadcasted.
 - Added a version compatibility check when using the CLI to login to a remote node. The `bypass-version-check` flag skips this check.
-- Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/chainlink-nodes/v1/configuration/#database_locking_mode) documentation for details.
+- Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/chainlink-nodes/v1/configuration) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
-- EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/chainlink-nodes/v1/configuration/#evm_eip1559_dynamic_fees) documentation for details.
+- EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/chainlink-nodes/v1/configuration) documentation for details.
 - Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
@@ -593,7 +689,7 @@ See the [v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/rel
 
 The v1.1.0 release includes several substantial changes to the way you configure and operate Chainlink nodes:
 
-- **Legacy environment variables**: Legacy environment variables are supported, but they might be removed in future node versions. See the [Configuring Chainlink Nodes](/chainlink-nodes/v1/configuration/#evmethereum-legacy-environment-variables) page to learn how to migrate your nodes away from legacy environment variables and use the API, CLI, or GUI exclusively to administer chains and nodes.
+- **Legacy environment variables**: Legacy environment variables are supported, but they might be removed in future node versions. See the [Configuring Chainlink Nodes](/chainlink-nodes/v1/configuration) page to learn how to migrate your nodes away from legacy environment variables and use the API, CLI, or GUI exclusively to administer chains and nodes.
 - **Full EIP1559 Support**: Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope. EIP-1559 mode is off by default, but can be enabled either globally or on a per-chain basis.
 - **New log level added**:
   - [crit]: Critical level logs are more severe than [error] and require quick action from the node operator.
