@@ -1032,10 +1032,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Secrets Config (TOML)",
               url: "chainlink-nodes/v1/secrets-config",
             },
-            {
-              title: "Legacy Config (.env)",
-              url: "chainlink-nodes/v1/configuration",
-            },
           ],
         },
         {
@@ -1082,10 +1078,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Security and Operation Best Practices",
           url: "chainlink-nodes/resources/best-security-practices",
-        },
-        {
-          title: "Best Practices for Nodes on AWS",
-          url: "chainlink-nodes/resources/best-practices-aws",
         },
         { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
