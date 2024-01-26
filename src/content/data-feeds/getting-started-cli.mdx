@@ -1,0 +1,56 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Data Feeds Getting Started (CLI)"
+excerpt: "Smart Contracts and Chainlink"
+whatsnext:
+  {
+    "See examples for how to read feeds onchain and offchain": "/data-feeds/using-data-feeds",
+    "Learn how to retrieve Historical Price Data": "/data-feeds/historical-data",
+    "Read the Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+metadata:
+  title: "Consuming Data Feeds"
+  description: "Learn how to consume Chainlink Data Feeds in your smart contracts."
+  image: "/files/1a63254-link.png"
+---
+
+import { Aside, CodeSample } from "@components"
+
+You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). This guide uses the [Chainlink Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit) to show you how to programatically read Chainlink Data Feeds and deploy contracts that can use this data onchain.
+
+## Before you begin
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract/) before you start this guide.
+- Install a [NodeJS LTS version](https://nodejs.org/en/download). Hardhat supports only LTS versions of NodeJS.
+
+1. Clone the [Chainlink Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit) repository and change directories:
+
+   ```shell
+   git clone https://github.com/smartcontractkit/hardhat-starter-kit.git &&
+   cd hardhat-starter-kit
+   ```
+
+1. Install the NPM packages:
+
+   ```shell
+   npm i
+   ```
+
+1. Compile the test contracts:
+
+   ```shell
+   npx hardhat test
+   ```
+
+1. Export your RPC endpoint to an environment variable. You can use a public endpoint or provide your own:
+
+   ```shell
+   export SEPOLIA_RPC_URL='https://ethereum-sepolia.publicnode.com'
+   ```
+
+1. Run the script to read a Data Feed offchain. This example reads from the BTC/USD feed on Sepolia Testnet:
+
+   ```shell
+   npx hardhat read-price-feed --contract 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 --network sepolia
+   ```
