@@ -203,7 +203,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["nftFloorPrice"],
+        tags: ["nftFloorPrice", "streams"],
       },
       {
         name: "Arbitrum Sepolia",

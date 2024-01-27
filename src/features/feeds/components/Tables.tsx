@@ -7,6 +7,11 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
+const verifierProxies = new Map<string, string>([
+  ["0x534a7FF707Bc862cAB0Dda546F1B817Be5235b66", "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C"],
+  ["0xA403a4a521be034B4A0D54019aF469A207094246", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"],
+])
+
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   verified: (
@@ -367,14 +372,14 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
         <a
           style="font-size: 0.75em;"
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A")}
+          href={network.explorerUrl.replace("%s", verifierProxies.get(proxy.contractAddress))}
         >
-          0x2ff010DEbC1297f19579B4246cad07bd24F2488A
+          {verifierProxies.get(proxy.contractAddress)}
         </a>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
-          data-clipboard-text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
+          data-clipboard-text={verifierProxies.get(proxy.contractAddress)}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
