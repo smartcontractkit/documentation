@@ -890,6 +890,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
+          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgement",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },
