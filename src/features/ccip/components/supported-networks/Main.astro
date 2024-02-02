@@ -3,6 +3,7 @@ import { Accordion, Aside } from "@components"
 import { loadReferenceData, Version, Environment } from "@config/data/ccip/"
 import { directoryToSupportedChain, getTitle, getChainIcon } from "@features/utils"
 import ChainConfig from "./ChainConfig.astro"
+import { FilterComponent } from "./Filter.tsx"
 
 type MainProps = {
   environment: Environment
@@ -15,6 +16,8 @@ const chainsReferenceData = loadReferenceData({ environment, version }).chainsRe
 ---
 
 <br />
+
+<FilterComponent environment={environment} version={version} client:only="preact" />
 
 {
   Object.entries(chainsReferenceData).map(([chainRefId, chainConfig], index) => {
