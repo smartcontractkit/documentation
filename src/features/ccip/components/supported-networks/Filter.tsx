@@ -1,19 +1,21 @@
-import { FunctionalComponent } from "preact"
-import { useState } from "preact/hooks"
+import { useState } from "react"
 import { FilterDropdown, FilterOption } from "@chainlink/components"
 import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { directoryToSupportedChain, getTitle, getChainIcon } from "@features/utils"
 
-export const FilterComponent: FunctionalComponent<{ environment: Environment; version: Version }> = ({
-  environment,
-  version,
-}) => {
+type FilterProps = {
+  environment: Environment
+  version: Version
+}
+
+const FilterComponent = ({ environment, version }: FilterProps) => {
   type FilterType = "source" | "destination"
   const [filters, setFilters] = useState<Record<FilterType, string[]>>({
     source: [],
     destination: [],
   })
 
+  console.log("aem", environment, version)
   const chainsReferenceData = loadReferenceData({ environment, version }).chainsReferenceData
 
   const sourceNetworkOptions = Object.keys(chainsReferenceData).map((chainRefId): FilterOption<FilterType> => {
@@ -29,10 +31,11 @@ export const FilterComponent: FunctionalComponent<{ environment: Environment; ve
     }
   })
 
+  console.log("aem", sourceNetworkOptions)
+
   const hasActiveFilters = Object.values(filters).some((filters) => filters.length)
   return (
     <div>
-      <p>"hello"</p>
       <FilterDropdown
         label="Source"
         type="source"
@@ -54,3 +57,5 @@ export const FilterComponent: FunctionalComponent<{ environment: Environment; ve
     </div>
   )
 }
+
+export default FilterComponent
