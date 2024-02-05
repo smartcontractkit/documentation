@@ -6,11 +6,15 @@ title: "Migrate to V2"
 
 import { Aside, ClickToZoom } from "@components"
 
-Chainlink Automation 2.0 is a consensus-driven Automation solution that allows you to cut onchain gas costs by leveraging cryptographically verified offchain compute. Automation 2.0 provides more offchain compute (10M gas) than earlier versions with increased reliability and performance. Additionally, it offers new features including Log triggers and StreamsLookup.
+Chainlink Automation 2.0 is a consensus-driven Automation solution that allows you to cut onchain gas costs by using cryptographically verified offchain compute. Automation 2.0 provides 10M gas worth of offchain compute, which is significantly more than previous versions. Additionally, Automation 2.0 provides increased reliability, performance, log trigger capability, and the ability to use `StreamsLookup` to retrieve Data Streams.
 
-You can migrate most upkeeps (on registry versions 1.2 and later) by using a simple migration process in the [Chainlink Automation App](https://automation.chain.link/) or [within the block scanner](#migrating-upkeeps-using-block-scanner). When you migrate upkeeps through the registry you retain the Upkeep ID. Before you migrate, read the [migration checklist](#migration-checklist) to maximize your benefits from Automation 2.0.
+You can migrate most upkeeps that use Automation version 1.2 and later in the [Chainlink Automation App](https://automation.chain.link/) or [in the block scanner](#migrating-upkeeps-using-block-scanner). When you migrate upkeeps through the registry, you retain the Upkeep ID. Before you migrate, read the [migration checklist](#migration-checklist) to maximize your benefits from Automation 2.0.
 
 For upkeeps on older registry versions 1.0 (Ethereum Mainnet), and 1.1 (BNB Mainnet and Polygon Mainnet), you must migrate manually by cancelling and re-registering your upkeep in the [Chainlink Automation App](https://automation.chain.link/). After you do this manual migration, future migrations will be easier because your new upkeeps will be eligible for the simpler migration process.
+
+<Aside type="caution" title="Deprecation date">
+  Ensure that you migrate your upkeeps by 31 March 2024. We will start deprecating earlier registries after this date.
+</Aside>
 
 ## Migrating using the Chainlink Automation App
 
@@ -55,7 +59,8 @@ To migrate one or more upkeeps using the scanner:
 1. Navigate to the blockscanner for the desired chain to the Automation registry containing your upkeeps. You can find the registry address in the Chainlink Automation App under **Upkeep details**.
 
 1. Under **Contract/Write contract** expand the `migrateUpkeeps` function.
-   Enter a list of UpkeepIDs, for example: `[99297446083125056953495436926707926113001699970195513612134585638496630959874,63026166139768298778579034679995711427803187091626268721992534052921779884688]`.
+
+   Enter a list of upkeep IDs. For example: `[99297446083125056953495436926707926113001699970195513612134585638496630959874,63026166139768298778579034679995711427803187091626268721992534052921779884688]`.
 
 1. Enter the destination registry address, which is the latest registry address on this chain. You can find this address in the [Supported Networks](/chainlink-automation/overview/supported-networks) page, or at the top of the Chainlink Automation App with the desired chain selected.
 
@@ -80,15 +85,15 @@ After migration, you have a new upkeep on Automation 2.0 with the same interface
 
 ## Migration checklist
 
-Please take note of these important changes.
+Before you migrate, be aware of several important changes listed here.
 
 ### Unique forwarder
 
-Automation 2.0 upkeeps are called from a unique forwarder per upkeep, and not the registry. If your upkeep restricts `msg.sender` to the previous registry address, you must update it to the newly created [forwarder address](/chainlink-automation/guides/forwarder). The forwarder address becomes available only after the upkeep has been migrated. This forwarder address will remain constant in future migrations to the next version of Automation.
+Automation 2.0 Upkeeps are called from a unique forwarder per upkeep and not from the registry. If your upkeep restricts `msg.sender` to the previous registry address, you must update it to the newly created [forwarder address](/chainlink-automation/guides/forwarder). The forwarder address becomes available only after the upkeep has been migrated. This forwarder address will remain constant in future migrations.
 
 ### Update programmatic upkeeps
 
-Migration moves upkeeps from one registry to another. If you interact with your upkeep programatically through Solidity or other interfaces, you must update your code to make sure that you are referencing the correct registry and registrar for your migrated upkeeps:
+Note that migration moves upkeeps from one registry to another. If you interact with your upkeep programatically using Solidity or other interfaces, you must update your code to make sure that you are referencing the correct registry and registrar for your migrated upkeeps:
 
 - Update the registry and registrar addresses.
 - Ensure you use the latest version of the ABI for the registry and registrar.
@@ -104,7 +109,7 @@ After updating to the latest ABI, you will able to execute `registry.getForwarde
 
 #### Check function signatures
 
-Ensure that your function calls to the registry from your upkeep contract (if any) follow the latest ABI.
+If your contract makes function calls to the registry from your upkeep contract, follow the latest ABI.
 
 ### Funding is moved with migration
 
@@ -112,4 +117,4 @@ When you migrate, your LINK funding is moved from one registry to the next autom
 
 ### Migration questions and feedback
 
-Reach out in the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in the [Chainlink Discord server](https://discord.gg/qj9qarT).
+If you have questions or feedback, contact use in the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) on the [Chainlink Discord server](https://discord.gg/qj9qarT).
