@@ -78,35 +78,151 @@ You will test on Polygon Mumbai, so you must have an Ethereum web3 wallet with e
 
    <ClickToZoom src="/images/chainlink-functions/getting-started/deploy.jpg" />
 
-1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address.
+1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address and save it for later. You will use this address with a Functions Subscription.
 
    <ClickToZoom src="/images/chainlink-functions/getting-started/deployed-contracts.jpg" />
 
 ### Create a subscription
 
-Follow the [Managing Functions Subscriptions](/chainlink-functions/resources/subscriptions#create-a-subscription) guide to accept the Chainlink Functions Terms of Service (ToS), create a subscription, fund it, then add your consumer contract address to it.
+You use a Chainlink Functions subscription to pay for, manage, and track Functions requests.
 
-You can find the Chainlink Functions Subscription Manager at [functions.chain.link](https://functions.chain.link/).
+1. Go to [functions.chain.link](https://functions.chain.link/).
+
+1. Click **Connect wallet**:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/frontend-landing.jpg"
+     alt="Chainlink Functions subscription landing page"
+     style="max-width: 70%;"
+   />
+
+1. Read and accept the Chainlink Foundation Terms of Service. Then click **MetaMask**.
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/accept-CL-foundation-tos.jpg"
+     alt="Chainlink Functions accept ToS"
+     style="max-width: 70%;"
+   />
+
+1. Make sure your wallet is connected to the _Polygon Mumbai_ testnet. If not, click the network name in the top right corner of the page and select _Polygon Mumbai_.
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/wallet-connected-polygon-mumbai.jpg"
+     style="max-width: 70%;"
+     alt="Chainlink Functions subscription landing page"
+   />
+
+1. Click **Create Subscription**:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/frontend-landing-wallet-connected.jpg"
+     alt="Chainlink Functions subscription landing page"
+     style="max-width: 70%;"
+   />
+
+1. Provide an email address and an optional subscription name:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/create-subscription.jpg"
+     alt="Chainlink Functions create subscription"
+     style="max-width: 70%;"
+   />
+
+1. The first time you interact with the Subscription Manager using your EOA, you must accept the Terms of Service (ToS). A MetaMask popup appears and you are asked to accept the ToS:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/acceptTos.jpg"
+     alt="Chainlink Functions accept ToS"
+     style="max-width: 70%;"
+   />
+
+1. After you approve the ToS, another MetaMask popup appears, and you are asked to approve the subscription creation:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/approve-create-subscription.jpg"
+     alt="Chainlink Functions approve subscriptions creation"
+     style="max-width: 70%;"
+   />
+
+1. After the subscription is created, MetaMask prompts you to sign a message that links the subscription name and email address to your subscription:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/sign-message-tos.jpg"
+     alt="Chainlink Functions sign message ToS"
+     style="max-width: 70%;"
+   />
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/sign-message-tos-metamask.jpg"
+     alt="Chainlink Functions sign message ToS MetaMask"
+     style="max-width: 70%;"
+   />
+
+### Fund your subscription
+
+1. After the subscription is created, the Functions UI prompts you to fund your subscription. Click **Add funds**:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/subscription-created.jpg"
+     alt="Chainlink Functions subscription created"
+     style="max-width: 70%;"
+   />
+
+1. For this example, add 2 LINK and click **Add funds**:
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-funds.jpg"
+     alt="Chainlink Functions subscription add funds"
+     style="max-width: 70%;"
+   />
+
+### Add a consumer to your subscription
+
+1. After you fund your subscription, add your consumer to it. Specify the address for the consumer contract that you deployed earlier and click **Add consumer**. MetaMask prompts you to confirm the transaction.
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer.jpg"
+     alt="Chainlink Functions subscription add consumer"
+     style="max-width: 70%;"
+   />
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer-2.jpg"
+     alt="Chainlink Functions subscription add consumer"
+     style="max-width: 70%;"
+   />
+
+1. Subscription creation and configuration is complete. You can always see the details of your subscription again at [functions.chain.link](https://functions.chain.link):
+
+   <ClickToZoom
+     src="/images/chainlink-functions/tutorials/subscription/subscription-details-after-creation.jpg"
+     alt="Chainlink Functions subscription details"
+     style="max-width: 70%;"
+   />
 
 ## Run the example
 
-The example is hardcoded to communicate with Chainlink Functions on Polygon Mumbai. Read the [Examine the code](#examine-the-code) section for a detailed description of all components.
-
-To run the example:
+The example is hardcoded to communicate with Chainlink Functions on Polygon Mumbai. After this example is run, you can examine the code and see a detailed description of all components.
 
 1.  In Remix under the **Deploy & Run Transactions** tab, expand your contract in the **Deployed Contracts** section.
 1.  Expand the `sendRequest` function to display its parameters.
-1.  Fill in the `subscriptionId` with your subscription ID and `args` with `[1]`, then click **transact** button.
+1.  Fill in the `subscriptionId` with your subscription ID and `args` with `[1]`. You can find your subscription ID on the Chainlink Functions Subscription Manager at [functions.chain.link](https://functions.chain.link/). The `[1]` value for `args` specifies which argument in the response will be retrieved.
+
+1.  Click the **transact** button.
 
     <ClickToZoom src="/images/chainlink-functions/getting-started/send-request.jpg" />
 
 1.  Wait for the request to be fulfilled. You can monitor the status of your request on the Chainlink Functions Subscription Manager.
+
     <ClickToZoom src="/images/chainlink-functions/getting-started/request-fulfilled.jpg" />
-1.  Once the status is _Success_, check the character name: In Remix, under the **Deploy & Run Transactions** tab, click on the `character` function, and you'll get the name of your character.
+
+1.  Refresh the Functions UI to get the latest request status.
+
+1.  After the status is _Success_, check the character name. In Remix, under the **Deploy & Run Transactions** tab, click the `character` function. If the transaction and request ran correctly, you will see the name of your character in the response.
 
     <ClickToZoom src="/images/chainlink-functions/getting-started/character.jpg" />
 
-Chainlink Functions is capable of much more than just computation. Try one of the [Tutorials](/chainlink-functions/tutorials) to see examples that can GET and POST to public APIs, securely handle API secrets, handle custom responses, and query multiple APIs.
+Chainlink Functions is capable of much more than just retrieving data. Try one of the [Tutorials](/chainlink-functions/tutorials) to see examples that can GET and POST to public APIs, securely handle API secrets, handle custom responses, and query multiple APIs.
 
 ## Examine the code
 
