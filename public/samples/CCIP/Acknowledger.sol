@@ -112,7 +112,7 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
 
         // bytes memory data = abi.encode(messageId);
 
-        Client.EVM2AnyMessage memory acknowledgement = _buildCCIPMessage(
+        Client.EVM2AnyMessage memory acknowledgment = _buildCCIPMessage(
             s_messageTrackerAddress,
             _messageIdToAcknowledge,
             address(s_linkToken)
@@ -124,7 +124,7 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         // Get the fee required to send the CCIP message
         uint256 fees = router.getFee(
             s_messageTrackerChainSelector,
-            acknowledgement
+            acknowledgment
         );
 
         if (fees > s_linkToken.balanceOf(address(this)))
@@ -136,7 +136,7 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         // Send the message via the router
         bytes32 messageId = router.ccipSend(
             s_messageTrackerChainSelector,
-            acknowledgement
+            acknowledgment
         );
 
         // Emit an event with message details
