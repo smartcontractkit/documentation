@@ -547,7 +547,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/importing-packages",
         },
         {
-          title: "Returning multiple responses and decoding them in your smart contract",
+          title: "Return multiple responses and decode them in your smart contract",
           url: "chainlink-functions/tutorials/abi-decoding",
         },
       ],
