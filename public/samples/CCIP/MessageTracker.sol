@@ -22,7 +22,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
-    error MessageWasNotSentByMessageTracker(bytes32 msgId);
+    error MessageWasNotSentByMessageTracker(bytes32 msgId); // Triggered when attempting to confirm a message not recognized as sent by this tracker.
 
     // Enum is used to track the status of messages sent via CCIP.
     // `NotSent` indicates a message has not yet been sent.
@@ -67,7 +67,8 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         address sender // The address of the sender from the source chain.
     );
 
-    // Event emitted upon acknowledgment receipt from the receiver.
+    // Event emitted when the sender contract receives an acknowledgment
+    // that the receiver contract has successfully received and processed the message.
     event MessageConfirmed(bytes32 indexed messageId);
 
     IERC20 private s_linkToken;
@@ -183,27 +184,23 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         onlyAllowlisted(
             any2EvmMessage.sourceChainSelector,
             abi.decode(any2EvmMessage.sender, (address))
-        ) // Make sure source chain and sender are allowlisted
+        ) // Ensure the source chain and sender are allowlisted for added security
     {
-        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-        s_lastReceivedAcknowledgedMsgId = abi.decode(
-            any2EvmMessage.data,
-            (bytes32)
-        ); // abi-decoding of the msgId acknowledged by the receiver
+        s_lastReceivedMessageId = any2EvmMessage.messageId; // Store the messageId of the received message
+        bytes32 data = abi.decode(any2EvmMessage.data, (bytes32)); // Decode the data sent by the receiver
 
-        if (
-            messagesStatus[s_lastReceivedAcknowledgedMsgId] ==
-            MessageStatus.Sent
-        ) {
-            messagesStatus[s_lastReceivedAcknowledgedMsgId] = MessageStatus
-                .Confirmed;
+        if (messagesStatus[data] == MessageStatus.Sent) {
+            // Update the message status to Confirmed upon receipt acknowledgment
+            messagesStatus[data] = MessageStatus.Confirmed;
+            s_lastReceivedAcknowledgedMsgId = data; // Store the last received and acknowledged messageId
             emit MessageConfirmed(s_lastReceivedAcknowledgedMsgId);
         } else {
-            revert MessageWasNotSentByMessageTracker(
-                s_lastReceivedAcknowledgedMsgId
-            );
+            // Revert the transaction if the message status isn't Sent, indicating an invalid or tampered acknowledgment, or simply wrong data
+            // This serves as an additional security layer, ensuring only genuine messages that were sent are confirmed
+            revert MessageWasNotSentByMessageTracker(data);
         }
 
+        // Emit an event indicating a message has been received and processed
         emit MessageReceived(
             any2EvmMessage.messageId, // fetch the messageId
             abi.decode(any2EvmMessage.data, (bytes32)), // abi-decoding of the msgId acknowledged by the receiver
@@ -240,11 +237,11 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
 
     /// @notice Fetches the details of the last received message.
     /// @return messageId The ID of the last received message.
-    /// @return messageIdToUpdate The ID of the message which status has to be updated
+    /// @return acknowledgedMsgId The ID of the last received and acknowledged message.
     function getLastReceivedMessageDetails()
         external
         view
-        returns (bytes32 messageId, bytes32 messageIdToUpdate)
+        returns (bytes32 messageId, bytes32 acknowledgedMsgId)
     {
         return (s_lastReceivedMessageId, s_lastReceivedAcknowledgedMsgId);
     }

@@ -185,7 +185,7 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
 
 #### Message from the _message tracker_ contract to the _acknowledger_ contract
 
-1. Send a `Hello World!` string from your _message tracker_ contract on _Ethereum Sepolia_ to your _acknowledger_ contract deployed on _Polygon Mumbai_:
+1. Send a `Hello World!` string from your _message tracker_ contract on _Ethereum Sepolia_ to your _acknowledger_ contract deployed on _Polygon Mumbai_. You will track the status of this message during this tutorial.
 
    1. Open MetaMask and select the _Ethereum Sepolia_ network.
    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
@@ -307,17 +307,21 @@ event AcknowledgmentSent(
 
    When the transaction is marked with a "Success" status on the CCIP explorer, the CCIP transaction and the destination transaction are complete. The _message tracker_ contract has received the message from the _acknowledger_ contract.
 
-1. Upon reception of the acknowledgment message, the `ccipReceive` function of the _message tracker_ contract updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract.
+#### Verify the final message status on the _message tracker_ contract
 
-   On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
+Upon reception of the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract, and stores the acknowledgment message ID together with the acknowledged message ID in the `s_lastReceivedAcknowledgedMsgId` variable.
 
-   Expand the **messagesStatus** getter function and paste the initial message ID. Click **call** to read the message status.
+On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
-   <ClickToZoom
-     src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
-     alt="Chainlink CCIP - Message Tracker Get Message Status - 2"
-     style="max-width: 70%;"
-   />
+Expand the **messagesStatus** getter function and paste the initial message ID. Click **call** to read the message status.
+
+{" "}
+
+<ClickToZoom
+  src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
+  alt="Chainlink CCIP - Message Tracker Get Message Status - 2"
+  style="max-width: 70%;"
+/>
 
 In this example, the _message tracker_ contract emits an event, `MessageConfirmed`, when it receives the acknowledgment message and updates the message status to `2` (`Confirmed`), confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.
 

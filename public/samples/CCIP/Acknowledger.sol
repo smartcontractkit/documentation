@@ -13,7 +13,7 @@ import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receiving string data across chains and tracking the status of sent messages.
+/// @title - A simple messenger contract for sending/receiving data across chains and tracking the status of sent messages.
 contract Acknowledger is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
@@ -46,13 +46,17 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         string text // The text that was received.
     );
 
+    // Emitted when an acknowledgment message is successfully sent back to the sender contract.
+    // This event signifies that the Acknowledger contract has recognized the receipt of an initial message
+    // and has informed the original sender contract by sending an acknowledgment message,
+    // including the original message ID, indicating successful message reception and processing.
     event AcknowledgmentSent(
         bytes32 indexed messageId, // The unique ID of the CCIP message.
         uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
         address receiver, // The address of the receiver on the destination chain.
-        bytes32 data, // The data being sent. In this case, the message ID to acknowledge.
-        address feeToken, // the token address used to pay CCIP fees.
-        uint256 fees // The fees paid for sending the CCIP message.
+        bytes32 data, // The data being sent back, usually containing the message ID of the original message to acknowledge its receipt.
+        address feeToken, // The token address used to pay CCIP fees for sending the acknowledgment.
+        uint256 fees // The fees paid for sending the acknowledgment message via CCIP.
     );
 
     IERC20 private s_linkToken;
@@ -105,59 +109,63 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         allowlistedSourceChains[_sourceChainSelector] = allowed;
     }
 
-    //----------------------------
+    /// @notice Sends an acknowledgment message back to the sender contract.
+    /// @dev This function constructs and sends an acknowledgment message using CCIP,
+    /// indicating the receipt and processing of an initial message. It emits the `AcknowledgmentSent` event
+    /// upon successful sending. This function should be called after processing the received message
+    /// to inform the sender contract about the successful message reception.
+    /// @param _messageIdToAcknowledge The message ID of the initial message being acknowledged.
     function _acknowledgePayLINK(bytes32 _messageIdToAcknowledge) internal {
-        // Prepare the acknowledgment message. This could be as simple as the messageId,
-        // or you could include more data as needed for your application logic.
-
-        // bytes memory data = abi.encode(messageId);
-
+        // Construct the CCIP message for acknowledgment, including the message ID of the initial message.
         Client.EVM2AnyMessage memory acknowledgment = _buildCCIPMessage(
-            s_messageTrackerAddress,
-            _messageIdToAcknowledge,
-            address(s_linkToken)
+            s_messageTrackerAddress, // The sender contract that awaits acknowledgment.
+            _messageIdToAcknowledge, // The ID of the message to acknowledge.
+            address(s_linkToken) // The token used to pay for the CCIP message transmission.
         );
 
-        // Initialize a router client instance to interact with cross-chain router
+        // Initialize a router client instance to interact with the cross-chain router.
         IRouterClient router = IRouterClient(this.getRouter());
 
-        // Get the fee required to send the CCIP message
+        // Calculate the fee required to send the CCIP acknowledgment message.
         uint256 fees = router.getFee(
-            s_messageTrackerChainSelector,
-            acknowledgment
+            s_messageTrackerChainSelector, // The chain selector for routing the message.
+            acknowledgment // The acknowledgment message data.
         );
 
-        if (fees > s_linkToken.balanceOf(address(this)))
+        // Ensure the contract has sufficient balance to cover the message sending fees.
+        if (fees > s_linkToken.balanceOf(address(this))) {
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+        }
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+        // Approve the router to transfer LINK tokens on behalf of this contract to cover the sending fees.
         s_linkToken.approve(address(router), fees);
 
-        // Send the message via the router
+        // Send the acknowledgment message via the CCIP router and capture the resulting message ID.
         bytes32 messageId = router.ccipSend(
-            s_messageTrackerChainSelector,
-            acknowledgment
+            s_messageTrackerChainSelector, // The destination chain selector.
+            acknowledgment // The CCIP message payload for acknowledgment.
         );
 
-        // Emit an event with message details
+        // Emit an event detailing the acknowledgment message sending, for external tracking and verification.
         emit AcknowledgmentSent(
-            messageId,
-            s_messageTrackerChainSelector,
-            s_messageTrackerAddress,
-            _messageIdToAcknowledge,
-            address(s_linkToken),
-            fees
+            messageId, // The ID of the sent acknowledgment message.
+            s_messageTrackerChainSelector, // The destination chain selector.
+            s_messageTrackerAddress, // The receiver of the acknowledgment, typically the original sender.
+            _messageIdToAcknowledge, // The original message ID that was acknowledged.
+            address(s_linkToken), // The fee token used.
+            fees // The fees paid for sending the message.
         );
     }
-
-    //----------------------------
 
     /// @dev Updates the allowlist status of a sender for transactions.
     function allowlistSender(address _sender, bool allowed) external onlyOwner {
         allowlistedSenders[_sender] = allowed;
     }
 
-    /// handle a received message
+    /// @dev Handles a received CCIP message, processes it, acknowledges its receipt, and emits a `MessageReceived` event.
+    /// This internal function is called upon the receipt of a new message via CCIP from an allowlisted source chain and sender.
+    /// It decodes the message, acknowledges its receipt by calling `_acknowledgePayLINK`, and logs the reception with `MessageReceived`.
+    /// @param any2EvmMessage The CCIP message received
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     )
@@ -168,16 +176,18 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
             abi.decode(any2EvmMessage.sender, (address))
         ) // Make sure source chain and sender are allowlisted
     {
-        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
+        s_lastReceivedMessageId = any2EvmMessage.messageId; // Store the ID of the received message
         s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
 
         _acknowledgePayLINK(s_lastReceivedMessageId);
 
+        // Emit an event to log the receipt of the message. This includes the message ID, the source chain selector,
+        // the sender's address, and the decoded text.
         emit MessageReceived(
             any2EvmMessage.messageId,
-            any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-            abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
-            abi.decode(any2EvmMessage.data, (string))
+            any2EvmMessage.sourceChainSelector,
+            abi.decode(any2EvmMessage.sender, (address)),
+            s_lastReceivedText // Use the decoded text directly to ensure consistency with stored data.
         );
     }
 
