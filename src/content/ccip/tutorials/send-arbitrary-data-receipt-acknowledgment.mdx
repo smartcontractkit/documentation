@@ -13,18 +13,16 @@ whatsnext:
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 
-In this tutorial, you will learn how to use Chainlink CCIP to send arbitrary data between smart contracts on different blockchains and how to track the status of each sent message from the sender contract on the source chain. This monitoring allows for the reliable execution of actions once the receiver contract acknowledges receipt. In this case, you will emit an event from the sender contract upon reception of the receipt.
+This tutorial will teach you how to use Chainlink CCIP to send arbitrary data between smart contracts on different blockchains and how to track the status of each sent message from the sender contract on the source chain. This monitoring allows for the reliable execution of actions once the receiver contract acknowledges receipt. In this case, you will emit an event from the sender contract upon reception of the receipt.
 
-## Before you begin
+## Prerequisites
 
-- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract) so you are familiar with the tools that are necessary for this guide:
-  - The [Solidity](https://soliditylang.org/) programming language
-  - The [MetaMask](https://metamask.io) wallet
-  - The [Remix](https://remix.ethereum.org/) development environment
-- Acquire testnet funds. This guide requires a testnet ETH and LINK on _Ethereum Sepolia_. It also requires testnet MATIC on _Polygon Mumbai_. If you need to use different networks, you can find more faucets on the [LINK Token Contracts](/resources/link-token-contracts) page.
-  - Go to [faucets.chain.link](https://faucets.chain.link/) and get testnet ETH and LINK on _Ethereum Sepolia_.
+- This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data) tutorial.
+- Ensure you have enough testnet funds. This guide requires testnet ETH and LINK on _Ethereum Sepolia_ and testnet MATIC and LINK on _Polygon Mumbai_. If you need to use different networks, you can find more faucets on the [LINK Token Contracts](/resources/link-token-contracts) page.
+
+  - Go to [faucets.chain.link](https://faucets.chain.link/) and get testnet ETH and LINK on _Ethereum Sepolia_, and testnet LINK on _Polygon Mumbai_.
   - Go to [faucet.polygon.technology](https://faucet.polygon.technology/) to acquire testnet MATIC.
-- Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
+  - Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
 
 ## Tutorial
 
@@ -183,7 +181,7 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
 
 ### Send data and track the message status
 
-#### Message from the _message tracker_ contract to the _acknowledger_ contract
+#### Initial message
 
 1. Send a `Hello World!` string from your _message tracker_ contract on _Ethereum Sepolia_ to your _acknowledger_ contract deployed on _Polygon Mumbai_. You will track the status of this message during this tutorial.
 
@@ -245,8 +243,8 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
    ```solidity
    // Enum is used to track the status of messages sent via CCIP.
    // `NotSent` indicates a message has not yet been sent.
-   // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged by the Acknowledger contract.
-   // `Confirmed` indicates that the Acknowledger contract has received and acknowledged the message.
+   // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
+   // `Confirmed` indicates that the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
    enum MessageStatus {
      NotSent, // 0
      Sent, // 1
@@ -270,20 +268,24 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
      style="max-width: 70%;"
    />
 
-#### Acknowledgment from the _acknowledger_ contract to the _message tracker_ contract
+#### Acknowledgment message
 
 Upon reception of the initial message, the _acknowledger_ contract sends an acknowledgment (a CCIP message) back to the _message tracker_ contract. This acknowledgment message contains the initial message ID (`bytes32`) which reception is to be acknowledged. This is possible thanks to the `acknowledgePayLINK` function, which acts as a custom `ccipSend` function nested within the `ccipReceive` function of the _acknowledger_ contract.
 
 When the acknowledgment message is sent to the _message tracker_ contract, the _acknowledger_ contract emits an `AcknowledgmentSent` event.
 
 ```solidity
+// Emitted when an acknowledgment message is successfully sent back to the sender contract.
+// This event signifies that the Acknowledger contract has recognized the receipt of an initial message
+// and has informed the original sender contract by sending an acknowledgment message,
+// including the original message ID, indicating successful message reception and processing.
 event AcknowledgmentSent(
   bytes32 indexed messageId, // The unique ID of the CCIP message.
   uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
   address receiver, // The address of the receiver on the destination chain.
-  bytes32 data, // The data being sent. In this case, the message ID to acknowledge.
-  address feeToken, // the token address used to pay CCIP fees.
-  uint256 fees // The fees paid for sending the CCIP message.
+  bytes32 data, // The data being sent back, usually containing the message ID of the original message to acknowledge its receipt.
+  address feeToken, // The token address used to pay CCIP fees for sending the acknowledgment.
+  uint256 fees // The fees paid for sending the acknowledgment message via CCIP.
 );
 ```
 
@@ -307,23 +309,29 @@ event AcknowledgmentSent(
 
    When the transaction is marked with a "Success" status on the CCIP explorer, the CCIP transaction and the destination transaction are complete. The _message tracker_ contract has received the message from the _acknowledger_ contract.
 
-#### Verify the final message status on the _message tracker_ contract
+#### Final status check
 
 Upon reception of the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract, and stores the acknowledgment message ID together with the acknowledged message ID in the `s_lastReceivedAcknowledgedMsgId` variable.
 
-On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
+1. On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
-Expand the **messagesStatus** getter function and paste the initial message ID. Click **call** to read the message status.
+1. Expand the **messagesStatus** getter function and paste the initial message ID. Click **call** to read the message status. It returns `2`, which corresponds to the `Confirmed` status.
 
-{" "}
+   <ClickToZoom
+     src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
+     alt="Chainlink CCIP - Message Tracker Get Message Status - 2"
+     style="max-width: 70%;"
+   />
 
-<ClickToZoom
-  src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
-  alt="Chainlink CCIP - Message Tracker Get Message Status - 2"
-  style="max-width: 70%;"
-/>
+1. Click the **getLastReceivedMessageDetails** getter function. You see the acknowledgment message ID (last message received from the _acknowledger_ contract) and the initial message ID that has been acknowledged.
 
-In this example, the _message tracker_ contract emits an event, `MessageConfirmed`, when it receives the acknowledgment message and updates the message status to `2` (`Confirmed`), confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.
+   <ClickToZoom
+     src="/images/ccip/tutorials/message-tracker-getLastReceivedMessageDetails.webp"
+     alt="Chainlink CCIP - Message Tracker Get Last Received Message Details"
+     style="max-width: 70%;"
+   />
+
+In this example, the _message tracker_ contract emits an event, `MessageConfirmed`, when it receives the acknowledgment message and updates the message status to `2` (`Confirmed`), confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute upon acknowledgment receipt. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.
 
 ## Examine the example code
 

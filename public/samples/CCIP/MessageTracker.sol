@@ -175,7 +175,17 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         return messageId;
     }
 
-    /// Handle a received message
+    /**
+     * @dev Receives and processes messages sent via the Chainlink CCIP from allowed chains and senders.
+     * Upon receiving a message, this function checks if the message's associated data indicates a previously
+     * sent message awaiting acknowledgment. If the message is valid (i.e., its status is `Sent`), it updates
+     * the message's status to `Confirmed`, thereby acknowledging its receipt. It then emits a `MessageConfirmed`
+     * event. If the message cannot be validated (e.g., it was not sent or has been tampered with), the function
+     * reverts with a `MessageWasNotSentByMessageTracker` error. This mechanism ensures that only messages
+     * genuinely sent and awaiting acknowledgment are confirmed.
+     * @param any2EvmMessage The CCIP message received, which includes the message ID, the data being acknowledged,
+     * the source chain selector, and the sender's address.
+     */
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     )
