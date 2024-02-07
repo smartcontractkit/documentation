@@ -13,7 +13,7 @@ import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receiving data across chains and tracking the status of sent messages.
+/// @title - A simple acknowledger contract for receiving data and sending acknowledgement of receipt messages across chains.
 contract Acknowledger is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
@@ -109,6 +109,11 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         allowlistedSourceChains[_sourceChainSelector] = allowed;
     }
 
+    /// @dev Updates the allowlist status of a sender for transactions.
+    function allowlistSender(address _sender, bool allowed) external onlyOwner {
+        allowlistedSenders[_sender] = allowed;
+    }
+
     /// @notice Sends an acknowledgment message back to the sender contract.
     /// @dev This function constructs and sends an acknowledgment message using CCIP,
     /// indicating the receipt and processing of an initial message. It emits the `AcknowledgmentSent` event
@@ -155,11 +160,6 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
             address(s_linkToken), // The fee token used.
             fees // The fees paid for sending the message.
         );
-    }
-
-    /// @dev Updates the allowlist status of a sender for transactions.
-    function allowlistSender(address _sender, bool allowed) external onlyOwner {
-        allowlistedSenders[_sender] = allowed;
     }
 
     /// @dev Handles a received CCIP message, processes it, acknowledges its receipt, and emits a `MessageReceived` event.

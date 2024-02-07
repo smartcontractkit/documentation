@@ -13,7 +13,7 @@ import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receiving string data across chains and tracking the status of sent messages.
+/// @title - A simple messenger contract for sending/receiving data across chains and tracking the status of sent messages.
 contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
