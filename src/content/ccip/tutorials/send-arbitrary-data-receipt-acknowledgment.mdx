@@ -30,7 +30,7 @@ You will deploy a _message tracker_ contract on the source chain and an _acknowl
 
 ### Deploy the _message tracker_ (sender) contract
 
-Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_. To see a detailed explanation of this contract, read the [Code Explanation](#message-tracker-code) section.
+Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_.
 
 1. [Open the MessageTracker.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/MessageTracker.sol) in Remix.
 
@@ -73,7 +73,7 @@ Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_. To see a detaile
 
 ### Deploy the acknowledger (receiver) contract
 
-Deploy the _acknowledger_ contract on _Polygon Mumbai_. You will use this contract to receive data from and send receipt acknowledgment to the _message tracker_ contract that you deployed on _Ethereum Sepolia_. To see a detailed explanation of this contract, read the [Code Explanation](#acknowledger-code) section.
+Deploy the _acknowledger_ contract on _Polygon Mumbai_. You will use this contract to receive data from and send receipt acknowledgment to the _message tracker_ contract that you deployed on _Ethereum Sepolia_.
 
 1. [Open the Acknowledger.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Acknowledger.sol) contract in Remix.
 
@@ -289,7 +289,7 @@ event AcknowledgmentSent(
 );
 ```
 
-1. Open the [_Polygon Mumbai_ explorer](https://mumbai.polygonscan.com) and search for your deployed _acknowledger_ contract, then click on the **Events** tab.
+1. Copy your _acknowledger_ contract address from Remix. Open the [_Polygon Mumbai_ explorer](https://mumbai.polygonscan.com) and search for your deployed _acknowledger_ contract, then click on the **Events** tab.
 
    <ClickToZoom
      src="/images/ccip/tutorials/polygon-mumbai-explorer-acknowledger-events.webp"
@@ -311,7 +311,11 @@ event AcknowledgmentSent(
 
 #### Final status check
 
-Upon reception of the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract, and stores the acknowledgment message ID together with the acknowledged message ID in the `s_lastReceivedAcknowledgedMsgId` variable.
+Upon reception of the acknowledgment message, the _message tracker_ `ccipReceive` function:
+
+    - Updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum`
+    - Stores the acknowledged message ID in the `s_lastReceivedAcknowledgedMsgId` variable
+    - Emits a `MessageConfirmed` event
 
 1. On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
@@ -323,7 +327,7 @@ Upon reception of the acknowledgment message, the `ccipReceive` function updates
      style="max-width: 70%;"
    />
 
-1. Click the **getLastReceivedMessageDetails** getter function. You see the acknowledgment message ID (last message received from the _acknowledger_ contract) and the initial message ID that has been acknowledged.
+1. Click the **getLastReceivedMessageDetails** getter function. You see the acknowledgment message ID (`s_lastReceivedMessageId`) and the acknowledged message ID (`s_lastReceivedAcknowledgedMsgId`).
 
    <ClickToZoom
      src="/images/ccip/tutorials/message-tracker-getLastReceivedMessageDetails.webp"
@@ -331,14 +335,104 @@ Upon reception of the acknowledgment message, the `ccipReceive` function updates
      style="max-width: 70%;"
    />
 
-In this example, the _message tracker_ contract emits an event, `MessageConfirmed`, when it receives the acknowledgment message and updates the message status to `2` (`Confirmed`), confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute upon acknowledgment receipt. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.
+1. Copy your _message tracker_ contract address from Remix. Open the [_Ethereum Sepolia_ explorer](https://sepolia.etherscan.io/) and search for your deployed _message tracker_ contract. Then, click on the **Events** tab.
 
-## Examine the example code
+   <ClickToZoom
+     src="/images/ccip/tutorials/message-tracker-messageconfirmed-event.webp"
+     alt="Chainlink CCIP - Message Tracker Message Confirmed Event"
+     style="max-width: 70%;"
+   />
 
-### Message tracker code
+   The `MessageConfirmed` event is emitted with the acknowledged message ID `0x1a09b4ce57fe52913b08867fc18cd9c263cb2c332a92fb19ccd44b90125e38b1`.
 
-<CodeSample src="samples/CCIP/MessageTracker.sol" />
+## Explanation
 
-### Acknowledger code
+The smart contracts featured in this tutorial are designed to interact with CCIP to send and receive messages and acknowledge message reception. The contract code across both contracts contains supporting comments clarifying the functions, events, and underlying logic.
 
-<CodeSample src="samples/CCIP/Acknowledger.sol" />
+Refer to the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data#explanation) tutorial for more explanation about initializing the contracts, sending data, paying in LINK, and receiving data.
+
+Here, we will further explain the acknowledgment of receipt mechanism.
+
+### Message acknowledgment mechanism
+
+The core of this tutorial is demonstrating a message acknowledgment mechanism between two smart contracts across different blockchains. This mechanism ensures that messages sent via CCIP are received and confirmed by the recipient contract.
+
+### _Message tracker_ contract
+
+The _message tracker_ contract acts as the sender, initiating cross-chain communication. It performs the following operations:
+
+- **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function.
+
+- **Status tracking**:
+  - Upon sending a message, the _message tracker_ updates its internal state to mark the message as `Sent`. This status is pivotal for tracking the message lifecycle and awaiting acknowledgment.
+  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` to `Confirmed`, indicating that the cross-chain communication cycle is complete and the recipient successfully received and acknowledged the message.
+
+### _Acknowledger_ contract
+
+The _acknowledger_ contract receives the message and, upon processing, sends back an acknowledgment (a CCIP message). It ensures that:
+
+- **Message receipt**: Upon receiving a message via CCIP, it decodes the message and calls the `acknowledgePayLINK` internal function that is nested within the [`ccipReceive`](/ccip/tutorials/send-arbitrary-data#receiving-data) function.
+
+- **Acknowledgment sending**: `acknowledgePayLINK` constructs an acknowledgment message and sends it back to the _message tracker_ contract, signaling that the original message was received and processed.
+
+```solidity
+/// @notice Sends an acknowledgment message back to the sender contract.
+/// @dev This function constructs and sends an acknowledgment message using CCIP,
+/// indicating the receipt and processing of an initial message. It emits the `AcknowledgmentSent` event
+/// upon successful sending. This function should be called after processing the received message
+/// to inform the sender contract about the successful message reception.
+/// @param _messageIdToAcknowledge The message ID of the initial message being acknowledged.
+function _acknowledgePayLINK(bytes32 _messageIdToAcknowledge) internal {
+  // Construct the CCIP message for acknowledgment, including the message ID of the initial message.
+  Client.EVM2AnyMessage memory acknowledgment = _buildCCIPMessage(
+    s_messageTrackerAddress, // The sender contract that awaits acknowledgment.
+    _messageIdToAcknowledge, // The ID of the message to acknowledge.
+    address(s_linkToken) // The token used to pay for the CCIP message transmission.
+  );
+
+  // Initialize a router client instance to interact with the cross-chain router.
+  IRouterClient router = IRouterClient(this.getRouter());
+
+  // Calculate the fee required to send the CCIP acknowledgment message.
+  uint256 fees = router.getFee(
+    s_messageTrackerChainSelector, // The chain selector for routing the message.
+    acknowledgment // The acknowledgment message data.
+  );
+
+  // Ensure the contract has sufficient balance to cover the message sending fees.
+  if (fees > s_linkToken.balanceOf(address(this))) {
+    revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+  }
+
+  // Approve the router to transfer LINK tokens on behalf of this contract to cover the sending fees.
+  s_linkToken.approve(address(router), fees);
+
+  // Send the acknowledgment message via the CCIP router and capture the resulting message ID.
+  bytes32 messageId = router.ccipSend(
+    s_messageTrackerChainSelector, // The destination chain selector.
+    acknowledgment // The CCIP message payload for acknowledgment.
+  );
+
+  // Emit an event detailing the acknowledgment message sending, for external tracking and verification.
+  emit AcknowledgmentSent(
+    messageId, // The ID of the sent acknowledgment message.
+    s_messageTrackerChainSelector, // The destination chain selector.
+    s_messageTrackerAddress, // The receiver of the acknowledgment, typically the original sender.
+    _messageIdToAcknowledge, // The original message ID that was acknowledged.
+    address(s_linkToken), // The fee token used.
+    fees // The fees paid for sending the message.
+  );
+}
+```
+
+### Security and integrity
+
+Both contracts use allowlists to process only messages from trusted sources.
+
+- **Allowlisting chains and senders**: The contracts verify that the source chain and sender are on their respective allowlists before processing any messages.
+
+- **Verifying message authenticity**: The _message tracker_ contract ensures that acknowledgment messages are received only for messages it has sent, guarding against replay or spoofing attacks.
+
+## Final note
+
+In this example, the _message tracker_ contract emits an event when it receives the acknowledgment message confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute upon acknowledgment receipt. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.

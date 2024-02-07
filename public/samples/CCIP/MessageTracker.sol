@@ -62,7 +62,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     // Event emitted when a message is received from another chain.
     event MessageReceived(
         bytes32 indexed messageId, // The unique ID of the CCIP message.
-        bytes32 indexed messageIdToAcknowledge,
+        bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
         uint64 indexed sourceChainSelector, // The chain selector of the source chain.
         address sender // The address of the sender from the source chain.
     );
