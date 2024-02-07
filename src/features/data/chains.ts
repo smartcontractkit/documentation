@@ -321,8 +321,7 @@ export const CHAINS: Chain[] = [
         name: "BASE Sepolia testnet",
         explorerUrl: "https://sepolia.basescan.org/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-ojdo0mkqv-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-base-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-base-1.json",
         queryString: "base-sepolia",
       },
       {
