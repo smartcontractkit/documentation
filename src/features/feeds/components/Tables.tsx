@@ -445,7 +445,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
               </dt>
               <dd>
                 <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
-                  {proxy.docs.marketHours} target="_blank"
+                  {proxy.docs.marketHours}
                 </a>
               </dd>
             </div>
