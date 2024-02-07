@@ -110,6 +110,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "OPTIMISM_MAINNET"
     case "ethereum-testnet-goerli-optimism-1":
       return "OPTIMISM_GOERLI"
+    case "ethereum-testnet-sepolia-optimism-1":
+      return "OPTIMISM_SEPOLIA"
     case "ethereum-mainnet-arbitrum-1":
       return "ARBITRUM_MAINNET"
     case "ethereum-testnet-goerli-arbitrum-1":
@@ -147,6 +149,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-optimism-1"
     case "OPTIMISM_GOERLI":
       return "ethereum-testnet-goerli-optimism-1"
+    case "OPTIMISM_SEPOLIA":
+      return "ethereum-testnet-sepolia-optimism-1"
     case "ARBITRUM_MAINNET":
       return "ethereum-mainnet-arbitrum-1"
     case "ARBITRUM_SEPOLIA":
