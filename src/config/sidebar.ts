@@ -322,6 +322,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
+        {
+          title: "Migrate to Automation V2",
+          url: "chainlink-automation/guides/migrate-to-v2",
+        },
       ],
     },
     {
@@ -545,6 +549,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Imports with Functions",
           url: "chainlink-functions/tutorials/importing-packages",
+        },
+        {
+          title: "Return multiple responses and decode them in your smart contract",
+          url: "chainlink-functions/tutorials/abi-decoding",
         },
       ],
     },
@@ -837,10 +845,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Testnet v1.2.0",
               url: "ccip/supported-networks/v1_2_0/testnet",
-            },
-            {
-              title: "Testnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/testnet",
             },
           ],
         },

@@ -12,7 +12,7 @@ whatsnext:
   }
 ---
 
-import { Aside, ClickToZoom } from "@components"
+import { Address, Aside, ClickToZoom, CopyText } from "@components"
 import { YouTube } from "@astro-community/astro-embed-youtube"
 import { Tabs } from "@components/Tabs"
 
@@ -35,27 +35,27 @@ Click the tabs below to use Chainlink Automation with each type of trigger:
 
       1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
 
-      2. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://automation.chain.link/arbitrum-sepolia).
+      1. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://faucets.chain.link/arbitrum-sepolia).
 
-      3. Click **Register new Upkeep** and select **Time-based** trigger.
+      1. Click **Register new Upkeep** and select **Time-based** trigger.
 
-      4. Under _Target contract address_, enter `0x698a3a4B0a98dda279795521Bd6f63cdBE605125`. This is a simple counter contract that will just increment with each call. Source code is [here](https://sepolia.arbiscan.io/address/0x083935210524c0A8922ec610d1063Aa0A54d9d70#code).
+      1. Under _Target contract address_, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x083935210524c0A8922ec610d1063Aa0A54d9d70" />. This is a simple counter contract that increments with each call. View the source code [here](https://sepolia.arbiscan.io/address/0x083935210524c0A8922ec610d1063Aa0A54d9d70#code).
 
-      5. In the _Contract call_ section, enter `addInteger` under _Target function_. In the _Function inputs_ section, enter a number to increment by under _intToAdd_. Then click **Next**.
+      1. In the _Contract call_ section, enter `addInteger` under _Target function_. In the _Function inputs_ section, enter a number to increment by under _intToAdd_. Then click **Next**.
 
          <ClickToZoom src="/images/automation/getting-started/gs_tbu_contract_address.png" />
 
-      6. Now specify the time schedule, for example every 5 minutes. Paste the cron expression `*/5 * * * *` under _Cron expression_ or select one of the example timers. Then click **Next**.
+      1. Specify the time schedule, for example every 5 minutes. Paste the cron expression <CopyText text="*/5 * * * *" code/> under _Cron expression_ or select one of the example timers. Then click **Next**.
 
-      7. To learn more about CRON expressions, click [here](/chainlink-automation/guides/job-scheduler#specifying-the-time-schedule).
+      1. To learn more about CRON expressions, click [here](/chainlink-automation/guides/job-scheduler#specifying-the-time-schedule).
 
-      8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+      1. Enter an _Upkeep name_, your public key address under _Admin Address_, <CopyText text="500000" code/> under _Gas limit_, and <CopyText text="0.1" code/> under _Starting balance (LINK)_.
 
          <ClickToZoom src="/images/automation/getting-started/gs_tbu_upkeep_details.png" />
 
-      9. Click **Register Upkeep**.
+      1. Click **Register Upkeep**.
 
-      10. After the transaction has completed, you can view the performs for your upkeep in the upkeep details.
+      1. After the transaction has completed, you can view the performs for your upkeep in the upkeep details.
 
       You have successfully automated your first time-based upkeep. To learn more about creating time-based upkeeps, read [here](/chainlink-automation/guides/job-scheduler).
 
@@ -65,21 +65,21 @@ Click the tabs below to use Chainlink Automation with each type of trigger:
 
       1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
 
-      2. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://automation.chain.link/arbitrum-sepolia).
+      1. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://automation.chain.link/arbitrum-sepolia).
 
-      3. Click **Register new Upkeep** and select **Custom logic** trigger.
+      1. Click **Register new Upkeep** and select **Custom logic** trigger.
 
-      4. Under _Target contract address_, enter `0xC3d3656868594db09abD410821c9F9ab9812B4d1`. This contract uses logic stored onchain and onchain state to determine when to perform, incrementing a counter. It is an example of an Automation-compatible contract and can be read [here](https://sepolia.arbiscan.io/address/0x6C0AAAeBcDb6F5D03759B8BF14b47BE491755530#readContract). Click **Next**.
+      1. Under _Target contract address_, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x6C0AAAeBcDb6F5D03759B8BF14b47BE491755530" />. This contract is an Automation-compatible contract that uses logic stored onchain and onchain state to determine when to increment a counter. View the source code [here](https://sepolia.arbiscan.io/address/0x6C0AAAeBcDb6F5D03759B8BF14b47BE491755530#readContract). Click **Next**.
 
          <ClickToZoom src="/images/automation/getting-started/gs_clu_contract_address.png" />
 
-      5. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+      1. Enter an _Upkeep name_, your public key address under _Admin Address_, <CopyText text="500000" code/> under _Gas limit_, and <CopyText text="0.1" code/> under _Starting balance (LINK)_.
 
-      6. Finally, enter your public key address under _Check data (Hexadecimal)_. `checkData` is optional static data that you can pass into your upkeep to ensure your counter increments.
+      1. Finally, enter your public key address under _Check data (Hexadecimal)_. `checkData` is optional static data that you can pass into your upkeep to ensure your counter increments.
 
-      7. Click **Register Upkeep**.
+      1. Click **Register Upkeep**.
 
-      8. After the transaction is complete, you can view the performs for your upkeep in the upkeep details. Your upkeep should perform once every minute and stop after 4 performs.
+      1. After the transaction is complete, you can view the performs for your upkeep in the upkeep details. Your upkeep should perform once every minute and stop after 4 performs.
 
       <ClickToZoom src="/images/automation/getting-started/gs_clu_upkeep_details.png" />
 
@@ -92,27 +92,27 @@ Click the tabs below to use Chainlink Automation with each type of trigger:
 
       1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
 
-      2. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://automation.chain.link/arbitrum-sepolia).
+      1. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://automation.chain.link/arbitrum-sepolia).
 
-      3. Click **Register new Upkeep** and select **log trigger**.
+      1. Click **Register new Upkeep** and select **log trigger**.
 
-      4. Under _Contract to automate_, enter `0xcf39b55F3E583DdEc8D418dB4708A71aA8453a83`. This is a simple `iLogAutomation`-compatible example contract that will increment a counter when a log is detected. The code is [here](https://sepolia.arbiscan.io/address/0xe817e4A71C69C72C01B31906F9F8591FbaB6b448#code). Click **Next**.
+      1. Under _Contract to automate_, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0xe817e4A71C69C72C01B31906F9F8591FbaB6b448" />. This is a simple `iLogAutomation`-compatible example contract that increments a counter when a log is detected. View the source code [here](https://sepolia.arbiscan.io/address/0xe817e4A71C69C72C01B31906F9F8591FbaB6b448#code). Click **Next**.
 
-      5. Under _Contract emitting logs_, enter `0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923`. This is the contract Automation will listen to for emitted logs. The code is [here](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#code). Click **Next**.
+      1. Under _Contract emitting logs_, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd" />. This is the contract Automation will listen to for emitted logs. View the source code [here](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#code). Click **Next**.
 
          <ClickToZoom src="/images/automation/getting-started/gs_ltu_log_trigger_details.png" />
 
-      6. Under _Emitted log_ select **Bump** from the dropdown menu. This is the log signature Automation will look for.
+      1. Under _Emitted log_ select **Bump** from the dropdown menu. This is the log signature Automation will look for.
 
-      7. _Log index topic filters_ are optional filters to narrow the logs you want to trigger your upkeep. For our example enter your public key address under _addr_ and leave the _num_ field empty. Later when you call the _bump_ function to emit the log, your `msg.Sender` address will be emitted in the log, triggering your upkeep. Click **Next**.
+      1. _Log index topic filters_ are optional filters to narrow the logs you want to trigger your upkeep. For this example, enter your public key address under _addr_ and leave the _num_ field empty. Later when you call the _bump_ function to emit the log, your `msg.Sender` address will be emitted in the log, triggering your upkeep. Click **Next**.
 
          <ClickToZoom src="/images/automation/getting-started/gs_ltu_emit_log_details.png" />
 
-      8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+      1. Enter an _Upkeep name_, your public key address under _Admin Address_, <CopyText text="500000" code/> under _Gas limit_, and <CopyText text="0.1" code/> under _Starting balance (LINK)_.
 
-      9. Click **Register Upkeep** and wait for the transaction to complete.
+      1. Click **Register Upkeep** and wait for the transaction to complete.
 
-      10. To trigger your upkeep call _bump_ on the trigger contract by navigating to the Arbitrum Sepolia [scanner](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#writeContract), connecting your wallet and executing the bump function. You can observe your upkeep's perform in the Automation dashboard.
+      1. To trigger your upkeep call _bump_ on the trigger contract by navigating to the Arbitrum Sepolia [scanner](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#writeContract), connecting your wallet and executing the bump function. You can observe your upkeep's perform in the Automation dashboard.
 
       You have successfully automated your first log trigger upkeep. To learn more about creating log trigger upkeeps, read [here](/chainlink-automation/guides/log-trigger).
 
