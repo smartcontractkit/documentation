@@ -54,6 +54,7 @@ const baseFrontmatter = z
     metadata,
     excerpt: z.string().optional(),
     datafeedtype: z.string().optional(),
+    fileExtension: z.string().optional(),
   })
   .strict()
 
