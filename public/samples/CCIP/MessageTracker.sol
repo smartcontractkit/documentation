@@ -6,6 +6,9 @@ import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/O
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/utils/SafeERC20.sol";
+
+using SafeERC20 for IERC20;
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -18,11 +21,12 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
-    error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
+    error InvalidReceiverAddress(); // Used when the receiver address is 0.
     error MessageWasNotSentByMessageTracker(bytes32 msgId); // Triggered when attempting to confirm a message not recognized as sent by this tracker.
+    error MessageHasAlreadyBeenConfirmed(bytes32 msgId); // Triggered when attempting to confirm a message that has already been confirmed.
 
     // Enum is used to track the status of messages sent via CCIP.
     // `NotSent` indicates a message has not yet been sent.
@@ -34,8 +38,11 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         Confirmed // 2
     }
 
-    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-    bytes32 private s_lastReceivedAcknowledgedMsgId; // Store the last received and acknowledged messageId.
+    // Struct to store the status and acknowledger message ID of a message.
+    struct MessageInfo {
+        MessageStatus status;
+        bytes32 acknowledgerMessageId;
+    }
 
     // Mapping to keep track of allowlisted destination chains.
     mapping(uint64 => bool) public allowlistedDestinationChains;
@@ -46,8 +53,8 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     // Mapping to keep track of allowlisted senders.
     mapping(address => bool) public allowlistedSenders;
 
-    // Mapping to keep track of message IDs to their status.
-    mapping(bytes32 => MessageStatus) public messagesStatus;
+    // Mapping to keep track of message IDs to their info (status & acknowledger message ID).
+    mapping(bytes32 => MessageInfo) public messagesInfo;
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -59,17 +66,14 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         uint256 fees // The fees paid for sending the CCIP message.
     );
 
-    // Event emitted when a message is received from another chain.
-    event MessageReceived(
+    // Event emitted when the sender contract receives an acknowledgment
+    // that the receiver contract has successfully received and processed the message.
+    event MessageConfirmed(
         bytes32 indexed messageId, // The unique ID of the CCIP message.
         bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
         uint64 indexed sourceChainSelector, // The chain selector of the source chain.
         address sender // The address of the sender from the source chain.
     );
-
-    // Event emitted when the sender contract receives an acknowledgment
-    // that the receiver contract has successfully received and processed the message.
-    event MessageConfirmed(bytes32 indexed messageId);
 
     IERC20 private s_linkToken;
 
@@ -95,6 +99,13 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         if (!allowlistedSourceChains[_sourceChainSelector])
             revert SourceChainNotAllowlisted(_sourceChainSelector);
         if (!allowlistedSenders[_sender]) revert SenderNotAllowlisted(_sender);
+        _;
+    }
+
+    /// @dev Modifier that checks the receiver address is not 0.
+    /// @param _receiver The receiver address.
+    modifier validateReceiver(address _receiver) {
+        if (_receiver == address(0)) revert InvalidReceiverAddress();
         _;
     }
 
@@ -134,6 +145,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -159,7 +171,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
         // Update the message status to `Sent`
-        messagesStatus[messageId] = MessageStatus.Sent;
+        messagesInfo[messageId].status = MessageStatus.Sent;
 
         // Emit an event with message details
         emit MessageSent(
@@ -196,27 +208,32 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
             abi.decode(any2EvmMessage.sender, (address))
         ) // Ensure the source chain and sender are allowlisted for added security
     {
-        s_lastReceivedMessageId = any2EvmMessage.messageId; // Store the messageId of the received message
-        bytes32 data = abi.decode(any2EvmMessage.data, (bytes32)); // Decode the data sent by the receiver
+        bytes32 initialMsgId = abi.decode(any2EvmMessage.data, (bytes32)); // Decode the data sent by the receiver
+        bytes32 acknowledgerMsgId = any2EvmMessage.messageId;
+        messagesInfo[initialMsgId].acknowledgerMessageId = acknowledgerMsgId; // Store the messageId of the received message
 
-        if (messagesStatus[data] == MessageStatus.Sent) {
-            // Update the message status to Confirmed upon receipt acknowledgment
-            messagesStatus[data] = MessageStatus.Confirmed;
-            s_lastReceivedAcknowledgedMsgId = data; // Store the last received and acknowledged messageId
-            emit MessageConfirmed(s_lastReceivedAcknowledgedMsgId);
+        if (messagesInfo[initialMsgId].status == MessageStatus.Sent) {
+            // Updates the status of the message to 'Confirmed' to reflect that an acknowledgment
+            // of receipt has been received and emits an event to log this confirmation along with relevant details.
+            messagesInfo[initialMsgId].status = MessageStatus.Confirmed;
+            emit MessageConfirmed(
+                acknowledgerMsgId,
+                initialMsgId,
+                any2EvmMessage.sourceChainSelector,
+                abi.decode(any2EvmMessage.sender, (address))
+            );
+        } else if (
+            messagesInfo[initialMsgId].status == MessageStatus.Confirmed
+        ) {
+            // If the message is already marked as 'Confirmed', this indicates an attempt to
+            // re-confirm a message that has already been processed.
+            revert MessageHasAlreadyBeenConfirmed(initialMsgId);
         } else {
-            // Revert the transaction if the message status isn't Sent, indicating an invalid or tampered acknowledgment, or simply wrong data
-            // This serves as an additional security layer, ensuring only genuine messages that were sent are confirmed
-            revert MessageWasNotSentByMessageTracker(data);
+            // If the message status is neither 'Sent' nor 'Confirmed', it implies that the
+            // message ID provided for acknowledgment does not correspond to a valid, previously
+            // sent message.
+            revert MessageWasNotSentByMessageTracker(initialMsgId);
         }
-
-        // Emit an event indicating a message has been received and processed
-        emit MessageReceived(
-            any2EvmMessage.messageId, // fetch the messageId
-            abi.decode(any2EvmMessage.data, (bytes32)), // abi-decoding of the msgId acknowledged by the receiver
-            any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-            abi.decode(any2EvmMessage.sender, (address)) // abi-decoding of the sender address,
-        );
     }
 
     /// @notice Construct a CCIP message.
@@ -238,28 +255,12 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
                 tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
                     // Additional arguments, setting gas limit
-                    Client.EVMExtraArgsV1({gasLimit: 900_000})
+                    Client.EVMExtraArgsV1({gasLimit: 300_000})
                 ),
                 // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
                 feeToken: _feeTokenAddress
             });
     }
-
-    /// @notice Fetches the details of the last received message.
-    /// @return messageId The ID of the last received message.
-    /// @return acknowledgedMsgId The ID of the last received and acknowledged message.
-    function getLastReceivedMessageDetails()
-        external
-        view
-        returns (bytes32 messageId, bytes32 acknowledgedMsgId)
-    {
-        return (s_lastReceivedMessageId, s_lastReceivedAcknowledgedMsgId);
-    }
-
-    /// @notice Fallback function to allow the contract to receive Ether.
-    /// @dev This function has no function body, making it a default function for receiving Ether.
-    /// It is automatically called when Ether is sent to the contract without any data.
-    receive() external payable {}
 
     /// @notice Allows the owner of the contract to withdraw all tokens of a specific ERC20 token.
     /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
@@ -275,6 +276,6 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         // Revert if there is nothing to withdraw
         if (amount == 0) revert NothingToWithdraw();
 
-        IERC20(_token).transfer(_beneficiary, amount);
+        IERC20(_token).safeTransfer(_beneficiary, amount);
     }
 }

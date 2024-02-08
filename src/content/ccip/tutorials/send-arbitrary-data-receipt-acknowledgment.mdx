@@ -13,30 +13,27 @@ whatsnext:
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 
-This tutorial will teach you how to use Chainlink CCIP to send arbitrary data between smart contracts on different blockchains and how to track the status of each sent message in the sender contract on the source chain. This tracking enables the execution of actions once the sender receives an acknowledgment of receipt from the receiver. In this tutorial, the sender contract will emit an event upon reception of the acknowledgment of receipt. **Note**: For simplicity, this tutorial demonstrates this pattern for sending arbitrary data. However, you are not limited to this application. You can apply the same pattern to programmable token transfers.
+This tutorial will teach you how to use Chainlink CCIP to send arbitrary data between smart contracts on different blockchains and how to track the status of each sent message in the sender contract on the source chain. This tracking enables the execution of actions once the sender receives an acknowledgment of receipt from the receiver. In this tutorial, the sender contract will emit an event upon reception of the acknowledgment of receipt.
+
+**Note**: For simplicity, this tutorial demonstrates this pattern for sending arbitrary data. However, you are not limited to this application. You can apply the same pattern to programmable token transfers.
 
 ## Before you begin
 
 - This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data) tutorial.
-- Ensure you have enough testnet funds. This guide requires testnet ETH and LINK on _Ethereum Sepolia_ and testnet MATIC and LINK on _Polygon Mumbai_.
-
-  - Go to [faucets.chain.link](https://faucets.chain.link/) and get testnet ETH and LINK on _Ethereum Sepolia_, and testnet LINK on _Polygon Mumbai_.
-  - Go to [faucet.polygon.technology](https://faucet.polygon.technology/) to acquire testnet MATIC.
-  - Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
-
-If you need to use different networks, you can find more faucets on the [LINK Token Contracts](/resources/link-token-contracts) page.
+- Your account must have some ETH tokens on _Ethereum Sepolia_ and MATIC tokens on _Polygon Mumbai_.
+- Learn how to [Acquire testnet LINK](/resources/acquire-link) and [Fund your contract with LINK](/resources/fund-your-contract).
 
 ## Tutorial
 
 In this tutorial, you will deploy a _message tracker_ contract on the source blockchain (Ethereum Sepolia) and an _acknowledger_ on the destination blockchain (Polygon Mumbai). Throughout the tutorial, you will pay for CCIP fees using LINK tokens. Here is a step-by-step breakdown:
 
-1. **Sending and Building a CCIP Message:** You'll initiate and send a message from the _message tracker_ contract on Ethereum Sepolia to the _acknowledger_ contract on Polygon Mumbai. The _message tracker_ contract constructs a CCIP message that encapsulates the string text and establishes a tracking status for this message before sending it off.
-1. **Receiving and Acknowledging the Message:** Upon receiving the text, the _acknowledger_ contract on Polygon Mumbai sends back a CCIP message to the _message tracker_ contract as an acknowledgment of receipt.
-1. **Updating Tracking Status:** Once the acknowledgment is received, the _message tracker_ contract updates the tracking status of the initial CCIP message and emits an event to signal completion.
+1. **Sending and building a CCIP message:** You'll initiate and send a message from the _message tracker_ contract on Ethereum Sepolia to the _acknowledger_ contract on Polygon Mumbai. The _message tracker_ contract constructs a CCIP message that encapsulates a string text and establishes a tracking status for this message before sending it off.
+1. **Receiving and acknowledging the message:** Upon receiving the text, the _acknowledger_ contract on Polygon Mumbai sends back a CCIP message to the _message tracker_ contract as an acknowledgment of receipt.
+1. **Updating tracking status:** Once the acknowledgment is received, the _message tracker_ contract updates the tracking status of the initial CCIP message and emits an event to signal completion.
 
 ### Deploy the _message tracker_ (sender) contract
 
-Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_.
+Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_ and enable receiving messages from and sending messages to _Polygon Mumbai_. You must also allow the _acknowledger_ contract address as a sender.
 
 1. [Open the MessageTracker.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/MessageTracker.sol) in Remix.
 
@@ -52,6 +49,8 @@ Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_.
 
       - The router address is <CopyText text="0x0bf3de8c5d3e8a2b34d2beeb17abfcebaf363a59" code/>
       - The LINK address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>
+
+      {" "}
 
       <ClickToZoom
         src="/images/ccip/tutorials/deploy-message-tracker-sepolia.webp"
@@ -69,7 +68,7 @@ Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_.
         style="max-width: 70%;"
       />
 
-   1. Open MetaMask and send <CopyText text="3" code/> LINK to the contract address you copied. Your contract will pay CCIP fees in LINK.
+   1. Open MetaMask and send <CopyText text="2" code/> LINK to the contract address you copied. Your contract will pay CCIP fees in LINK.
 
       <ClickToZoom
         src="/images/ccip/tutorials/fund-deployed-message-tracker-sepolia.webp"
@@ -77,113 +76,102 @@ Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_.
         style="max-width: 70%;"
       />
 
+1. As the _message tracker_ contract will send messages to and receive messages from the _acknowledger_ contract deployed on _Polygon Mumbai_, you must allow the _Polygon Mumbai_ chain selector in both _message tracker_'s allowed destination and source chains.
+
+   1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
+   1. Call the `allowlistDestinationChain` function with <CopyText text="12532609583862916517" code/> as the destination chain selector for _Polygon Mumbai_ and <CopyText text="true" code /> as allowed.
+   1. Call the `allowlistSourceChain` function with <CopyText text="12532609583862916517" code/> as the source chain selector for _Polygon Mumbai_ and <CopyText text="true" code /> as allowed.
+      You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks).
+
+      {" "}
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deployed-message-tracker-allowlist.webp"
+        alt="Chainlink CCIP - Message Tracker Allowlist Polygon Mumbai and Acknowledger"
+        style="max-width: 70%;"
+      />
+
 ### Deploy the acknowledger (receiver) contract
 
-Deploy the _acknowledger_ contract on _Polygon Mumbai_. You will use this contract to receive data from and send receipt acknowledgment to the _message tracker_ contract you deployed on _Ethereum Sepolia_.
+Deploy the `Acknowledger.sol` contract on _Polygon Mumbai_ and enable receiving messages from and sending messages to _Ethereum Sepolia_. You must also allow the _message tracker_ contract address as a sender.
 
-1. [Open the Acknowledger.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Acknowledger.sol) contract in Remix.
+1.  [Open the Acknowledger.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Acknowledger.sol) contract in Remix.
 
-   <CodeSample src="samples/CCIP/Acknowledger.sol" />
+    <CodeSample src="samples/CCIP/Acknowledger.sol" />
 
-1. Compile the contract.
+1.  Compile the contract.
 
-1. Deploy the contract on _Polygon Mumbai_:
+1.  Deploy the contract on _Polygon Mumbai_:
 
-   1. Open MetaMask and select the _Polygon Mumbai_ network.
+    1. Open MetaMask and select the _Polygon Mumbai_ network.
 
-   1. On the **Deploy & Run Transactions** tab in Remix, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
-   1. Under the **Deploy** section, fill in the constructor arguments:
+    1. On the **Deploy & Run Transactions** tab in Remix, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
+    1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/ccip/supported-networks) page. The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Polygon Mumbai_:
 
-      - For _Polygon Mumbai_, the Router address is <CopyText text="0x1035cabc275068e0f4b745a29cedf38e13af41b1" code/>. You can find the address for each network on the [Supported Networks](/ccip/supported-networks) page.
-      - The LINK token address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>. You can find the address for each network on the [LINK Token Contracts](/resources/link-token-contracts) page.
-      - The _message tracker_ chain selector, deployed on _Ethereum Sepolia_, is <CopyText text="16015286601757825753" code/>. You can find each network's chain selector on the [Supported Networks](/ccip/supported-networks) page.
-      - The _message tracker_ contract address, deployed on _Ethereum Sepolia_, is the address you copied when you deployed the _message tracker_ contract.
+       - The Router address is <CopyText text="0x1035cabc275068e0f4b745a29cedf38e13af41b1" code/>.
+       - The LINK token address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>.
 
-      <ClickToZoom
-        src="/images/ccip/tutorials/deploy-acknowledger-mumbai.webp"
-        alt="Chainlink CCIP - Deploy Acknowledger Mumbai"
-        style="max-width: 70%;"
-      />
+       {" "}
 
-   1. Click on **transact** to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+       <ClickToZoom
+         src="/images/ccip/tutorials/deploy-acknowledger-mumbai.webp"
+         alt="Chainlink CCIP - Deploy Acknowledger Mumbai"
+         style="max-width: 70%;"
+       />
 
-   1. After you confirm the transaction, the contract address appears as the second item in the **Deployed Contracts** list. Copy this contract address.
+    1. Click **transact** to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
 
-      <ClickToZoom
-        src="/images/ccip/tutorials/deployed-acknowledger-mumbai.webp"
-        alt="Chainlink CCIP - Deployed Acknowledger Mumbai"
-        style="max-width: 70%;"
-      />
+    1. After you confirm the transaction, the contract address appears as the second item in the **Deployed Contracts** list. Copy this contract address.
 
-   1. Open MetaMask and send <CopyText text="1" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+       <ClickToZoom
+         src="/images/ccip/tutorials/deployed-acknowledger-mumbai.webp"
+         alt="Chainlink CCIP - Deployed Acknowledger Mumbai"
+         style="max-width: 70%;"
+       />
 
-   <ClickToZoom
-     src="/images/ccip/tutorials/fund-deployed-acknowledger-sepolia.webp"
-     alt="Chainlink CCIP - Fund Deployed Acknowledger Mumbai"
-     style="max-width: 70%;"
-   />
+    1. Open MetaMask and send <CopyText text="1" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
 
-You now have one _message tracker_ (sender) contract on _Ethereum Sepolia_ and one _acknowledger_ (receiver) contract on _Polygon Mumbai_. You sent `3` LINK to the _message tracker_ contract and `1` LINK to the _acknowledger_ contract to pay the CCIP fees.
+       <ClickToZoom
+         src="/images/ccip/tutorials/fund-deployed-acknowledger-sepolia.webp"
+         alt="Chainlink CCIP - Fund Deployed Acknowledger Mumbai"
+         style="max-width: 70%;"
+       />
 
-### Allow chains and senders
+1.  As the _acknowledger_ contract will send messages to and receive messages from the _message tracker_ contract deployed on _Ethereum Sepolia_, you must allow the _Ethereum Sepolia_ chain selector in both _acknowledger_'s allowed destination and source chains. You must also allow the _message tracker_ contract address as a sender. The _message tracker_ contract address is the address you copied when you deployed the _message tracker_ contract on _Ethereum Sepolia_.
 
-Both _message tracker_ and _acknowledger_ contracts must allow each other's chains and addresses. This security measure ensures that only the intended contracts can send and receive messages. You can find the chain selector for each network on the [Supported Networks](/ccip/supported-networks) page.
+    1. On the **Deploy & Run Transactions** tab in Remix, expand the _acknowledger_ contract in the **Deployed Contracts** section. Expand the `allowlistDestinationChain`, `allowlistSender`, and `allowlistSourceChain` functions and fill in the following arguments:
 
-#### _Message tracker_ contract
+       | Function                  | Description                                                                                                                                             | Value (_Ethereum Sepolia_)                                                 |
+       | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+       | allowlistDestinationChain | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="16015286601757825753" code/>, <CopyText text="true" code/> |
+       | allowlistSender           | The _message tracker_ contract address                                                                                                                  | Your deployed contract address, <CopyText text="true" code/>               |
+       | allowlistSourceChain      | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="16015286601757825753" code/>, <CopyText text="true" code/> |
 
-As the _message tracker_ contract will send messages to and receive messages from the _acknowledger_ contract deployed on _Polygon Mumbai_, you must allow the _Polygon Mumbai_ chain selector in both _message tracker_'s allowed destination and source chains.
+       <ClickToZoom
+         src="/images/ccip/tutorials/deployed-acknowledger-allowlist.webp"
+         alt="Chainlink CCIP - Acknowledger Allowlist Ethereum Sepolia and Message Tracker"
+         style="max-width: 70%;"
+       />
 
-You must also allow the _acknowledger_ contract address as a sender. The _acknowledger_ contract address is the address you copied when you deployed the _acknowledger_ contract on _Polygon Mumbai_.
+    1. Open MetaMask and select the _Polygon Mumbai_ network.
+    1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
 
-1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section. Expand the `allowlistDestinationChain`, `allowlistSender`, and `allowlistSourceChain` functions and fill in the following arguments:
+1.  Finally, allow your _acknowledger_ contract as a sender in the _message tracker_ contract on _Ethereum Sepolia_:
 
-   | Function                  | Description                                                                                                                                             | Value (_Polygon Mumbai_)                           |
-   | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-   | allowlistDestinationChain | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="12532609583862916517" code/>, true |
-   | allowlistSender           | The _acknowledger_ contract address                                                                                                                     | Your deployed contract address, true               |
-   | allowlistSourceChain      | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="12532609583862916517" code/>, true |
+    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section. Expand the `allowlistSender` function and fill in your _acknowledger_ contract address and <CopyText text="true" code/> as allowed.
 
-   {" "}
+       {" "}
 
-   {" "}
+       <ClickToZoom
+         src="/images/ccip/tutorials/deployed-message-tracker-allowlist-sender.webp"
+         alt="Chainlink CCIP - Message Tracker Allowlist Acknowledger"
+         style="max-width: 70%;"
+       />
 
-   <ClickToZoom
-     src="/images/ccip/tutorials/deployed-message-tracker-allowlist.webp"
-     alt="Chainlink CCIP - Message Tracker Allowlist Polygon Mumbai and Acknowledger"
-     style="max-width: 70%;"
-   />
+    1. Open MetaMask and select the _Ethereum Sepolia_ network.
+    1. Click **transact** to call the function. MetaMask prompts you to confirm the transaction.
 
-1. Open MetaMask and select the _Ethereum Sepolia_ network.
-1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
-
-#### _Acknowledger_ contract
-
-As the _acknowledger_ contract will send messages to and receive messages from the _message tracker_ contract deployed on _Ethereum Sepolia_, you must allow the _Ethereum Sepolia_ chain selector in both _acknowledger_'s allowed destination and source chains.
-
-You must also allow the _message tracker_ contract address as a sender. The _message tracker_ contract address is the address you copied when you deployed the _message tracker_ contract on _Ethereum Sepolia_.
-
-1. On the **Deploy & Run Transactions** tab in Remix, expand the _acknowledger_ contract in the **Deployed Contracts** section. Expand the `allowlistDestinationChain`, `allowlistSender`, and `allowlistSourceChain` functions and fill in the following arguments:
-
-   | Function                  | Description                                                                                                                                             | Value (_Ethereum Sepolia_)                         |
-   | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-   | allowlistDestinationChain | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="16015286601757825753" code/>, true |
-   | allowlistSender           | The _message tracker_ contract address                                                                                                                  | Your deployed contract address, true               |
-   | allowlistSourceChain      | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="16015286601757825753" code/>, true |
-
-   {" "}
-
-   {" "}
-
-   {" "}
-
-   <ClickToZoom
-     src="/images/ccip/tutorials/deployed-acknowledger-allowlist.webp"
-     alt="Chainlink CCIP - Acknowledger Allowlist Ethereum Sepolia and Message Tracker"
-     style="max-width: 70%;"
-   />
-
-1. Open MetaMask and select the _Polygon Mumbai_ network.
-1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
+At this point, you have one _message tracker_ (sender) contract on _Ethereum Sepolia_ and one _acknowledger_ (receiver) contract on _Polygon Mumbai_. You sent `2` LINK to the _message tracker_ contract and `1` LINK to the _acknowledger_ contract to pay the CCIP fees.
 
 ### Send data and track the message status
 
@@ -214,7 +202,7 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
         transaction fails, fund your contract with more _LINK_ tokens and try again.
       </Aside>
 
-   1. Upon transaction success, expand the last transaction in the Remix log and copy the transaction hash. In this example, it is `0x58126ec3ee643d25e605d8fb08cd7dc3d6c5cefa504047aba09761a823000681`.
+   1. Upon transaction success, expand the last transaction in the Remix log and copy the transaction hash. In this example, it is `0x69ada1a3d014386440f52e609f08d7c60a23727b2dafccaf10d407fb827d44d3`.
 
       <ClickToZoom
         src="/images/ccip/tutorials/message-tracker-send-message-txn-hash.webp"
@@ -232,11 +220,11 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
 
    After the transaction is finalized on the source chain, it will take a few minutes for CCIP to deliver the data to _Polygon Mumbai_ and call the `ccipReceive` function on your _acknowledger_ contract.
 
-1. Copy the message ID from the CCIP Explorer transaction details. You will use this message ID to track your message status on the _message tracker_ contract. In this example, it is `0x1a09b4ce57fe52913b08867fc18cd9c263cb2c332a92fb19ccd44b90125e38b1`.
+1. Copy the message ID from the CCIP Explorer transaction details. You will use this message ID to track your message status on the _message tracker_ contract. In this example, it is `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b`.
 
 1. On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
-1. Expand the **messagesStatus** getter function and paste the message ID you copied from the CCIP explorer. Click **call** to read the message status.
+1. Paste the message ID you copied from the CCIP explorer as the argument in the **messagesInfo** getter function. Click **messagesInfo** to read the message status.
 
    <ClickToZoom
      src="/images/ccip/tutorials/message-tracker-message-status-1.webp"
@@ -244,7 +232,7 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
      style="max-width: 70%;"
    />
 
-   Note the returned `1` value. This value indicates that the _message tracker_ contract has updated your message status to `1`, which corresponds to the `Sent` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract.
+   Note the returned `status 1`. This value indicates that the _message tracker_ contract has updated your message status to the `Sent` status as defined by the `MessageStatus` `enum` in the _message tracker_ contract.
 
    ```solidity
    // Enum is used to track the status of messages sent via CCIP.
@@ -266,17 +254,9 @@ You must also allow the _message tracker_ contract address as a sender. The _mes
      style="max-width: 70%;"
    />
 
-   You can also verify the last message received on the _acknowledger_ contract by calling its `getLastReceivedMessageDetails` function. On the **Deploy & Run Transactions** tab in Remix, expand the _acknowledger_ contract in the **Deployed Contracts** section and click **getLastReceivedMessageDetails** to read the stored data.
-
-   <ClickToZoom
-     src="/images/ccip/tutorials/acknowledger-getlastreceivedmessagedetails.webp"
-     alt="Chainlink CCIP - Acknowledger Get Last Received Message Details"
-     style="max-width: 70%;"
-   />
-
 #### Acknowledgment message
 
-The `acknowledgePayLINK` function acts as a custom [`sendMessagePayLINK`](https://docs.chain.link/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function nested within the `ccipReceive` function of the _acknowledger_ contract and sends an acknowledgment (a CCIP message) back to the _message tracker_ contract upon reception of the initial message. This acknowledgment message contains the initial message ID.
+The `acknowledgePayLINK` function acts as a custom [`sendMessagePayLINK`](https://docs.chain.link/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function nested within the `ccipReceive` function of the _acknowledger_ contract and sends an acknowledgment (a CCIP message) to the _message tracker_ contract upon the initial message receipt. The data transferred in this acknowledgment message is the initial message ID.
 
 When the acknowledgment message is sent to the _message tracker_ contract, the _acknowledger_ contract emits an `AcknowledgmentSent` event.
 
@@ -284,11 +264,11 @@ When the acknowledgment message is sent to the _message tracker_ contract, the _
 // Emitted when an acknowledgment message is successfully sent back to the sender contract.
 // This event signifies that the Acknowledger contract has recognized the receipt of an initial message
 // and has informed the original sender contract by sending an acknowledgment message,
-// including the original message ID, indicating successful message reception and processing.
+// including the original message ID.
 event AcknowledgmentSent(
   bytes32 indexed messageId, // The unique ID of the CCIP message.
   uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
-  address receiver, // The address of the receiver on the destination chain.
+  address indexed receiver, // The address of the receiver on the destination chain.
   bytes32 data, // The data being sent back, usually containing the message ID of the original message to acknowledge its receipt.
   address feeToken, // The token address used to pay CCIP fees for sending the acknowledgment.
   uint256 fees // The fees paid for sending the acknowledgment message via CCIP.
@@ -303,7 +283,7 @@ event AcknowledgmentSent(
      style="max-width: 70%;"
    />
 
-   The first indexed topic (`topic1`) in the `AcknowledgmentSent` event is the message ID of the acknowledgment message sent to the _message tracker_ contract on _Ethereum Sepolia_. In this example, the message ID is `0xc9b031da5e0bd18efd48c186f40ddb7b713db5c9092c6919443a80a793e3c912`.
+   The first indexed topic (`topic1`) in the `AcknowledgmentSent` event is the acknowledgment message ID sent to the _message tracker_ contract on _Ethereum Sepolia_. In this example, the message ID is `0x0defcd4d21415378e7136b7300940fb8c0e9e046002aa9b54a0362ecb5cee0ec`.
 
 1. Copy your own message ID from the indexed `topic1` and search for it in the [CCIP explorer](https://ccip.chain.link/).
 
@@ -317,27 +297,15 @@ event AcknowledgmentSent(
 
 #### Final status check
 
-Upon reception of the acknowledgment message, the _message tracker_ `ccipReceive` function:
-
-    - Updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum`
-    - Stores the acknowledged message ID in the `s_lastReceivedAcknowledgedMsgId` variable
-    - Emits a `MessageConfirmed` event
+Upon reception of the acknowledgment message, the _message tracker_ `ccipReceive` function updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum` and emits a `MessageConfirmed` event.
 
 1. On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
-1. Expand the **messagesStatus** getter function and paste the initial message ID. Click **call** to read the message status. It returns `2`, which corresponds to the `Confirmed` status.
+1. Paste the message ID you copied from the CCIP explorer as the argument in the **messagesInfo** getter function. Click **messagesInfo** to read the message status. It returns `status 2` and the acknowledger message ID that confirms this status.
 
    <ClickToZoom
      src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
      alt="Chainlink CCIP - Message Tracker Get Message Status - 2"
-     style="max-width: 70%;"
-   />
-
-1. Click the **getLastReceivedMessageDetails** getter function. You see the acknowledgment message ID (`s_lastReceivedMessageId`) and the acknowledged message ID (`s_lastReceivedAcknowledgedMsgId`).
-
-   <ClickToZoom
-     src="/images/ccip/tutorials/message-tracker-getLastReceivedMessageDetails.webp"
-     alt="Chainlink CCIP - Message Tracker Get Last Received Message Details"
      style="max-width: 70%;"
    />
 
@@ -349,7 +317,18 @@ Upon reception of the acknowledgment message, the _message tracker_ `ccipReceive
      style="max-width: 70%;"
    />
 
-   The `MessageConfirmed` event is emitted with the acknowledged message ID `0x1a09b4ce57fe52913b08867fc18cd9c263cb2c332a92fb19ccd44b90125e38b1`.
+   The `MessageConfirmed` event is emitted with the acknowledged message ID `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b` as indexed `topic2`.
+
+   ```solidity
+   // Event emitted when the sender contract receives an acknowledgment
+   // that the receiver contract has successfully received and processed the message.
+   event MessageConfirmed(
+     bytes32 indexed messageId, // The unique ID of the CCIP message.
+     bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
+     uint64 indexed sourceChainSelector, // The chain selector of the source chain.
+     address sender // The address of the sender from the source chain.
+   );
+   ```
 
 ## Explanation
 
