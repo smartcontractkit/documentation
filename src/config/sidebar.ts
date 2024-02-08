@@ -846,10 +846,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Testnet v1.2.0",
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
-            {
-              title: "Testnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/testnet",
-            },
           ],
         },
         {
