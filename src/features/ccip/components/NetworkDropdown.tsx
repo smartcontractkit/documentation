@@ -57,7 +57,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     detailsElementRef.current.open = false
   }, [detailsElementRef])
 
-  const supportedChains = getAllChains({ mainnetVersion: Version.V1_0_0, testnetVersion: Version.V1_2_0 }).map(
+  const supportedChains = getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map(
     (element) => directoryToSupportedChain(element)
   )
 
@@ -332,7 +332,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         <div className={styles["dropdown-container"]}>
           {activeChain ? (
             <ul style={{ listStyle: "none" }}>
-              {getAllChains({ mainnetVersion: Version.V1_0_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
+              {getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
                 if (isBnMOrLnMRdd({ chainRdd, version: Version.V1_2_0 })) {
                   const supportedChain = directoryToSupportedChain(chainRdd)
                   const supportedChainTitle = getTitle(supportedChain)
@@ -443,7 +443,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         <>
           <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
           <ul style={{ marginTop: "1.5rem" }}>
-            {getAllChains({ mainnetVersion: Version.V1_0_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
+            {getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
               if (isBnMOrLnMRdd({ chainRdd, version: Version.V1_2_0 })) {
                 const supportedChain = directoryToSupportedChain(chainRdd)
                 const supportedChainTitle = getTitle(supportedChain)
