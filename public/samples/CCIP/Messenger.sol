@@ -239,7 +239,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         address _receiver,
         string calldata _text,
         address _feeTokenAddress
-    ) internal pure returns (Client.EVM2AnyMessage memory) {
+    ) private pure returns (Client.EVM2AnyMessage memory) {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
         return
             Client.EVM2AnyMessage({
