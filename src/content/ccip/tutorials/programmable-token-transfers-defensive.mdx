@@ -12,13 +12,8 @@ whatsnext:
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
-import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 This tutorial extends the [programmable token transfers example](/ccip/tutorials/programmable-token-transfers). It uses Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains, and focuses on defensive coding in the receiver contract. In the event of a specified error during the CCIP message reception, the contract locks the tokens. Locking the tokens allows the owner to recover and redirect them as needed. Defensive coding is crucial as it enables the recovery of locked tokens and ensures the protection of your users' assets.
-
-<Aside type="note" title="Node Operator Rewards">
-  CCIP rewards the oracle node and Risk Management node operators in LINK.
-</Aside>
 
 <Aside type="caution" title="Transferring tokens">
   This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
@@ -39,6 +34,12 @@ This tutorial extends the [programmable token transfers example](/ccip/tutorials
 ## Tutorial
 
 In this guide, you'll initiate a transaction from a smart contract on _Ethereum Sepolia_, sending a _string_ text and CCIP-BnM tokens to another smart contract on _Polygon Mumbai_ using CCIP. However, a deliberate failure in the processing logic will occur upon reaching the receiver contract. This tutorial will demonstrate a graceful error-handling approach, allowing the contract owner to recover the locked tokens.
+
+<Aside type="note" title="Correctly estimate your gas limit">
+  It is crucial to thoroughly test all scenarios to accurately estimate the required gas limit, including for failure
+  scenarios. Be aware that the gas used to execute the error-handling logic for failure scenarios may be higher than
+  that for successful scenarios.
+</Aside>
 
 <CodeSample src="samples/CCIP/ProgrammableDefensiveTokenTransfers.sol" />
 
@@ -103,7 +104,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
         | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                                        |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
-    1.  After the transaction is successful, record the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0x2cf22661edecb61978d213bd0d7ceb47bcad71cc76322c16a2158dfa42bca4a9) of a transaction on _Ethereum Sepolia_.
+    1.  After the transaction is successful, record the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0x24beae2612078f55ffad71f9784f0047f45cfe43e56dd16afad367f310bc5ccc) of a transaction on _Ethereum Sepolia_.
 
     <Aside type="note">
       During gas price spikes, your transaction might fail, requiring more than _0.5 LINK_ to proceed. If your
@@ -119,7 +120,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
             alt="Chainlink CCIP Explorer transaction details"
           />
 
-1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x63e095fef2161d8bd3267bc474233693e85029aad3b59c12eb5b9ffdd3832f5d_.
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x2fb721d506350a75439b16f7dab551cf518c6dcc473b4e9271218f8f470533f8_.
 
                 <br />
 
@@ -132,7 +133,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
     1.  Open MetaMask and select the network _Polygon Mumbai_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
-    1.  Call the `getFailedMessagesIds` function to list the failed messages.
+    1.  Call the `getFailedMessages` function with an _offset_ of <CopyText text="0" code/> and a _limit_ of <CopyText text="1" code/> to retrieve the first failed message.
 
         <br />
 
@@ -141,7 +142,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
           alt="Chainlink CCIP Mumbai last failed message ids"
         />
 
-    1.  Notice the messageId _0x63e095fef2161d8bd3267bc474233693e85029aad3b59c12eb5b9ffdd3832f5d_ is in the list.
+    1.  Notice the returned values are: _0x2fb721d506350a75439b16f7dab551cf518c6dcc473b4e9271218f8f470533f8_ (the message ID) and _1_ (the error code indicating failure).
 
 1.  To recover the locked tokens, call the `retryFailedMessage` function:
 
@@ -166,11 +167,24 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
             alt="Chainlink CCIP retry failed message - tokens transferred"
           />
 
+1.  Call again the `getFailedMessages` function with an _offset_ of <CopyText text="0" code/> and a _limit_ of <CopyText text="1" code/> to retrieve the first failed message. Notice that the error code is now _0_, indicating that the message was resolved.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-tokens-lastfailedmessageids-defensive-recovered.jpg"
+            alt="Chainlink CCIP retry failed message - tokens transferred - recovered"
+          />
+
 **Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to transfer tokens with data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
 
 ## Explanation
 
-The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/programmable-token-transfers#explanation). We will only explain the processing of received messages.
+The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/programmable-token-transfers#explanation). We will only explain the main differences.
+
+### Sending messages
+
+The `sendMessagePayLINK` function is similar to the `sendMessagePayLINK` function in the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. The main difference is the increased gas limit to account for the additional gas required to process the error-handling logic.
 
 ### Receiving and processing messages
 
