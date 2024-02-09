@@ -37,14 +37,6 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
     // Mapping to keep track of allowlisted senders.
     mapping(address => bool) public allowlistedSenders;
 
-    // Event emitted when a message is received from another chain.
-    event MessageReceived(
-        bytes32 indexed messageId, // The unique ID of the CCIP message.
-        uint64 indexed sourceChainSelector, // The chain selector of the source chain.
-        address sender, // The address of the sender from the source chain.
-        string text // The text that was received.
-    );
-
     // Emitted when an acknowledgment message is successfully sent back to the sender contract.
     // This event signifies that the Acknowledger contract has recognized the receipt of an initial message
     // and has informed the original sender contract by sending an acknowledgment message,
@@ -53,7 +45,7 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         bytes32 indexed messageId, // The unique ID of the CCIP message.
         uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
         address indexed receiver, // The address of the receiver on the destination chain.
-        bytes32 data, // The data being sent back, usually containing the message ID of the original message to acknowledge its receipt.
+        bytes32 data, // The data being sent back, containing the message ID of the initial message to acknowledge.
         address feeToken, // The token address used to pay CCIP fees for sending the acknowledgment.
         uint256 fees // The fees paid for sending the acknowledgment message via CCIP.
     );
@@ -84,7 +76,6 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         if (!allowlistedSenders[_sender]) revert SenderNotAllowlisted(_sender);
         _;
     }
-
 
     /// @dev Updates the allowlist status of a destination chain for transactions.
     function allowlistDestinationChain(
@@ -171,9 +162,9 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         );
     }
 
-    /// @dev Handles a received CCIP message, processes it, acknowledges its receipt, and emits a `MessageReceived` event.
+    /// @dev Handles a received CCIP message, processes it, and acknowledges its receipt.
     /// This internal function is called upon the receipt of a new message via CCIP from an allowlisted source chain and sender.
-    /// It decodes the message, acknowledges its receipt by calling `_acknowledgePayLINK`, and logs the reception with `MessageReceived`.
+    /// It decodes the message and acknowledges its receipt by calling `_acknowledgePayLINK`.
     /// @param any2EvmMessage The CCIP message received
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
@@ -197,15 +188,6 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
             messageIdToAcknowledge,
             messageTrackerAddress,
             messageTrackerChainSelector
-        );
-
-        // Emit an event to log the receipt of the message. This includes the message ID, the source chain selector,
-        // the sender's address, and the decoded text.
-        emit MessageReceived(
-            messageIdToAcknowledge,
-            messageTrackerChainSelector,
-            messageTrackerAddress,
-            s_lastReceivedText
         );
     }
 
