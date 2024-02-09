@@ -6,8 +6,11 @@ title: "Report Schema Reference"
 
 import { Aside } from "@components"
 
-<Aside type="note" title="Mainnet Early Access">
-  Chainlink Data Streams is available on Arbitrum Sepolia and in Early Access on Arbitrum Mainnet.{" "}
+<Aside type="note" title="Mainnet Access">
+  Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia.
+</Aside>
+
+<Aside type="note" title="Talk to an expert">
   <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
   integrating Chainlink Data Streams with your applications.
 </Aside>
@@ -18,17 +21,21 @@ Data Streams can deliver a broad array of information in each report. The values
 
 Streams with the `Basic` schema have the following values specifically applicable to market pricing data:
 
-- `feedID`: The unique identifier for the stream
-- `validFromTimestamp`: The earliest timestamp during which the price is valid
-- `observationsTimestamp`: The latest timestamp during which the price is valid
-- `nativeFee`: The cost to verify this report when paying with the blockchain's native token
-- `linkFee`: The cost to verify this report when paying with LINK
-- `expiresAt`: The expiration date of this report
-- `price`: The DON's concensus median price for this report carried to 8 decimal places
+| Value                   | Type      | Description                                                                   |
+| ----------------------- | --------- | ----------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | The unique identifier for the stream                                          |
+| `validFromTimestamp`    | `uint32`  | The earliest timestamp during which the price is valid                        |
+| `observationsTimestamp` | `uint32`  | The latest timestamp during which the price is valid                          |
+| `nativeFee`             | `uint192` | The cost to verify this report when paying with the blockchain's native token |
+| `linkFee`               | `uint192` | The cost to verify this report when paying with LINK                          |
+| `expiresAt`             | `uint32`  | The expiration date of this report                                            |
+| `price`                 | `int192`  | The DON's consensus median price for this report carried to 8 decimal places  |
 
 ## Premium schema
 
 The `Premium` schema includes all values from the `Basic` schema, and also includes `bid` and `ask` values:
 
-- `bid`: The simulated price impact of a buy order up to the X% depth of liquidity usage
-- `ask`: Simulated price impact of a sell order up to the X% depth of liquidity usage
+| Value | Type     | Description                                                                     |
+| ----- | -------- | ------------------------------------------------------------------------------- |
+| `bid` | `int192` | The simulated price impact of a buy order up to the X% depth of liquidity usage |
+| `ask` | `int192` | Simulated price impact of a sell order up to the X% depth of liquidity usage    |
