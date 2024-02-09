@@ -85,12 +85,6 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         _;
     }
 
-    /// @dev Modifier that checks the receiver address is not 0.
-    /// @param _receiver The receiver address.
-    modifier validateReceiver(address _receiver) {
-        if (_receiver == address(0)) revert InvalidReceiverAddress();
-        _;
-    }
 
     /// @dev Updates the allowlist status of a destination chain for transactions.
     function allowlistDestinationChain(
@@ -126,7 +120,10 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         bytes32 _messageIdToAcknowledge,
         address _messageTrackerAddress,
         uint64 _messageTrackerChainSelector
-    ) internal validateReceiver(_messageTrackerAddress) {
+    ) private {
+        if (_messageTrackerAddress == address(0))
+            revert InvalidReceiverAddress();
+
         // Construct the CCIP message for acknowledgment, including the message ID of the initial message.
         Client.EVM2AnyMessage memory acknowledgment = Client.EVM2AnyMessage({
             receiver: abi.encode(_messageTrackerAddress), // ABI-encoded receiver address
