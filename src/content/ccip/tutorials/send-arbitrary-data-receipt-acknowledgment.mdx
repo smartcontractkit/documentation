@@ -198,7 +198,7 @@ At this point, you have one _message tracker_ (sender) contract on _Ethereum Sep
    1. Click **transact** to call the function. MetaMask prompts you to confirm the transaction.
 
       <Aside type="note">
-        During gas price spikes, your transaction might fail, requiring more than _3 LINK_ to proceed. If your
+        During gas price spikes, your transaction might fail, requiring more than _2 LINK_ to proceed. If your
         transaction fails, fund your contract with more _LINK_ tokens and try again.
       </Aside>
 
@@ -332,55 +332,95 @@ Upon reception of the acknowledgment message, the _message tracker_ `ccipReceive
 
 ## Explanation
 
-The smart contracts featured in this tutorial are designed to interact with CCIP to send and receive messages and acknowledge message reception. The contract code across both contracts contains supporting comments clarifying the functions, events, and underlying logic.
+The smart contracts featured in this tutorial are designed to interact with CCIP to send and receive messages with an acknowledgment of receipt mechanism. The contract code across both contracts contains supporting comments clarifying the functions, events, and underlying logic.
 
-Refer to the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data#explanation) tutorial for more explanation about initializing the contracts, sending data, paying in LINK, and receiving data.
+Refer to the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data#explanation) tutorial for more explanation about [initializing the contracts](/ccip/tutorials/send-arbitrary-data#initializing-of-the-contract), [sending data, paying in LINK](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link), and [receiving data](/ccip/tutorials/send-arbitrary-data#receiving-data).
 
 Here, we will further explain the acknowledgment of receipt mechanism.
 
-### Message acknowledgment mechanism
+### Message acknowledgment of receipt mechanism
 
-The core of this tutorial is demonstrating a message acknowledgment mechanism between two smart contracts across different blockchains. This mechanism ensures that messages sent via CCIP are received and confirmed by the recipient contract.
+This mechanism ensures that a message sent by the _message tracker_ (sender) contract is received and acknowledged by the _acknowledger_ (receiver) contract. The message status is tracked and stored in the _message tracker_ contract.
 
-### _Message tracker_ contract
+```solidity
+// Enum is used to track the status of messages sent via CCIP.
+// `NotSent` indicates a message has not yet been sent.
+// `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
+// `Confirmed` indicates that the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
+enum MessageStatus {
+    NotSent, // 0
+    Sent, // 1
+    Confirmed // 2
+}
+
+// Struct to store the status and acknowledger message ID of a message.
+struct MessageInfo {
+    MessageStatus status;
+    bytes32 acknowledgerMessageId;
+}
+
+// Mapping to keep track of message IDs to their info (status & acknowledger message ID).
+mapping(bytes32 => MessageInfo) public messagesInfo;
+```
+
+#### _Message tracker_ contract
 
 The _message tracker_ contract acts as the sender, initiating cross-chain communication. It performs the following operations:
 
-- **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function.
+- **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function. On top of its [five primary operations](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link), the [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function also updates the message status upon sending.
 
 - **Status tracking**:
-  - Upon sending a message, the _message tracker_ updates its internal state to mark the message as `Sent`. This status is pivotal for tracking the message lifecycle and awaiting acknowledgment.
-  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` to `Confirmed`, indicating that the cross-chain communication cycle is complete and the recipient successfully received and acknowledged the message.
 
-### _Acknowledger_ contract
+  - Upon sending a message, the _message tracker_ updates its internal state to mark the message as `Sent` (status `1`). This status is pivotal for tracking the message lifecycle and awaiting acknowledgment.
+  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` (status `1`) to `Confirmed` (status `2`). This update indicates that the cross-chain communication cycle is complete, and the receiver successfully received and acknowledged the message.
+
+    ```solidity
+    // Update the message status to `Sent`
+    messagesInfo[messageId].status = MessageStatus.Sent;
+    ```
+
+#### _Acknowledger_ contract
 
 The _acknowledger_ contract receives the message and, upon processing, sends back an acknowledgment (a CCIP message). It ensures that:
 
-- **Message receipt**: Upon receiving a message via CCIP, it decodes the message and calls the `acknowledgePayLINK` internal function that is nested within the [`ccipReceive`](/ccip/tutorials/send-arbitrary-data#receiving-data) function.
+- **Message receipt**: Upon receiving a message via CCIP, the `ccipReceive` function decodes it and calls the `acknowledgePayLINK` internal function nested within the [`ccipReceive`](/ccip/tutorials/send-arbitrary-data#receiving-data) function.
 
-- **Acknowledgment sending**: `acknowledgePayLINK` constructs an acknowledgment message and sends it back to the _message tracker_ contract, signaling that the original message was received and processed.
+- **Acknowledgment sending**: `acknowledgePayLINK` constructs an acknowledgment message, sends it to the _message tracker_ contract, and emits an `AcknowledgmentSent` event. This acknowledgment message signals that the initial message was received and acknowledged.
 
 ```solidity
-/// @notice Sends an acknowledgment message back to the sender contract.
+/// @notice Sends an acknowledgment message back to the sender contract on the source chain
+/// and pays the fees using LINK tokens.
 /// @dev This function constructs and sends an acknowledgment message using CCIP,
 /// indicating the receipt and processing of an initial message. It emits the `AcknowledgmentSent` event
 /// upon successful sending. This function should be called after processing the received message
 /// to inform the sender contract about the successful message reception.
 /// @param _messageIdToAcknowledge The message ID of the initial message being acknowledged.
-function _acknowledgePayLINK(bytes32 _messageIdToAcknowledge) internal {
+/// @param _messageTrackerAddress The address of the message tracker contract on the source chain.
+/// @param _messageTrackerChainSelector The chain selector of the source chain.
+function _acknowledgePayLINK(
+  bytes32 _messageIdToAcknowledge,
+  address _messageTrackerAddress,
+  uint64 _messageTrackerChainSelector
+) internal validateReceiver(_messageTrackerAddress) {
   // Construct the CCIP message for acknowledgment, including the message ID of the initial message.
-  Client.EVM2AnyMessage memory acknowledgment = _buildCCIPMessage(
-    s_messageTrackerAddress, // The sender contract that awaits acknowledgment.
-    _messageIdToAcknowledge, // The ID of the message to acknowledge.
-    address(s_linkToken) // The token used to pay for the CCIP message transmission.
-  );
+  Client.EVM2AnyMessage memory acknowledgment = Client.EVM2AnyMessage({
+    receiver: abi.encode(_messageTrackerAddress), // ABI-encoded receiver address
+    data: abi.encode(_messageIdToAcknowledge), // ABI-encoded message ID to acknowledge
+    tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+    extraArgs: Client._argsToBytes(
+      // Additional arguments, setting gas limit
+      Client.EVMExtraArgsV1({ gasLimit: 200_000 })
+    ),
+    // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
+    feeToken: address(s_linkToken)
+  });
 
   // Initialize a router client instance to interact with the cross-chain router.
   IRouterClient router = IRouterClient(this.getRouter());
 
   // Calculate the fee required to send the CCIP acknowledgment message.
   uint256 fees = router.getFee(
-    s_messageTrackerChainSelector, // The chain selector for routing the message.
+    _messageTrackerChainSelector, // The chain selector for routing the message.
     acknowledgment // The acknowledgment message data.
   );
 
@@ -394,15 +434,15 @@ function _acknowledgePayLINK(bytes32 _messageIdToAcknowledge) internal {
 
   // Send the acknowledgment message via the CCIP router and capture the resulting message ID.
   bytes32 messageId = router.ccipSend(
-    s_messageTrackerChainSelector, // The destination chain selector.
+    _messageTrackerChainSelector, // The destination chain selector.
     acknowledgment // The CCIP message payload for acknowledgment.
   );
 
   // Emit an event detailing the acknowledgment message sending, for external tracking and verification.
   emit AcknowledgmentSent(
     messageId, // The ID of the sent acknowledgment message.
-    s_messageTrackerChainSelector, // The destination chain selector.
-    s_messageTrackerAddress, // The receiver of the acknowledgment, typically the original sender.
+    _messageTrackerChainSelector, // The destination chain selector.
+    _messageTrackerAddress, // The receiver of the acknowledgment, typically the original sender.
     _messageIdToAcknowledge, // The original message ID that was acknowledged.
     address(s_linkToken), // The fee token used.
     fees // The fees paid for sending the message.
@@ -412,12 +452,15 @@ function _acknowledgePayLINK(bytes32 _messageIdToAcknowledge) internal {
 
 ### Security and integrity
 
-Both contracts use allowlists to process only messages from trusted sources.
+Both contracts use allowlists to process only messages from and to allowed sources.
 
-- **Allowlisting chains and senders**: The contracts verify that the source chain and sender are on their respective allowlists before processing any messages.
+- **Allowlisting chains and senders**:
 
-- **Verifying message authenticity**: The _message tracker_ contract ensures that acknowledgment messages are received only for messages it has sent, guarding against replay or spoofing attacks.
+  - The `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain` modifier, ensuring the contract owner has allowlisted a destination chain.
+  - The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
+
+- **Verifying message authenticity**: The _message tracker_ contract ensures that a message status is updated to `Confirmed` only for a message it has sent.
 
 ## Final note
 
-In this example, the _message tracker_ contract emits an event when it receives the acknowledgment message confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute upon acknowledgment receipt. Also, this tutorial showcases a simple case of sending and confirming receipt of a message containing a `string`, but you could think of any other instances where tokens or tokens and data are transferred cross-chain.
+In this example, the _message tracker_ contract emits an event when it receives the acknowledgment message confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute upon acknowledgment receipt. Also, this tutorial demonstrates this pattern for sending arbitrary data, but you can apply the same pattern to programmable token transfers.
