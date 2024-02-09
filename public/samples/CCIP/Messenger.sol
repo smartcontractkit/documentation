@@ -22,6 +22,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
+    error InvalidReceiverAddress(); // Used when the receiver address is 0.
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -80,6 +81,13 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         _;
     }
 
+    /// @dev Modifier that checks the receiver address is not 0.
+    /// @param _receiver The receiver address.
+    modifier validateReceiver(address _receiver) {
+        if (_receiver == address(0)) revert InvalidReceiverAddress();
+        _;
+    }
+
     /// @dev Updates the allowlist status of a destination chain for transactions.
     function allowlistDestinationChain(
         uint64 _destinationChainSelector,
@@ -116,6 +124,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -169,6 +178,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
