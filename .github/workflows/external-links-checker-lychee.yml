@@ -1,0 +1,34 @@
+name: External Links Checker (Lychee)
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  schedule:
+    - cron: "59 23 * * 0"
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Link Checker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/data \
+            khadni/lychee-amd64:latest \
+            --base /data \
+            --quiet \
+            --no-progress \
+            '/data/**/*.md' \
+            '/data/**/*.mdx' \
+            '/data/**/*.astro' \
+            '/data/**/*.html' \
+            --exclude '(^(file://)|http://127.0.0.1:\d+|http://localhost:\d+)' \
+            --accept '403, 429' \
+            --format markdown | tee -a $GITHUB_STEP_SUMMARY
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "Exit code: $EXIT_CODE"
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit $EXIT_CODE
+          fi
