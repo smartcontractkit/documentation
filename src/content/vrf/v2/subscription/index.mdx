@@ -107,9 +107,7 @@ Each subscription must maintain a minimum balance to fund requests from consumin
 
 In the Subscription Manager, the minimum subscription balance is displayed as the **Max Cost**, and it indicates the amount of LINK you need to add for a pending request to process. After the request is processed, only the amount actually consumed by the request is deducted from your balance. For example, if your minimum balance is 10 LINK, but your subscription balance is 5 LINK, you need to add at least 5 more LINK for your request to process. This does not mean that your request will ultimately cost 10 LINK. If the request ultimately costs 3 LINK after it has processed, then 3 LINK is deducted from your subscription balance.
 
-The minimum subscription balance must be sufficient for each new consuming contract that you add to a subscription. For example, the minimum balance for a subscription that supports 20 consuming contracts needs to cover all the requests for all 20 contracts, while a subscription with one consuming contract only needs to cover that one contract.
-
-For one request, the required size of the minimum balance depends on the gas lane and the size of the request. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000 gwei.
+The minimum subscription balance is calculated per request. For one request, the required size of the minimum balance depends on the gas lane and the size of the request. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000 gwei.
 
 ```
 (((Gas lane maximum * (Max verification gas + Callback gas limit)) / (1,000,000,000 Gwei/ETH)) / (ETH/LINK price)) + LINK premium = Minimum LINK
