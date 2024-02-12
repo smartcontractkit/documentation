@@ -1,21 +1,31 @@
 name: Check external links
 
 on:
-  schedule:
-    - cron: '59 23 * * */7'
   workflow_dispatch:
+  schedule:
+    - cron: "59 23 * * 0"
 
 jobs:
   check-external-links:
-    name: Check external links
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
-      - name: Install Dependencies
-        run: npm i
-      - name: Run external link checks
-        run: npm run linkcheck-external
+      - uses: actions/checkout@v3
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.9.0
+        with:
+          args: >
+            --base . 
+            --quiet 
+            --no-progress 
+            './**/*.md' 
+            './**/*.mdx' 
+            './**/*.html' 
+            './**/*.astro' 
+            --exclude '(^(file://)|http://127.0.0.1:\d+|https://127.0.0.1:\d+|http://localhost:\d+|https://localhost:\d+)' 
+            --accept '403, 429'
+            --format markdown
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+          format: markdown
+          fail: true
