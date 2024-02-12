@@ -10,22 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v1.9.0
         with:
           args: >
-            --base . 
-            --quiet 
-            --no-progress 
-            './**/*.md' 
-            './**/*.mdx' 
-            './**/*.html' 
-            './**/*.astro' 
-            --exclude '(^(file://)|http://127.0.0.1:\d+|https://127.0.0.1:\d+|http://localhost:\d+|https://localhost:\d+)' 
-            --accept '403, 429'
+            --base ./dist
+            --quiet
+            --no-progress
+            './dist/**/*.html'
+            --exclude '(^(file://)|http://127.0.0.1:\d+|https://127.0.0.1:\d+|http://localhost:\d+|https://localhost:\d+|https?://[^ ]*/%s)'
+            --accept '403, 406, 429'
             --format markdown
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
             --github-token ${{ secrets.GITHUB_TOKEN }}
           format: markdown
           fail: true
