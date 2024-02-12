@@ -28,7 +28,14 @@ const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const currentFile = `src/content${currentPage.replace(/\/$/, "")}${frontmatter.isIndex ? "/index" : ""}.mdx`
+const fileExtension = frontmatter.fileExtension || "mdx"
+
+const baseDirectory = fileExtension === "astro" ? "src/pages" : "src/content"
+
+const currentFile = `${baseDirectory}${currentPage.replace(/\/$/, "")}${
+  frontmatter.isIndex ? "/index" : ""
+}.${fileExtension}`
+
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
