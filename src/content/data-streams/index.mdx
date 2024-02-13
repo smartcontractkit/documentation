@@ -5,13 +5,12 @@ isIndex: true
 whatsnext:
   {
     "Learn the basics about how to retrieve Data Streams reports in the Getting Started guide.": "/data-streams/getting-started",
-    "Find the list of available stream IDs.": "/data-streams/stream-ids",
+    "Find the list of available Stream IDs.": "/data-streams/stream-ids",
     "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
   }
 ---
 
 import { Aside, ClickToZoom } from "@components"
-import button from "@chainlink/design-system/button.module.css"
 
 <Aside type="note" title="Mainnet Access">
   Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia.
@@ -22,9 +21,7 @@ import button from "@chainlink/design-system/button.module.css"
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Data Streams provides low-latency delivery of market data offchain that you can verify onchain. With Chainlink Data Streams, decentralized applications (dApps) now have on-demand access to high-frequency market data backed by decentralized and transparent infrastructure. When combined with [Chainlink Automation](/chainlink-automation/introduction), Chainlink Data Streams allows decentralized applications to automate trade execution, mitigate frontrunning, and limit bias or adverse incentives in executing non-user-triggered orders.
-
-<ClickToZoom src="/images/data-streams/data-streams-architecture.webp" />
+Chainlink Data Streams provides low-latency delivery of market data offchain that you can verify onchain. With Chainlink Data Streams, decentralized applications (dApps) now have on-demand access to high-frequency market data backed by decentralized and transparent infrastructure.
 
 Traditional push-based oracles provide regular updates onchain when certain price thresholds or update time periods have been met. Chainlink Data Streams is built using a new pull-based oracle design that maintains trust-minimization using onchain verification.
 
@@ -36,15 +33,17 @@ Pull-based oracles allow decentralized applications to access data that is updat
 - **Options:** Pull-based oracles allow timely and precise settlement of options contracts. Additionally, Data Streams provides more detailed market liquidity data that can support dynamic onchain risk management logic.
 - **Prediction Markets:** Higher frequency data updates allow for applications where users can act quickly in response to real-time events and be confident in the accuracy of the data used in the settlement.
 
-## Streams Trade and Streams Direct
+## Data Streams implementations
 
 ### Streams Trade: Using Data Streams with Chainlink Automation
 
-XXX
+When combined with [Chainlink Automation](/chainlink-automation/introduction), Chainlink Data Streams allows decentralized applications to automate trade execution, mitigate frontrunning, and limit bias or adverse incentives in executing non-user-triggered orders.
+
+<ClickToZoom src="/images/data-streams/data-streams-architecture.webp" />
 
 #### Example trading flow
 
-One example of how to use Data Streams is in a decentralized exchange. An example flow might work using the following process:
+One example of how to use Streams Trade is in a decentralized exchange. An example flow might work using the following process:
 
 <ClickToZoom src="/images/data-streams/sequence-diagram.webp" />
 
@@ -60,8 +59,16 @@ One example of how to use Data Streams is in a decentralized exchange. An exampl
 
 This is one example of how you can combine Data Streams and Chainlink Automation, but the systems are highly configurable. You can write your own log triggers to initiate upkeeps on Chainlink Automation for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
 
-Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams.
+Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams, using the Streams Trade implementation.
 
 ### Streams Direct: Using the Data Engine with your own bot
 
-XXX
+Streams Direct offers a direct approach to integrating low-latency and high-frequency data into your applications. You can use an off-chain API to fetch reports, a WebSocket connection to subscribe to report updates, and an on-chain smart contract to verify reports.
+
+For instance, you can use Chainlink Data Streams with the Streams Direct implementation to display indicative pricing off-chain on your front end or with your bot to settle trades on-chain.
+
+#### On-Demand Offchain Workflows
+
+<ClickToZoom src="/images/data-streams/data-streams-on-demand-offchain-workflows.webp" />
+
+Read the [Streams Direct Interface](/data-streams/reference/streams-direct-interface) guide to learn how to use the Streams Direct implementation.

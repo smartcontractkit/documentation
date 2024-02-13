@@ -200,7 +200,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started with Streams Trade",
+          title: "Getting Started",
           url: "data-streams/getting-started",
         },
         {
@@ -247,8 +247,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/report-schema",
         },
         {
-          title: "Interfaces",
-          url: "data-streams/reference/interfaces",
+          title: "Streams Trade Interface",
+          url: "data-streams/reference/streams-trade-interface",
+        },
+        {
+          title: "Streams Direct Interface",
+          url: "data-streams/reference/streams-direct-interface",
         },
       ],
     },

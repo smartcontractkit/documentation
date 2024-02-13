@@ -10,7 +10,6 @@ whatsnext:
 ---
 
 import { Aside, ClickToZoom } from "@components"
-import button from "@chainlink/design-system/button.module.css"
 
 <Aside type="note" title="Mainnet Access">
   Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia.
@@ -21,7 +20,7 @@ import button from "@chainlink/design-system/button.module.css"
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-# High-Level Architecture
+## High-Level Architecture
 
 Chainlink Data Streams has the following core components:
 
@@ -33,7 +32,7 @@ Chainlink Data Streams has the following core components:
 
 Using Chainlink Automation with Data Streams automates trade execution and mitigates frontrunning by executing the transaction before the data is recorded onchain. Chainlink Automation executes transactions only in response to the data and the verified report, so the transaction is executed correctly and independently from the decentralized application itself.
 
-## Comparison to push-based oracles
+### Comparison to push-based oracles
 
 Chainlink's push-based oracles provide regular updates onchain. Chainlink Data Streams operates as a pull-based oracle where you can retrieve the data in a report and use it onchain any time. Verifying the report onchain confirms that the data was agreed upon and signed by the DON. While many applications benefit from push-based oracles and require data only after it has been verified onchain, some applications require access to data that is updated at a higher frequency and delivered with lower latency. Pull-based oracles deliver these benefits while still cryptographically signing the data to ensure its veracity.
 
@@ -41,7 +40,7 @@ Chainlink's push-based oracles provide regular updates onchain. Chainlink Data S
 
 Additionally, pull-based oracles deliver data onchain more efficiently by retrieving and verifying the data only when the application needs it. For example, a decentralized exchange might retrieve a Data Streams report and verify the data onchain when a user executes a trade. A push-based oracle repeatedly delivers data onchain even when that data is not immediately required by users.
 
-### Example trading flow
+#### Example trading flow using Streams Trade
 
 One example of how to use Data Streams is in a decentralized exchange. An example flow might work using the following process:
 
@@ -59,4 +58,4 @@ One example of how to use Data Streams is in a decentralized exchange. An exampl
 
 This is one example of how you can combine Data Streams and Chainlink Automation, but the systems are highly configurable. You can write your own log triggers to initiate upkeeps on Chainlink Automation for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
 
-Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams.
+Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams, using the Streams Trade implementation.
