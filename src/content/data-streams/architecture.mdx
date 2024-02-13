@@ -1,10 +1,9 @@
 ---
 section: dataStreams
-title: "Chainlink Data Streams"
-isIndex: true
+title: "Data Streams Architecture"
+isIndex: false
 whatsnext:
   {
-    "Learn the basics about how to retrieve Data Streams reports in the Getting Started guide.": "/data-streams/getting-started",
     "Find the list of available stream IDs.": "/data-streams/stream-ids",
     "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
   }
@@ -22,27 +21,27 @@ import button from "@chainlink/design-system/button.module.css"
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Data Streams provides low-latency delivery of market data offchain that you can verify onchain. With Chainlink Data Streams, decentralized applications (dApps) now have on-demand access to high-frequency market data backed by decentralized and transparent infrastructure. When combined with [Chainlink Automation](/chainlink-automation/introduction), Chainlink Data Streams allows decentralized applications to automate trade execution, mitigate frontrunning, and limit bias or adverse incentives in executing non-user-triggered orders.
+# High-Level Architecture
+
+Chainlink Data Streams has the following core components:
+
+- **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Engine rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a concensus about the median price of an asset, sign a report including that data, and deliver the report to the Chainlink Data Engine.
+- **The Chainlink Data Engine:** The Data Engine stores the signed reports and delivers them to Chainlink Automation when it is requested.
+- **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached concensus to the point where you use the data in your application.
 
 <ClickToZoom src="/images/data-streams/data-streams-architecture.webp" />
 
-Traditional push-based oracles provide regular updates onchain when certain price thresholds or update time periods have been met. Chainlink Data Streams is built using a new pull-based oracle design that maintains trust-minimization using onchain verification.
+Using Chainlink Automation with Data Streams automates trade execution and mitigates frontrunning by executing the transaction before the data is recorded onchain. Chainlink Automation executes transactions only in response to the data and the verified report, so the transaction is executed correctly and independently from the decentralized application itself.
 
-## Use cases
+## Comparison to push-based oracles
 
-Pull-based oracles allow decentralized applications to access data that is updated at a high frequency and delivered with low latency, which enables several new use cases:
+Chainlink's push-based oracles provide regular updates onchain. Chainlink Data Streams operates as a pull-based oracle where you can retrieve the data in a report and use it onchain any time. Verifying the report onchain confirms that the data was agreed upon and signed by the DON. While many applications benefit from push-based oracles and require data only after it has been verified onchain, some applications require access to data that is updated at a higher frequency and delivered with lower latency. Pull-based oracles deliver these benefits while still cryptographically signing the data to ensure its veracity.
 
-- **Perpetual Futures:** Low-latency data and frontrunning prevention enable onchain perpetual futures protocols that can compete on performance with centralized exchanges while still using more transparent and decentralized infrastructure.
-- **Options:** Pull-based oracles allow timely and precise settlement of options contracts. Additionally, Data Streams provides more detailed market liquidity data that can support dynamic onchain risk management logic.
-- **Prediction Markets:** Higher frequency data updates allow for applications where users can act quickly in response to real-time events and be confident in the accuracy of the data used in the settlement.
+<ClickToZoom src="/images/data-streams/push-based-vs-pull-based-oracles.webp" />
 
-## Streams Trade and Streams Direct
+Additionally, pull-based oracles deliver data onchain more efficiently by retrieving and verifying the data only when the application needs it. For example, a decentralized exchange might retrieve a Data Streams report and verify the data onchain when a user executes a trade. A push-based oracle repeatedly delivers data onchain even when that data is not immediately required by users.
 
-### Streams Trade: Using Data Streams with Chainlink Automation
-
-XXX
-
-#### Example trading flow
+### Example trading flow
 
 One example of how to use Data Streams is in a decentralized exchange. An example flow might work using the following process:
 
@@ -61,7 +60,3 @@ One example of how to use Data Streams is in a decentralized exchange. An exampl
 This is one example of how you can combine Data Streams and Chainlink Automation, but the systems are highly configurable. You can write your own log triggers to initiate upkeeps on Chainlink Automation for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
 
 Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams.
-
-### Streams Direct: Using the Data Engine with your own bot
-
-XXX

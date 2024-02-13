@@ -200,7 +200,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started with Streams Trade",
           url: "data-streams/getting-started",
         },
         {
@@ -208,8 +208,34 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/stream-ids",
         },
         {
+          title: "Billing",
+          url: "data-streams/billing",
+        },
+        {
           title: "Release Notes",
           url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Fetch and decode single and bulk reports from the REST API",
+          url: "#",
+        },
+        {
+          title: "Connect, listen, and decode real-time reports using WebSockets",
+          url: "#",
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Architecture",
+          url: "data-streams/architecture",
         },
       ],
     },

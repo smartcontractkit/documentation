@@ -15,15 +15,160 @@ import { Aside, CodeSample } from "@components"
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
+## Streams Trade
+
 Data Streams require several interfaces in order to retrieve and verify reports.
 
-- Automation interfaces:
-  - [StreamsLookupCompatibleInterface](/chainlink-automation/reference/automation-interfaces#streamslookupcompatibleinterface)
-  - [ILogAutomation](/chainlink-automation/reference/automation-interfaces#ilogautomation)
-- Data Streams interfaces:
-  - IVerifierProxy
-  - IReportHandler
+### Automation interfaces:
 
-In the current code example for using Data Streams with Automation, these interfaces are specified in the example itself. Imports for these interfaces will be available in the future.
+- [StreamsLookupCompatibleInterface](/chainlink-automation/reference/automation-interfaces#streamslookupcompatibleinterface)
+- [ILogAutomation](/chainlink-automation/reference/automation-interfaces#ilogautomation)
+
+### Streams Trade interfaces:
+
+- IVerifierProxy
+- IFeeManager
+
+In the current code example for using Data Streams with Automation (Streams Trade), these interfaces are specified in the example itself. Imports for these interfaces will be available in the future.
 
 <CodeSample src="samples/DataStreams/StreamsUpkeep.sol" />
+
+## Streams Direct
+
+### Domains
+
+| Description                                      | Testnet URL                                | Mainnet URL                       |
+| ------------------------------------------------ | ------------------------------------------ | --------------------------------- |
+| REST endpoint to poll for specific reports       | https://api.testnet-dataengine.chain.link/ | https://api.dataengine.chain.link |
+| websocket endpoint to subscribe to price updates | https://ws.testnet-dataengine.chain.link/  | wss://ws.dataengine.chain.link    |
+
+### Authentication
+
+<Aside type="note" title="Early Access">
+  Credentials are provided to you by your Chainlink Solution Architect.{" "}
+  <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
+  integrating Chainlink Data Streams with your applications.
+</Aside>
+
+#### Headers
+
+All routes require the following three headers for user authentication:
+
+| Header                           | Description                                                                                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Authorization                    | The user’s id, which is a uuid that we will provide to you after we create your user                                                                                |
+| X-Authorization-Timestamp        | The current time in up to nanosecond precision. Must be within 5 seconds of the current time (by default).                                                          |
+| X-Authorization-Signature-SHA256 | The HMAC, which is a user generated hash that is created by encrypting parts of the request and its metadata with a shared secret for the user that we will provide |
+
+#### Authentication error response codes
+
+| Error                        | Description                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code 400 - Invalid Timestamp | This error occurs if the timestamp is invalid.                                                                                                                                                                                                                                                                                                                      |
+| Code 401 - Unauthorized User | This error occurs if the user is unauthorized. Most often seen when the server produces an HMAC that differs from what the client provide.                                                                                                                                                                                                                          |
+| Code 420 - Bad Request       | This error occurs if: <ul><li>There’s any missing/malformed query arguments</li><li>If the user requested a feed that they don’t have permission to access or that doesn’t exist</li><li>If the user is missing required headers or if those headers have bad values</li><li>Error code 500 on internal server errors (something went wrong on our side).</li></ul> |
+
+### Paths
+
+#### REST API endpoints
+
+- **`/api/v1/reports/latest`**
+
+  | Type     | Description                                        | Parameter(s)                          |
+  | -------- | -------------------------------------------------- | ------------------------------------- |
+  | HTTP GET | Returns a single report with the latest timestamp. | <ul><li>`feedID`: A FeedID.</li></ul> |
+
+  - Sample request:
+
+    ```http
+    GET /api/v1/reports/latest?feedID=0x...
+    ```
+
+  - Sample response:
+    ```json
+    {
+      "report": {
+        "feedID": "hex encoded feedId",
+        "validFromTimestamp": "report's earliest applicable timestamp",
+        "observationsTimestamp": "report's latest applicable timestamp",
+        "fullReport": "a blob containing the report context + body, can be passed unmodified to the contract for verification"
+      }
+    }
+    ```
+
+- **`/api/v1/reports`**
+
+  | Type     | Description                                    | Parameter(s)                                                                             |
+  | -------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+  | HTTP GET | Returns a single report for a given timestamp. | <ul><li>`feedID`: A FeedID.</li><li>`timestamp`: The timestamp for the report.</li></ul> |
+
+  - Sample request:
+
+    ```http
+    GET /api/v1/reports?feedID=0x...&timestamp=XXXX
+    ```
+
+  - Sample response:
+    ```json
+    {
+      "report": {
+        "feedID": "hex encoded feedId",
+        "validFromTimestamp": "report's earliest applicable timestamp",
+        "observationsTimestamp": "report's latest applicable timestamp",
+        "fullReport": "a blob containing the report context + body, can be passed unmodified to the contract for verification"
+      }
+    }
+    ```
+
+- **`/api/v1/reports/bulk`**
+
+  | Type     | Description                                                          | Parameter(s)                                                                                                        |
+  | -------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+  | HTTP GET | Return multiple reports for multiple FeedIDs and the same timestamp. | <ul><li>`feedIDs`: A comma-separated list of FeedIDs.</li><li>`timestamp`: The timestamp for the reports.</li></ul> |
+
+  - Sample request:
+    ```http
+    GET /api/v1/reports/bulk?feedIDs=0x...,0x...,0x...&timestamp=XXXX
+    ```
+  - Sample response:
+    ```json
+    {
+      "reports": [
+        {
+          "feedID": "hex encoded feedId",
+          "validFromTimestamp": "report's earliest applicable timestamp",
+          "observationsTimestamp": "report's latest applicable timestamp",
+          "fullReport": "a blob containing the report context + body, can be passed unmodified to the contract for verification"
+        }
+        //...
+      ]
+    }
+    ```
+
+#### WebSocket
+
+**`/api/v1/ws`**
+
+| Type      | Description                                                                                                     | Parameter(s)                          |
+| --------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| WebSocket | Establishes a streaming websocket connection that sends reports for the given feedID(s) after they are verified | <ul><li>`feedID`: A FeedID.</li></ul> |
+
+- Sample request:
+
+  ```http
+  GET /api/v1/ws?feedIDs=0x..., 0x..., 0x...
+  ```
+
+- Sample response:
+  ```json
+  {
+    "report": {
+      "feedID": "hex encoded feedId",
+      "fullReport": "a blob containing the report context + body, can be passed unmodified to the contract for verification"
+    }
+  }
+  ```
+
+```
+
+```
