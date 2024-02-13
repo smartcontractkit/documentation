@@ -4,7 +4,8 @@ title: "Chainlink Data Streams"
 isIndex: true
 whatsnext:
   {
-    "Learn the basics about how to retrieve Data Streams reports in the Getting Started guide.": "/data-streams/getting-started",
+    "Learn the basics about how to retrieve Data Streams reports using the Streams Trade implementation": "/data-streams/getting-started",
+    "Learn how to fetch and decode Data Streams reports using the Streams Direct implementation": "/data-streams/#",
     "Find the list of available Stream IDs.": "/data-streams/stream-ids",
     "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
   }
@@ -25,6 +26,14 @@ Chainlink Data Streams provides low-latency delivery of market data offchain tha
 
 Traditional push-based oracles provide regular updates onchain when certain price thresholds or update time periods have been met. Chainlink Data Streams is built using a new pull-based oracle design that maintains trust-minimization using onchain verification.
 
+## Comparison to push-based oracles
+
+Chainlink's push-based oracles provide regular updates onchain. Chainlink Data Streams operates as a pull-based oracle where you can retrieve the data in a report and use it onchain any time. Verifying the report onchain confirms that the data was agreed upon and signed by the DON. While many applications benefit from push-based oracles and require data only after it has been verified onchain, some applications require access to data that is updated at a higher frequency and delivered with lower latency. Pull-based oracles deliver these benefits while still cryptographically signing the data to ensure its veracity.
+
+<ClickToZoom src="/images/data-streams/push-based-vs-pull-based-oracles.webp" />
+
+Additionally, pull-based oracles deliver data onchain more efficiently by retrieving and verifying the data only when the application needs it. For example, a decentralized exchange might retrieve a Data Streams report and verify the data onchain when a user executes a trade. A push-based oracle repeatedly delivers data onchain even when that data is not immediately required by users.
+
 ## Use cases
 
 Pull-based oracles allow decentralized applications to access data that is updated at a high frequency and delivered with low latency, which enables several new use cases:
@@ -39,7 +48,7 @@ Pull-based oracles allow decentralized applications to access data that is updat
 
 When combined with [Chainlink Automation](/chainlink-automation/introduction), Chainlink Data Streams allows decentralized applications to automate trade execution, mitigate frontrunning, and limit bias or adverse incentives in executing non-user-triggered orders.
 
-<ClickToZoom src="/images/data-streams/data-streams-architecture.webp" />
+<ClickToZoom src="/images/data-streams/data-streams-trade-architecture.webp" />
 
 #### Example trading flow
 
@@ -57,7 +66,7 @@ One example of how to use Streams Trade is in a decentralized exchange. An examp
 1. The verifier contract returns a `verifierResponse` bytes value to the upkeep.
 1. If the response indicates that the report is valid, the upkeep executes the user's requested trade. If the response is invalid, the upkeep rejects the trade and notifies the user.
 
-This is one example of how you can combine Data Streams and Chainlink Automation, but the systems are highly configurable. You can write your own log triggers to initiate upkeeps on Chainlink Automation for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
+This is one example of how you can combine Data Streams and Chainlink Automation, but the systems are highly configurable. You can write your own log triggers to initiate upkeeps on Chainlink Automation for various events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
 
 Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Chainlink Data Streams, using the Streams Trade implementation.
 
@@ -71,4 +80,4 @@ For instance, you can use Chainlink Data Streams with the Streams Direct impleme
 
 <ClickToZoom src="/images/data-streams/data-streams-on-demand-offchain-workflows.webp" />
 
-Read the [Streams Direct Interface](/data-streams/reference/streams-direct-interface) guide to learn how to use the Streams Direct implementation.
+Learn more about the [Streams Direct Architecture](/data-streams/architecture#streams-direct-architecture) or read this [guide](/data-streams/guides/#) to learn how to fetch and decode Data Streams reports using the Streams Direct implementation.
