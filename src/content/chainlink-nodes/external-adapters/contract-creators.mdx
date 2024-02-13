@@ -20,13 +20,13 @@ function requestMWAPrice(string _coin, string _market)
   onlyOwner
   returns (bytes32 requestId)
 {
-  Chainlink.Request memory req = buildChainlinkRequest(SPEC_ID, this, this.fulfill.selector);
-  req.add("endpoint", "mwa-historic");
-  req.add("coin", _coin);
-  req.add("market", _market);
-  req.add("copyPath", "data.-1.1");
-  req.addInt("times", 100);
-  requestId = sendChainlinkRequest(req, oraclePayment);
+  Chainlink.Request memory req = _buildChainlinkRequest(SPEC_ID, this, this.fulfill.selector);
+  req._add("endpoint", "mwa-historic");
+  req._add("coin", _coin);
+  req._add("market", _market);
+  req._add("copyPath", "data.-1.1");
+  req._addInt("times", 100);
+  requestId = _sendChainlinkRequest(req, oraclePayment);
 }
 ```
 

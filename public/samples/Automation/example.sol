@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 // KeeperCompatible.sol imports the functions from both ./KeeperBase.sol and
 // ./interfaces/KeeperCompatibleInterface.sol
-import "@chainlink/contracts/src/v0.8/Automation/KeeperCompatible.sol";
+import "@chainlink/contracts/src/v0.8/automation/KeeperCompatible.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.

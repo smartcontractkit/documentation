@@ -74,7 +74,7 @@ After the function signature and a short description, two code examples are prov
 
 {/* prettier-ignore */}
 ```solidity
-function setChainlinkOracle(
+function _setChainlinkOracle(
   address _oracle
 )
 ```
@@ -87,7 +87,7 @@ Retrieve the oracle address using [chainlinkOracleAddress](#chainlinkoracleaddre
 ```solidity
 constructor(address _oracle)
 {
-  setChainlinkOracle(_oracle);
+  _setChainlinkOracle(_oracle);
 }
 ```
 
@@ -95,7 +95,7 @@ constructor(address _oracle)
 
 {/* prettier-ignore */}
 ```solidity
-setChainlinkToken(
+_setChainlinkToken(
   address _link
 )
 ```
@@ -107,7 +107,7 @@ Sets the stored address for the LINK token which is used to send requests to Ora
 constructor(address _link)
   public
 {
-  setChainlinkToken(_link);
+  _setChainlinkToken(_link);
 }
 ```
 
@@ -118,7 +118,7 @@ Use `buildOperatorRequest` [function](#buildoperatorrequest) if the oracle is an
 
 {/* prettier-ignore */}
 ```solidity
-function buildChainlinkRequest(
+function _buildChainlinkRequest(
     bytes32 _jobId,
     address _callbackAddress,
     bytes4 _callbackFunctionSignature
@@ -137,7 +137,7 @@ function requestPrice()
   // build a request that calls the myCallback function defined
   //   below by specifying the address of this contract and the function
   //   selector of the myCallback
-  Chainlink.Request memory request = buildChainlinkRequest(
+  Chainlink.Request memory request = _buildChainlinkRequest(
     jobId,
     address(this),
     selector);
@@ -185,7 +185,7 @@ Use `sendOperatorRequest` [function](#sendoperatorrequest) if the oracle is an `
 
 {/* prettier-ignore */}
 ```solidity
-function sendChainlinkRequest(
+function _sendChainlinkRequest(
     Chainlink.Request memory _req,
     uint256 _payment
 ) returns (bytes32 requestId)
@@ -202,11 +202,11 @@ Sends the request payload to the stored oracle address. It takes a [Chainlink.Re
 function requestPrice()
   public
 {
-  Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.callback.selector);
+  Chainlink.Request memory request = _buildChainlinkRequest(jobId, address(this), this.callback.selector);
   uint256 paymentAmount = 1 * LINK_DIVISIBILITY / 10; // Equivalent to 0.1 LINK
 
   // send the request that you just built
-  sendChainlinkRequest(request, paymentAmount);
+  _sendChainlinkRequest(request, paymentAmount);
 }
 ```
 
@@ -217,7 +217,7 @@ Use `sendOperatorRequestTo` [function](#sendoperatorrequestto) if the oracle is 
 
 {/* prettier-ignore */}
 ```solidity
-function sendChainlinkRequestTo(
+function _sendChainlinkRequestTo(
   address _oracle,
   Chainlink.Request memory _req,
   uint256 _payment
@@ -233,11 +233,11 @@ Similar to [sendChainlinkRequest](#sendchainlinkrequest), `sendChainlinkRequestT
 function requestPriceFrom(address _oracle)
   public
 {
-  Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.callback.callbackSelector);
+  Chainlink.Request memory request = _buildChainlinkRequest(jobId, address(this), this.callback.callbackSelector);
   uint256 paymentAmount = 1 * LINK_DIVISIBILITY; // = 1 LINK
 
   // send the request that you just built to a specified oracle
-  sendChainlinkRequestTo(_oracle, request, paymentAmount);
+  _sendChainlinkRequestTo(_oracle, request, paymentAmount);
 }
 ```
 
@@ -282,7 +282,7 @@ It is recommended to use `sendOperatorRequestTo`, but make sure the oracle you a
 
 {/* prettier-ignore */}
 ```solidity
-function sendChainlinkRequestTo(
+function _sendChainlinkRequestTo(
   address _oracle,
   Chainlink.Request memory _req,
   uint256 _payment
@@ -368,7 +368,7 @@ Being able to change a request means that you can change the data fed into a con
 
 {/* prettier-ignore */}
 ```solidity
-function cancelChainlinkRequest(bytes32 _requestId,
+function _cancelChainlinkRequest(bytes32 _requestId,
     uint256 _payment,
     bytes4 _callbackFunc,
     uint256 _expiration
@@ -391,7 +391,7 @@ function cancelRequest(
     bytes4 _callbackFunc,
     uint256 _expiration
 ) public {
-  cancelChainlinkRequest(_requestId, _payment, _callbackFunc, _expiration);
+  _cancelChainlinkRequest(_requestId, _payment, _callbackFunc, _expiration);
 }
 ```
 
@@ -453,7 +453,7 @@ If an oracle provider supports listing their oracle on ENS, that provides the ad
 
 {/* prettier-ignore */}
 ```solidity
-function chainlinkTokenAddress() returns (address)
+function _chainlinkTokenAddress() returns (address)
 ```
 
 The `chainlinkTokenAddress` function is a helper used to return the stored address of the Chainlink token. This variable is protected and so only made available through getters and setters.
@@ -461,7 +461,7 @@ The `chainlinkTokenAddress` function is a helper used to return the stored addre
 {/* prettier-ignore */}
 ```solidity
 function withdrawLink() public {
-  LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+  LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
 
   require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
 }
@@ -609,11 +609,11 @@ Add a string value to the run request parameters. Commonly used for `get` with j
 function requestEthereumPrice()
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
-  req.add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR,JPY");
+  req._add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR,JPY");
 
-  sendChainlinkRequest(req, 1 * LINK_DIVISIBILITY); // =1 LINK
+  _sendChainlinkRequest(req, 1 * LINK_DIVISIBILITY); // =1 LINK
 }
 ```
 
@@ -635,11 +635,11 @@ Add a CBOR bytes type value to the run request parameters.
 function requestEmojiPopularity(bytes _unicode)
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
   req.addBytes("emojiUnicode", _unicode);
 
-  sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
+  _sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
 }
 ```
 
@@ -647,7 +647,7 @@ Note that this can also be used as a workaround to pass other data types like ar
 
 {/* prettier-ignore */}
 ```solidity
-Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+Chainlink.Request memory req = _buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
 req.addBytes("address", abi.encode(msg.sender)); // msg.sender used in this example. Replace it with your address
 
@@ -671,11 +671,11 @@ Add a CBOR signed integer type value to the run request parameters. Commonly use
 function requestPrice()
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
-  req.addInt("times", 100);
+  req._addInt("times", 100);
 
-  sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
+  _sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
 }
 ```
 
@@ -697,11 +697,11 @@ Add a CBOR unsigned integer type value to the run request parameters. Commonly u
 function requestPrice()
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
   req.addUint("times", 100);
 
-  sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
+  _sendChainlinkRequest(req, LINK_DIVISIBILITY * 1);
 }
 ```
 
@@ -723,7 +723,7 @@ Add a CBOR array of strings to the run request parameters. Commonly used with th
 function requestPrice(string _currency)
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
   string[] memory path = new string[](2);
   path[0] = _currency;
   path[1] = "recent";
@@ -731,7 +731,7 @@ function requestPrice(string _currency)
   // specify templated fields in a job specification
   req.addStringArray("path", path);
 
-  sendChainlinkRequest(req, PAYMENT);
+  _sendChainlinkRequest(req, PAYMENT);
 }
 ```
 
@@ -752,11 +752,11 @@ Set the CBOR payload directly on the request object, avoiding the cost of encodi
 function requestPrice(bytes _cbor)
   public
 {
-  Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
+  Chainlink.Request memory req = _buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
 
   req.setBuffer(_cbor);
 
-  sendChainlinkRequest(req, PAYMENT);
+  _sendChainlinkRequest(req, PAYMENT);
 }
 ```
 

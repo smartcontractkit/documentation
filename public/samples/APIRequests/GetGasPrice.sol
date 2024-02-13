@@ -42,8 +42,8 @@ contract GetGasPrice is ChainlinkClient, ConfirmedOwner {
      *
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
-        setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        _setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "7223acbd01654282865b678924126013";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
@@ -52,13 +52,13 @@ contract GetGasPrice is ChainlinkClient, ConfirmedOwner {
      * Create a Chainlink request the gas price from Etherscan
      */
     function requestGasPrice() public returns (bytes32 requestId) {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfill.selector
         );
         // No need extra parameters for this job. Send the request
-        return sendChainlinkRequest(req, fee);
+        return _sendChainlinkRequest(req, fee);
     }
 
     /**
@@ -85,7 +85,7 @@ contract GetGasPrice is ChainlinkClient, ConfirmedOwner {
      * Allow withdraw of Link tokens from the contract
      */
     function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
         require(
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
