@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "59 23 * * 0"
+  push:
+    branches:
+      - "external-links-checker-lychee"
 
 jobs:
   check-external-links:
@@ -29,7 +32,6 @@ jobs:
             --no-progress
             './dist/**/*.html'
             --exclude '(^(file://)|http://127.0.0.1:\d+|https://127.0.0.1:\d+|http://localhost:\d+|https://localhost:\d+|https?://[^ ]*/%s)'
-            --accept '403, 406, 429'
             --format markdown
             --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
             --github-token ${{ secrets.GITHUB_TOKEN }}
