@@ -1,10 +1,218 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode single and bulk reports from the REST API"
-# whatsnext:
-#   {
-#   }
+title: "Fetch and decode reports using Streams Direct"
+whatsnext:
+  {
+    "Learn how to Connect, listen, and decode real-time reports using Streams Direct": "/data-streams/tutorials/streams-direct-ws",
+    "Find the list of available Stream IDs": "/data-streams/stream-ids",
+  }
 ---
 
 import { Aside, CodeSample } from "@components"
+
+In this tutorial, you'll learn how to use the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation of Chainlink Data Streams to fetch and decode reports from the RESTful API using Go. You'll set up your Go project, retrieve reports from the API, and decode them.
+
+## Before you begin
+
+- Ensure you have Go version 1.21 or higher. You can download it from the official [Go website](https://go.dev/) and verify your version with the `go version` command in your terminal.
+- Access to the Streams Direct implementation requires API credentials. [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications if you don't have credentials yet.
+
+## Tutorial
+
+You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple feeds, and log their attributes to your terminal.
+
+### Set up your Go project
+
+1.  Create and navigate to your project directory:
+
+    ```bash
+    mkdir data-streams-direct && cd data-streams-direct
+    ```
+
+1.  Initialize a Go module:
+
+    ```bash
+    go mod init data-streams-direct
+    ```
+
+1.  Define the required environment variables in your terminal session:
+
+    ```bash
+    export BASE_URL='api.testnet-dataengine.chain.link'
+    export CLIENT_ID='YOUR_CLIENT_ID'
+    export CLIENT_SECRET='YOUR_CLIENT_SECRET'
+    ```
+
+    - `BASE_URL` is the Data Engine API URL. See the [Streams Direct Interface guide](/data-streams/reference/streams-direct-interface#domains) for more information.
+    - `CLIENT_ID` and `CLIENT_SECRET` are your API credentials.
+
+1.  Open the `go.mod` file at the root of your project directory and include the necessary module and package information:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/mod.go" />
+
+1.  Create `client` and `internal` subfolders within your project directory:
+
+    ```bash
+    mkdir client internal
+    ```
+
+1.  Create a `client.go` file in the `client` subfolder:
+
+    ```bash
+    touch client/client.go
+    ```
+
+    Open the `client.go` file and insert the following code to enable report fetching:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/client.go" />
+
+1.  Create a `decoder.go` file in the `internal` subfolder:
+
+    ```bash
+    touch internal/decoder.go
+    ```
+
+    Open the `decoder.go` file and insert the following code to enable report decoding:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/decoder.go" />
+
+1.  Execute the command below to download dependencies and generate the `go.sum` file:
+
+    ```bash
+    go mod tidy
+    ```
+
+    Your project directory should now have the following structure:
+
+    ```plaintext
+    data-streams-direct/
+    ├── client/
+    │   └── client.go
+    ├── go.mod
+    ├── go.sum
+    ├── internal/
+    │   └── decoder.go
+    ```
+
+### Fetch and decode a report with a single feed
+
+1.  Create a `singleFeed.go` file at the root of your project directory:
+
+    ```bash
+    touch singleFeed.go
+    ```
+
+    Then, open the `singleFeed.go` file and insert the following code to initialize the fetching and decoding processes for a single feed:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/singleFeed.go" />
+
+1.  Run your application:
+
+    ```bash
+    go run singleFeed.go
+    ```
+
+    Expect to see the output below in your terminal:
+
+        ```plaintext
+        Generating HMAC with the following:  GET /api/v1/reports?feedID=0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b&timestamp=1707920277 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 <YOUR_CLIENT_ID> 1707920278120
+        base:  api.testnet-dataengine.chain.link
+        header:  map[Authorization:[<YOUR_CLIENT_ID>] X-Authorization-Signature-Sha256:[...] X-Authorization-Timestamp:[1707920278120]]
+        params:  map[feedID:[0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b] timestamp:[1707920277]]
+        Feed ID: 0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b
+        Feed Version: 2
+        Decoded V2 Report Details:
+        Valid From Timestamp: 1707920277
+        Observations Timestamp: 1707920277
+        Native Fee: 36191497454800
+        Link Fee: 4931765327865000
+        Expires At: 1708006677
+        Benchmark Price: 2763079922979423400000
+        ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute              | Value                                                                | Description                                                                                                                                 |
+| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feed ID                | `0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe` | Unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with Report schema: Basic).                                             |
+| Feed Version           | `2`                                                                  | Version of the feed report schema.                                                                                                          |
+| Valid From Timestamp   | `1707920277`                                                         | Start validity timestamp for the report, indicating when the data becomes relevant.                                                         |
+| Observations Timestamp | `1707920277`                                                         | Unix timestamp indicating when the data was captured.                                                                                       |
+| Native Fee             | `36191497454800`                                                     | Fee paid in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) with 18 decimals. For readability: `0.036191497454800` ETH. |
+| Link Fee               | `4931765327865000`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.931765327865000` LINK.                                                         |
+| Expires At             | `1708006677`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
+| Benchmark Price        | `2763079922979423400000`                                             | Observed price in the report with 18 decimals. For readability: `2,763.0799229794234` ETH per USD.                                          |
+
+This tutorial logs data to the terminal, but you can also utilize these attributes for further analysis, processing, or display in your application.
+
+### Fetch and decode a report with multiple feeds
+
+1.  Create a `multipleFeeds.go` file at the root of your project directory:
+
+    ```bash
+    touch multipleFeeds.go
+    ```
+
+    Then, open the `multipleFeeds.go` file and insert the following code to initialize the fetching and decoding processes for a multiple feeds:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/multipleFeeds.go" />
+
+1.  Run your application:
+
+    ```bash
+    go run multipleFeeds.go
+    ```
+
+    Expect to see the output below in your terminal:
+
+        ``` plaintext
+        Generating HMAC with the following:  GET /api/v1/reports/bulk?feedIDs=0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b%2C0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe&timestamp=1707925622 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 <YOUR_CLIENT_ID> 1707925622896
+        base:  api.testnet-dataengine.chain.link
+        header:  map[Authorization:[<YOUR_CLIENT_ID>] X-Authorization-Signature-Sha256:[...] X-Authorization-Timestamp:[1707925622896]]
+        params:  map[feedIDs:[0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b,0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe] timestamp:[1707925622]]
+        Feed ID: 0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b
+        Feed Version: 2
+        Decoded V2 Report Details:
+        Valid From Timestamp: 1707925622
+        Observations Timestamp: 1707925622
+        Native Fee: 36338793853100
+        Link Fee: 4987049841110400
+        Expires At: 1708012022
+        Benchmark Price: 2751879999214571400000
+        Feed ID: 0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe
+        Feed Version: 2
+        Decoded V2 Report Details:
+        Valid From Timestamp: 1707925622
+        Observations Timestamp: 1707925622
+        Native Fee: 36339880628000
+        Link Fee: 4987244502331500
+        Expires At: 1708012022
+        Benchmark Price: 20051152485756674000
+        ```
+
+        Your application has successfully fetched and decoded data for both feeds from the same report.
+
+This tutorial logs data to the terminal, but you can also utilize these attributes for further analysis, processing, or display in your application.
+
+## Explanation
+
+### Fetching the report
+
+The application fetches a report from the Data Engine API using either the `FetchSingleReportSingleFeed` function for a single feed or the `FetchSingleReportMultipleFeeds` function for multiple feeds, found in the `client` package. This step involves sending an API request and receiving a response with the report data in either a `SingleReport` struct (single feed) or a `BulkReportResponse` struct (multiple feeds).
+
+The response includes a `FullReport` blob containing the encoded report's context and observations.
+
+### Decoding the report
+
+When the application successfully fetches the report, it decodes the report with the `DecodeFullReportAndReportData` function from the `internal` package. The process includes:
+
+1. **`FullReport` blob decoding**: It first decodes the `FullReport` blob into a `FullReport` struct, extracting the report context (including the feed ID(s) and the report version) and the report data.
+
+1. **Report data decoding**: Based on the feed ID(s) version(s), it transforms the raw data into a structured format.
+
+### Handling the decoded data
+
+The application then logs the decoded data to the terminal. This data can be used for further processing, analysis, or display in your own application.
