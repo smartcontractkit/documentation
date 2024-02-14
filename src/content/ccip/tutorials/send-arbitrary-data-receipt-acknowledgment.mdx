@@ -39,6 +39,8 @@ Deploy the `MessageTracker.sol` contract on _Ethereum Sepolia_ and enable it to 
 
    <CodeSample src="samples/CCIP/MessageTracker.sol" showButtonOnly={true} />
 
+   Note: The contract code is also available in the [Examine the code](/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment#messagetrackersol) section.
+
 1. Compile the contract.
 
 1. Deploy the contract on _Ethereum Sepolia_:
@@ -98,6 +100,8 @@ Deploy the `Acknowledger.sol` contract on _Polygon Mumbai_ and enable it to send
 1.  [Open the Acknowledger.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Acknowledger.sol) contract in Remix.
 
     <CodeSample src="samples/CCIP/Acknowledger.sol" showButtonOnly={true} />
+
+    Note: The contract code is also available in the [Examine the code](/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment#acknowledgersol) section.
 
 1.  Compile the contract.
 
@@ -388,71 +392,6 @@ The _acknowledger_ contract receives the message, sends back an acknowledgment m
 - **Acknowledgment sending**: The `acknowledgePayLINK` function acts as a custom [`sendMessagePayLINK`](https://docs.chain.link/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function nested within the `ccipReceive` function. It sends
   an acknowledgment (a CCIP message) to the _message tracker_ contract upon the initial message receipt. The data transferred in this acknowledgment message is the initial message ID. It then emits an `AcknowledgmentSent` event.
 
-```solidity
-/// @notice Sends an acknowledgment message back to the sender contract on the source chain
-/// and pays the fees using LINK tokens.
-/// @dev This function constructs and sends an acknowledgment message using CCIP,
-/// indicating the receipt and processing of an initial message. It emits the `AcknowledgmentSent` event
-/// upon successful sending. This function should be called after processing the received message
-/// to inform the sender contract about the successful message reception.
-/// @param _messageIdToAcknowledge The message ID of the initial message being acknowledged.
-/// @param _messageTrackerAddress The address of the message tracker contract on the source chain.
-/// @param _messageTrackerChainSelector The chain selector of the source chain.
-function _acknowledgePayLINK(
-  bytes32 _messageIdToAcknowledge,
-  address _messageTrackerAddress,
-  uint64 _messageTrackerChainSelector
-) private {
-  if (_messageTrackerAddress == address(0)) revert InvalidReceiverAddress();
-
-  // Construct the CCIP message for acknowledgment, including the message ID of the initial message.
-  Client.EVM2AnyMessage memory acknowledgment = Client.EVM2AnyMessage({
-    receiver: abi.encode(_messageTrackerAddress), // ABI-encoded receiver address
-    data: abi.encode(_messageIdToAcknowledge), // ABI-encoded message ID to acknowledge
-    tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
-    extraArgs: Client._argsToBytes(
-      // Additional arguments, setting gas limit
-      Client.EVMExtraArgsV1({ gasLimit: 200_000 })
-    ),
-    // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
-    feeToken: address(s_linkToken)
-  });
-
-  // Initialize a router client instance to interact with the cross-chain router.
-  IRouterClient router = IRouterClient(this.getRouter());
-
-  // Calculate the fee required to send the CCIP acknowledgment message.
-  uint256 fees = router.getFee(
-    _messageTrackerChainSelector, // The chain selector for routing the message.
-    acknowledgment // The acknowledgment message data.
-  );
-
-  // Ensure the contract has sufficient balance to cover the message sending fees.
-  if (fees > s_linkToken.balanceOf(address(this))) {
-    revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
-  }
-
-  // Approve the router to transfer LINK tokens on behalf of this contract to cover the sending fees.
-  s_linkToken.approve(address(router), fees);
-
-  // Send the acknowledgment message via the CCIP router and capture the resulting message ID.
-  bytes32 messageId = router.ccipSend(
-    _messageTrackerChainSelector, // The destination chain selector.
-    acknowledgment // The CCIP message payload for acknowledgment.
-  );
-
-  // Emit an event detailing the acknowledgment message sending, for external tracking and verification.
-  emit AcknowledgmentSent(
-    messageId, // The ID of the sent acknowledgment message.
-    _messageTrackerChainSelector, // The destination chain selector.
-    _messageTrackerAddress, // The receiver of the acknowledgment, typically the original sender.
-    _messageIdToAcknowledge, // The original message ID that was acknowledged.
-    address(s_linkToken), // The fee token used.
-    fees // The fees paid for sending the message.
-  );
-}
-```
-
 ### Security and integrity
 
 Both contracts use allowlists to process only messages from and to allowed sources.
@@ -463,6 +402,16 @@ Both contracts use allowlists to process only messages from and to allowed sourc
   - The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
 
 - **Verifying message authenticity**: The _message tracker_ contract ensures that a message status is updated to `Confirmed` only for a message it has sent.
+
+## Examine the code
+
+### MessageTracker.sol
+
+<CodeSample src="samples/CCIP/MessageTracker.sol" />
+
+### Acknowledger.sol
+
+<CodeSample src="samples/CCIP/Acknowledger.sol" />
 
 ## Final note
 
