@@ -26,7 +26,6 @@ contract VRFSubscriptionBalanceMonitor is
     event FundsWithdrawn(uint256 amountWithdrawn, address payee);
     event TopUpSucceeded(uint64 indexed subscriptionId);
     event TopUpFailed(uint64 indexed subscriptionId);
-    event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
     event ForwarderAddressUpdated(address oldAddress, address newAddress);
     event VRFCoordinatorV2AddressUpdated(
         address oldAddress,
@@ -51,7 +50,6 @@ contract VRFSubscriptionBalanceMonitor is
         uint56 lastTopUpTimestamp;
     }
 
-    address public s_keeperRegistryAddress; // the address of the keeper registry
     address public s_forwarderAddress; // the address of the upkeep's forwarder
     uint256 public s_minWaitPeriodSeconds; // minimum time to wait between top-ups
     uint64[] public s_watchList; // the watchlist on which subscriptions are stored
@@ -60,20 +58,17 @@ contract VRFSubscriptionBalanceMonitor is
     /**
      * @param linkTokenAddress the Link token address
      * @param coordinatorAddress the address of the vrf coordinator contract
-     * @param keeperRegistryAddress the address of the keeper registry contract
      * @param forwarderAddress the address of the upkeep's forwarder
      * @param minWaitPeriodSeconds the minimum wait period for addresses between funding
      */
     constructor(
         address linkTokenAddress,
         address coordinatorAddress,
-        address keeperRegistryAddress,
         address forwarderAddress,
         uint256 minWaitPeriodSeconds
     ) ConfirmedOwner(msg.sender) {
         setLinkTokenAddress(linkTokenAddress);
         setVRFCoordinatorV2Address(coordinatorAddress);
-        setKeeperRegistryAddress(keeperRegistryAddress);
         setForwarderAddress(forwarderAddress);
         setMinWaitPeriodSeconds(minWaitPeriodSeconds);
     }
@@ -264,20 +259,6 @@ contract VRFSubscriptionBalanceMonitor is
             coordinatorAddress
         );
         COORDINATOR = VRFCoordinatorV2Interface(coordinatorAddress);
-    }
-
-    /**
-     * @notice Sets the keeper registry address.
-     */
-    function setKeeperRegistryAddress(
-        address keeperRegistryAddress
-    ) public onlyOwner {
-        require(keeperRegistryAddress != address(0));
-        emit KeeperRegistryAddressUpdated(
-            s_keeperRegistryAddress,
-            keeperRegistryAddress
-        );
-        s_keeperRegistryAddress = keeperRegistryAddress;
     }
 
     /**
