@@ -253,6 +253,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Streams Direct Interface",
           url: "data-streams/reference/streams-direct-interface",
+          children: [
+            {
+              title: "Code samples",
+              url: "data-streams/reference/streams-direct-code-samples",
+            },
+            {
+              title: "Onchain reports validation",
+              url: "data-streams/reference/streams-direct-onchain-verification",
+            },
+          ],
         },
       ],
     },

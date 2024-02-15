@@ -1,3 +1,5 @@
+// client.go
+
 package client
 
 import (
@@ -65,9 +67,9 @@ func GenerateAuthHeaders(method string, pathAndParams string, clientId string, u
 }
 
 func FetchSingleReportSingleFeed() (SingleReport, error) {
-	baseUrl := os.Getenv("BASE_URL")                                               // Example: api.testnet-dataengine.chain.link
-	clientId := os.Getenv("CLIENT_ID")                                             // Example: "00000000-0000-0000-0000-000000000000"
-	userSecret := os.Getenv("CLIENT_SECRET")                                       // Example: "your-secret"
+	baseUrl := os.Getenv("BASE_URL") // Example: api.testnet-dataengine.chain.link
+	clientId := os.Getenv("CLIENT_ID") // Example: "00000000-0000-0000-0000-000000000000"
+	userSecret := os.Getenv("CLIENT_SECRET") // Example: "your-secret"
 	feedId := "0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b" // 0x is optional 
 	// This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
 	// Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
@@ -119,8 +121,8 @@ func FetchSingleReportSingleFeed() (SingleReport, error) {
 }
 
 func FetchSingleReportManyFeeds() ([]SingleReport, error) {
-	baseUrl := os.Getenv("BASE_URL")         //Example: api.testnet-dataengine.chain.link
-	clientId := os.Getenv("CLIENT_ID")       // Example: "00000000-0000-0000-0000-000000000000"
+	baseUrl := os.Getenv("BASE_URL") //Example: api.testnet-dataengine.chain.link
+	clientId := os.Getenv("CLIENT_ID") // Example: "00000000-0000-0000-0000-000000000000"
 	userSecret := os.Getenv("CLIENT_SECRET") // Example: "your-secret"
 	feedIds := []string{
 		"0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b", // 0x is optional // This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.

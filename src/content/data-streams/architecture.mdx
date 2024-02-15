@@ -62,6 +62,21 @@ Read the [Getting Started](/data-streams/getting-started) guide to learn how to 
 
 ## Streams Direct Architecture
 
-XXX
+#### Example of offchain price updates with Streams Direct
 
----Offchain Price Updates Sequence Diagram---
+Streams Direct facilitates seamless, offchain price updates through a robust mechanism designed for real-time data delivery. Here is an example of how your Client will benefit from low-latency market data directly from an Oracle server.
+
+1. The Client opens a WebSocket connection to the Oracle Server using a `GET` request to `/ws`, enabling real-time data streams with low-latency.
+
+1. The Oracle Server sends price reports over the WebSocket, giving the Client instant access to updated market data.
+
+1. The Client stores the price reports in a cache for quick access and use, preserving data integrity over time.
+
+1. To cover any data gaps caused by network disruptions, the Client regularly queries `/client/bulk` for any missed reports, ensuring data completeness.
+
+1. If missed reports are identified, the Oracle Server sends an array of these reports back, allowing the Client to update its cache and keep the data set complete and up-to-date.
+
+<ClickToZoom
+  src="/images/data-streams/streams-direct-off-chain-price-updates.webp"
+  alt="Chainlink Data Streams - Streams Direct Off-Chain Price Updates"
+/>

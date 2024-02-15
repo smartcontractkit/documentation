@@ -8,3 +8,215 @@ title: "Connect, listen, and decode real-time reports using WebSockets"
 ---
 
 import { Aside, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
+import { Environment } from "~/config/data/ccip"
+
+In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface#websocket-connections) to listen for real-time reports from the Data Engine. You'll set up your Go project, listen for real-time reports, decode the report data, and log their attributes to your terminal.
+
+## Before you begin
+
+- **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
+
+## Tutorial
+
+### Set up your Go project
+
+1.  Create and navigate to your project directory:
+
+    ```bash
+    mkdir data-streams-direct-ws && cd data-streams-direct-ws
+    ```
+
+1.  Initialize a Go module:
+
+    ```bash
+    go mod init data-streams-direct-ws
+    ```
+
+1.  Open the `go.mod` file at the root of your project directory and include the necessary module and package information:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/ws/mod.go" />
+
+1.  Create `client` and `internal` subfolders within your project directory:
+
+    ```bash
+    mkdir client internal
+    ```
+
+1.  Create a `client-ws.go` file in the `client` subfolder and a `decoder.go` file in the `internal` subfolder:
+
+    ```bash
+    touch client/client-ws.go
+    touch internal/decoder.go
+    ```
+
+1.  Add the provided code to `client-ws.go` to establish the WebSocket connection and start message listening. For report decoding, add the provided code to `decoder.go`.
+
+    <Tabs sharedStore="package" client:visible>
+      <Fragment slot="tab.1">client/client-ws.go</Fragment>
+      <Fragment slot="tab.2">internal/decoder.go</Fragment>
+      <Fragment slot="panel.1">
+        <CodeSample src="samples/DataStreams/StreamsDirect/ws/client-ws.go" />
+      </Fragment>
+      <Fragment slot="panel.2">
+        <CodeSample src="samples/DataStreams/StreamsDirect/decoder.go" />
+      </Fragment>
+    </Tabs>
+
+1.  Execute the command below to download dependencies and generate the `go.sum` file:
+
+    ```bash
+    go mod tidy
+    ```
+
+    Your project directory should now have the following structure:
+
+    ```plaintext
+    data-streams-direct-ws/
+    ├── client/
+    │   └── client-ws.go
+    ├── go.mod
+    ├── go.sum
+    ├── internal/
+    │   └── decoder.go
+    ```
+
+### Set environment variables
+
+Set the required environment variables in your terminal session to authenticate with the Data Engine:
+
+    ```bash
+    export BASE_URL='ws.testnet-dataengine.chain.link'
+    export CLIENT_ID='YOUR_CLIENT_ID'
+    export CLIENT_SECRET='YOUR_CLIENT_SECRET'
+    ```
+
+    - `BASE_URL` is the WebSocket endpoint to subscribe to price updates. See the [Streams Direct Interface](/data-streams/reference/streams-direct-interface#domains) guide for more information.
+    - Replace `CLIENT_ID` and `CLIENT_SECRET` with your API credentials.
+
+### Connect to Streams Direct WebSocket and listen for real-time reports
+
+1.  Create a `wsConnectAndListen.go` file at the root of your project directory:
+
+    ```bash
+    touch wsConnectAndListen.go
+    ```
+
+    Then, open the `wsConnectAndListen.go` file and insert the following code to establish a WebSocket connection and listen for real-time data reports from the Data Engine:
+
+    <CodeSample src="samples/DataStreams/StreamsDirect/ws/wsConnectAndListen.go" />
+
+1.  Execute your application:
+
+    ```bash
+    go run wsConnectAndListen.go
+    ```
+
+    Expect output similar to the following in your terminal:
+
+        ```plaintext
+        Generating HMAC with the following:  GET /api/v1/ws?feedIDs=0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b&timestamp=1694212245 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 <YOUR_CLIENT_ID> 1707986323635
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c90b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd950000000000000000000000000000000000000000000000000000000065cdcd95000000000000000000000000000000000000000000000000000020b5e9c686e80000000000000000000000000000000000000000000000000011b8f926846fb80000000000000000000000000000000000000000000000000000000065cf1f15000000000000000000000000000000000000000000000096ba314c8f5ec2800000000000000000000000000000000000000000000000000000000000000000029c85f7bb779ce5316821a6efd3bdc843e32f1438bad24a6b269871ade0c166d2142574b78d7a75d3cb855e51caf9cb36e1d598b43c881989251bd2c450624a2600000000000000000000000000000000000000000000000000000000000000021c1e5c393a57a24f2c698e23c59e6a954a9ef006b63c7f58eeabdd0bbeff21e5353ddef53e9beb93f628cd23e2cc28750533f444559622640bcf7dcc935d66af}}
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c90f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd960000000000000000000000000000000000000000000000000000000065cdcd96000000000000000000000000000000000000000000000000000020b5e9c686e80000000000000000000000000000000000000000000000000011b8f926846fb80000000000000000000000000000000000000000000000000000000065cf1f16000000000000000000000000000000000000000000000096ba314c8f5ec28000000000000000000000000000000000000000000000000000000000000000000299a2b6af5f1065e69489bdef26881e227351012bfbedbaee4fceb0fc14d34d092100d012b2358274376149839f05f156e9862aa47f07d28e52e59f93323ff3b7000000000000000000000000000000000000000000000000000000000000000220523afa66acad4b7741e5ae388547c71578d2dfcf5151f5edfa8a0add55fd2662da0b23a84cc8e67a92b7cb95dad1a184ae5f2c8bd37c4bad33a03608e4f956}}
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c913000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd970000000000000000000000000000000000000000000000000000000065cdcd97000000000000000000000000000000000000000000000000000020b5e9c686e80000000000000000000000000000000000000000000000000011b8f91a5339a40000000000000000000000000000000000000000000000000000000065cf1f17000000000000000000000000000000000000000000000096ba314c8f5ec280000000000000000000000000000000000000000000000000000000000000000002d67c77bb643d5e41f7c3243064c378cef9fded63522b0a3082ceab6b68d2c7a008df1f1152f4be0ff4295addfe278b1ec952b5e26a0b99eb98d0bc24d00a1037000000000000000000000000000000000000000000000000000000000000000237745633dd85a3ccafe6becbcde1ebf6573c168df37646e5d079eacccb301f433f10db9c335e8171b3cde94c4e2a7bf7b2aea187bff56d217c1f60fe8d201599}}
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c917000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd980000000000000000000000000000000000000000000000000000000065cdcd98000000000000000000000000000000000000000000000000000020b736b0bdd80000000000000000000000000000000000000000000000000011b8f90a0231540000000000000000000000000000000000000000000000000000000065cf1f18000000000000000000000000000000000000000000000096b4337f46250c0f800000000000000000000000000000000000000000000000000000000000000002cd9a5eaec5f47eb67063c7bc326779526b746a14674b27bdf7bdd1b78dc668faf355c68ceb6db420b20435bce0a67957eea5843abc2127b44726ec674703eb440000000000000000000000000000000000000000000000000000000000000002093d3d995d852ee22c862e145d012ff42edb9d7916d94ec8d7693774309ee45564af27fb8660dc45533fbb3b43c991af6bc86d06e348ad66e126564b598e3e62}}
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0ca02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd990000000000000000000000000000000000000000000000000000000065cdcd99000000000000000000000000000000000000000000000000000020b70ae0789c0000000000000000000000000000000000000000000000000011b8f82aef382c0000000000000000000000000000000000000000000000000000000065cf1f19000000000000000000000000000000000000000000000096b4fd53c94c35e820000000000000000000000000000000000000000000000000000000000000000226c56e66384ccd189f43a667eb7c76bf76617e2b630f4f5c49a83f8903c05d72255c7e385683241009bc8646520b109acdd05e3a3e07681f73e2938ce2740ccf000000000000000000000000000000000000000000000000000000000000000263cf8a429c9f596fd7155b64f888e0413b5800549331d93de5072853041269c95468adc288f6565283fd9277ff34cc144d46b8bd2ebd7d7c8cbcb2faa14c34af}}
+        2024/02/15 09:38:49 Websocket: Sending ping...
+        2024/02/15 09:38:49 Websocket: Received pong...
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0ca06000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd9a0000000000000000000000000000000000000000000000000000000065cdcd9a000000000000000000000000000000000000000000000000000020b7963d55f40000000000000000000000000000000000000000000000000011b8f7f37de5f00000000000000000000000000000000000000000000000000000000065cf1f1a000000000000000000000000000000000000000000000096b27b5f366550ea000000000000000000000000000000000000000000000000000000000000000002ff156709c0d19059366e9e9c76f3186383fe6548d0a11bffd9af8d6c1722c99fb046d2b46cbe8f6c8d57b5416935c79cb72474463df70af17a2c15c13c617647000000000000000000000000000000000000000000000000000000000000000219dac6cc851be9cc40bbf777c491fa21fa7772e55312697f2ace8f833361c52b50f3da720cb14ef3730935d6c853a23a7a3608a9e4c6d1ee136fcde21efd76e1}}
+        Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0ca0a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd9b0000000000000000000000000000000000000000000000000000000065cdcd9b000000000000000000000000000000000000000000000000000020b6e6bed5940000000000000000000000000000000000000000000000000011b9819711c2700000000000000000000000000000000000000000000000000000000065cf1f1b000000000000000000000000000000000000000000000096b5a3c6746f046240000000000000000000000000000000000000000000000000000000000000000242fe28869203fb2f7e0ec1cd10ec28320cff0685a3f9564d7b12110911b201286b355d565358b93ed929421ae161e9fbe18727ce855bfecca72b9bb6fcb2684d0000000000000000000000000000000000000000000000000000000000000002512bb715a412dfebdaf9e254b8e98aff807a83421edeaf378f2dc138e459b09c2dd3bc345ec712e43767efc699d827973e2a5f77187118ddce8cefdaa2c44817}}
+        ```
+
+    When examining a specific message from the WebSocket connection's output, you will notice it contains two values:
+
+    ```plaintext
+    {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c90b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd950000000000000000000000000000000000000000000000000000000065cdcd95000000000000000000000000000000000000000000000000000020b5e9c686e80000000000000000000000000000000000000000000000000011b8f926846fb80000000000000000000000000000000000000000000000000000000065cf1f15000000000000000000000000000000000000000000000096ba314c8f5ec2800000000000000000000000000000000000000000000000000000000000000000029c85f7bb779ce5316821a6efd3bdc843e32f1438bad24a6b269871ade0c166d2142574b78d7a75d3cb855e51caf9cb36e1d598b43c881989251bd2c450624a2600000000000000000000000000000000000000000000000000000000000000021c1e5c393a57a24f2c698e23c59e6a954a9ef006b63c7f58eeabdd0bbeff21e5353ddef53e9beb93f628cd23e2cc28750533f444559622640bcf7dcc935d66af}}
+    ```
+
+    - The first value `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` is the `feedId`. In this example, it is the ETH/USD feed on Arbitrum Sepolia.
+    - The second value is the `FullReport` payload in hexadecimal. It contains the encoded report data, which you'll decode in the next section. Save the `FullReport` payload value for the next step.
+
+Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within the `openWebsocketConnection` function of the `client` package. This example uses a single feed ID, but multiple IDs can be included by separating them with commas.
+
+<Aside type="caution" title="Verifying data onchain">
+  The next section decodes the `FullReport` payload to extract the report data and log it to the terminal. In a
+  production environment, you should verify the data onchain to ensure its integrity and authenticity. Refer to the
+  [Onchain reports validation](/data-streams/reference/streams-direct-onchain-verification) guide.
+</Aside>
+
+### Decode the reports
+
+1.  Create a `decodeFullReportHex.go` file at the root of your project directory:
+
+    ```bash
+    touch decodeFullReportHex.go
+    ```
+
+1.  - Open the `decodeFullReportHex.go` file and insert the sample code provided below. It uses the `DecodeFullReportAndReportData` function from the `internal` package to decode the `FullReport` part of the message.
+    - Replace the `fullReportHex` variable value with the hexadecimal value you saved earlier from your WebSocket message output, without the `0x` prefix.
+
+      {" "}
+
+      <CodeSample src="samples/DataStreams/StreamsDirect/ws/decodeFullReportHex.go" />
+
+1.  Execute your application:
+
+    ```bash
+    go run decodeFullReportHex.go
+    ```
+
+    The `decodedReport` contains structured data about the report, including the `FeedId`, `FeedVersion`, and specific report data based on the version (e.g., `V2Report` for [Basic Schema](/data-streams/reference/report-schema#basic-schema) reports and `V3Report` for [Premium Schema](/data-streams/reference/report-schema#premium-schema) reports).
+
+    Expect to see the output below in your terminal:
+
+    ```plaintext
+    Decoded Report: &{FeedId:0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b FeedVersion:2 V1Report:<nil> V2Report:0x1400011ad20 V3Report:<nil> Round:11 Epoch:1175753 Digest:[0 6 127 20 199 99 7 11 236 29 225 17 138 206 238 209 84 104 120 171 36 227 33 61 226 17 39 36 154 218 188 189]}
+    Valid From Timestamp: 1707986325
+    Observations Timestamp: 1707986325
+    Native Fee: 35965683271400
+    Link Fee: 4988454836662200
+    Expires At: 1708072725
+    Benchmark Price: 2780428200000000000000
+    ```
+
+#### Decoded report details
+
+The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report. The decoded report details include:
+
+| Attribute              | Value                                                                | Description                                                                                                                                 |
+| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feed ID                | `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` | Unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with Report schema: Basic).                                             |
+| Feed Version           | `2`                                                                  | Version of the feed report schema.                                                                                                          |
+| Valid From Timestamp   | `1707986325`                                                         | Start validity timestamp for the report, indicating when the data becomes relevant.                                                         |
+| Observations Timestamp | `1707986325`                                                         | Unix timestamp indicating when the data was captured.                                                                                       |
+| Native Fee             | `35965683271400`                                                     | Fee paid in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) with 18 decimals. For readability: `0.035965683271400` ETH. |
+| Link Fee               | `4988454836662200`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.4988454836662200` LINK.                                                        |
+| Expires At             | `1708072725`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
+| Benchmark Price        | `2780428200000000000000`                                             | Observed price in the report with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                     |
+
+This tutorial logs data to the terminal, but you can also utilize these attributes for further analysis, processing, or display in your application.
+
+### Explanation
+
+#### Establishing WebSocket connection and listening for message reports
+
+The `ConnectAndListen` function in the `client` package initializes the connection and enables the application to listen for messages from the Data Engine via WebSocket.
+
+- Authentication and security: Uses HMAC headers, created with `CLIENT_ID` and `CLIENT_SECRET`, for secure, authenticated communication.
+- Continuous listening: After authentication, continuously listens for real-time report messages, which include the `feedId` and the encoded `FullReport`.
+
+#### Decoding a report
+
+The `DecodeFullReportAndReportData` function in the `internal` package unpacks the `FullReport` payload, decodes the `FullReport`'s `ReportBlob`, and decodes the report data into a structured format:
+
+1. It unpacks the `FullReport` payload that includes the report context, the report blob and raw signatures:
+
+   - Report context: The report context contains metadata such as the `feedId` and the report version, which determines the appropriate schema for decoding the report data.
+   - Cryptographic signatures: These signatures validate the data's integrity and authenticity.
+
+2. Report data decoding: Depending on the report version (`V1Report`, `V2Report`, or `V3Report`) extracted from the `feedID`, the function proceeds to decode the report data into a structured format.
+
+#### Handling the decoded data
+
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.

@@ -10,13 +10,14 @@ whatsnext:
 ---
 
 import { Aside, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
 
-In this tutorial, you'll learn how to use the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation of Chainlink Data Streams to fetch and decode reports from the RESTful API using Go. You'll set up your Go project, retrieve reports from the API, and decode them.
+In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and the [RESTful API](/data-streams/reference/streams-direct-interface#rest-api-endpoints) to fetch reports from the Data Engine. You'll set up your Go project, retrieve reports from the API, decode them, and log their attributes to your terminal.
 
 ## Before you begin
 
-- Ensure you have Go version 1.21 or higher. You can download it from the official [Go website](https://go.dev/) and verify your version with the `go version` command in your terminal.
-- Access to the Streams Direct implementation requires API credentials. [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications if you don't have credentials yet.
+- **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
 
 ## Tutorial
 
@@ -36,17 +37,6 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
     go mod init data-streams-direct
     ```
 
-1.  Define the required environment variables in your terminal session:
-
-    ```bash
-    export BASE_URL='api.testnet-dataengine.chain.link'
-    export CLIENT_ID='YOUR_CLIENT_ID'
-    export CLIENT_SECRET='YOUR_CLIENT_SECRET'
-    ```
-
-    - `BASE_URL` is the Data Engine API URL. See the [Streams Direct Interface guide](/data-streams/reference/streams-direct-interface#domains) for more information.
-    - `CLIENT_ID` and `CLIENT_SECRET` are your API credentials.
-
 1.  Open the `go.mod` file at the root of your project directory and include the necessary module and package information:
 
     <CodeSample src="samples/DataStreams/StreamsDirect/mod.go" />
@@ -57,25 +47,25 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
     mkdir client internal
     ```
 
-1.  Create a `client.go` file in the `client` subfolder:
+1.  Create a `client.go` file in the `client` subfolder and a `decoder.go` file in the `internal` subfolder:
 
     ```bash
     touch client/client.go
-    ```
-
-    Open the `client.go` file and insert the following code to enable report fetching:
-
-    <CodeSample src="samples/DataStreams/StreamsDirect/client.go" />
-
-1.  Create a `decoder.go` file in the `internal` subfolder:
-
-    ```bash
     touch internal/decoder.go
     ```
 
-    Open the `decoder.go` file and insert the following code to enable report decoding:
+1.  Insert the provided code samples to enable report fetching and decoding:
 
-    <CodeSample src="samples/DataStreams/StreamsDirect/decoder.go" />
+        <Tabs sharedStore="package" client:visible>
+        <Fragment slot="tab.1">client/client.go</Fragment>
+        <Fragment slot="tab.2">internal/decoder.go</Fragment>
+        <Fragment slot="panel.1">
+            <CodeSample src="samples/DataStreams/StreamsDirect/client.go" />
+        </Fragment>
+        <Fragment slot="panel.2">
+            <CodeSample src="samples/DataStreams/StreamsDirect/decoder.go" />
+        </Fragment>
+        </Tabs>
 
 1.  Execute the command below to download dependencies and generate the `go.sum` file:
 
@@ -94,6 +84,19 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
     ├── internal/
     │   └── decoder.go
     ```
+
+### Set environment variables
+
+Set the required environment variables in your terminal session to authenticate with the Data Engine API:
+
+    ```bash
+    export BASE_URL='api.testnet-dataengine.chain.link'
+    export CLIENT_ID='YOUR_CLIENT_ID'
+    export CLIENT_SECRET='YOUR_CLIENT_SECRET'
+    ```
+
+    - `BASE_URL` is the REST endpoint to poll for specific reports. See the [Streams Direct Interface](/data-streams/reference/streams-direct-interface#domains) guide for more information.
+    - Replace `CLIENT_ID` and `CLIENT_SECRET` with your API credentials.
 
 ### Fetch and decode a report with a single feed
 
@@ -133,18 +136,19 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
 #### Decoded report details
 
-The decoded report details include:
+The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report, decoded using the `V2Report` library. The decoded report attributes include:
 
 | Attribute              | Value                                                                | Description                                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | Feed ID                | `0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe` | Unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with Report schema: Basic).                                             |
-| Feed Version           | `2`                                                                  | Version of the feed report schema.                                                                                                          |
 | Valid From Timestamp   | `1707920277`                                                         | Start validity timestamp for the report, indicating when the data becomes relevant.                                                         |
 | Observations Timestamp | `1707920277`                                                         | Unix timestamp indicating when the data was captured.                                                                                       |
 | Native Fee             | `36191497454800`                                                     | Fee paid in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) with 18 decimals. For readability: `0.036191497454800` ETH. |
 | Link Fee               | `4931765327865000`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.931765327865000` LINK.                                                         |
 | Expires At             | `1708006677`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
 | Benchmark Price        | `2763079922979423400000`                                             | Observed price in the report with 18 decimals. For readability: `2,763.0799229794234` ETH per USD.                                          |
+
+#### Verify the decoded report
 
 This tutorial logs data to the terminal, but you can also utilize these attributes for further analysis, processing, or display in your application.
 
@@ -159,6 +163,16 @@ This tutorial logs data to the terminal, but you can also utilize these attribut
     Then, open the `multipleFeeds.go` file and insert the following code to initialize the fetching and decoding processes for a multiple feeds:
 
     <CodeSample src="samples/DataStreams/StreamsDirect/multipleFeeds.go" />
+
+1.  Ensure the required environment variables are still defined in your terminal session.
+
+    ```bash
+    echo $BASE_URL
+    echo $CLIENT_ID
+    echo $CLIENT_SECRET
+    ```
+
+    Otherwise, [set them](/data-streams/tutorials/streams-direct-api#set-environment-variables) again.
 
 1.  Run your application:
 
@@ -199,13 +213,13 @@ This tutorial logs data to the terminal, but you can also utilize these attribut
 
 ## Explanation
 
-### Fetching the report
+### Fetching a report
 
 The application fetches a report from the Data Engine API using either the `FetchSingleReportSingleFeed` function for a single feed or the `FetchSingleReportMultipleFeeds` function for multiple feeds, found in the `client` package. This step involves sending an API request and receiving a response with the report data in either a `SingleReport` struct (single feed) or a `BulkReportResponse` struct (multiple feeds).
 
 The response includes a `FullReport` blob containing the encoded report's context and observations.
 
-### Decoding the report
+### Decoding a report
 
 When the application successfully fetches the report, it decodes the report with the `DecodeFullReportAndReportData` function from the `internal` package. The process includes:
 
@@ -215,4 +229,4 @@ When the application successfully fetches the report, it decodes the report with
 
 ### Handling the decoded data
 
-The application then logs the decoded data to the terminal. This data can be used for further processing, analysis, or display in your own application.
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.

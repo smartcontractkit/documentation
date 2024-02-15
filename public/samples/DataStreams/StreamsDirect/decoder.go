@@ -1,3 +1,5 @@
+// decoder.go
+
 package internal
 
 import (
