@@ -2,9 +2,11 @@
 section: dataStreams
 date: Last Modified
 title: "Stream and decode reports via WebSockets"
-# whatsnext:
-#   {
-#   }
+whatsnext:
+  {
+    "Learn how to verify you data onchain": "/data-streams/reference/streams-direct-onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/stream-ids",
+  }
 ---
 
 import { Aside, CodeSample } from "@components"
@@ -13,7 +15,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="streamsDirectEarlyAccess" />
 
-In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface#websocket-connections) to listen for real-time reports from the Data Engine. You'll set up your Go project, listen for real-time reports, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface-ws) to listen for real-time reports from the Data Engine. You'll set up your Go project, listen for real-time reports, decode the report data, and log their attributes to your terminal.
 
 ## Before you begin
 
@@ -94,7 +96,7 @@ Set the required environment variables in your terminal session to authenticate 
     export CLIENT_SECRET='YOUR_CLIENT_SECRET'
     ```
 
-    - `BASE_URL` is the WebSocket endpoint to subscribe to price updates. See the [Streams Direct Interface](/data-streams/reference/streams-direct-interface#domains) guide for more information.
+    - `BASE_URL` is the WebSocket endpoint to subscribe to price updates. See the [Streams Direct Interface](/data-streams/reference/streams-direct-interface-ws#domains) guide for more information.
     - Replace `CLIENT_ID` and `CLIENT_SECRET` with your API credentials.
 
 ### Establish a WebSocket connection and listen for real-time reports
@@ -162,7 +164,7 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
     go run decodeFullReportHex.go
     ```
 
-    The `decodedReport` contains structured data about the report, including the `FeedId`, `FeedVersion`, and specific report data based on the version (e.g., `V2Report` for [Basic Schema](/data-streams/reference/report-schema#basic-schema) reports and `V3Report` for [Premium Schema](/data-streams/reference/report-schema#premium-schema) reports).
+    The `decodedReport` contains structured data about the report, including the `FeedId`, `FeedVersion`, and specific report data based on the report version (e.g., `V2Report` for [Basic Schema](/data-streams/reference/report-schema#basic-schema) reports and `V3Report` for [Premium Schema](/data-streams/reference/report-schema#premium-schema) reports).
 
     Expect to see the output below in your terminal:
 
