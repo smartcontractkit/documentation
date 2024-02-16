@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.16;
 
-import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+import {Common} from "@chainlink/contracts/src/v0.8/libraries/Common.sol";
 // import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IRewardManager.sol";
 import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierFeeManager.sol";
 
