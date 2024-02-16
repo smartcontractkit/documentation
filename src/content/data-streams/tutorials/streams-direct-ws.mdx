@@ -1,7 +1,7 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Connect, listen, and decode real-time reports using WebSockets"
+title: "Stream and decode reports via WebSockets"
 # whatsnext:
 #   {
 #   }
@@ -9,7 +9,9 @@ title: "Connect, listen, and decode real-time reports using WebSockets"
 
 import { Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
-import { Environment } from "~/config/data/ccip"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="streamsDirectEarlyAccess" />
 
 In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface#websocket-connections) to listen for real-time reports from the Data Engine. You'll set up your Go project, listen for real-time reports, decode the report data, and log their attributes to your terminal.
 
@@ -95,7 +97,7 @@ Set the required environment variables in your terminal session to authenticate 
     - `BASE_URL` is the WebSocket endpoint to subscribe to price updates. See the [Streams Direct Interface](/data-streams/reference/streams-direct-interface#domains) guide for more information.
     - Replace `CLIENT_ID` and `CLIENT_SECRET` with your API credentials.
 
-### Connect to Streams Direct WebSocket and listen for real-time reports
+### Establish a WebSocket connection and listen for real-time reports
 
 1.  Create a `wsConnectAndListen.go` file at the root of your project directory:
 
@@ -139,12 +141,6 @@ Set the required environment variables in your terminal session to authenticate 
 
 Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within the `openWebsocketConnection` function of the `client` package. This example uses a single feed ID, but multiple IDs can be included by separating them with commas.
 
-<Aside type="caution" title="Verifying data onchain">
-  The next section decodes the `FullReport` payload to extract the report data and log it to the terminal. In a
-  production environment, you should verify the data onchain to ensure its integrity and authenticity. Refer to the
-  [Onchain reports validation](/data-streams/reference/streams-direct-onchain-verification) guide.
-</Aside>
-
 ### Decode the reports
 
 1.  Create a `decodeFullReportHex.go` file at the root of your project directory:
@@ -180,6 +176,8 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
     Benchmark Price: 2780428200000000000000
     ```
 
+<DataStreams section="asideOnChainVerification" />
+
 #### Decoded report details
 
 The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report. The decoded report details include:
@@ -194,8 +192,6 @@ The feed in this example uses the [Basic schema](/data-streams/reference/report-
 | Link Fee               | `4988454836662200`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.4988454836662200` LINK.                                                        |
 | Expires At             | `1708072725`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
 | Benchmark Price        | `2780428200000000000000`                                             | Observed price in the report with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                     |
-
-This tutorial logs data to the terminal, but you can also utilize these attributes for further analysis, processing, or display in your application.
 
 ### Explanation
 
