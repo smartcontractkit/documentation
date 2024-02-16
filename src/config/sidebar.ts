@@ -886,7 +886,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
-          title: "Manual execution",
+          title: "Manual Execution",
           url: "ccip/tutorials/manual-execution",
         },
         {
