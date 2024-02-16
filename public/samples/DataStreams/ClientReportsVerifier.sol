@@ -3,10 +3,12 @@
 pragma solidity 0.8.16;
 
 import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-// import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IRewardManager.sol";
+import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IRewardManager.sol";
 import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/interfaces/IERC20.sol";
+using SafeERC20 for IERC20;
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
@@ -72,12 +74,13 @@ interface IFeeManager {
     function i_rewardManager() external view returns (address);
 }
 
+/**
+ * @dev This contract implements functionality to verify Data Streams reports from
+ * the Streams Direct API or WebSocket connection, with payment in LINK tokens.
+ */
 contract ClientReportsVerifier {
-    enum FeeToken {
-        LINK,
-        ETH,
-        WETH
-    } // Available fee token options
+    error NothingToWithdraw(); // Thrown when a withdrawal attempt is made but the contract holds no tokens of the specified type.
+    error NotOwner(address caller); // Thrown when a caller tries to execute a function that is restricted to the contract's owner.
 
     struct BasicReport {
         bytes32 feedId; // The feed ID the report has data for
@@ -103,13 +106,92 @@ contract ClientReportsVerifier {
 
     IVerifierProxy public s_verifierProxy;
 
-    event PriceUpdate(int192);
+    address private s_owner;
+    int192 public last_decoded_price;
 
-    constructor(address verifierProxyAddress) {
-        s_verifierProxy = IVerifierProxy(verifierProxyAddress);
+    event DecodedPrice(int192);
+
+    /**
+     * @param _verifierProxy The address of the VerifierProxy contract.
+     * You can find these addresses on https://docs.chain.link/data-streams/stream-ids
+     */
+    constructor(address _verifierProxy) {
+        s_owner = msg.sender;
+        s_verifierProxy = IVerifierProxy(_verifierProxy);
     }
 
-    function VerifyReport() external {
-        // TBC
+    /// @notice Checks if the caller is the owner of the contract.
+    modifier onlyOwner() {
+        if (msg.sender != s_owner) revert NotOwner(msg.sender);
+        _;
+    }
+
+    /**
+     * @notice Verifies a report and handles fee payment.
+     * @dev Decodes the unverified report, calculates fees, approves token spending, and verifies the report.
+     * Emits a DecodedPrice event upon successful verification and stores the price from the report in `last_decoded_price`.
+     * @param unverifiedReport The encoded report data to be verified.
+     */
+    function VerifyReport(bytes memory unverifiedReport) external {
+        // Report verification fees
+        IFeeManager feeManager = IFeeManager(
+            address(s_verifierProxy.s_feeManager())
+        );
+
+        IRewardManager rewardManager = IRewardManager(
+            address(feeManager.i_rewardManager())
+        );
+
+        (, /* bytes32[3] reportContextData */ bytes memory reportData) = abi
+            .decode(unverifiedReport, (bytes32[3], bytes));
+
+        address feeTokenAddress = feeManager.i_linkAddress();
+
+        (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
+            address(this),
+            reportData,
+            feeTokenAddress
+        );
+
+        // Approve rewardManager to spend this contract's balance in fees
+        IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
+
+        // Verify the report
+        bytes memory verifiedReportData = s_verifierProxy.verify(
+            unverifiedReport,
+            abi.encode(feeTokenAddress)
+        );
+
+        // Decode verified report data into BasicReport struct
+        // If your report is a PremiumReport, you should decode it as a PremiumReport
+        BasicReport memory verifiedReport = abi.decode(
+            verifiedReportData,
+            (BasicReport)
+        );
+
+        // Log price from report
+        emit DecodedPrice(verifiedReport.price);
+
+        // Store the price from the report
+        last_decoded_price = verifiedReport.price;
+    }
+
+    /**
+     * @notice Withdraws all tokens of a specific ERC20 token type to a beneficiary address.
+     * @dev Utilizes SafeERC20's safeTransfer for secure token transfer. Reverts if the contract's balance of the specified token is zero.
+     * @param _beneficiary Address to which the tokens will be sent. Must not be the zero address.
+     * @param _token Address of the ERC20 token to be withdrawn. Must be a valid ERC20 token contract.
+     */
+    function withdrawToken(
+        address _beneficiary,
+        address _token // LINK token address on Arbitrum Sepolia: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+    ) public onlyOwner {
+        // Retrieve the balance of this contract
+        uint256 amount = IERC20(_token).balanceOf(address(this));
+
+        // Revert if there is nothing to withdraw
+        if (amount == 0) revert NothingToWithdraw();
+
+        IERC20(_token).safeTransfer(_beneficiary, amount);
     }
 }
