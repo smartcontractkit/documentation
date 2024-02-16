@@ -255,7 +255,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/streams-direct-interface",
           children: [
             {
-              title: "Code samples",
+              title: "REST API",
+              url: "data-streams/reference/streams-direct-api",
+            },
+            {
+              title: "WebSocket",
+              url: "data-streams/reference/streams-direct-ws",
+            },
+            {
+              title: "Go Code Samples",
               url: "data-streams/reference/streams-direct-code-samples",
             },
             {
