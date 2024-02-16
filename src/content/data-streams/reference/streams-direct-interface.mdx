@@ -34,18 +34,16 @@ All routes require the following three headers for user authentication:
 
 ### Authentication error response codes
 
-| Error                        | Description                                                                                                                                                                                                                                                             |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code 400 - Invalid Timestamp | Indicates that the provided timestamp is invalid.                                                                                                                                                                                                                       |
-| Code 401 - Unauthorized User | Triggered when authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.                                                                                                                          |
-| Code 420 - Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument</li><li>A user requests access to a feed without the appropriate permission or that does not exist</li><li>Required headers are missing or provided with incorrect values</li></ul> |
-| Code 500 - Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                       |
+| Status Code           | Description                                                                                                                                                                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400 Invalid Timestamp | Indicates that the provided timestamp is invalid.                                                                                                                                                                                                                       |
+| 401 Unauthorized User | Triggered when authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.                                                                                                                          |
+| 420 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument</li><li>A user requests access to a feed without the appropriate permission or that does not exist</li><li>Required headers are missing or provided with incorrect values</li></ul> |
+| 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                       |
 
-## Paths
+## REST API endpoints
 
-### REST API endpoints
-
-#### Return a single report with the latest timestamp
+### Return a single report with the latest timestamp
 
 ##### Endpoint
 
@@ -74,15 +72,15 @@ GET /api/v1/reports/latest?feedID=0x...
 }
 ```
 
-#### Return a single report for a given timestamp
+### Return a single report for a given timestamp
 
 ##### Endpoint
 
 **`/api/v1/reports`**
 
-| Type     | Description                                    | Parameter(s)                                                                              |
-| -------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| HTTP GET | Returns a single report for a given timestamp. | <ul><li>`feedID`: A feed ID.</li><li>`timestamp`: The timestamp for the report.</li></ul> |
+| Type     | Description                                    | Parameter(s)                                                                                   |
+| -------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| HTTP GET | Returns a single report for a given timestamp. | <ul><li>`feedID`: A feed ID.</li><li>`timestamp`: The Unix timestamp for the report.</li></ul> |
 
 ##### Sample request
 
@@ -103,15 +101,15 @@ GET /api/v1/reports?feedID=0x...&timestamp=XXXX
 }
 ```
 
-#### Return multiple reports for multiple FeedIDs and the same timestamp
+### Return multiple reports for multiple FeedIDs and the same timestamp
 
 ##### Endpoint
 
 **`/api/v1/reports/bulk`**
 
-| Type     | Description                                                          | Parameter(s)                                                                                                         |
-| -------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Return multiple reports for multiple FeedIDs and the same timestamp. | <ul><li>`feedIDs`: A comma-separated list of feed IDs.</li><li>`timestamp`: The timestamp for the reports.</li></ul> |
+| Type     | Description                                                          | Parameter(s)                                                                                                              |
+| -------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Return multiple reports for multiple FeedIDs and the same timestamp. | <ul><li>`feedIDs`: A comma-separated list of feed IDs.</li><li>`timestamp`: The Unix timestamp for the reports.</li></ul> |
 
 ##### Sample request
 
@@ -135,7 +133,7 @@ GET /api/v1/reports/bulk?feedIDs=0x...,0x...,0x...&timestamp=XXXX
 }
 ```
 
-### WebSocket Connections
+## WebSocket Connection
 
 Establish a streaming WebSocket connection that sends reports for the given feedID(s) after they are verified.
 
