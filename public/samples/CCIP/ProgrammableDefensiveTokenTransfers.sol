@@ -28,6 +28,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowed(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowed(address sender); // Used when the sender has not been allowlisted by the contract owner.
+    error InvalidReceiverAddress(); // Used when the receiver address is 0.
     error OnlySelf(); // Used when a function is called outside of the contract itself.
     error ErrorCase(); // Used when simulating a revert during message processing.
     error MessageNotFailed(bytes32 messageId);
@@ -37,7 +38,12 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         // RESOLVED is first so that the default value is resolved.
         RESOLVED,
         // Could have any number of error codes here.
-        BASIC
+        FAILED
+    }
+
+    struct FailedMessage {
+        bytes32 messageId;
+        ErrorCode errorCode;
     }
 
     // Event emitted when a message is sent to another chain.
@@ -116,6 +122,13 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         _;
     }
 
+    /// @dev Modifier that checks the receiver address is not 0.
+    /// @param _receiver The receiver address.
+    modifier validateReceiver(address _receiver) {
+        if (_receiver == address(0)) revert InvalidReceiverAddress();
+        _;
+    }
+
     /// @dev Modifier to allow only the contract itself to execute a function.
     /// Throws an exception if called by any account other than the contract itself.
     modifier onlySelf() {
@@ -172,6 +185,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -237,6 +251,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -310,22 +325,34 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     }
 
     /**
-     * @notice Retrieves the IDs of failed messages from the `s_failedMessages` map.
-     * @dev Iterates over the `s_failedMessages` map, collecting all keys.
-     * @return ids An array of bytes32 containing the IDs of failed messages from the `s_failedMessages` map.
+     * @notice Retrieves a paginated list of failed messages.
+     * @dev This function returns a subset of failed messages defined by `offset` and `limit` parameters. It ensures that the pagination parameters are within the bounds of the available data set.
+     * @param offset The index of the first failed message to return, enabling pagination by skipping a specified number of messages from the start of the dataset.
+     * @param limit The maximum number of failed messages to return, restricting the size of the returned array.
+     * @return failedMessages An array of `FailedMessage` struct, each containing a `messageId` and an `errorCode` (RESOLVED or FAILED), representing the requested subset of failed messages. The length of the returned array is determined by the `limit` and the total number of failed messages.
      */
-    function getFailedMessagesIds()
-        external
-        view
-        returns (bytes32[] memory ids)
-    {
+    function getFailedMessages(
+        uint256 offset,
+        uint256 limit
+    ) external view returns (FailedMessage[] memory) {
         uint256 length = s_failedMessages.length();
-        bytes32[] memory allKeys = new bytes32[](length);
-        for (uint256 i = 0; i < length; i++) {
-            (bytes32 key, ) = s_failedMessages.at(i);
-            allKeys[i] = key;
+
+        // Calculate the actual number of items to return (can't exceed total length or requested limit)
+        uint256 returnLength = (offset + limit > length)
+            ? length - offset
+            : limit;
+        FailedMessage[] memory failedMessages = new FailedMessage[](
+            returnLength
+        );
+
+        // Adjust loop to respect pagination (start at offset, end at offset + limit or total length)
+        for (uint256 i = 0; i < returnLength; i++) {
+            (bytes32 messageId, uint256 errorCode) = s_failedMessages.at(
+                offset + i
+            );
+            failedMessages[i] = FailedMessage(messageId, ErrorCode(errorCode));
         }
-        return allKeys;
+        return failedMessages;
     }
 
     /// @notice The entrypoint for the CCIP router to call. This function should
@@ -351,7 +378,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
             // handled differently.
             s_failedMessages.set(
                 any2EvmMessage.messageId,
-                uint256(ErrorCode.BASIC)
+                uint256(ErrorCode.FAILED)
             );
             s_messageContents[any2EvmMessage.messageId] = any2EvmMessage;
             // Don't revert so CCIP doesn't revert. Emit event instead.
@@ -392,7 +419,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         address tokenReceiver
     ) external onlyOwner {
         // Check if the message has failed; if not, revert the transaction.
-        if (s_failedMessages.get(messageId) != uint256(ErrorCode.BASIC))
+        if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED))
             revert MessageNotFailed(messageId);
 
         // Set the error code to RESOLVED to disallow reentry and multiple retries of the same failed message.
@@ -467,7 +494,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
             tokenAmounts: tokenAmounts, // The amount and type of token being transferred
             extraArgs: Client._argsToBytes(
                 // Additional arguments, setting gas limit
-                Client.EVMExtraArgsV1({gasLimit: 2_000_000})
+                Client.EVMExtraArgsV1({gasLimit: 400_000})
             ),
             // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
             feeToken: _feeTokenAddress
@@ -512,6 +539,6 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         // Revert if there is nothing to withdraw
         if (amount == 0) revert NothingToWithdraw();
 
-        IERC20(_token).transfer(_beneficiary, amount);
+        IERC20(_token).safeTransfer(_beneficiary, amount);
     }
 }

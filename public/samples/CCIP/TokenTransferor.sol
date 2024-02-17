@@ -19,6 +19,7 @@ contract TokenTransferor is OwnerIsCreator {
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
+    error InvalidReceiverAddress(); // Used when the receiver address is 0.
     // Event emitted when the tokens are transferred to an account on another chain.
     event TokensTransferred(
         bytes32 indexed messageId, // The unique ID of the message.
@@ -53,6 +54,13 @@ contract TokenTransferor is OwnerIsCreator {
         _;
     }
 
+    /// @dev Modifier that checks the receiver address is not 0.
+    /// @param _receiver The receiver address.
+    modifier validateReceiver(address _receiver) {
+        if (_receiver == address(0)) revert InvalidReceiverAddress();
+        _;
+    }
+
     /// @dev Updates the allowlist status of a destination chain for transactions.
     /// @notice This function can only be called by the owner.
     /// @param _destinationChainSelector The selector of the destination chain to be updated.
@@ -83,6 +91,7 @@ contract TokenTransferor is OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -149,6 +158,7 @@ contract TokenTransferor is OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
