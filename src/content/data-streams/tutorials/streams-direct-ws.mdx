@@ -195,16 +195,16 @@ The feed in this example uses the [Basic schema](/data-streams/reference/report-
 | Expires At             | `1708072725`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                         |
 | Benchmark Price        | `2780428200000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                                                             |
 
-### Explanation
+## Explanation
 
-#### Establishing WebSocket connection and listening for message reports
+### Establishing a WebSocket connection and listening for message reports
 
 The `ConnectAndListen` function in the `client` package initializes the connection and enables the application to listen for messages from the Data Engine via WebSocket.
 
 - Authentication and security: Uses HMAC headers, created with `CLIENT_ID` and `CLIENT_SECRET`, for secure, authenticated communication.
 - Continuous listening: After authentication, continuously listens for real-time report messages, which include the `feedId` and the encoded `FullReport`.
 
-#### Decoding a report
+### Decoding a report
 
 The `DecodeFullReportAndReportData` function in the `internal` package unpacks the `FullReport` payload, decodes the `FullReport`'s `ReportBlob`, and decodes the report data into a structured format:
 
@@ -213,8 +213,8 @@ The `DecodeFullReportAndReportData` function in the `internal` package unpacks t
    - Report context: The report context contains metadata such as the `feedId` and the report version, which determines the appropriate schema for decoding the report data.
    - Cryptographic signatures: These signatures validate the data's integrity and authenticity.
 
-2. Report data decoding: Depending on the report version (`V1Report`, `V2Report`, or `V3Report`) extracted from the `feedID`, the function proceeds to decode the report data into a structured format.
+1. Report data decoding: Depending on the report version (`V1Report`, `V2Report`, or `V3Report`) extracted from the `feedID`, the function proceeds to decode the report data into a structured format.
 
-#### Handling the decoded data
+### Handling the decoded data
 
 In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.

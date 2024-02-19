@@ -118,7 +118,9 @@ func openWebsocketConnection(ctx context.Context) (*websocket.Conn, error) {
 	userSecret := os.Getenv("CLIENT_SECRET") // Example: "your-secret"
 
 	feedIds := []string{
-		"0x0003C6D7788D752F941090697B872EBF08B2B55ACF33DDA41E1E0B3496A54B37", //0x is optional
+		"0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b", //0x is optional
+		// This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
+		// Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
 	}
 	params := url.Values{
 		"feedIDs":   {strings.Join(feedIds, ",")},
