@@ -15,7 +15,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="streamsDirectEarlyAccess" />
 
-In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface-ws) to listen for real-time reports from the Data Engine. You'll set up your Go project, listen for real-time reports, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Engine, decode the report data, and log their attributes to your terminal.
 
 ## Before you begin
 
@@ -55,7 +55,7 @@ In this tutorial, you'll learn how to use Chainlink Data Streams with the [Strea
     touch internal/decoder.go
     ```
 
-1.  Add the provided code to `client-ws.go` to establish the WebSocket connection and start message listening. For report decoding, add the provided code to `decoder.go`.
+1.  Insert the provided code into `client-ws.go` and `decoder.go` to allow your application to establish a WebSocket connection, listen for new reports, and decode them:
 
     <Tabs sharedStore="package" client:visible>
       <Fragment slot="tab.1">client/client-ws.go</Fragment>
@@ -101,17 +101,17 @@ Set the required environment variables in your terminal session to authenticate 
 
 ### Establish a WebSocket connection and listen for real-time reports
 
-1.  Create a `wsConnectAndListen.go` file at the root of your project directory:
+1.  Create `wsConnectAndListen.go` at the root of your project directory:
 
     ```bash
     touch wsConnectAndListen.go
     ```
 
-    Then, open the `wsConnectAndListen.go` file and insert the following code to establish a WebSocket connection and listen for real-time data reports from the Data Engine:
+    Then, open `wsConnectAndListen.go` and insert the following code to establish a WebSocket connection and listen for real-time data reports from the Data Engine:
 
     <CodeSample src="samples/DataStreams/StreamsDirect/ws/wsConnectAndListen.go" />
 
-1.  Execute your application:
+1.  Launch the WebSocket listener by running the following command in your terminal:
 
     ```bash
     go run wsConnectAndListen.go
@@ -132,7 +132,7 @@ Set the required environment variables in your terminal session to authenticate 
         Received the following message:  {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0ca0a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd9b0000000000000000000000000000000000000000000000000000000065cdcd9b000000000000000000000000000000000000000000000000000020b6e6bed5940000000000000000000000000000000000000000000000000011b9819711c2700000000000000000000000000000000000000000000000000000000065cf1f1b000000000000000000000000000000000000000000000096b5a3c6746f046240000000000000000000000000000000000000000000000000000000000000000242fe28869203fb2f7e0ec1cd10ec28320cff0685a3f9564d7b12110911b201286b355d565358b93ed929421ae161e9fbe18727ce855bfecca72b9bb6fcb2684d0000000000000000000000000000000000000000000000000000000000000002512bb715a412dfebdaf9e254b8e98aff807a83421edeaf378f2dc138e459b09c2dd3bc345ec712e43767efc699d827973e2a5f77187118ddce8cefdaa2c44817}}
         ```
 
-    When examining a specific message from the WebSocket connection's output, you will notice it contains two values:
+    When you examine a message from the WebSocket connection's output, you notice that it contains two values:
 
     ```plaintext
     {{0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b 0x00067f14c763070bec1de1118aceeed1546878ab24e3213de21127249adabcbd0000000000000000000000000000000000000000000000000000000011f0c90b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000240010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b0000000000000000000000000000000000000000000000000000000065cdcd950000000000000000000000000000000000000000000000000000000065cdcd95000000000000000000000000000000000000000000000000000020b5e9c686e80000000000000000000000000000000000000000000000000011b8f926846fb80000000000000000000000000000000000000000000000000000000065cf1f15000000000000000000000000000000000000000000000096ba314c8f5ec2800000000000000000000000000000000000000000000000000000000000000000029c85f7bb779ce5316821a6efd3bdc843e32f1438bad24a6b269871ade0c166d2142574b78d7a75d3cb855e51caf9cb36e1d598b43c881989251bd2c450624a2600000000000000000000000000000000000000000000000000000000000000021c1e5c393a57a24f2c698e23c59e6a954a9ef006b63c7f58eeabdd0bbeff21e5353ddef53e9beb93f628cd23e2cc28750533f444559622640bcf7dcc935d66af}}
@@ -145,20 +145,20 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
 
 ### Decode the reports
 
-1.  Create a `decodeFullReportHex.go` file at the root of your project directory:
+1.  Create `decodeFullReportHex.go` at the root of your project directory:
 
     ```bash
     touch decodeFullReportHex.go
     ```
 
-1.  - Open the `decodeFullReportHex.go` file and insert the sample code provided below. It uses the `DecodeFullReportAndReportData` function from the `internal` package to decode the `FullReport` part of the message.
+1.  - Open `decodeFullReportHex.go` and insert the sample code provided below. It uses the `DecodeFullReportAndReportData` function from the `internal` package to decode the `FullReport` part of the message.
     - Replace the `fullReportHex` variable value with the hexadecimal value you saved earlier from your WebSocket message output, without the `0x` prefix.
 
       {" "}
 
       <CodeSample src="samples/DataStreams/StreamsDirect/ws/decodeFullReportHex.go" />
 
-1.  Execute your application:
+1.  Run the decoding script by executing the following command in your terminal:
 
     ```bash
     go run decodeFullReportHex.go
@@ -166,7 +166,7 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
 
     The `decodedReport` contains structured data about the report, including the `FeedId`, `FeedVersion`, and specific report data based on the report version (e.g., `V2Report` for [Basic Schema](/data-streams/reference/report-schema#basic-schema) reports and `V3Report` for [Premium Schema](/data-streams/reference/report-schema#premium-schema) reports).
 
-    Expect to see the output below in your terminal:
+    Expect output similar to the following in your terminal:
 
     ```plaintext
     Decoded Report: &{FeedId:0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b FeedVersion:2 V1Report:<nil> V2Report:0x1400011ad20 V3Report:<nil> Round:11 Epoch:1175753 Digest:[0 6 127 20 199 99 7 11 236 29 225 17 138 206 238 209 84 104 120 171 36 227 33 61 226 17 39 36 154 218 188 189]}
@@ -184,16 +184,16 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
 
 The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report. The decoded report details include:
 
-| Attribute              | Value                                                                | Description                                                                                                                                 |
-| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feed ID                | `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` | Unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with Report schema: Basic).                                             |
-| Feed Version           | `2`                                                                  | Version of the feed report schema.                                                                                                          |
-| Valid From Timestamp   | `1707986325`                                                         | Start validity timestamp for the report, indicating when the data becomes relevant.                                                         |
-| Observations Timestamp | `1707986325`                                                         | Unix timestamp indicating when the data was captured.                                                                                       |
-| Native Fee             | `35965683271400`                                                     | Fee paid in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) with 18 decimals. For readability: `0.035965683271400` ETH. |
-| Link Fee               | `4988454836662200`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.4988454836662200` LINK.                                                        |
-| Expires At             | `1708072725`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
-| Benchmark Price        | `2780428200000000000000`                                             | Observed price in the report with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                     |
+| Attribute              | Value                                                                | Description                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feed ID                | `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` | The unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with the Basic Report schema).                                                                                   |
+| Feed Version           | `2`                                                                  | The feed report schema version.                                                                                                                                                          |
+| Valid From Timestamp   | `1707986325`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                  |
+| Observations Timestamp | `1707986325`                                                         | The timestamp indicating when the data was captured.                                                                                                                                     |
+| Native Fee             | `35965683271400`                                                     | The fee to pay in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) for verifying the report data onchain. With 18 decimals. For readability: `0.035965683271400` ETH. |
+| Link Fee               | `4988454836662200`                                                   | The fee to pay in LINK tokens for verifying the report data onchain. With 18 decimals. For readability: `4.4988454836662200` LINK.                                                       |
+| Expires At             | `1708072725`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                         |
+| Benchmark Price        | `2780428200000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                                                             |
 
 ### Explanation
 

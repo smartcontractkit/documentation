@@ -58,7 +58,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
     touch internal/decoder.go
     ```
 
-1.  Insert the provided code samples to enable report fetching and decoding:
+1.  Insert the provided code into `client.go` and `decoder.go` to enable your application to fetch and decode reports:
 
         <Tabs sharedStore="package" client:visible>
         <Fragment slot="tab.1">client/client.go</Fragment>
@@ -104,23 +104,23 @@ Set the required environment variables in your terminal session to authenticate 
 
 ### Fetch and decode a report with a single feed
 
-1.  Create a `singleFeed.go` file at the root of your project directory:
+1.  Create `singleFeed.go` at the root of your project directory:
 
     ```bash
     touch singleFeed.go
     ```
 
-    Then, open the `singleFeed.go` file and insert the following code to initialize the fetching and decoding processes for a single feed:
+    Then, open `singleFeed.go` and insert the following code to fetch and decode a single feed:
 
     <CodeSample src="samples/DataStreams/StreamsDirect/singleFeed.go" />
 
-1.  Run your application:
+1.  Execute your application:
 
     ```bash
     go run singleFeed.go
     ```
 
-    Expect to see the output below in your terminal:
+    Expect output similar to the following in your terminal:
 
         ```plaintext
         Generating HMAC with the following:  GET /api/v1/reports?feedID=0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b&timestamp=1707920277 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 <YOUR_CLIENT_ID> 1707920278120
@@ -142,17 +142,17 @@ Set the required environment variables in your terminal session to authenticate 
 
 #### Decoded report details
 
-The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report, decoded using the `V2Report` library. The decoded report attributes include:
+The report in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) and is decoded with the corresponding `V2Report` library.
 
-| Attribute              | Value                                                                | Description                                                                                                                                 |
-| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feed ID                | `0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe` | Unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with Report schema: Basic).                                             |
-| Valid From Timestamp   | `1707920277`                                                         | Start validity timestamp for the report, indicating when the data becomes relevant.                                                         |
-| Observations Timestamp | `1707920277`                                                         | Unix timestamp indicating when the data was captured.                                                                                       |
-| Native Fee             | `36191497454800`                                                     | Fee paid in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) with 18 decimals. For readability: `0.036191497454800` ETH. |
-| Link Fee               | `4931765327865000`                                                   | Fee paid in LINK token with 18 decimals. For readability: `4.931765327865000` LINK.                                                         |
-| Expires At             | `1708006677`                                                         | Expiration timestamp for the report, indicating when the data is considered outdated.                                                       |
-| Benchmark Price        | `2763079922979423400000`                                             | Observed price in the report with 18 decimals. For readability: `2,763.0799229794234` ETH per USD.                                          |
+| Attribute              | Value                                                                | Description                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feed ID                | `0x00026776af33e1916ef83f016a5e7fad5b4322242fe6133b631d612fa7528bbe` | The unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with the Basic Report schema).                                                                                   |
+| Valid From Timestamp   | `1707920277`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                  |
+| Observations Timestamp | `1707920277`                                                         | The timestamp indicating when the data was captured.                                                                                                                                     |
+| Native Fee             | `36191497454800`                                                     | The fee to pay in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) for verifying the report data onchain. With 18 decimals. For readability: `0.036191497454800` ETH. |
+| Link Fee               | `4931765327865000`                                                   | The fee to pay in LINK tokens for verifying the report data onchain. With 18 decimals. For readability: `4.931765327865000` LINK.                                                        |
+| Expires At             | `1708006677`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                         |
+| Benchmark Price        | `2763079922979423400000`                                             | The observed price in the report, with 18 decimals. For readability: `2,763.0799229794234` ETH per USD.                                                                                  |
 
 ### Fetch and decode a report with multiple feeds
 
@@ -162,7 +162,7 @@ The feed in this example uses the [Basic schema](/data-streams/reference/report-
     touch multipleFeeds.go
     ```
 
-    Then, open the `multipleFeeds.go` file and insert the following code to initialize the fetching and decoding processes for a multiple feeds:
+    Then, open the `multipleFeeds.go` file and insert the following code to fetch and decode multiple feeds:
 
     <CodeSample src="samples/DataStreams/StreamsDirect/multipleFeeds.go" />
 
@@ -225,10 +225,10 @@ The response includes a `FullReport` blob containing the encoded report's contex
 
 When the application successfully fetches the report, it decodes the report with the `DecodeFullReportAndReportData` function from the `internal` package. The process includes:
 
-1. **`FullReport` blob decoding**: It first decodes the `FullReport` blob into a `FullReport` struct, extracting the report context (including the feed ID(s) and the report version) and the report data.
+1. **`FullReport` blob decoding**: It first decodes the `FullReport` blob into a `FullReport` struct, extracting the report context (including the feed ID(s) and the report version) and the report data. In this example, the feed uses the [Basic Schema](/data-streams/reference/report-schema#basic-schema), corresponding to the `V2` report version.
 
-1. **Report data decoding**: Based on the feed ID(s) version(s), it transforms the raw data into a structured format.
+1. **Report data decoding**: Based on the feed ID(s) version(s), it transforms the raw data into a structured format. In this example, the application decodes the report data into a `V2Report` struct, which contains the report's attributes.
 
 ### Handling the decoded data
 
-In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.
+The application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.
