@@ -61,65 +61,69 @@ When a DON's oracle reports the response, subscription accounts are charged base
 
 This is an example of cost estimation for a request and then cost calculation at fulfillment.
 
-| Parameter               | Value     |
-| ----------------------- | --------- |
-| Overestimated gas price | 500 gwei  |
-| Callback gas limit      | 100000    |
-| Gas overhead            | 200000    |
-| Premium fee             | 0.25 LINK |
+#### Cost Simulation (Reservation)
+
+| Parameter               | Value    |
+| ----------------------- | -------- |
+| Overestimated gas price | 9 gwei   |
+| Callback gas limit      | 300000   |
+| Gas overhead            | 185000   |
+| Premium fee             | 0.2 LINK |
 
 1. Calculate the total estimated gas cost in LINK, using an overestimated gas price, the gas overhead, and the full callback gas limit:
 
-   | Gas cost calculation                                          | Total estimated gas cost  |
-   | ------------------------------------------------------------- | ------------------------- |
-   | Overestimated gas price x (Gas overhead + Callback gas limit) |                           |
-   | 500 gwei x (200000 + 100000)                                  | 150000000 gwei (0.15 ETH) |
+   | Gas cost calculation                                          | Total estimated gas cost    |
+   | ------------------------------------------------------------- | --------------------------- |
+   | Overestimated gas price x (Gas overhead + Callback gas limit) |                             |
+   | 9 gwei x (300000 + 185000)                                    | 4365000 gwei (0.004365 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
-   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+   For this example, assume the feed returns a conversion value of Ξ0.007 ETH per 1 LINK.
 
-   | ETH to LINK cost conversion | Total gas cost (LINK) |
-   | --------------------------- | --------------------- |
-   | 0.15 ETH / 0.004 ETH/LINK   | 37.5 LINK             |
+   | ETH to LINK cost conversion   | Total gas cost (LINK) |
+   | ----------------------------- | --------------------- |
+   | 0.004365 ETH / 0.007 ETH/LINK | 0.62 LINK             |
 
 1. Add the premium fee to get the estimated cost for a subscription reservation:
 
    | Adding LINK premium                 | Maximum request cost (LINK) |
    | ----------------------------------- | --------------------------- |
    | Total gas cost (LINK) + Premium fee |                             |
-   | 37.5 LINK + 0.25 LINK               | 37.75 LINK                  |
+   | 0.62 LINK + 0.2 LINK                | 0.82 LINK                   |
 
-For this example request, 37.75 LINK is reserved from your subscription balance, but not yet deducted. Next, when the request is fulfilled, the exact request cost will be deducted.
+For this example request, 0.82 LINK is reserved from your subscription balance, but not yet deducted. Next, when the request is fulfilled, the exact request cost will be deducted.
 
-| Parameter    | Value     |
-| ------------ | --------- |
-| Gas price    | 500 gwei  |
-| Callback gas | 100000    |
-| Gas overhead | 200000    |
-| Premium fee  | 0.25 LINK |
+#### Cost Calculation (Fulfillment)
+
+| Parameter    | Value    |
+| ------------ | -------- |
+| Gas price    | 1.5 gwei |
+| Callback gas | 200000   |
+| Gas overhead | 185000   |
+| Premium fee  | 0.2 LINK |
 
 1. Calculate the total gas cost:
 
-   | Gas cost calculation                      | Total gas cost             |
-   | ----------------------------------------- | -------------------------- |
-   | Gas price x (Gas overhead + Callback gas) |                            |
-   | 50 gwei x (115000 + 95000)                | 10500000 gwei (0.0105 ETH) |
+   | Gas cost calculation                      | Total gas cost              |
+   | ----------------------------------------- | --------------------------- |
+   | Gas price x (Gas overhead + Callback gas) |                             |
+   | 1.5 gwei x (200000 + 185000)              | 577500 gwei (0.0005775 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
-   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+   For this example, assume the feed returns a conversion value of Ξ0.007 ETH per 1 LINK.
 
-   | ETH to LINK cost conversion | Total gas cost (LINK) |
-   | --------------------------- | --------------------- |
-   | 0.0105 ETH / 0.004 ETH/LINK | 2.625 LINK            |
+   | ETH to LINK cost conversion    | Total gas cost (LINK) |
+   | ------------------------------ | --------------------- |
+   | 0.0005775 ETH / 0.007 ETH/LINK | 0.0825 LINK           |
 
 1. Add the premium fee to get the total cost of a request:
 
    | Adding premium fee                  | Total request cost (LINK) |
    | ----------------------------------- | ------------------------- |
    | Total gas cost (LINK) + premium fee |                           |
-   | 2.625 LINK + 0.25 LINK              | 2.875 LINK                |
+   | 0.0825 LINK + 0.2 LINK              | 0.2825 LINK               |
 
-This example request would cost 2.875 LINK when fulfilled. The subscription reservation for the 37.75 LINK is released, and the actual cost, 2.875 LINK, is deducted from your subscription balance.
+This example request would cost 0.2825 LINK when fulfilled. The subscription reservation for the 0.82 LINK is released, and the actual cost, 0.2825 LINK, is deducted from your subscription balance.
 
 ## Minimum balance for uploading encrypted secrets
 
