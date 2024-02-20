@@ -242,11 +242,12 @@ At this point, you have one _message tracker_ (sender) contract on _Ethereum Sep
    // Enum is used to track the status of messages sent via CCIP.
    // `NotSent` indicates a message has not yet been sent.
    // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
-   // `Confirmed` indicates that the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
+   // `ProcessedOnDest` indicates that the Acknowledger contract has processed the message and that
+   // the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
    enum MessageStatus {
      NotSent, // 0
      Sent, // 1
-     Confirmed // 2
+     ProcessedOnDest // 2
    }
    ```
 
@@ -299,13 +300,13 @@ event AcknowledgmentSent(
 
 #### Final status check
 
-When the _message tracker_ receives the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `Confirmed` status as defined by the `MessageStatus` `enum`. The function emits a `MessageConfirmed` event.
+When the _message tracker_ receives the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `ProcessedOnDest` status as defined by the `MessageStatus` `enum`. The function emits a `MessageProcessedOnDest` event.
 
 1. Open MetaMask and select the _Ethereum Sepolia_ network.
 
 1. On the **Deploy & Run Transactions** tab in Remix, expand your _message tracker_ contract in the **Deployed Contracts** section.
 
-1. Copy the **initial message ID** from the CCIP explorer (transaction from _Ethereum Sepolia_ to _Polygon Mumbai_) and paste it as the argument in the **messagesInfo** getter function. Click **messagesInfo** to read the message status. It returns `status 2` and the acknowledger message ID that confirms this status.
+1. Copy the **initial message ID** from the CCIP explorer (transaction from _Ethereum Sepolia_ to _Polygon Mumbai_) and paste it as the argument in the **messagesInfo** getter function. Click **messagesInfo** to read the message status. It returns `status 2` and the acknowledgment message ID that confirms this status.
 
    <ClickToZoom
      src="/images/ccip/tutorials/message-tracker-message-status-2.webp"
@@ -321,13 +322,13 @@ When the _message tracker_ receives the acknowledgment message, the `ccipReceive
      style="max-width: 70%;"
    />
 
-   The `MessageConfirmed` event is emitted with the acknowledged message ID `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b` as indexed `topic2`.
+   The `MessageProcessedOnDest` event is emitted with the acknowledged message ID `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b` as indexed `topic2`.
 
    ```solidity
    // Event emitted when the sender contract receives an acknowledgment
    // that the receiver contract has successfully received and processed the message.
-   event MessageConfirmed(
-     bytes32 indexed messageId, // The unique ID of the CCIP message.
+   event MessageProcessedOnDest(
+     bytes32 indexed messageId, // The unique ID of the CCIP acknowledgment message.
      bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
      uint64 indexed sourceChainSelector, // The chain selector of the source chain.
      address sender // The address of the sender from the source chain.
@@ -350,11 +351,12 @@ This mechanism ensures that a message sent by the _message tracker_ (sender) con
 // Enum is used to track the status of messages sent via CCIP.
 // `NotSent` indicates a message has not yet been sent.
 // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
-// `Confirmed` indicates that the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
+// `ProcessedOnDest` indicates that the Acknowledger contract has processed the message and that
+// the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
 enum MessageStatus {
     NotSent, // 0
     Sent, // 1
-    Confirmed // 2
+    ProcessedOnDest // 2
 }
 
 // Struct to store the status and acknowledger message ID of a message.
@@ -376,11 +378,17 @@ The _message tracker_ contract acts as the sender, initiating cross-chain commun
 - **Status tracking**:
 
   - Upon sending a message, the _message tracker_ updates its internal state to mark the message as `Sent` (status `1`). This status is pivotal for tracking the message lifecycle and awaiting acknowledgment.
-  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` (status `1`) to `Confirmed` (status `2`). This update indicates that the cross-chain communication cycle is complete, and the receiver successfully received and acknowledged the message.
 
     ```solidity
     // Update the message status to `Sent`
     messagesInfo[messageId].status = MessageStatus.Sent;
+    ```
+
+  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` (status `1`) to `ProcessedOnDest` (status `2`). This update indicates that the cross-chain communication cycle is complete, and the receiver successfully received and acknowledged the message.
+
+    ```solidity
+    // Update the message status to `ProcessedOnDest`
+    messagesInfo[messageId].status = MessageStatus.ProcessedOnDest;
     ```
 
 #### _Acknowledger_ contract
@@ -401,7 +409,7 @@ Both contracts use allowlists to process only messages from and to allowed sourc
   - The `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain` modifier, ensuring the contract owner has allowlisted a destination chain.
   - The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
 
-- **Verifying message authenticity**: The _message tracker_ contract ensures that a message status is updated to `Confirmed` only for a message it has sent.
+- **Ensuring the initial message authenticity**: The _message tracker_ contract first checks that the message awaiting acknowledgment was sent from the contract itself and is currently marked as `Sent`. Once confirmed, the message status is updated to `ProcessedOnDest`.
 
 ## Examine the code
 
@@ -415,4 +423,4 @@ Both contracts use allowlists to process only messages from and to allowed sourc
 
 ## Final note
 
-In this example, the _message tracker_ contract emits an event when it receives the acknowledgment message confirming the initial message reception on the counterpart chain. However, you could think of any other logic to execute when the _message tracker_ receives the acknowledgment. This tutorial demonstrates the pattern for sending arbitrary data, but you can apply the same pattern to programmable token transfers.
+In this example, the _message tracker_ contract emits an event when it receives the acknowledgment message confirming the initial message reception and processing on the counterpart chain. However, you could think of any other logic to execute when the _message tracker_ receives the acknowledgment. This tutorial demonstrates the pattern for sending arbitrary data, but you can apply the same pattern to programmable token transfers.
