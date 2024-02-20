@@ -215,7 +215,7 @@ contract TokenTransferor is OwnerIsCreator {
         address _token,
         uint256 _amount,
         address _feeTokenAddress
-    ) internal pure returns (Client.EVM2AnyMessage memory) {
+    ) private pure returns (Client.EVM2AnyMessage memory) {
         // Set the token amounts
         Client.EVMTokenAmount[]
             memory tokenAmounts = new Client.EVMTokenAmount[](1);
