@@ -242,12 +242,12 @@ At this point, you have one _message tracker_ (sender) contract on _Ethereum Sep
    // Enum is used to track the status of messages sent via CCIP.
    // `NotSent` indicates a message has not yet been sent.
    // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
-   // `ProcessedOnDest` indicates that the Acknowledger contract has processed the message and that
+   // `ProcessedOnDestination` indicates that the Acknowledger contract has processed the message and that
    // the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
    enum MessageStatus {
      NotSent, // 0
      Sent, // 1
-     ProcessedOnDest // 2
+     ProcessedOnDestination // 2
    }
    ```
 
@@ -300,7 +300,7 @@ event AcknowledgmentSent(
 
 #### Final status check
 
-When the _message tracker_ receives the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `ProcessedOnDest` status as defined by the `MessageStatus` `enum`. The function emits a `MessageProcessedOnDest` event.
+When the _message tracker_ receives the acknowledgment message, the `ccipReceive` function updates the initial message status to `2`, which corresponds to the `ProcessedOnDestination` status as defined by the `MessageStatus` `enum`. The function emits a `MessageProcessedOnDestination` event.
 
 1. Open MetaMask and select the _Ethereum Sepolia_ network.
 
@@ -322,12 +322,12 @@ When the _message tracker_ receives the acknowledgment message, the `ccipReceive
      style="max-width: 70%;"
    />
 
-   The `MessageProcessedOnDest` event is emitted with the acknowledged message ID `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b` as indexed `topic2`.
+   The `MessageProcessedOnDestination` event is emitted with the acknowledged message ID `0x8773e27ea01eb0e7671da8d63e14a647713cb1274b7110141d249d3b8fce116b` as indexed `topic2`.
 
    ```solidity
    // Event emitted when the sender contract receives an acknowledgment
    // that the receiver contract has successfully received and processed the message.
-   event MessageProcessedOnDest(
+   event MessageProcessedOnDestination(
      bytes32 indexed messageId, // The unique ID of the CCIP acknowledgment message.
      bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
      uint64 indexed sourceChainSelector, // The chain selector of the source chain.
@@ -351,12 +351,12 @@ This mechanism ensures that a message sent by the _message tracker_ (sender) con
 // Enum is used to track the status of messages sent via CCIP.
 // `NotSent` indicates a message has not yet been sent.
 // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
-// `ProcessedOnDest` indicates that the Acknowledger contract has processed the message and that
+// `ProcessedOnDestination` indicates that the Acknowledger contract has processed the message and that
 // the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
 enum MessageStatus {
     NotSent, // 0
     Sent, // 1
-    ProcessedOnDest // 2
+    ProcessedOnDestination // 2
 }
 
 // Struct to store the status and acknowledger message ID of a message.
@@ -384,11 +384,11 @@ The _message tracker_ contract acts as the sender, initiating cross-chain commun
     messagesInfo[messageId].status = MessageStatus.Sent;
     ```
 
-  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` (status `1`) to `ProcessedOnDest` (status `2`). This update indicates that the cross-chain communication cycle is complete, and the receiver successfully received and acknowledged the message.
+  - Upon receiving an acknowledgment message from the _acknowledger_ contract, the _message tracker_ contract updates the message status from `Sent` (status `1`) to `ProcessedOnDestination` (status `2`). This update indicates that the cross-chain communication cycle is complete, and the receiver successfully received and acknowledged the message.
 
     ```solidity
-    // Update the message status to `ProcessedOnDest`
-    messagesInfo[messageId].status = MessageStatus.ProcessedOnDest;
+    // Update the message status to `ProcessedOnDestination`
+    messagesInfo[messageId].status = MessageStatus.ProcessedOnDestination;
     ```
 
 #### _Acknowledger_ contract
@@ -409,7 +409,7 @@ Both contracts use allowlists to process only messages from and to allowed sourc
   - The `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain` modifier, ensuring the contract owner has allowlisted a destination chain.
   - The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
 
-- **Ensuring the initial message authenticity**: The _message tracker_ contract first checks that the message awaiting acknowledgment was sent from the contract itself and is currently marked as `Sent`. Once confirmed, the message status is updated to `ProcessedOnDest`.
+- **Ensuring the initial message authenticity**: The _message tracker_ contract first checks that the message awaiting acknowledgment was sent from the contract itself and is currently marked as `Sent`. Once confirmed, the message status is updated to `ProcessedOnDestination`.
 
 ## Examine the code
 

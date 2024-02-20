@@ -26,17 +26,17 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
     error InvalidReceiverAddress(); // Used when the receiver address is 0.
     error MessageWasNotSentByMessageTracker(bytes32 msgId); // Triggered when attempting to confirm a message not recognized as sent by this tracker.
-    error MessageHasAlreadyBeenProcessedOnDest(bytes32 msgId); // Triggered when trying to mark a message as `ProcessedOnDest` when it is already marked as such.
+    error MessageHasAlreadyBeenProcessedOnDestination(bytes32 msgId); // Triggered when trying to mark a message as `ProcessedOnDestination` when it is already marked as such.
 
     // Enum is used to track the status of messages sent via CCIP.
     // `NotSent` indicates a message has not yet been sent.
     // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
-    // `ProcessedOnDest` indicates that the Acknowledger contract has processed the message and that
+    // `ProcessedOnDestination` indicates that the Acknowledger contract has processed the message and that
     // the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
     enum MessageStatus {
         NotSent, // 0
         Sent, // 1
-        ProcessedOnDest // 2
+        ProcessedOnDestination // 2
     }
 
     // Struct to store the status and acknowledger message ID of a message.
@@ -69,7 +69,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
 
     // Event emitted when the sender contract receives an acknowledgment
     // that the receiver contract has successfully received and processed the message.
-    event MessageProcessedOnDest(
+    event MessageProcessedOnDestination(
         bytes32 indexed messageId, // The unique ID of the CCIP acknowledgment message.
         bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
         uint64 indexed sourceChainSelector, // The chain selector of the source chain.
@@ -192,10 +192,10 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
      * @dev Receives and processes messages sent via the Chainlink CCIP from allowed chains and senders.
      * Upon receiving a message, this function checks if the message's associated data indicates a previously
      * sent message awaiting acknowledgment. If the message is valid (i.e., its status is `Sent`), it updates
-     * the message's status to `ProcessedOnDest`, thereby acknowledging its receipt. It then emits a `MessageProcessedOnDest`
+     * the message's status to `ProcessedOnDestination`, thereby acknowledging its receipt. It then emits a `MessageProcessedOnDestination`
      * event. If the message cannot be validated (e.g., it was not sent or has been tampered with), the function
      * reverts with a `MessageWasNotSentByMessageTracker` error. This mechanism ensures that only messages
-     * genuinely sent and awaiting acknowledgment are marked as `ProcessedOnDest`.
+     * genuinely sent and awaiting acknowledgment are marked as `ProcessedOnDestination`.
      * @param any2EvmMessage The CCIP message received, which includes the message ID, the data being acknowledged,
      * the source chain selector, and the sender's address.
      */
@@ -214,23 +214,25 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         messagesInfo[initialMsgId].acknowledgerMessageId = acknowledgerMsgId; // Store the messageId of the received message
 
         if (messagesInfo[initialMsgId].status == MessageStatus.Sent) {
-            // Updates the status of the message to 'ProcessedOnDest' to reflect that an acknowledgment
+            // Updates the status of the message to 'ProcessedOnDestination' to reflect that an acknowledgment
             // of receipt has been received and emits an event to log this confirmation along with relevant details.
-            messagesInfo[initialMsgId].status = MessageStatus.ProcessedOnDest;
-            emit MessageProcessedOnDest(
+            messagesInfo[initialMsgId].status = MessageStatus
+                .ProcessedOnDestination;
+            emit MessageProcessedOnDestination(
                 acknowledgerMsgId,
                 initialMsgId,
                 any2EvmMessage.sourceChainSelector,
                 abi.decode(any2EvmMessage.sender, (address))
             );
         } else if (
-            messagesInfo[initialMsgId].status == MessageStatus.ProcessedOnDest
+            messagesInfo[initialMsgId].status ==
+            MessageStatus.ProcessedOnDestination
         ) {
-            // If the message is already marked as 'ProcessedOnDest', this indicates an attempt to
+            // If the message is already marked as 'ProcessedOnDestination', this indicates an attempt to
             // re-confirm a message that has already been processed on the destination chain and marked as such.
-            revert MessageHasAlreadyBeenProcessedOnDest(initialMsgId);
+            revert MessageHasAlreadyBeenProcessedOnDestination(initialMsgId);
         } else {
-            // If the message status is neither 'Sent' nor 'ProcessedOnDest', it implies that the
+            // If the message status is neither 'Sent' nor 'ProcessedOnDestination', it implies that the
             // message ID provided for acknowledgment does not correspond to a valid, previously
             // sent message.
             revert MessageWasNotSentByMessageTracker(initialMsgId);
