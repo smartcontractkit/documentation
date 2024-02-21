@@ -348,8 +348,14 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.pair[0]}/{proxy.pair[1]}
+        {proxy.docs.schema ? (
+            <div>
+              Schema: {proxy.docs.schema}
+            </div>
+          ) : (
+            ""
+          )}
       </div>
       {proxy.docs.shutdownDate && (
         <div className={clsx(feedList.shutDate)}>
@@ -392,16 +398,6 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {proxy.docs.schema ? (
-            <div>
-              <dt>
-                <span class="label">Report schema:</span>
-              </dt>
-              <dd>{proxy.docs.schema}</dd>
-            </div>
-          ) : (
-            ""
-          )}
           {proxy.docs.productType ? (
             <div>
               <dt>
