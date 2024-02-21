@@ -14,12 +14,13 @@ enum NetworkType {
 }
 
 enum FeedCategory {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
   Custom = "custom",
+  New = "new",
   Deprecating = "deprecating",
   Empty = "",
-  Monitored = "monitored",
-  Specialized = "specialized",
-  Verified = "verified",
 }
 
 enum ProxyFeedType {

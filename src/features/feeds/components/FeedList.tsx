@@ -37,7 +37,7 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
-  const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
+  const dataFeedCategory = ["low", "medium", "high", "custom", "new", "deprecating"]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
