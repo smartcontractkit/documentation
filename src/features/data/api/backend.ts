@@ -13,7 +13,9 @@ export const getServerSideChainMetadata = async (chains: Chain[]): Promise<Recor
             type: "json", // we’ll parse JSON for you
           }).then((metadata) => ({
             ...nw,
-            metadata: metadata.filter((meta) => meta.docs?.hidden !== true),
+            metadata: metadata.filter(
+              (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
+            ),
           }))
         : undefined
     )
