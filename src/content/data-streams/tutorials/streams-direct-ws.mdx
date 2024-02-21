@@ -4,8 +4,8 @@ date: Last Modified
 title: "Stream and decode reports via WebSocket"
 whatsnext:
   {
-    "Learn how to verify you data onchain": "/data-streams/reference/streams-direct-onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/stream-ids",
+    "Learn how to verify your data onchain": "/data-streams/reference/streams-direct-onchain-verification",
+    "Find the list of available Data Streams Feed IDs": "/data-streams/stream-ids",
   }
 ---
 
@@ -15,7 +15,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="streamsDirectEarlyAccess" />
 
-In this tutorial, you'll learn how to use Chainlink Data Streams with the [Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation and a [WebSocket connection](/data-streams/reference/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Engine, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams#streams-direct-using-the-data-engine-with-your-own-bot) implementation_ and a [WebSocket connection](/data-streams/reference/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Engine, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -186,16 +186,16 @@ Note: You specify the feed ID(s) to listen for in the `feedIDs` variable within 
 
 The feed in this example uses the [Basic schema](/data-streams/reference/report-schema#basic-schema) for its report. The decoded report details include:
 
-| Attribute              | Value                                                                | Description                                                                                                                                                                              |
-| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feed ID                | `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` | The unique identifier for the stream (e.g., ETH/USD on Arbitrum Sepolia with the Basic Report schema).                                                                                   |
-| Feed Version           | `2`                                                                  | The feed report schema version.                                                                                                                                                          |
-| Valid From Timestamp   | `1707986325`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                  |
-| Observations Timestamp | `1707986325`                                                         | The timestamp indicating when the data was captured.                                                                                                                                     |
-| Native Fee             | `35965683271400`                                                     | The fee to pay in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) for verifying the report data onchain. With 18 decimals. For readability: `0.035965683271400` ETH. |
-| Link Fee               | `4988454836662200`                                                   | The fee to pay in LINK tokens for verifying the report data onchain. With 18 decimals. For readability: `4.4988454836662200` LINK.                                                       |
-| Expires At             | `1708072725`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                         |
-| Benchmark Price        | `2780428200000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                                                             |
+| Attribute              | Value                                                                | Description                                                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feed ID                | `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` | The unique identifier for the Data Streams feed. In this example, the feed is ETH/USD on Arbitrum Sepolia with the Basic Report schema.                                                            |
+| Feed Version           | `2`                                                                  | The feed report schema version.                                                                                                                                                                    |
+| Valid From Timestamp   | `1707986325`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                            |
+| Observations Timestamp | `1707986325`                                                         | The timestamp indicating when the data was captured.                                                                                                                                               |
+| Native Fee             | `35965683271400`                                                     | The fee to pay in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) for the onchain verification of the report data. With 18 decimals. For readability: `0.035965683271400` ETH. |
+| Link Fee               | `4988454836662200`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `4.4988454836662200` LINK.                                                       |
+| Expires At             | `1708072725`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                   |
+| Benchmark Price        | `2780428200000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `2,780.428200000000000000` ETH per USD.                                                                                       |
 
 ## Explanation
 

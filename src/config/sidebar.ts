@@ -204,7 +204,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/getting-started",
         },
         {
-          title: "Stream IDs",
+          title: "Data Streams Feed IDs",
           url: "data-streams/stream-ids",
         },
         {
