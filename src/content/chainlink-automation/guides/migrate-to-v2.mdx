@@ -23,8 +23,6 @@ If your upkeep is restricted to a single address calling it, you must give permi
 
 The Chainlink Automation App offers a streamlined migration process for upkeeps using registry versions 1.2 and later. To migrate upkeeps with older versions, follow the [manual migration process](#migrating-older-upkeeps-manually) instead.
 
-You can use the Chainlink Automation App to migrate one upkeep at a time, or [migrate multiple upkeeps using the block scanner](#migrating-upkeeps-using-block-scanner).
-
 1. Navigate to the Chainlink Automation App, select the supported blockchain you're using, and connect your wallet.
 
    <div class="remix-callout">
@@ -35,25 +33,29 @@ You can use the Chainlink Automation App to migrate one upkeep at a time, or [mi
 
    <ClickToZoom src="/images/automation/v2-migration/landing-page.png" />
 
-1. Select your upkeep. In the **Details** page, expand the **Actions** menu and select **Migrate upkeep**.
+1. To start migrating a specific upkeep, select the upkeep. In the **Details** page, expand the **Actions** menu and select **Migrate upkeep**.
 
    <ClickToZoom src="/images/automation/v2-migration/upkeep-details.png" />
 
-1. Confirm the transaction in your wallet.
+   If you have multiple upkeeps to migrate, start the migration using the link in your upkeeps dashboard. This link displays only if you have one or more upkeeps to migrate:
+
+   <ClickToZoom src="/images/automation/v2-migration/1-bulk-migration-ui.png" />
+
+1. Follow the prompts to approve and confirm the transactions in your wallet to migrate your upkeeps.
 
    <ClickToZoom src="/images/automation/v2-migration/approve-migration.png" />
 
-Upkeeps that are successfully migrated will show the following [transaction logs](https://testnet.bscscan.com/tx/0x85b3a147518719d3c9b1dd6b80e5f39d53d18c177ebc10d1bfb8890eaab8900a#eventlog):
+   Upkeeps that are successfully migrated will show the following [transaction logs](https://testnet.bscscan.com/tx/0x85b3a147518719d3c9b1dd6b80e5f39d53d18c177ebc10d1bfb8890eaab8900a#eventlog):
 
-<ClickToZoom src="/images/automation/v2-migration/migration-txn.png" />
+   <ClickToZoom src="/images/automation/v2-migration/migration-txn.png" />
 
-When the migration is complete:
+1. If your upkeep restricts `msg.sender` to the previous registry address, [update your contract](#update-permissions) to use the new forwarder address.
+
+After the migration is complete:
 
 - Your balance is transferred to the new registry automatically.
-- The new upkeep details page shows the updated registry address and a forwarder address. The forwarder address is a new [unique forwarder](#unique-forwarder) to increase security for your upkeep. This address will be the unique `msg.sender` for your upkeep. If your upkeep is restricted to a single address calling it, you must give permission to the forwarder address. Otherwise, Automation will no longer be able to execute your function.
-- Read the [migration checklist](#migration-checklist) to understand further updates you may need to make in your contracts.
-
-<ClickToZoom src="/images/automation/v2-migration/details-with-forwarder.png" />
+- The new forwarder address becomes available.
+- Read the [migration checklist](#migration-checklist) to understand further updates you might need to make in your contracts.
 
 ## Migrating upkeeps using block scanner
 
@@ -65,9 +67,17 @@ To migrate one or more upkeeps using the scanner:
 
    Enter a list of upkeep IDs. For example: `[99297446083125056953495436926707926113001699970195513612134585638496630959874,63026166139768298778579034679995711427803187091626268721992534052921779884688]`.
 
-1. Enter the destination registry address, which is the latest registry address on this chain. You can find this address in the [Supported Networks](/chainlink-automation/overview/supported-networks) page, or at the top of the Chainlink Automation App with the desired chain selected.
+1. Enter the destination registry address, which is the latest registry address on this chain. You can find this address on the [Supported Networks](/chainlink-automation/overview/supported-networks) page, or at the top of the Chainlink Automation App with the desired chain selected.
 
 1. Execute the `migrateUpkeeps` function and confirm the transaction. When this transaction is confirmed, your upkeeps will be migrated to the latest registry, and each upkeep will have a [unique forwarder](#unique-forwarder) address.
+
+1. If your upkeep restricts `msg.sender` to the previous registry address, [update your contract](#update-permissions) to use the new forwarder address.
+
+After the migration is complete:
+
+- Your balance is transferred to the new registry automatically.
+- The new forwarder address becomes available.
+- Read the [migration checklist](#migration-checklist) to understand further updates you might need to make in your contracts.
 
 ## Migrating older upkeeps manually
 
@@ -83,8 +93,25 @@ For upkeeps on registry versions 1.0 and 1.1, you must migrate upkeeps manually:
 1. Expand the **Actions** menu and select **Cancel upkeep**.
 1. Approve the transaction in your wallet. When this transaction is confirmed, you must wait 50 blocks before you can withdraw funds.
 1. Return to the main [Chainlink Automation App](https://automation.chain.link/) landing page. Register a new upkeep, providing the **Upkeep address** of your old upkeep.
+1. If your upkeep restricts `msg.sender` to the previous registry address, [update your contract](#update-permissions) to use the new forwarder address.
 
-After migration, you have a new upkeep on Automation 2.0 with the same interface as your old upkeep. Future migrations are eligible for the simpler migration process. Read the [migration checklist](#migration-checklist) to understand further updates you may need to make in your contracts.
+After migration, you have a new upkeep on Automation 2.0 with the same interface as your old upkeep. Future migrations are eligible for the simpler migration process.
+
+After the migration is complete:
+
+- Your balance is transferred to the new registry automatically.
+- The new forwarder address becomes available.
+- Read the [migration checklist](#migration-checklist) to understand further updates you might need to make in your contracts.
+
+## Update permissions
+
+Your new upkeep has a new [unique forwarder](#unique-forwarder) to increase security for your upkeep. This address will be the unique `msg.sender` for your upkeep. If your upkeep restricts `msg.sender` to the previous registry address, you must give permission to the forwarder address. Otherwise, Automation will no longer be able to execute your function.
+
+1. The forwarder address becomes available after migrating your upkeep. You can find this in the Chainlink Automation App, within the upkeep's **Details** section:
+
+   <ClickToZoom src="/images/automation/v2-migration/forwarder-address.png" />
+
+1. Update your contract to use the forwarder address by following the instructions on the [Forwarder](/chainlink-automation/guides/forwarder) page.
 
 ## Migration checklist
 
