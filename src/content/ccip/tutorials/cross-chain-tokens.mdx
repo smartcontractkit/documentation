@@ -53,7 +53,7 @@ To use this contract:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, click _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Ethereum Sepolia_.
-   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0x0bf3de8c5d3e8a2b34d2beeb17abfcebaf363a59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
       Note your contract address.
    1. Open MetaMask and fund your contract with CCIP-BnM tokens. You can transfer <CopyText text="0.002" code/> _CCIP-BnM_ to your contract.
@@ -200,7 +200,7 @@ When you deploy the contract, you define the router address and LINK contract ad
 
 The `transferTokensPayLINK` function undertakes six primary operations:
 
-1. Call the `_buildCCIPMessage` internal function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
@@ -224,7 +224,7 @@ The `transferTokensPayLINK` function undertakes six primary operations:
 
 The `transferTokensPayNative` function undertakes five primary operations:
 
-1. Call the `_buildCCIPMessage` internal function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
