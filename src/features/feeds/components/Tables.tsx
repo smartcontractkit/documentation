@@ -508,7 +508,7 @@ export const MainnetTable = ({
       if (isStreams) return chain.contractType === "verifier"
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      return !chain.docs.nftFloorUnits && !chain.docs.porType
+      return !chain.docs.nftFloorUnits && !chain.docs.porType && chain.contractType !== "verifier"
     })
     .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
     .filter(
