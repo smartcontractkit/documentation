@@ -6,6 +6,9 @@ import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/O
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/utils/SafeERC20.sol";
+
+using SafeERC20 for IERC20;
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -13,16 +16,46 @@ import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receving string data across chains.
-contract Messenger is CCIPReceiver, OwnerIsCreator {
+/// @title - A simple messenger contract for sending/receiving data across chains and tracking the status of sent messages.
+contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
-    error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
     error InvalidReceiverAddress(); // Used when the receiver address is 0.
+    error MessageWasNotSentByMessageTracker(bytes32 msgId); // Triggered when attempting to confirm a message not recognized as sent by this tracker.
+    error MessageHasAlreadyBeenProcessedOnDestination(bytes32 msgId); // Triggered when trying to mark a message as `ProcessedOnDestination` when it is already marked as such.
+
+    // Enum is used to track the status of messages sent via CCIP.
+    // `NotSent` indicates a message has not yet been sent.
+    // `Sent` indicates that a message has been sent to the Acknowledger contract but not yet acknowledged.
+    // `ProcessedOnDestination` indicates that the Acknowledger contract has processed the message and that
+    // the Message Tracker contract has received the acknowledgment from the Acknowledger contract.
+    enum MessageStatus {
+        NotSent, // 0
+        Sent, // 1
+        ProcessedOnDestination // 2
+    }
+
+    // Struct to store the status and acknowledger message ID of a message.
+    struct MessageInfo {
+        MessageStatus status;
+        bytes32 acknowledgerMessageId;
+    }
+
+    // Mapping to keep track of allowlisted destination chains.
+    mapping(uint64 => bool) public allowlistedDestinationChains;
+
+    // Mapping to keep track of allowlisted source chains.
+    mapping(uint64 => bool) public allowlistedSourceChains;
+
+    // Mapping to keep track of allowlisted senders.
+    mapping(address => bool) public allowlistedSenders;
+
+    // Mapping to keep track of message IDs to their info (status & acknowledger message ID).
+    mapping(bytes32 => MessageInfo) public messagesInfo;
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -34,25 +67,14 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         uint256 fees // The fees paid for sending the CCIP message.
     );
 
-    // Event emitted when a message is received from another chain.
-    event MessageReceived(
-        bytes32 indexed messageId, // The unique ID of the CCIP message.
+    // Event emitted when the sender contract receives an acknowledgment
+    // that the receiver contract has successfully received and processed the message.
+    event MessageProcessedOnDestination(
+        bytes32 indexed messageId, // The unique ID of the CCIP acknowledgment message.
+        bytes32 indexed acknowledgedMsgId, // The unique ID of the message acknowledged by the receiver.
         uint64 indexed sourceChainSelector, // The chain selector of the source chain.
-        address sender, // The address of the sender from the source chain.
-        string text // The text that was received.
+        address sender // The address of the sender from the source chain.
     );
-
-    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-    string private s_lastReceivedText; // Store the last received text.
-
-    // Mapping to keep track of allowlisted destination chains.
-    mapping(uint64 => bool) public allowlistedDestinationChains;
-
-    // Mapping to keep track of allowlisted source chains.
-    mapping(uint64 => bool) public allowlistedSourceChains;
-
-    // Mapping to keep track of allowlisted senders.
-    mapping(address => bool) public allowlistedSenders;
 
     IERC20 private s_linkToken;
 
@@ -149,6 +171,9 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         // Send the CCIP message through the router and store the returned CCIP message ID
         messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
+        // Update the message status to `Sent`
+        messagesInfo[messageId].status = MessageStatus.Sent;
+
         // Emit an event with message details
         emit MessageSent(
             messageId,
@@ -163,61 +188,17 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         return messageId;
     }
 
-    /// @notice Sends data to receiver on the destination chain.
-    /// @notice Pay for fees in native gas.
-    /// @dev Assumes your contract has sufficient native gas tokens.
-    /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
-    /// @param _receiver The address of the recipient on the destination blockchain.
-    /// @param _text The text to be sent.
-    /// @return messageId The ID of the CCIP message that was sent.
-    function sendMessagePayNative(
-        uint64 _destinationChainSelector,
-        address _receiver,
-        string calldata _text
-    )
-        external
-        onlyOwner
-        onlyAllowlistedDestinationChain(_destinationChainSelector)
-        validateReceiver(_receiver)
-        returns (bytes32 messageId)
-    {
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
-            _receiver,
-            _text,
-            address(0)
-        );
-
-        // Initialize a router client instance to interact with cross-chain router
-        IRouterClient router = IRouterClient(this.getRouter());
-
-        // Get the fee required to send the CCIP message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
-
-        if (fees > address(this).balance)
-            revert NotEnoughBalance(address(this).balance, fees);
-
-        // Send the CCIP message through the router and store the returned CCIP message ID
-        messageId = router.ccipSend{value: fees}(
-            _destinationChainSelector,
-            evm2AnyMessage
-        );
-
-        // Emit an event with message details
-        emit MessageSent(
-            messageId,
-            _destinationChainSelector,
-            _receiver,
-            _text,
-            address(0),
-            fees
-        );
-
-        // Return the CCIP message ID
-        return messageId;
-    }
-
-    /// handle a received message
+    /**
+     * @dev Receives and processes messages sent via the Chainlink CCIP from allowed chains and senders.
+     * Upon receiving a message, this function checks if the message's associated data indicates a previously
+     * sent message awaiting acknowledgment. If the message is valid (i.e., its status is `Sent`), it updates
+     * the message's status to `ProcessedOnDestination`, thereby acknowledging its receipt. It then emits a `MessageProcessedOnDestination`
+     * event. If the message cannot be validated (e.g., it was not sent or has been tampered with), the function
+     * reverts with a `MessageWasNotSentByMessageTracker` error. This mechanism ensures that only messages
+     * genuinely sent and awaiting acknowledgment are marked as `ProcessedOnDestination`.
+     * @param any2EvmMessage The CCIP message received, which includes the message ID, the data being acknowledged,
+     * the source chain selector, and the sender's address.
+     */
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     )
@@ -226,17 +207,36 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         onlyAllowlisted(
             any2EvmMessage.sourceChainSelector,
             abi.decode(any2EvmMessage.sender, (address))
-        ) // Make sure source chain and sender are allowlisted
+        ) // Ensure the source chain and sender are allowlisted for added security
     {
-        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+        bytes32 initialMsgId = abi.decode(any2EvmMessage.data, (bytes32)); // Decode the data sent by the receiver
+        bytes32 acknowledgerMsgId = any2EvmMessage.messageId;
+        messagesInfo[initialMsgId].acknowledgerMessageId = acknowledgerMsgId; // Store the messageId of the received message
 
-        emit MessageReceived(
-            any2EvmMessage.messageId,
-            any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-            abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
-            abi.decode(any2EvmMessage.data, (string))
-        );
+        if (messagesInfo[initialMsgId].status == MessageStatus.Sent) {
+            // Updates the status of the message to 'ProcessedOnDestination' to reflect that an acknowledgment
+            // of receipt has been received and emits an event to log this confirmation along with relevant details.
+            messagesInfo[initialMsgId].status = MessageStatus
+                .ProcessedOnDestination;
+            emit MessageProcessedOnDestination(
+                acknowledgerMsgId,
+                initialMsgId,
+                any2EvmMessage.sourceChainSelector,
+                abi.decode(any2EvmMessage.sender, (address))
+            );
+        } else if (
+            messagesInfo[initialMsgId].status ==
+            MessageStatus.ProcessedOnDestination
+        ) {
+            // If the message is already marked as 'ProcessedOnDestination', this indicates an attempt to
+            // re-confirm a message that has already been processed on the destination chain and marked as such.
+            revert MessageHasAlreadyBeenProcessedOnDestination(initialMsgId);
+        } else {
+            // If the message status is neither 'Sent' nor 'ProcessedOnDestination', it implies that the
+            // message ID provided for acknowledgment does not correspond to a valid, previously
+            // sent message.
+            revert MessageWasNotSentByMessageTracker(initialMsgId);
+        }
     }
 
     /// @notice Construct a CCIP message.
@@ -255,48 +255,14 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             Client.EVM2AnyMessage({
                 receiver: abi.encode(_receiver), // ABI-encoded receiver address
                 data: abi.encode(_text), // ABI-encoded string
-                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
                     // Additional arguments, setting gas limit
-                    Client.EVMExtraArgsV1({gasLimit: 200_000})
+                    Client.EVMExtraArgsV1({gasLimit: 300_000})
                 ),
                 // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
                 feeToken: _feeTokenAddress
             });
-    }
-
-    /// @notice Fetches the details of the last received message.
-    /// @return messageId The ID of the last received message.
-    /// @return text The last received text.
-    function getLastReceivedMessageDetails()
-        external
-        view
-        returns (bytes32 messageId, string memory text)
-    {
-        return (s_lastReceivedMessageId, s_lastReceivedText);
-    }
-
-    /// @notice Fallback function to allow the contract to receive Ether.
-    /// @dev This function has no function body, making it a default function for receiving Ether.
-    /// It is automatically called when Ether is sent to the contract without any data.
-    receive() external payable {}
-
-    /// @notice Allows the contract owner to withdraw the entire balance of Ether from the contract.
-    /// @dev This function reverts if there are no funds to withdraw or if the transfer fails.
-    /// It should only be callable by the owner of the contract.
-    /// @param _beneficiary The address to which the Ether should be sent.
-    function withdraw(address _beneficiary) public onlyOwner {
-        // Retrieve the balance of this contract
-        uint256 amount = address(this).balance;
-
-        // Revert if there is nothing to withdraw
-        if (amount == 0) revert NothingToWithdraw();
-
-        // Attempt to send the funds, capturing the success status and discarding any return data
-        (bool sent, ) = _beneficiary.call{value: amount}("");
-
-        // Revert if the send failed, with information about the attempted transfer
-        if (!sent) revert FailedToWithdrawEth(msg.sender, _beneficiary, amount);
     }
 
     /// @notice Allows the owner of the contract to withdraw all tokens of a specific ERC20 token.
@@ -313,6 +279,6 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         // Revert if there is nothing to withdraw
         if (amount == 0) revert NothingToWithdraw();
 
-        IERC20(_token).transfer(_beneficiary, amount);
+        IERC20(_token).safeTransfer(_beneficiary, amount);
     }
 }
