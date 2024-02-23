@@ -14,9 +14,13 @@ import { ClickToZoom } from "@components"
 
 Given an upkeep ID, this page contains different methods of understanding and fixing issues with Upkeeps.
 
+## Automation debugging script
+
+You can use the [Automation debugging script](https://github.com/smartcontractkit/chainlink/blob/cla-debugger-docs/core/scripts/chaincli/DEBUGGING.md) to debug and diagnose possible issues with registered upkeeps in Automation 2.1 registries. The script can debug custom logic upkeeps, log trigger upkeeps, and upkeeps that use `StreamsLookup`.
+
 ## Underfunded upkeeps
 
-In the Chainlink Automation app, you can see the registration details of the upkeep, alongside the balance required and `performUpkeep` history. If the upkeep is underfunded, you’ll see a warning on top of the page. Underfunded upkeeps will not be performed.
+In the Chainlink Automation app, you can see the registration details of the upkeep, alongside the balance required and `performUpkeep` history. If the upkeep is underfunded, you will see a warning on top of the page. Underfunded upkeeps will not be performed.
 
 <ClickToZoom src="/images/automation/debugging-ui.png" />
 
@@ -30,13 +34,13 @@ If the amount of computation in your checkUpkeep exceeds our checkGasLimit, your
 
 ## Paused upkeeps
 
-If your upkeep is paused, your upkeep will not be performed. Please unpause it via the UI..
+If your upkeep is paused, your upkeep will not be performed. Please unpause it in the [Chainlink Automation app](https://automation.chain.link/).
 
 ## StreamsLookup
 
 ### Upkeep has not been allowlisted
 
-Once you registered your upkeep, you need to ask the Data Streams team to allowlist your upkeepID and specify the feeds you will need to access. If your upkeepID has not been added to the allow list it will not perform an upkeep.
+Once you registered your upkeep, you need to [ask the Data Streams team to allowlist your upkeepID](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) and specify the feeds you will need to access. If your upkeepID has not been added to the allow list it will not perform an upkeep.
 
 ### Requesting multiple feeds where one is not valid
 
@@ -44,10 +48,10 @@ It is possible to request multiple feeds by specifying the feeds in a string arr
 
 ## Etherscan
 
-You can view the registry/user's upkeep address on [Etherscan](https://etherscan.io/) to view transaction history. There are three types of information you can find on Ehterscan:
+You can view the registry or user's upkeep address on [Etherscan](https://etherscan.io/) to view transaction history. There are three types of information you can find on Etherscan:
 
 - **All transactions on registry**: This shows all the perform upkeeps on the registry. You can view a specific `perfomUpkeep` transaction to debug more.
-- **Specific `performUpkeep` transaction**: By diving deep in the logs, you can check the upkeep ID within UpkeepPerformed log.
+- **Specific `performUpkeep` transaction**: By diving deep in the logs, you can check the upkeep ID within the UpkeepPerformed log.
 - **Target's internal transactions**: For a particular target contract, you can view its internal transactions which contains `performUpkeep` transactions for that contract by using the registry address as the filter for _from_ address. _Note_: internal transactions are only visible on Etherscan.
 
 ## Tenderly
