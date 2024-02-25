@@ -132,7 +132,7 @@ contract ClientReportsVerifier {
      * Emits a DecodedPrice event upon successful verification and stores the price from the report in `last_decoded_price`.
      * @param unverifiedReport The encoded report data to be verified.
      */
-    function VerifyReport(bytes memory unverifiedReport) external {
+    function verifyReport(bytes memory unverifiedReport) external {
         // Report verification fees
         IFeeManager feeManager = IFeeManager(
             address(s_verifierProxy.s_feeManager())
