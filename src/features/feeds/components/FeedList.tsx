@@ -180,6 +180,30 @@ export const FeedList = ({
                       </p>
                     )}
                   <div className={feedList.tableFilters}>
+                    {!isStreams && (
+                      <details class={feedList.filterDropdown_details}>
+                        <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                          Data Feed Categories
+                        </summary>
+                        <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                          <ul>
+                            {dataFeedCategory.map((category) => (
+                              <li>
+                                <button onClick={() => handleCategorySelection(category)}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedFeedCategories?.includes(category)}
+                                    readonly
+                                    style="cursor:pointer;"
+                                  />
+                                  <span> {category}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </nav>
+                      </details>
+                    )}
                     <form class={feedList.filterDropdown_search}>
                       <input
                         id="search"
