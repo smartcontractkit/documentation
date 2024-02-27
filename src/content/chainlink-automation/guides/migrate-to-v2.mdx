@@ -113,6 +113,15 @@ Your new upkeep has a new [unique forwarder](#unique-forwarder) to increase secu
 
 1. Update your contract to use the forwarder address by following the instructions on the [Forwarder](/chainlink-automation/guides/forwarder) page.
 
+### Forwarders by upkeep type
+
+This diagram shows the flow of different contracts that Automation 2.0 deploys for new and migrated upkeeps. Compared to custom logic and log trigger upkeeps, time-based upkeeps have an additional contract:
+
+<ClickToZoom src="/images/automation/v2-migration/v2-upkeeps-by-type.png" />
+
+- For custom logic and log trigger upkeeps, the `msg.sender` in relation to your contract is the unique forwarder that Automation deploys when you migrate your upkeep.
+- For time-based upkeeps, Automation deploys a unique forwarder and a unique CRON upkeep contract. In this case, the CRON upkeep contract is the `msg.sender` in relation to your contract.
+
 ## Migration checklist
 
 Before you migrate, be aware of several important changes listed here.
