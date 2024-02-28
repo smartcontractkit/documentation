@@ -306,7 +306,7 @@ export const CHAINS: Chain[] = [
     label: "Base",
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
-    networkStatusUrl: "https://goerli.basescan.org",
+    networkStatusUrl: "https://basescan.statuspage.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
