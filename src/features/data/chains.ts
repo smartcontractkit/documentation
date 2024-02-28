@@ -303,22 +303,22 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "base",
-    label: "BASE",
-    title: "BASE Data Feeds",
+    label: "Base",
+    title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://goerli.basescan.org",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "BASE Mainnet",
+        name: "Base Mainnet",
         explorerUrl: "https://basescan.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
       },
       {
-        name: "BASE Sepolia testnet",
+        name: "Base Sepolia testnet",
         explorerUrl: "https://sepolia.basescan.org/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-base-1.json",
@@ -592,7 +592,7 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "metis-mainnet",
       },
       {
-        name: "BASE Mainnet",
+        name: "Base Mainnet",
         explorerUrl: "https://basescan.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
