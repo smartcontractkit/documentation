@@ -57,6 +57,74 @@ When a DON's oracle reports the response, subscription accounts are charged base
 
 1. The FunctionsRouter contract performs several accounting movements.
 
+### Cost calculation example
+
+This is an example of cost estimation for a request and then cost calculation at fulfillment.
+
+#### Cost Simulation (Reservation)
+
+| Parameter               | Value    |
+| ----------------------- | -------- |
+| Overestimated gas price | 9 gwei   |
+| Callback gas limit      | 300000   |
+| Gas overhead            | 185000   |
+| Premium fee             | 0.2 LINK |
+
+1. Calculate the total estimated gas cost in LINK, using an overestimated gas price, the gas overhead, and the full callback gas limit:
+
+   | Gas cost calculation                                          | Total estimated gas cost    |
+   | ------------------------------------------------------------- | --------------------------- |
+   | Overestimated gas price x (Gas overhead + Callback gas limit) |                             |
+   | 9 gwei x (300000 + 185000)                                    | 4365000 gwei (0.004365 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.007 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion   | Total gas cost (LINK) |
+   | ----------------------------- | --------------------- |
+   | 0.004365 ETH / 0.007 ETH/LINK | 0.62 LINK             |
+
+1. Add the premium fee to get the estimated cost for a subscription reservation:
+
+   | Adding LINK premium                 | Maximum request cost (LINK) |
+   | ----------------------------------- | --------------------------- |
+   | Total gas cost (LINK) + Premium fee |                             |
+   | 0.62 LINK + 0.2 LINK                | 0.82 LINK                   |
+
+For this example request, 0.82 LINK is reserved from your subscription balance, but not yet deducted. When the request is fulfilled, the exact request cost is deducted. The estimated cost of a request is overestimated to allow for 99% of gas price fluctuation increases in between request and response time.
+
+#### Cost Calculation (Fulfillment)
+
+| Parameter    | Value    |
+| ------------ | -------- |
+| Gas price    | 1.5 gwei |
+| Callback gas | 200000   |
+| Gas overhead | 185000   |
+| Premium fee  | 0.2 LINK |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                      | Total gas cost              |
+   | ----------------------------------------- | --------------------------- |
+   | Gas price x (Gas overhead + Callback gas) |                             |
+   | 1.5 gwei x (200000 + 185000)              | 577500 gwei (0.0005775 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.007 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion    | Total gas cost (LINK) |
+   | ------------------------------ | --------------------- |
+   | 0.0005775 ETH / 0.007 ETH/LINK | 0.0825 LINK           |
+
+1. Add the premium fee to get the total cost of a request:
+
+   | Adding premium fee                  | Total request cost (LINK) |
+   | ----------------------------------- | ------------------------- |
+   | Total gas cost (LINK) + premium fee |                           |
+   | 0.0825 LINK + 0.2 LINK              | 0.2825 LINK               |
+
+This example request would cost 0.2825 LINK when it is fulfilled. The subscription reservation for the 0.82 LINK is released, and the actual cost of 0.2825 LINK is deducted from your subscription balance.
+
 ## Minimum balance for uploading encrypted secrets
 
 If you choose to store the encrypted secrets with the DON (learn more on the [Secrets Management page](/chainlink-functions/resources/secrets)), then one of your subscriptions must maintain a balance greater than the minimum required for uploading encrypted secrets. This balance is blockchain-specific. You can find the specific values for each blockchain on the [Supported Networks](/chainlink-functions/supported-networks) page.
