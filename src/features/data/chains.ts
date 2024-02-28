@@ -406,7 +406,7 @@ export const CHAINS: Chain[] = [
     label: "zkSync",
     title: "zkSync Data Feeds",
     img: "/assets/chains/zksync.svg",
-    networkStatusUrl: "https://uptime.com/statuspage/zkSync",
+    networkStatusUrl: "https://explorer.zksync.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
