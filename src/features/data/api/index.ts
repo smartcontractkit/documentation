@@ -49,10 +49,7 @@ export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | an
       ? getFeedsMetadata(network?.rddUrl).then((metadata) => ({
           ...network,
           metadata: metadata.filter(
-            (meta) =>
-              meta.docs?.hidden !== true &&
-              (meta.proxyAddress || meta.transmissionsAccount || meta.feedId) &&
-              meta.proxyAddress !== "0x80f8D7b4fB192De43Ed6aE0DD4A42A60f43641b0"
+            (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
           ),
         }))
       : undefined
