@@ -324,13 +324,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-base-1.json",
         queryString: "base-sepolia",
       },
-      {
-        name: "BASE Goerli testnet",
-        explorerUrl: "https://goerli.basescan.org/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-base-1.json",
-        queryString: "base-goerli",
-      },
     ],
   },
   {
