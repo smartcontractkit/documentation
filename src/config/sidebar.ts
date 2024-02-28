@@ -846,10 +846,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Testnet v1.2.0",
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
-            {
-              title: "Testnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/testnet",
-            },
           ],
         },
         {
@@ -890,6 +886,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
+          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+        },
+        {
+          title: "Manual Execution",
+          url: "ccip/tutorials/manual-execution",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },
@@ -899,12 +903,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Concept Overview",
+          title: "Conceptual Overview",
           url: "ccip/concepts",
         },
         {
           title: "Architecture",
           url: "ccip/architecture",
+        },
+        {
+          title: "Manual execution",
+          url: "ccip/concepts/manual-execution",
         },
         {
           title: "Best Practices",

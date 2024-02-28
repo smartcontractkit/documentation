@@ -134,6 +134,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BASE_MAINNET"
     case "ethereum-testnet-goerli-base-1":
       return "BASE_GOERLI"
+    case "ethereum-testnet-sepolia-base-1":
+      return "BASE_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -173,6 +175,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-base-1"
     case "BASE_GOERLI":
       return "ethereum-testnet-goerli-base-1"
+    case "BASE_SEPOLIA":
+      return "ethereum-testnet-sepolia-base-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

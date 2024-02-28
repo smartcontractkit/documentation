@@ -136,6 +136,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         <a
           class={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
+          target="_blank"
         >
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
@@ -168,7 +169,9 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
                   <span class="label">Market hours:</span>
                 </dt>
                 <dd>
-                  <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+                  <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                    {proxy.docs.marketHours}
+                  </a>
                 </dd>
               </div>
             )}
@@ -228,7 +231,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
-        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)} target="_blank">
           {proxy.proxyAddress}
         </a>
         <button
@@ -271,7 +274,9 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
                 <span class="label">Market hours:</span>
               </dt>
               <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                  {proxy.docs.marketHours}
+                </a>
               </dd>
             </div>
           )}
@@ -322,7 +327,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
-        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)} target="_blank">
           {proxy.proxyAddress}
         </a>
       </div>
@@ -343,8 +348,8 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.pair[0]}/{proxy.pair[1]}
+        {proxy.docs.schema ? <div>Schema: {proxy.docs.schema}</div> : ""}
       </div>
       {proxy.docs.shutdownDate && (
         <div className={clsx(feedList.shutDate)}>
@@ -373,6 +378,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           style="font-size: 0.75em;"
           class={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", verifierProxies.get(proxy.contractAddress))}
+          target="_blank"
         >
           {verifierProxies.get(proxy.contractAddress)}
         </a>
@@ -386,16 +392,6 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {proxy.docs.schema ? (
-            <div>
-              <dt>
-                <span class="label">Report schema:</span>
-              </dt>
-              <dd>{proxy.docs.schema}</dd>
-            </div>
-          ) : (
-            ""
-          )}
           {proxy.docs.productType ? (
             <div>
               <dt>
@@ -438,7 +434,9 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
                 <span class="label">Market hours:</span>
               </dt>
               <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours">{proxy.docs.marketHours}</a>
+                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                  {proxy.docs.marketHours}
+                </a>
               </dd>
             </div>
           ) : (
@@ -510,7 +508,7 @@ export const MainnetTable = ({
       if (isStreams) return chain.contractType === "verifier"
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      return !chain.docs.nftFloorUnits && !chain.docs.porType
+      return !chain.docs.nftFloorUnits && !chain.docs.porType && chain.contractType !== "verifier"
     })
     .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
     .filter(
