@@ -1,6 +1,10 @@
 import { ChainsConfig, LanesConfig, TokensConfig, Environment, Version } from "./types"
 
 // For mainnet
+import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
+import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json"
+import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json"
+
 import chainsMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/chains.json"
 import lanesMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/lanes.json"
 import tokensMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/tokens.json"
@@ -11,9 +15,6 @@ import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
 
-import chainsTestnetv100 from "@config/data/ccip/v1_0_0/testnet/chains.json"
-import lanesTestnetv100 from "@config/data/ccip/v1_0_0/testnet/lanes.json"
-import tokensTestnetv100 from "@config/data/ccip/v1_0_0/testnet/tokens.json"
 import { SupportedChain } from "@config/types"
 import { supportedChainToChainInRdd } from "@features/utils"
 
@@ -22,7 +23,11 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
   let lanesReferenceData: LanesConfig
   let tokensReferenceData: TokensConfig
 
-  if (environment === Environment.Mainnet && version === Version.V1_0_0) {
+  if (environment === Environment.Mainnet && version === Version.V1_2_0) {
+    chainsReferenceData = chainsMainnetv120 as unknown as ChainsConfig
+    lanesReferenceData = lanesMainnetv120 as unknown as LanesConfig
+    tokensReferenceData = tokensMainnetv120 as unknown as TokensConfig
+  } else if (environment === Environment.Mainnet && version === Version.V1_0_0) {
     chainsReferenceData = chainsMainnetv100 as unknown as ChainsConfig
     lanesReferenceData = lanesMainnetv100 as unknown as LanesConfig
     tokensReferenceData = tokensMainnetv100 as unknown as TokensConfig
@@ -30,10 +35,6 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
     chainsReferenceData = chainsTestnetv120 as unknown as ChainsConfig
     lanesReferenceData = lanesTestnetv120 as unknown as LanesConfig
     tokensReferenceData = tokensTestnetv120 as unknown as TokensConfig
-  } else if (environment === Environment.Testnet && version === Version.V1_0_0) {
-    chainsReferenceData = chainsTestnetv100 as unknown as ChainsConfig
-    lanesReferenceData = lanesTestnetv100 as unknown as LanesConfig
-    tokensReferenceData = tokensTestnetv100 as unknown as TokensConfig
   } else {
     throw new Error(`Invalid environment/version combination: ${environment}/${version}`)
   }
@@ -52,6 +53,9 @@ export const getAllChains = ({
   let chainsTestnetKeys: string[] = []
 
   switch (mainnetVersion) {
+    case Version.V1_2_0:
+      chainsMainnetKeys = Object.keys(chainsMainnetv120)
+      break
     case Version.V1_0_0:
       chainsMainnetKeys = Object.keys(chainsMainnetv100)
       break
@@ -60,9 +64,6 @@ export const getAllChains = ({
   }
 
   switch (testnetVersion) {
-    case Version.V1_0_0:
-      chainsTestnetKeys = Object.keys(chainsTestnetv100)
-      break
     case Version.V1_2_0:
       chainsTestnetKeys = Object.keys(chainsTestnetv120)
       break
@@ -80,9 +81,6 @@ const isBnMRdd = ({ chainRdd, version }: { chainRdd: string; version: Version })
   let tokensTestData
 
   switch (version) {
-    case Version.V1_0_0:
-      tokensTestData = tokensTestnetv100["CCIP-BnM"]
-      break
     case Version.V1_2_0:
       tokensTestData = tokensTestnetv120["CCIP-BnM"]
       break
@@ -102,9 +100,6 @@ export const isLnMRdd = ({ chainRdd, version }: { chainRdd: string; version: Ver
   let tokensTestData
   const supportedChainForLock: SupportedChain = "ETHEREUM_SEPOLIA"
   switch (version) {
-    case Version.V1_0_0:
-      tokensTestData = tokensTestnetv100["CCIP-LnM"]
-      break
     case Version.V1_2_0:
       tokensTestData = tokensTestnetv120["CCIP-LnM"]
       break
@@ -137,10 +132,6 @@ export const getBnMParams = ({ supportedChain, version }: { supportedChain: Supp
   let chainsTestData
   let tokensTestData
   switch (version) {
-    case Version.V1_0_0:
-      chainsTestData = chainsTestnetv100
-      tokensTestData = tokensTestnetv100["CCIP-BnM"]
-      break
     case Version.V1_2_0:
       chainsTestData = chainsTestnetv120
       tokensTestData = tokensTestnetv120["CCIP-BnM"]
@@ -183,9 +174,6 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
 
   let tokensTestData
   switch (version) {
-    case Version.V1_0_0:
-      tokensTestData = tokensTestnetv100["CCIP-LnM"]
-      break
     case Version.V1_2_0:
       tokensTestData = tokensTestnetv120["CCIP-LnM"]
       break

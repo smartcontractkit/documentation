@@ -49,9 +49,13 @@ To estimate the accurate gas limit for your destination contract, consider the f
 
 ## Using `extraArgs`
 
-The purpose of `extraArgs` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand.
+The purpose of `extraArgs` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it offchain and pass it in a call to a function or store it in a variable that you can update on-demand.
 
 If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set.
+
+## Decoupling CCIP Message Reception and Business Logic
+
+As a best practice, separate the reception of CCIP messages from the core business logic of the contract. Implement 'escape hatches' or fallback mechanisms to gracefully manage situations where the business logic encounters issues. To explore this concept further, refer to the [Defensive Example](/ccip/tutorials/programmable-token-transfers-defensive) guide.
 
 ## Evaluate the security and reliability of the networks that you use
 
@@ -69,4 +73,4 @@ Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/su
 
 When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
 
-Create your own monitoring alerts based on deviations normal activity. This will notify you when potential issues occur so you can respond to them.
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.

@@ -5,7 +5,7 @@ import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -22,6 +22,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
     error DestinationChainNotAllowed(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowed(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
     error SenderNotAllowed(address sender); // Used when the sender has not been allowlisted by the contract owner.
+    error InvalidReceiverAddress(); // Used when the receiver address is 0.
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -73,6 +74,13 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
     modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
         if (!allowlistedDestinationChains[_destinationChainSelector])
             revert DestinationChainNotAllowed(_destinationChainSelector);
+        _;
+    }
+
+    /// @dev Modifier that checks the receiver address is not 0.
+    /// @param _receiver The receiver address.
+    modifier validateReceiver(address _receiver) {
+        if (_receiver == address(0)) revert InvalidReceiverAddress();
         _;
     }
 
@@ -135,6 +143,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -200,6 +209,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
         external
         onlyOwner
         onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -313,7 +323,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
         address _token,
         uint256 _amount,
         address _feeTokenAddress
-    ) internal pure returns (Client.EVM2AnyMessage memory) {
+    ) private pure returns (Client.EVM2AnyMessage memory) {
         // Set the token amounts
         Client.EVMTokenAmount[]
             memory tokenAmounts = new Client.EVMTokenAmount[](1);

@@ -29,7 +29,7 @@ A contract is Automation-compatible when it follows a specified interface that a
 The interface you use will depend on the type of trigger you want to use:
 
 - If you want a log event to trigger your upkeep, use the [`ILogAutomation`](/chainlink-automation/reference/automation-interfaces/#ilogautomation) interface.
-- If you want to use on-chain state in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](/chainlink-automation/reference/automation-interfaces/#automationcompatibleinterface) interface.
+- If you want to use onchain state in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](/chainlink-automation/reference/automation-interfaces/#automationcompatibleinterface) interface.
 - If you want to call a function just based on time, you don't need an interface. Consider instead using a [time-based upkeep](/chainlink-automation/guides/job-scheduler).
 - If you want to use Automation with Data Streams, use [`StreamsLookupCompatibleInterface`](/chainlink-automation/reference/automation-interfaces/#streamslookupcompatibleinterface) interface.
 
@@ -41,10 +41,10 @@ Custom logic Automation compatible contracts must meet the following requirement
 
 - Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
 - Use the [`AutomationCompatibleInterface`](/chainlink-automation/reference/automation-interfaces) from the library to ensure your `checkUpkeep` and `performUpkeep` function definitions match the definitions expected by the Chainlink Automation Network.
-- Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
-- Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`.
+- Include a `checkUpkeep` function that contains the logic that will be executed offchain to see if `performUpkeep` should be executed. `checkUpkeep` can use onchain data and a specified `checkData` parameter to perform complex calculations offchain and then send the result to `performUpkeep` as `performData`.
+- Include a `performUpkeep` function that will be executed onchain when `checkUpkeep` returns `true`.
 
-Use these elements to create a compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network frequently simulates your `checkUpkeep` off-chain to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
+Use these elements to create a compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network frequently simulates your `checkUpkeep` offchain to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` onchain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
 <CodeSample src="samples/Automation/AutomationCounter.sol" />
 

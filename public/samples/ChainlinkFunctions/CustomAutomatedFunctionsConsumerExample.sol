@@ -87,7 +87,7 @@ contract CustomAutomatedFunctionsConsumerExample is
 
     /// @notice Update the request settings
     /// @dev Only callable by the owner of the contract
-    /// @param _request The new encoded CBOR request to be set. The request is encoded off-chain
+    /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
     /// @param _subscriptionId The new subscription ID to be set
     /// @param _gasLimit The new gas limit to be set
     /// @param _donID The new job ID to be set

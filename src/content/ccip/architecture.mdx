@@ -4,6 +4,7 @@ date: Last Modified
 title: "CCIP Architecture"
 whatsnext:
   {
+    "CCIP manual execution": "/ccip/concepts/manual-execution",
     "Learn CCIP best practices": "/ccip/best-practices",
     "Find the list of supported networks, lanes, and rate limits on the CCIP Supported Networks page": "/ccip/supported-networks",
   }
@@ -30,7 +31,7 @@ Below is a diagram displaying the basic architecture of CCIP. Routers are smart 
   Pools](#token-pools) section to understand the various mechanisms that are used to transfer value across chains.
 </Aside>
 
-<ClickToZoom src="/images/ccip/basic-architecture.png" alt="Chainlink CCIP Basic Architecture" />
+<ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Basic Architecture" />
 
 ## CCIP terminology
 
@@ -44,7 +45,7 @@ CCIP enables a _sender_ on a _source blockchain_ to send a _message_ to a _recei
 | Receiver               | A smart contract or an EOA. **Note**: An EOA cannot receive arbitrary data. It can only receive tokens. |
 | Destination Blockchain | The blockchain the receiver resides on.                                                                 |
 
-## CCIP components
+## Detailed Architecture
 
 The figure below outlines the different components involved in a cross-chain transaction:
 
@@ -52,9 +53,9 @@ The figure below outlines the different components involved in a cross-chain tra
 - The contracts in dark blue are the CCIP interface ([Router](#router)). To use CCIP, users need only to understand how to interact with the router; they don't need to understand the whole CCIP architecture. **Note**: The CCIP interface is static and remains consistent over time to provide reliability and stability to the users.
 - The contracts in light blue are internal to the CCIP protocol and subject to change.
 
-<ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Detailed Architecture" />
+<ClickToZoom src="/images/ccip/detailed-architecture.png" alt="Chainlink CCIP Detailed Architecture" />
 
-### On-chain components
+### Onchain components
 
 #### Router
 
@@ -97,11 +98,21 @@ Each token has its own token pool, an abstraction layer over ERC-20 tokens that 
 
 Token pools provide rate limiting, which is a security feature enabling token issuers to set a maximum rate at which their token can be transferred.
 
+<Aside type="note" title="Onboarding New Tokens">
+  Supported tokens for each lane are listed on the [CCIP supported network pages](/ccip/supported-networks). Expanding
+  support for additional tokens is an ongoing process to help ensure the highest level of cross-chain security. [Token
+  pool rate limits](/ccip/architecture/#token-pool-rate-limit) are configured per-token for each lane. These rate limits
+  are set together with token issuers where applicable. Rate limits are also selected based on various factors, such as
+  the unique risk characteristics of the token and the intended use cases. The onboarding process for adding new tokens
+  also helps ensure that dApps and users interact with the correct token version, reducing risks within the cross-chain
+  ecosystem.
+</Aside>
+
 #### Risk Management Network contract
 
 The Risk Management contract maintains the list of Risk Management node addresses that are allowed to bless or curse. The contract also holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain. Read the [Risk Management Network Concepts](/ccip/concepts#risk-management-network) section to learn more.
 
-### Off-chain Components
+### Offchain Components
 
 #### Committing DON
 
@@ -145,7 +156,7 @@ The rate limits are enforced at both the source and destination blockchains for 
 
 For each supported token on each individual [lane](/ccip/concepts#lane), the token pool rate limit manages the total number of tokens that can be transferred within a given time. This limit is independent of the USD value of the token.
 
-For example, the maximum capacity of the suUSD token pool on the [Ethereum mainnet → Base mainnet lane](/ccip/supported-networks/v1_0_0/mainnet#ethereum-mainnet-base-mainnet) is 200,000 suUSD. The refill rate is 2 suUSD per second. If 200,000 suUSD are transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 20 suUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 1200 suUSD every 10 minutes.
+For example, the maximum capacity of the suUSD token pool on the [Ethereum mainnet → Base mainnet lane](/ccip/supported-networks/v1_2_0/mainnet#ethereum-mainnet-base-mainnet) is 200,000 suUSD. The refill rate is 2 suUSD per second. If 200,000 suUSD are transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 20 suUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 1200 suUSD every 10 minutes.
 
 ### Aggregate rate limit
 
@@ -159,4 +170,4 @@ Chainlink CCIP has been purposely designed to take a security-first approach to 
 
 If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
-Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The `permissionlessExecutionThresholdSeconds` parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of `permissionlessExecutionThresholdSeconds` due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/).
+Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The Smart Execution time window parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of Smart Execution time window due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/). Read the [manual execution](/ccip/concepts/manual-execution) conceptual guide to learn more.

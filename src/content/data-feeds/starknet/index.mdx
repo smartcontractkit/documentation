@@ -10,7 +10,7 @@ metadata:
 
 StarkNet is a permissionless decentralized ZK-Rollup operating as an L2 network over Ethereum. Unlike other Ethereum L2 networks, StarkNet is not EVM-compatible and uses [Cairo](https://docs.cairo-lang.org/index.html) as its smart contract language. Chainlink Data Feeds are available on the StarkNet testnet as Cairo smart contracts.
 
-You can read Chainlink Data Feeds on StarkNet using an [on-chain contract](#running-the-on-chain-example) that you compile and deploy. Alternatively, you can [read the data feed off-chain](#running-the-off-chain-example) without a StarkNet account. You can complete these steps using only the [StarkNet CLI commands](https://docs.starknet.io/documentation/tools/CLI/commands/), but the example scripts demonstrate how to compile, deploy, and interact with StarkNet contracts programmatically. [StarkNet.js](https://www.starknetjs.com/), [HardHat](https://hardhat.org/), and the [StarkNet Hardhat Plugin](https://shard-labs.github.io/starknet-hardhat-plugin/) simplify the processes, which normally require you to keep track of your class hashes and ABI files. See [https://docs.starknet.io/](https://docs.starknet.io/documentation/) for more information about writing and compiling Cairo contracts for StarkNet.
+You can read Chainlink Data Feeds on StarkNet using an [onchain contract](#running-the-onchain-example) that you compile and deploy. Alternatively, you can [read the data feed offchain](#running-the-offchain-example) without a StarkNet account. You can complete these steps using only the [StarkNet CLI commands](https://docs.starknet.io/documentation/tools/CLI/commands/), but the example scripts demonstrate how to compile, deploy, and interact with StarkNet contracts programmatically. [StarkNet.js](https://www.starknetjs.com/), [HardHat](https://hardhat.org/), and the [StarkNet Hardhat Plugin](https://shard-labs.github.io/starknet-hardhat-plugin/) simplify the processes, which normally require you to keep track of your class hashes and ABI files. See [https://docs.starknet.io/](https://docs.starknet.io/documentation/) for more information about writing and compiling Cairo contracts for StarkNet.
 
 For a complete list of Chainlink Price Feeds available on StarkNet testnet, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=starknet) page.
 
@@ -18,7 +18,7 @@ For a complete list of Chainlink Price Feeds available on StarkNet testnet, see 
 
 Set up your environment to run the examples.
 
-- [Set up your local StarkNet environment](https://docs.starknet.io/documentation/getting_started/environment_setup/). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts on-chain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://docs.starknet.io/documentation/getting_started/environment_setup/) for the latest requirements.
+- [Set up your local StarkNet environment](https://docs.starknet.io/documentation/getting_started/environment_setup/). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts onchain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://docs.starknet.io/documentation/getting_started/environment_setup/) for the latest requirements.
 - [Install NodeJS](https://nodejs.org/en/download/) in the version in the `>=14 <=18` version range.
 - [Install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/).
 - Clone and configure the code examples:
@@ -41,7 +41,7 @@ Set up your environment to run the examples.
      yarn install
      ```
 
-- If you want to run the on-chain examples, you must [set up a StarkNet account](https://docs.starknet.io/documentation/getting_started/account_setup/) on StarkNet's `alpha-goerli` network and fund it with [testnet ETH](https://faucet.goerli.starknet.io/). These examples expect the OpenZeppelin wallet, which stores your addresses and private keys in the following default path:
+- If you want to run the onchain examples, you must [set up a StarkNet account](https://docs.starknet.io/documentation/getting_started/account_setup/) on StarkNet's `alpha-goerli` network and fund it with [testnet ETH](https://faucet.goerli.starknet.io/). These examples expect the OpenZeppelin wallet, which stores your addresses and private keys in the following default path:
 
   ```
   ~/.starknet_accounts/starknet_open_zeppelin_accounts.json
@@ -77,9 +77,9 @@ After you prepare the requirements, check to make sure the required tools are co
   1.22.19
   ```
 
-## Running the on-chain example
+## Running the onchain example
 
-The on-chain [proxy consumer](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/proxy-consumer/) example uses a local OpenZeppelin wallet as the account to deploy a contract on-chain. This contract reads a specified Chainlink data feed and stores the information for the latest round of data. This example has the following components:
+The onchain [proxy consumer](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/proxy-consumer/) example uses a local OpenZeppelin wallet as the account to deploy a contract onchain. This contract reads a specified Chainlink data feed and stores the information for the latest round of data. This example has the following components:
 
 - The example [proxy_consumer.cairo](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/proxy-consumer/src/proxy_consumer.cairo) contract: You will compile and deploy this example contract to the StarkNet Goerli testnet where it can read and store values from one of the [data feed proxy contracts](https://docs.chain.link/data-feeds/price-feeds/addresses?network=starknet). The proxy address is defined in the constructor when you deploy the contract.
 - The [deployConsumer.ts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/proxy-consumer/scripts/deployConsumer.ts) script: This script uses [StarkNet.js](https://www.starknetjs.com/) to identify your OpenZeppelin wallet and deploy the compiled contract.
@@ -136,7 +136,7 @@ If the invoke request is successful, you can see the stored values in the [Stark
 
 You can achieve a similar result by running the `starknet-compile`, `starknet declare`, `starknet deploy`, and `starknet invoke` [CLI commands](https://docs.starknet.io/documentation/tools/CLI/commands/), but the scripts are useful for interacting with StarkNet contracts and accounts programmatically.
 
-## Running the off-chain example
+## Running the offchain example
 
 This example reads the proxy contract to get the latest values with no account or contract compiling steps required. The [readLatestRoundOffChain.ts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/proxy-consumer/scripts/readLatestRoundOffChain.ts) script uses [StarkNet.js](https://www.starknetjs.com/) to make a call directly to the data feed proxy address. By default, the script reads the [LINK / USD feed](https://testnet.starkscan.co/contract/0x02579940ca3c41e7119283ceb82cd851c906cbb1510908a913d434861fdcb245), but you can change the address to read any of the [available data feeds](https://docs.chain.link/data-feeds/price-feeds/addresses?network=starknet) on the StarkNet testnet.
 
