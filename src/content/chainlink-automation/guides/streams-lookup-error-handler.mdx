@@ -1,0 +1,160 @@
+---
+section: automation
+date: Last Modified
+title: "StreamsLookup ErrorHandler"
+isMdx: true
+whatsnext: { "Troubleshoot and Debug Upkeeps": "/chainlink-automation/reference/debugging-errors",
+"Automation Interfaces": "/chainlink-automation/reference/automation-interfaces",
+"Automation Contracts": "/chainlink-automation/reference/automation-contracts" }
+---
+
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+<Aside type="note" title="Early Access">
+  Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia in Early Access.{" "}
+  <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
+  integrating Chainlink Data Streams with your applications.
+</Aside>
+
+Chainlink Automation StreamsLookup ErrorHandler provides insight into potential errors or edge cases in StreamsLookup upkeeps. The table below outlines a range of error codes and the behavior associated with the codes. Use the `checkErrorHandler` function to specify how you want to respond to the error codes. `checkErrorHandler` is simulated offchain and determines what action for Automation to take onchain in `performUpkeep`.
+
+<Aside type="caution" title="Developer responsibility">
+Developers implementing Chainlink products are solely responsible for maintaining the security and user experience of their applications. Developers must monitor and mitigate any potential application code risks that may, among other things, result in unanticipated application behavior, including by instituting requisite [risk mitigation processes](/data-feeds/selecting-data-feeds#risk-mitigation) including, but not limited to, data quality checks, circuit breakers, and appropriate contingency logic for their use case. 
+</Aside>
+
+## Error handler
+
+If StreamsLookup reverts and you're unable to pull the report, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. If you are able to pull the report, `checkCallback` is simulated offchain, and it has the same function signature as `checkErrorHandler`.
+
+<ClickToZoom src="/images/automation/check-error-handler-placeholder.png" alt="Error handler flow diagram" />
+
+Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes):
+
+```solidity
+function checkErrorHandler(uint errorCode, bytes extraData) external pure returns (bool upkeepNeeded, bytes memory performData) {
+   ....
+}
+```
+
+- `checkErrorHandler` is simulated offchain
+- If `upkeepNeeded` returns `true`, then Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`
+
+## Error codes
+
+<table>
+<thead>
+  <tr>
+    <th>checkErrorHandler errorCode</th>
+    <th>Possible cause of error</th>
+    <th>Data Streams equivalent API response</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>No error</td>
+    <td>No error</td>
+    <td>200 (Status OK)</td>
+  </tr>
+    <td colspan="3">ErrCodeStreamsBadRequest : 800400 [no retry]</td>
+    <td>User requested 0 feeds</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>User error, incorrect parameter input</td>
+    <td>400 (StatusBadRequest)</td>
+  </tr>
+  <tr>
+    <td>Issue with encoding http url (bad characters)</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>ErrCodeStreamsUnauthorized: 808401  [no retry]</td>
+    <td>Key access issue or incorrect feedID</td>
+    <td>401 (StatusUnauthorized)</td>
+  </tr>
+  <tr>
+    <td>808206  [Log trigger - after retries; Conditional immediately]</td>
+    <td>Requested m reports but only received n (partial)</td>
+    <td>200 (Status OK) or StatusPartialContent</td>
+  </tr>
+  <tr>
+    <td>8085XX e.g 808500  [Log trigger - after retries; Conditional immediately]</td>
+    <td>No response</td>
+    <td>
+        <ul>
+            <li>500 (StatusInternalServerError)</li>
+            <li>502 (StatusBadGateway)</li>
+            <li>503 (StatusServiceUnavailable)</li>
+            <li>504 (StatusGatewayTimeout)</li>
+        </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>ErrCodeStreamsTimeout: 808601 [no retry]</td>
+    <td>No valid report is received for 10 seconds (e.g. Data Streams returns 200 but no report)</td>
+    <td>No valid Data Streams report received within 10 seconds (200 but no report)</td>
+  </tr>
+  <tr>
+  <tr>
+    <td>ErrCodeStreamsBadResponse: 808600  [no retry]</td>
+    <td>Error in reading body of returned response, but service is up</td>
+    <td>200 but can't decode Data Streams output</td>
+  </tr>
+  <tr>
+    <td>ErrCodeStreamsUnknownError: 808700  [no retry]</td>
+    <td>Unknown</td>
+    <td>Anything Else</td>
+  </tr>
+</tbody>
+</table>
+
+## Example implementation
+
+```solidity
+...
+    function checkLog(Log calldata log, bytes memory)
+        external
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        revert StreamsLookup(
+            STRING_DATASTREAMS_FEEDLABEL,
+            feedIds,
+            STRING_DATASTREAMS_QUERYLABEL,
+            log.timestamp,
+            ""
+        );
+    }
+
+    function checkCallback(bytes[] calldata values, bytes calldata extraData)
+        external
+        pure
+        returns (bool, bytes memory)
+    {
+        bool success = true;
+        return (true, abi.encode(values, extraData, success));
+    }
+
+    function checkErrorHandler(
+        bytes calldata errorCode,
+        bytes calldata extraData
+    ) public view returns (bool upkeepNeeded, bytes memory performData) {
+        bool success = false;
+        // catch error and handle
+        return (true, abi.encode(errorCode, extraData, success));
+    }
+
+    // function will be performed on-chain
+    function performUpkeep(bytes calldata performData) external {
+        // Decode incoming performData
+        (
+            bytes[] memory signedReports,
+            bytes memory extraData,
+            bool reportSuccess
+        ) = abi.decode(performData, (bytes[], bytes, bool));
+
+        if (reportSuccess) {
+            bytes memory report = signedReports[0];
+
+            (, bytes memory reportData) = abi.decode(
+            ...
+```
