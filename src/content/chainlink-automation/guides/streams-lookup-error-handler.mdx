@@ -36,8 +36,17 @@ function checkErrorHandler(uint errorCode, bytes extraData) external pure return
 }
 ```
 
-- `checkErrorHandler` is simulated offchain
-- If `upkeepNeeded` returns `true`, then Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`
+### Testing checkErrorHandler
+
+`checkErrorHandler` is simulated offchain. If `upkeepNeeded` returns `true`, then Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`. If the `checkErrorHandler` function itself reverts, `performUpkeep` does not run.
+
+The following mechanisms can force errors in streamsLookup:
+
+- Specifying an incorrect feedID to force 808400
+- Specifying a future timestamp to force 808206 for both single feedID and bulk feedID requests
+- Specifying old timestamps for reports not available anymore yields 808504 or 808600, depending on which service calls the timeout request
+
+Note that if your `revert streamsLookup` function is incorrectly defined in your smart contracts, the nodes will not be able to decode it.
 
 ## Error codes
 
