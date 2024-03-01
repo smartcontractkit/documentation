@@ -12,7 +12,42 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.9.0 nodes - 2024-02-22
+
+**[v2.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.9.0)**
+
+### Added
+
+- The `chainlink health` CLI command and HTML `/health` endpoint to provide human-readable views of the underlying JSON health data.
+- New job type `stream` to represent streamspecs. This job type is not yet used anywhere but will be required for Data Streams V1.
+- Environment variables `CL_MEDIAN_ENV`, `CL_SOLANA_ENV`, and `CL_STARKNET_ENV` for setting environment variables in LOOP Plugins with an `.env` file.
+
+  ```
+  echo "Foo=Bar" >> median.env
+  echo "Baz=Val" >> median.env
+  CL_MEDIAN_ENV="median.env"
+  ```
+
+### Fixed
+
+- Fixed the encoding used for transactions when resending in batches.
+
+### Removed
+
+- `P2P.V1` is no longer supported and must not be set in the TOML configuration in order to boot. Use `P2P.V2` instead. If you are using both, `V1` can simply be removed.
+- Removed `TelemetryIngress.URL` and `TelemetryIngress.ServerPubKey` from TOML configuration, these fields are replaced by `[[TelemetryIngress.Endpoints]]`:
+
+  ```toml
+    [[TelemetryIngress.Endpoints]]
+    Network = '...' # e.g. EVM. Solana, Starknet, Cosmos
+    ChainID = '...' # e.g. 1, 5, devnet, mainnet-beta
+    URL = '...'
+    ServerPubKey = '...'
+  ```
+
 ## Changes in v2.8.0 nodes - 2024-01-24
+
+**[v2.8.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.8.0)**
 
 ### Added
 
@@ -103,6 +138,8 @@ Starting in `v2.9.0`:
 - `P2P.V1` will no longer be supported and must not be set in TOML configuration in order to boot. Use `P2P.V2` instead. If you are using both, `V1` can simply be removed.
 
 ## Changes in v2.7.2 nodes - 2023-12-14
+
+**[v2.7.2 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.7.2)**
 
 ### Fixed
 
