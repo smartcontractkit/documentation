@@ -2,6 +2,15 @@
 import { useState } from "preact/hooks"
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
+declare global {
+  interface Window {
+    dataLayer: Array<{
+      event: string
+      feedback_message?: string
+    }>
+  }
+}
+
 export const Feedback = () => {
   const [feedbackType, setFeedbackType] = useState("")
   const [feedbackGiven, setFeedbackGiven] = useState(false)
@@ -121,12 +130,29 @@ export const Feedback = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const formData = new FormData(e.target)
+
+    const formData = new FormData(e.target as HTMLFormElement)
+    const messageValue = formData.get("msg")
+    const message = typeof messageValue === "string" ? messageValue : undefined
+
     const data = {
-      msg: formData.get("msg"),
+      msg: message,
       time: Date.now(),
       url: window.location.href,
-      type: feedbackType,
+      type: feedbackType, // "positive" or "negative"
+    }
+
+    // Dispatch a custom event based on the feedback type
+    if (feedbackType === "positive") {
+      window.dataLayer.push({
+        event: "positive_feedback_submitted",
+        feedback_message: data.msg,
+      })
+    } else if (feedbackType === "negative") {
+      window.dataLayer.push({
+        event: "negative_feedback_submitted",
+        feedback_message: data.msg,
+      })
     }
 
     const path = "https://docs-feedbacks-22203-default-rtdb.firebaseio.com/feedback.json"
