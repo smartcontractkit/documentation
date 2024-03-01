@@ -21,6 +21,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   ARBITRUM_GOERLI: () =>
     new providers.JsonRpcProvider("https://arb-goerli.g.alchemy.com/v2/AwZE27jvfRidiu-6FFunBzP3Bff0XFNx"),
   OPTIMISM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/optimism"),
+  OPTIMISM_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.optimism.io/"),
   OPTIMISM_GOERLI: () =>
     new providers.JsonRpcProvider("https://opt-goerli.g.alchemy.com/v2/5lHtpzqF7gxVKsSfpyoUbisei8OwoIRS"),
   MOONRIVER_MAINNET: () => new providers.JsonRpcProvider("https://rpc.api.moonriver.moonbeam.network"),
@@ -28,6 +29,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),
   BASE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.base.org"),
   BASE_GOERLI: () => new providers.JsonRpcProvider("https://goerli.base.org"),
+  BASE_SEPOLIA: () => new providers.JsonRpcProvider("https://base-sepolia-rpc.publicnode.com"),
   SCROLL_MAINNET: () => new providers.JsonRpcProvider("https://rpc.scroll.io"),
   SCROLL_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia-rpc.scroll.io"),
   CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),

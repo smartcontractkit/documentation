@@ -322,6 +322,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
+        {
+          title: "Migrate to Automation V2",
+          url: "chainlink-automation/guides/migrate-to-v2",
+        },
       ],
     },
     {
@@ -545,6 +549,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Imports with Functions",
           url: "chainlink-functions/tutorials/importing-packages",
+        },
+        {
+          title: "Return multiple responses and decode them in your smart contract",
+          url: "chainlink-functions/tutorials/abi-decoding",
         },
       ],
     },
@@ -838,10 +846,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Testnet v1.2.0",
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
-            {
-              title: "Testnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/testnet",
-            },
           ],
         },
         {
@@ -882,6 +886,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
+          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+        },
+        {
+          title: "Manual Execution",
+          url: "ccip/tutorials/manual-execution",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },
@@ -891,12 +903,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Concept Overview",
+          title: "Conceptual Overview",
           url: "ccip/concepts",
         },
         {
           title: "Architecture",
           url: "ccip/architecture",
+        },
+        {
+          title: "Manual execution",
+          url: "ccip/concepts/manual-execution",
         },
         {
           title: "Best Practices",
@@ -1032,10 +1048,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Secrets Config (TOML)",
               url: "chainlink-nodes/v1/secrets-config",
             },
-            {
-              title: "Legacy Config (.env)",
-              url: "chainlink-nodes/v1/configuration",
-            },
           ],
         },
         {
@@ -1082,10 +1094,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Security and Operation Best Practices",
           url: "chainlink-nodes/resources/best-security-practices",
-        },
-        {
-          title: "Best Practices for Nodes on AWS",
-          url: "chainlink-nodes/resources/best-practices-aws",
         },
         { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],

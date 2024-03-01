@@ -110,6 +110,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "OPTIMISM_MAINNET"
     case "ethereum-testnet-goerli-optimism-1":
       return "OPTIMISM_GOERLI"
+    case "ethereum-testnet-sepolia-optimism-1":
+      return "OPTIMISM_SEPOLIA"
     case "ethereum-mainnet-arbitrum-1":
       return "ARBITRUM_MAINNET"
     case "ethereum-testnet-goerli-arbitrum-1":
@@ -132,6 +134,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BASE_MAINNET"
     case "ethereum-testnet-goerli-base-1":
       return "BASE_GOERLI"
+    case "ethereum-testnet-sepolia-base-1":
+      return "BASE_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -147,6 +151,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-optimism-1"
     case "OPTIMISM_GOERLI":
       return "ethereum-testnet-goerli-optimism-1"
+    case "OPTIMISM_SEPOLIA":
+      return "ethereum-testnet-sepolia-optimism-1"
     case "ARBITRUM_MAINNET":
       return "ethereum-mainnet-arbitrum-1"
     case "ARBITRUM_SEPOLIA":
@@ -169,6 +175,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-base-1"
     case "BASE_GOERLI":
       return "ethereum-testnet-goerli-base-1"
+    case "BASE_SEPOLIA":
+      return "ethereum-testnet-sepolia-base-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
