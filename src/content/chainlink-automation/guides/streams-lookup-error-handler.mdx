@@ -1,7 +1,7 @@
 ---
 section: automation
 date: Last Modified
-title: "StreamsLookup ErrorHandler"
+title: "Error handler for StreamsLookup upkeeps"
 isMdx: true
 whatsnext: { "Troubleshoot and Debug Upkeeps": "/chainlink-automation/reference/debugging-errors",
 "Automation Interfaces": "/chainlink-automation/reference/automation-interfaces",
@@ -16,7 +16,7 @@ import { Aside, ClickToZoom, CodeSample } from "@components"
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Automation StreamsLookup ErrorHandler provides insight into potential errors or edge cases in StreamsLookup upkeeps. The table below outlines a range of error codes and the behavior associated with the codes. Use the `checkErrorHandler` function to specify how you want to respond to the error codes. `checkErrorHandler` is simulated offchain and determines what action for Automation to take onchain in `performUpkeep`.
+The Chainlink Automation StreamsLookup error handler provides insight into potential errors or edge cases in StreamsLookup upkeeps. The table below outlines a range of error codes and the behavior associated with the codes. Use the `checkErrorHandler` function to specify how you want to respond to the error codes. `checkErrorHandler` is simulated offchain and determines what action for Automation to take onchain in `performUpkeep`.
 
 <Aside type="caution" title="Developer responsibility">
 Developers implementing Chainlink products are solely responsible for maintaining the security and user experience of their applications. Developers must monitor and mitigate any potential application code risks that may, among other things, result in unanticipated application behavior, including by instituting requisite [risk mitigation processes](/data-feeds/selecting-data-feeds#risk-mitigation) including, but not limited to, data quality checks, circuit breakers, and appropriate contingency logic for their use case. 
@@ -24,9 +24,9 @@ Developers implementing Chainlink products are solely responsible for maintainin
 
 ## Error handler
 
-If StreamsLookup reverts and you're unable to pull the report, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. If you are able to pull the report, `checkCallback` is simulated offchain, and it has the same function signature as `checkErrorHandler`.
+If StreamsLookup reverts and the call to pull a report is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. If the call is successful, `checkCallback` is simulated offchain, and it has the same output types as `checkErrorHandler`.
 
-<ClickToZoom src="/images/automation/streamslookup-errorhandler-flow.png" alt="Error handler flow diagram" />
+<ClickToZoom src="/images/automation/streamslookup-errorhandler-vertical.png" alt="Error handler flow diagram" />
 
 Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes):
 
@@ -40,11 +40,11 @@ function checkErrorHandler(uint errorCode, bytes extraData) external pure return
 
 `checkErrorHandler` is simulated offchain. If `upkeepNeeded` returns `true`, then Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`. If the `checkErrorHandler` function itself reverts, `performUpkeep` does not run.
 
-The following mechanisms can force errors in streamsLookup:
+If you need to force errors in streamsLookup while testing, you can try the following methods:
 
-- Specifying an incorrect feedID to force 808400
-- Specifying a future timestamp to force 808206 for both single feedID and bulk feedID requests
-- Specifying old timestamps for reports not available anymore yields 808504 or 808600, depending on which service calls the timeout request
+- Specifying an incorrect feedID to force 808400 (`ErrCodeStreamsBadRequest`)
+- Specifying a future timestamp to force 808206 (where partial content is received) for both single feedID and bulk feedID requests
+- Specifying old timestamps for reports not available anymore yields 808504 (no response) or 808600 (bad response), depending on which service calls the timeout request
 
 Note that if your `revert streamsLookup` function is incorrectly defined in your smart contracts, the nodes will not be able to decode it.
 
@@ -53,7 +53,8 @@ Note that if your `revert streamsLookup` function is incorrectly defined in your
 <table>
 <thead>
   <tr>
-    <th>checkErrorHandler errorCode</th>
+    <th>Error code</th>
+    <th>Retries</th>
     <th>Possible cause of error</th>
     <th>Data Streams equivalent API response</th>
   </tr>
@@ -64,8 +65,9 @@ Note that if your `revert streamsLookup` function is incorrectly defined in your
     <td>No error</td>
     <td>200 (Status OK)</td>
   </tr>
-  <tr>
-    <td rowspan="3">ErrCodeStreamsBadRequest : 800400 [no retry]</td>
+  <tr><a href="#800400"></a>
+    <td rowspan="3">ErrCodeStreamsBadRequest : 800400</td>
+    <td rowspan="3">No</td>
     <td>User requested 0 feeds</td>
     <td>N/A</td>
   </tr>
@@ -77,18 +79,21 @@ Note that if your `revert streamsLookup` function is incorrectly defined in your
     <td>Issue with encoding http url (bad characters)</td>
     <td>N/A</td>
   </tr>
-  <tr>
-    <td>ErrCodeStreamsUnauthorized: 808401  [no retry]</td>
+  <tr><a href="#800401"></a>
+    <td>ErrCodeStreamsUnauthorized: 808401</td>
+    <td>No</td>
     <td>Key access issue or incorrect feedID</td>
     <td>401 (StatusUnauthorized)</td>
   </tr>
-  <tr>
-    <td>808206  [Log trigger - after retries; Conditional immediately]</td>
+  <tr><a href="#808206"></a>
+    <td>808206</td>
+    <td>Log trigger - after retries; Conditional immediately</td>
     <td>Requested m reports but only received n (partial)</td>
     <td>200 (Status OK) or StatusPartialContent</td>
   </tr>
-  <tr>
-    <td>8085XX e.g 808500  [Log trigger - after retries; Conditional immediately]</td>
+  <tr><a href="#808500"></a>
+    <td>8085XX (e.g 808500)</td>
+    <td>Log trigger - after retries; Conditional immediately</td>
     <td>No response</td>
     <td>
         <ul>
@@ -99,18 +104,21 @@ Note that if your `revert streamsLookup` function is incorrectly defined in your
         </ul>
     </td>
   </tr>
-  <tr>
-    <td>ErrCodeStreamsTimeout: 808601 [no retry]</td>
-    <td>No valid report is received for 10 seconds (e.g. Data Streams returns 200 but no report)</td>
-    <td>No valid Data Streams report received within 10 seconds (200 but no report)</td>
-  </tr>
-  <tr>
-    <td>ErrCodeStreamsBadResponse: 808600  [no retry]</td>
+  <tr><a href="#808600"></a>
+    <td>ErrCodeStreamsBadResponse: 808600</td>
+    <td>No</td>
     <td>Error in reading body of returned response, but service is up</td>
     <td>200 but can't decode Data Streams output</td>
   </tr>
-  <tr>
-    <td>ErrCodeStreamsUnknownError: 808700  [no retry]</td>
+  <tr><a href="#808601"></a>
+    <td>ErrCodeStreamsTimeout: 808601</td>
+    <td>No</td>
+    <td>No valid report is received for 10 seconds (e.g. Data Streams returns 200 but no report)</td>
+    <td>No valid Data Streams report received within 10 seconds (200 but no report)</td>
+  </tr>
+  <tr><a href="#808700"></a>
+    <td>ErrCodeStreamsUnknownError: 808700</td>
+    <td>No</td>
     <td>Unknown</td>
     <td>Anything Else</td>
   </tr>
