@@ -4,27 +4,15 @@ date: Last Modified
 title: "Role-Based Access Control (RBAC)"
 ---
 
-Chainlink Nodes allow the root admin CLI user and any additional admin users to create and assign tiers of role-based access to new users. These new API users can able to log in to the Operator UI independently.
+import { Aside } from "@components"
+
+Chainlink Nodes allow the root admin CLI user and additional admin users to assign role-based access tiers. This approach grants specific access to multiple users without providing admin privileges to all users.
+
+These new API users can log in to the Operator UI independently.
+
+## Roles and access
 
 Each user has a specific role assigned to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
-
-If there are multiple users who need specific access to manage the Chainlink Node instance, permissions and level of access can be set here.
-
-User management is configured through the use of the admin `chainlink admin users` command. Run `chainlink admin login` before you set user roles for other accounts. For example, a view-only user can be created with the following command:
-
-```shell
-chainlink admin users create --email=operator-ui-view-only@test.com --role=view
-```
-
-To modify permissions or delete existing users, run the `admin users chrole` or `admin users delete` commands. Use the `-h` flag to get a full list of options for these commands:
-
-```shell
-chainlink admin users chrole -h
-```
-
-```shell
-chainlink admin users delete -h
-```
 
 Specific actions are enabled to check role-based access before they execute. The following table lists the actions that have role-based access and the role that is required to run that action:
 
@@ -84,4 +72,69 @@ Specific actions are enabled to check role-based access before they execute. The
 | Edit user                                     |      |     |      |   X   |
 | List users                                    |      |     |      |   X   |
 
-The run command allows for minimal interaction and only enables the ability to replay a specific block number and kick off a job run.
+## Configure users and roles
+
+You can only use the CLI to configure role-based access.
+
+### Prerequisites
+
+Only admins can configure role-based access. Connect to the Chainlink node container and log in as an admin before you create, modify, or delete user roles for other accounts:
+
+1. Open an interactive shell session on the container that is running your node:
+
+   ```shell
+   docker exec -it chainlink /bin/bash
+   ```
+
+1. Log into the Chainlink CLI:
+
+   ```shell
+   chainlink admin login
+   ```
+
+   The CLI prompts you for the admin credentials that you configured for your node.
+
+<Aside type="note" title="Log out of the CLI after your changes">
+    Log out of the CLI after your changes. This prevents users with access to the shell from executing admin commands.
+
+    To log out from the shell session, run:
+
+    ```shell
+    chainlink admin logout
+    ```
+
+</Aside>
+
+### View the current list of users
+
+To view the current list of users, run the following command:
+
+```shell
+chainlink admin users list
+```
+
+### Create a new user with a specific role
+
+For example, you can create a user with view-only permissions on the node with the following command:
+
+```shell
+chainlink admin users create --email=operator-ui-view-only@test.com --role=view
+```
+
+This user can now log into the UI and query the API, but cannot change any settings or jobs.
+
+### Modify a user role and permissions
+
+To modify permissions, run the `admin users chrole` command. Use the `-h` flag to get a complete list of options for these commands:
+
+```shell
+chainlink admin users chrole -h
+```
+
+### Delete a user role and permissions
+
+To delete existing users, run the `admin users delete` command. Use the `-h` flag to get a complete list of options for these commands:
+
+```shell
+chainlink admin users delete -h
+```
