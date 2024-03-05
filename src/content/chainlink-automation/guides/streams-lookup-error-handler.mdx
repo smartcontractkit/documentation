@@ -26,7 +26,7 @@ Developers implementing Chainlink products are solely responsible for maintainin
 
 If StreamsLookup reverts and the call to pull a report is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. If the call is successful, `checkCallback` is simulated offchain, and it has the same output types as `checkErrorHandler`.
 
-<ClickToZoom src="/images/automation/streamslookup-errorhandler-vertical.png" alt="Error handler flow diagram" style="max-width: 70%; max-height: 70%; display: block; margin-left: auto; margin-right: auto;" />
+<ClickToZoom src="/images/automation/streamslookup-errorhandler-vertical.png" alt="Error handler flow diagram" style="max-width: 60%; max-height: 60%; display: block; margin-left: auto; margin-right: auto;" />
 
 Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes):
 
@@ -42,9 +42,9 @@ function checkErrorHandler(uint errorCode, bytes extraData) external pure return
 
 If you need to force errors in streamsLookup while testing, you can try the following methods:
 
-- Specifying an incorrect feedID to force error code [800400](#800400) (`ErrCodeStreamsBadRequest`)
-- Specifying a future timestamp to force error code [808206](#808206) (where partial content is received) for both single feedID and bulk feedID requests
-- Specifying old timestamps for reports not available anymore yields either error code [808504](#8085XX) (no response) or [808600](#808600) (bad response), depending on which service calls the timeout request
+- Specifying an incorrect feedID to force error code 800400 (`ErrCodeStreamsBadRequest`)
+- Specifying a future timestamp to force error code 808206 (where partial content is received) for both single feedID and bulk feedID requests
+- Specifying old timestamps for reports not available anymore yields either error code 808504 (no response) or 808600 (bad response), depending on which service calls the timeout request
 
 If your `revert streamsLookup` function is defined incorrectly in your smart contracts, the nodes will not be able to decode it.
 
@@ -66,7 +66,7 @@ If your `revert streamsLookup` function is defined incorrectly in your smart con
     <td>No error</td>
     <td>200 (Status OK)</td>
   </tr>
-  <tr id="800400">
+  <tr>
     <td rowspan="3">ErrCodeStreamsBadRequest: 800400</td>
     <td rowspan="3">No</td>
     <td>User requested 0 feeds</td>
@@ -81,18 +81,18 @@ If your `revert streamsLookup` function is defined incorrectly in your smart con
     <td>N/A</td>
   </tr>
   <tr>
-    <td id="800401">ErrCodeStreamsUnauthorized: 808401</td>
+    <td>ErrCodeStreamsUnauthorized: 808401</td>
     <td>No</td>
     <td>Key access issue or incorrect feedID</td>
     <td>401 (StatusUnauthorized)</td>
   </tr>
-  <tr id="808206">
+  <tr>
     <td>808206</td>
     <td>Log trigger - after retries; Conditional immediately</td>
     <td>Requested m reports but only received n (partial)</td>
     <td>200 (Status OK) or StatusPartialContent</td>
   </tr>
-  <tr id="8085XX">
+  <tr>
     <td>8085XX (e.g 808500)</td>
     <td>Log trigger - after retries; Conditional immediately</td>
     <td>No response</td>
@@ -126,7 +126,9 @@ If your `revert streamsLookup` function is defined incorrectly in your smart con
 </tbody>
 </table>
 
-## Example implementation
+## Example code
+
+This example code highlights the `revert StreamsLookup`, `checkCallback`, `checkErrorHandler` and `performUpkeep` functions. The full code example is available [here](https://gist.github.com/stone4419/e255177a16751ebd333eadb33692d1d3).
 
 ```solidity
 ...
