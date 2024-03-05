@@ -367,6 +367,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
         },
+        {
+          title: "Using the error handler for StreamsLookup upkeeps",
+          url: "chainlink-automation/guides/streams-lookup-error-handler",
+        },
       ],
     },
     {
