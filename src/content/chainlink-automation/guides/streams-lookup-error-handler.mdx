@@ -11,26 +11,39 @@ whatsnext: { "Troubleshoot and Debug Upkeeps": "/chainlink-automation/reference/
 import { Aside, ClickToZoom, CodeSample } from "@components"
 
 <Aside type="note" title="Data Streams Mainnet Access">
-  Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia. [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
+  Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia. [Contact
+  us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink
+  Data Streams with your applications.
 </Aside>
 
 The Chainlink Automation StreamsLookup error handler provides insight into potential errors or edge cases in StreamsLookup upkeeps. The table below outlines a range of error codes and the behavior associated with the codes. Use the `checkErrorHandler` function to specify how you want to respond to the error codes. `checkErrorHandler` is simulated offchain and determines what action for Automation to take onchain in `performUpkeep`.
 
 <Aside type="caution" title="Developer responsibility">
-Developers implementing Chainlink products are solely responsible for maintaining the security and user experience of their applications. Developers must monitor and mitigate any potential application code risks that may, among other things, result in unanticipated application behavior, including by instituting requisite [risk mitigation processes](/data-feeds/selecting-data-feeds#risk-mitigation) including, but not limited to, data quality checks, circuit breakers, and appropriate contingency logic for their use case. 
+  Developers implementing Chainlink products are solely responsible for maintaining the security and user experience of
+  their applications. Developers must monitor and mitigate any potential application code risks that may, among other
+  things, result in unanticipated application behavior, including by instituting requisite [risk mitigation
+  processes](/data-feeds/selecting-data-feeds#risk-mitigation) including, but not limited to, data quality checks,
+  circuit breakers, and appropriate contingency logic for their use case.
 </Aside>
 
 ## Error handler
 
-When Automation detects an event, it runs the `checkLog` function, which includes a [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) custom error. If this StreamsLookup error triggers, and the call to pull a report from Data Streams is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. The upkeep runs the custom logic you define in your `checkErrorHandler` function to handle report request errors.  If the call to pull a report is successful, the [`checkCallback`](/chainlink-automation/reference/automation-interfaces#checkcallback-function) function is simulated offchain. Both functions have the same output types (`bool upkeepNeeded, bytes memory performData`), which Automation uses to run `performUpkeep` onchain.
+When Automation detects an event, it runs the `checkLog` function, which includes a [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) custom error. If this StreamsLookup error triggers, and the call to pull a report from Data Streams is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. The upkeep runs the custom logic you define in your `checkErrorHandler` function to handle report request errors. If the call to pull a report is successful, the [`checkCallback`](/chainlink-automation/reference/automation-interfaces#checkcallback-function) function is simulated offchain. Both functions have the same output types (`bool upkeepNeeded, bytes memory performData`), which Automation uses to run `performUpkeep` onchain. The [example code](#example-code) also shows each function outlined in the diagram below:
 
-<ClickToZoom src="/images/automation/streamslookup-errorhandler-horizontal.png" alt="Error handler flow diagram" style="display: block; margin-left: auto; margin-right: auto;" />
+<ClickToZoom
+  src="/images/automation/streamslookup-errorhandler-horizontal.png"
+  alt="Error handler flow diagram"
+  style="display: block; margin-left: auto; margin-right: auto;"
+/>
 
 Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes):
 
 ```solidity
-function checkErrorHandler(uint errorCode, bytes extraData) external pure returns (bool upkeepNeeded, bytes memory performData) {
-   // custom logic to handle error codes
+function checkErrorHandler(
+  uint errorCode,
+  bytes extraData
+) external pure returns (bool upkeepNeeded, bytes memory performData) {
+  // custom logic to handle error codes
 }
 ```
 
@@ -49,84 +62,84 @@ If your [StreamsLookup revert](/chainlink-automation/reference/automation-interf
 ## Error codes
 
 <table>
-<thead>
-  <tr>
-    <th>Error code</th>
-    <th>Retries</th>
-    <th>Possible cause of error</th>
-    <th>Data Streams equivalent API response</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>No error</td>
-    <td>N/A</td>
-    <td>No error</td>
-    <td>200 (Status OK)</td>
-  </tr>
-  <tr>
-    <td rowspan="3">ErrCodeStreamsBadRequest: 800400</td>
-    <td rowspan="3">No</td>
-    <td>User requested 0 feeds</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>User error, incorrect parameter input</td>
-    <td>400 (StatusBadRequest)</td>
-  </tr>
-  <tr>
-    <td>Issue with encoding http url (bad characters)</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>ErrCodeStreamsUnauthorized: 808401</td>
-    <td>No</td>
-    <td>Key access issue or incorrect feedID</td>
-    <td>401 (StatusUnauthorized)</td>
-  </tr>
-  <tr>
-    <td>808206</td>
-    <td>Log trigger - after retries; Conditional immediately</td>
-    <td>Requested m reports but only received n (partial)</td>
-    <td>200 (Status OK) or StatusPartialContent</td>
-  </tr>
-  <tr>
-    <td>8085XX (e.g 808500)</td>
-    <td>Log trigger - after retries; Conditional immediately</td>
-    <td>No response</td>
-    <td>
+  <thead>
+    <tr>
+      <th>Error code</th>
+      <th>Retries</th>
+      <th>Possible cause of error</th>
+      <th>Data Streams equivalent API response</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No error</td>
+      <td>N/A</td>
+      <td>No error</td>
+      <td>200 (Status OK)</td>
+    </tr>
+    <tr>
+      <td rowspan="3">ErrCodeStreamsBadRequest: 800400</td>
+      <td rowspan="3">No</td>
+      <td>User requested 0 feeds</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>User error, incorrect parameter input</td>
+      <td>400 (StatusBadRequest)</td>
+    </tr>
+    <tr>
+      <td>Issue with encoding http url (bad characters)</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>ErrCodeStreamsUnauthorized: 808401</td>
+      <td>No</td>
+      <td>Key access issue or incorrect feedID</td>
+      <td>401 (StatusUnauthorized)</td>
+    </tr>
+    <tr>
+      <td>808206</td>
+      <td>Log trigger - after retries; Conditional immediately</td>
+      <td>Requested m reports but only received n (partial)</td>
+      <td>200 (Status OK) or StatusPartialContent</td>
+    </tr>
+    <tr>
+      <td>8085XX (e.g 808500)</td>
+      <td>Log trigger - after retries; Conditional immediately</td>
+      <td>No response</td>
+      <td>
         <ul>
-            <li>500 (StatusInternalServerError)</li>
-            <li>502 (StatusBadGateway)</li>
-            <li>503 (StatusServiceUnavailable)</li>
-            <li>504 (StatusGatewayTimeout)</li>
+          <li>500 (StatusInternalServerError)</li>
+          <li>502 (StatusBadGateway)</li>
+          <li>503 (StatusServiceUnavailable)</li>
+          <li>504 (StatusGatewayTimeout)</li>
         </ul>
-    </td>
-  </tr>
-  <tr id="808600">
-    <td>ErrCodeStreamsBadResponse: 808600</td>
-    <td>No</td>
-    <td>Error in reading body of returned response, but service is up</td>
-    <td>200 but can't decode Data Streams output</td>
-  </tr>
-  <tr id="808601">
-    <td>ErrCodeStreamsTimeout: 808601</td>
-    <td>No</td>
-    <td>No valid report is received for 10 seconds (e.g. Data Streams returns 200 but no report)</td>
-    <td>No valid Data Streams report received within 10 seconds (200 but no report)</td>
-  </tr>
-  <tr id="808700">
-    <td>ErrCodeStreamsUnknownError: 808700</td>
-    <td>No</td>
-    <td>Unknown</td>
-    <td>Anything else</td>
-  </tr>
-</tbody>
+      </td>
+    </tr>
+    <tr id="808600">
+      <td>ErrCodeStreamsBadResponse: 808600</td>
+      <td>No</td>
+      <td>Error in reading body of returned response, but service is up</td>
+      <td>200 but can't decode Data Streams output</td>
+    </tr>
+    <tr id="808601">
+      <td>ErrCodeStreamsTimeout: 808601</td>
+      <td>No</td>
+      <td>No valid report is received for 10 seconds (e.g. Data Streams returns 200 but no report)</td>
+      <td>No valid Data Streams report received within 10 seconds (200 but no report)</td>
+    </tr>
+    <tr id="808700">
+      <td>ErrCodeStreamsUnknownError: 808700</td>
+      <td>No</td>
+      <td>Unknown</td>
+      <td>Anything else</td>
+    </tr>
+  </tbody>
 </table>
 
 ## Example code
 
-This example code highlights the `revert StreamsLookup`, `checkCallback`, `checkErrorHandler` and `performUpkeep` functions. The full code example is available [here](https://gist.github.com/stone4419/e255177a16751ebd333eadb33692d1d3).
+This example code highlights the `revert StreamsLookup`, `checkCallback`, `checkErrorHandler` and `performUpkeep` functions. The full code example is available [here](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/StreamsWithError.sol).
 
 ```solidity
 ...
