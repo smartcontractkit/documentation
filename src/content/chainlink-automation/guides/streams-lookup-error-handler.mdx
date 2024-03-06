@@ -22,7 +22,7 @@ Developers implementing Chainlink products are solely responsible for maintainin
 
 ## Error handler
 
-If StreamsLookup reverts and the call to pull a report is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. If the call is successful, [`checkCallback`](/chainlink-automation/reference/automation-interfaces#checkcallback-function) is simulated offchain, and it has the same output types as `checkErrorHandler`.
+When Automation detects an event, it runs the `checkLog` function, which includes a [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) custom error. If this StreamsLookup error triggers, and the call to pull a report from Data Streams is unsuccessful, the `checkErrorHandler` function runs offchain and determines what action Automation takes onchain in `performUpkeep`. The upkeep runs the custom logic you define in your `checkErrorHandler` function to handle report request errors.  If the call to pull a report is successful, the [`checkCallback`](/chainlink-automation/reference/automation-interfaces#checkcallback-function) function is simulated offchain. Both functions have the same output types (`bool upkeepNeeded, bytes memory performData`), which Automation uses to run `performUpkeep` onchain.
 
 <ClickToZoom src="/images/automation/streamslookup-errorhandler-horizontal.png" alt="Error handler flow diagram" style="display: block; margin-left: auto; margin-right: auto;" />
 
@@ -30,13 +30,13 @@ Add the `checkErrorHandler` function in your contract to specify how you want to
 
 ```solidity
 function checkErrorHandler(uint errorCode, bytes extraData) external pure returns (bool upkeepNeeded, bytes memory performData) {
-   ....
+   // custom logic to handle error codes
 }
 ```
 
 ### Testing checkErrorHandler
 
-`checkErrorHandler` is simulated offchain. If `upkeepNeeded` returns `true`, then Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`. If the `checkErrorHandler` function itself reverts, `performUpkeep` does not run.
+`checkErrorHandler` is simulated offchain. When `upkeepNeeded` returns `true`, Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`. If the `checkErrorHandler` function itself reverts, `performUpkeep` does not run.
 
 If you need to force errors in streamsLookup while testing, you can try the following methods:
 
@@ -44,7 +44,7 @@ If you need to force errors in streamsLookup while testing, you can try the foll
 - Specifying a future timestamp to force error code 808206 (where partial content is received) for both single feedID and bulk feedID requests
 - Specifying old timestamps for reports not available anymore yields either error code 808504 (no response) or 808600 (bad response), depending on which service calls the timeout request
 
-If your [`revert streamsLookup`](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) function is defined incorrectly in your smart contracts, the nodes will not be able to decode it.
+If your [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) function is defined incorrectly in your smart contracts, the nodes will not be able to decode it.
 
 ## Error codes
 
