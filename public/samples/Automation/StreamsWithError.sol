@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.16;
 
 import {StreamsLookupCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
@@ -22,33 +22,13 @@ interface IFeeManager {
         address subscriber,
         bytes memory report,
         address quoteAddress
-    )
-        external
-        returns (
-            ChainlinkCommon.Asset memory,
-            ChainlinkCommon.Asset memory,
-            uint256
-        );
+    ) external returns (Common.Asset memory, Common.Asset memory, uint256);
 
     function i_linkAddress() external view returns (address);
 
     function i_nativeAddress() external view returns (address);
 
     function i_rewardManager() external view returns (address);
-}
-
-library ChainlinkCommon {
-    // @notice The asset struct to hold the address of an asset and amount
-    struct Asset {
-        address assetAddress;
-        uint256 amount;
-    }
-
-    // @notice Struct to hold the address and its associated weight
-    struct AddressAndWeight {
-        address addr;
-        uint64 weight;
-    }
 }
 
 interface IVerifierProxy {
@@ -165,7 +145,7 @@ contract StreamsLookupChainlinkAutomation is
             );
 
             address feeTokenAddress = feeManager.i_linkAddress();
-            (ChainlinkCommon.Asset memory fee, , ) = feeManager.getFeeAndReward(
+            (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
                 address(this),
                 reportData,
                 feeTokenAddress
