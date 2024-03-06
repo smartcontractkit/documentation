@@ -17,10 +17,6 @@ import {Common} from "@chainlink/contracts/src/v0.8/libraries/Common.sol";
 ////////////////////////INTERFACES
 //////////////////////////////////
 
-interface IERC20 {
-    function approve(address spender, uint256 amount) external returns (bool);
-}
-
 interface IFeeManager {
     function getFeeAndReward(
         address subscriber,
@@ -63,14 +59,6 @@ interface IVerifierProxy {
 
     function s_feeManager() external view returns (IVerifierFeeManager);
 }
-
-interface IReportHandler {
-    function handleReport(bytes calldata report) external;
-}
-
-interface IVerifierFeeManager {}
-
-interface IRewardManager {}
 
 //////////////////////////////////
 ///////////////////END INTERFACES
