@@ -148,7 +148,7 @@ contract StreamsLookupChainlinkAutomation is
             (uint errorCode, bytes memory extraData, bool reportSuccess) = abi
                 .decode(payload, (uint, bytes, bool));
 
-            // Logic to handle error codes onchain
+            // Custom logic to handle error codes onchain
         } else {
             // Otherwise unpacking info from checkCallback
             (
@@ -201,7 +201,7 @@ contract StreamsLookupChainlinkAutomation is
                 // Log price from report
                 emit PriceUpdate(verifiedReport.price);
             } else {
-                // ERROR LOGIC
+                // Logic in case reports were not pulled successfully
             }
         }
     }
