@@ -138,7 +138,10 @@ contract StreamsLookupChainlinkAutomation is
     // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
         // Decode incoming performData
-        (bool isError, bytes memory payload) = abi.decode(performData);
+        (bool isError, bytes memory payload) = abi.decode(
+            performData,
+            (bool, bytes)
+        );
 
         // Unpacking the errorCode from checkErrorHandler
         if (isError) {
