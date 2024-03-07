@@ -46,15 +46,15 @@ function checkErrorHandler(
   bytes extraData
 ) external pure returns (bool upkeepNeeded, bytes memory performData) {
   // Add custom logic to handle errors offchain here
-  bool upkeepNeeded = true;
+  bool _upkeepNeeded = true;
   bool success = false;
   if (errorCode == 800400) {
     // Bad request error code
-    upkeepNeeded = false;
+    _upkeepNeeded = false;
   } else {
     // logic to handle other errors
   }
-  return (upkeepNeeded, abi.encode(errorCode, extraData, success));
+  return (_upkeepNeeded, abi.encode(errorCode, extraData, success));
 }
 ```
 
