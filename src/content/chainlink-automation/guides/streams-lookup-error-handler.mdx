@@ -40,59 +40,59 @@ If the Automation network fails to get the requested reports, an error code is s
 
 1. Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes). For example, you could decide to ignore any codes related to bad requests or incorrect input, without running `performUpkeep` onchain:
 
-```solidity
-function checkErrorHandler(
-  uint errorCode,
-  bytes calldata extraData
-) external returns (bool upkeepNeeded, bytes memory performData) {
-  // Add custom logic to handle errors offchain here
-  bool _upkeepNeeded = true;
-  bool success = false;
-  bool isError = true;
-  if (errorCode == 800400) {
-    // Handle bad request error code offchain
-    _upkeepNeeded = false;
-  } else {
-    // logic to handle other errors
-  }
-  return (_upkeepNeeded, abi.encode(isError, abi.encode(errorCode, extraData, success)));
-}
-```
+   ```solidity
+   function checkErrorHandler(
+     uint errorCode,
+     bytes calldata extraData
+   ) external returns (bool upkeepNeeded, bytes memory performData) {
+     // Add custom logic to handle errors offchain here
+     bool _upkeepNeeded = true;
+     bool success = false;
+     bool isError = true;
+     if (errorCode == 800400) {
+       // Handle bad request error code offchain
+       _upkeepNeeded = false;
+     } else {
+       // logic to handle other errors
+     }
+     return (_upkeepNeeded, abi.encode(isError, abi.encode(errorCode, extraData, success)));
+   }
+   ```
 
 1. Define custom logic for the alternative path within `performUpkeep`, to handle any error codes you did not intercept offchain in `checkErrorHandler`:
 
-```solidity
-// function will be performed on-chain
-function performUpkeep(bytes calldata performData) external {
-  // Decode incoming performData
-  (bool isError, bytes payload) = abi.decode(performData)
+   ```solidity
+   // function will be performed on-chain
+   function performUpkeep(bytes calldata performData) external {
+     // Decode incoming performData
+     (bool isError, bytes payload) = abi.decode(performData)
 
-  // Unpacking the errorCode from checkErrorHandler
-  if (isError){
-    (uint errorCode, bytes memory extraData, bool reportSuccess) = abi.decode(
-    payload,
-    (uint, bytes, bool)
+     // Unpacking the errorCode from checkErrorHandler
+     if (isError){
+       (uint errorCode, bytes memory extraData, bool reportSuccess) = abi.decode(
+       payload,
+       (uint, bytes, bool)
 
-    // Define custom logic here to handle error codes onchain
-  );
-  } else {
-    // Otherwise unpacking info from checkCallback
-    (bytes[] memory signedReports, bytes memory extraData, bool reportSuccess) = abi.decode(
-      payload,
-      (bytes[], bytes, bool)
-    );
-    if (reportSuccess) {
-    bytes memory report = signedReports[0];
+       // Define custom logic here to handle error codes onchain
+     );
+     } else {
+       // Otherwise unpacking info from checkCallback
+       (bytes[] memory signedReports, bytes memory extraData, bool reportSuccess) = abi.decode(
+         payload,
+         (bytes[], bytes, bool)
+       );
+       if (reportSuccess) {
+       bytes memory report = signedReports[0];
 
-    (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
+       (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
 
-    // Logic to verify and decode report
-    } else {
-      // Logic in case reports were not pulled successfully
-    }
-  }
-}
-```
+       // Logic to verify and decode report
+       } else {
+         // Logic in case reports were not pulled successfully
+       }
+     }
+   }
+   ```
 
 ### Testing checkErrorHandler
 
