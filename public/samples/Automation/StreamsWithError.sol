@@ -106,74 +106,100 @@ contract StreamsLookupChainlinkAutomation is
         bytes[] calldata values,
         bytes calldata extraData
     ) external pure returns (bool, bytes memory) {
+        bool _upkeepNeeded = true;
         bool success = true;
-        return (true, abi.encode(values, extraData, success));
+        bool isError = false;
+        return (
+            _upkeepNeeded,
+            abi.encode(isError, abi.encode(values, extraData, success))
+        );
     }
 
     function checkErrorHandler(
-        bytes calldata errorCode,
+        uint errorCode,
         bytes calldata extraData
     ) public view returns (bool upkeepNeeded, bytes memory performData) {
+        bool _upkeepNeeded = true;
         bool success = false;
-        return (true, abi.encode(errorCode, extraData, success));
+        bool isError = true;
+        // Add custom logic to handle errors offchain here
+        if (errorCode == 800400) {
+            // Bad request error code
+            _upkeepNeeded = false;
+        } else {
+            // logic to handle other errors
+        }
+        return (
+            _upkeepNeeded,
+            abi.encode(isError, abi.encode(errorCode, extraData, success))
+        );
     }
 
     // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
         // Decode incoming performData
-        (
-            bytes[] memory signedReports,
-            bytes memory extraData,
-            bool reportSuccess
-        ) = abi.decode(performData, (bytes[], bytes, bool));
+        (bool isError, bytes memory payload) = abi.decode(performData);
 
-        if (reportSuccess) {
-            bytes memory report = signedReports[0];
+        // Unpacking the errorCode from checkErrorHandler
+        if (isError) {
+            (uint errorCode, bytes memory extraData, bool reportSuccess) = abi
+                .decode(payload, (uint, bytes, bool));
 
-            (, bytes memory reportData) = abi.decode(
-                report,
-                (bytes32[3], bytes)
-            );
-
-            // Billing
-
-            IFeeManager feeManager = IFeeManager(
-                address(verifier.s_feeManager())
-            );
-            IRewardManager rewardManager = IRewardManager(
-                address(feeManager.i_rewardManager())
-            );
-
-            address feeTokenAddress = feeManager.i_linkAddress();
-            (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
-                address(this),
-                reportData,
-                feeTokenAddress
-            );
-
-            IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
-
-            // Verify the report
-            bytes memory verifiedReportData = verifier.verify(
-                report,
-                abi.encode(feeTokenAddress)
-            );
-
-            /*
-        Deprecated Interface:
-        bytes memory verifiedReportData = verifier.verify(bundledReport);
-        */
-
-            // Decode verified report data into BasicReport struct
-            BasicReport memory verifiedReport = abi.decode(
-                verifiedReportData,
-                (BasicReport)
-            );
-
-            // Log price from report
-            emit PriceUpdate(verifiedReport.price);
+            // Logic to handle error codes onchain
         } else {
-            // ERROR LOGIC
+            // Otherwise unpacking info from checkCallback
+            (
+                bytes[] memory signedReports,
+                bytes memory extraData,
+                bool reportSuccess
+            ) = abi.decode(payload, (bytes[], bytes, bool));
+
+            if (reportSuccess) {
+                bytes memory report = signedReports[0];
+
+                (, bytes memory reportData) = abi.decode(
+                    report,
+                    (bytes32[3], bytes)
+                );
+
+                // Billing
+
+                IFeeManager feeManager = IFeeManager(
+                    address(verifier.s_feeManager())
+                );
+                IRewardManager rewardManager = IRewardManager(
+                    address(feeManager.i_rewardManager())
+                );
+
+                address feeTokenAddress = feeManager.i_linkAddress();
+                (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
+                    address(this),
+                    reportData,
+                    feeTokenAddress
+                );
+
+                IERC20(feeTokenAddress).approve(
+                    address(rewardManager),
+                    fee.amount
+                );
+
+                // Verify the report
+                bytes memory verifiedReportData = verifier.verify(
+                    report,
+                    abi.encode(feeTokenAddress)
+                );
+
+                // Decode verified report data into BasicReport struct
+                BasicReport memory verifiedReport = abi.decode(
+                    verifiedReportData,
+                    (BasicReport)
+                );
+
+                // Log price from report
+                emit PriceUpdate(verifiedReport.price);
+            } else {
+                // ERROR LOGIC
+            }
         }
     }
 
