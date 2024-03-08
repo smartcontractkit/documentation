@@ -19,6 +19,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/getting-started",
         },
         {
+          title: "Developer Responsibilities",
+          url: "data-feeds/developer-responsibilities",
+        },
+        {
           title: "Price Feeds",
           url: "data-feeds/price-feeds",
         },
