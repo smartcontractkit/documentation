@@ -136,8 +136,8 @@ contract StreamsLookupChainlinkAutomation is
         bytes[] calldata values,
         bytes calldata extraData
     ) external pure returns (bool upkeepNeeded, bytes memory) {
-        bool success = true; // Indicates successful data retrieval
-        return (true, abi.encode(success, abi.encode(values, extraData)));
+        bool reportSuccess = true; // Indicates successful data retrieval
+        return (true, abi.encode(reportSuccess, abi.encode(values, extraData)));
     }
 
     /**
@@ -153,7 +153,7 @@ contract StreamsLookupChainlinkAutomation is
     ) external returns (bool upkeepNeeded, bytes memory performData) {
         // Add custom logic to handle errors offchain here
         bool _upkeepNeeded = true;
-        bool success = false;
+        bool reportSuccess = false;
         if (errorCode == 808400) {
             // Handle bad request errors code offchain.
             // In this example, no upkeep needed for bad request errors.
@@ -163,19 +163,19 @@ contract StreamsLookupChainlinkAutomation is
         }
         return (
             _upkeepNeeded,
-            abi.encode(success, abi.encode(errorCode, extraData))
+            abi.encode(reportSuccess, abi.encode(errorCode, extraData))
         );
     }
 
     // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
         // Decode incoming performData
-        (bool success, bytes memory payload) = abi.decode(
+        (bool reportSuccess, bytes memory payload) = abi.decode(
             performData,
             (bool, bytes)
         );
 
-        if (success) {
+        if (reportSuccess) {
             // Decode the performData bytes passed in by CL Automation.
             // This contains the data returned by your implementation in checkCallback().
             (bytes[] memory signedReports, bytes memory extraData) = abi.decode(
