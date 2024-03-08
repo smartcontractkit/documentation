@@ -38,7 +38,7 @@ If the Automation network fails to get the requested reports, an error code is s
    ) external returns (bool upkeepNeeded, bytes memory performData) {
      // Add custom logic to handle errors offchain here
      bool _upkeepNeeded = true;
-     bool success = false;
+     bool reportSuccess = false;
      if (errorCode == 808400) {
        // Handle bad request errors code offchain.
        // In this example, no upkeep needed for bad request errors.
@@ -46,7 +46,7 @@ If the Automation network fails to get the requested reports, an error code is s
      } else {
        // Handle other errors as needed.
      }
-     return (_upkeepNeeded, abi.encode(success, abi.encode(errorCode, extraData)));
+     return (_upkeepNeeded, abi.encode(reportSuccess, abi.encode(errorCode, extraData)));
    }
    ```
 
@@ -56,9 +56,9 @@ If the Automation network fails to get the requested reports, an error code is s
    // function will be performed on-chain
    function performUpkeep(bytes calldata performData) external {
      // Decode incoming performData
-     (bool success, bytes memory payload) = abi.decode(performData, (bool, bytes));
+     (bool reportSuccess, bytes memory payload) = abi.decode(performData, (bool, bytes));
 
-     if (success) {
+     if (reportSuccess) {
        // Decode the performData bytes passed in by CL Automation.
        // This contains the data returned by your implementation in checkCallback().
        (bytes[] memory signedReports, bytes memory extraData) = abi.decode(payload, (bytes[], bytes));
