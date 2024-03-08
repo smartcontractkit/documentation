@@ -13,14 +13,26 @@ import {Common} from "@chainlink/contracts/src/v0.8/libraries/Common.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-//////////////////////////////////
-////////////////////////INTERFACES
-//////////////////////////////////
+// =====================
+// INTERFACES
+// =====================
 
 interface IFeeManager {
+    /**
+     * @notice Calculates the fee and reward associated with verifying a report, including discounts for subscribers.
+     * This function assesses the fee and reward for report verification, applying a discount for recognized subscriber addresses.
+     * @param subscriber The address attempting to verify the report. A discount is applied if this address
+     * is recognized as a subscriber.
+     * @param unverifiedReport The report data awaiting verification. The content of this report is used to
+     * determine the base fee and reward, before considering subscriber discounts.
+     * @param quoteAddress The payment token address used for quoting fees and rewards.
+     * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
+     * @return reward The reward allocated to the caller for successfully verifying the report.
+     * @return totalDiscount The total discount amount deducted from the fee for subscribers.
+     */
     function getFeeAndReward(
         address subscriber,
-        bytes memory report,
+        bytes memory unverifiedReport,
         address quoteAddress
     ) external returns (Common.Asset memory, Common.Asset memory, uint256);
 
@@ -32,6 +44,15 @@ interface IFeeManager {
 }
 
 interface IVerifierProxy {
+    /**
+     * @notice Verifies that the data encoded has been signed.
+     * correctly by routing to the correct verifier, and bills the user if applicable.
+     * @param payload The encoded data to be verified, including the signed
+     * report.
+     * @param parameterPayload Fee metadata for billing. In the current implementation,
+     * this consists of the abi-encoded address of the ERC-20 token used for fees.
+     * @return verifierResponse The encoded report from the verifier.
+     */
     function verify(
         bytes calldata payload,
         bytes calldata parameterPayload
@@ -40,9 +61,9 @@ interface IVerifierProxy {
     function s_feeManager() external view returns (IVerifierFeeManager);
 }
 
-//////////////////////////////////
-///////////////////END INTERFACES
-//////////////////////////////////
+// =======================
+// CONTRACT IMPLEMENTATION
+// =======================
 
 contract StreamsLookupChainlinkAutomation is
     ILogAutomation,
@@ -89,6 +110,8 @@ contract StreamsLookupChainlinkAutomation is
         verifier = IVerifierProxy(_verifier); //Arbitrum Sepolia: 0x2ff010debc1297f19579b4246cad07bd24f2488a
     }
 
+    // This function uses revert to convey call information.
+    // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
     function checkLog(
         Log calldata log,
         bytes memory
@@ -102,107 +125,110 @@ contract StreamsLookupChainlinkAutomation is
         );
     }
 
+    /**
+     * @dev This function is intended for off-chain simulation by Chainlink Automation to pass in the data reports fetched from Data Streams.
+     * @param values The bytes array of data reports fetched from Data Streams.
+     * @param extraData Contextual or additional data related to the feed lookup process.
+     * @return upkeepNeeded Indicates that upkeep is needed to pass the data to the on-chain performUpkeep function.
+     * @return performData Encoded data indicating success and including the original `values` and `extraData`, to be used in `performUpkeep`.
+     */
     function checkCallback(
         bytes[] calldata values,
         bytes calldata extraData
-    ) external pure returns (bool, bytes memory) {
-        bool _upkeepNeeded = true;
-        bool success = true;
-        bool isError = false;
-        return (
-            _upkeepNeeded,
-            abi.encode(isError, abi.encode(values, extraData, success))
-        );
+    ) external pure returns (bool upkeepNeeded, bytes memory) {
+        bool success = true; // Indicates successful data retrieval
+        return (true, abi.encode(success, abi.encode(values, extraData)));
     }
 
+    /**
+     * @notice Determines the need for upkeep in response to an error from Data Streams.
+     * @param errorCode The error code returned by the Data Streams lookup.
+     * @param extraData Additional context or data related to the error condition.
+     * @return upkeepNeeded Boolean indicating whether upkeep is needed based on the error.
+     * @return performData Data to be used if upkeep is performed, encoded with success state and error context.
+     */
     function checkErrorHandler(
         uint errorCode,
         bytes calldata extraData
-    ) public view returns (bool upkeepNeeded, bytes memory performData) {
+    ) external returns (bool upkeepNeeded, bytes memory performData) {
+        // Add custom logic to handle errors offchain here
         bool _upkeepNeeded = true;
         bool success = false;
-        bool isError = true;
-        // Add custom logic to handle errors offchain here
         if (errorCode == 800400) {
-            // Bad request error code
+            // Handle bad request errors code offchain.
+            // In this example, no upkeep needed for bad request errors.
             _upkeepNeeded = false;
         } else {
-            // logic to handle other errors
+            // Handle other errors as needed.
         }
         return (
             _upkeepNeeded,
-            abi.encode(isError, abi.encode(errorCode, extraData, success))
+            abi.encode(success, abi.encode(errorCode, extraData))
         );
     }
 
     // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
         // Decode incoming performData
-        (bool isError, bytes memory payload) = abi.decode(
+        (bool success, bytes memory payload) = abi.decode(
             performData,
             (bool, bytes)
         );
 
-        // Unpacking the errorCode from checkErrorHandler
-        if (isError) {
-            (uint errorCode, bytes memory extraData, bool reportSuccess) = abi
-                .decode(payload, (uint, bytes, bool));
+        if (success) {
+            // Decode the performData bytes passed in by CL Automation.
+            // This contains the data returned by your implementation in checkCallback().
+            (bytes[] memory signedReports, bytes memory extraData) = abi.decode(
+                payload,
+                (bytes[], bytes)
+            );
+            // Logic to verify and decode report
+            bytes memory unverifiedReport = signedReports[0];
 
-            // Custom logic to handle error codes onchain
+            (, bytes memory reportData) = abi.decode(
+                unverifiedReport,
+                (bytes32[3], bytes)
+            );
+
+            // Report verification fees
+            IFeeManager feeManager = IFeeManager(
+                address(verifier.s_feeManager())
+            );
+            IRewardManager rewardManager = IRewardManager(
+                address(feeManager.i_rewardManager())
+            );
+
+            address feeTokenAddress = feeManager.i_linkAddress();
+            (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
+                address(this),
+                reportData,
+                feeTokenAddress
+            );
+
+            // Approve rewardManager to spend this contract's balance in fees
+            IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
+
+            // Verify the report
+            bytes memory verifiedReportData = verifier.verify(
+                unverifiedReport,
+                abi.encode(feeTokenAddress)
+            );
+
+            // Decode verified report data into BasicReport struct
+            BasicReport memory verifiedReport = abi.decode(
+                verifiedReportData,
+                (BasicReport)
+            );
+
+            // Log price from report
+            emit PriceUpdate(verifiedReport.price);
         } else {
-            // Otherwise unpacking info from checkCallback
-            (
-                bytes[] memory signedReports,
-                bytes memory extraData,
-                bool reportSuccess
-            ) = abi.decode(payload, (bytes[], bytes, bool));
-
-            if (reportSuccess) {
-                bytes memory report = signedReports[0];
-
-                (, bytes memory reportData) = abi.decode(
-                    report,
-                    (bytes32[3], bytes)
-                );
-
-                // Billing
-
-                IFeeManager feeManager = IFeeManager(
-                    address(verifier.s_feeManager())
-                );
-                IRewardManager rewardManager = IRewardManager(
-                    address(feeManager.i_rewardManager())
-                );
-
-                address feeTokenAddress = feeManager.i_linkAddress();
-                (Common.Asset memory fee, , ) = feeManager.getFeeAndReward(
-                    address(this),
-                    reportData,
-                    feeTokenAddress
-                );
-
-                IERC20(feeTokenAddress).approve(
-                    address(rewardManager),
-                    fee.amount
-                );
-
-                // Verify the report
-                bytes memory verifiedReportData = verifier.verify(
-                    report,
-                    abi.encode(feeTokenAddress)
-                );
-
-                // Decode verified report data into BasicReport struct
-                BasicReport memory verifiedReport = abi.decode(
-                    verifiedReportData,
-                    (BasicReport)
-                );
-
-                // Log price from report
-                emit PriceUpdate(verifiedReport.price);
-            } else {
-                // Logic in case reports were not pulled successfully
-            }
+            // Handle error condition
+            (uint errorCode, bytes memory extraData) = abi.decode(
+                payload,
+                (uint, bytes)
+            );
+            // Custom logic to handle error codes
         }
     }
 
