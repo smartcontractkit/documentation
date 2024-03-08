@@ -61,9 +61,9 @@ interface IVerifierProxy {
     function s_feeManager() external view returns (IVerifierFeeManager);
 }
 
-// =======================
+// ==========================
 // CONTRACT IMPLEMENTATION
-// =======================
+// ==========================
 
 contract StreamsLookupChainlinkAutomation is
     ILogAutomation,

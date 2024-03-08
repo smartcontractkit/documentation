@@ -25,6 +25,13 @@ If the Automation network fails to get the requested reports, an error code is s
 1. Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes). For example, you could decide to ignore any codes related to bad requests or incorrect input, without running `performUpkeep` onchain:
 
    ```solidity
+   /**
+    * @notice Determines the need for upkeep in response to an error from Data Streams.
+    * @param errorCode The error code returned by the Data Streams lookup.
+    * @param extraData Additional context or data related to the error condition.
+    * @return upkeepNeeded Boolean indicating whether upkeep is needed based on the error.
+    * @return performData Data to be used if upkeep is performed, encoded with success state and error context.
+    */
    function checkErrorHandler(
      uint errorCode,
      bytes calldata extraData
@@ -32,14 +39,14 @@ If the Automation network fails to get the requested reports, an error code is s
      // Add custom logic to handle errors offchain here
      bool _upkeepNeeded = true;
      bool success = false;
-     bool isError = true;
      if (errorCode == 800400) {
-       // Handle bad request error code offchain
+       // Handle bad request errors code offchain.
+       // In this example, no upkeep needed for bad request errors.
        _upkeepNeeded = false;
      } else {
-       // logic to handle other errors
+       // Handle other errors as needed.
      }
-     return (_upkeepNeeded, abi.encode(isError, abi.encode(errorCode, extraData, success)));
+     return (_upkeepNeeded, abi.encode(success, abi.encode(errorCode, extraData)));
    }
    ```
 
@@ -49,31 +56,18 @@ If the Automation network fails to get the requested reports, an error code is s
    // function will be performed on-chain
    function performUpkeep(bytes calldata performData) external {
      // Decode incoming performData
-     (bool isError, bytes payload) = abi.decode(performData)
+     (bool success, bytes memory payload) = abi.decode(performData, (bool, bytes));
 
-     // Unpacking the errorCode from checkErrorHandler
-     if (isError){
-       (uint errorCode, bytes memory extraData, bool reportSuccess) = abi.decode(
-       payload,
-       (uint, bytes, bool)
-
-       // Define custom logic here to handle error codes onchain
-     );
-     } else {
-       // Otherwise unpacking info from checkCallback
-       (bytes[] memory signedReports, bytes memory extraData, bool reportSuccess) = abi.decode(
-         payload,
-         (bytes[], bytes, bool)
-       );
-       if (reportSuccess) {
-       bytes memory report = signedReports[0];
-
-       (, bytes memory reportData) = abi.decode(report, (bytes32[3], bytes));
-
+     if (success) {
+       // Decode the performData bytes passed in by CL Automation.
+       // This contains the data returned by your implementation in checkCallback().
+       (bytes[] memory signedReports, bytes memory extraData) = abi.decode(payload, (bytes[], bytes));
        // Logic to verify and decode report
-       } else {
-         // Logic in case reports were not pulled successfully
-       }
+       // ...
+     } else {
+       // Handle error condition
+       (uint errorCode, bytes memory extraData) = abi.decode(payload, (uint, bytes));
+       // Custom logic to handle error codes
      }
    }
    ```
@@ -84,7 +78,8 @@ If the Automation network fails to get the requested reports, an error code is s
 
 If you need to force errors in StreamsLookup while testing, you can try the following methods:
 
-- Specifying an incorrect `feedID` to force error code 800400 (`ErrCodeStreamsBadRequest`)
+- Not specifying any `feedID` to force error code 800400 (`ErrCodeStreamsBadRequest`)
+- Specifying an incorrect `feedID` to force error code 800401 (`ErrCodeStreamsBadRequest`)
 - Specifying a future timestamp to force error code 808206 (where partial content is received) for both single `feedID` and bulk `feedID` requests
 - Specifying old timestamps for reports not available anymore yields either error code 808504 (no response) or 808600 (bad response), depending on which service calls the timeout request
 
