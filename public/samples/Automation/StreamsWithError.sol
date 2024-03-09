@@ -123,7 +123,7 @@ contract StreamsLookupChainlinkAutomation is
         bool success = false;
         bool isError = true;
         // Add custom logic to handle errors offchain here
-        if (errorCode == 800400) {
+        if (errorCode == 808400) {
             // Bad request error code
             _upkeepNeeded = false;
         } else {
