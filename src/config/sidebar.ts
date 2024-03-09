@@ -857,6 +857,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Service Responsibility",
+          url: "ccip/service-responsibility",
+        },
+        {
           title: "Billing",
           url: "ccip/billing",
         },
