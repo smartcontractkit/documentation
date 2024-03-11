@@ -40,4 +40,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   POLYGON_ZKEVM_TESTNET: () => new providers.JsonRpcProvider("https://rpc.public.zkevm-test.net"),
   ZKSYNC_MAINNET: () => new providers.JsonRpcProvider("https://testnet.era.zksync.dev"),
   ZKSYNC_GOERLI: () => new providers.JsonRpcProvider("https://mainnet.era.zksync.io"),
+  KROMA_MAINNET: () => new providers.JsonRpcProvider("https://1rpc.io/kroma"),
+  KROMA_SEPOLIA: () => new providers.JsonRpcProvider("https://api.sepolia.kroma.network"),
+  WEMIX_MAINNET: () => new providers.JsonRpcProvider("https://api.wemix.com"),
+  WEMIX_TESTNET: () => new providers.JsonRpcProvider("https://api.test.wemix.com"),
 }
