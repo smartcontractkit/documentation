@@ -15,6 +15,8 @@ export type SupportedTechnology =
   | "POLYGON_ZKEVM"
   | "LINEA"
   | "SCROLL"
+  | "WEMIX"
+  | "KROMA"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -51,6 +53,10 @@ export type SupportedChain =
   | "ZKSYNC_GOERLI"
   | "POLYGON_ZKEVM_MAINNET"
   | "POLYGON_ZKEVM_TESTNET"
+  | "WEMIX_MAINNET"
+  | "WEMIX_TESTNET"
+  | "KROMA_MAINNET"
+  | "KROMA_SEPOLIA"
 
 export type Chains = Record<
   SupportedTechnology,

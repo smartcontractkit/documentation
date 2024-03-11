@@ -136,6 +136,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BASE_GOERLI"
     case "ethereum-testnet-sepolia-base-1":
       return "BASE_SEPOLIA"
+    case "wemix-mainnet":
+      return "WEMIX_MAINNET"
+    case "wemix-testnet":
+      return "WEMIX_TESTNET"
+    case "ethereum-mainnet-kroma-1":
+      return "KROMA_MAINNET"
+    case "ethereum-testnet-sepolia-kroma-1":
+      return "KROMA_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -177,6 +185,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-goerli-base-1"
     case "BASE_SEPOLIA":
       return "ethereum-testnet-sepolia-base-1"
+    case "WEMIX_MAINNET":
+      return "wemix-mainnet"
+    case "WEMIX_TESTNET":
+      return "wemix-testnet"
+    case "KROMA_MAINNET":
+      return "ethereum-mainnet-kroma-1"
+    case "KROMA_SEPOLIA":
+      return "ethereum-testnet-sepolia-kroma-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
