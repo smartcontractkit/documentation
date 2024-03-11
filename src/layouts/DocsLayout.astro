@@ -8,6 +8,7 @@ import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
+import Breadcrumbs from "~/components/Breadcrumbs/Breadcrumbs.astro"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -40,6 +41,8 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+
+const showBreadcrumb = frontmatter.showBreadcrumb !== false
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
@@ -51,6 +54,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
+        <Breadcrumbs currentPage={currentPage} showBreadcrumb={showBreadcrumb} />
         <PageContent {titleHeading}>
           <slot />
         </PageContent>

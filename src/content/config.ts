@@ -51,6 +51,7 @@ const baseFrontmatter = z
     whatsnext: z.record(z.string(), z.string()).optional(),
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
+    showBreadcrumb: z.boolean().optional(),
     metadata,
     excerpt: z.string().optional(),
     datafeedtype: z.string().optional(),
