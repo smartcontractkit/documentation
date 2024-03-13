@@ -19,6 +19,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/getting-started",
         },
         {
+          title: "Developer Responsibilities",
+          url: "data-feeds/developer-responsibilities",
+        },
+        {
           title: "Price Feeds",
           url: "data-feeds/price-feeds",
         },
@@ -366,6 +370,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
+        },
+        {
+          title: "Using the StreamsLookup error handler",
+          url: "chainlink-automation/guides/streams-lookup-error-handler",
         },
       ],
     },
@@ -847,6 +855,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
           ],
+        },
+        {
+          title: "Service Responsibility",
+          url: "ccip/service-responsibility",
         },
         {
           title: "Billing",
