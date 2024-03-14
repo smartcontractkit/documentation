@@ -224,3 +224,89 @@ The primary function that the script executes is `makeRequestMumbai`. This funct
 
    - Call the `s_answer`, `s_updatedAt`, `s_decimals`, and `s_description` functions of your consumer contract to fetch the decoded values.
    - Log the decoded values to the console.
+
+## Handling complex data types with ABI Encoding and Decoding
+
+This section details the process of encoding complex data types into byte arrays to fulfill the Ethereum Virtual Machine (EVM) data handling requirements for transactions and smart contract interactions. It will then outline the steps for decoding these byte arrays to align with corresponding structures defined in Solidity.
+
+Consider a scenario where a contract needs to interact with a data structure that encapsulates multiple properties, including nested objects:
+
+```json
+{
+  "id": 1,
+  "name": "Chainlink",
+  "metadata": {
+    "description": "Decentralized Oracle Network",
+    "awesome": true
+  }
+}
+```
+
+Transferring and storing this kind of structured data requires encoding it into a format (`bytes`) that smart contracts can accept and process.
+
+### Encoding in JavaScript
+
+To encode complex data structures, you can use the `defaultAbiCoder.encode` function from the `ethers.js` library. The function takes two arguments:
+
+- An array of Solidity data types
+- The corresponding data in JavaScript format
+
+Here's how you can encode the aforementioned complex data:
+
+```javascript
+const ethers = require("ethers")
+
+// Define the data structure
+const complexData = {
+  id: 1,
+  name: "Chainlink",
+  metadata: JSON.stringify({
+    description: "Decentralized Oracle Network",
+    awesome: true,
+  }),
+}
+
+// Define the Solidity types for encoding
+const types = ["uint256", "string", "string"]
+
+// Data to encode
+const data = [complexData.id, complexData.name, complexData.metadata]
+
+// Encoding the data
+const encodedData = ethers.utils.defaultAbiCoder.encode(types, data)
+```
+
+Note: Since Solidity doesn't natively support nested objects like JSON, the metadata object is first stringified before encoding.
+
+After encoding the data, it's necessary to format it as a byte array for smart contract interactions and blockchain transactions. In Solidity, the data type for byte arrays data is `bytes`. However, when working in a JavaScript environment, such as when using the `ethers.js` library, the equivalent data structure is a `Uint8Array`.
+
+The `ethers.js` library provides the `utils.getBytes` method to convert encoded hex strings into a `Uint8Array`:
+
+```javascript
+// Converting the encoded data to a byte array
+const encodedBytes = ethers.utils.getBytes(encodedData)
+```
+
+### Decoding in Solidity
+
+The encoded data can be decoded using the `abi.decode` function. To decode the data, you'll need to define a corresponding structure in your smart contract:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+contract DataDecoder {
+  // Example of a structure to hold the complex data
+  struct ComplexData {
+    uint256 id;
+    string name;
+    string metadata; // This will contain the JSON string
+  }
+
+  // Function to decode the data
+  function decodeComplexData(bytes memory data) public pure returns (ComplexData memory) {
+    (uint256 id, string memory name, string memory metadata) = abi.decode(data, (uint256, string, string));
+    return ComplexData(id, name, metadata);
+  }
+}
+```
