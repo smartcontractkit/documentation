@@ -868,6 +868,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Release Notes",
           url: "ccip/release-notes",
         },
+        {
+          title: "Service Limits",
+          url: "ccip/service-limits",
+        },
       ],
     },
     {
@@ -929,10 +933,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "ccip/best-practices",
-        },
-        {
-          title: "Service Limits",
-          url: "ccip/service-limits",
         },
       ],
     },

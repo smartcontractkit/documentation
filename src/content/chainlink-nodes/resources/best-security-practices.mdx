@@ -6,7 +6,7 @@ title: "Security and Operation Best Practices"
 
 The following information provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
 
-## Restricting Access
+## Restricting access
 
 To run a Chainlink node, the Operator UI port does not need to be open on the internet for it to correctly function. Due to this, we strongly recommend restricting access to all of the services required over the internet.
 
@@ -21,11 +21,11 @@ To run a Chainlink node, the Operator UI port does not need to be open on the in
 - With the use of the VPN, all traffic between Chainlink nodes and Ethereum clients is routed internally rather than over the internet. For example, all servers are placed in an internal subnet range such as `10.0.0.0/16` and use these IP addresses for communicating.
 - Chainlink nodes have the potential to send arbitrary HTTP GET and POST requests, exposing internal network resources. We recommend deploying with a DMZ which has strong outbound network restrictions.
 
-## Failover Capabilities
+## Failover capabilities
 
 To ensure there is very minimal downtime, failover capabilities are required on both the Chainlink and Ethereum clients so that if any one server fails, the service is still online.
 
-**Minimum Requirements:**
+**Minimum requirements:**
 
 - Chainlink nodes are using a PostgreSQL database that are not on the same servers as the Chainlink nodes.
 - At least two Chainlink nodes are running at any one time, with both of them pointing to the same database to ensure failover if one fails.
@@ -36,7 +36,7 @@ To ensure there is very minimal downtime, failover capabilities are required on 
   - If a VPN and internal routing is configured, SSL is not needed but still recommended, as all traffic is purely internal.
   - If both Ethereum and Chainlink nodes are public facing without a VPN, SSL is required to ensure that no communication between both can be intercepted.
 
-## Disaster Recovery
+## Disaster recovery
 
 Problems occur and when they do, the right processes need to be in-place to ensure that as little downtime as possible occurs. The main impediment to incurring large amounts of downtime in the context of Chainlink node operators is a fully corrupted Ethereum node that requires a re-sync.
 
@@ -47,7 +47,7 @@ Due to the challenge of recovering an Ethereum client, we recommend:
 
 With this process in-place, the elapsed time of full disaster is kept to a minimum.
 
-## Active Monitoring
+## Active monitoring
 
 To be proactive in detecting any issues before or when they occur, active monitoring needs to be in place. The areas where we recommend to monitor are:
 
@@ -60,13 +60,13 @@ To be proactive in detecting any issues before or when they occur, active monito
 Monitoring can be set up from the Docker container's output and fed into most major logging providers. For example, you can use Docker's docs to set up the logging driver for [Amazon CloudWatch](https://docs.docker.com/config/containers/logging/awslogs/) and [Google Cloud Logging](https://docs.docker.com/config/containers/logging/gcplogs/). You will want to set the [
 JSON_CONSOLE](/chainlink-nodes/v1/configuration) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
 
-## Frequent Updates
+## Frequent updates
 
 Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node.
 
 On performing system maintenance to update the Chainlink node, follow [this](/chainlink-nodes/resources/performing-system-maintenance/#failover-node-example) guide.
 
-## Jobs and Config
+## Jobs and config
 
 The following are suggestions for job specifications and configuration settings for the node.
 
