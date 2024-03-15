@@ -38,12 +38,12 @@ export const FeedList = ({
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = [
-    {"key": "low", "name": "Low Market Risk"},
-    {"key": "medium", "name":  "Medium Market Risk"},
-    {"key": "high", "name":  "High Market Risk"},
-    {"key": "custom", "name":  "Custom"},
-    {"key": "new", "name":  "New Token"},
-    {"key": "deprecating", "name":  "Deprecating"}
+    { key: "low", name: "Low Market Risk" },
+    { key: "medium", name: "Medium Market Risk" },
+    { key: "high", name: "High Market Risk" },
+    { key: "custom", name: "Custom" },
+    { key: "new", name: "New Token" },
+    { key: "deprecating", name: "Deprecating" },
   ]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
