@@ -253,3 +253,112 @@ This table summarizes the gas usage for different iterations from both Foundry a
 | 99                   | 24099              | 24077              |
 
 Gas usage trends across different iterations are consistent in both Foundry and Hardhat, increasing with the number of iterations and reaching a peak at 99. Despite these similarities, slight variations in gas usage exist between the two environments at each iteration level. This stresses the importance of extending beyond local environment testing for gas usage estimation. To accurately determine the appropriate gas limit, it's recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to bridge gaps between local environment estimations and the actual gas usage on the target blockchain.
+
+## Gas estimation on a testnet
+
+To accurately validate your local environment's gas usage estimations, follow these steps:
+
+1. Deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet.
+1. Send several CCIP messages with the same number of iterations used in your local testing. For this purpose, utilize the `sendCCIPMessage.ts` script located in the `scripts/testing` directory. This script incorporates a buffer of 10% over the estimated gas usage to ensure the gas limit is sufficiently set. Refer to the table below for the buffered gas limits for each iteration:
+
+| Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
+| -------------------- | ----------------------------- | ------------------------- |
+| 0                    | 5168                          | 5685                      |
+| 50                   | 14718                         | 16190                     |
+| 99                   | 24077                         | 26485                     |
+
+1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the ccipReceive function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
+
+This approach ensures that your gas limit settings are validated against real-world conditions on testnets, providing a more accurate and reliable estimation for deploying on live blockchains.
+
+### Deploy and configure the contracts
+
+To deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet, follow these steps:
+
+1. Deploy the CCIP Sender on the Avalanche Fuji testnet:
+
+   ```shell
+   npx hardhat run scripts/deployment/deploySender.ts --network avalancheFuji
+   ```
+
+1. Deploy the CCIP Receiver on the Ethereum Sepolia testnet:
+
+   ```shell
+   npx hardhat run scripts/deployment/deployReceiver.ts --network ethereumSepolia
+   ```
+
+1. Authorize the Sender to send messages to Ethereum Sepolia:
+
+   ```shell
+   npx hardhat run scripts/configuration/allowlistingForSender.ts --network avalancheFuji
+   ```
+
+1. Authorize the Receiver to receive messages from the Sender:
+
+   ```shell
+   npx hardhat run scripts/configuration/allowlistingForReceiver.ts --network ethereumSepolia
+   ```
+
+Upon completion, you will find the CCIP Sender and Receiver contracts deployed and configured on their respective testnets. Contract addresses are available in the `scripts/generatedData.json` file.
+
+### Send CCIP Messages
+
+1. Send three CCIP messages with different number of iterations:
+
+   ```shell
+   npx hardhat run scripts/testing/sendCCIPMessages.ts --network avalancheFuji
+   ```
+
+   Example output:
+
+   ```text
+   $ npx hardhat run scripts/testing/sendCCIPMessages.ts --network avalancheFuji
+   Approving 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 for 0x32A24e40851E19d1eD2a7E697d1a38228e9388a3. Allowance is 115792089237316195423570985008687907853269984665640564039457584007913129639935. Signer 0x9d087fC03ae39b088326b67fA3C788236645b717...
+   115792089237316195423570985008687907853269984665640564039457584007913129639935n
+
+   Number of iterations 0 - Gas limit: 5685 - Message Id: 0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7
+   Number of iterations 50 - Gas limit: 16190 - Message Id: 0x4b3a97f6ac959f67d769492ab3e0414e87fdd9c143228f9c538b22bb695ca728
+   Number of iterations 99 - Gas limit: 26485 - Message Id: 0x37d1867518c0f8c54ceb0c5507b46b8d44c6c53864218f448cba0234f8de867a
+   ```
+
+1. Open the [CCIP explorer](https://ccip.chain.link), search each message by its id and wait for each message to be successfully transmitted (Status in the explorer: `Success`).
+
+For the example above, here below the destination transaction hashes:
+
+| Message id                                                         | Ethereum Sepolia transaction hash                                  |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| 0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7 | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
+| 0x4b3a97f6ac959f67d769492ab3e0414e87fdd9c143228f9c538b22bb695ca728 | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
+| 0x37d1867518c0f8c54ceb0c5507b46b8d44c6c53864218f448cba0234f8de867a | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
+
+**Note** that the Ethereum Sepolia transaction hash is the same for all the messages. This is because CCIP batched the messages.
+
+### Check the actual gas usage
+
+1. Open [Tenderly](https://dashboard.tenderly.co) and Search for the [destination transaction hash](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689).
+
+1. Search for `_callWithExactGasSafeReturnData` with a payload containing your messageId (without `0x`). [Example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2) for `0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7`.
+
+1. Below it, you will find the call trace from the Router to your Receiver contract.[Call trace example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2.0).
+
+1. Click on the debugger and you'll get the gas details:
+
+```text
+"gas":{
+"gas_left":5685
+"gas_used":5031
+"total_gas_used":7994315
+}
+```
+
+1. Note the `gas_left` is equal to the limit that is set in the `sendCCIPMessages.ts` script: `5685`. The `gas_used` is the actual gas used by the Receiver contract to process the message.
+
+1. Repeating the same steps for the other two messages, we can summarize the output:
+
+| Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) | Gas used on testnet |
+| -------------------- | ----------------------------- | ------------------------- | ------------------- |
+| 0                    | 5168                          | 5685                      | 5031                |
+| 50                   | 14718                         | 16190                     | 14581               |
+| 99                   | 24077                         | 26485                     | 23940               |
+
+Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. It is important to note, however, that gas usage may differ across testnets. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider utilizing offchain methods (see the next section) to estimate gas usage.
