@@ -110,14 +110,146 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 #### Estimate gas
 
-The test file `SendReceive.t.sol` is located under `test` directory. This file contains the test case for estimating the gas consumption of the `ccipReceive` function. The test case sends a CCIP message to the `MockCCIPRouter` contract and emits the `MsgExecuted` event, which reports the gas consumed by the `ccipReceive` function. There are three test cases, each with different number of iterations:
+The test file named `SendReceive.t.sol`, located within the `test` directory, is designed to evaluate the gas usage of the ccipReceive function. This file includes a test case that transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized. The test case has three different scenarios, each varying by the number of iterations to comprehensively understand gas consumption under various conditions:
 
-- `0`: Used to estimate the minimal gas consumption.
-- `50`: Used to estimate the average gas consumption.
-- `99`: Used to estimate the maximum gas consumption.
+- **`0` iterations:** This scenario aims to determine the baseline gas consumption, representing the least amount of gas required.
+- **`50` iterations:** This scenario estimates the gas consumption under average operational conditions.
+- **`99` iterations:** This final scenario estimates the peak gas consumption, marking the upper limit of gas usage.
 
-To run the test cases, execute the following command:
+To run the test, execute the following command:
 
 ```shell
-
+forge test -vv --isolate
 ```
+
+Example of the output:
+
+```text
+[⠊] Compiling...
+[⠘] Compiling 52 files with 0.8.19
+[⠃] Solc 0.8.19 finished in 2.72s
+Compiler run successful!
+
+Ran 3 tests for test/SendReceive.t.sol:SenderReceiverTest
+[PASS] test_SendReceiveAverage() (gas: 125166)
+Logs:
+  Number of iterations 50 - Gas used: 14740
+
+[PASS] test_SendReceiveMax() (gas: 134501)
+Logs:
+  Number of iterations 99 - Gas used: 24099
+
+[PASS] test_SendReceiveMin() (gas: 115581)
+Logs:
+  Number of iterations 0 - Gas used: 5190
+
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 10.84ms (5.28ms CPU time)
+
+Ran 1 test suite in 188.81ms (10.84ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
+```
+
+This table summarizes the gas usage for different iterations:
+
+| Number of iterations | Gas used |
+| -------------------- | -------- |
+| 0                    | 5190     |
+| 50                   | 14740    |
+| 99                   | 24099    |
+
+As you can notice from the output, the gas usage increases with the number of iterations. The upper limit is observed when the number of iterations is 99.
+In the next section, you will compare these results with the ones obtained from a local Hardhat environment.
+
+### Hardhat
+
+#### Prerequisites
+
+1. In your terminal, change to the `hardhat` directory:
+
+   ```shell
+   cd hardhat
+   ```
+
+1. Install the dependencies:
+
+   ```shell
+   npm install
+   ```
+
+1. Set the password to encrypt your environment variables using the following command:
+
+```bash
+npx env-enc set-pw
+```
+
+1. Set up the following environment variables (These variables will be used to deploy your contracts on testnets):
+
+   - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note:** Your private key is needed to sign any transactions you make such as making requests.
+   - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+   - `AVALANCHE_FUJI_RPC_URL`: The RPC URL for Avalanche Fuji testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+   - `ETHERSCAN_API_KEY`: An Ethereum explorer API key, used to verify your contract. Follow [this guide](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) to get one.
+
+Input these variables using the following command:
+
+```bash
+npx env-enc set
+```
+
+1. Compile the contracts:
+
+   ```shell
+   npx hardhat compile
+   ```
+
+   The output should be similar to:
+
+   ```text
+   Generating typings for: 31 artifacts in dir: typechain-types for target: ethers-v6
+   Successfully generated 114 typings!
+   Compiled 33 Solidity files successfully (evm target: paris).
+   ```
+
+#### Estimate gas
+
+The test file named `Send-Receive.ts`, located within the `test` directory, is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized.
+
+To run the test, execute the following command:
+
+```shell
+npx hardhat test
+```
+
+Example of the output:
+
+```text
+  Sender and Receiver
+Final Gas Usage Report:
+Number of iterations 0 - Gas used: 5168
+Number of iterations 50 - Gas used: 14718
+Number of iterations 99 - Gas used: 24077
+    ✔ should CCIP message from sender to receiver (1716ms)
+
+
+  1 passing (2s)
+```
+
+This table summarizes the gas usage across different iterations:
+
+| Number of iterations | Gas used |
+| -------------------- | -------- |
+| 0                    | 5168     |
+| 50                   | 14718    |
+| 99                   | 24077    |
+
+As you can notice from the output, the gas usage increases with the number of iterations. The upper limit is observed when the number of iterations is 99.
+
+### Compare the results from Foundry and Hardhat
+
+This table summarizes the gas usage for different iterations from both Foundry and Hardhat:
+
+| Number of iterations | Gas used (Foundry) | Gas used (Hardhat) |
+| -------------------- | ------------------ | ------------------ |
+| 0                    | 5190               | 5168               |
+| 50                   | 14740              | 14718              |
+| 99                   | 24099              | 24077              |
+
+Gas usage trends across different iterations are consistent in both Foundry and Hardhat, increasing with the number of iterations and reaching a peak at 99. Despite these similarities, slight variations in gas usage exist between the two environments at each iteration level. This stresses the importance of extending beyond local environment testing for gas usage estimation. To accurately determine the appropriate gas limit, it's recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to bridge gaps between local environment estimations and the actual gas usage on the target blockchain.
