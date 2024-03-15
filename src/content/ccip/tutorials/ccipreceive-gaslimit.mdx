@@ -58,7 +58,16 @@ The `_ccipReceive` function's breakdown is as follows:
 
 This code shows how gas consumption for the `_ccipReceive` function can fluctuate in response to the input data, highlighting the necessity for thorough testing under different scenarios to determine the correct `gasLimit`.
 
-## Gas estimation on local environment
+## Gas estimation in a local environment
+
+To facilitate testing within a local environment, you will use the [MockCCIPRouter](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract. This contract serves as a mock implementation of the CCIP Router contract, enabling the local testing of CCIP Sender and Receiver contracts.
+A notable feature of the `MockCCIPRouter` contract is its ability to emit a `MsgExecuted` event:
+
+```solidity
+event MsgExecuted(bool success, bytes retData, uint256 gassed))
+```
+
+This event reports the amount of gas consumed by the `ccipReceive` function.
 
 ### Foundry
 
@@ -100,3 +109,9 @@ This code shows how gas consumption for the `_ccipReceive` function can fluctuat
    ```
 
 #### Estimate gas
+
+The test file `SendReceive.t.sol` is located under `test` directory. This file contains the test case for estimating the gas consumption of the `ccipReceive` function. The test case sends a CCIP message to the `MockCCIPRouter` contract and emits the `MsgExecuted` event, which reports the gas consumed by the `ccipReceive` function. There are three test cases, each with different number of iterations:
+
+- `0`: Used to estimate the minimal gas consumption.
+- `50`: Used to estimate the average gas consumption.
+- `99`: Used to estimate the maximum gas consumption.
