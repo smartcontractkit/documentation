@@ -234,7 +234,6 @@ Consider a scenario where a contract needs to interact with a data structure tha
 ```json
 {
   "id": 1,
-  "name": "Chainlink",
   "metadata": {
     "description": "Decentralized Oracle Network",
     "awesome": true
@@ -257,32 +256,35 @@ and returns the encoded data as a hexadecimal string.
 Here's how you can encode the aforementioned complex data:
 
 ```javascript
-const ethers = await import("npm:ethers@6.10.0") // Import ethers.js v6.10.0
+const { ethers } = await import("npm:ethers@6.10.0") // Import ethers.js v6.10.0
+
+const abiCoder = ethers.AbiCoder.defaultAbiCoder()
 
 // Define the data structure
 const complexData = {
   id: 1,
-  name: "Chainlink",
   metadata: {
     description: "Decentralized Oracle Network",
     awesome: true,
   },
 }
 
-// Encode first the metadata object
-const metadataEncoded = ethers.utils.defaultAbiCoder.encode(
-  ["string", "bool"],
-  [complexData.metadata.description, complexData.metadata.awesome]
-)
-
 // Define the Solidity types for encoding
-const types = ["uint256", "string", "bytes"]
+const types = ["tuple(uint256 id, tuple(string description, bool awesome) metadata)"]
 
 // Data to encode
-const data = [complexData.id, complexData.name, metadataEncoded]
+const data = [
+  [
+    complexData.id,
+    {
+      description: complexData.metadata.description,
+      awesome: complexData.metadata.awesome,
+    },
+  ],
+]
 
 // Encoding the data
-const encodedData = ethers.utils.defaultAbiCoder.encode(types, data)
+const encodedData = abiCoder.encode(types, data)
 ```
 
 After encoding the data, it's necessary to format it as a `Uint8Array` array for smart contract interactions and blockchain transactions. In Solidity, the data type for byte arrays data is `bytes`. However, when working in a JavaScript environment, such as when using the `ethers.js` library, the equivalent data structure is a `Uint8Array`.
@@ -290,8 +292,7 @@ After encoding the data, it's necessary to format it as a `Uint8Array` array for
 The `ethers.js` library provides the [`getBytes`](https://docs.ethers.org/v6/api/utils/#getBytes) function to convert encoded hexadecimal strings into a `Uint8Array`:
 
 ```javascript
-const encodedBytes = ethers.getBytes(encodedData) // Converting the encoded data to a byte array
-return encodedBytes // Return the Uint8Array to fulfill the Chainlink Functions API requirements
+return ethers.getBytes(encodedData) // Return the encoded data converted into a Uint8Array
 ```
 
 ### Decoding in Solidity
@@ -308,17 +309,17 @@ contract DataDecoder {
     string description;
     bool awesome;
   }
+
   struct ComplexData {
     uint256 id;
-    string name;
     Metadata metadata;
   }
+
   // ... other contract functions (including the send request function)
 
   // Fulfill function (callback function)
   function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     // Decode the response
-
     ComplexData memory metadata = abi.decode(response, (ComplexData));
     // ... rest of the function
   }
