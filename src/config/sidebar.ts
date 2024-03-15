@@ -519,16 +519,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-query-parameters",
         },
         {
-          title: "Return Custom Data Types",
-          url: "chainlink-functions/tutorials/api-custom-response",
-        },
-        {
           title: "POST Data to an API",
           url: "chainlink-functions/tutorials/api-post-data",
         },
         {
           title: "Using DON-hosted Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets",
+        },
+        {
+          title: "Using Imports with Functions",
+          url: "chainlink-functions/tutorials/importing-packages",
+        },
+        {
+          title: "Return multiple responses and decode them in your smart contract",
+          url: "chainlink-functions/tutorials/abi-decoding",
         },
         {
           title: "Offchain secrets - Using Gists",
@@ -553,14 +557,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Automate your Functions (Custom Logic Automation)",
           url: "chainlink-functions/tutorials/automate-functions-custom-logic",
-        },
-        {
-          title: "Using Imports with Functions",
-          url: "chainlink-functions/tutorials/importing-packages",
-        },
-        {
-          title: "Return multiple responses and decode them in your smart contract",
-          url: "chainlink-functions/tutorials/abi-decoding",
         },
       ],
     },
@@ -857,6 +853,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Service Limits",
+          url: "ccip/service-limits",
+        },
+        {
           title: "Service Responsibility",
           url: "ccip/service-responsibility",
         },
@@ -933,10 +933,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "ccip/best-practices",
-        },
-        {
-          title: "Service Limits",
-          url: "ccip/service-limits",
         },
       ],
     },
