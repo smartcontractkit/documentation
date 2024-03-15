@@ -111,7 +111,9 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
         {feedCategories[proxy.docs.feedCategory] || ""}
-        {(proxy.docs.baseAsset && proxy.docs.quoteAsset) ? (proxy.docs.baseAsset + " / " + proxy.docs.quoteAsset):(proxy.name)}
+        {proxy.docs.baseAsset && proxy.docs.quoteAsset
+          ? proxy.docs.baseAsset + " / " + proxy.docs.quoteAsset
+          : proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
         <div className={clsx(feedList.shutDate)}>
