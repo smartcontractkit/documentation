@@ -906,6 +906,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/manual-execution",
         },
         {
+          title: "Optimizing Gas Limit Settings in CCIP Messages for Receiver Execution",
+          url: "ccip/tutorials/ccipreceive-gaslimit",
+        },
+        {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
         },

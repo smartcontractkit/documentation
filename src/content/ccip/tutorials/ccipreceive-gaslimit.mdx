@@ -19,7 +19,7 @@ These approaches will give you insights into accurately estimating the gas limit
 
 Before you begin, open a terminal clone the [smart-contract-examples repository](https://github.com/smartcontractkit/smart-contract-examples) and change to the `smart-contract-examples/ccip/estimate-gas` directory.
 
-    ```shell
+    ```bash
     git clone https://github.com/smartcontractkit/smart-contract-examples.git && \
     cd smart-contract-examples/ccip/estimate-gas
     ```
@@ -75,7 +75,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 1. In tour terminal, change to the `foundry` directory:
 
-   ```shell
+   ```bash
    cd foundry
    ```
 
@@ -83,7 +83,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 1. Check the Foundry version:
 
-   ```shell
+   ```bash
    forge --version
    ```
 
@@ -95,7 +95,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 1. Build your project:
 
-   ```shell
+   ```bash
    forge build
    ```
 
@@ -118,7 +118,7 @@ The test file named `SendReceive.t.sol`, located within the `test` directory, is
 
 To run the test, execute the following command:
 
-```shell
+```bash
 forge test -vv --isolate
 ```
 
@@ -165,13 +165,13 @@ In the next section, you will compare these results with the ones obtained from 
 
 1. In your terminal, change to the `hardhat` directory:
 
-   ```shell
+   ```bash
    cd hardhat
    ```
 
 1. Install the dependencies:
 
-   ```shell
+   ```bash
    npm install
    ```
 
@@ -196,7 +196,7 @@ npx env-enc set
 
 1. Compile the contracts:
 
-   ```shell
+   ```bash
    npx hardhat compile
    ```
 
@@ -214,7 +214,7 @@ The test file named `Send-Receive.ts`, located within the `test` directory, is d
 
 To run the test, execute the following command:
 
-```shell
+```bash
 npx hardhat test
 ```
 
@@ -277,25 +277,25 @@ To deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet a
 
 1. Deploy the CCIP Sender on the Avalanche Fuji testnet:
 
-   ```shell
+   ```bash
    npx hardhat run scripts/deployment/deploySender.ts --network avalancheFuji
    ```
 
 1. Deploy the CCIP Receiver on the Ethereum Sepolia testnet:
 
-   ```shell
+   ```bash
    npx hardhat run scripts/deployment/deployReceiver.ts --network ethereumSepolia
    ```
 
 1. Authorize the Sender to send messages to Ethereum Sepolia:
 
-   ```shell
+   ```bash
    npx hardhat run scripts/configuration/allowlistingForSender.ts --network avalancheFuji
    ```
 
 1. Authorize the Receiver to receive messages from the Sender:
 
-   ```shell
+   ```bash
    npx hardhat run scripts/configuration/allowlistingForReceiver.ts --network ethereumSepolia
    ```
 
@@ -305,7 +305,7 @@ Upon completion, you will find the CCIP Sender and Receiver contracts deployed a
 
 1. Send three CCIP messages with different number of iterations:
 
-   ```shell
+   ```bash
    npx hardhat run scripts/testing/sendCCIPMessages.ts --network avalancheFuji
    ```
 
@@ -362,3 +362,126 @@ For the example above, here below the destination transaction hashes:
 | 99                   | 24077                         | 26485                     | 23940               |
 
 Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. It is important to note, however, that gas usage may differ across testnets. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider utilizing offchain methods (see the next section) to estimate gas usage.
+
+## Offchain methods
+
+This section guides you through estimating gas usage using two different offchain methods:
+
+- A web3 provider using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
+- [Tenderly simulation API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction). The Tenderly simulation API provides a more accurate result (Read this [blog](https://blog.tenderly.co/how-tenderly-enables-most-accurate-ethereum-gas-estimation/) to learn more) but you are limited to the blockchains supported by Tenderly.
+
+These methods provide the most accurate and rapid means to determine the necessary gas limit for the `ccipReceive` function. You will use the same CCIP Receiver contract deployed on the Ethereum Sepolia testnet in the previous section.
+
+### Prerequisites
+
+1. In your terminal, change to the `offchain` directory:
+
+   ```bash
+   cd offchain
+   ```
+
+1. Modify the `data.json` file and put the deployed addresses of your Sender and Receiver contracts.
+
+1. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+1. Set the password to encrypt your environment variables:
+
+   ```bash
+   npx env-enc set-pw
+   ```
+
+1. Setup these environment variables (**Remark**: Read the [tenderly guide](https://docs.tenderly.co/account/projects/account-project-slug) for finding the `TENDERLY_ACCOUNT_SLUG` and `TENDERLY_PROJECT_SLUG`. You can get `TENDERLY_ACCESS_KEY` by generating a new access token):
+
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+- `TENDERLY_ACCOUNT_SLUG`.
+- `TENDERLY_PROJECT_SLUG`.
+- `TENDERLY_ACCESS_KEY`.
+
+Input these variables using the following command:
+
+    ```bash
+    npx env-enc set
+    ```
+
+1. Generate [Typechain typings](https://www.npmjs.com/package/typechain) for the Receiver contract:
+
+   ```bash
+   npm run generate-types
+   ```
+
+### Introduction of the scripts
+
+The scripts are located in the `src` directory. Each script is self-explanatory and includes comprehensive comments to explain its functionality and usage. There are three scripts:
+
+- `estimateGasProvider.ts`: This script utilizes ethers.js to estimate the gas usage of the `ccipReceive` function. It simulates sending three CCIP messages to the Receiver contract with a varying number of iterations and estimates the gas usage using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
+
+- `estimateGasTenderly.ts`: This script leverages the Tenderly `simulate` API to estimate the gas usage of the `ccipReceive` function. Similar to the previous script, it simulates sending three CCIP messages to the Receiver contract with different numbers of iterations and estimates the gas usage using the [Tenderly `simulate` API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction).
+
+- `helper.ts`: This script contains helper functions used by the other scripts. The two main functions are:
+
+  - `buildTransactionData`: This function constructs a CCIP message for a specified number of iterations and then returns the transaction data.
+  - `estimateIntrinsicGas`: Exclusively called by the `estimateGasProvider.ts` script, this function estimates the intrinsic gas of a transaction. The intrinsic gas represents the minimum amount of gas required before executing a transaction. It is determined by the transaction data and the type of transaction. Since this gas is paid by the initiator of the transaction, we use this function to estimate the intrinsic gas and then deduct it from the total gas used to isolate the gas consumed by the `ccipReceive` function.
+
+### Estimate gas using ethers.js
+
+To estimate the gas usage of the `ccipReceive` function using ethers.js, execute the following command:
+
+```bash
+npm run estimate-gas-provider
+```
+
+Example output:
+
+```text
+$ npm run estimate-gas-provider
+
+> offchain-simulator@1.0.0 estimate-gas-provider
+> ts-node src/estimateGasProvider.ts
+
+Final Gas Usage Report:
+Number of iterations 0 - Gas used: 5377
+Number of iterations 50 - Gas used: 14946
+Number of iterations 99 - Gas used: 24324
+```
+
+### Estimate gas using Tenderly
+
+To estimate the gas usage of the `ccipReceive` function using Tenderly, execute the following command:
+
+```bash
+npm run estimate-gas-tenderly
+```
+
+Example output:
+
+```text
+$ npm run estimate-gas-tenderly
+
+> offchain-simulator@1.0.0 estimate-gas-tenderly
+> ts-node src/estimateGasTenderly.ts
+
+Final Gas Usage Report:
+Number of iterations 0 - Gas used: 5031
+Number of iterations 50 - Gas used: 14581
+Number of iterations 99 - Gas used: 23940
+```
+
+### Comparison
+
+The table below summarizes the gas estimations for different iterations using both ethers.js and Tenderly:
+
+| Number of iterations | Gas estimated (ethers.js) | Gas estimated (Tenderly) |
+| -------------------- | ------------------------- | ------------------------ |
+| 0                    | 5377                      | 5031                     |
+| 50                   | 14946                     | 14581                    |
+| 99                   | 24324                     | 23940                    |
+
+The gas estimations from both ethers.js and Tenderly are consistent across different iterations and are in line with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However you can notice that Tenderly provides more accurate results.
+
+## Conclusion
+
+This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and utilize offchain methods to estimate gas usage. The offchain methods, particularly Tenderly, have proven to be the most accurate and reliable in estimating gas usage. By following these methods, you can accurately determine the necessary gas limit for the `ccipReceive` function, ensuring cost-effective CCIP transactions. It is important to note that gas usage may differ across different blockchains. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. For efficiency, consider utilizing offchain methods to estimate gas usage.
