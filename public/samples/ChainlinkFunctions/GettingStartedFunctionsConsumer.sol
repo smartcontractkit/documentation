@@ -40,11 +40,11 @@ contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
 
     // JavaScript source code
     // Fetch character name from the Star Wars API.
-    // Documentation: https://swapi.dev/documentation#people
+    // Documentation: https://swapi.info/people
     string source =
         "const characterId = args[0];"
         "const apiResponse = await Functions.makeHttpRequest({"
-        "url: `https://swapi.dev/api/people/${characterId}/`"
+        "url: `https://swapi.info/api/people/${characterId}/`"
         "});"
         "if (apiResponse.error) {"
         "throw Error('Request failed');"
