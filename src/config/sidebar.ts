@@ -494,6 +494,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/supported-networks",
         },
         {
+          title: "Service Limits",
+          url: "chainlink-functions/resources/service-limits",
+        },
+        {
           title: "Service Responsibility",
           url: "chainlink-functions/service-responsibility",
         },
@@ -578,10 +582,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
-        },
-        {
-          title: "Service Limits",
-          url: "chainlink-functions/resources/service-limits",
         },
       ],
     },
