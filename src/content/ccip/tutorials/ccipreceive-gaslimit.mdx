@@ -183,7 +183,7 @@ In the next section, you will compare these results with those obtained from a l
     npx env-enc set-pw
     ```
 
-1. Set the following environment variables to deploy contracts on testnets:
+1.  Set the following environment variables to deploy contracts on testnets:
 
     - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note:** Your private key is needed to sign any transactions you make such as making requests.
     - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
@@ -254,7 +254,7 @@ This table summarizes the gas usage for different iterations from both Foundry a
 | 50                   | 14740              | 14718              |
 | 99                   | 24099              | 24077              |
 
-Gas usage trends across different iterations are consistent between Foundry and Hardhat and increase with the number of iterations, reaching a peak at 99. However, slight variations in gas usage between the two environments at each iteration level demonstrate the importance of extending gas usage estimation beyond local environment testing. To accurately determine the appropriate gas limit, it's recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to account for differences between local environment estimations and actual gas usage on the target blockchain.
+Gas usage trends across different iterations are consistent between Foundry and Hardhat and increase with the number of iterations, reaching a peak at 99. However, slight variations in gas usage between the two environments at each iteration level demonstrate the importance of extending gas usage estimation beyond local environment testing. To accurately determine the appropriate gas limit, it is recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to account for differences between local environment estimations and actual gas usage on the target blockchain.
 
 ## Gas estimation on a testnet
 
@@ -263,11 +263,11 @@ To accurately validate your local environment's gas usage estimations, follow th
 1. Deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet.
 1. Send several CCIP messages with the same number of iterations used in your local testing. For this purpose, utilize the `sendCCIPMessage.ts` script in the `scripts/testing` directory. This script includes a 10% buffer over the estimated gas usage to ensure a sufficient gas limit. Refer to the table below for the buffered gas limits for each iteration:
 
-| Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
-| -------------------- | ----------------------------- | ------------------------- |
-| 0                    | 5168                          | 5685                      |
-| 50                   | 14718                         | 16190                     |
-| 99                   | 24077                         | 26485                     |
+   | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
+   | -------------------- | ----------------------------- | ------------------------- |
+   | 0                    | 5168                          | 5685                      |
+   | 50                   | 14718                         | 16190                     |
+   | 99                   | 24077                         | 26485                     |
 
 1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the `ccipReceive` function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
 
@@ -488,4 +488,8 @@ The gas estimations from both ethers.js and Tenderly are consistent across diffe
 
 This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and utilize offchain methods to estimate gas usage.
 
-The offchain methods, particularly Tenderly, have proven to be the most accurate and reliable in estimating gas usage. Following these methods, you can accurately determine the necessary gas limit for the `ccipReceive` function, ensuring cost-effective CCIP transactions. It is important to note that gas usage may differ across different blockchains. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. For efficiency, consider utilizing offchain methods to estimate gas usage.
+As we have explored various methods for estimating gas for the `ccipReceive` function, it is crucial to apply this knowledge effectively. Here are some targeted recommendations to enhance your approach to gas estimation:
+
+1. **Comprehensive Testing:** Emphasize testing under diverse scenarios to ensure your gas estimations are robust. Different conditions can significantly affect gas usage, so covering as many cases as possible in your tests is crucial.
+1. **Preliminary Local Estimates:** While local environments like Hardhat and Foundry offer the convenience of quick testing, it is important to remember that these environments might not fully replicate the conditions of your target blockchain. Although they are excellent for initial estimates, you should consider these figures as starting points rather than definitive values. To account for the variability and potential discrepancies, adding a buffer to your gas limit estimations is wise before moving on to testnet validations.
+1. **Efficiency with Offchain Methods:** Recognizing that testing across different blockchains can be resource-intensive, leaning on offchain methods for gas estimation becomes invaluable. Tools such as Tenderly not only facilitate rapid and accurate gas usage insights on your target blockchains but also enable you to simulate the execution of the `ccipReceive` function on actual contracts deployed on mainnets. This approach saves time and enhances the precision of your gas limit estimations, allowing for more cost-effective transactions from your dApp.
