@@ -4,20 +4,20 @@ date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
 ---
 
-When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), accurately setting the gas limit is crucial. The gas limit represents the maximum amount of gas that can be consumed to execute the [ccipReceive](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, fundamentally influencing the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), accurately setting the gas limit is crucial. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, fundamentally influencing the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
-- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` of the CCIP Receiver, necessitating a manual re-execution with an increased gas limit. For further details, refer to the [manual execution guide](/ccip/tutorials/manual-execution).
+- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, necessitating a manual re-execution with an increased gas limit. For further details, refer to the [manual execution guide](/ccip/tutorials/manual-execution).
 - Conversely, an excessively high gas limit leads to higher fees.
 
 This tutorial will guide you through estimating the gas limit for the `ccipReceive` function using various methods. We will explore using a CCIP Receiver, where the gas consumption of the `ccipReceive` function varies based on the input data, emphasizing the need for testing under diverse conditions. Our examination will span across different environments:
 
 1. **Local Environment**: Utilizing [Hardhat](https://hardhat.org/) and [Foundry](https://book.getfoundry.sh/) on a local blockchain provides a swift initial gas estimate. However, different frameworks can yield different results. Moreover, the local environment will not always be representative of your destination blockchain. Consider these figures preliminary estimates, then incorporate a buffer and conduct subsequent validations on a testnet.
-1. **Testnet**: By deploying your CCIP Sender and Receiver on a testnet and transmitting several CCIP messages with the previously estimated gas, you can precisely determine the necessary gas limit. Although this approach is more time-intensive, especially if testing across multiple blockchains, it offers enhanced accuracy.
-1. **Offchain Methods**: Estimating gas using an offchain web3 provider or tools like [Tenderly](https://docs.tenderly.co/) represents the most accurate and rapid method to determine the needed gas limit.
+1. **Testnet**: You can precisely determine the required gas limit by deploying your CCIP Sender and Receiver on a testnet and transmitting several CCIP messages with the previously estimated gas. Although this approach is more time-intensive, especially if testing across multiple blockchains, it offers enhanced accuracy.
+1. **Offchain Methods**: Estimating gas with an offchain Web3 provider or tools like [Tenderly](https://docs.tenderly.co/) offers the most accurate and swift way to determine the needed gas limit.
 
 These approaches will give you insights into accurately estimating the gas limit for the `ccipReceive` function, ensuring cost-effective CCIP transactions.
 
-Before you begin, open a terminal clone the [smart-contract-examples repository](https://github.com/smartcontractkit/smart-contract-examples) and change to the `smart-contract-examples/ccip/estimate-gas` directory.
+Before you begin, open a terminal, clone the [smart-contract-examples repository](https://github.com/smartcontractkit/smart-contract-examples), and navigate to the `smart-contract-examples/ccip/estimate-gas` directory.
 
     ```bash
     git clone https://github.com/smartcontractkit/smart-contract-examples.git && \
@@ -26,7 +26,7 @@ Before you begin, open a terminal clone the [smart-contract-examples repository]
 
 ## Examine the code
 
-The CCIP Sender and Receiver source codes are in the contracts directory for Hardhat projects and the src directory for Foundry projects. The code is structured to be self-explanatory, complemented by comprehensive comments to explain the functionality of each function. This section will focus on the `_ccipReceive` function:
+The CCIP Sender and Receiver source codes are in the `contracts` directory for Hardhat projects and in the `src` directory for Foundry projects. The code includes detailed comments for clarity and is designed to ensure self-explanatory functionality. This section will focus on the `_ccipReceive` function:
 
 ```solidity
 function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
@@ -49,12 +49,12 @@ function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal over
 }
 ```
 
-The `_ccipReceive` function's breakdown is as follows:
+The `_ccipReceive` function operates as follows:
 
-1. **Input Processing:** The function accepts a `Client.Any2EVMMessage`.The first step involves decoding the number of iterations from the message's data using ABI decoding.
-1. **Logic Execution:** It initializes the result variable with the number of iterations. The function calculates `maxIterations` by taking the modulo of iterations with 100, setting an upper limit for iteration. This precautionary step ensures that the function will not run out of gas.
-1. **Iteration:** The function iterates from 0 to `maxIterations`. This loop simulates the variable computational work based on the input data, which, in turn, affects gas consumption.
-1. **Event Emission:** Finally, an event MessageReceived is emitted.
+1. **Input Processing:** The function accepts a `Client.Any2EVMMessage`. The first step involves decoding the number of iterations from the message's data using ABI decoding.
+1. **Logic Execution:** It initializes the `result` variable with the number of iterations. The function calculates `maxIterations` by taking the modulo of iterations with 100, setting an upper limit for iteration. This step is a safeguard to ensure the function doesn't run out of gas.
+1. **Iteration:** The function executes a loop from 0 to `maxIterations`, simulating variable computational work based on the input data. This variability directly influences gas consumption.
+1. **Event Emission:** Finally, an event `MessageReceived` is emitted.
 
 This code shows how gas consumption for the `_ccipReceive` function can fluctuate in response to the input data, highlighting the necessity for thorough testing under different scenarios to determine the correct `gasLimit`.
 
@@ -79,7 +79,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
    cd foundry
    ```
 
-1. Make sure Foundry is [installed](https://book.getfoundry.sh/getting-started/installation) or run `foundryup` to update Foundry.
+1. Ensure Foundry is [installed](https://book.getfoundry.sh/getting-started/installation).
 
 1. Check the Foundry version:
 
@@ -87,11 +87,13 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
    forge --version
    ```
 
-   The output should be similar to (version 0.2.0 or above):
+   The output should be similar to the following:
 
    ```text
    forge 0.2.0 (545cd0b 2024-03-14T00:20:00.210934000Z)
    ```
+
+You need version 0.2.0 or above. Run `foundryup` to update Foundry if necessary.
 
 1. Build your project:
 
@@ -110,7 +112,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 #### Estimate gas
 
-The test file named `SendReceive.t.sol`, located within the `test` directory, is designed to evaluate the gas usage of the ccipReceive function. This file includes a test case that transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized. The test case has three different scenarios, each varying by the number of iterations to comprehensively understand gas consumption under various conditions:
+Located in the `test` directory, the `SendReceive.t.sol` test file assesses the gas consumption of the `ccipReceive` function. This file features a test case that sends a CCIP message to the `MockCCIPRouter` contract, thereby triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized. The test case explores three distinct scenarios, differentiated by the number of iterations, to comprehensively examine gas usage across various operational conditions:
 
 - **`0` iterations:** This scenario aims to determine the baseline gas consumption, representing the least amount of gas required.
 - **`50` iterations:** This scenario estimates the gas consumption under average operational conditions.
@@ -122,7 +124,7 @@ To run the test, execute the following command:
 forge test -vv --isolate
 ```
 
-Example of the output:
+Output example:
 
 ```text
 [⠊] Compiling...
@@ -156,17 +158,17 @@ This table summarizes the gas usage for different iterations:
 | 50                   | 14740    |
 | 99                   | 24099    |
 
-As you can notice from the output, the gas usage increases with the number of iterations. The upper limit is observed when the number of iterations is 99.
-In the next section, you will compare these results with the ones obtained from a local Hardhat environment.
+The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches 99.
+In the next section, you will compare these results with those obtained from a local Hardhat environment.
 
 ### Hardhat
 
 #### Prerequisites
 
-1.  In your terminal, change to the `hardhat` directory:
+1.  In your terminal, navigate to the `hardhat` directory:
 
     ```bash
-    cd hardhat
+    cd ../hardhat
     ```
 
 1.  Install the dependencies:
@@ -181,12 +183,12 @@ In the next section, you will compare these results with the ones obtained from 
     npx env-enc set-pw
     ```
 
-1.  Set up the following environment variables (These variables will be used to deploy your contracts on testnets):
+1. Set the following environment variables to deploy contracts on testnets:
 
-    - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note:** Your private key is needed to sign any transactions you make such as making requests.
+    - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note:** Your private key is needed to sign any transactions you make such as making requests.
     - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
-    - `AVALANCHE_FUJI_RPC_URL`: The RPC URL for Avalanche Fuji testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
-    - `ETHERSCAN_API_KEY`: An Ethereum explorer API key, used to verify your contract. Follow [this guide](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) to get one.
+    - `AVALANCHE_FUJI_RPC_URL`: The RPC URL for Avalanche Fuji testnet. You can sign up for a personal endpoint from [Infura](https://www.infura.io/) or another node provider service.
+    - `ETHERSCAN_API_KEY`: An Ethereum explorer API key, used to verify your contract. Follow [this guide](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) to get one from Etherscan.
 
     Input these variables using the following command:
 
@@ -210,7 +212,7 @@ In the next section, you will compare these results with the ones obtained from 
 
 #### Estimate gas
 
-The test file named `Send-Receive.ts`, located within the `test` directory, is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized.
+Located in the `test` directory, the `Send-Receive.ts` test file is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized.
 
 To run the test, execute the following command:
 
@@ -240,7 +242,7 @@ This table summarizes the gas usage across different iterations:
 | 50                   | 14718    |
 | 99                   | 24077    |
 
-As you can notice from the output, the gas usage increases with the number of iterations. The upper limit is observed when the number of iterations is 99.
+The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches 99.
 
 ### Compare the results from Foundry and Hardhat
 
@@ -252,14 +254,14 @@ This table summarizes the gas usage for different iterations from both Foundry a
 | 50                   | 14740              | 14718              |
 | 99                   | 24099              | 24077              |
 
-Gas usage trends across different iterations are consistent in both Foundry and Hardhat, increasing with the number of iterations and reaching a peak at 99. Despite these similarities, slight variations in gas usage exist between the two environments at each iteration level. This stresses the importance of extending beyond local environment testing for gas usage estimation. To accurately determine the appropriate gas limit, it's recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to bridge gaps between local environment estimations and the actual gas usage on the target blockchain.
+Gas usage trends across different iterations are consistent between Foundry and Hardhat and increase with the number of iterations, reaching a peak at 99. However, slight variations in gas usage between the two environments at each iteration level demonstrate the importance of extending gas usage estimation beyond local environment testing. To accurately determine the appropriate gas limit, it's recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to account for differences between local environment estimations and actual gas usage on the target blockchain.
 
 ## Gas estimation on a testnet
 
 To accurately validate your local environment's gas usage estimations, follow these steps:
 
 1. Deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet.
-1. Send several CCIP messages with the same number of iterations used in your local testing. For this purpose, utilize the `sendCCIPMessage.ts` script located in the `scripts/testing` directory. This script incorporates a buffer of 10% over the estimated gas usage to ensure the gas limit is sufficiently set. Refer to the table below for the buffered gas limits for each iteration:
+1. Send several CCIP messages with the same number of iterations used in your local testing. For this purpose, utilize the `sendCCIPMessage.ts` script in the `scripts/testing` directory. This script includes a 10% buffer over the estimated gas usage to ensure a sufficient gas limit. Refer to the table below for the buffered gas limits for each iteration:
 
 | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
 | -------------------- | ----------------------------- | ------------------------- |
@@ -267,13 +269,13 @@ To accurately validate your local environment's gas usage estimations, follow th
 | 50                   | 14718                         | 16190                     |
 | 99                   | 24077                         | 26485                     |
 
-1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the ccipReceive function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
+1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the `ccipReceive` function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
 
 This approach ensures that your gas limit settings are validated against real-world conditions on testnets, providing a more accurate and reliable estimation for deploying on live blockchains.
 
 ### Deploy and configure the contracts
 
-To deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet, follow these steps:
+To deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet, follow the steps below. **Note**: Your account must have some ETH tokens on Ethereum Sepolia and AVAX tokens on Avalanche Fuji.
 
 1. Deploy the CCIP Sender on the Avalanche Fuji testnet:
 
@@ -321,9 +323,9 @@ Upon completion, you will find the CCIP Sender and Receiver contracts deployed a
    Number of iterations 99 - Gas limit: 26485 - Message Id: 0x37d1867518c0f8c54ceb0c5507b46b8d44c6c53864218f448cba0234f8de867a
    ```
 
-1. Open the [CCIP explorer](https://ccip.chain.link), search each message by its id and wait for each message to be successfully transmitted (Status in the explorer: `Success`).
+1. Open the [CCIP explorer](https://ccip.chain.link), search each message by its ID, and wait for each message to be successfully transmitted (`Status` in the explorer: `Success`).
 
-For the example above, here below the destination transaction hashes:
+For the example above, here are the destination transaction hashes:
 
     | Message id                                                         | Ethereum Sepolia transaction hash                                  |
     | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -361,26 +363,26 @@ For the example above, here below the destination transaction hashes:
    | 50                   | 14718                         | 16190                     | 14581               |
    | 99                   | 24077                         | 26485                     | 23940               |
 
-Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. It is important to note, however, that gas usage may differ across testnets. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider utilizing offchain methods (see the next section) to estimate gas usage.
+Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. However, it is important to note that gas usage may differ across testnets. Therefore, it is advisable to conduct similar validation efforts on the blockchain where you intend to deploy. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider utilizing offchain methods (see the next section) to estimate gas usage.
 
 ## Offchain methods
 
 This section guides you through estimating gas usage using two different offchain methods:
 
-- A web3 provider using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
-- [Tenderly simulation API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction). The Tenderly simulation API provides a more accurate result (Read this [blog](https://blog.tenderly.co/how-tenderly-enables-most-accurate-ethereum-gas-estimation/) to learn more) but you are limited to the blockchains supported by Tenderly.
+- A Web3 provider using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
+- [Tenderly simulation API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction). The Tenderly simulation API provides a more accurate result (Read this [blog post](https://blog.tenderly.co/how-tenderly-enables-most-accurate-ethereum-gas-estimation/) to learn more) but you are limited to the blockchains supported by Tenderly.
 
 These methods provide the most accurate and rapid means to determine the necessary gas limit for the `ccipReceive` function. You will use the same CCIP Receiver contract deployed on the Ethereum Sepolia testnet in the previous section.
 
 ### Prerequisites
 
-1. In your terminal, change to the `offchain` directory:
+1. In your terminal, navigate to the `offchain` directory:
 
    ```bash
-   cd offchain
+   cd ../offchain
    ```
 
-1. Modify the `data.json` file and put the deployed addresses of your Sender and Receiver contracts.
+1. Modify the `data.json` file to insert the deployed addresses of your Sender and Receiver contracts.
 
 1. Install the dependencies:
 
@@ -394,7 +396,7 @@ These methods provide the most accurate and rapid means to determine the necessa
    npx env-enc set-pw
    ```
 
-1. Setup these environment variables (**Remark**: Read the [tenderly guide](https://docs.tenderly.co/account/projects/account-project-slug) for finding the `TENDERLY_ACCOUNT_SLUG` and `TENDERLY_PROJECT_SLUG`. You can get `TENDERLY_ACCESS_KEY` by generating a new access token):
+1. Setup these environment variables (**Remark**: Read the [tenderly guide](https://docs.tenderly.co/account/projects/account-project-slug) for finding `TENDERLY_ACCOUNT_SLUG` and `TENDERLY_PROJECT_SLUG`. You can get `TENDERLY_ACCESS_KEY` by generating a new access token):
 
    - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
    - `TENDERLY_ACCOUNT_SLUG`.
@@ -480,8 +482,10 @@ The table below summarizes the gas estimations for different iterations using bo
 | 50                   | 14946                     | 14581                    |
 | 99                   | 24324                     | 23940                    |
 
-The gas estimations from both ethers.js and Tenderly are consistent across different iterations and are in line with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However you can notice that Tenderly provides more accurate results.
+The gas estimations from both ethers.js and Tenderly are consistent across different iterations and align with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However, you can notice that Tenderly provides more accurate results.
 
 ## Conclusion
 
-This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and utilize offchain methods to estimate gas usage. The offchain methods, particularly Tenderly, have proven to be the most accurate and reliable in estimating gas usage. By following these methods, you can accurately determine the necessary gas limit for the `ccipReceive` function, ensuring cost-effective CCIP transactions. It is important to note that gas usage may differ across different blockchains. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. For efficiency, consider utilizing offchain methods to estimate gas usage.
+This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and utilize offchain methods to estimate gas usage.
+
+The offchain methods, particularly Tenderly, have proven to be the most accurate and reliable in estimating gas usage. Following these methods, you can accurately determine the necessary gas limit for the `ccipReceive` function, ensuring cost-effective CCIP transactions. It is important to note that gas usage may differ across different blockchains. Therefore, conducting similar validation efforts on the blockchain where you intend to deploy is advisable. For efficiency, consider utilizing offchain methods to estimate gas usage.
