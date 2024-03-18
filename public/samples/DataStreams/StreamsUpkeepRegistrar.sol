@@ -78,7 +78,10 @@ interface IFeeManager {
     function i_rewardManager() external view returns (address);
 }
 
-contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
+contract StreamsUpkeepRegistrar is
+    ILogAutomation,
+    StreamsLookupCompatibleInterface
+{
     LinkTokenInterface public immutable i_link;
     AutomationRegistrarInterface public immutable i_registrar;
 
