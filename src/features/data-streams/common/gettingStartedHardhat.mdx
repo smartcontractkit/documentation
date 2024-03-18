@@ -27,8 +27,6 @@ This guide uses the [Hardhat](https://hardhat.org/) development environment to d
    $ node -v
    v20.11.0
   ```
-- **RPC URL**: You need a Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
-- **Private key**: You need the private key of the account that will deploy and interact with the contracts. You can use the private key of your [MetaMask wallet](https://metamask.io/).
 - **Testnet funds**: This guide requires testnet ETH and LINK on Arbitrum Sepolia. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
 
 ## Tutorial
@@ -60,8 +58,8 @@ This guide uses the [Hardhat](https://hardhat.org/) development environment to d
    npx env-enc set
    ```
 
-   - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
-   - `ARBITRUM_SEPOLIA_RPC_URL`: The RPC URL for the Arbitrum Sepolia network.
+   - `PRIVATE_KEY`: The private key for your testnet wallet that will deploy and interact with the contracts. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+   - `ARBITRUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
 
 ### Deploy the upkeep and the log emitter contracts
 
@@ -191,9 +189,9 @@ The `transfer-link` Hardhat task sets up the necessary parameters for the LINK t
 
 ### Registering the upkeep
 
-You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerLogUpkeep`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/registerLogUpkeep.js) task to programmatically register the `StreamsUpkeepRegistrar` and `LogEmitter` contracts with the Chainlink Automation registrar. The task also funds the upkeep with 1 testnet LINK token.
+You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerAndFundLogUpkeep`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/registerAndFundLogUpkeep.js) task to programmatically register the `StreamsUpkeepRegistrar` and `LogEmitter` contracts with the Chainlink Automation registrar. The task also funds the upkeep with 1 testnet LINK token.
 
-The `registerLogUpkeep` Hardhat task sets up the necessary parameters for upkeep registration, including trigger configuration for a Log Emitter contract, and submits the registration request to the registrar contract via the `registerAndPredictID` function.
+The `registerAndFundLogUpkeep` Hardhat task sets up the necessary parameters for upkeep registration, including trigger configuration for a Log Emitter contract, and submits the registration request to the registrar contract via the `registerAndPredictID` function.
 
 You can use the [Chainlink Automation UI](https://automation.chain.link/) to view the registered upkeep and the upkeep's configuration.
 

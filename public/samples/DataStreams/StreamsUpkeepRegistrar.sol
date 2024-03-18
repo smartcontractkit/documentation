@@ -122,20 +122,19 @@ contract StreamsUpkeepRegistrar is
     uint256 s_upkeepID;
     bytes public s_LogTriggerConfig;
 
-    // This example reads the ID for the basic ETH/USD price report on Arbitrum Sepolia.
     // Find a complete list of IDs at https://docs.chain.link/data-streams/stream-ids
-    string[] public feedIds = [
-        "0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b"
-    ];
+    string[] public feedIds;
 
     constructor(
         address _verifier,
         LinkTokenInterface link,
-        AutomationRegistrarInterface registrar
+        AutomationRegistrarInterface registrar,
+        string[] memory _feedIds
     ) {
         verifier = IVerifierProxy(_verifier);
         i_link = link;
         i_registrar = registrar;
+        feedIds = _feedIds;
     }
 
     /**
