@@ -152,13 +152,13 @@ Ran 1 test suite in 188.81ms (10.84ms CPU time): 3 tests passed, 0 failed, 0 ski
 
 This table summarizes the gas usage for different iterations:
 
-| Number of iterations | Gas used |
-| -------------------- | -------- |
-| 0                    | 5190     |
-| 50                   | 14740    |
-| 99                   | 24099    |
+| Scenario                 | Number of iterations | Gas used |
+| ------------------------ | -------------------- | -------- |
+| Baseline gas consumption | 0                    | 5190     |
+| Average gas consumption  | 50                   | 14740    |
+| Peak gas consumption     | 99                   | 24099    |
 
-The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches 99.
+The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches `99`.
 In the next section, you will compare these results with those obtained from a local Hardhat environment.
 
 ### Hardhat
@@ -236,23 +236,23 @@ Number of iterations 99 - Gas used: 24077
 
 This table summarizes the gas usage across different iterations:
 
-| Number of iterations | Gas used |
-| -------------------- | -------- |
-| 0                    | 5168     |
-| 50                   | 14718    |
-| 99                   | 24077    |
+| Scenario                 | Number of iterations | Gas used |
+| ------------------------ | -------------------- | -------- |
+| Baseline gas consumption | 0                    | 5168     |
+| Average gas consumption  | 50                   | 14718    |
+| Peak gas consumption     | 99                   | 24077    |
 
-The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches 99.
+The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches `99`.
 
 ### Compare the results from Foundry and Hardhat
 
 This table summarizes the gas usage for different iterations from both Foundry and Hardhat:
 
-| Number of iterations | Gas used (Foundry) | Gas used (Hardhat) |
-| -------------------- | ------------------ | ------------------ |
-| 0                    | 5190               | 5168               |
-| 50                   | 14740              | 14718              |
-| 99                   | 24099              | 24077              |
+| Scenario                 | Number of iterations | Gas used (Foundry) | Gas used (Hardhat) |
+| ------------------------ | -------------------- | ------------------ | ------------------ |
+| Baseline gas consumption | 0                    | 5190               | 5168               |
+| Average gas consumption  | 50                   | 14740              | 14718              |
+| Peak gas consumption     | 99                   | 24099              | 24077              |
 
 Gas usage trends across different iterations are consistent between Foundry and Hardhat and increase with the number of iterations, reaching a peak at 99. However, slight variations in gas usage between the two environments at each iteration level demonstrate the importance of extending gas usage estimation beyond local environment testing. To accurately determine the appropriate gas limit, it is recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to account for differences between local environment estimations and actual gas usage on the target blockchain.
 
@@ -263,11 +263,11 @@ To accurately validate your local environment's gas usage estimations, follow th
 1. Deploy and configure the CCIP Sender contract on the Avalanche Fuji testnet and the CCIP Receiver contract on the Ethereum Sepolia testnet.
 1. Send several CCIP messages with the same number of iterations used in your local testing. For this purpose, utilize the `sendCCIPMessage.ts` script in the `scripts/testing` directory. This script includes a 10% buffer over the estimated gas usage to ensure a sufficient gas limit. Refer to the table below for the buffered gas limits for each iteration:
 
-   | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
-   | -------------------- | ----------------------------- | ------------------------- |
-   | 0                    | 5168                          | 5685                      |
-   | 50                   | 14718                         | 16190                     |
-   | 99                   | 24077                         | 26485                     |
+   | Scenario                 | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
+   | ------------------------ | -------------------- | ----------------------------- | ------------------------- |
+   | Baseline gas consumption | 0                    | 5168                          | 5685                      |
+   | Average gas consumption  | 50                   | 14718                         | 16190                     |
+   | Peak gas consumption     | 99                   | 24077                         | 26485                     |
 
 1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the `ccipReceive` function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
 
@@ -357,11 +357,11 @@ For the example above, here are the destination transaction hashes:
 
 1. Repeating the same steps for the other two messages, we can summarize the output:
 
-   | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) | Gas used on testnet |
-   | -------------------- | ----------------------------- | ------------------------- | ------------------- |
-   | 0                    | 5168                          | 5685                      | 5031                |
-   | 50                   | 14718                         | 16190                     | 14581               |
-   | 99                   | 24077                         | 26485                     | 23940               |
+   | Scenario                 | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) | Gas used on testnet |
+   | ------------------------ | -------------------- | ----------------------------- | ------------------------- | ------------------- |
+   | Baseline gas consumption | 0                    | 5168                          | 5685                      | 5031                |
+   | Average gas consumption  | 50                   | 14718                         | 16190                     | 14581               |
+   | Peak gas consumption     | 99                   | 24077                         | 26485                     | 23940               |
 
 Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. However, it is important to note that gas usage may differ across testnets. Therefore, it is advisable to conduct similar validation efforts on the blockchain where you intend to deploy. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider utilizing offchain methods (see the next section) to estimate gas usage.
 
@@ -476,11 +476,11 @@ Number of iterations 99 - Gas used: 23940
 
 The table below summarizes the gas estimations for different iterations using both ethers.js and Tenderly:
 
-| Number of iterations | Gas estimated (ethers.js) | Gas estimated (Tenderly) |
-| -------------------- | ------------------------- | ------------------------ |
-| 0                    | 5377                      | 5031                     |
-| 50                   | 14946                     | 14581                    |
-| 99                   | 24324                     | 23940                    |
+| Scenario                 | Number of iterations | Gas estimated (ethers.js) | Gas estimated (Tenderly) |
+| ------------------------ | -------------------- | ------------------------- | ------------------------ |
+| Baseline gas consumption | 0                    | 5377                      | 5031                     |
+| Average gas consumption  | 50                   | 14946                     | 14581                    |
+| Peak gas consumption     | 99                   | 24324                     | 23940                    |
 
 The gas estimations from both ethers.js and Tenderly are consistent across different iterations and align with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However, you can notice that Tenderly provides more accurate results.
 
