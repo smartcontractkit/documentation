@@ -428,9 +428,9 @@ The scripts are located in the `src` directory. Each script is self-explanatory 
   - `buildTransactionData`: This function constructs a CCIP message for a specified number of iterations and then returns the transaction data.
   - `estimateIntrinsicGas`: Exclusively called by the `estimateGasProvider.ts` script, this function estimates the intrinsic gas of a transaction. The intrinsic gas represents the minimum amount of gas required before executing a transaction. It is determined by the transaction data and the type of transaction. Since this gas is paid by the initiator of the transaction, we use this function to estimate the intrinsic gas and then deduct it from the total gas used to isolate the gas consumed by the `ccipReceive` function.
 
-### Estimate gas using ethers.js
+### Estimate gas using a Web3 provider
 
-To estimate the gas usage of the `ccipReceive` function using ethers.js, execute the following command:
+Ethereum nodes implement the [`eth_estimateGas`](https://docs.alchemy.com/reference/eth-estimategas) Ethereum API to predict the gas required for a transaction's successful execution. To estimate the gas usage of the `ccipReceive` function, you can directly call the `eth_estimateGas` API via a Web3 provider or leverage a library like ethers.js, simplifying this interaction. This guide focuses on the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function for gas estimation. To estimate the gas usage, execute the following command in your terminal:
 
 ```bash
 npm run estimate-gas-provider
@@ -449,6 +449,8 @@ Number of iterations 0 - Gas used: 5377
 Number of iterations 50 - Gas used: 14946
 Number of iterations 99 - Gas used: 24324
 ```
+
+The estimate may exceed the actual gas used by the transaction for various reasons, including differences in node performance and EVM mechanics. For a more precise estimation, consider using Tenderly (see the next section for details).
 
 ### Estimate gas using Tenderly
 
@@ -476,13 +478,13 @@ Number of iterations 99 - Gas used: 23940
 
 The table below summarizes the gas estimations for different iterations using both ethers.js and Tenderly:
 
-| Scenario                 | Number of iterations | Gas estimated (ethers.js) | Gas estimated (Tenderly) |
-| ------------------------ | -------------------- | ------------------------- | ------------------------ |
-| Baseline gas consumption | 0                    | 5377                      | 5031                     |
-| Average gas consumption  | 50                   | 14946                     | 14581                    |
-| Peak gas consumption     | 99                   | 24324                     | 23940                    |
+| Scenario                 | Number of iterations | Gas estimated (Web3 provider) | Gas estimated (Tenderly) |
+| ------------------------ | -------------------- | ----------------------------- | ------------------------ |
+| Baseline gas consumption | 0                    | 5377                          | 5031                     |
+| Average gas consumption  | 50                   | 14946                         | 14581                    |
+| Peak gas consumption     | 99                   | 24324                         | 23940                    |
 
-The gas estimations from both ethers.js and Tenderly are consistent across different iterations and align with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However, you can notice that Tenderly provides more accurate results.
+The gas estimations from both Web3 provider and Tenderly are consistent across different iterations and align with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However, you can notice that Tenderly provides more accurate results.
 
 ## Conclusion
 
@@ -491,5 +493,5 @@ This tutorial has guided you through estimating the gas limit for the `ccipRecei
 As we have explored various methods for estimating gas for the `ccipReceive` function, it is crucial to apply this knowledge effectively. Here are some targeted recommendations to enhance your approach to gas estimation:
 
 1. **Comprehensive Testing:** Emphasize testing under diverse scenarios to ensure your gas estimations are robust. Different conditions can significantly affect gas usage, so covering as many cases as possible in your tests is crucial.
-1. **Preliminary Local Estimates:** While local environments like Hardhat and Foundry offer the convenience of quick testing, it is important to remember that these environments might not fully replicate the conditions of your target blockchain. Although they are excellent for initial estimates, you should consider these figures as starting points rather than definitive values. To account for the variability and potential discrepancies, adding a buffer to your gas limit estimations is wise before moving on to testnet validations.
-1. **Efficiency with Offchain Methods:** Recognizing that testing across different blockchains can be resource-intensive, leaning on offchain methods for gas estimation becomes invaluable. Tools such as Tenderly not only facilitate rapid and accurate gas usage insights on your target blockchains but also enable you to simulate the execution of the `ccipReceive` function on actual contracts deployed on mainnets. This is particularly helpful when considering the diversity in gas metering rules across blockchains. This approach saves time and enhances the precision of your gas limit estimations, allowing for more cost-effective transactions from your dApp.
+1. **Preliminary Local Estimates:** Local testing is a critical first step for estimating gas and ensuring your contracts function correctly under various scenarios. While Hardhat and Foundry facilitate development and testing, it's key to remember that these environments may not perfectly mirror your target blockchain's conditions. These initial estimates serve as valuable insights, guiding you toward more accurate gas limit settings when you proceed to testnet validations. Incorporating a buffer based on these preliminary results can help mitigate the risks of underestimating gas requirements due to environmental differences.
+1. **Efficiency with Offchain Methods:** Recognizing that testing across different blockchains can be resource-intensive, leaning on offchain methods for gas estimation becomes invaluable. Tools such as Tenderly not only facilitate rapid and accurate gas usage insights on your target blockchains but also enable you to simulate the execution of the `ccipReceive` function on actual contracts deployed on mainnets. If Tenderly doesn't support a particular blockchain, leveraging a Web3 provider that does, as illustrated in the [Estimate gas using a Web3 provider](#estimate-gas-using-a-web3-provider) section, becomes a practical alternative. This is particularly helpful when considering the diversity in gas metering rules across blockchains. This approach saves time and enhances the precision of your gas limit estimations, allowing for more cost-effective transactions from your dApp.
