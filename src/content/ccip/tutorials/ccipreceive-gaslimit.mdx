@@ -4,7 +4,7 @@ date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
 ---
 
-When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), accurately setting the gas limit is crucial. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, fundamentally influencing the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, which fundamentally influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
 - Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, necessitating a manual re-execution with an increased gas limit. For further details, refer to the [manual execution guide](/ccip/tutorials/manual-execution).
 - Conversely, an excessively high gas limit leads to higher fees.
@@ -26,7 +26,7 @@ Before you begin, open a terminal, clone the [smart-contract-examples repository
 
 ## Examine the code
 
-The CCIP Sender and Receiver source codes are in the `contracts` directory for Hardhat projects and in the `src` directory for Foundry projects. The code includes detailed comments for clarity and is designed to ensure self-explanatory functionality. This section will focus on the `_ccipReceive` function:
+The source code for the CCIP Sender and Receiver is located in the `contracts` directory for Hardhat projects and in the `src` directory for Foundry projects. The code includes detailed comments for clarity and is designed to ensure self-explanatory functionality. This section focuses on the `_ccipReceive` function:
 
 ```solidity
 function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
@@ -73,7 +73,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 #### Prerequisites
 
-1. In tour terminal, change to the `foundry` directory:
+1. In your terminal, change to the `foundry` directory:
 
    ```bash
    cd foundry
@@ -112,11 +112,11 @@ You need version 0.2.0 or above. Run `foundryup` to update Foundry if necessary.
 
 #### Estimate gas
 
-Located in the `test` directory, the `SendReceive.t.sol` test file assesses the gas consumption of the `ccipReceive` function. This file features a test case that sends a CCIP message to the `MockCCIPRouter` contract, thereby triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized. The test case explores three distinct scenarios, differentiated by the number of iterations, to comprehensively examine gas usage across various operational conditions:
+Located in the `test` directory, the `SendReceive.t.sol` test file assesses the gas consumption of the `ccipReceive` function. This file features a test case that sends a CCIP message to the `MockCCIPRouter` contract, thereby triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas consumed. The test case explores three scenarios to examine gas usage comprehensively across various operational conditions:
 
-- **`0` iterations:** This scenario aims to determine the baseline gas consumption, representing the least amount of gas required.
-- **`50` iterations:** This scenario estimates the gas consumption under average operational conditions.
-- **`99` iterations:** This final scenario estimates the peak gas consumption, marking the upper limit of gas usage.
+- **Baseline gas consumption:** This scenario runs `0` iteration to determine the baseline gas consumption, representing the least amount of gas required.
+- **Average gas consumption:** This scenario runs `50` iterations to estimate the gas consumption under average operational conditions.
+- **Peak gas consumption:** This scenario runs `99` iterations to estimate the peak gas consumption, marking the upper limit of gas usage.
 
 To run the test, execute the following command:
 
@@ -337,11 +337,11 @@ For the example above, here are the destination transaction hashes:
 
 ### Check the actual gas usage
 
-1. Open [Tenderly](https://dashboard.tenderly.co) and Search for the [destination transaction hash](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689).
+1. Open [Tenderly](https://dashboard.tenderly.co) and search for the [destination transaction hash](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689).
 
-1. Search for `_callWithExactGasSafeReturnData` with a payload containing your messageId (without `0x`). [Example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2) for `0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7`.
+1. Search for `_callWithExactGasSafeReturnData` with a payload containing your `messageId` (without `0x`). [Example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2) for `0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7`.
 
-1. Below it, you will find the call trace from the Router to your Receiver contract.[Call trace example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2.0).
+1. Below the payload with your `messageId`, you will find the call trace from the Router to your Receiver contract. [Call trace example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2.0).
 
 1. Click on the debugger and you'll get the gas details:
 
@@ -396,7 +396,7 @@ These methods provide the most accurate and rapid means to determine the necessa
    npx env-enc set-pw
    ```
 
-1. Setup these environment variables (**Remark**: Read the [tenderly guide](https://docs.tenderly.co/account/projects/account-project-slug) for finding `TENDERLY_ACCOUNT_SLUG` and `TENDERLY_PROJECT_SLUG`. You can get `TENDERLY_ACCESS_KEY` by generating a new access token):
+1. Setup these environment variables (**Remark**: Read the [Tenderly guide](https://docs.tenderly.co/account/projects/account-project-slug) for finding `TENDERLY_ACCOUNT_SLUG` and `TENDERLY_PROJECT_SLUG`. You can get `TENDERLY_ACCESS_KEY` by generating a new access token):
 
    - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
    - `TENDERLY_ACCOUNT_SLUG`.
