@@ -33,7 +33,24 @@ const removeSlashes = (url: string) => {
   return sanitizedUrl
 }
 
-const currentPageMatch = removeSlashes(currentPage.slice(1))
+// This function checks if the current page is a match for the main section or any of its subpages
+// (e.g. /getting-started-hardhat is a subpage of /getting-started).
+const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean => {
+  const normalizedSectionUrl = removeSlashes(sectionUrl)
+  const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
+
+  // Direct match (e.g., both "/getting-started")
+  if (normalizedCurrentPage === normalizedSectionUrl) {
+    return true
+  }
+
+  // Check for subpage match (e.g., currentPage is "/getting-started-hardhat" and sectionUrl is "/getting-started")
+  if (normalizedCurrentPage.startsWith(`${normalizedSectionUrl}-`)) {
+    return true
+  }
+
+  return false
+}
 ---
 
 <nav aria-labelledby="grid-left">
@@ -42,9 +59,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
       sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
         <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
           <details
-            open={
-              !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
-            }
+            open={!!flattenChildren(s.contents).filter((object) => isCurrentPageMatch(object.url, currentPage)).length}
           >
             <summary class="nav-group-title">{s.section}</summary>
             <ul class="nav-group-entries">
@@ -55,7 +70,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
                       <a
                         class="nav-link"
                         href={`${Astro.site?.pathname}${child.url}`}
-                        aria-current={currentPageMatch === removeSlashes(child.url) ? "page" : "false"}
+                        aria-current={isCurrentPageMatch(child.url, currentPage) ? "page" : "false"}
                       >
                         <ActiveIcon />
                         {child.title}
@@ -67,7 +82,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
                           <a
                             class="nav-link nested"
                             href={`${Astro.site?.pathname}${childItem.url}`}
-                            aria-current={`${currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"}`}
+                            aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
                           >
                             <ActiveIcon />
                             {childItem.title}
