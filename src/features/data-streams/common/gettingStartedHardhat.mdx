@@ -1,0 +1,206 @@
+import { Aside, CodeSample, CopyText } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+This guide shows you how to read data from a Data Streams feed, verify the answer, and store the answer onchain. This example uses a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Engine, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
+
+<DataStreams section="asideDisclaimer" />
+
+## Before you begin
+
+This guide uses the [Hardhat](https://hardhat.org/) development environment to deploy and interact with the contracts. To learn more about Hardhat, read the [Hardhat Documentation](https://hardhat.org/hardhat-runner/docs/getting-started).
+
+### Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Nodejs** and **npm**: Make sure you have Node.js and npm installed. You can check your current version by running <CopyText text="node -v" code/> and <CopyText text="npm -v" code/> in your terminal. Download the latest version from the official [Node.js website](https://nodejs.org/en/download/) if necessary.
+- **RPC URL**: You need a Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
+- **Private key**: You need the private key of the account that will deploy and interact with the contracts. You can use the private key of your [MetaMask wallet](https://metamask.io/).
+- **Testnet funds**: This guide requires testnet ETH and LINK on _Arbitrum Sepolia_.
+  - Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH from Ethereum Sepolia to Arbitrum Sepolia. Testnet ETH on Ethereum Sepolia is available at one of [several faucets](https://faucetlink.to/sepolia).
+  - Testnet LINK is available for Arbitrum Sepolia at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+
+## Tutorial
+
+### Setup
+
+1. Clone the repository that contains the Hardhat project setup for this guide. This repository contains the Solidity contracts and the Hardhat configuration files you need to deploy and interact with the contracts.
+
+   ```bash
+   git clone https://github.com/khadni/streams-trade-getting-started
+   cd data-streams-getting-started-hardhat
+   ```
+
+1. Install all the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+1. Set an encryption password for your environment variables. This password needs to be set each time you create or restart a terminal shell session.
+
+   ```bash
+   npx env-enc set-pw
+   ```
+
+1. Set the required environment variables using the following command:
+
+   ```bash
+   npx env-enc set
+   ```
+
+   - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+   - `ARBITRUM_SEPOLIA_RPC_URL`: The RPC URL for the Arbitrum Sepolia network.
+
+### Deploy the upkeep and the log emitter contracts
+
+Deploy an upkeep contract that is enabled to retrieve data from Data Streams. For this example, you will read from the ETH/USD Data Streams feed with ID `0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b` on Arbitrum Sepolia. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets, IDs, and verifier proxy addresses.
+
+Execute the following command to deploy the Chainlink Automation upkeep contract and the Log Emitter contract to the Arbitrum Sepolia network.
+
+```bash
+npm run deploy
+```
+
+Expect output similar to the following in your terminal:
+
+```bash
+✔ StreamsUpkeep deployed at: 0xD721337a827F9D814daEcCc3c7e72300af914BFE
+✔ LogEmitter deployed at: 0x48403478Aa021A9BC30Da0BDE47cbc155CcA8916
+```
+
+Save the deployed contract addresses for both contracts. You will use these addresses later.
+
+### Fund the upkeep contract
+
+Before registering your upkeep, you need to fund the upkeep contract with testnet LINK tokens. Transfer `1.5` testnet LINK to the upkeep contract address you saved earlier. You can retrieve unused LINK later.
+
+```bash
+npx hardhat transfer-link --recipient <StreamsUpkeepAddress> --amount 1500000000000000000 --network arbitrumSepolia
+```
+
+Replace `<StreamsUpkeepAddress>` with the address of the `StreamsUpkeep` contract you saved earlier.
+
+Expect output similar to the following in your terminal:
+
+```bash
+ℹ Starting LINK transfer from <YOUR_ADDRESS> to the streams upkeep contract at 0xD721337a827F9D814daEcCc3c7e72300af914BFE
+ℹ LINK token address: 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E
+ℹ LINK balance of sender 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d is 6.5 LINK
+✔ 1.5 LINK were sent from 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d to 0xD721337a827F9D814daEcCc3c7e72300af914BFE. Transaction Hash: 0xf241bf4415ec081325ccd8ec3d54432e424afd16f1c81fa78b291ae9a0c03ce2
+```
+
+### Register the upkeep
+
+Programmatically register a new `Log Trigger` upkeep:
+
+```bash
+npx hardhat registerUpkeep --streams-upkeep <StreamsUpkeepAddress> --log-emitter <LogEmitterAddress> --network arbitrumSepolia
+```
+
+Replace `<StreamsUpkeepAddress>` and `<LogEmitterAddress>` with the addresses of your `StreamsUpkeep` and `LogEmitter` contracts.
+
+Expect output similar to the following in your terminal:
+
+```bash
+Upkeep registered successfully.
+```
+
+### Emit a log
+
+Now, you can use your emitter contract to emit a log and initiate the upkeep, which retrieves data for the specified Data Streams feed ID.
+
+```bash
+npx hardhat emitLog --log-emitter <LogEmitterContractAddress> --network arbitrumSepolia
+```
+
+Replace `<LogEmitterContractAddress>` with the address of your `LogEmitter` contract.
+
+Expect output similar to the following in your terminal:
+
+```bash
+✔ Log emitted successfully in transaction: 0x236ee95faade12d1b6d497ee2e51ddf957f7d4986ffe51d784b923081ed440ff
+```
+
+After the transaction is complete, the log is emitted, and the upkeep is triggered.
+
+### View the retrieved price
+
+The retrieved price is stored in the `s_last_retrieved_price` contract variable and emitted in the logs. To see the price retrieved by the `StreamsUpkeep` contract:
+
+```bash
+npx hardhat getLastRetrievedPrice --streams-upkeep <StreamsUpkeepContractAddress> --network arbitrumSepolia
+```
+
+Replace `<StreamsUpkeepContractAddress>` with the address of your `StreamsUpkeep` contract.
+
+Expect output similar to the following in your terminal:
+
+```bash
+✔ Last Retrieved Price: 2945878120219995000000
+```
+
+The answer on the ETH/USD feed uses 18 decimal places, so an answer of `2945878120219995000000` indicates an ETH/USD price of 2945.878120219995. Each Data Streams feed uses a different number of decimal places for answers. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for more information.
+
+Alternatively, you can view the price emitted in the logs for your upkeep transaction.
+
+You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) and view the transaction logs in the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/).
+
+## Examine the code
+
+The example code you deployed has all the interfaces and functions required to work with Chainlink Automation as an upkeep contract. It follows a similar flow to the trading flow in the [Architecture](/data-streams/architecture#example-trading-flow-using-streams-trade) documentation but uses a basic log emitter to simulate the client contract that would initiate a `StreamsLookup`. After the contract receives and verifies the report, `performUpkeep` stores the price from the report in the `s_last_retrieved_price` and emits a `PriceUpdate` log message with the price. You could modify this to use the data in a way that works for your specific use case and application.
+
+The code example uses `revert` with `StreamsLookup` to convey call information about what streams to retrieve. See the [EIP-3668 rationale](https://eips.ethereum.org/EIPS/eip-3668#rationale) for more information about how to use `revert` in this way.
+
+<CodeSample src="samples/DataStreams/StreamsUpkeepRegistrar.sol" />
+
+### Initializing the contract
+
+When deploying the contract, you define:
+
+1. The verifier proxy address for the Data Streams feed you want to read from. You can find this address on the [Data Streams Feed IDs](/data-streams/stream-ids) page. The verifier proxy address provides functions that are required for this example:
+
+   - The `s_feeManager` function to estimate the verification fees.
+   - The `verify` function to verify the report onchain.
+
+2. The LINK token address. This address is used to register and fund your upkeep. You can find the LINK token address on the [Chainlink Token Addresses](/chainlink-token/addresses) page.
+
+3. The registrar's contract address. This address is used to register your upkeep. You can find the registrar contract addresses on the [Chainlink Automation Registrar Addresses](/chainlink-automation/addresses) page.
+
+### Funding the upkeep contract
+
+In this example, you must fund the `StreamsUpkeep` contract with testnet LINK tokens to pay the onchain report verification fees. You can use the [`transfer-link`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/transfer-link.js) task to transfer LINK tokens to the `StreamsUpkeep` contract you deployed.
+
+The `transfer-link` Hardhat task sets up the necessary parameters for the LINK token transfer and submits the transfer request to the LINK token contract using the `transfer` function.
+
+Note: Funding the `StreamsUpkeep` contract is distinct from funding your Chainlink Automation upkeep to pay the fees to perform the upkeep.
+
+### Registering the upkeep
+
+You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerLogUpkeep`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/registerLogUpkeep.js) task to programmatically register the `StreamsUpkeep` and `LogEmitter` contracts with the Chainlink Automation registrar.
+
+The `registerLogUpkeep` Hardhat task sets up the necessary parameters for upkeep registration, including trigger configuration for a Log Emitter contract, and submits the registration request to the registrar contract via the `registerAndPredictID` function.
+
+You can use the [Chainlink Automation UI](https://automation.chain.link/) to view the registered upkeep and the upkeep's configuration.
+
+### Emitting a log, retrieving, and verifying the report
+
+You can use the [`emitLog` task](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/emitLog.js) to emit a log from the `LogEmitter` contract.
+
+    1. The emitted log triggers the Chainlink Automation upkeep.
+    2. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Engine, returns the data in a callback (`checkCallback`), and runs the `performUpkeep` function on your registered upkeep contract.
+    3. The `performUpkeep` function calls the `verify` function on the verifier contract to verify the report onchain.
+    4. In this example, the `performUpkeep` function also stores the price from the report in the `s_last_retrieved_price` state variable and emits a `PriceUpdate` log message with the price.
+
+### Viewing the retrieved price
+
+The [`getLastRetrievedPrice`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/getLastRetrievedPrice.js) Hardhat task retrieves the last price updated by the `performUpkeep` function in the `s_last_retrieved_price` state variable of the `StreamsUpkeep` contract.
