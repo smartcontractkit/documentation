@@ -272,19 +272,8 @@ const complexData = {
 // Define the Solidity types for encoding
 const types = ["tuple(uint256 id, tuple(string description, bool awesome) metadata)"]
 
-// Data to encode
-const data = [
-  [
-    complexData.id,
-    {
-      description: complexData.metadata.description,
-      awesome: complexData.metadata.awesome,
-    },
-  ],
-]
-
 // Encoding the data
-const encodedData = abiCoder.encode(types, data)
+const encodedData = abiCoder.encode(types, [complexData])
 ```
 
 After encoding the data, it's necessary to format it as a `Uint8Array` array for smart contract interactions and blockchain transactions. In Solidity, the data type for byte arrays data is `bytes`. However, when working in a JavaScript environment, such as when using the `ethers.js` library, the equivalent data structure is a `Uint8Array`.
