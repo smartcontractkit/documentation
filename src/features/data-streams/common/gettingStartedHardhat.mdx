@@ -68,21 +68,24 @@ Deploy an upkeep contract that is enabled to retrieve data from Data Streams. Fo
 Execute the following command to deploy the Chainlink Automation upkeep contract and the Log Emitter contract to the Arbitrum Sepolia network.
 
 ```bash
-npm run deploy
+npx hardhat deployAll --network arbitrumSepolia
 ```
 
 Expect output similar to the following in your terminal:
 
 ```bash
-✔ StreamsUpkeep deployed at: 0xD721337a827F9D814daEcCc3c7e72300af914BFE
-✔ LogEmitter deployed at: 0x48403478Aa021A9BC30Da0BDE47cbc155CcA8916
+ℹ Deploying StreamsUpkeepRegistrar contract...
+✔ StreamsUpkeepRegistrar deployed at: 0x48403478Aa021A9BC30Da0BDE47cbc155CcA8916
+ℹ Deploying LogEmitter contract...
+✔ LogEmitter deployed at: 0xD721337a827F9D814daEcCc3c7e72300af914BFE
+✔ All contracts deployed successfully.
 ```
 
 Save the deployed contract addresses for both contracts. You will use these addresses later.
 
 ### Fund the upkeep contract
 
-Before registering your upkeep, you need to fund the upkeep contract with testnet LINK tokens. Transfer `1.5` testnet LINK to the upkeep contract address you saved earlier. You can retrieve unused LINK later.
+In this example, the upkeep contract pays for onchain verification of reports from Data Streams. The Automation subscription does not cover the cost. Transfer `1.5` testnet LINK to the upkeep contract address you saved earlier. You can retrieve unused LINK later.
 
 ```bash
 npx hardhat transfer-link --recipient <StreamsUpkeepAddress> --amount 1500000000000000000 --network arbitrumSepolia
@@ -99,12 +102,12 @@ Expect output similar to the following in your terminal:
 ✔ 1.5 LINK were sent from 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d to 0xD721337a827F9D814daEcCc3c7e72300af914BFE. Transaction Hash: 0xf241bf4415ec081325ccd8ec3d54432e424afd16f1c81fa78b291ae9a0c03ce2
 ```
 
-### Register the upkeep
+### Register and fund the upkeep
 
-Programmatically register a new `Log Trigger` upkeep:
+Programmatically register and fund a new `Log Trigger` upkeep with 1 LINK:
 
 ```bash
-npx hardhat registerUpkeep --streams-upkeep <StreamsUpkeepAddress> --log-emitter <LogEmitterAddress> --network arbitrumSepolia
+npx hardhat registerAndFundUpkeep --streams-upkeep <StreamsUpkeepAddress> --log-emitter <LogEmitterAddress> --network arbitrumSepolia
 ```
 
 Replace `<StreamsUpkeepAddress>` and `<LogEmitterAddress>` with the addresses of your `StreamsUpkeep` and `LogEmitter` contracts.
@@ -112,7 +115,7 @@ Replace `<StreamsUpkeepAddress>` and `<LogEmitterAddress>` with the addresses of
 Expect output similar to the following in your terminal:
 
 ```bash
-✔ Upkeep registered successfully.
+✔ Upkeep registered and funded with 1 LINK successfully.
 ```
 
 ### Emit a log
@@ -120,7 +123,7 @@ Expect output similar to the following in your terminal:
 Now, you can use your emitter contract to emit a log and initiate the upkeep, which retrieves data for the specified Data Streams feed ID.
 
 ```bash
-npx hardhat emitLog --log-emitter <LogEmitterContractAddress> --network arbitrumSepolia
+npx hardhat emitLog --log-emitter <LogEmitterAddress> --network arbitrumSepolia
 ```
 
 Replace `<LogEmitterContractAddress>` with the address of your `LogEmitter` contract.
@@ -186,7 +189,7 @@ Note: Funding the `StreamsUpkeep` contract is distinct from funding your Chainli
 
 ### Registering the upkeep
 
-You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerLogUpkeep`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/registerLogUpkeep.js) task to programmatically register the `StreamsUpkeep` and `LogEmitter` contracts with the Chainlink Automation registrar.
+You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerLogUpkeep`](https://github.com/smartcontractkit/data-streams-getting-started-hardhat/blob/master/tasks/registerLogUpkeep.js) task to programmatically register the `StreamsUpkeep` and `LogEmitter` contracts with the Chainlink Automation registrar. The task also funds the upkeep with 1 testnet LINK token.
 
 The `registerLogUpkeep` Hardhat task sets up the necessary parameters for upkeep registration, including trigger configuration for a Log Emitter contract, and submits the registration request to the registrar contract via the `registerAndPredictID` function.
 
