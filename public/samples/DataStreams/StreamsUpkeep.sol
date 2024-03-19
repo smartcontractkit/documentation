@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity 0.8.16;
 
 import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
 import {StreamsLookupCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
@@ -37,10 +37,7 @@ interface IFeeManager {
     function i_rewardManager() external view returns (address);
 }
 
-abstract contract StreamsUpkeep is
-    ILogAutomation,
-    StreamsLookupCompatibleInterface
-{
+contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     struct BasicReport {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
@@ -99,6 +96,22 @@ abstract contract StreamsUpkeep is
             log.timestamp,
             ""
         );
+    }
+
+    /**
+     * @notice this is a new, optional function in streams lookup. It is meant to surface streams lookup errors.
+     * @return upkeepNeeded boolean to indicate whether the keeper should call performUpkeep or not.
+     * @return performData bytes that the keeper should call performUpkeep with, if
+     * upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
+     */
+    function checkErrorHandler(
+        uint256 /*errCode*/,
+        bytes memory /*extraData*/
+    ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+        return (true, "0");
+        // Hardcoded to always perform upkeep.
+        // Read the StreamsLookup error handler guide for more information.
+        // https://docs.chain.link/chainlink-automation/guides/streams-lookup-error-handler
     }
 
     // The Data Streams report bytes is passed here.
