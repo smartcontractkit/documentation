@@ -37,7 +37,10 @@ interface IFeeManager {
     function i_rewardManager() external view returns (address);
 }
 
-contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
+abstract contract StreamsUpkeep is
+    ILogAutomation,
+    StreamsLookupCompatibleInterface
+{
     struct BasicReport {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
