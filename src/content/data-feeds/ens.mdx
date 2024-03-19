@@ -17,7 +17,7 @@ import { Aside, CodeSample } from "@components"
 
 <EnsManualLookupForm client:idle />
 
-## Naming Structure
+## Naming structure
 
 Chainlink data feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).
 
@@ -47,13 +47,13 @@ For each network, there is a single Chainlink resolver, which does not change. I
 | :--------------- | :----------------------------------------------------------------------------------------------------------------------- |
 | Ethereum Mainnet | [0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B](https://app.ens.domains/address/0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B) |
 
-### Listening for Address Changes
+### Listening for address changes
 
 When a new aggregator is deployed for a specific feed, it is first proposed, and when accepted becomes the aggregator for that feed. During this process, the `proposed` and `aggregator` subdomains for that feed will change. With each change, the resolver emits an `AddrChanged` event, using the feed subdomain (for example: `eth-usd.data.eth`) as the indexed parameter.
 
 **Example**: If you want to listen for when the aggregator of the ETH / USD feed changes, set up a listener to track the `AddrChanged` event on the resolver, using a filter like this: `ethers.utils.namehash('aggregator.eth-usd.data.eth')`.
 
-## Obtaining Addresses
+## Obtaining addresses
 
 <Aside type="caution" title="Reverse Lookup">
 

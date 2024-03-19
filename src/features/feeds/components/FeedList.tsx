@@ -37,7 +37,14 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
-  const dataFeedCategory = ["low", "medium", "high", "custom", "new", "deprecating"]
+  const dataFeedCategory = [
+    { key: "low", name: "Low Market Risk" },
+    { key: "medium", name: "Medium Market Risk" },
+    { key: "high", name: "High Market Risk" },
+    { key: "custom", name: "Custom" },
+    { key: "new", name: "New Token" },
+    { key: "deprecating", name: "Deprecating" },
+  ]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
@@ -189,14 +196,14 @@ export const FeedList = ({
                           <ul>
                             {dataFeedCategory.map((category) => (
                               <li>
-                                <button onClick={() => handleCategorySelection(category)}>
+                                <button onClick={() => handleCategorySelection(category.key)}>
                                   <input
                                     type="checkbox"
-                                    checked={selectedFeedCategories?.includes(category)}
+                                    checked={selectedFeedCategories?.includes(category.key)}
                                     readonly
                                     style="cursor:pointer;"
                                   />
-                                  <span> {category}</span>
+                                  <span> {category.name}</span>
                                 </button>
                               </li>
                             ))}
