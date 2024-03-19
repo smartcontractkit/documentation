@@ -7,13 +7,13 @@ contract NFTFloorPriceConsumerV3 {
     AggregatorV3Interface internal nftFloorPriceFeed;
 
     /**
-     * Network: Goerli - No Sepolia feeds available at this time
-     * Aggregator: CryptoPunks
-     * Address: 0x5c13b249846540F81c093Bc342b5d963a7518145
+     * Network: Mumbai Testnet
+     * Aggregator: Azuki Floor Price
+     * Address: 0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
      */
     constructor() {
         nftFloorPriceFeed = AggregatorV3Interface(
-            0x5c13b249846540F81c093Bc342b5d963a7518145
+            0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
         );
     }
 
