@@ -4,14 +4,14 @@ date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
 ---
 
-When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, which fundamentally influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
-- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, necessitating a manual re-execution with an increased gas limit. For further details, refer to the [manual execution guide](/ccip/tutorials/manual-execution).
+- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, which requires a manual re-execution with an increased gas limit. For more details about this scenario, read the [Manual Execution](/ccip/tutorials/manual-execution) guide.
 - Conversely, an excessively high gas limit leads to higher fees.
 
-This tutorial will guide you through estimating the gas limit for the `ccipReceive` function using various methods. We will explore using a CCIP Receiver, where the gas consumption of the `ccipReceive` function varies based on the input data, emphasizing the need for testing under diverse conditions. Our examination will span across different environments:
+This tutorial shows you how to estimate the gas limit for the `ccipReceive` function using various methods. You will learn how to use a CCIP Receiver where the gas consumption of the `ccipReceive` function varies based on the input data. This example emphasizes the need for testing under diverse conditions. This tutorial includes tasks for the following environments:
 
-1. **Local Environment**: Utilizing [Hardhat](https://hardhat.org/) and [Foundry](https://book.getfoundry.sh/) on a local blockchain provides a swift initial gas estimate. However, different frameworks can yield different results. Moreover, the local environment will not always be representative of your destination blockchain. Consider these figures preliminary estimates, then incorporate a buffer and conduct subsequent validations on a testnet.
+1. **Local Environment**: Using [Hardhat](https://hardhat.org/) and [Foundry](https://book.getfoundry.sh/) on a local blockchain provides a swift initial gas estimate. However, different frameworks can yield different results and the local environment will not always be representative of your destination blockchain. Consider these figures to be preliminary estimates. Then, incorporate a buffer and conduct subsequent validations on a testnet.
 1. **Testnet**: You can precisely determine the required gas limit by deploying your CCIP Sender and Receiver on a testnet and transmitting several CCIP messages with the previously estimated gas. Although this approach is more time-intensive, especially if testing across multiple blockchains, it offers enhanced accuracy.
 1. **Offchain Methods**: Estimating gas with an offchain Web3 provider or tools like [Tenderly](https://docs.tenderly.co/) offers the most accurate and swift way to determine the needed gas limit.
 
@@ -52,7 +52,7 @@ function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal over
 The `_ccipReceive` function operates as follows:
 
 1. **Input Processing:** The function accepts a `Client.Any2EVMMessage`. The first step involves decoding the number of iterations from the message's data using ABI decoding.
-1. **Logic Execution:** It initializes the `result` variable with the number of iterations. The function calculates `maxIterations` by taking the modulo of iterations with 100, setting an upper limit for iteration. This step is a safeguard to ensure the function doesn't run out of gas.
+1. **Logic Execution:** It initializes the `result` variable with the number of iterations. The function calculates `maxIterations` by taking the modulo of iterations with 100, which sets an upper limit for iteration. This step is a safeguard to ensure that the function does not run out of gas.
 1. **Iteration:** The function executes a loop from 0 to `maxIterations`, simulating variable computational work based on the input data. This variability directly influences gas consumption.
 1. **Event Emission:** Finally, an event `MessageReceived` is emitted.
 
@@ -112,7 +112,7 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
 #### Estimate gas
 
-Located in the `test` directory, the `SendReceive.t.sol` test file assesses the gas consumption of the `ccipReceive` function. This file features a test case that sends a CCIP message to the `MockCCIPRouter` contract, thereby triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas consumed. The test case explores three scenarios to examine gas usage comprehensively across various operational conditions:
+Located in the `test` directory, the `SendReceive.t.sol` test file assesses the gas consumption of the `ccipReceive` function. This file features a test case that sends a CCIP message to the `MockCCIPRouter` contract, which triggers the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas consumed. The test case explores three scenarios to examine gas usage comprehensively across various operational conditions:
 
 - **Baseline gas consumption:** This scenario runs `0` iteration to determine the baseline gas consumption, representing the least amount of gas required.
 - **Average gas consumption:** This scenario runs `50` iterations to estimate the gas consumption under average operational conditions.
@@ -212,7 +212,7 @@ In the next section, you will compare these results with those obtained from a l
 
 #### Estimate gas
 
-Located in the `test` directory, the `Send-Receive.ts` test file is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas utilized.
+Located in the `test` directory, the `Send-Receive.ts` test file is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas used.
 
 To run the test, execute the following command:
 
@@ -419,7 +419,7 @@ These methods provide the most accurate and rapid means to determine the necessa
 
 The scripts are located in the `src` directory. Each script is self-explanatory and includes comprehensive comments to explain its functionality and usage. There are three scripts:
 
-- `estimateGasProvider.ts`: This script utilizes the [`eth_estimateGas`](https://docs.alchemy.com/reference/eth-estimategas) Ethereum API to estimate the gas usage of the `ccipReceive` function. It simulates sending three CCIP messages to the Receiver contract with a varying number of iterations and estimates the gas usage using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
+- `estimateGasProvider.ts`: This script uses the [`eth_estimateGas`](https://docs.alchemy.com/reference/eth-estimategas) Ethereum API to estimate the gas usage of the `ccipReceive` function. It simulates sending three CCIP messages to the Receiver contract with a varying number of iterations and estimates the gas usage using the [ethers.js `estimateGas`](https://docs.ethers.org/v6/api/providers/#Provider-estimateGas) function.
 
 - `estimateGasTenderly.ts`: This script leverages the Tenderly `simulate` API to estimate the gas usage of the `ccipReceive` function. Similar to the previous script, it simulates sending three CCIP messages to the Receiver contract with different numbers of iterations and estimates the gas usage using the [Tenderly `simulate` API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction).
 
@@ -488,7 +488,7 @@ The gas estimations from both Web3 provider and Tenderly are consistent across d
 
 ## Conclusion
 
-This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and utilize offchain methods to estimate gas usage.
+This tutorial has guided you through estimating the gas limit for the `ccipReceive` function using various methods. You have learned how to estimate gas usage in a local environment using Hardhat and Foundry, validate these estimations on testnets, and use offchain methods to estimate gas usage.
 
 As we have explored various methods for estimating gas for the `ccipReceive` function, it is crucial to apply this knowledge effectively. Here are some targeted recommendations to enhance your approach to gas estimation:
 
