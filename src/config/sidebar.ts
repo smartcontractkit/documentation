@@ -218,6 +218,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Guides",
+      contents: [
+        {
+          title: "Using the StreamsLookup error handler",
+          url: "data-streams/tutorials/streams-lookup-error-handler",
+        },
+      ],
+    },
+    {
       section: "Reference",
       contents: [
         {
