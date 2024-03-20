@@ -181,7 +181,7 @@ When deploying the contract, you define:
 
 ### Funding the upkeep contract
 
-In this example, you must fund the `StreamsUpkeepRegistrar` contract with testnet LINK tokens to pay the onchain report verification fees. You can use the [`transfer-link`](https://github.com/smartcontractkit/data-streams/getting-started/hardhat/blob/master/tasks/transfer-link.js) task to transfer LINK tokens to the `StreamsUpkeepRegistrar` contract you deployed.
+In this example, you must fund the `StreamsUpkeepRegistrar` contract with testnet LINK tokens to pay the onchain report verification fees. You can use the [`transfer-link`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/data-streams/getting-started/hardhat/tasks/transfer-link.js) task to transfer LINK tokens to the `StreamsUpkeepRegistrar` contract you deployed.
 
 The `transfer-link` Hardhat task sets up the necessary parameters for the LINK token transfer and submits the transfer request to the LINK token contract using the `transfer` function.
 
@@ -189,7 +189,7 @@ The `transfer-link` Hardhat task sets up the necessary parameters for the LINK t
 
 ### Registering the upkeep
 
-You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerAndFundLogUpkeep`](https://github.com/smartcontractkit/data-streams/getting-started/hardhat/blob/master/tasks/registerAndFundLogUpkeep.js) task to programmatically register the `StreamsUpkeepRegistrar` and `LogEmitter` contracts with the Chainlink Automation registrar. The task also funds the upkeep with 1 testnet LINK token.
+You need to register your log-triggered upkeep with the Chainlink Automation registrar. You can use the [`registerAndFundLogUpkeep`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/data-streams/getting-started/hardhat/tasks/registerAndFundLogUpkeep.js) task to programmatically register the `StreamsUpkeepRegistrar` and `LogEmitter` contracts with the Chainlink Automation registrar. The task also funds the upkeep with 1 testnet LINK token.
 
 The `registerAndFundLogUpkeep` Hardhat task sets up the necessary parameters for upkeep registration, including trigger configuration for a Log Emitter contract, and submits the registration request to the registrar contract via the `registerAndPredictID` function.
 
@@ -197,7 +197,7 @@ You can use the [Chainlink Automation UI](https://automation.chain.link/) to vie
 
 ### Emitting a log, retrieving, and verifying the report
 
-You can use the [`emitLog` task](https://github.com/smartcontractkit/smart-contract-examples/data-streams/getting-started/hardhat/blob/master/tasks/emitLog.js) to emit a log from the `LogEmitter` contract.
+You can use the [`emitLog` task](https://github.com/smartcontractkit/smart-contract-examples/blob/main/data-streams/getting-started/hardhat/tasks/emitLog.js) to emit a log from the `LogEmitter` contract.
 
     1. The emitted log triggers the Chainlink Automation upkeep.
     2. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Engine, returns the data in a callback (`checkCallback`), and runs the `performUpkeep` function on your registered upkeep contract.
@@ -206,4 +206,4 @@ You can use the [`emitLog` task](https://github.com/smartcontractkit/smart-contr
 
 ### Viewing the retrieved price
 
-The [`getLastRetrievedPrice`](https://github.com/smartcontractkit/smart-contract-examples/data-streams/getting-started/hardhat/blob/master/tasks/getLastRetrievedPrice.js) Hardhat task retrieves the last price updated by the `performUpkeep` function in the `s_last_retrieved_price` state variable of the `StreamsUpkeep` contract.
+The [`getLastRetrievedPrice`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/data-streams/getting-started/hardhat/tasks/getLastRetrievedPrice.js) Hardhat task retrieves the last price updated by the `performUpkeep` function in the `s_last_retrieved_price` state variable of the `StreamsUpkeep` contract.
