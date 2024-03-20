@@ -19,13 +19,13 @@ Create a directory `tls/` within your local Chainlink directory:
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
   ```text Sepolia
   mkdir ~/.chainlink-sepolia/tls
   ```
   </Fragment>
-  <Fragment slot="panel.3">
+  <Fragment slot="panel.2">
   ```text Mainnet
   mkdir ~/.chainlink/tls
   ```
@@ -37,7 +37,7 @@ Run this command to create a `server.crt` and `server.key` file in the previousl
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
 <Fragment slot="panel.1">
 ```shell Sepolia
 openssl req -x509 -out  ~/.chainlink-sepolia/tls/server.crt  -keyout ~/.chainlink-sepolia/tls/server.key \
@@ -46,7 +46,7 @@ openssl req -x509 -out  ~/.chainlink-sepolia/tls/server.crt  -keyout ~/.chainlin
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
 </Fragment>
-<Fragment slot="panel.3">
+<Fragment slot="panel.2">
 ```shell Mainnet
 openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
@@ -80,14 +80,14 @@ Finally, update your run command to forward port 6689 to the container instead o
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
     cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it
     --env-file=.env smartcontract/chainlink local n
     ```
   </Fragment>
-  <Fragment slot="panel.3">
+  <Fragment slot="panel.2">
     ```shell Mainnet
     cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env
     smartcontract/chainlink local n
