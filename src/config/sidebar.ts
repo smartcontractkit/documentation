@@ -204,11 +204,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started (Remix IDE)",
           url: "data-streams/getting-started",
         },
         {
-          title: "Getting Started [Hardhat]",
+          title: "Getting Started (Hardhat CLI)",
           url: "data-streams/getting-started-hardhat",
         },
         {
