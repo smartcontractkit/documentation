@@ -90,6 +90,8 @@ export const evmProducts = [
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
       { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "base", title: "BASE" },
     ],
   },
   {
