@@ -18,7 +18,7 @@ type ConfigProps = {
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
 const { laneConfig, sourceChain, environment, sourceChainRefId, version } = Astro.props as ConfigProps
-const { rateLimiterConfig, supportedTokens } = laneConfig
+const { rateLimiterConfig, supportedTokens, onRamp } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
@@ -80,6 +80,8 @@ const explorerUrl = getExplorer(sourceChain)
 
 if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
+const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp)
+
 let tokensWithExtraInfo: {
   token: string
   address: any
@@ -117,6 +119,17 @@ if (supportedTokens) {
     })
 }
 ---
+
+<table>
+  <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>OnRamp address</td>
+      <td><Address contractUrl={onRampExplorerUrl} /></td>
+    </tr>
+  </tbody>
+</table>
+<br />
 
 {
   tokensWithExtraInfo.length > 0 ? (

@@ -50,7 +50,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" />
               <a
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 target="_blank"
                 className={clsx(styles.button)}
                 href="https://github.com/smartcontractkit/documentation"

@@ -108,14 +108,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ETHEREUM_SEPOLIA"
     case "ethereum-mainnet-optimism-1":
       return "OPTIMISM_MAINNET"
-    case "ethereum-testnet-goerli-optimism-1":
-      return "OPTIMISM_GOERLI"
     case "ethereum-testnet-sepolia-optimism-1":
       return "OPTIMISM_SEPOLIA"
     case "ethereum-mainnet-arbitrum-1":
       return "ARBITRUM_MAINNET"
-    case "ethereum-testnet-goerli-arbitrum-1":
-      return "ARBITRUM_GOERLI"
     case "ethereum-testnet-sepolia-arbitrum-1":
       return "ARBITRUM_SEPOLIA"
     case "matic-mainnet":
@@ -132,8 +128,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BNB_TESTNET"
     case "ethereum-mainnet-base-1":
       return "BASE_MAINNET"
-    case "ethereum-testnet-goerli-base-1":
-      return "BASE_GOERLI"
+    case "ethereum-testnet-sepolia-base-1":
+      return "BASE_SEPOLIA"
+    case "wemix-mainnet":
+      return "WEMIX_MAINNET"
+    case "wemix-testnet":
+      return "WEMIX_TESTNET"
+    case "ethereum-mainnet-kroma-1":
+      return "KROMA_MAINNET"
+    case "ethereum-testnet-sepolia-kroma-1":
+      return "KROMA_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -147,16 +151,12 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia"
     case "OPTIMISM_MAINNET":
       return "ethereum-mainnet-optimism-1"
-    case "OPTIMISM_GOERLI":
-      return "ethereum-testnet-goerli-optimism-1"
     case "OPTIMISM_SEPOLIA":
       return "ethereum-testnet-sepolia-optimism-1"
     case "ARBITRUM_MAINNET":
       return "ethereum-mainnet-arbitrum-1"
     case "ARBITRUM_SEPOLIA":
       return "ethereum-testnet-sepolia-arbitrum-1"
-    case "ARBITRUM_GOERLI":
-      return "ethereum-testnet-goerli-arbitrum-1"
     case "POLYGON_MAINNET":
       return "matic-mainnet"
     case "POLYGON_MUMBAI":
@@ -171,8 +171,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "bsc-testnet"
     case "BASE_MAINNET":
       return "ethereum-mainnet-base-1"
-    case "BASE_GOERLI":
-      return "ethereum-testnet-goerli-base-1"
+    case "BASE_SEPOLIA":
+      return "ethereum-testnet-sepolia-base-1"
+    case "WEMIX_MAINNET":
+      return "wemix-mainnet"
+    case "WEMIX_TESTNET":
+      return "wemix-testnet"
+    case "KROMA_MAINNET":
+      return "ethereum-mainnet-kroma-1"
+    case "KROMA_SEPOLIA":
+      return "ethereum-testnet-sepolia-kroma-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

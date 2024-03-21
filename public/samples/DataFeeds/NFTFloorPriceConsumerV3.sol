@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract NFTFloorPriceConsumerV3 {
     AggregatorV3Interface internal nftFloorPriceFeed;
 
     /**
-     * Network: Goerli - No Sepolia feeds available at this time
-     * Aggregator: CryptoPunks
-     * Address: 0x5c13b249846540F81c093Bc342b5d963a7518145
+     * Network: Mumbai Testnet
+     * Aggregator: Azuki Floor Price
+     * Address: 0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
      */
     constructor() {
         nftFloorPriceFeed = AggregatorV3Interface(
-            0x5c13b249846540F81c093Bc342b5d963a7518145
+            0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
         );
     }
 

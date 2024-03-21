@@ -37,7 +37,14 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
-  const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
+  const dataFeedCategory = [
+    { key: "low", name: "Low Market Risk" },
+    { key: "medium", name: "Medium Market Risk" },
+    { key: "high", name: "High Market Risk" },
+    { key: "custom", name: "Custom" },
+    { key: "new", name: "New Token" },
+    { key: "deprecating", name: "Deprecating" },
+  ]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
@@ -71,7 +78,7 @@ export const FeedList = ({
       window.history.replaceState({ path: newUrl }, "", newUrl)
       const inputElement = document.getElementById("search") as HTMLInputElement
       if (inputElement) {
-        inputElement.placeholder = !isStreams ? "Search price feeds" : "Search data streams"
+        inputElement.placeholder = "Search"
       }
     }
   }, [chainMetadata.processedData, searchValue])
@@ -180,33 +187,35 @@ export const FeedList = ({
                       </p>
                     )}
                   <div className={feedList.tableFilters}>
-                    <details class={feedList.filterDropdown_details}>
-                      <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                        {!isStreams ? "Data Feed Categories" : "Data Streams Categories"}
-                      </summary>
-                      <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                        <ul>
-                          {dataFeedCategory.map((category) => (
-                            <li>
-                              <button onClick={() => handleCategorySelection(category)}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedFeedCategories?.includes(category)}
-                                  readonly
-                                  style="cursor:pointer;"
-                                />
-                                <span> {category}</span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </nav>
-                    </details>
+                    {!isStreams && (
+                      <details class={feedList.filterDropdown_details}>
+                        <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                          Data Feed Categories
+                        </summary>
+                        <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                          <ul>
+                            {dataFeedCategory.map((category) => (
+                              <li>
+                                <button onClick={() => handleCategorySelection(category.key)}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedFeedCategories?.includes(category.key)}
+                                    readonly
+                                    style="cursor:pointer;"
+                                  />
+                                  <span> {category.name}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </nav>
+                      </details>
+                    )}
                     <form class={feedList.filterDropdown_search}>
                       <input
                         id="search"
                         class={feedList.filterDropdown_searchInput}
-                        placeholder={!isStreams ? "Search price feeds" : "Search data streams"}
+                        placeholder="Search"
                         onInput={(event) => {
                           setSearchValue((event.target as HTMLInputElement).value)
                           setCurrentPage("1")

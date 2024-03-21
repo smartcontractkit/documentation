@@ -13,6 +13,7 @@ type SupportedTokenConfig = {
 export type LaneConfig = {
   supportedTokens?: SupportedTokenConfig
   rateLimiterConfig: RateLimiterConfig
+  onRamp: string
 }
 
 export type DestinationsLaneConfig = {

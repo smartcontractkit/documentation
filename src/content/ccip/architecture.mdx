@@ -4,6 +4,7 @@ date: Last Modified
 title: "CCIP Architecture"
 whatsnext:
   {
+    "CCIP manual execution": "/ccip/concepts/manual-execution",
     "Learn CCIP best practices": "/ccip/best-practices",
     "Find the list of supported networks, lanes, and rate limits on the CCIP Supported Networks page": "/ccip/supported-networks",
   }
@@ -16,7 +17,7 @@ import { Aside, ClickToZoom } from "@components"
   page.
 </Aside>
 
-## High-Level Architecture
+## High-level architecture
 
 Below is a diagram displaying the basic architecture of CCIP. Routers are smart contracts that provide a simple and consistent interface for users. Users can interact with routers to:
 
@@ -44,7 +45,7 @@ CCIP enables a _sender_ on a _source blockchain_ to send a _message_ to a _recei
 | Receiver               | A smart contract or an EOA. **Note**: An EOA cannot receive arbitrary data. It can only receive tokens. |
 | Destination Blockchain | The blockchain the receiver resides on.                                                                 |
 
-## Detailed Architecture
+## Detailed architecture
 
 The figure below outlines the different components involved in a cross-chain transaction:
 
@@ -111,7 +112,7 @@ Token pools provide rate limiting, which is a security feature enabling token is
 
 The Risk Management contract maintains the list of Risk Management node addresses that are allowed to bless or curse. The contract also holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain. Read the [Risk Management Network Concepts](/ccip/concepts#risk-management-network) section to learn more.
 
-### Offchain Components
+### Offchain components
 
 #### Committing DON
 
@@ -163,10 +164,10 @@ Each [lane](/ccip/concepts#lane) also has an aggregate rate limit that limits th
 
 Consider an example where a lane has a maximum capacity of 100,000 USD, a refill rate of 167 USD per second, and several token transfers with a total value of 60,000 USD have been executed. In that example, the remaining available capacity is 40,000 USD. If a user intends to transfer tokens equating to 50,000 USD, they must wait at least 60 seconds for capacity to refill the additional 10,000 USD that is required. The maximum throughput in USD value on the lane is 100,000 USD every 10 minutes.
 
-## CCIP Execution latency
+## CCIP execution latency
 
 Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source chain to reach [finality](/ccip/concepts#finality). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a chain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
 
 If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
-Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The `permissionlessExecutionThresholdSeconds` parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of `permissionlessExecutionThresholdSeconds` due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/).
+Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The Smart Execution time window parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of Smart Execution time window due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/). Read the [manual execution](/ccip/concepts/manual-execution) conceptual guide to learn more.

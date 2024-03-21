@@ -19,6 +19,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/getting-started",
         },
         {
+          title: "Developer Responsibilities",
+          url: "data-feeds/developer-responsibilities",
+        },
+        {
           title: "Price Feeds",
           url: "data-feeds/price-feeds",
         },
@@ -200,8 +204,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started (Remix IDE)",
           url: "data-streams/getting-started",
+        },
+        {
+          title: "Getting Started (Hardhat CLI)",
+          url: "data-streams/getting-started-hardhat",
         },
         {
           title: "Stream IDs",
@@ -367,6 +375,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
         },
+        {
+          title: "Using the StreamsLookup error handler",
+          url: "chainlink-automation/guides/streams-lookup-error-handler",
+        },
       ],
     },
     {
@@ -486,6 +498,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/supported-networks",
         },
         {
+          title: "Service Limits",
+          url: "chainlink-functions/resources/service-limits",
+        },
+        {
           title: "Service Responsibility",
           url: "chainlink-functions/service-responsibility",
         },
@@ -511,16 +527,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-query-parameters",
         },
         {
-          title: "Return Custom Data Types",
-          url: "chainlink-functions/tutorials/api-custom-response",
-        },
-        {
           title: "POST Data to an API",
           url: "chainlink-functions/tutorials/api-post-data",
         },
         {
           title: "Using DON-hosted Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets",
+        },
+        {
+          title: "Using Imports with Functions",
+          url: "chainlink-functions/tutorials/importing-packages",
+        },
+        {
+          title: "Return multiple responses and decode them in your smart contract",
+          url: "chainlink-functions/tutorials/abi-decoding",
         },
         {
           title: "Offchain secrets - Using Gists",
@@ -546,14 +566,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Automate your Functions (Custom Logic Automation)",
           url: "chainlink-functions/tutorials/automate-functions-custom-logic",
         },
-        {
-          title: "Using Imports with Functions",
-          url: "chainlink-functions/tutorials/importing-packages",
-        },
-        {
-          title: "Return multiple responses and decode them in your smart contract",
-          url: "chainlink-functions/tutorials/abi-decoding",
-        },
       ],
     },
     {
@@ -574,10 +586,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
-        },
-        {
-          title: "Service Limits",
-          url: "chainlink-functions/resources/service-limits",
         },
       ],
     },
@@ -849,6 +857,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Service Limits",
+          url: "ccip/service-limits",
+        },
+        {
+          title: "Service Responsibility",
+          url: "ccip/service-responsibility",
+        },
+        {
           title: "Billing",
           url: "ccip/billing",
         },
@@ -874,8 +890,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Transfer Tokens between EOAs",
-          url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+          title: "Offchain",
+          url: "ccip/tutorials/offchain",
+          children: [
+            {
+              title: "Transfer Tokens between EOAs",
+              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+            },
+            {
+              title: "Checking CCIP Message Status",
+              url: "ccip/tutorials/get-status-offchain",
+            },
+          ],
         },
         {
           title: "Transfer USDC with Data",
@@ -884,6 +910,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Send Arbitrary Data",
           url: "ccip/tutorials/send-arbitrary-data",
+        },
+        {
+          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+        },
+        {
+          title: "Manual Execution",
+          url: "ccip/tutorials/manual-execution",
         },
         {
           title: "Acquire Test Tokens",
@@ -895,7 +929,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Concept Overview",
+          title: "Conceptual Overview",
           url: "ccip/concepts",
         },
         {
@@ -903,12 +937,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
-          title: "Best Practices",
-          url: "ccip/best-practices",
+          title: "Manual execution",
+          url: "ccip/concepts/manual-execution",
         },
         {
-          title: "Service Limits",
-          url: "ccip/service-limits",
+          title: "Best Practices",
+          url: "ccip/best-practices",
         },
       ],
     },

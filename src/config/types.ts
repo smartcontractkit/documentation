@@ -15,11 +15,12 @@ export type SupportedTechnology =
   | "POLYGON_ZKEVM"
   | "LINEA"
   | "SCROLL"
+  | "WEMIX"
+  | "KROMA"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
-  | "ETHEREUM_GOERLI"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"
@@ -31,15 +32,13 @@ export type SupportedChain =
   | "FANTOM_TESTNET"
   | "ARBITRUM_MAINNET"
   | "ARBITRUM_SEPOLIA"
-  | "ARBITRUM_GOERLI"
   | "OPTIMISM_MAINNET"
   | "OPTIMISM_SEPOLIA"
-  | "OPTIMISM_GOERLI"
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
   | "BASE_MAINNET"
-  | "BASE_GOERLI"
+  | "BASE_SEPOLIA"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
   | "SCROLL_MAINNET"
@@ -50,6 +49,10 @@ export type SupportedChain =
   | "ZKSYNC_GOERLI"
   | "POLYGON_ZKEVM_MAINNET"
   | "POLYGON_ZKEVM_TESTNET"
+  | "WEMIX_MAINNET"
+  | "WEMIX_TESTNET"
+  | "KROMA_MAINNET"
+  | "KROMA_SEPOLIA"
 
 export type Chains = Record<
   SupportedTechnology,
