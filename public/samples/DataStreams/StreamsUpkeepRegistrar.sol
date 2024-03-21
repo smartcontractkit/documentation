@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity 0.8.19;
 
-import {Common} from "@chainlink/contracts/src/v0.8/libraries/Common.sol";
+import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
 import {StreamsLookupCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
 import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IRewardManager.sol";
 import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/interfaces/IVerifierFeeManager.sol";
-import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/interfaces/IERC20.sol";
+import {IERC20} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/interfaces/IERC20.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -152,6 +152,22 @@ contract StreamsUpkeepRegistrar is
         } else {
             revert("auto-approve disabled");
         }
+    }
+
+    /**
+     * @notice this is a new, optional function in streams lookup. It is meant to surface streams lookup errors.
+     * @return upkeepNeeded boolean to indicate whether the keeper should call performUpkeep or not.
+     * @return performData bytes that the keeper should call performUpkeep with, if
+     * upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
+     */
+    function checkErrorHandler(
+        uint256 /*errCode*/,
+        bytes memory /*extraData*/
+    ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+        return (true, "0");
+        // Hardcoded to always perform upkeep.
+        // Read the StreamsLookup error handler guide for more information.
+        // https://docs.chain.link/chainlink-automation/guides/streams-lookup-error-handler
     }
 
     // This function uses revert to convey call information.
