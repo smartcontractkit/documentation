@@ -50,7 +50,12 @@ export function ProductNavigation({ productsNav }: Props) {
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <a rel="noreferrer" target="_blank" className={clsx("home-logo", styles.logo)} href="https://chain.link/">
+      <a
+        rel="noreferrer noopener"
+        target="_blank"
+        className={clsx("home-logo", styles.logo)}
+        href="https://chain.link/"
+      >
         <img
           alt="Chainlink Home"
           title="Chainlink Home"
