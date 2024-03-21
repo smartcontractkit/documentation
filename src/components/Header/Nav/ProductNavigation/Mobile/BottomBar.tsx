@@ -3,7 +3,12 @@ import { ResourcesIcon } from "./ResourcesIcon"
 import { Search } from "../../../aiSearch/Search"
 
 const ResourcesButton = () => (
-  <a rel="noreferrer" target="_blank" className="nav-cta" href="https://github.com/smartcontractkit/documentation">
+  <a
+    rel="noreferrer noopener"
+    target="_blank"
+    className="nav-cta"
+    href="https://github.com/smartcontractkit/documentation"
+  >
     <ResourcesIcon />
     <span
       style={{
