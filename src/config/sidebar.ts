@@ -204,8 +204,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started (Remix IDE)",
           url: "data-streams/getting-started",
+        },
+        {
+          title: "Getting Started (Hardhat CLI)",
+          url: "data-streams/getting-started-hardhat",
         },
         {
           title: "Stream IDs",
@@ -886,8 +890,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Transfer Tokens between EOAs",
-          url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+          title: "Offchain",
+          url: "ccip/tutorials/offchain",
+          children: [
+            {
+              title: "Transfer Tokens between EOAs",
+              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+            },
+            {
+              title: "Checking CCIP Message Status",
+              url: "ccip/tutorials/get-status-offchain",
+            },
+          ],
         },
         {
           title: "Transfer USDC with Data",
