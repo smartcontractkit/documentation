@@ -1,0 +1,111 @@
+---
+interface Props {
+  currentPage: string
+  showBreadcrumb?: boolean
+}
+
+const { currentPage, showBreadcrumb } = Astro.props
+
+const noPageSegments = ["mainnet", "testnet"]
+
+function segmentToTitle(segment: string): string {
+  const segments = {
+    ccip: "CCIP",
+    "chainlink-functions": "Functions",
+    vrf: "VRF",
+    "chainlink-automation": "Automation",
+    "chainlink-nodes": "Nodes",
+    "api-reference": "API Reference",
+  }
+
+  if (segments[segment]) {
+    return segments[segment]
+  }
+
+  return segment
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
+const pathSegments = currentPage.split("/").filter(Boolean)
+const breadcrumbTitles = pathSegments.map((segment) => segmentToTitle(segment))
+---
+
+{
+  showBreadcrumb && (
+    <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/">
+            <img src="/images/breadcrumb-home-icn.svg" alt="Home" class="home-icon" /> Home
+          </a>
+        </li>
+        {pathSegments.slice(1).map((segment, index) => {
+          const hasPage = !noPageSegments.includes(segment)
+          const href = `/${pathSegments.slice(0, index + 1).join("/")}/`
+          const title = breadcrumbTitles[index]
+
+          return (
+            <>
+              <span class="separator"> / </span>
+              <li class="breadcrumb-item">{hasPage ? <a href={href}>{title}</a> : title}</li>
+            </>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .breadcrumb-nav {
+    margin: var(--space-8x) 0 0 0;
+  }
+
+  .breadcrumb {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb-item {
+    display: inline;
+    font-size: 0.875rem;
+  }
+
+  .breadcrumb-item a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .breadcrumb-item a:hover {
+    color: var(--blue-600);
+  }
+
+  .separator {
+    margin: 0 var(--space-2x);
+    vertical-align: middle;
+  }
+
+  .breadcrumb-item,
+  .separator {
+    font-size: 0.875rem;
+    line-height: 1.2;
+    vertical-align: middle;
+  }
+
+  .home-icon {
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-right: var(--space-1x);
+  }
+
+  @media (max-width: 50em) {
+    .breadcrumb-nav {
+      display: none;
+    }
+  }
+</style>
