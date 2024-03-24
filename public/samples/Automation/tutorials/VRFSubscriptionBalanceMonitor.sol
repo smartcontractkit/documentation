@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.6;
+pragma solidity 0.8.20;
 
 import "@chainlink/contracts/src/v0.8/automation/interfaces/KeeperCompatibleInterface.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
@@ -26,7 +26,7 @@ contract VRFSubscriptionBalanceMonitor is
     event FundsWithdrawn(uint256 amountWithdrawn, address payee);
     event TopUpSucceeded(uint64 indexed subscriptionId);
     event TopUpFailed(uint64 indexed subscriptionId);
-    event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
+    event ForwarderAddressUpdated(address oldAddress, address newAddress);
     event VRFCoordinatorV2AddressUpdated(
         address oldAddress,
         address newAddress
@@ -40,6 +40,7 @@ contract VRFSubscriptionBalanceMonitor is
 
     error InvalidWatchList();
     error OnlyKeeperRegistry();
+    error OnlyForwarder();
     error DuplicateSubcriptionId(uint64 duplicate);
 
     struct Target {
@@ -49,7 +50,7 @@ contract VRFSubscriptionBalanceMonitor is
         uint56 lastTopUpTimestamp;
     }
 
-    address public s_keeperRegistryAddress; // the address of the keeper registry
+    address public s_forwarderAddress; // the address of the upkeep's forwarder
     uint256 public s_minWaitPeriodSeconds; // minimum time to wait between top-ups
     uint64[] public s_watchList; // the watchlist on which subscriptions are stored
     mapping(uint64 => Target) internal s_targets;
@@ -57,18 +58,18 @@ contract VRFSubscriptionBalanceMonitor is
     /**
      * @param linkTokenAddress the Link token address
      * @param coordinatorAddress the address of the vrf coordinator contract
-     * @param keeperRegistryAddress the address of the keeper registry contract
+     * @param forwarderAddress the address of the upkeep's forwarder
      * @param minWaitPeriodSeconds the minimum wait period for addresses between funding
      */
     constructor(
         address linkTokenAddress,
         address coordinatorAddress,
-        address keeperRegistryAddress,
+        address forwarderAddress,
         uint256 minWaitPeriodSeconds
     ) ConfirmedOwner(msg.sender) {
         setLinkTokenAddress(linkTokenAddress);
         setVRFCoordinatorV2Address(coordinatorAddress);
-        setKeeperRegistryAddress(keeperRegistryAddress);
+        setForwarderAddress(forwarderAddress);
         setMinWaitPeriodSeconds(minWaitPeriodSeconds);
     }
 
@@ -218,7 +219,7 @@ contract VRFSubscriptionBalanceMonitor is
      */
     function performUpkeep(
         bytes calldata performData
-    ) external override onlyKeeperRegistry whenNotPaused {
+    ) external override onlyForwarder whenNotPaused {
         uint64[] memory needsFunding = abi.decode(performData, (uint64[]));
         topUp(needsFunding);
     }
@@ -261,17 +262,14 @@ contract VRFSubscriptionBalanceMonitor is
     }
 
     /**
-     * @notice Sets the keeper registry address.
+     * @notice Sets the upkeep's unique forwarder address
+     * for upkeeps in Automation versions 2.0 and later
+     * https://docs.chain.link/chainlink-automation/guides/forwarder
      */
-    function setKeeperRegistryAddress(
-        address keeperRegistryAddress
-    ) public onlyOwner {
-        require(keeperRegistryAddress != address(0));
-        emit KeeperRegistryAddressUpdated(
-            s_keeperRegistryAddress,
-            keeperRegistryAddress
-        );
-        s_keeperRegistryAddress = keeperRegistryAddress;
+    function setForwarderAddress(address forwarderAddress) public onlyOwner {
+        require(forwarderAddress != address(0));
+        emit ForwarderAddressUpdated(s_forwarderAddress, forwarderAddress);
+        s_forwarderAddress = forwarderAddress;
     }
 
     /**
@@ -327,9 +325,9 @@ contract VRFSubscriptionBalanceMonitor is
         _unpause();
     }
 
-    modifier onlyKeeperRegistry() {
-        if (msg.sender != s_keeperRegistryAddress) {
-            revert OnlyKeeperRegistry();
+    modifier onlyForwarder() {
+        if (msg.sender != s_forwarderAddress) {
+            revert OnlyForwarder();
         }
         _;
     }
