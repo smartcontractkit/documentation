@@ -15,8 +15,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started (Remix IDE)",
           url: "data-feeds/getting-started",
+        },
+        {
+          title: "Getting Started (Hardhat CLI)",
+          url: "data-feeds/getting-started-hardhat",
         },
         {
           title: "Developer Responsibilities",
