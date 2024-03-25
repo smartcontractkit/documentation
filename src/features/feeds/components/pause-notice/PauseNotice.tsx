@@ -37,7 +37,7 @@ export const PauseNotice = ({
   useEffect(() => {
     const fetchRipCord = async () => {
       const res = await fetch(
-        `https://api.real-time-reserves.ledgerlens.io/v1/chainlink/proof-of-reserves/${currencyName}`,
+        `https://api.real-time-reserves.verinumus.io/v1/chainlink/proof-of-reserves/${currencyName}`,
         {
           method: "GET",
         }
