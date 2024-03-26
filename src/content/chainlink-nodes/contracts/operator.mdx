@@ -8,10 +8,10 @@ import { Aside } from "@components"
 
 Oracles must deploy an onchain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
-When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.7/Operator.sol).
+When the _Basic Request_ model was introduced, node operators had to deploy the legacy [Oracle contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/Operator.sol).
 
 <Aside type="note">
-  <p>Node operators are recommended to use _Operator.sol_ instead of _Oracle.sol_.</p>
+  <p>Node operators must use _Operator.sol_ instead of _Oracle.sol_.</p>
 </Aside>
 
 In addition to replacing oracle contracts, operator contracts come with additional features that add more security and flexibility for node operators.
@@ -22,7 +22,7 @@ In addition to replacing oracle contracts, operator contracts come with addition
 
 In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes.
 
-[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.7/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
+[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
 
 ### Factory deployment
 
@@ -50,7 +50,7 @@ As discussed in the [forwarder](/chainlink-nodes/contracts/forwarder) contracts 
 
 ## API reference
 
-The operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
+The operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
 
 ### Methods
 
