@@ -1,36 +1,49 @@
-const devHubProductsUrl = "https://dev.chain.link/products/"
+import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
+import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
+import functionsLogo from "../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../assets/product-logos/automation-logo.svg"
+import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
+import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
+import nodesLogo from "../../assets/product-logos/general-logo.svg"
 
 const docsSubProductsNav = [
   {
     label: "Data Feeds",
     href: "/data-feeds",
+    icon: dataFeedsLogo.src,
   },
   {
     label: "Data Streams",
     href: "/data-streams",
+    icon: dataStreamsLogo.src,
   },
   {
     label: "CCIP",
     href: "/ccip",
+    icon: ccipLogo.src,
   },
   {
     label: "Functions",
     href: "/chainlink-functions",
-  },
-  {
-    label: "VRF",
-    href: "/vrf",
+    icon: functionsLogo.src,
   },
   {
     label: "Automation",
     href: "/chainlink-automation",
+    icon: automationLogo.src,
   },
   {
-    label: "Nodes",
+    label: "VRF",
+    href: "/vrf",
+    icon: vrfLogo.src,
+  },
+  {
+    label: "Chainlink Nodes",
     href: "/chainlink-nodes",
+    icon: nodesLogo.src,
   },
   {
-    label: "Overview",
+    label: "Documentation",
     href: "/",
     hideFromDropdown: true,
   },
@@ -88,61 +101,52 @@ const quickStartsSubProductsNav = [
 
 const devHubCategories = [
   {
-    label: "Developer Hub",
+    label: "Documentation",
     items: [
       {
-        label: "Home",
-        icon: "home",
-        href: "https://dev.chain.link/",
+        label: "Data Feeds",
+        href: "/data-feeds",
+        icon: dataFeedsLogo.src,
       },
       {
-        label: "Docs",
-        icon: "documentation",
-        href: "https://docs.chain.link",
-        subProducts: {
-          label: "Docs",
-          items: docsSubProductsNav,
-        },
+        label: "Data Streams",
+        href: "/data-streams",
+        icon: dataStreamsLogo.src,
       },
       {
-        label: "All Resources",
-        icon: "resources",
-        href: "https://dev.chain.link/resources",
+        label: "CCIP",
+        href: "/ccip",
+        icon: ccipLogo.src,
+      },
+      {
+        label: "Functions",
+        href: "/chainlink-functions",
+        icon: functionsLogo.src,
+      },
+      {
+        label: "Automation",
+        href: "/chainlink-automation",
+        icon: automationLogo.src,
+      },
+      {
+        label: "VRF",
+        href: "/vrf",
+        icon: vrfLogo.src,
+      },
+      {
+        label: "Chainlink Nodes",
+        href: "/chainlink-nodes",
+        icon: nodesLogo.src,
       },
     ],
   },
   {
-    label: "Product Resources",
+    label: "Other Resources",
     items: [
       {
-        label: "CCIP",
-        icon: "ccip",
-        href: devHubProductsUrl + "ccip",
-      },
-      {
-        label: "Data",
-        icon: "data",
-        href: devHubProductsUrl + "data",
-      },
-      {
-        label: "Functions",
-        icon: "functions",
-        href: devHubProductsUrl + "functions",
-      },
-      {
-        label: "Automation",
-        icon: "automation",
-        href: devHubProductsUrl + "automation",
-      },
-      {
-        label: "VRF",
-        icon: "vrf",
-        href: devHubProductsUrl + "vrf",
-      },
-      {
-        label: "General",
-        icon: "general",
-        href: devHubProductsUrl + "general",
+        label: "Developer Hub",
+        href: "https://dev.chain.link",
+        external: true,
       },
     ],
   },
