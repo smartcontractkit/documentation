@@ -9,6 +9,7 @@ import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
+import externalArrow from "../../../../../assets/icons/external-arrow.svg"
 
 export type SubProducts = {
   label: string
@@ -50,27 +51,12 @@ export function ProductNavigation({ productsNav }: Props) {
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <a
-        rel="noreferrer noopener"
-        target="_blank"
-        className={clsx("home-logo", styles.logo)}
-        href="https://chain.link/"
-      >
-        <img
-          alt="Chainlink Home"
-          title="Chainlink Home"
-          style={{ display: "flex" }}
-          src="/assets/icons/chainlink.svg"
-          height={24}
-          width={24}
-        />
-      </a>
       <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
         <span
           className={"text-300"}
           style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
         >
-          Developer Hub
+          Documentation
         </span>
         <CaretIcon
           style={{
@@ -105,7 +91,6 @@ export function ProductNavigation({ productsNav }: Props) {
           <Close ref={closeButtonRef} className={styles.closeButton}>
             <img src="/assets/icons/close.svg" />
           </Close>
-
           <BottomBar />
         </Dialog.Content>
       </Portal>

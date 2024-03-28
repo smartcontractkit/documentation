@@ -24,6 +24,7 @@ export type ProductsNav = {
 export type SubProductsNavItem = {
   label: string
   icon?: string
+  external?: boolean
   href: string
   hideFromDropdown?: boolean
 }
