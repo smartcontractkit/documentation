@@ -2,7 +2,7 @@
 import { LaneConfig } from "@config/data/ccip/types"
 import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { SupportedChain } from "@config"
-import { Address, Aside } from "@components"
+import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
@@ -12,12 +12,14 @@ type ConfigProps = {
   laneConfig: LaneConfig
   sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
+  destinationChainSelector: string
   environment: Environment
   version: Version
 }
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
-const { laneConfig, sourceChain, environment, sourceChainRefId, version } = Astro.props as ConfigProps
+const { laneConfig, sourceChain, environment, sourceChainRefId, version, destinationChainSelector } =
+  Astro.props as ConfigProps
 const { rateLimiterConfig, supportedTokens, onRamp } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
@@ -126,6 +128,10 @@ if (supportedTokens) {
     <tr>
       <td>OnRamp address</td>
       <td><Address contractUrl={onRampExplorerUrl} /></td>
+    </tr>
+    <tr>
+      <td>Destination chain selector</td>
+      <td><CopyText text={destinationChainSelector} code /></td>
     </tr>
   </tbody>
 </table>

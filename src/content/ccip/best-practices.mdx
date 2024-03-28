@@ -20,9 +20,13 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
 
 Before calling the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
 
+**Example**: For an example of how to verify the destination chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
+
 ## Verify source chain
 
 When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+**Example**: For an example of how to verify the source chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
 
 ## Verify sender
 
@@ -30,9 +34,13 @@ When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#c
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
+**Example**: For an example of how to verify the sender of the incoming CCIP message, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
+
 ## Verify router addresses
 
 When you implement the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
+
+**Example**: For an example of how to verify the router, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
 
 ## Setting `gasLimit`
 
@@ -46,6 +54,8 @@ To estimate the accurate gas limit for your destination contract, consider the f
 - Conducting [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking).
 - Using [Hardhat plugin for gas tests](https://github.com/cgewecke/eth-gas-reporter).
 - Using a blockchain explorer to look up the gas consumption of a particular internal transaction.
+
+**Example**: For an example of how to estimate the gas limit, refer to the [Optimizing Gas Limit Settings in CCIP Messages](/ccip/tutorials/ccipreceive-gaslimit) guide.
 
 ## Using `extraArgs`
 
