@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from "@features/chainlink-automation"
 import { SupportedChain, SupportedTechnology } from "@config"
+import { Aside } from "@components"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 import GithubSlugger from "github-slugger"
@@ -32,6 +33,27 @@ export const AutomationConfigList = () => {
 
           if (!(title && config && registryAddress && explorerUrl)) {
             return null
+          }
+
+          if (title == "Fantom") {
+            return (
+              <SectionWrapper
+                title={title}
+                idOverride={slugger.slug(title)}
+                depth={4}
+                updateTOC={false}
+                key={supportedChain}
+              >
+                <Aside type="note" title="New Fantom upkeeps not supported">
+                  Creating new Fantom upkeeps is no longer supported. Existing Fantom upkeeps are still supported.
+                </Aside>
+                <AutomationConfig
+                  config={config}
+                  registryAddress={registryAddress}
+                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                />
+              </SectionWrapper>
+            )
           }
 
           return (
