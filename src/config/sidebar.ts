@@ -133,10 +133,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataFeeds",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataFeeds",
         },
@@ -237,10 +233,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataStreams",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataStreams",
@@ -418,10 +410,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=automation",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=automation",
@@ -610,10 +598,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=chainlinkFunctions",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
         },
@@ -763,10 +747,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=vrf",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=vrf",
@@ -983,10 +963,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=ccip",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=ccip",
@@ -1276,10 +1252,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "General Documentation",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview",
