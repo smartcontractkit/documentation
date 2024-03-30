@@ -29,7 +29,7 @@ Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls)
   Chainlink Functions account.
 </Aside>
 
-<ChainlinkFunctions section="prerequisites-guides" />
+<ChainlinkFunctions section="prerequisites-guides-with-automation" />
 
 ## Tutorial
 
@@ -51,32 +51,33 @@ You can locate the scripts used in this tutorial in the [_examples/10-automate-f
 
 ### Deploy an Automated Functions Consumer contract
 
-1. Deploy a Functions consumer contract on _Polygon Mumbai_:
+Deploy a Functions consumer contract on _Polygon Mumbai_:
 
-   1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
-
-   {" "}
+1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
 
    <CodeSample src="samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol" showButtonOnly={true} />
 
-   1. Compile the contract.
-   1. Open MetaMask and select the _Polygon Mumbai_ network.
-   1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
-   1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
-   1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
-   1. After you confirm the transaction, the contract address appears in the Deployed Contracts list. Copy your contract address.
+1. Compile the contract.
+1. Open MetaMask and select the _Polygon Mumbai_ network.
+1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
+1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
+1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+1. After you confirm the transaction, the contract address appears in the Deployed Contracts list. Copy your contract address.
 
-1. Create a Chainlink Functions subscription and add your contract as an approved consumer contract. **Note**: If you followed the previous tutorials, then you can reuse your existing subscription.
+### Add your Consumer contract to your Functions subscription
+
+Add your contract as an approved consumer contract to your Functions subscription using the [Chainlink Functions Subscription Manager](https://functions.chain.link/).
 
 ### Configure Chainlink Automation
 
 The consumer contract that you deployed is designed to be used with a **time-based** automation. Follow the instructions in the [Automation Job Scheduler](/chainlink-automation/guides/job-scheduler) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
 
 - Trigger: Time-based
-- Target contract address: The address of the Chainlink Functions consumer contract that you deployed
-- ABI: copy/paste the abi from [automatedFunctions.json](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/abi/automatedFunctions.json)
+- Target contract address: The address of the Automated Functions consumer contract that you deployed
+- ABI: copy/paste the ABI from [automatedFunctions.json](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/abi/automatedFunctions.json)
 - Target function: sendRequestCBOR
 - Time interval: Every 15 minutes
+- Name: Give your upkeep a name
 - Gas limit: <CopyText text="1000000" code/>
 - Starting balance (LINK): <CopyText text="1" code/>
 
@@ -96,7 +97,7 @@ There are two balances that you must monitor:
 
 </Aside>
 
-### Configure your Automation Consumer contract
+### Configure your Automated Consumer contract
 
 Two important steps are done here:
 
@@ -110,13 +111,13 @@ Two important steps are done here:
 
 1. Configure the request details by calling the `updateRequest` function. This step stores the encoded request (source code, reference to encrypted secrets if any, arguments), gas limit, subscription ID, and job ID in the contract storage (see [Examine the code](#examine-the-code)). To do so, follow these steps:
 
-   1. On a terminal, go to the [_Functions tutorials_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/).
+   1. On a terminal, change directories to the [_10-automate-functions_](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions) directory.
    1. Open [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) and replace the consumer contract address and the subscription ID with your own values:
 
-   ```javascript
-   const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
-   const subscriptionId = 3 // REPLACE this with your subscription ID
-   ```
+      ```javascript
+      const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+      const subscriptionId = 3 // REPLACE this with your subscription ID
+      ```
 
    1. Run the [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script.
 
@@ -124,7 +125,7 @@ Two important steps are done here:
       node examples/10-automate-functions/updateRequest.js
       ```
 
-      Example:
+      Output example:
 
       ```text
       $ node examples/10-automate-functions/updateRequest.js
@@ -150,11 +151,11 @@ Two important steps are done here:
       ✅ Automated Functions request settings updated! Transaction hash 0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14 - Check the explorer https://mumbai.polygonscan.com/tx/0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14
       ```
 
-   The output of the example gives you the following information:
+      The output of the example gives you the following information:
 
-   - Your request is first run on a sandbox environment to ensure it is correctly configured.
-   - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
-   - The Functions consumer contract's request details are updated.
+      - Your request is first run on a sandbox environment to ensure it is correctly configured.
+      - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
+      - The Functions consumer contract's request details are updated.
 
 At this stage, your Functions consumer contract is configured to get the median Bitcoin price every 15 minutes.
 
@@ -169,34 +170,32 @@ Click on your upkeep to fetch de details:
 <ClickToZoom src="/images/chainlink-functions/tutorials/automation/myupkeep-details.jpg" />
 
 As you can see in the _History_ table, the upkeep is running every 15 minutes.
-On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) to read the latest received response:
+On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script to read the latest received response:
 
-    1.  Open `readLatest.js` and replace the consumer contract address with your own values:
+1.  Open `readLatest.js` and replace the consumer contract address with your own values:
 
     ```javascript
     const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
     ```
 
-    1. Run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script.
+1.  Run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script.
 
-      ```shell
-      node examples/10-automate-functions/readLatest.js
-      ```
+    ```shell
+    node examples/10-automate-functions/readLatest.js
+    ```
 
-      Example:
+    Output example:
 
-      ```text
-      $ node examples/10-automate-functions/readLatest.js
-      secp256k1 unavailable, reverting to browser version
-      Last request ID is 0x38687b48c9d8dfc7115d516840d45089a5409557765f031c14b332913e92ee7e
-      ✅ Decoded response to uint256:  2570207n
-      ```
+    ```text
+    $ node examples/10-automate-functions/readLatest.js
+    secp256k1 unavailable, reverting to browser version
+    Last request ID is 0x38687b48c9d8dfc7115d516840d45089a5409557765f031c14b332913e92ee7e
+    ✅ Decoded response to uint256:  2570207n
+    ```
 
 ### Clean up
 
-After you finish the guide:
-
-1. Cancel your upkeep from the [Chainlink Automation App](https://automation.chain.link/). **Note**: Remember to withdraw funds after you cancel the upkeep. There is a 50-block delay once upkeep between the moment you cancel your upkeep and the moment you can withdraw funds.
+After you finish the guide, cancel your upkeep in the [Chainlink Automation App](https://automation.chain.link/) and withdraw the remaining funds. After you cancel the upkeep, there is a 50-block delay before you can withdraw the funds.
 
 ## Examine the code
 
@@ -210,7 +209,7 @@ The JavaScript code is similar to the [Call Multiple Data Sources](/chainlink-fu
 
 ### updateRequest.js
 
-This explanation focuses on the [update.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to encode a request offchain then store in your contract. The code is self-explanatory and has comments to help you understand all the steps.
+This explanation focuses on the [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to encode a request offchain and store it in your contract. The code is self-explanatory and has comments to help you understand all the steps.
 
 The script imports:
 
@@ -218,7 +217,7 @@ The script imports:
 - [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
 - `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
 - `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
-- `../abi/automatedFunctions.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [AutomatedFunctionsConsumer contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol).
+- `../abi/automatedFunctions.json`: The ABI of the contract your script will interact with. **Note**: The script was tested with this [AutomatedFunctionsConsumer contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol).
 
 The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
 
@@ -263,22 +262,22 @@ The primary function that the script executes is `updateRequestMumbai`. This fun
 
 ### readLatest.js
 
-This explanation focuses on the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script and that reads the latest receive response of your consumer contract then decode it offchain using the Chainlink Function NPM package.
+This explanation focuses on the [readLatest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script that reads your consumer contract's latest received response and decodes it offchain using the Chainlink Function NPM package.
 
-The script has one hardcoded values that you have to change using your own Functions consumer contract address:
+The script contains a hardcoded value that you must replace with your own Functions consumer contract address:
 
 ```javascript
 const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
 ```
 
-The primary function that the script executes is `readLatest`. This function can be broken into two main parts:
+The primary function that the script executes is `readLatest`. This function can be broken down into two main parts:
 
 1. Read the latest response:
 
-   - Initialize your functions consumer contract using the contract address, abi, and ethers provider.
+   - Initialize your functions consumer contract using the contract address, ABI, and ethers provider.
    - Call the `s_lastRequestId`, `s_lastResponse`, and `s_lastError` functions of your consumer contract.
 
 1. Decode the latest response:
 
-   - If there was an error, read the latest error and parse it to `string`.
-   - If there was no error, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+   - If there was an error, read the latest error and parse it into a `string`.
+   - If there was no error, use the Functions NPM package's `decodeResult` function and the `ReturnType` enum to decode the response to the expected return type (`ReturnType.uint256` in this example).
