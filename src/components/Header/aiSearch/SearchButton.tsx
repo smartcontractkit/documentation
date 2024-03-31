@@ -25,6 +25,7 @@ const searchIcon = (
 )
 
 export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) => {
+  const isMac = navigator.userAgent.toUpperCase().indexOf("MAC") >= 0
   return variant === "default" ? (
     <button className={clsx(styles.default, "search-widget-trigger")}>
       <svg
@@ -48,7 +49,7 @@ export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) 
         </defs>
       </svg>
       <span className={styles.text}>Search Chainlink Docs</span>
-      <div className={styles.shortcut}>⌘K</div>
+      <div className={styles.shortcut}>{isMac ? "⌘" : "Ctrl+"}K</div>
     </button>
   ) : (
     <button className={clsx(styles.bottomBar, "search-widget-trigger")}>
