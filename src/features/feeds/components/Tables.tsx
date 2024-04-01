@@ -264,7 +264,9 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           </div>
           <div>
             <dt>
-              <span class="label">Attestation:</span>
+              <span class="label">
+                {proxy.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
+              </span>
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
