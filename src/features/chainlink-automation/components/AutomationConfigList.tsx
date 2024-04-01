@@ -54,23 +54,23 @@ export const AutomationConfigList = () => {
                 />
               </SectionWrapper>
             )
+          } else {
+            return (
+              <SectionWrapper
+                title={title}
+                idOverride={slugger.slug(title)}
+                depth={4}
+                updateTOC={false}
+                key={supportedChain}
+              >
+                <AutomationConfig
+                  config={config}
+                  registryAddress={registryAddress}
+                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                />
+              </SectionWrapper>
+            )
           }
-
-          return (
-            <SectionWrapper
-              title={title}
-              idOverride={slugger.slug(title)}
-              depth={4}
-              updateTOC={false}
-              key={supportedChain}
-            >
-              <AutomationConfig
-                config={config}
-                registryAddress={registryAddress}
-                getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-              />
-            </SectionWrapper>
-          )
         })}
       </SectionWrapper>
     )
