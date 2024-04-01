@@ -5,10 +5,6 @@ import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
 import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json"
 import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json"
 
-import chainsMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/chains.json"
-import lanesMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/lanes.json"
-import tokensMainnetv100 from "@config/data/ccip/v1_0_0/mainnet/tokens.json"
-
 // For testnet
 
 import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
@@ -27,10 +23,6 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
     chainsReferenceData = chainsMainnetv120 as unknown as ChainsConfig
     lanesReferenceData = lanesMainnetv120 as unknown as LanesConfig
     tokensReferenceData = tokensMainnetv120 as unknown as TokensConfig
-  } else if (environment === Environment.Mainnet && version === Version.V1_0_0) {
-    chainsReferenceData = chainsMainnetv100 as unknown as ChainsConfig
-    lanesReferenceData = lanesMainnetv100 as unknown as LanesConfig
-    tokensReferenceData = tokensMainnetv100 as unknown as TokensConfig
   } else if (environment === Environment.Testnet && version === Version.V1_2_0) {
     chainsReferenceData = chainsTestnetv120 as unknown as ChainsConfig
     lanesReferenceData = lanesTestnetv120 as unknown as LanesConfig
@@ -55,9 +47,6 @@ export const getAllChains = ({
   switch (mainnetVersion) {
     case Version.V1_2_0:
       chainsMainnetKeys = Object.keys(chainsMainnetv120)
-      break
-    case Version.V1_0_0:
-      chainsMainnetKeys = Object.keys(chainsMainnetv100)
       break
     default:
       throw new Error(`Invalid mainnet version: ${mainnetVersion}`)
