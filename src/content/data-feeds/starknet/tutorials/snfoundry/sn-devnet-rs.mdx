@@ -9,7 +9,7 @@ metadata:
 
 import { CodeSample, CopyText } from "@components"
 
-This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment for Starknet. It provides code examples and scripts that enable you to compile, declare, and deploy your own aggregator and consumer contracts. You can use a set of pre-funded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
+This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment for Starknet. It provides code examples and scripts that enable you to compile, declare, and deploy your own aggregator and consumer contracts. You can use a set of prefunded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
 
 ## Requirements
 
@@ -17,13 +17,13 @@ This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet
 
 This guide uses the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit and the [Scarb](https://github.com/software-mansion/scarb) project management tool so you can compile, deploy, and interact with your Starknet smart contracts.
 
-- **Starknet Foundry**: Make sure you have Starknet Foundry **v0.20.1** installed. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
+- **Starknet Foundry**: Install Starknet Foundry **v0.20.1**. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
 
-- **Scarb**: Make sure you have Scarb **v2.5.4** installed. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
+- **Scarb**: Install Scarb **v2.5.4**. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
 
 Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.html) tool version manager to install both Starknet Foundry and Scarb. Read the setup instructions for [Starknet Foundry](https://github.com/foundry-rs/asdf-starknet-foundry) and [Scarb](https://docs.swmansion.com/scarb/download.html#install-via-asdf) for more information.
 
-- **Docker**: Make sure you have [Docker Desktop](https://docs.docker.com/get-docker/) installed. You will run Starknet Devnet RS in a Docker container.
+- **Docker**: Install [Docker Desktop](https://docs.docker.com/get-docker/). You will run Starknet Devnet RS in a Docker container.
 
 ### Clone and configure the code examples repository
 
@@ -39,7 +39,7 @@ Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.htm
    cd chainlink-starknet/examples/contracts/aggregator_consumer/
    ```
 
-1. In the `~/chainlink-starknet/examples/contracts/aggregator_consumer/` directory, make sure the `url` property in your `snfoundry.toml` file points to the Docker container. For example:
+1. Open your `snfoundry.toml` file and locate the `[sncast.devnet]` section. Make sure the `url` points to the correct endpoint for connecting to the Starknet node running inside the Docker container. By default, it is:
 
    ```bash
    [sncast.default]
@@ -56,7 +56,7 @@ The contracts should compile successfully and the tests should pass.
 
 ## Tutorial
 
-### Aggregator mock contract
+### Run Starknet Devnet RS and add a prefunded account
 
 1. Execute the following command to run a Starknet Devnet RS container:
 
@@ -94,6 +94,8 @@ The contracts should compile successfully and the tests should pass.
    }
    }
    ```
+
+### Deploy and interact with a mock aggregator contract
 
 1. Declare and deploy a mock aggregator contract to the devnet using the `deploy_mock_aggregator` [LINK_TO_UPDATE] script. Run the following command:
 
@@ -156,55 +158,61 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-### Aggregator consumer mock contract
+### Deploy and interact with a mock aggregator and a mock consumer contract
 
 The mock aggregator consumer contract is initialized with the address of an aggregator mock contract during the contract's constructor call and contains two functions:
 
 - `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
 - `read_answer` reads the stored `answer` value.
 
-1. Open the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script in the `scripts/src/consumer/` directory and update the `aggregator_address` variable with the address of the mock aggregator contract you deployed earlier.
-
-1. Declare and deploy the mock aggregator consumer contract to the devnet using the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script. Run the following command:
+1. Run the following command to (re)start the Starknet Devnet RS container:
 
    ```bash
-   make ac-deploy NETWORK=devnet
+   make devnet
    ```
+
+1. If you haven't already, add a prefunded account to the local `accounts.json` file using the following command:
+
+   ```bash
+   make add-account
+   ```
+
+1. Declare and deploy both a mock aggregator and a consumer contracts to the devnet using the following command:
+
+   ```bash
+   make devnet-deploy
+   ```
+
+   This command runs both `ma-deploy` [LINK_TO_UPDATE] and `ac-deploy` [LINK_TO_UPDATE] scripts.
 
    Expect an output similar to the following:
 
    ```bash
+   Declaring and deploying MockAggregator
+   Declaring contract...
+   Transaction hash = 0x568d29d07128cba750845b57a4bb77a31f628b6f4288861d8b31d12e71e4c3b
+   Deploying contract...
+   Transaction hash = 0xfbc49eb82894a704ce536ab904cdee0fd021b0fba335900f8b9b12cfcd005f
+   MockAggregator deployed at address: 1566652744716179301065270359129119857774335542042051464747302084192731701184
+
+   command: script run
+   status: success
+
    Declaring and deploying AggregatorConsumer
    Declaring contract...
-   Transaction hash = 0x23c39d1868f1e1c985d428728a68d98dec1be74756f2359be82f7b0a8868edb
+   Transaction hash = 0x3f11f08103e263690b1eeac76c25ce7b003c86d2d1c0492815d1ddb39f58e8e
    Deploying contract...
-   Transaction hash = 0x27b8fa433eba1c3e49aff93e6afcad45a70b051916bc42c8656be3de71ada9a
-   AggregatorConsumer deployed at address: 3403979817904867284271724434893698520332178225456427040822048848031141514773
+   Transaction hash = 0xfe5b1ed51a435117098343b5d0fdc1c32fd493f1220ff2c69c732f5bb805d8
+   AggregatorConsumer deployed at address: 2775662320989421053891107164335108610292525354452508848326323790006553228656
 
    command: script run
    status: success
    ```
 
-1. Retrieve and store the latest round data from the aggregator contract using the `set_answer` [LINK_TO_UPDATE] script. Run the following command:
+Once the contracts are deployed, experiment and interact with both contracts and the available scripts [LINK_TO_UPDATE] as needed for your projects.
 
-   ```bash
-   make ac-set-answer NETWORK=devnet
-   ```
+You can, for instance, set the latest round data on the aggregator contract, retrieve and set the `answer` on the consumer contract, and read the `answer` from the consumer contract:
 
-   Expect an output similar to the following:
-
-   ```bash
-   [TBU]
-   ```
-
-1. Read the stored `answer` value using the `read_answer` [LINK_TO_UPDATE] script. Run the following command:
-
-   ```bash
-   make ac-read-answer NETWORK=devnet
-   ```
-
-   Expect an output similar to the following:
-
-   ```bash
-   [TBU]
-   ```
+```bash
+make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && make ac-read-answer NETWORK=devnet
+```
