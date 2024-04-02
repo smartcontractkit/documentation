@@ -1,0 +1,163 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Deploy and interact with a Consumer Contract on Starknet using Starknet Foundry"
+whatsnext:
+  {
+    "Starknet Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses?network=starknet",
+    "Experiment with Starknet Devnet RS": "/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+  }
+metadata:
+  description: "Deploy and Interact with a Data Feeds Consumer Contract on StarkNet using Starknet Foundry."
+---
+
+import { CodeSample, CopyText } from "@components"
+
+This example uses a local OpenZeppelin account to deploy and interact with a consumer contract onchain. This contract retrieves data from a specified Chainlink data feed on Starknet Sepolia and stores the information for the latest round of data.
+
+## Requirements
+
+### Set up your environment
+
+This guide uses the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit and the [Scarb](https://github.com/software-mansion/scarb) project management tool so you can compile, deploy, and interact with your Starknet smart contracts.
+
+- **Starknet Foundry**: Make sure you have Starknet Foundry **v0.20.1** installed. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
+
+- **Scarb**: Make sure you have Scarb **v2.5.4** installed. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
+
+Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.html) tool version manager to install both Starknet Foundry and Scarb. Read the setup instructions for [Starknet Foundry](https://github.com/foundry-rs/asdf-starknet-foundry) and [Scarb](https://docs.swmansion.com/scarb/download.html#install-via-asdf) for more information.
+
+### Clone and configure the code examples repository
+
+1. Clone the [chainlink-starknet](https://github.com/smartcontractkit/chainlink-starknet/) repository, which includes the example contracts for this guide:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/chainlink-starknet.git
+   ```
+
+1. Navigate to the `aggregator_consumer` [LINK_TO_UPDATE] directory:
+
+   ```bash
+   cd chainlink-starknet/examples/contracts/aggregator_consumer/
+   ```
+
+1. In the `~/chainlink-starknet/examples/contracts/aggregator_consumer/` directory, make sure the `url` property in your `snfoundry.toml` file points to a Starknet Sepolia RPC endpoint. For example:
+
+   ```bash
+   [sncast.default]
+   url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+   ```
+
+   Note: This example utilizes a [Blast API](https://blastapi.io/public-api/starknet) RPC endpoint. You can interact with the network using any other Starknet Sepolia RPC provider, such as [Alchemy](https://www.alchemy.com/starknet) or [Infura](https://www.infura.io/networks/ethereum/starknet).
+
+After you prepare the requirements, check to make sure the required tools are configured correctly by running the tests:
+
+    ```bash
+    snforge test
+    ```
+
+The contracts should compile successfully and the tests should pass.
+
+## Tutorial
+
+1. In the `~/chainlink-starknet/examples/contracts/aggregator_consumer/` directory, run the `create-account` [LINK_TO_UPDATE] script:
+
+   ```bash
+   make create-account
+   ```
+
+   This script creates a new OpenZeppelin local account for the Sepolia testnet. The account details are stored locally in your `~/.starknet_accounts/starknet_open_zeppelin_accounts.json` file.
+
+   Expect an output similar to the following:
+
+   ```bash
+   command: account create
+   address: 0x3e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d
+   max_fee: 9529927566560
+   message: Account successfully created. Prefund generated address with at least <max_fee> tokens. It is good to send more in the case of higher demand.
+
+   Your accounts:
+   {
+     "alpha-sepolia": {
+       "testnet-account": {
+         "address": "0x3e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d",
+         "class_hash": "0x4c6d6cf894f8bc96bb9c525e6853e5483177841f7388f74a46cfda6f028c755",
+         "deployed": false,
+         "legacy": false,
+         "private_key": <PRIVATE_KEY>,
+         "public_key": "0x2972c3cb7aa85403fa1e038f9ce7a93f025ea57017eb7ef735bae989bfb15bd",
+         "salt": "0x61a062d2dd4e7656"
+       }
+     }
+   }
+   ```
+
+   From the output, note:
+
+   - Your account address. In this example, it is `0x03e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d`, with an added zero after `0x`.
+   - The `max_fee` value, which is the minimum amount of testnet ETH required to deploy the account.
+
+1. Fund the newly created account with testnet ETH to cover the account deployment, the consumer contract deployment and the network interaction costs.
+
+   Go to the Blast [Starknet Sepolia ETH Faucet](https://blastapi.io/faucets/starknet-sepolia-eth) and enter your account address to receive 0.025 testnet ETH. Wait a few seconds for the transaction to complete.
+
+   Alternatively, you can transfer ETH tokens from a Starknet-compatible wallet, such as [Argent](https://www.argent.xyz/) or [Braavos](https://braavos.app/), or utilize the [StarkGate bridge](https://starkgate.starknet.io/) to transfer testnet ETH from Ethereum Sepolia to Starknet Sepolia. If you need testnet ETH on Ethereum Sepolia, you can use the [Chainlink faucet](https://faucets.chain.link/sepolia).
+
+1. Deploy your account to the Starknet Sepolia testnet:
+
+   ```bash
+   make deploy-account
+   ```
+
+   This command deploys your account to the Starknet Sepolia testnet. Expect an output similar to the following:
+
+   ```bash
+   command: account deploy
+   transaction_hash: 0x541ffae49f77dd942376391286052d9fb87dc8d6848139ab1508c114e3aa005
+   ```
+
+1. In the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script, update the `aggregator_address` variable within the `main` function with the ETH / USD Chainlink aggregator contract address on Starknet Sepolia : <CopyText text="[ADDRESS_TO_UPDATE]" code/>.
+
+   For a complete list of Chainlink Price Feeds available on Starknet, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=starknet) page.
+
+1. Deploy a consumer contract to the Starknet Sepolia testnet using the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script:
+
+   ```bash
+   make ac-deploy NETWORK=testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   command: contract deploy
+   transaction_hash: 0x541ffae49f77dd942376391286052d9fb87dc8d6848139ab1508c114e3aa005
+   ```
+
+   This consumer contract contains two functions:
+
+   - `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
+   - `read_answer` reads the stored `answer` value.
+
+1. Call the `set_answer` function to retrieve the latest answer from the ETH / USD feed using the `set_answer` [LINK_TO_UPDATE] script:
+
+   ```bash
+   make ac-set-answer NETWORK=testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   [TBU]
+   ```
+
+1. Call the `read_answer` function to read the stored answer value using the `read_answer` [LINK_TO_UPDATE] script:
+
+   ```bash
+   [TBU]
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   [TBU]
+   ```
