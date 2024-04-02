@@ -127,7 +127,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/starknet/tutorials/snfoundry/consumer-contract",
             },
             {
-              title: "Experiment with Starknet Devnet RS",
+              title: "Experiment on a Devnet",
               url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
             },
           ],
