@@ -29,25 +29,25 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
      * @dev Check https://docs.chain.link/docs/link-token-contracts/ for LINK address for the right network
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
     }
 
     function requestEthereumPrice(
         address _oracle,
         string memory _jobId
     ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             stringToBytes32(_jobId),
             address(this),
             this.fulfillEthereumPrice.selector
         );
-        req.add(
+        req._add(
             "get",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
         );
-        req.add("path", "USD");
-        req.addInt("times", 100);
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+        req._add("path", "USD");
+        req._addInt("times", 100);
+        _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
     /**
@@ -58,7 +58,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
         address _oracle,
         string memory _jobId
     ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             stringToBytes32(_jobId),
             address(this),
             this.fulfillFirstId.selector
@@ -66,7 +66,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
 
         // Set the URL to perform the GET request on
         // API docs: https://www.coingecko.com/en/api/documentation?
-        req.add(
+        req._add(
             "get",
             "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=10"
         );
@@ -81,9 +81,9 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
         // ...
         // .. }]
         // request.add("path", "0.id"); // Chainlink nodes prior to 1.0.0 support this format
-        req.add("path", "0,id"); // Chainlink nodes 1.0.0 and later support this format
+        req._add("path", "0,id"); // Chainlink nodes 1.0.0 and later support this format
         // Sends the request
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+        _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
     function fulfillEthereumPrice(
@@ -106,11 +106,11 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
     }
 
     function getChainlinkToken() public view returns (address) {
-        return chainlinkTokenAddress();
+        return _chainlinkTokenAddress();
     }
 
     function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
         require(
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
@@ -123,7 +123,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
         bytes4 _callbackFunctionId,
         uint256 _expiration
     ) public onlyOwner {
-        cancelChainlinkRequest(
+        _cancelChainlinkRequest(
             _requestId,
             _payment,
             _callbackFunctionId,
