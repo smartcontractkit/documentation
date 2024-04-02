@@ -138,6 +138,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "KROMA_MAINNET"
     case "ethereum-testnet-sepolia-kroma-1":
       return "KROMA_SEPOLIA"
+    case "xdai-testnet-chiado":
+      return "GNOSIS_CHIADO"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -181,6 +183,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-kroma-1"
     case "KROMA_SEPOLIA":
       return "ethereum-testnet-sepolia-kroma-1"
+    case "GNOSIS_CHIADO":
+      return "xdai-testnet-chiado"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
