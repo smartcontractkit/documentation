@@ -56,4 +56,155 @@ The contracts should compile successfully and the tests should pass.
 
 ## Tutorial
 
-[TBC]
+### Aggregator mock contract
+
+1. Execute the following command to run a Starknet Devnet RS container:
+
+   ```bash
+   make devnet
+   ```
+
+   Note: Running this command when a container is running stops and recreates the container, which helps restart from a clean state.
+
+1. The Starknet devnet container includes a set of prefunded accounts. To run the scripts from this guide, add one of these accounts to a local `accounts.json` file using the following command:
+
+   ```bash
+   make add-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Importing a prefunded account from starknet devnet container...
+
+   command: account add
+
+   Your accounts:
+
+   {
+   "alpha-goerli": {
+      "devnet-account": {
+         "address": "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
+         "class_hash": "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+         "deployed": true,
+         "legacy": false,
+         "private_key": "0x57b2f8431c772e647712ae93cc616638",
+         "public_key": "0x374f7fcb50bc2d6b8b7a267f919232e3ac68354ce3eafe88d3df323fc1deb23"
+      }
+   }
+   }
+   ```
+
+1. Declare and deploy a mock aggregator contract to the devnet using the `deploy_mock_aggregator` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make ma-deploy NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Declaring and deploying MockAggregator
+   Declaring contract...
+   Transaction hash = 0x568d29d07128cba750845b57a4bb77a31f628b6f4288861d8b31d12e71e4c3b
+   Deploying contract...
+   Transaction hash = 0xfbc49eb82894a704ce536ab904cdee0fd021b0fba335900f8b9b12cfcd005f
+   MockAggregator deployed at address: 1566652744716179301065270359129119857774335542042051464747302084192731701184
+
+   command: script run
+   status: success
+   ```
+
+   Save the mock aggregator contract address for later. In this example, it is `1566652744716179301065270359129119857774335542042051464747302084192731701184` (decimal representation), equivalent to `0x376B1ABF788737BDED2011A0F76CE61CABDEAEC22E97B8A4E231B149DD49FC0` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.binaryhexconverter.com/decimal-to-hex-converter) to convert the address.
+
+1. Read the latest round data using the `read_latest_round` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make agg-read-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Result::Ok(CallResult { data: [0, 0, 0, 0, 0] })
+   command: script run
+   status: success
+   ```
+
+   By default, the retrieved data from your mock aggregator contract are all zeros.
+
+1. You can set the latest round data using the `set_latest_round` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make ma-set-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Transaction hash = 0x3f01f4595dcf20b4f355720540d5279efc0fff306d4e848dda4550cdd2a5367
+   Result::Ok(InvokeResult { transaction_hash: 1781197671452105104356220458359085564429259248315865550090042149835146679143 })
+   command: script run
+   status: success
+   ```
+
+1. Read the latest round data again using the <CopyText text="make agg-read-latest-round NETWORK=devnet" code/> command to verify the updated values:
+
+   ```bash
+   Result::Ok(CallResult { data: [1, 1, 12345, 100000, 200000] })
+   command: script run
+   status: success
+   ```
+
+### Aggregator consumer mock contract
+
+The mock aggregator consumer contract is initialized with the address of an aggregator mock contract during the contract's constructor call and contains two functions:
+
+- `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
+- `read_answer` reads the stored `answer` value.
+
+1. Open the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script in the `scripts/src/consumer/` directory and update the `aggregator_address` variable with the address of the mock aggregator contract you deployed earlier.
+
+1. Declare and deploy the mock aggregator consumer contract to the devnet using the `deploy_aggregator_consumer` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make ac-deploy NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Declaring and deploying AggregatorConsumer
+   Declaring contract...
+   Transaction hash = 0x23c39d1868f1e1c985d428728a68d98dec1be74756f2359be82f7b0a8868edb
+   Deploying contract...
+   Transaction hash = 0x27b8fa433eba1c3e49aff93e6afcad45a70b051916bc42c8656be3de71ada9a
+   AggregatorConsumer deployed at address: 3403979817904867284271724434893698520332178225456427040822048848031141514773
+
+   command: script run
+   status: success
+   ```
+
+1. Retrieve and store the latest round data from the aggregator contract using the `set_answer` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make ac-set-answer NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   [TBU]
+   ```
+
+1. Read the stored `answer` value using the `read_answer` [LINK_TO_UPDATE] script. Run the following command:
+
+   ```bash
+   make ac-read-answer NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   [TBU]
+   ```
