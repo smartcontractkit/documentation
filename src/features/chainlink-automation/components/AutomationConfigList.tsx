@@ -2,7 +2,7 @@
 import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from "@features/chainlink-automation"
 import { SupportedChain, SupportedTechnology } from "@config"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
-import { FunctionComponent } from "preact" // or 'preact';
+import { FunctionComponent } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 import GithubSlugger from "github-slugger"
 
