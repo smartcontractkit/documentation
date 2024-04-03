@@ -20,10 +20,7 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
-enum PoolType {
-  LockRelease = "lockRelease",
-  BurnMint = "burnMint",
-}
+export type PoolType = "lockRelease" | "burnMint" | "usdc"
 
 type PoolInfo = {
   tokenAddress: string
@@ -50,7 +47,9 @@ export type LanesConfig = {
 }
 
 export type TokensConfig = {
-  [token: string]: PoolInfo
+  [token: string]: {
+    [chain: string]: PoolInfo
+  }
 }
 
 export enum Environment {

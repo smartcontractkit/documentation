@@ -1,6 +1,5 @@
 ---
-import { LaneConfig } from "@config/data/ccip/types"
-import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
+import { loadReferenceData, Environment, Version, PoolType, LaneConfig } from "@config/data/ccip/"
 import { SupportedChain } from "@config"
 import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
@@ -12,14 +11,22 @@ type ConfigProps = {
   laneConfig: LaneConfig
   sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
+  destinationChainRefId: string // id in reference directory
   destinationChainSelector: string
   environment: Environment
   version: Version
 }
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
-const { laneConfig, sourceChain, environment, sourceChainRefId, version, destinationChainSelector } =
-  Astro.props as ConfigProps
+const {
+  laneConfig,
+  sourceChain,
+  environment,
+  sourceChainRefId,
+  destinationChainRefId,
+  version,
+  destinationChainSelector,
+} = Astro.props as ConfigProps
 const { rateLimiterConfig, supportedTokens, onRamp } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
@@ -84,44 +91,74 @@ if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
 const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp)
 
-let tokensWithExtraInfo: {
+interface TokenExtraInfo {
   token: string
-  address: any
+  address: string
   rateLimiterConfig: { capacity: string; isEnabled: boolean; rate: string }
   name?: string
   decimals: number
-  poolType?: string
-}[] = []
+  poolMechanism?: string
+}
+
+let tokensWithExtraInfo: TokenExtraInfo[] = []
+
+const determineMechanism = (
+  sourcePoolType: PoolType | undefined,
+  destinationPoolType: PoolType | undefined
+): string => {
+  if (!sourcePoolType || !destinationPoolType) {
+    console.error(`Pool types not found for token on ${sourceChainRefId} to ${destinationChainRefId}`)
+    return ""
+  } else if (sourcePoolType === "lockRelease" && destinationPoolType === "burnMint") {
+    return "Lock & Mint"
+  } else if (sourcePoolType === "lockRelease" && destinationPoolType === "lockRelease") {
+    return "Lock & Unlock"
+  } else if (
+    (sourcePoolType === "burnMint" && destinationPoolType === "burnMint") ||
+    (sourcePoolType === "usdc" && destinationPoolType === "usdc")
+  ) {
+    return "Burn & Mint"
+  } else {
+    console.error(
+      `Unsupported pool mechanism ${sourcePoolType}-${destinationPoolType} on ${sourceChainRefId} to ${destinationChainRefId}`
+    )
+    return ""
+  }
+}
 
 const tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
 if (supportedTokens) {
-  tokensWithExtraInfo = Object.keys(supportedTokens)
-    .filter((supportedToken) => {
+  tokensWithExtraInfo = Object.entries(supportedTokens)
+    .filter(([supportedToken]) => {
       const tokenData = tokensReferenceData[supportedToken]
-      if (!tokenData) {
-        console.error(`Token data not found for supportedToken: ${supportedToken}`)
-        return false
-      }
-      if (!tokenData[sourceChainRefId]) {
-        console.error(
-          `Chain reference data not found for supportedToken: ${supportedToken}, chainRefId: ${sourceChainRefId}`
-        )
+      if (!tokenData || !tokenData[sourceChainRefId]) {
+        console.error(`Data not found for supportedToken: ${supportedToken}, chainRefId: ${sourceChainRefId}`)
         return false
       }
 
       return !tokenData[sourceChainRefId].allowListEnabled
     })
-    .map((supportedToken) => {
+    .map(([supportedToken, { rateLimiterConfig }]): TokenExtraInfo | null => {
       const tokenData = tokensReferenceData[supportedToken]
-      const { tokenAddress, decimals, poolType } = tokenData[sourceChainRefId]
+      const sourceData = tokenData[sourceChainRefId]
+      const destinationData = tokenData[destinationChainRefId]
+
+      if (!sourceData || !destinationData) {
+        console.error(`Pool type not found for token: ${supportedToken}`)
+        return null
+      }
+
+      const mechanism = determineMechanism(sourceData.poolType, destinationData.poolType)
+
       return {
         token: supportedToken,
-        address: tokenAddress,
-        rateLimiterConfig: supportedTokens[supportedToken].rateLimiterConfig,
-        decimals: decimals,
-        poolType: poolType,
+        address: sourceData.tokenAddress,
+        rateLimiterConfig: rateLimiterConfig,
+        decimals: sourceData.decimals,
+        poolMechanism: mechanism,
       }
     })
+    .filter((item): item is TokenExtraInfo => item !== null && item.token !== undefined)
 }
 ---
 
@@ -207,7 +244,14 @@ if (supportedTokens) {
               <th>Symbol</th>
               <th>Token Address</th>
               <th>Decimals</th>
-              <th>Token Pool Type</th>
+              <th>
+                <Tooltip
+                  tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock"
+                  label="Mechanism"
+                  style={{ marginTop: "0" }}
+                  client:load
+                />
+              </th>
               <th>
                 <Tooltip
                   tip="Maximum amount per transaction"
@@ -238,7 +282,7 @@ if (supportedTokens) {
                     />
                   </td>
                   <td>{tokenWithExtraInfo.decimals}</td>
-                  <td>{tokenWithExtraInfo.poolType}</td>
+                  <td>{tokenWithExtraInfo.poolMechanism}</td>
                   <td>
                     {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
                       ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
