@@ -90,6 +90,7 @@ let tokensWithExtraInfo: {
   rateLimiterConfig: { capacity: string; isEnabled: boolean; rate: string }
   name?: string
   decimals: number
+  poolType?: string
 }[] = []
 
 const tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
@@ -111,12 +112,14 @@ if (supportedTokens) {
       return !tokenData[sourceChainRefId].allowListEnabled
     })
     .map((supportedToken) => {
-      const { tokenAddress, decimals } = tokensReferenceData[supportedToken][sourceChainRefId]
+      const tokenData = tokensReferenceData[supportedToken]
+      const { tokenAddress, decimals, poolType } = tokenData[sourceChainRefId]
       return {
         token: supportedToken,
         address: tokenAddress,
         rateLimiterConfig: supportedTokens[supportedToken].rateLimiterConfig,
         decimals: decimals,
+        poolType: poolType,
       }
     })
 }
@@ -204,6 +207,7 @@ if (supportedTokens) {
               <th>Symbol</th>
               <th>Token Address</th>
               <th>Decimals</th>
+              <th>Token Pool Type</th>
               <th>
                 <Tooltip
                   tip="Maximum amount per transaction"
@@ -234,6 +238,7 @@ if (supportedTokens) {
                     />
                   </td>
                   <td>{tokenWithExtraInfo.decimals}</td>
+                  <td>{tokenWithExtraInfo.poolType}</td>
                   <td>
                     {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
                       ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
