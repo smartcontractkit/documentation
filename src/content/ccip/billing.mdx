@@ -73,18 +73,24 @@ This cost is only relevant if the destination blockchain is a [L2 layer](https:/
 
 The premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network) is calculated as follows:
 
-- For token transfers or programmable transfers (token + data), the fee uses a percentage-based premium. For each token, the premium is calculated using the following expression:
+- For token transfers or programmable transfers (token + data), the fees vary based on the [token pool type](/ccip/architecture#token-pools) and the [lanes](/ccip/concepts#lane):
 
-  ```
-  tokenAmount * price * percentage
-  ```
+  - **Lock and Unlock** token pools: Fees are based on a percentage-based premium. For each token, the premium is calculated using the following expression:
 
-  Where:
+        ```
+        tokenAmount * price * percentage
+        ```
 
-  - `tokenAmount`: The amount of tokens.
-  - `price`: Initially denominated in USD and translated into the `feeToken`.
-  - `percentage`: The values are listed in the table below.
+        Where:
 
-- For messaging (only data): The fee is a static amount. The values denominated in USD are listed in the table below.
+        - `tokenAmount`: The amount of tokens being transferred.
+        - `price`: Initially priced in USD and converted into the `feeToken`.
+        - `percentage`: The values are provided in the table below.
+
+  - **Lock and Mint** and **Burn and Mint** token pools: The fee is a static amount for each transferred token. The values denominated in USD are provided in the table below.
+
+    **Note**: To determine the token pool type, refer to the CCIP supported networks on the [mainnet](/ccip/supported-networks/v1_2_0/mainnet) or [testnet](/ccip/supported-networks/v1_2_0/testnet) pages.
+
+- For messaging (only data): The fee is a static amount. The values denominated in USD are provided in the table below.
 
 <Billing />
