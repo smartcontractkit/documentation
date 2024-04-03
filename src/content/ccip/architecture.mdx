@@ -27,8 +27,9 @@ Below is a diagram displaying the basic architecture of CCIP. Routers are smart 
 
 <Aside type="caution" title="Transferring tokens">
   This section uses the term "transferring tokens" even though the tokens are not technically transferred. Instead, they
-  are locked or burned on the source chain and then unlocked or minted on the destination chain. Read the [Token
-  Pools](#token-pools) section to understand the various mechanisms that are used to transfer value across chains.
+  are locked or burned on the source blockchain and then unlocked or minted on the destination blockchain. Read the
+  [Token Pools](#token-pools) section to understand the various mechanisms that are used to transfer value across
+  blockchain.
 </Aside>
 
 <ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Basic Architecture" />
@@ -59,7 +60,7 @@ The figure below outlines the different components involved in a cross-chain tra
 
 #### Router
 
-The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contract exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
+The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contract exists per blockchain. When transferring tokens, callers have to approve tokens for the router contract.
 The router contract routes the instruction to the destination-specific [OnRamp](#onramp).
 
 When a message is received on the destination chain, the router is the contract that “delivers” tokens to the user's account or the message to the receiver's smart contract.
@@ -89,14 +90,28 @@ One OffRamp contract per [lane](/ccip/concepts#lane) exists. This contract perfo
 
 #### Token pools
 
-Each token has its own token pool, an abstraction layer over ERC-20 tokens that facilitates OnRamp and OffRamp token-related operations. Token pools are configurable to `lock` or `burn` at the source blockchain and `unlock` or `mint` at the destination blockchain. The mechanism for handling tokens depends on the characteristics of the token in question. Here are a few examples:
+Each token is associated with its own token pool, an abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide rate limiting, a security feature enabling token issuers to set a maximum rate at which their token can be transferred. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
 
-- Blockchain-native gas tokens, such as ETH, MATIC, and AVAX, can only be minted on their native chains. These tokens cannot be burned on the source and minted at the destination to transfer these tokens between chains. Instead, the linked token pool uses a "Lock and Mint" approach that locks the token at its source and then mints a wrapped or synthetic asset on the destination blockchain. This synthetic asset represents the locked asset and is essential for redeeming the locked asset.
-- A token like LINK is minted on a single chain (Ethereum mainnet) with a fixed total supply. CCIP cannot natively mint it on another chain. In this case, the "Lock and Mint" approach is required.
-- Some tokens can be minted on multiple chains. Examples of such tokens include stablecoins like USDC, TUSD, USDT, and FRAX. The linked token pools use a "Burn and Mint" method to burn the token at its source and then mint it natively on the destination blockchain. Wrapped assets such as WBTC or WETH are other examples that use the "Burn and Mint" approach.
-- A token with a Proof Of Reserve (PoR) feed on a specific chain poses a challenge for the "Burn and Mint" method when applied to other chains because it conflicts with the PoR feed. For these tokens, "Lock and Mint" is the preferred approach.
+- **Burn and Mint**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain.
+- **Lock and Mint**: Tokens are locked on their issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens can be transferred across non-issuing blockchains using the _Burn and Mint_ mechanism.
+- **Lock and Unlock**: Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain.
+- **Burn and Unlock**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. This mechanism is the inverse of the _Lock and Mint_ mechanism. It applies when you send tokens to their issuing source blockchain.
 
-Token pools provide rate limiting, which is a security feature enabling token issuers to set a maximum rate at which their token can be transferred.
+The mechanism for handling tokens varies depending on the characteristics of each token. Below are several examples to illustrate this:
+
+- LINK Token is minted on a single blockchain (Ethereum mainnet) and has a fixed total supply. Consequently, CCIP cannot natively mint it on another blockchain. For LINK, the token pool is configured to lock tokens on Ethereum mainnet (the issuing blockchain) and mint them on the destination blockchain. Conversely, when transferring from a non-issuing blockchain to Ethereum mainnet, the LINK token pool is set to burn the tokens on the source (non-issuing) blockchain and unlock them on Ethereum Mainnet (issuing).
+- Wrapped native Assets (e.g., WETH) utilize a _Lock and Unlock_ mechanism. For instance, when transferring 10 WETH from Ethereum mainnet to Optimism mainnet, the WETH token pool will lock 10 WETH on Ethereum mainnet and unlock 10 WETH on Optimism mainnet. Conversely, transferring from Optimism mainnet back to Ethereum mainnet involves the WETH token pool locking 10 WETH on Optimism mainnet and unlocking 10 WETH on the Ethereum mainnet.
+- Stablecoins (e.g., USDC) can be minted natively on multiple blockchains. Their respective token pools employ a _Burn and Mint_ mechanism, burning the token on the source blockchain and then minting it natively on the destination blockchain.
+- Tokens with a Proof Of Reserve (PoR) with a PoR feed on a specific blockchain present a challenge for the _Burn and Mint_ mechanism when applied across other blockchains due to conflicts with the PoR feed. For such tokens, the _Lock and Mint_ approach is preferred.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Transferring Native Gas Tokens">
+  To transfer blockchain native gas tokens, such as <strong>ETH</strong>, from one blockchain to another, follow these steps: 
+  1. Wrap ETH into WETH: Users must first interact with the WETH contract or use a DEX to convert their ETH into Wrapped Ether (WETH). 
+  1. Send WETH via CCIP: Next, users call the CCIP Router to send WETH to the receiver account on the desired destination blockchain. 
+  1. Unwrap WETH back into ETH: Finally, on the destination blockchain, users call the WETH contract or use a DEX to convert the WETH into ETH.
+    
+</Aside>
 
 <Aside type="note" title="Onboarding New Tokens">
   Supported tokens for each lane are listed on the [CCIP supported network pages](/ccip/supported-networks). Expanding
@@ -166,8 +181,8 @@ Consider an example where a lane has a maximum capacity of 100,000 USD, a refill
 
 ## CCIP execution latency
 
-Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source chain to reach [finality](/ccip/concepts#finality). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a chain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
+Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source blockchain to reach [finality](/ccip/concepts#finality). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a blockchain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
 
-If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
+If the fee paid on the source blockchain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
 Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The Smart Execution time window parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of Smart Execution time window due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/). Read the [manual execution](/ccip/concepts/manual-execution) conceptual guide to learn more.
