@@ -110,16 +110,19 @@ The contracts should compile successfully and the tests should pass.
    ```bash
    Declaring and deploying MockAggregator
    Declaring contract...
-   Transaction hash = 0x568d29d07128cba750845b57a4bb77a31f628b6f4288861d8b31d12e71e4c3b
+   Transaction hash = 0x1d4cb925322e0f9645cf0bf4028b7fca963b5325cc685784c0f6e22628de8ad
+   Class hash = 3238358970964595466962588940073124312643094641461979698784985925711454737896
    Deploying contract...
-   Transaction hash = 0xfbc49eb82894a704ce536ab904cdee0fd021b0fba335900f8b9b12cfcd005f
-   MockAggregator deployed at address: 1566652744716179301065270359129119857774335542042051464747302084192731701184
+   Transaction hash = 0x6b065766a26105fbd9bf55be46675d2c2b4b0dd9a85db5ab0b6a1f8ad04f743
+   MockAggregator deployed at address: 1708487128334545444076626254389547159540422020354796381590079145465639129383
 
    command: script run
    status: success
    ```
 
-   Save the mock aggregator contract address for later. In this example, it is `1566652744716179301065270359129119857774335542042051464747302084192731701184` (decimal representation), equivalent to `0x376B1ABF788737BDED2011A0F76CE61CABDEAEC22E97B8A4E231B149DD49FC0` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to convert the address.
+   In this example, the mock aggregator address is `1708487128334545444076626254389547159540422020354796381590079145465639129383` (decimal representation), equivalent to `0x3c6f82da5dbfa89ec9dbe414f33d23d1720d15568e4a880afcc9b0c3d98d127` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to convert the address. Save this address for the next step.
+
+1. In `/scripts/src/aggregator/`, open the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script and update the `aggregator_address` variable with your deployed mock aggregator address.
 
 1. Read the latest round data by using the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script. Run the following command:
 
@@ -135,9 +138,11 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-   By default, the retrieved data from your mock aggregator contract are all zeros.
+   By default, the data on your mock aggregator contract are all set to zeros.
 
-1. You can set the latest round data using the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
+1. In `/scripts/src/mock_aggregator/`, open the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script and update the `mock_aggregator_address` variable with your deployed mock aggregator address.
+
+1. Set the latest round of data to some values defined in the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
 
    ```bash
    make ma-set-latest-round NETWORK=devnet
@@ -152,7 +157,13 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-1. Read the latest round data again using the <CopyText text="make agg-read-latest-round NETWORK=devnet" code/> command to verify the updated values:
+1. Read the latest round of data again to verify the updated values:
+
+   ```bash
+   make agg-read-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
 
    ```bash
    Result::Ok(CallResult { data: [1, 1, 12345, 100000, 200000] })
