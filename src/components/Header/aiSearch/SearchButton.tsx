@@ -1,5 +1,6 @@
 import { clsx } from "~/lib"
 import styles from "./searchButton.module.css"
+import { useEffect, useState } from "react"
 
 const searchIcon = (
   <svg
@@ -25,7 +26,12 @@ const searchIcon = (
 )
 
 export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) => {
-  const isMac = navigator.userAgent.toUpperCase().indexOf("MAC") >= 0
+  const [isMac, setIsMac] = useState(false)
+  useEffect(() => {
+    const checkIsMac = typeof navigator !== "undefined" ? navigator.userAgent.toUpperCase().indexOf("MAC") >= 0 : false
+    setIsMac(checkIsMac)
+  }, [])
+
   return variant === "default" ? (
     <button className={clsx(styles.default, "search-widget-trigger")}>
       <svg
