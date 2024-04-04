@@ -437,24 +437,6 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
-    page: "starknet",
-    label: "StarkNet",
-    title: "StarkNet Data Feeds",
-    img: "/assets/chains/starknet.svg",
-    networkStatusUrl: "https://testnet.starkscan.co/stats",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "StarkNet testnet",
-        explorerUrl: "https://testnet.starkscan.co/contract/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
-        queryString: "starknet-testnet",
-      },
-    ],
-  },
-  {
     page: "solana",
     label: "Solana",
     title: "Solana Data Feeds",
