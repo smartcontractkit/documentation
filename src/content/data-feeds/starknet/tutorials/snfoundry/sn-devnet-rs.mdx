@@ -33,7 +33,7 @@ Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.htm
    git clone https://github.com/smartcontractkit/chainlink-starknet.git
    ```
 
-1. Navigate to the `aggregator_consumer` [LINK_TO_UPDATE] directory:
+1. Navigate to the `aggregator_consumer` directory:
 
    ```bash
    cd chainlink-starknet/examples/contracts/aggregator_consumer/
@@ -58,13 +58,15 @@ The contracts should compile successfully and the tests should pass.
 
 ### Run Starknet Devnet RS and add a prefunded account
 
+1. Make sure Docker Desktop is running.
+
 1. Execute the following command to run a Starknet Devnet RS container:
 
    ```bash
    make devnet
    ```
 
-   Note: Running this command when a container is running stops and recreates the container, which helps restart from a clean state.
+   Note: Executing this command when a container is running stops and recreates the container, which helps restart from a clean state.
 
 1. The Starknet devnet container includes a set of prefunded accounts. To run the scripts from this guide, add one of these accounts to a local `accounts.json` file using the following command:
 
@@ -97,7 +99,7 @@ The contracts should compile successfully and the tests should pass.
 
 ### Deploy and interact with a mock aggregator contract
 
-1. Declare and deploy a mock aggregator contract to the devnet using the `deploy_mock_aggregator` [LINK_TO_UPDATE] script. Run the following command:
+1. Declare and deploy a mock aggregator contract to the devnet by using the [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) script. Run the following command:
 
    ```bash
    make ma-deploy NETWORK=devnet
@@ -117,9 +119,9 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-   Save the mock aggregator contract address for later. In this example, it is `1566652744716179301065270359129119857774335542042051464747302084192731701184` (decimal representation), equivalent to `0x376B1ABF788737BDED2011A0F76CE61CABDEAEC22E97B8A4E231B149DD49FC0` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.binaryhexconverter.com/decimal-to-hex-converter) to convert the address.
+   Save the mock aggregator contract address for later. In this example, it is `1566652744716179301065270359129119857774335542042051464747302084192731701184` (decimal representation), equivalent to `0x376B1ABF788737BDED2011A0F76CE61CABDEAEC22E97B8A4E231B149DD49FC0` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to convert the address.
 
-1. Read the latest round data using the `read_latest_round` [LINK_TO_UPDATE] script. Run the following command:
+1. Read the latest round data by using the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script. Run the following command:
 
    ```bash
    make agg-read-latest-round NETWORK=devnet
@@ -135,7 +137,7 @@ The contracts should compile successfully and the tests should pass.
 
    By default, the retrieved data from your mock aggregator contract are all zeros.
 
-1. You can set the latest round data using the `set_latest_round` [LINK_TO_UPDATE] script. Run the following command:
+1. You can set the latest round data using the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
 
    ```bash
    make ma-set-latest-round NETWORK=devnet
@@ -163,7 +165,7 @@ The contracts should compile successfully and the tests should pass.
 The mock aggregator consumer contract is initialized with the address of an aggregator mock contract during the contract's constructor call and contains two functions:
 
 - `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
-- `read_answer` reads the stored `answer` value.
+- `read_answer` reads the stored `_answer` value.
 
 1. Run the following command to (re)start the Starknet Devnet RS container:
 
@@ -171,7 +173,7 @@ The mock aggregator consumer contract is initialized with the address of an aggr
    make devnet
    ```
 
-1. If you haven't already, add a prefunded account to the local `accounts.json` file using the following command:
+1. Add a prefunded account to the local `accounts.json` file using the following command:
 
    ```bash
    make add-account
@@ -183,7 +185,7 @@ The mock aggregator consumer contract is initialized with the address of an aggr
    make devnet-deploy
    ```
 
-   This command runs both `ma-deploy` [LINK_TO_UPDATE] and `ac-deploy` [LINK_TO_UPDATE] scripts.
+   This command runs both [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) and [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) scripts.
 
    Expect an output similar to the following:
 
@@ -209,9 +211,9 @@ The mock aggregator consumer contract is initialized with the address of an aggr
    status: success
    ```
 
-Once the contracts are deployed, experiment and interact with both contracts and the available scripts [LINK_TO_UPDATE] as needed for your projects.
+Once the contracts are deployed, experiment with both contracts and the available [scripts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/aggregator_consumer/scripts/src) and [commands](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/Makefile) as needed for your projects.
 
-You can, for instance, set the latest round data on the aggregator contract, retrieve and set the `answer` on the consumer contract, and read the `answer` from the consumer contract:
+For instance, you can set new values for the latest round of data on the aggregator contract, retrieve and set the `answer` on the consumer contract, and read the `answer` from the consumer contract:
 
 ```bash
 make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && make ac-read-answer NETWORK=devnet

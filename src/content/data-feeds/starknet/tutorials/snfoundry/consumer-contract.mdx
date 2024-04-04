@@ -90,13 +90,13 @@ The contracts should compile successfully and the tests should pass.
    - Your account address. In this example, it is `0x03e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d`, with an added zero after `0x`.
    - The `max_fee` value, which is the minimum amount of testnet ETH required to deploy the account.
 
-1. Fund the newly created account with testnet ETH to cover the account deployment, the consumer contract deployment and the network interaction costs.
+1. Fund the newly created account with testnet ETH to cover the account deployment, the consumer contract deployment, and the network interaction costs.
 
    Go to the Blast [Starknet Sepolia ETH Faucet](https://blastapi.io/faucets/starknet-sepolia-eth) and enter your account address to receive 0.025 testnet ETH. Wait a few seconds for the transaction to complete.
 
    Alternatively, you can transfer ETH tokens from a Starknet-compatible wallet, such as [Argent](https://www.argent.xyz/) or [Braavos](https://braavos.app/), or utilize the [StarkGate bridge](https://starkgate.starknet.io/) to transfer testnet ETH from Ethereum Sepolia to Starknet Sepolia. If you need testnet ETH on Ethereum Sepolia, you can use the [Chainlink faucet](https://faucets.chain.link/sepolia).
 
-1. Deploy your account to the Starknet Sepolia testnet:
+1. Deploy your account to Starknet Sepolia:
 
    ```bash
    make deploy-account
@@ -120,7 +120,7 @@ The consumer contract contains two functions that you'll interact with in this e
 
 1. Update the `aggregator_address` variable within the `main` function with the ETH / USD Chainlink aggregator contract address on Starknet Sepolia : <CopyText text="[ADDRESS_TO_UPDATE]" code/>.
 
-1. Run the `deploy_aggregator_consumer` script to deploy a consumer contract to Starknet Sepolia. Use the following command:
+1. Run the [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) script to deploy a consumer contract to Starknet Sepolia. Use the following command:
 
    ```bash
    make ac-deploy NETWORK=testnet
@@ -146,7 +146,7 @@ The consumer contract contains two functions that you'll interact with in this e
 
    The consumer address is represented in its decimal form: `2956260449156927152048242588422796467290585049226993045191257886158889626959`. You can use a [converter tool](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to get the hexadecimal format. In this example, the hexadecimal equivalent is `0x06892f22691473dc5a413a7626062604155516ec91a82d3734dc68bcf3d72d4f`. Save your consumer address for the next steps.
 
-1. In `/scripts/src/consumer/`, open the [`set_answer.cairo`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/set_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
+1. In `/scripts/src/consumer/`, open the [`set_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/set_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
 
 1. Run the following command to update the answer:
 
@@ -166,9 +166,9 @@ The consumer contract contains two functions that you'll interact with in this e
    status: success
    ```
 
-1. In `/scripts/src/consumer/`, open the [`read_answer.cairo`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/read_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
+1. In `/scripts/src/consumer/`, open the [`read_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/read_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
 
-1. Call the `read_answer` function to read the stored answer value using the `read_answer` [LINK_TO_UPDATE] script:
+1. Run the following command to read the stored answer value from your consumer contract:
 
    ```bash
    make ac-read-answer NETWORK=testnet
