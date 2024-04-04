@@ -73,26 +73,34 @@ This cost is only relevant if the destination blockchain is a [L2 layer](https:/
 
 The premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network) is calculated as follows:
 
-- For token transfers or programmable transfers (token + data), the fees vary based on the [token handling mechanism](/ccip/architecture#token-pools) and the [lanes](/ccip/concepts#lane):
+#### Token transfers or programmable transfers
 
-  - **Lock and Unlock**: Fees are based on a percentage-based premium. For each token, the premium is calculated using the following expression:
+For token transfers or programmable transfers (token + data), the network fee varies based on the [token handling mechanism](/ccip/architecture#token-pools) and the [lanes](/ccip/concepts#lane):
 
-        ```
-        tokenAmount * price * percentage
-        ```
+- **Lock and Unlock**: The network fee is a percentage-based premium. For each token, it is calculated using the following expression:
 
-        Where:
+      ```
+      tokenAmount * price * percentage
+      ```
 
-        - `tokenAmount`: The amount of tokens being transferred.
-        - `price`: Initially priced in USD and converted into the `feeToken`.
-        - `percentage`: The values are provided in the table below.
+      Where:
 
-  - **Lock and Mint**, **Burn and Mint** and **Burn and Unlock**: The fee is a static amount. The values denominated in USD are provided in the table below.
+      - `tokenAmount`: The amount of tokens being transferred.
+      - `price`: Initially priced in USD and converted into the `feeToken`.
+      - `percentage`: The values are provided in the [network fee table](#network-fee-table).
 
-        <Aside type="note" title="Determine Token Handling Mechanism">
-        To determine the token handling mechanism for a given lane, refer to the CCIP supported networks on the [mainnet](/ccip/supported-networks/v1_2_0/mainnet) or [testnet](/ccip/supported-networks/v1_2_0/testnet) pages.
-        </Aside>
+- **Lock and Mint**, **Burn and Mint** and **Burn and Unlock**: The network fee is a static amount. See the [network fee table](#network-fee-table).
 
-- For messaging (only data): The fee is a static amount. The values denominated in USD are provided in the table below.
+      <Aside type="note" title="Determine Token Handling Mechanism">
+      To determine a token's handling mechanism on a given lane, refer to the CCIP supported networks on the [mainnet](/ccip/supported-networks/v1_2_0/mainnet) or [testnet](/ccip/supported-networks/v1_2_0/testnet) pages.
+      </Aside>
+
+#### Messaging (only data)
+
+For messaging (only data): The network fee is a static amount, denominated in USD. See the [network fee table](#network-fee-table).
+
+#### Network fee table
+
+The table below provides an overview of the network fees charged for different use cases on different lanes. Percentage-based fees are calculated on the value transferred in a message. USD-denominated fees are applied per message.
 
 <Billing />
