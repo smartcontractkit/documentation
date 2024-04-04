@@ -11,6 +11,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   POLYGON_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon"),
   POLYGON_MUMBAI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon_mumbai"),
   GNOSIS_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/gnosis"),
+  GNOSIS_CHIADO: () => new providers.JsonRpcProvider("https://rpc.chiadochain.net"),
   AVALANCHE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche"),
   AVALANCHE_FUJI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche_fuji"),
   FANTOM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/fantom"),
