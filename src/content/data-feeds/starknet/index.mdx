@@ -26,14 +26,14 @@ You can read Chainlink Data Feeds on Starknet Sepolia using an [onchain contract
 
 ### Devnet examples
 
-Experiment with Chainlink Data Feeds on Starknet using [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a Rust-implemented local Docker-based testnet environment.
+Experiment with Chainlink Data Feeds on Starknet using [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment implemented using Rust.
 The [Starknet Devnet RS guide](/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs) provides code examples and scripts that enable you to compile, declare, and deploy your own aggregator and consumer contracts. You can use a set of pre-funded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
 
 ## Getting Started (Starkli CLI)
 
-[Starkli](https://github.com/xJonathanLEI/starkli) is a Starknet standalone CLI similar to [cairo-lang](https://github.com/starkware-libs/cairo-lang) but written in Rust. It enables interaction with a Starknet network without requiring additional tools or dependencies.
+[Starkli](https://github.com/xJonathanLEI/starkli) is a Starknet standalone CLI similar to [cairo-lang](https://github.com/starkware-libs/cairo-lang) but written in Rust. It enables interaction with a Starknet network without the need for extra tools or dependencies.
 
-In this example, you'll utilize the `starkli call` command to read data from a Chainlink Price Feed on Starknet Sepolia. The command requires the proxy aggregator address, the function selector, and an RPC endpoint of the Starknet Sepolia network.
+In this example, you'll utilize the `starkli call` command to read data from a Chainlink Price Feed on Starknet Sepolia. This command requires the proxy aggregator address, the function selector, and an RPC endpoint for Starknet Sepolia.
 
 ### Requirements
 
@@ -48,7 +48,7 @@ Follow the official [installation guide](<(https://book.starkli.rs/installation)
 
 ### Read data from a Chainlink Price Feed
 
-Use the following command to call the `latest_round_data` function on the ETH / USD Chainlink Price Feed aggregator proxy on Starknet Sepolia:
+Use the following command to call the `latest_round_data` function on the ETH / USD Chainlink Price Feed aggregator proxy:
 
 ```bash
 starkli call \
@@ -73,11 +73,11 @@ The example output contains an array with the hex encoded latest round data for 
 
 | Value name   | Hex-encoded value                                                    | Decoded value                             | Description                                                                                                      |
 | ------------ | -------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `round_id`   | `0x000000000000000000000000000000010000000000000000000000000000320c` | `340282366920938463463374607431768224268` | The unique identifier of the round of data updates                                                               |
+| `round_id`   | `0x000000000000000000000000000000010000000000000000000000000000320c` | `340282366920938463463374607431768224268` | The unique identifier of the data round                                                                          |
 | `answer`     | `0x0000000000000000000000000000000000000000000000000000005293770eb1` | `354661371569`                            | The actual data provided by the data feed, representing the latest price of an asset in the case of a price feed |
 | `block_num`  | `0x000000000000000000000000000000000000000000000000000000000000d44d` | `54349`                                   | The block number at which the data was recorded on the blockchain                                                |
-| `started_at` | `0x000000000000000000000000000000000000000000000000000000006606b8cc` | `1711716556`                              | The timestamp indicating when the data round started, represented as a Unix timestamp                            |
-| `updated_at` | `0x000000000000000000000000000000000000000000000000000000006606b8a2` | `1711716514`                              | The timestamp indicating when the data was last updated, represented as a Unix timestamp                         |
+| `started_at` | `0x000000000000000000000000000000000000000000000000000000006606b8cc` | `1711716556`                              | The Unix timestamp indicating when the data round started                                                        |
+| `updated_at` | `0x000000000000000000000000000000000000000000000000000000006606b8a2` | `1711716514`                              | The Unix timestamp indicating when the data was last updated                                                     |
 
 For a complete list of Chainlink Price Feeds available on Starknet, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=starknet) page.
 

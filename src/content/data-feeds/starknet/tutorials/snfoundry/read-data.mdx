@@ -14,61 +14,41 @@ metadata:
 
 import { CodeSample, CopyText } from "@components"
 
-This example reads the aggregator proxy contract to get the latest values with no account or contract compiling steps required. The [TO_UPDATE] script makes a call directly to the data feed proxy address. By default, the script reads the ETH / USD feed, but you can change the address to read any of the [available data feeds](/data-feeds/price-feeds/addresses?network=starknet) on the Starknet Sepolia testnet.
+In this example, you'll read from a Chainlink price feed on Starknet using the Starknet Foundry toolkit. You'll call the `latest_round_data` function on the ETH / USD aggregator proxy contract to read the latest round of data.
 
 ## Requirements
 
-### Set up your environment
-
-This guide uses the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit and the [Scarb](https://github.com/software-mansion/scarb) project management tool so you can compile, deploy, and interact with your Starknet smart contracts.
-
-- **Starknet Foundry**: Install Starknet Foundry **v0.20.1**. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
-
-- **Scarb**: Install Scarb **v2.5.4**. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
-
-Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.html) tool version manager to install both Starknet Foundry and Scarb. Read the setup instructions for [Starknet Foundry](https://github.com/foundry-rs/asdf-starknet-foundry) and [Scarb](https://docs.swmansion.com/scarb/download.html#install-via-asdf) for more information.
-
-### Clone and configure the code examples repository
-
-1. Clone the [chainlink-starknet](https://github.com/smartcontractkit/chainlink-starknet/) repository, which includes the example contracts and script for this guide:
-
-   ```bash
-   git clone https://github.com/smartcontractkit/chainlink-starknet.git
-   ```
-
-1. Navigate to the `aggregator_consumer` [LINK_TO_UPDATE] directory:
-
-   ```bash
-   cd chainlink-starknet/examples/contracts/aggregator_consumer/
-   ```
+Make sure you have the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit installed. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal. Follow the [installation](https://github.com/foundry-rs/starknet-foundry#installation) guide if necessary.
 
 ## Tutorial
 
-In the `~/chainlink-starknet/examples/contracts/aggregator_consumer/` directory, run the [TO_UPDATE] script:
+Run the following command to read data from the ETH / USD data feed proxy contract:
 
 ```bash
-make [TO_UPDATE]
+sncast \
+  --url https://starknet-sepolia.public.blastapi.io/rpc/v0_7 \
+  call \
+  --contract-address <ETH_USD_PROXY_ADD> \
+  --function "latest_round_data" \
 ```
 
-The script reads the latest data from the ETH / USD Chainlink data feed proxy contract and prints it. Expect an output similar to the following:
+Expect an output similar to the following:
 
 ```bash
-Compiling lib(src) src v0.1.0 (~/chainlink-starknet/examples/contracts/aggregator_consumer/scripts/Scarb.toml)
-Compiling starknet-contract(src) src v0.1.0 (~/chainlink-starknet/examples/contracts/aggregator_consumer/scripts/Scarb.toml)
-Finished release target(s) in 9 seconds
-Result::Ok(CallResult { data: [TO_UPDATE] })
-command: script run
-status: success
+command: call
+response: [0x10000000000000000000000000000320c, 0x5293770eb1, 0xd44d, 0x6606b8cc, 0x6606b8a2]
 ```
 
-The output contains an array with the latest data from the Chainlink data feed proxy contract. The array contains the following values:
+The example output contains an array with the hex encoded latest round of data for the ETH / USD price feed. The array contains the following values:
 
-| Value name   | Example value | Description                                                                                                       |
-| ------------ | ------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `round_id`   | `TO_UPDATE`   | The unique identifier of the round of data updates.                                                               |
-| `answer`     | `TO_UPDATE`   | The actual data provided by the data feed, representing the latest price of an asset in the case of a price feed. |
-| `block_num`  | `TO_UPDATE`   | The block number at which the data was recorded on the blockchain.                                                |
-| `started_at` | `TO_UPDATE`   | The timestamp indicating when the data round started, represented as a Unix timestamp.                            |
-| `updated_at` | `TO_UPDATE`   | The timestamp indicating when the data was last updated, represented as a Unix timestamp.                         |
+| Value name   | Hex-encoded value                     | Decoded value                             | Description                                                                                                      |
+| ------------ | ------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `round_id`   | `0x10000000000000000000000000000320c` | `340282366920938463463374607431768224268` | The unique identifier of the data round                                                                          |
+| `answer`     | `0x5293770eb1`                        | `354661371569`                            | The actual data provided by the data feed, representing the latest price of an asset in the case of a price feed |
+| `block_num`  | `0xd44d`                              | `54349`                                   | The block number at which the data was recorded on the blockchain                                                |
+| `started_at` | `0x6606b8cc`                          | `1711716556`                              | The Unix timestamp indicating when the data round started                                                        |
+| `updated_at` | `0x6606b8a2`                          | `1711716514`                              | The Unix timestamp indicating when the data was last updated                                                     |
 
 For a complete list of Chainlink Price Feeds available on Starknet, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=starknet) page.
+
+Note: This example utilizes a [Blast API](https://blastapi.io/public-api/starknet) RPC endpoint. You can interact with the network using any other Starknet Sepolia RPC provider, such as [Alchemy](https://www.alchemy.com/starknet) or [Infura](https://www.infura.io/networks/ethereum/starknet).
