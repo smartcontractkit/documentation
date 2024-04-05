@@ -1,9 +1,26 @@
+---
+import {
+  calculateMessagingNetworkFeesDirect,
+  calculateNetworkFeesForTokenMechanismDirect,
+  TokenMechanism,
+} from "@config/data/ccip"
+
+const lockAndUnlockAllLanes = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.LockAndUnlock, "allLanes")
+const restMechanismFromToEthereum = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromToEthereum"
+)
+const restMechanismNonEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "nonEthereum")
+const messagingFeesFromToEthereum = calculateMessagingNetworkFeesDirect("fromToEthereum")
+const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereum")
+---
+
 <table>
   <thead>
     <tr>
       <th rowspan="2">Use case</th>
-      <th rowspan="2">Lanes</th>
       <th rowspan="2">Token Pool Mechanism</th>
+      <th rowspan="2">Lanes</th>
       <th colspan="2">Fee Token</th>
     </tr>
     <tr>
@@ -14,57 +31,41 @@
   <tbody>
     <!-- Token Transfers with/without messaging -->
     <tr>
-      <td rowspan="6">
+      <td rowspan="3">
         <ul style="list-style-type:none; margin:0; padding:0;">
           <li>Token Transfers</li>
           <li>Programmable Token Transfers</li>
         </ul>
       </td>
-      <td rowspan="2">From:&nbsp;Ethereum</td>
       <td>Lock and Unlock</td>
-      <td>0.07&nbsp;%</td>
-      <td>0.063&nbsp;%</td>
+      <td>All Lanes</td>
+      <td>{lockAndUnlockAllLanes.gasTokenFee}</td>
+      <td>{lockAndUnlockAllLanes.linkFee}</td>
     </tr>
     <tr>
-      <td>Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
-      <td>0.50&nbsp;USD</td>
-      <td>0.45&nbsp;USD</td>
+      <td rowspan="2">Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
+      <td>From/To: Ethereum</td>
+      <td>{restMechanismFromToEthereum.gasTokenFee}</td>
+      <td>{restMechanismFromToEthereum.linkFee}</td>
     </tr>
     <tr>
-      <td rowspan="2">To:&nbsp;Ethereum</td>
-      <td>Lock and Unlock</td>
-      <td>0.07&nbsp;%</td>
-      <td>0.063&nbsp;%</td>
-    </tr>
-    <tr>
-      <td>Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
-      <td>5.00&nbsp;USD</td>
-      <td>4.50&nbsp;USD</td>
-    </tr>
-    <tr>
-      <td rowspan="2">Non-Ethereum</td>
-      <td>Lock and Unlock</td>
-      <td>0.07&nbsp;%</td>
-      <td>0.063&nbsp;%</td>
-    </tr>
-    <tr>
-      <td>Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
-      <td>0.25&nbsp;USD</td>
-      <td>0.225&nbsp;USD</td>
+      <td>Non-Ethereum</td>
+      <td>{restMechanismNonEthereum.gasTokenFee}</td>
+      <td>{restMechanismNonEthereum.linkFee}</td>
     </tr>
     <!-- Messaging -->
     <tr>
       <td rowspan="2">Messaging</td>
-      <td>From/To:&nbsp;Ethereum</td>
       <td>N/A</td>
-      <td>0.50&nbsp;USD</td>
-      <td>0.45&nbsp;USD</td>
+      <td>From/To: Ethereum</td>
+      <td>{messagingFeesFromToEthereum.gasTokenFee}</td>
+      <td>{messagingFeesFromToEthereum.linkFee}</td>
     </tr>
     <tr>
-      <td>Non-Ethereum</td>
       <td>N/A</td>
-      <td>0.10&nbsp;USD</td>
-      <td>0.09&nbsp;USD</td>
+      <td>Non-Ethereum</td>
+      <td>{messagingFeesNonEthereum.gasTokenFee}</td>
+      <td>{messagingFeesNonEthereum.linkFee}</td>
     </tr>
   </tbody>
 </table>
@@ -78,6 +79,7 @@
   td {
     text-align: center;
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 1em;
+    white-space: nowrap;
   }
 </style>
