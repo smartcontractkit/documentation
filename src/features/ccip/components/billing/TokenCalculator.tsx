@@ -220,7 +220,12 @@ const NetworkFeeCalculator = () => {
     }
   }, [sourceBlockchain, token, environment])
 
+  useEffect(() => {
+    setFees(undefined)
+  }, [sourceBlockchain, token, environment, destinationBlockchain])
+
   const handleGetNetworkFee = () => {
+    if (isButtonDisabled) return
     if (!environment || !token || !sourceBlockchain || !destinationBlockchain) {
       console.error("Missing required parameters")
       setFees(undefined)
@@ -338,12 +343,7 @@ const NetworkFeeCalculator = () => {
       </datalist>
 
       {/* Fetch Button */}
-      <button
-        onClick={handleGetNetworkFee}
-        disabled={isButtonDisabled}
-        className={button.secondary}
-        style={inputAndButtonBaseStyle}
-      >
+      <button onClick={handleGetNetworkFee} className={button.secondary} style={inputAndButtonBaseStyle}>
         Network Fee
       </button>
 
