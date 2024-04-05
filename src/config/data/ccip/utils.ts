@@ -64,8 +64,12 @@ export const calculateNetworkFeesForTokenMechanism = (
   const isDestinationEthereum = destinationTechno === "ETHEREUM"
 
   let laneSpecificFeeKey: LaneSpecificFeeKey
-  if (isSourceEthereum || isDestinationEthereum) {
+  if ((isSourceEthereum || isDestinationEthereum) && feesForMechanism.fromToEthereum) {
     laneSpecificFeeKey = "fromToEthereum"
+  } else if (isSourceEthereum && feesForMechanism.fromEthereum) {
+    laneSpecificFeeKey = "fromEthereum"
+  } else if (isDestinationEthereum && feesForMechanism.toEthereum) {
+    laneSpecificFeeKey = "toEthereum"
   } else {
     laneSpecificFeeKey = "nonEthereum"
   }

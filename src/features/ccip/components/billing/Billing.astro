@@ -6,10 +6,8 @@ import {
 } from "@config/data/ccip"
 
 const lockAndUnlockAllLanes = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.LockAndUnlock, "allLanes")
-const restMechanismFromToEthereum = calculateNetworkFeesForTokenMechanismDirect(
-  TokenMechanism.BurnAndMint,
-  "fromToEthereum"
-)
+const restFromEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "fromEthereum")
+const restToEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "toEthereum")
 const restMechanismNonEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "nonEthereum")
 const messagingFeesFromToEthereum = calculateMessagingNetworkFeesDirect("fromToEthereum")
 const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereum")
@@ -31,7 +29,7 @@ const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereu
   <tbody>
     <!-- Token Transfers with/without messaging -->
     <tr>
-      <td rowspan="3">
+      <td rowspan="4">
         <ul style="list-style-type:none; margin:0; padding:0;">
           <li>Token Transfers</li>
           <li>Programmable Token Transfers</li>
@@ -43,10 +41,15 @@ const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereu
       <td>{lockAndUnlockAllLanes.linkFee}</td>
     </tr>
     <tr>
-      <td rowspan="2">Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
-      <td>From/To: Ethereum</td>
-      <td>{restMechanismFromToEthereum.gasTokenFee}</td>
-      <td>{restMechanismFromToEthereum.linkFee}</td>
+      <td rowspan="3">Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
+      <td>From: Ethereum</td>
+      <td>{restFromEthereum.gasTokenFee}</td>
+      <td>{restFromEthereum.linkFee}</td>
+    </tr>
+    <tr>
+      <td>To: Ethereum</td>
+      <td>{restToEthereum.gasTokenFee}</td>
+      <td>{restToEthereum.linkFee}</td>
     </tr>
     <tr>
       <td>Non-Ethereum</td>
