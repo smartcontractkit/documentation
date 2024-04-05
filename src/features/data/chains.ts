@@ -437,6 +437,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "starknet",
+    label: "Starknet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://status.starknet.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Starknet Sepolia testnet",
+        explorerUrl: "https://sepolia.starkscan.co/contract/%s",
+        networkType: "testnet",
+        rddUrl: "", // TODO: Add Starknet RDD url
+        queryString: "starknet-sepolia-testnet",
+      },
+    ],
+  },
+  {
     page: "solana",
     label: "Solana",
     title: "Solana Data Feeds",
