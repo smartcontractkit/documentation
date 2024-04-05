@@ -14,6 +14,7 @@ import {
 import { getTitle } from "@features/utils"
 import { SupportedChain } from "@config"
 import button from "@chainlink/design-system/button.module.css"
+import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown"
 
 interface EnvironmentData {
   environments: Environment[]
@@ -50,11 +51,6 @@ interface FetchParams {
   tokens: TokenDetails
   sourceBlockchain: SupportedChain
   destinationBlockchain: SupportedChain
-}
-
-interface TitleKeyMapping {
-  title: string
-  supportedChain: SupportedChain
 }
 
 const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): FetchDataReturn => {
@@ -126,10 +122,6 @@ const cellStyle = {
   padding: "1em",
 }
 
-const isEnvironment = (value: string) => {
-  return Object.values(Environment).includes(value as Environment)
-}
-
 const getTokensList = (tokens: TokenDetails | undefined) => {
   if (!tokens) return []
   if (Array.isArray(tokens) && tokens.length === 0) {
@@ -144,35 +136,19 @@ const getTokensList = (tokens: TokenDetails | undefined) => {
 const NetworkFeeCalculator = () => {
   const [environments, setEnvironments] = useState<Environment[]>([])
   const [environment, setEnvironment] = useState<Environment | undefined>()
-  const [token, setToken] = useState("")
+  const [token, setToken] = useState<string | undefined>()
   const [tokens, setTokens] = useState<TokenDetails>() // All available tokens
+  const [tokensDropDownReset, setTokensDropDownReset] = useState(false)
   const [sourceBlockchain, setSourceBlockchain] = useState<{ title: string; key: SupportedChain } | undefined>()
+  const [sourceBlockchainDropdownReset, setSourceBlockchainDropDownReset] = useState(false)
   const [destinationBlockchain, setDestinationBlockchain] = useState<
     { title: string; key: SupportedChain } | undefined
   >()
+  const [destinationBlockchainDropdownReset, setDestinationBlockchainDropDownReset] = useState(false)
 
-  const [sourceBlockchains, setSourceBlockchains] = useState<SupportedChain[]>([])
-  const [destinationBlockchains, setDestinationBlockchains] = useState<SupportedChain[]>([])
+  const [sourceBlockchains, setSourceBlockchains] = useState<{ title: string; key: SupportedChain }[]>([])
+  const [destinationBlockchains, setDestinationBlockchains] = useState<{ title: string; key: SupportedChain }[]>([])
   const [fees, setFees] = useState<FeeDetails | undefined>()
-
-  const titleToKeyMapping: Record<string, TitleKeyMapping> = [...sourceBlockchains, ...destinationBlockchains].reduce(
-    (acc, supportedChain) => {
-      const title = getTitle(supportedChain)
-      if (!title) {
-        console.error(`No title found for chain: ${supportedChain}`)
-        return acc
-      }
-      const titleKey = title.toLowerCase()
-
-      acc[titleKey] = {
-        title,
-        supportedChain,
-      }
-
-      return acc
-    },
-    {} as Record<string, TitleKeyMapping>
-  )
 
   useEffect(() => {
     const data = fetchData("environments") as EnvironmentData
@@ -183,10 +159,15 @@ const NetworkFeeCalculator = () => {
 
   // Fetch tokens when environment is selected
   useEffect(() => {
-    setToken("")
+    setToken(undefined)
+    setTokensDropDownReset((prev) => !prev)
     setSourceBlockchain(undefined)
+    setSourceBlockchainDropDownReset((prev) => !prev)
     setDestinationBlockchain(undefined)
+    setDestinationBlockchainDropDownReset((prev) => !prev)
     setFees(undefined)
+    setSourceBlockchains([])
+    setDestinationBlockchains([])
     if (environment) {
       const data = fetchData("tokens", { environment }) as TokenData
       if ("tokens" in data) {
@@ -198,24 +179,48 @@ const NetworkFeeCalculator = () => {
   // Fetch source blockchains when token is selected
   useEffect(() => {
     setSourceBlockchain(undefined)
+    setSourceBlockchainDropDownReset((prev) => !prev)
     setDestinationBlockchain(undefined)
+    setDestinationBlockchainDropDownReset((prev) => !prev)
     setFees(undefined)
+    setSourceBlockchains([])
+    setDestinationBlockchains([])
+
     if (token && environment) {
       const data = fetchData("blockchains", { token, tokens }) as BlockchainData
       if ("blockchains" in data) {
-        setSourceBlockchains(data.blockchains)
+        const blockchains = data.blockchains.reduce((acc, chain) => {
+          const title = getTitle(chain)
+          if (title) {
+            acc.push({ title, key: chain })
+          } else {
+            console.error(`No title found for chain: ${chain}`)
+          }
+          return acc
+        }, [] as Array<{ title: string; key: SupportedChain }>)
+
+        setSourceBlockchains(blockchains)
       }
     }
-  }, [token, environment])
+  }, [token, environment, tokens])
 
-  // Fetch destination blockchains when source blockchain is selected
   useEffect(() => {
-    setDestinationBlockchain(undefined)
     setFees(undefined)
+    setDestinationBlockchains([])
+    setDestinationBlockchains([])
     if (token && environment && sourceBlockchain) {
       const data = fetchData("blockchains", { token, tokens, sourceBlockchain: sourceBlockchain.key })
       if ("blockchains" in data) {
-        setDestinationBlockchains(data.blockchains)
+        const blockchains = data.blockchains.reduce((acc, chain) => {
+          const title = getTitle(chain)
+          if (title) {
+            acc.push({ title, key: chain })
+          } else {
+            console.error(`No title found for chain: ${chain}`)
+          }
+          return acc
+        }, [] as Array<{ title: string; key: SupportedChain }>)
+        setDestinationBlockchains(blockchains)
       }
     }
   }, [sourceBlockchain, token, environment])
@@ -250,97 +255,68 @@ const NetworkFeeCalculator = () => {
   return (
     <div style={containerStyle}>
       {/* Environment Dropdown */}
-      <input
-        list="environments-list"
-        value={environment}
-        onInput={(e) => {
-          const selectedValue = e.currentTarget.value
-
-          if (isEnvironment(selectedValue)) {
-            setEnvironment(selectedValue as Environment)
-          } else if (selectedValue !== "") {
-            console.error(`Invalid environment selected: ${selectedValue}`)
-          } else {
-            setEnvironment(undefined)
-          }
-        }}
+      <TokenCalculatorDropdown
+        options={environments}
         placeholder="Environment"
+        onSelect={(environment) => {
+          setEnvironment(environment)
+        }}
+        filterFunction={(option, filter) => option.toLowerCase().includes(filter.toLowerCase())}
+        renderOption={(option) => <div>{option.toUpperCase()}</div>}
+        optionToString={(option) => option.toUpperCase()}
+        stringToOption={(value) => {
+          if (value === "") return undefined
+          return environments.find((environment) => environment.toLowerCase() === value.toLowerCase()) as Environment
+        }}
         style={inputAndButtonBaseStyle}
       />
-      <datalist id="environments-list">
-        {environments.map((env) => (
-          <option key={env} value={env} />
-        ))}
-      </datalist>
-      <input
-        list="tokens"
-        value={token}
-        onInput={(e) => {
-          const tokenInput = e.currentTarget.value
-          const matchingToken = getTokensList(tokens).find((t: string) => t.toLowerCase() === tokenInput.toLowerCase())
-          if (matchingToken) {
-            setToken(matchingToken)
-          } else {
-            setToken("")
-          }
-        }}
+      <TokenCalculatorDropdown
+        options={getTokensList(tokens)}
         placeholder="Token"
-        disabled={!environment}
-        style={inputAndButtonBaseStyle}
-      />
-      <datalist id="tokens">
-        {getTokensList(tokens).map((t) => (
-          <option key={t} value={t} />
-        ))}
-      </datalist>
-
-      <input
-        list="source-blockchains-list"
-        value={sourceBlockchain ? sourceBlockchain.title : ""}
-        onInput={(e) => {
-          const inputTitle = e.currentTarget.value
-          const inputTitleKey = inputTitle.toLowerCase()
-          const matchingEntry = titleToKeyMapping[inputTitleKey]
-          if (matchingEntry) {
-            setSourceBlockchain({ title: matchingEntry.title, key: matchingEntry.supportedChain })
-          } else {
-            console.log(`No matching key found for title:  ${e.currentTarget.value}`)
-            setSourceBlockchain(undefined)
-          }
+        onSelect={(token) => setToken(token)}
+        filterFunction={(token, filter) => token.toLowerCase().includes(filter.toLowerCase())}
+        renderOption={(option) => <div>{option}</div>}
+        optionToString={(option) => option}
+        stringToOption={(value) => {
+          if (value === "") return undefined
+          return value
         }}
+        disabled={environment === undefined || environment.toString() === ""}
+        style={inputAndButtonBaseStyle}
+        resetTrigger={tokensDropDownReset}
+      />
+
+      <TokenCalculatorDropdown
+        options={sourceBlockchains}
         placeholder="Source"
-        disabled={!token}
-        style={inputAndButtonBaseStyle}
-      />
-      <datalist id="source-blockchains-list">
-        {sourceBlockchains.map((b: SupportedChain) => (
-          <option key={b} value={getTitle(b)} />
-        ))}
-      </datalist>
-
-      <input
-        list="destination-blockchains-list"
-        value={destinationBlockchain ? destinationBlockchain.title : ""}
-        onInput={(e) => {
-          const inputTitle = e.currentTarget.value
-          const inputTitleKey = inputTitle.toLowerCase()
-          const matchingEntry = titleToKeyMapping[inputTitleKey]
-          if (matchingEntry) {
-            setDestinationBlockchain({ title: matchingEntry.title, key: matchingEntry.supportedChain })
-          } else {
-            console.log(`No matching key found for title:  ${e.currentTarget.value}`)
-            setDestinationBlockchain(undefined)
-          }
+        onSelect={(chain) => setSourceBlockchain(chain)}
+        filterFunction={(chain, filter) => chain.title.toLowerCase().includes(filter.toLowerCase())}
+        renderOption={(option) => <div>{option.title}</div>}
+        optionToString={(option) => option.title}
+        stringToOption={(value) => {
+          if (value === "") return undefined
+          return sourceBlockchains.find((chain) => chain.title === value) as { title: string; key: SupportedChain }
         }}
-        placeholder="Destination"
-        disabled={!sourceBlockchain}
+        disabled={token === undefined}
         style={inputAndButtonBaseStyle}
+        resetTrigger={sourceBlockchainDropdownReset}
       />
-      <datalist id="destination-blockchains-list">
-        {destinationBlockchains.map((b: SupportedChain) => (
-          <option key={b} value={getTitle(b)} />
-        ))}
-      </datalist>
+
+      <TokenCalculatorDropdown
+        options={destinationBlockchains}
+        placeholder="Destination"
+        onSelect={(chain) => setDestinationBlockchain(chain)}
+        filterFunction={(chain, filter) => chain.title.toLowerCase().includes(filter.toLowerCase())}
+        renderOption={(option) => <div>{option.title}</div>}
+        optionToString={(option) => option.title}
+        stringToOption={(value) => {
+          if (value === "") return undefined
+          return destinationBlockchains.find((chain) => chain.title === value) as { title: string; key: SupportedChain }
+        }}
+        disabled={sourceBlockchain === undefined}
+        style={inputAndButtonBaseStyle}
+        resetTrigger={destinationBlockchainDropdownReset}
+      />
 
       {/* Fetch Button */}
       <button onClick={handleGetNetworkFee} className={button.secondary} style={inputAndButtonBaseStyle}>
