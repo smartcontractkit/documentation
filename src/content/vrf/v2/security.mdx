@@ -10,7 +10,7 @@ Gaining access to high quality randomness onchain requires a solution like Chain
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
 - [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
-- [Do not re-request randomness](#do-not-re-request-randomness)
+- [Do not allow re-requesting or cancellation of randomness](#do-not-allow-re-requesting-or-cancellation-of-randomness)
 - [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
 - [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
 - [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
@@ -31,11 +31,9 @@ In principle, miners/validators of your underlying blockchain could rewrite the 
 
 You must choose an appropriate confirmation time for the randomness requests you make. Confirmation time is how many blocks the VRF service waits before writing a fulfillment to the chain to make potential rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
-## Do not re-request randomness
+## Do not allow re-requesting or cancellation of randomness
 
-Any re-request of randomness is an incorrect use of VRFv2. Doing so would give the VRF service provider the option to withhold a VRF fulfillment if the outcome is not favorable to them and wait for the re-request in the hopes that they get a better outcome, similar to the considerations with block confirmation time.
-
-Re-requesting randomness is easily detectable onchain and should be avoided for use cases that want to be considered as using VRFv2 correctly.
+Any re-request or cancellation of randomness is an incorrect use of VRFv2. dApps that implement the ability to cancel or re-request randomness for specific commitments must consider the additional attack vectors created by this capability. For example, you must prevent the ability for any party to discard unfavorable randomness.
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 
