@@ -92,7 +92,7 @@ The contracts should compile successfully and the tests should pass.
 
 1. Fund the newly created account with testnet ETH to cover the account deployment, the consumer contract deployment, and the network interaction costs.
 
-   Go to the Blast [Starknet Sepolia ETH Faucet](https://blastapi.io/faucets/starknet-sepolia-eth) and enter your account address to receive 0.025 testnet ETH. Wait a few seconds for the transaction to complete.
+   Go to the Blast [Starknet Sepolia ETH Faucet](https://blastapi.io/faucets/starknet-sepolia-eth) and enter your account address to receive testnet ETH. Wait a few seconds for the transaction to complete.
 
    Alternatively, you can transfer ETH tokens from a Starknet-compatible wallet, such as [Argent](https://www.argent.xyz/) or [Braavos](https://braavos.app/), or utilize the [StarkGate bridge](https://starkgate.starknet.io/) to transfer testnet ETH from Ethereum Sepolia to Starknet Sepolia. If you need testnet ETH on Ethereum Sepolia, you can use the [Chainlink faucet](https://faucets.chain.link/sepolia).
 
@@ -109,11 +109,13 @@ The contracts should compile successfully and the tests should pass.
    transaction_hash: 0x541ffae49f77dd942376391286052d9fb87dc8d6848139ab1508c114e3aa005
    ```
 
+   Wait a few seconds for the transaction to complete.
+
 ### Deploy and interact with a consumer contract
 
 The consumer contract contains two functions that you'll interact with in this example:
 
-- `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
+- `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the `_answer` internal storage variable.
 - `read_answer` reads the stored `_answer` value.
 
 1. Navigate to `/scripts/src/consumer/` and open the [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) script.
@@ -159,16 +161,18 @@ The consumer contract contains two functions that you'll interact with in this e
    Expect an output similar to the following:
 
    ```bash
-   Transaction hash = 0x7f096dc41a3f93fcad2b1d82396f92472d67dee840e1a447aa3691f58589baa
+   Result::Ok(CallResult { data: [3374557091160001179079409876363576078229871685244120671563970051729036896526] })
+   Result::Ok(CallResult { data: [340282366920938463463374607431768224268, 354661371569, 54349, 1711716556, 1711716514] })
+   Transaction hash = 0x20edd6388041d78a36f153a7694fd8c0849d81aff3fc2d5a0606d7275ea4837
    Waiting for transaction to be accepted (59 retries / 295s left until timeout)
-   Result::Ok(InvokeResult { transaction_hash: 3591274435682716112592822792656399461090392655710476322066689010471752211370 })
+   Result::Ok(InvokeResult { transaction_hash: 930889525374955449815155593419397099236202282693723934594292211164864202807 })
    command: script run
    status: success
    ```
 
 1. In `/scripts/src/consumer/`, open the [`read_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/read_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
 
-1. Run the following command to read the stored answer value from your consumer contract:
+1. Run the following command to read the stored `answer` value from your consumer contract:
 
    ```bash
    make ac-read-answer NETWORK=testnet
@@ -177,5 +181,9 @@ The consumer contract contains two functions that you'll interact with in this e
    Expect an output similar to the following:
 
    ```bash
-   [TBU]
+   Result::Ok(CallResult { data: [354661371569] })
+   command: script run
+   status: success
    ```
+
+   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the Show more details checkbox.

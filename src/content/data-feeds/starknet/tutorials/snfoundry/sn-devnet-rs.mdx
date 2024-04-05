@@ -7,9 +7,9 @@ metadata:
   description: "Experiment with Chainlink Data Feeds on a Devnet using Starknet Devnet RS."
 ---
 
-import { CodeSample, CopyText } from "@components"
+import { CodeSample, CopyText, Aside } from "@components"
 
-This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment for Starknet. It provides code examples and scripts that enable you to compile, declare, and deploy your own aggregator and consumer contracts. You can use a set of prefunded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
+This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment for Starknet. It provides code examples, [scripts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/aggregator_consumer/scripts/src), and [commands](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/Makefile) that enable you to deploy and experiment with your own aggregator and consumer contracts. You can use a set of prefunded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
 
 ## Requirements
 
@@ -56,6 +56,14 @@ The contracts should compile successfully and the tests should pass.
 
 ## Tutorial
 
+<Aside type="note" title="Contract addresses for Starknet Devnet RS">
+  If you followed the [onchain](/data-feeds/starknet/tutorials/snfoundry/consumer-contract) guide, [clone the
+  chainlink-starknet
+  repository](/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs#clone-and-configure-the-code-examples-repository)
+  again to make sure you start from a clean state. By default, some addresses used in this guide are hardcoded to work
+  with the Starknet Devnet RS environment.
+</Aside>
+
 ### Run Starknet Devnet RS and add a prefunded account
 
 1. Make sure Docker Desktop is running.
@@ -68,7 +76,7 @@ The contracts should compile successfully and the tests should pass.
 
    Note: Executing this command when a container is running stops and recreates the container, which helps restart from a clean state.
 
-1. The Starknet devnet container includes a set of prefunded accounts. To run the scripts from this guide, add one of these accounts to a local `accounts.json` file using the following command:
+1. The Starknet devnet container includes a set of prefunded accounts. To execute the scripts from this guide, add one of these accounts to a local `accounts.json` file by running the following command:
 
    ```bash
    make add-account
@@ -120,11 +128,7 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-   In this example, the mock aggregator address is `1708487128334545444076626254389547159540422020354796381590079145465639129383` (decimal representation), equivalent to `0x3c6f82da5dbfa89ec9dbe414f33d23d1720d15568e4a880afcc9b0c3d98d127` (hexadecimal representation). You can use a decimal-to-hexadecimal [converter](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to convert the address. Save this address for the next step.
-
-1. In `/scripts/src/aggregator/`, open the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script and update the `aggregator_address` variable with your deployed mock aggregator address.
-
-1. Read the latest round data by using the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script. Run the following command:
+1. Read the latest round of data by using the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script. Run the following command:
 
    ```bash
    make agg-read-latest-round NETWORK=devnet
@@ -138,11 +142,9 @@ The contracts should compile successfully and the tests should pass.
    status: success
    ```
 
-   By default, the data on your mock aggregator contract are all set to zeros.
+   The default data on the mock aggregator contract is all set to zeros.
 
-1. In `/scripts/src/mock_aggregator/`, open the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script and update the `mock_aggregator_address` variable with your deployed mock aggregator address.
-
-1. Set the latest round of data to some values defined in the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
+1. Set the latest round of data to values defined in the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
 
    ```bash
    make ma-set-latest-round NETWORK=devnet
@@ -184,19 +186,19 @@ The mock aggregator consumer contract is initialized with the address of an aggr
    make devnet
    ```
 
-1. Add a prefunded account to the local `accounts.json` file using the following command:
+1. If you haven't already, add a prefunded account to the local `accounts.json` file using the following command:
 
    ```bash
    make add-account
    ```
 
-1. Declare and deploy both a mock aggregator and a consumer contracts to the devnet using the following command:
+1. Declare and deploy both a mock aggregator and a consumer contracts to the devnet by running the following command:
 
    ```bash
    make devnet-deploy
    ```
 
-   This command runs both [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) and [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) scripts.
+   This command executes both [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) and [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) scripts.
 
    Expect an output similar to the following:
 
