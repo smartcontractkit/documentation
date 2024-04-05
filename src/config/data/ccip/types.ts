@@ -61,7 +61,7 @@ export enum TokenMechanism {
   NoPoolSourceChain = "No pool on source blockchain",
   NoPoolDestinationChain = "No pool on destination blockchain",
   NoPoolsOnBothChains = "No pools on both blockchains",
-  Unsupported = "",
+  Unsupported = "Unsupported pool mechanism",
 }
 
 export type NetworkFeeStructure = {

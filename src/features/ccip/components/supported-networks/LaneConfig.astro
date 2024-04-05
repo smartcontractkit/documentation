@@ -1,5 +1,13 @@
 ---
-import { loadReferenceData, Environment, Version, PoolType, LaneConfig } from "@config/data/ccip/"
+import {
+  loadReferenceData,
+  Environment,
+  Version,
+  PoolType,
+  LaneConfig,
+  determineTokenMechanism,
+  TokenMechanism,
+} from "@config/data/ccip/"
 import { SupportedChain } from "@config"
 import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
@@ -107,28 +115,18 @@ const determineMechanism = (
   sourcePoolType: PoolType | undefined,
   destinationPoolType: PoolType | undefined
 ): string => {
-  if (!sourcePoolType || !destinationPoolType) {
-    console.error(
-      `Pool types not found for token on ${sourceChainRefId} to ${destinationChainRefId} for token ${supportedToken}`
-    )
-    return ""
-  } else if (sourcePoolType === "lockRelease" && destinationPoolType === "burnMint") {
-    return "Lock & Mint"
-  } else if (sourcePoolType === "burnMint" && destinationPoolType === "lockRelease") {
-    return "Burn & Unlock"
-  } else if (sourcePoolType === "lockRelease" && destinationPoolType === "lockRelease") {
-    return "Lock & Unlock"
-  } else if (
-    (sourcePoolType === "burnMint" && destinationPoolType === "burnMint") ||
-    (sourcePoolType === "usdc" && destinationPoolType === "usdc")
+  const mechanism = determineTokenMechanism(sourcePoolType, destinationPoolType)
+  if (
+    mechanism === TokenMechanism.NoPoolSourceChain ||
+    mechanism === TokenMechanism.NoPoolDestinationChain ||
+    mechanism === TokenMechanism.NoPoolsOnBothChains ||
+    mechanism === TokenMechanism.Unsupported
   ) {
-    return "Burn & Mint"
-  } else {
-    console.error(
-      `Unsupported pool mechanism ${sourcePoolType}-${destinationPoolType} on ${sourceChainRefId} to ${destinationChainRefId} for token ${supportedToken}`
-    )
+    console.error(`Error: ${mechanism} for token ${supportedToken} on ${sourceChainRefId} to ${destinationChainRefId}`)
     return ""
   }
+
+  return mechanism
 }
 
 const tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
