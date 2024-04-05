@@ -98,7 +98,7 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
 
 const inputAndButtonBaseStyle = {
   flex: "1 1 auto",
-  maxWidth: "10em",
+  maxWidth: "9em",
 }
 
 const containerStyle = {
@@ -320,7 +320,7 @@ const NetworkFeeCalculator = () => {
 
       {/* Fetch Button */}
       <button onClick={handleGetNetworkFee} className={button.secondary} style={inputAndButtonBaseStyle}>
-        Network Fee
+        Calculate
       </button>
 
       {/* Fees Table */}
