@@ -130,7 +130,7 @@ const getTokensList = (tokens: TokenDetails | undefined) => {
     return []
   }
 
-  return Object.keys(tokens).sort()
+  return Object.keys(tokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "accent" }))
 }
 
 const NetworkFeeCalculator = () => {
@@ -262,8 +262,10 @@ const NetworkFeeCalculator = () => {
           setEnvironment(environment)
         }}
         filterFunction={(option, filter) => option.toLowerCase().includes(filter.toLowerCase())}
-        renderOption={(option) => <div>{option.toUpperCase()}</div>}
-        optionToString={(option) => option.toUpperCase()}
+        renderOption={(option) => (
+          <div>{option ? option.charAt(0).toUpperCase() + option.slice(1).toLowerCase() : ""}</div>
+        )}
+        optionToString={(option) => (option ? option.charAt(0).toUpperCase() + option.slice(1).toLowerCase() : "")}
         stringToOption={(value) => {
           if (value === "") return undefined
           return environments.find((environment) => environment.toLowerCase() === value.toLowerCase()) as Environment
