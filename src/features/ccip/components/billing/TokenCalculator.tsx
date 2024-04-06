@@ -2,56 +2,27 @@
 import { useState, useEffect } from "preact/hooks"
 import {
   Environment,
-  NetworkFeeStructure,
-  SupportedTokenConfig,
-  TokenMechanism,
-  Version,
   getAllEnvironments,
   getAllSupportedTokens,
   getTokenMechanism,
   calculateNetworkFeesForTokenMechanism,
+  Version,
 } from "@config/data/ccip"
 import { getTitle } from "@features/utils"
 import { SupportedChain } from "@config"
 import button from "@chainlink/design-system/button.module.css"
 import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown"
-
-interface EnvironmentData {
-  environments: Environment[]
-}
-
-interface TokenDetails {
-  [sourceChain: string]: Record<SupportedChain, Record<SupportedChain, SupportedTokenConfig>> | never[]
-}
-
-interface TokenData {
-  tokens: TokenDetails
-}
-
-interface BlockchainData {
-  blockchains: SupportedChain[]
-}
-
-interface FeeDetails {
-  token: string
-  mechanism: TokenMechanism
-  fee: NetworkFeeStructure
-}
-
-interface FeeData {
-  fees: FeeDetails
-}
-
-type FetchDataReturn = EnvironmentData | TokenData | BlockchainData | FeeData | Record<string, never>
-
-interface FetchParams {
-  environment: Environment
-  version: Version
-  token: string
-  tokens: TokenDetails
-  sourceBlockchain: SupportedChain
-  destinationBlockchain: SupportedChain
-}
+import {
+  FetchParams,
+  FetchDataReturn,
+  TokenDetails,
+  FeeDetails,
+  EnvironmentData,
+  TokenData,
+  BlockchainData,
+  FeeData,
+  BlockchainTitle,
+} from "./types"
 
 const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): FetchDataReturn => {
   const params = { version: Version.V1_2_0, ...fetchParams }
@@ -125,12 +96,11 @@ const cellStyle = {
 const getTokensList = (tokens: TokenDetails | undefined) => {
   if (!tokens) return []
   if (Array.isArray(tokens) && tokens.length === 0) {
-    // test for never[]
     console.error("No tokens found")
     return []
   }
 
-  return Object.keys(tokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "accent" }))
+  return Object.keys(tokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 }
 
 const NetworkFeeCalculator = () => {
@@ -139,16 +109,60 @@ const NetworkFeeCalculator = () => {
   const [token, setToken] = useState<string | undefined>()
   const [tokens, setTokens] = useState<TokenDetails>() // All available tokens
   const [tokensDropDownReset, setTokensDropDownReset] = useState(false)
-  const [sourceBlockchain, setSourceBlockchain] = useState<{ title: string; key: SupportedChain } | undefined>()
+  const [sourceBlockchain, setSourceBlockchain] = useState<BlockchainTitle | undefined>()
   const [sourceBlockchainDropdownReset, setSourceBlockchainDropDownReset] = useState(false)
-  const [destinationBlockchain, setDestinationBlockchain] = useState<
-    { title: string; key: SupportedChain } | undefined
-  >()
+  const [destinationBlockchain, setDestinationBlockchain] = useState<BlockchainTitle | undefined>()
   const [destinationBlockchainDropdownReset, setDestinationBlockchainDropDownReset] = useState(false)
 
-  const [sourceBlockchains, setSourceBlockchains] = useState<{ title: string; key: SupportedChain }[]>([])
-  const [destinationBlockchains, setDestinationBlockchains] = useState<{ title: string; key: SupportedChain }[]>([])
+  const [sourceBlockchains, setSourceBlockchains] = useState<BlockchainTitle[]>([])
+  const [destinationBlockchains, setDestinationBlockchains] = useState<BlockchainTitle[]>([])
   const [fees, setFees] = useState<FeeDetails | undefined>()
+
+  const fetchAndSetBlockchains = ({
+    isSourceBlockchain = true,
+    sourceBlockchainKey,
+  }: {
+    isSourceBlockchain: boolean
+    sourceBlockchainKey?: SupportedChain
+  }) => {
+    setFees(undefined)
+    if (isSourceBlockchain) {
+      setSourceBlockchain(undefined)
+      setSourceBlockchainDropDownReset((prev) => !prev)
+      setSourceBlockchains([])
+    } else {
+      setDestinationBlockchain(undefined)
+      setDestinationBlockchainDropDownReset((prev) => !prev)
+      setDestinationBlockchains([])
+    }
+
+    // Determine the appropriate parameters for fetchData based on the context
+    const fetchParams: Partial<FetchParams> = isSourceBlockchain
+      ? { token, tokens }
+      : { token, tokens, sourceBlockchain: sourceBlockchainKey }
+    const data = fetchData("blockchains", fetchParams) as BlockchainData
+
+    if ("blockchains" in data) {
+      const blockchains = data.blockchains
+        .reduce((acc, chain) => {
+          let title = getTitle(chain)
+          if (title) {
+            title = title.replace(/(mainnet|testnet)$/i, "").trim()
+            acc.push({ title, key: chain })
+          } else {
+            console.error(`No title found for chain: ${chain}`)
+          }
+          return acc
+        }, [] as Array<BlockchainTitle>)
+        .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }))
+
+      if (isSourceBlockchain) {
+        setSourceBlockchains(blockchains)
+      } else {
+        setDestinationBlockchains(blockchains)
+      }
+    }
+  }
 
   useEffect(() => {
     const data = fetchData("environments") as EnvironmentData
@@ -178,50 +192,14 @@ const NetworkFeeCalculator = () => {
 
   // Fetch source blockchains when token is selected
   useEffect(() => {
-    setSourceBlockchain(undefined)
-    setSourceBlockchainDropDownReset((prev) => !prev)
-    setDestinationBlockchain(undefined)
-    setDestinationBlockchainDropDownReset((prev) => !prev)
-    setFees(undefined)
-    setSourceBlockchains([])
-    setDestinationBlockchains([])
-
     if (token && environment) {
-      const data = fetchData("blockchains", { token, tokens }) as BlockchainData
-      if ("blockchains" in data) {
-        const blockchains = data.blockchains.reduce((acc, chain) => {
-          const title = getTitle(chain)
-          if (title) {
-            acc.push({ title, key: chain })
-          } else {
-            console.error(`No title found for chain: ${chain}`)
-          }
-          return acc
-        }, [] as Array<{ title: string; key: SupportedChain }>)
-
-        setSourceBlockchains(blockchains)
-      }
+      fetchAndSetBlockchains({ isSourceBlockchain: true })
     }
   }, [token, environment, tokens])
 
   useEffect(() => {
-    setFees(undefined)
-    setDestinationBlockchains([])
-    setDestinationBlockchains([])
     if (token && environment && sourceBlockchain) {
-      const data = fetchData("blockchains", { token, tokens, sourceBlockchain: sourceBlockchain.key })
-      if ("blockchains" in data) {
-        const blockchains = data.blockchains.reduce((acc, chain) => {
-          const title = getTitle(chain)
-          if (title) {
-            acc.push({ title, key: chain })
-          } else {
-            console.error(`No title found for chain: ${chain}`)
-          }
-          return acc
-        }, [] as Array<{ title: string; key: SupportedChain }>)
-        setDestinationBlockchains(blockchains)
-      }
+      fetchAndSetBlockchains({ isSourceBlockchain: false, sourceBlockchainKey: sourceBlockchain.key })
     }
   }, [sourceBlockchain, token, environment])
 
@@ -297,7 +275,7 @@ const NetworkFeeCalculator = () => {
         optionToString={(option) => option.title}
         stringToOption={(value) => {
           if (value === "") return undefined
-          return sourceBlockchains.find((chain) => chain.title === value) as { title: string; key: SupportedChain }
+          return sourceBlockchains.find((chain) => chain.title === value) as BlockchainTitle
         }}
         disabled={token === undefined}
         style={inputAndButtonBaseStyle}
@@ -313,7 +291,7 @@ const NetworkFeeCalculator = () => {
         optionToString={(option) => option.title}
         stringToOption={(value) => {
           if (value === "") return undefined
-          return destinationBlockchains.find((chain) => chain.title === value) as { title: string; key: SupportedChain }
+          return destinationBlockchains.find((chain) => chain.title === value) as BlockchainTitle
         }}
         disabled={sourceBlockchain === undefined}
         style={inputAndButtonBaseStyle}
