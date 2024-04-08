@@ -26,6 +26,7 @@ export type SupportedChain =
   | "POLYGON_MAINNET"
   | "POLYGON_MUMBAI"
   | "GNOSIS_MAINNET"
+  | "GNOSIS_CHIADO"
   | "AVALANCHE_MAINNET"
   | "AVALANCHE_FUJI"
   | "FANTOM_MAINNET"

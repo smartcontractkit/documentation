@@ -189,6 +189,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=dataFeeds",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=dataFeeds",
         },
@@ -298,6 +302,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help?parent=dataStreams" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataStreams" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=dataStreams",
         },
         {
           title: "Contributing to Chainlink",
@@ -473,6 +481,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help?parent=automation" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=automation" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=automation",
         },
         {
           title: "Contributing to Chainlink",
@@ -666,6 +678,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=chainlinkFunctions",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=chainlinkFunctions",
         },
@@ -820,6 +836,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=vrf",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=vrf",
         },
@@ -843,15 +863,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/supported-networks",
           children: [
             {
-              title: "Mainnet v1.2.0",
+              title: "Mainnet",
               url: "ccip/supported-networks/v1_2_0/mainnet",
             },
             {
-              title: "Mainnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/mainnet",
-            },
-            {
-              title: "Testnet v1.2.0",
+              title: "Testnet",
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
           ],
@@ -1038,6 +1054,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help?parent=ccip" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=ccip",
         },
         {
           title: "Contributing to Chainlink",
@@ -1331,6 +1351,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration",
         },
         {
           title: "Contributing to Chainlink",
