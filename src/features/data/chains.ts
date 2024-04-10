@@ -420,6 +420,13 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-mainnet",
       },
+      {
+        name: "Polygon zkEVM testnet",
+        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-testnet",
+      },
     ],
   },
   {
