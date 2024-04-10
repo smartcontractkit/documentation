@@ -379,13 +379,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
         queryString: "linea-mainnet",
       },
-      {
-        name: "Linea Goerli testnet",
-        explorerUrl: "https://goerli.lineascan.build/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-linea-1.json",
-        queryString: "linea-goerli-testnet",
-      },
     ],
   },
   {
