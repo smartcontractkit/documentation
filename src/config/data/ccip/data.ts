@@ -1,4 +1,14 @@
-import { ChainsConfig, LanesConfig, TokensConfig, Environment, Version } from "./types"
+import {
+  ChainsConfig,
+  LanesConfig,
+  TokensConfig,
+  Environment,
+  Version,
+  SupportedTokenConfig,
+  determineTokenMechanism,
+  TokenMechanism,
+  NetworkFees,
+} from "."
 
 // For mainnet
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
@@ -12,7 +22,43 @@ import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
 
 import { SupportedChain } from "@config/types"
-import { supportedChainToChainInRdd } from "@features/utils"
+import { directoryToSupportedChain, supportedChainToChainInRdd } from "@features/utils"
+
+export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
+export const getAllVersions = () => [Version.V1_2_0]
+
+export const networkFees: NetworkFees = {
+  tokenTransfers: {
+    [TokenMechanism.LockAndUnlock]: {
+      allLanes: { gasTokenFee: "0.07 %", linkFee: "0.063 %" },
+    },
+    [TokenMechanism.LockAndMint]: {
+      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+    },
+    [TokenMechanism.BurnAndMint]: {
+      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+    },
+    [TokenMechanism.BurnAndUnlock]: {
+      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+    },
+    [TokenMechanism.NoPoolDestinationChain]: {
+      allLanes: { gasTokenFee: "", linkFee: "" },
+    },
+    [TokenMechanism.NoPoolSourceChain]: { allLanes: { gasTokenFee: "", linkFee: "" } },
+    [TokenMechanism.NoPoolsOnBothChains]: { allLanes: { gasTokenFee: "", linkFee: "" } },
+    [TokenMechanism.Unsupported]: { allLanes: { gasTokenFee: "", linkFee: "" } },
+  },
+  messaging: {
+    fromToEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+    nonEthereum: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
+  },
+}
 
 export const loadReferenceData = ({ environment, version }: { environment: Environment; version: Version }) => {
   let chainsReferenceData: ChainsConfig
@@ -61,6 +107,52 @@ export const getAllChains = ({
   }
 
   return [...chainsMainnetKeys, ...chainsTestnetKeys]
+}
+
+export const getAllSupportedTokens = (params: { environment: Environment; version: Version }) => {
+  const { lanesReferenceData } = loadReferenceData(params)
+  const tokens: Record<string, Record<SupportedChain, Record<SupportedChain, SupportedTokenConfig>>> = {}
+  Object.entries(lanesReferenceData).forEach(([sourceChainRdd, laneReferenceData]) => {
+    const sourceChain = directoryToSupportedChain(sourceChainRdd)
+
+    Object.entries(laneReferenceData).forEach(([destinationChainRdd, destinationLaneReferenceData]) => {
+      const supportedTokens = destinationLaneReferenceData.supportedTokens
+      if (supportedTokens) {
+        Object.entries(supportedTokens).forEach(([token, tokenConfig]) => {
+          const destinationChain = directoryToSupportedChain(destinationChainRdd)
+
+          tokens[token] = tokens[token] || {}
+          tokens[token][sourceChain] = tokens[token][sourceChain] || {}
+          tokens[token][sourceChain][destinationChain] = tokenConfig
+        })
+      }
+    })
+  })
+  if (Object.keys(tokens).length === 0) {
+    console.warn(`No supported tokens found for ${params.environment} ${params.version}`)
+    return []
+  }
+  return tokens
+}
+
+export const getTokenMechanism = (params: {
+  token: string
+  sourceChain: SupportedChain
+  destinationChain: SupportedChain
+  environment: Environment
+  version: Version
+}) => {
+  const { tokensReferenceData } = loadReferenceData(params)
+  const sourceChainRdd = supportedChainToChainInRdd(params.sourceChain)
+  const destinationChainRdd = supportedChainToChainInRdd(params.destinationChain)
+
+  const tokenConfig = tokensReferenceData[params.token]
+  const sourceChainPoolInfo = tokenConfig[sourceChainRdd]
+  const destinationChainPoolInfo = tokenConfig[destinationChainRdd]
+  const sourceChainPoolType = sourceChainPoolInfo.poolType
+  const destinationChainPoolType = destinationChainPoolInfo.poolType
+  const tokenMechanism = determineTokenMechanism(sourceChainPoolType, destinationChainPoolType)
+  return tokenMechanism
 }
 
 const CCIPTokenImage =
