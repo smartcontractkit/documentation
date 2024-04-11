@@ -377,13 +377,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
         queryString: "linea-mainnet",
       },
-      {
-        name: "Linea Goerli testnet",
-        explorerUrl: "https://goerli.lineascan.build/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-linea-1.json",
-        queryString: "linea-goerli-testnet",
-      },
     ],
   },
   {
@@ -433,24 +426,6 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-testnet",
-      },
-    ],
-  },
-  {
-    page: "starknet",
-    label: "StarkNet",
-    title: "StarkNet Data Feeds",
-    img: "/assets/chains/starknet.svg",
-    networkStatusUrl: "https://testnet.starkscan.co/stats",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "StarkNet testnet",
-        explorerUrl: "https://testnet.starkscan.co/contract/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
-        queryString: "starknet-testnet",
       },
     ],
   },
