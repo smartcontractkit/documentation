@@ -1,17 +1,18 @@
-type RateLimiterConfig = {
+export type RateLimiterConfig = {
   capacity: string
   isEnabled: boolean
   rate: string
 }
 
-type SupportedTokenConfig = {
-  [token: string]: {
-    rateLimiterConfig: RateLimiterConfig
-  }
+export type SupportedTokenConfig = {
+  rateLimiterConfig: RateLimiterConfig
+}
+export type SupportedTokensConfig = {
+  [token: string]: SupportedTokenConfig
 }
 
 export type LaneConfig = {
-  supportedTokens?: SupportedTokenConfig
+  supportedTokens?: SupportedTokensConfig
   rateLimiterConfig: RateLimiterConfig
   onRamp: string
 }
@@ -20,10 +21,7 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
-enum PoolType {
-  LockRelease = "lockRelease",
-  BurnMint = "burnMint",
-}
+export type PoolType = "lockRelease" | "burnMint" | "usdc"
 
 type PoolInfo = {
   tokenAddress: string
@@ -50,7 +48,46 @@ export type LanesConfig = {
 }
 
 export type TokensConfig = {
-  [token: string]: PoolInfo
+  [token: string]: {
+    [chain: string]: PoolInfo
+  }
+}
+
+export enum TokenMechanism {
+  LockAndMint = "Lock & Mint",
+  BurnAndUnlock = "Burn & Unlock",
+  LockAndUnlock = "Lock & Unlock",
+  BurnAndMint = "Burn & Mint",
+  NoPoolSourceChain = "No pool on source blockchain",
+  NoPoolDestinationChain = "No pool on destination blockchain",
+  NoPoolsOnBothChains = "No pools on both blockchains",
+  Unsupported = "Unsupported pool mechanism",
+}
+
+export type NetworkFeeStructure = {
+  gasTokenFee: string
+  linkFee: string
+}
+
+export type LaneSpecificFees = {
+  fromToEthereum?: NetworkFeeStructure
+  fromEthereum?: NetworkFeeStructure
+  toEthereum?: NetworkFeeStructure
+  nonEthereum?: NetworkFeeStructure
+  allLanes?: NetworkFeeStructure
+}
+
+export type LaneSpecificFeeKey = keyof LaneSpecificFees
+
+export type TokenTransfersNetworkFees = {
+  [key in TokenMechanism]: LaneSpecificFees
+}
+
+export type MessagingNetworkFees = LaneSpecificFees
+
+export type NetworkFees = {
+  tokenTransfers: TokenTransfersNetworkFees
+  messaging: MessagingNetworkFees
 }
 
 export enum Environment {

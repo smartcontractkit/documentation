@@ -5,7 +5,7 @@ title: "CCIP Billing"
 ---
 
 import { Aside } from "@components"
-import Billing from "@features/ccip/components/Billing.astro"
+import { Billing, TokenCalculator } from "@features/ccip/components/billing"
 
 <Aside type="note" title="Prerequisites">
   Read the CCIP [Introduction](/ccip) and [Concepts](/ccip/concepts) to understand all the concepts discussed on this
@@ -23,21 +23,21 @@ Aside from billing, remember to [carefully estimate the `gasLimit` that you set]
 The fee is calculated by the following formula:
 
     ```
-    fee = message fee + network fee
+    fee = blockchain fee + network fee
     ```
 
 Where:
 
     - `fee`: The total fee for processing a [CCIP message](/ccip/api-reference/client#evm2anymessage). **Note:** Users can call the [getFee](/ccip/api-reference/i-router-client#getfee) function to estimate the fee.
-    - `message fee`: This represents an estimation of the gas cost the node operators will pay to deliver the CCIP message to the destination blockchain.
-    - `network fee`: Premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network).
+    - `blockchain fee`: This represents an estimation of the gas cost the node operators will pay to deliver the CCIP message to the destination blockchain.
+    - `network fee`: Fee paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network).
 
-### Message fee
+### Blockchain fee
 
-The message fee is calculated by the following formula:
+The blockchain fee is calculated by the following formula:
 
     ```
-    message fee = execution cost + data availability cost
+    blockchain fee = execution cost + data availability cost
     ```
 
 #### Execution cost
@@ -71,20 +71,46 @@ This cost is only relevant if the destination blockchain is a [L2 layer](https:/
 
 ### Network fee
 
-The premium paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network) is calculated as follows:
+The fee paid to CCIP service providers, including node operators running the [Decentralized Oracle Network](/ccip/concepts#decentralized-oracle-network-don) and [Risk Management Network](/ccip/concepts#risk-management-network) is calculated as follows:
 
-- For token transfers or programmable transfers (token + data), the fee uses a percentage-based premium. For each token, the premium is calculated using the following expression:
+#### Token transfers or programmable token transfers
 
-  ```
-  tokenAmount * price * percentage
-  ```
+For token transfers or programmable token transfers (token + data), the network fee varies based on the [token handling mechanism](/ccip/architecture#token-pools) and the [lanes](/ccip/concepts#lane):
 
-  Where:
+- **Lock and Unlock**: The network fee is percentage-based. For each token, it is calculated using the following expression:
 
-  - `tokenAmount`: The amount of tokens.
-  - `price`: Initially denominated in USD and translated into the `feeToken`.
-  - `percentage`: The values are listed in the table below.
+      ```
+      tokenAmount * price * percentage
+      ```
 
-- For messaging (only data): The fee is a static amount. The values denominated in USD are listed in the table below.
+      Where:
+
+      - `tokenAmount`: The amount of tokens being transferred.
+      - `price`: Initially priced in USD and converted into the `feeToken`.
+      - `percentage`: The values are provided in the [network fee table](#network-fee-table).
+
+- **Lock and Mint**, **Burn and Mint** and **Burn and Unlock**: The network fee is a static amount. See the [network fee table](#network-fee-table).
+
+  <Aside type="note" title="Determine Token Handling Mechanism">
+    Use the [calculator](#network-token-calculator) below or consult the CCIP supported networks on the
+    [mainnet](/ccip/supported-networks/v1_2_0/mainnet) or [testnet](/ccip/supported-networks/v1_2_0/testnet) pages to
+    determine a token's handling mechanism on a given lane.
+  </Aside>
+
+#### Messaging (only data)
+
+For messaging (only data): The network fee is a static amount, denominated in USD. See the [network fee table](#network-fee-table).
+
+#### Network fee table
+
+The table below provides an overview of the network fees charged for different use cases on different lanes. Percentage-based fees are calculated on the value transferred in a message. USD-denominated fees are applied per message.
 
 <Billing />
+
+<br id="network-token-calculator" />
+
+You can use the calculator below to learn the network fees for a specific token. Select the environment (mainnet/testnet), the token, the source blockchain, and the destination blockchain to get the network fee:
+
+<br />
+
+<TokenCalculator client:idle />
