@@ -106,13 +106,25 @@ export const AutomationConfigList = () => {
                     getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
                   />
                 </>
-              ) : (
-                <AutomationConfig
+              ) : title === "Mumbai testnet" ? (
+                <>
+                <TemporaryNote title="Polygon Mumbai network status">
+                  The Mumbai network has stopped producing blocks, so example code will not function on this network. Check again soon
+  for updates about future testnet support.
+                  </TemporaryNote>
+                  <AutomationConfig
                   config={config}
                   registryAddress={registryAddress}
                   getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
                 />
-              )}
+                </>
+              ) : (
+              <AutomationConfig
+                config={config}
+                registryAddress={registryAddress}
+                getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+              />
+              ) }
             </SectionWrapper>
           )
         })}
