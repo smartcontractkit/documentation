@@ -7,13 +7,13 @@ contract NFTFloorPriceConsumerV3 {
     AggregatorV3Interface internal nftFloorPriceFeed;
 
     /**
-     * Network: Mumbai Testnet
+     * Network: Ethereum Mainnet
      * Aggregator: Azuki Floor Price
-     * Address: 0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
+     * Address: 0xA8B9A447C73191744D5B79BcE864F343455E1150
      */
     constructor() {
         nftFloorPriceFeed = AggregatorV3Interface(
-            0x16c74d1f6986c6Ffb48540b178fF8Cb0ED9F13b0
+            0xA8B9A447C73191744D5B79BcE864F343455E1150
         );
     }
 
