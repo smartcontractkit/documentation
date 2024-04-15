@@ -323,14 +323,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation",
         },
         {
-          title: "Getting Started",
-          url: "chainlink-automation/overview/getting-started",
-        },
-        {
-          title: "Billing and Costs",
-          url: "chainlink-automation/overview/automation-economics",
-        },
-        {
           title: "Supported Networks",
           url: "chainlink-automation/overview/supported-networks",
         },
@@ -338,15 +330,40 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
+      ],
+    },
+    {
+      section: "Learn",
+      contents: [
         {
-          title: "Migrate to Automation V2",
-          url: "chainlink-automation/guides/migrate-to-v2",
+          title: "Getting Started",
+          url: "chainlink-automation/overview/getting-started",
+        },
+        {
+          title: "Concepts",
+          url: "chainlink-automation/concepts/automation-concepts",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-automation/concepts/automation-architecture",
+        },
+        {
+          title: "Billing and Costs",
+          url: "chainlink-automation/overview/automation-economics",
         },
       ],
     },
     {
-      section: "Guides",
+      section: "Build",
       contents: [
+        {
+          title: "Best Practices",
+          url: "chainlink-automation/concepts/best-practice",
+        },
+        {
+          title: "Migrate to Automation V2",
+          url: "chainlink-automation/guides/migrate-to-v2",
+        },
         {
           title: "Create Automation-Compatible Contracts",
           url: "chainlink-automation/guides/compatible-contracts",
@@ -386,23 +403,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using the StreamsLookup error handler",
           url: "chainlink-automation/guides/streams-lookup-error-handler",
-        },
-      ],
-    },
-    {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Concepts",
-          url: "chainlink-automation/concepts/automation-concepts",
-        },
-        {
-          title: "Architecture",
-          url: "chainlink-automation/concepts/automation-architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
