@@ -849,6 +849,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ccip: [
     {
       section: "Chainlink CCIP",
+      contents: [],
+    },
+    {
+      section: "Learn",
       contents: [
         {
           title: "Overview",
@@ -857,6 +861,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Getting Started",
           url: "ccip/getting-started",
+        },
+        {
+          title: "Key Concepts",
+          url: "ccip/concepts",
+        },
+        {
+          title: "Architecture",
+          url: "ccip/architecture",
+        },
+        {
+          title: "Billing",
+          url: "ccip/billing",
         },
         {
           title: "Supported Networks",
@@ -881,29 +897,43 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/service-responsibility",
         },
         {
-          title: "Billing",
-          url: "ccip/billing",
-        },
-        {
           title: "Release Notes",
           url: "ccip/release-notes",
         },
       ],
     },
     {
-      section: "Guides",
+      section: "Build",
       contents: [
         {
-          title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          title: "Best Practices",
+          url: "ccip/best-practices",
         },
         {
-          title: "Transfer Tokens with Data",
-          url: "ccip/tutorials/programmable-token-transfers",
+          title: "Acquire Test Tokens",
+          url: "ccip/test-tokens",
         },
         {
-          title: "Transfer Tokens with Data - Defensive Example",
-          url: "ccip/tutorials/programmable-token-transfers-defensive",
+          title: "Cross-chain tokens",
+          url: "ccip/tutorials/offchain",
+          children: [
+            {
+              title: "Transfer Tokens",
+              url: "ccip/tutorials/cross-chain-tokens",
+            },
+            {
+              title: "Transfer Tokens with Data",
+              url: "ccip/tutorials/programmable-token-transfers",
+            },
+            {
+              title: "Transfer Tokens with Data - Defensive Example",
+              url: "ccip/tutorials/programmable-token-transfers-defensive",
+            },
+            {
+              title: "Transfer USDC with Data",
+              url: "ccip/tutorials/usdc",
+            },
+          ],
         },
         {
           title: "Offchain",
@@ -920,49 +950,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Transfer USDC with Data",
-          url: "ccip/tutorials/usdc",
-        },
-        {
-          title: "Send Arbitrary Data",
-          url: "ccip/tutorials/send-arbitrary-data",
-        },
-        {
-          title: "Send Arbitrary Data with Acknowledgment of Receipt",
-          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+          title: "Cross-chain messaging",
+          url: "ccip/tutorials/offchain",
+          children: [
+            {
+              title: "Send Arbitrary Data",
+              url: "ccip/tutorials/send-arbitrary-data",
+            },
+            {
+              title: "Send Arbitrary Data with Acknowledgment of Receipt",
+              url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+            },
+            {
+              title: "Optimizing Gas Limit Settings in CCIP Messages",
+              url: "ccip/tutorials/ccipreceive-gaslimit",
+            },
+          ],
         },
         {
           title: "Manual Execution",
           url: "ccip/tutorials/manual-execution",
-        },
-        {
-          title: "Optimizing Gas Limit Settings in CCIP Messages",
-          url: "ccip/tutorials/ccipreceive-gaslimit",
-        },
-        {
-          title: "Acquire Test Tokens",
-          url: "ccip/test-tokens",
-        },
-      ],
-    },
-    {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Conceptual Overview",
-          url: "ccip/concepts",
-        },
-        {
-          title: "Architecture",
-          url: "ccip/architecture",
-        },
-        {
-          title: "Manual execution",
-          url: "ccip/concepts/manual-execution",
-        },
-        {
-          title: "Best Practices",
-          url: "ccip/best-practices",
         },
       ],
     },
