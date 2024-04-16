@@ -335,6 +335,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/supported-networks",
         },
         {
+          title: "Best Practices",
+          url: "chainlink-automation/concepts/best-practice",
+        },
+        {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
@@ -399,10 +403,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Architecture",
           url: "chainlink-automation/concepts/automation-architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
