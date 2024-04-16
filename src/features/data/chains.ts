@@ -101,12 +101,12 @@ export const CHAINS: Chain[] = [
         tags: ["proofOfReserve"],
       },
       {
-        name: "Mumbai Testnet",
-        explorerUrl: "https://mumbai.polygonscan.com/address/%s",
+        name: "Amoy Testnet",
+        explorerUrl: "https://www.oklink.com/amoy/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
-        queryString: "polygon-mumbai",
-        tags: ["proofOfReserve", "nftFloorPrice", "rates"],
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
+        queryString: "polygon-amoy",
+        tags: ["proofOfReserve"],
       },
     ],
   },
@@ -115,7 +115,6 @@ export const CHAINS: Chain[] = [
     title: "Gnosis Chain (xDai) Data Feeds",
     img: "/assets/chains/gnosis-chain.svg",
     networkStatusUrl: "https://gnosisscan.io/",
-    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {

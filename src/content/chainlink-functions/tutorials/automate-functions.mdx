@@ -49,19 +49,19 @@ You can locate the scripts used in this tutorial in the [_examples/10-automate-f
    npx env-enc set
    ```
 
-### Deploy a Functions Consumer contract
+### Deploy an Automated Functions Consumer contract
 
-Deploy a Functions consumer contract on _Polygon Mumbai_:
+The consumer contract for Automated Functions is different from the consumer in other tutorials. Deploy the `AutomatedFunctionsConsumerExample` contract on _Ethereum Sepolia_:
 
 1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
 
    <CodeSample src="samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol" showButtonOnly={true} />
 
 1. Compile the contract.
-1. Open MetaMask and select the _Polygon Mumbai_ network.
-1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
-1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
-1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+1. Open MetaMask and select the _Ethereum Sepolia_ network.
+1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Ethereum Sepolia_.
+1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Ethereum Sepolia_, the router address is <CopyText text="0xb83E47C2bC239B3bf370bc41e1459A34b41238D0" code/>.
+1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Ethereum Sepolia_.
 1. After you confirm the transaction, the contract address appears in the Deployed Contracts list. Copy your contract address.
 
 ### Add your Consumer contract to your Functions subscription
@@ -131,24 +131,18 @@ Two important steps are done here:
       $ node examples/10-automate-functions/updateRequest.js
       secp256k1 unavailable, reverting to browser version
       Start simulation...
-      Performing simulation with the following versions:
-      deno 1.36.3 (release, aarch64-apple-darwin)
-      v8 11.6.189.12
-      typescript 5.1.6
-
-
       Simulation result {
-        capturedTerminalOutput: 'Median Bitcoin price: 25702.07\n',
-        responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000002737df'
+      capturedTerminalOutput: 'Median Bitcoin price: 66725.29\n',
+      responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000000000065d091'
       }
-      ✅ Decoded response to uint256:  2570207n
+      ✅ Decoded response to uint256:  6672529n
 
       Make request...
-      Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/user. StorageSlotId 0. Expiration in minutes: 150
+      Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/,https://02.functions-gateway.testnet.chain.link/. slotId 0. Expiration in minutes: 150
 
-      ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693925775, success: true }
+      ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/,https://02.functions-gateway.testnet.chain.link/! Gateways response:  { version: 1712948932, success: true }
 
-      ✅ Automated Functions request settings updated! Transaction hash 0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14 - Check the explorer https://mumbai.polygonscan.com/tx/0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14
+      ✅ Automated Functions request settings updated! Transaction hash 0x670c6a768a3fbccdcc344e51827ba41a13a579427272522550ad5810ca5b81a3 - Check the explorer https://sepolia.etherscan.io/tx/0x670c6a768a3fbccdcc344e51827ba41a13a579427272522550ad5810ca5b81a3
       ```
 
       The output of the example gives you the following information:
@@ -161,7 +155,7 @@ At this stage, your Functions consumer contract is configured to get the median 
 
 ### Check Result
 
-Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to Polygon Mumbai. Your upkeep will be listed under _My upkeeps_:
+Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to the Sepolia testnet. Your upkeep will be listed under _My upkeeps_:
 
 <ClickToZoom src="/images/chainlink-functions/tutorials/automation/cl-automation-home.jpg" />
 
@@ -189,8 +183,8 @@ On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart
     ```text
     $ node examples/10-automate-functions/readLatest.js
     secp256k1 unavailable, reverting to browser version
-    Last request ID is 0x38687b48c9d8dfc7115d516840d45089a5409557765f031c14b332913e92ee7e
-    ✅ Decoded response to uint256:  2570207n
+    Last request ID is 0xa6c0a45c9a24981e0112381f9addeeb8f8a9ad0ea91dd0426703eaa11d5a773a
+    ✅ Decoded response to uint256:  6675568n
     ```
 
 ### Clean up
@@ -226,14 +220,14 @@ const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `updateRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `updateRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
+   - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
    - `gatewayUrls`: The secrets endpoint URL to which you will upload the encrypted secrets.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt args to fetch other asset prices.
    - `secrets`: The secrets object that will be encrypted.
