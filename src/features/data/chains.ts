@@ -89,7 +89,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
