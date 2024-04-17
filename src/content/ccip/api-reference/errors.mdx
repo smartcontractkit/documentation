@@ -5,6 +5,7 @@ title: "Errors API Reference"
 ---
 
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+import { CCIPSendError } from "@features/ccip/components/api-reference"
 import { Aside, CopyText } from "@components"
 
 <CcipCommon callout="importCCIPPackage" />
@@ -13,53 +14,20 @@ When invoking the `ccipSend` [function](/ccip/api-reference/i-router-client#ccip
 
 ## Router
 
-| Error                       | Parameters                                 | Error&nbsp;Selector                 | Description                                                                                         |
-| --------------------------- | ------------------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------- |
-| UnsupportedDestinationChain | <ul><li>uint64 destChainSelector</li></ul> | <CopyText text="0xae236d9c" code /> | Thrown when the destination chain is not supported.                                                 |
-| InsufficientFeeTokenAmount  | -                                          | <CopyText text="0x07da6ee6" code /> | Thrown when the CCIP fees are paid with native tokens, but not enough is sent with the transaction. |
-| InvalidMsgValue             | -                                          | <CopyText text="0x1841b4e1" code /> | Thrown when the CCIP fees are _not_ paid in native tokens, but `msg.value` is non-zero.             |
+<CCIPSendError type="router" />
 
 ## Onramp
 
-| Error                       | Parameters                                                   | Error&nbsp;Selector                 | Description                                                                                                             |
-| --------------------------- | ------------------------------------------------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| NotAFeeToken                | <ul><li>address token</li></ul>                              | <CopyText text="0xa7499d20" code /> | Thrown when an unsupported fee token is used.                                                                           |
-| UnsupportedToken            | <ul><li>IERC20 token</li></ul>                               | <CopyText text="0xbf16aab6" code /> | Thrown when an unsupported transfer token is used.                                                                      |
-| CannotSendZeroTokens        | -                                                            | <CopyText text="0x5cf04449" code /> | Thrown when the user tries to send a zero amount of tokens.                                                             |
-| InvalidChainSelector        | <ul><li>uint64 chainSelector</li></ul>                       | <CopyText text="0xd9a9cd68" code /> | Thrown when an invalid destination chain selector is used.                                                              |
-| InvalidAddress              | <ul><li>bytes encodedAddress</li></ul>                       | <CopyText text="0x370d875f" code /> | Thrown when the receiver address is invalid.                                                                            |
-| InvalidExtraArgsTag         | -                                                            | <CopyText text="0x5247fdce" code /> | Thrown when an invalid extra arguments tag is used.                                                                     |
-| RouterMustSetOriginalSender | -                                                            | <CopyText text="0xa4ec7479" code /> | This error should never be thrown as the router always sets the sender.                                                 |
-| MustBeCalledByRouter        | -                                                            | <CopyText text="0x1c0a3529" code /> | This error should never be thrown as the router always makes the call.                                                  |
-| MessageTooLarge             | <ul><li>uint256 maxSize</li><li>uint256 actualSize</li></ul> | <CopyText text="0x86933789" code /> | Thrown when the message size exceeds the maximum allowed size.                                                          |
-| MessageGasLimitTooHigh      | -                                                            | <CopyText text="0x4c4fc93a" code /> | Thrown when the gas limit is too high.                                                                                  |
-| UnsupportedNumberOfTokens   | -                                                            | <CopyText text="0x4c056b6a" code /> | Thrown when too many tokens are involved in the transfer.                                                               |
-| SenderNotAllowed            | <ul><li>address sender</li></ul>                             | <CopyText text="0xd0d25976" code /> | Thrown when the sender is not allowlisted.                                                                              |
-| MaxFeeBalanceReached        | -                                                            | <CopyText text="0xe5c7a491" code /> | Thrown when the onRamp has reached its maximum fee storage capacity. If it is full, it cannot process new transactions. |
+<CCIPSendError type="onramp" />
 
 ## RateLimiter
 
-| Error                             | Parameters                                                                                        | Error&nbsp;Selector                 | Description                                                                                                                                                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PriceNotFoundForToken             | <ul><li>address token</li></ul>                                                                   | <CopyText text="0x9a655f7b" code /> | Thrown when a price cannot be found for a specific token.                                                                                                                                                                        |
-| BucketOverfilled                  | -                                                                                                 | <CopyText text="0x9725942a" code /> | This error should never be thrown as it indicates an invalid bucket state.                                                                                                                                                       |
-| AggregateValueMaxCapacityExceeded | <ul><li>uint256 capacity</li><li>uint256 requested</li></ul>                                      | <CopyText text="0xf94ebcd1" code /> | Thrown when the user requests to transfer more value than the capacity of the aggregate rate limit bucket.                                                                                                                       |
-| TokenMaxCapacityExceeded          | <ul><li>uint256 capacity</li><li>uint256 requested</li><li>address tokenAddress</li></ul>         | <CopyText text="0x1a76572a" code /> | Thrown when the user requests to transfer more of a token than the capacity of the bucket.                                                                                                                                       |
-| AggregateValueRateLimitReached    | <ul><li>uint256 minWaitInSeconds</li><li>uint256 available</li></ul>                              | <CopyText text="0x15279c08" code /> | Thrown when the user requests to transfer more value than currently available in the bucket. The user might have to wait for at least `minWaitInSeconds` for enough availability or transfer the currently `available` amount.   |
-| TokenRateLimitReached             | <ul><li>uint256 minWaitInSeconds</li><li>uint256 available</li><li>address tokenAddress</li></ul> | <CopyText text="0xd0c8d23a" code /> | Thrown when the user requests to transfer more of a token than currently available in the bucket. The user might have to wait at least `minWaitInSeconds` for enough availability, or transfer the currently `available` amount. |
+<CCIPSendError type="rate-limiter" />
 
 ## ERC20
 
-| Error                                    | Description                                                   |
-| ---------------------------------------- | ------------------------------------------------------------- |
-| ERC20: burn amount exceeds balance       | Thrown when the amount to be burned exceeds the pool balance. |
-| ERC20: transfer amount exceeds allowance | Thrown when the transfer amount exceeds the allowance.        |
+<CCIPSendError type="erc20" />
 
 ## PriceRegistry
 
-| Error             | Parameters                                                                                      | Error&nbsp;Selector                 | Description                                |
-| ----------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| ChainNotSupported | <ul><li>uint64 chain</li></ul>                                                                  | <CopyText text="0x2e59db3a" code /> | Thrown when a chain is not supported.      |
-| StaleGasPrice     | <ul><li>uint64 destChainSelector</li><li>uint256 threshold</li><li>uint256 timePassed</li></ul> | <CopyText text="0xf08bcb3e" code /> | Thrown when the gas price is stale.        |
-| TokenNotSupported | <ul><li>address token</li></ul>                                                                 | <CopyText text="0x06439c6b" code /> | Thrown when a token is not supported.      |
-| StaleTokenPrice   | <ul><li>address token</li><li>uint256 threshold</li><li>uint256 timePassed</li></ul>            | <CopyText text="0xc65fdfca" code /> | Thrown when the price of a token is stale. |
+<CCIPSendError type="price-registry" />

@@ -1,0 +1,105 @@
+---
+// Importing necessary modules and error data
+import {
+  erc20Errors,
+  routerErrors,
+  onrampErrors,
+  ratelimiterErrors,
+  priceRegistryErrors,
+  CCIPSendErrorEntry,
+} from "@config/data/ccip/"
+import { CopyText } from "@components"
+
+// Get the prop type and determine which error data to use
+const { type } = Astro.props
+let errors: CCIPSendErrorEntry[] = []
+
+switch (type) {
+  case "erc20":
+    errors = erc20Errors
+    break
+  case "router":
+    errors = routerErrors
+    break
+  case "onramp":
+    errors = onrampErrors
+    break
+  case "rate-limiter":
+    errors = ratelimiterErrors
+    break
+  case "price-registry":
+    errors = priceRegistryErrors
+    break
+  default:
+    throw new Error(`Invalid error type: ${type}`)
+}
+
+// Determine if any errors have parameters or an error selector
+const hasParameters = errors.some((error) => error.parameters && error.parameters.length > 0)
+const hasErrorSelector = errors.some((error) => error.errorSelector)
+---
+
+<div class="errors-table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Error</th>
+        {hasParameters ? <th>Parameters</th> : null}
+        {hasErrorSelector ? <th>Error Selector</th> : null}
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        errors.map((error) => {
+          const params = error.parameters || []
+          const paramsLength = params.length
+          return (
+            <tr>
+              <td>{error.error}</td>
+              {hasParameters ? (
+                <td>
+                  {paramsLength > 0
+                    ? params.map((param, index) => (
+                        <>
+                          <span>
+                            {param.type} {param.name}
+                          </span>
+                          {index < paramsLength - 1 ? <br /> : null}
+                        </>
+                      ))
+                    : "-"}
+                </td>
+              ) : null}
+              {hasErrorSelector ? (
+                <td>{error.errorSelector ? <CopyText text={error.errorSelector} code /> : "-"}</td>
+              ) : null}
+              <td class="description">{error.description}</td>
+            </tr>
+          )
+        })
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .errors-table-container {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 1em;
+    white-space: nowrap;
+  }
+  td.description {
+    text-align: left;
+    white-space: normal;
+  }
+</style>
