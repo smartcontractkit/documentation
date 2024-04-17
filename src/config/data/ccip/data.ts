@@ -4,6 +4,7 @@ import {
   TokensConfig,
   Environment,
   Version,
+  CCIPSendErrorEntry,
   SupportedTokenConfig,
   determineTokenMechanism,
   TokenMechanism,
@@ -21,11 +22,25 @@ import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
 
+// errors
+
+import erc20CCIPSendErrors from "@config/data/ccip/errors/erc20.json"
+import routerCCIPSendErrors from "@config/data/ccip/errors/router.json"
+import onrampCCIPSendErrors from "@config/data/ccip/errors/onramp.json"
+import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json"
+import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
+
 import { SupportedChain } from "@config/types"
 import { directoryToSupportedChain, supportedChainToChainInRdd } from "@features/utils"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
+
+export const erc20Errors: CCIPSendErrorEntry[] = erc20CCIPSendErrors
+export const routerErrors: CCIPSendErrorEntry[] = routerCCIPSendErrors
+export const onrampErrors: CCIPSendErrorEntry[] = onrampCCIPSendErrors
+export const ratelimiterErrors: CCIPSendErrorEntry[] = ratelimiterCCIPSendErrors
+export const priceRegistryErrors: CCIPSendErrorEntry[] = priceregistryCCIPSendErrors
 
 export const networkFees: NetworkFees = {
   tokenTransfers: {
