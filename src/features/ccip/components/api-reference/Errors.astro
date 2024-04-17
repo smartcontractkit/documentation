@@ -9,6 +9,7 @@ import {
   CCIPSendErrorEntry,
 } from "@config/data/ccip/"
 import { CopyText } from "@components"
+import { marked } from "marked"
 
 // Get the prop type and determine which error data to use
 const { type } = Astro.props
@@ -37,6 +38,10 @@ switch (type) {
 // Determine if any errors have parameters or an error selector
 const hasParameters = errors.some((error) => error.parameters && error.parameters.length > 0)
 const hasErrorSelector = errors.some((error) => error.errorSelector)
+
+const renderMarkdown = (text: string) => {
+  return marked.parse(text)
+}
 ---
 
 <div class="errors-table-container">
@@ -74,7 +79,7 @@ const hasErrorSelector = errors.some((error) => error.errorSelector)
               {hasErrorSelector ? (
                 <td>{error.errorSelector ? <CopyText text={error.errorSelector} code /> : "-"}</td>
               ) : null}
-              <td class="description">{error.description}</td>
+              <td class="description" set:html={renderMarkdown(error.description)} />
             </tr>
           )
         })
