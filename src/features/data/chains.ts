@@ -115,6 +115,7 @@ export const CHAINS: Chain[] = [
     title: "Gnosis Chain (xDai) Data Feeds",
     img: "/assets/chains/gnosis-chain.svg",
     networkStatusUrl: "https://gnosisscan.io/",
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -192,7 +193,8 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+        rddUrl:
+          "https://reference-data-directory-r9449l7ul-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
         tags: ["nftFloorPrice", "streams"],
       },
@@ -200,7 +202,8 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Sepolia",
         explorerUrl: "https://sepolia.arbiscan.io/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
+        rddUrl:
+          "https://reference-data-directory-r9449l7ul-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
         queryString: "arbitrum-sepolia",
         tags: ["rates", "streams"],
       },

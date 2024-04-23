@@ -85,17 +85,7 @@ contract StreamsUpkeepRegistrar is
     LinkTokenInterface public immutable i_link;
     AutomationRegistrarInterface public immutable i_registrar;
 
-    struct BasicReport {
-        bytes32 feedId; // The feed ID the report has data for
-        uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
-        uint32 observationsTimestamp; // Latest timestamp for which price is applicable
-        uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native token (WETH/ETH)
-        uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK
-        uint32 expiresAt; // Latest timestamp where the report can be verified onchain
-        int192 price; // DON consensus median price, carried to 8 decimal places
-    }
-
-    struct PremiumReport {
+    struct Report {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
         uint32 observationsTimestamp; // Latest timestamp for which price is applicable
@@ -233,11 +223,8 @@ contract StreamsUpkeepRegistrar is
             abi.encode(feeTokenAddress)
         );
 
-        // Decode verified report data into BasicReport struct
-        BasicReport memory verifiedReport = abi.decode(
-            verifiedReportData,
-            (BasicReport)
-        );
+        // Decode verified report data into a Report struct
+        Report memory verifiedReport = abi.decode(verifiedReportData, (Report));
 
         // Log price from report
         emit PriceUpdate(verifiedReport.price);
