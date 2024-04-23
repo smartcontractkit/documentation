@@ -115,6 +115,7 @@ export const CHAINS: Chain[] = [
     title: "Gnosis Chain (xDai) Data Feeds",
     img: "/assets/chains/gnosis-chain.svg",
     networkStatusUrl: "https://gnosisscan.io/",
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
