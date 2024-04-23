@@ -102,7 +102,7 @@ export const CHAINS: Chain[] = [
       },
       {
         name: "Amoy Testnet",
-        explorerUrl: "https://www.oklink.com/amoy/address/%s",
+        explorerUrl: "https://amoy.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
         queryString: "polygon-amoy",
