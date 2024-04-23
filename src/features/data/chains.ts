@@ -194,7 +194,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl:
-          "https://reference-data-directory-r9449l7ul-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+          "https://reference-data-directory-faoc82ype-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
         tags: ["nftFloorPrice", "streams"],
       },
@@ -203,7 +203,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://sepolia.arbiscan.io/address/%s",
         networkType: "testnet",
         rddUrl:
-          "https://reference-data-directory-r9449l7ul-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
+          "https://reference-data-directory-faoc82ype-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
         queryString: "arbitrum-sepolia",
         tags: ["rates", "streams"],
       },
