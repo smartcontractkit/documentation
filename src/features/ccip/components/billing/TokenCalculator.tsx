@@ -79,6 +79,7 @@ const containerStyle = {
   alignItems: "center",
   gap: "0.5em",
   padding: "1em",
+  overflowX: "auto",
 }
 
 const tableStyle = {

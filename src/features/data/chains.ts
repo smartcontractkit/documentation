@@ -89,7 +89,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -422,10 +422,10 @@ export const CHAINS: Chain[] = [
         queryString: "polygon-zkevm-mainnet",
       },
       {
-        name: "Polygon zkEVM testnet",
-        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
+        name: "Polygon zkEVM Cardona Testnet",
+        explorerUrl: "https://cardona-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-testnet",
       },
     ],
