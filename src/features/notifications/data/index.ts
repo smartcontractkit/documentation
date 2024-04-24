@@ -1,8 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "Introducing Transporter, a new bridging app powered by CCIP.",
+  description: "CCIP is now live for all developers.",
   type: "info",
-  linkText: "Go cross-chain.",
-  linkUrl: "https://transporter.io?utm_campaign=ga&utm_medium=referral&utm_source=chainlink-docs&utm_content=banner",
+  linkText: "See what's new.",
+  linkUrl:
+    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-dev&utm_campaign=ccip-ga",
 }
