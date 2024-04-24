@@ -5,5 +5,5 @@ export const NotificationData: BannerContent = {
   type: "info",
   linkText: "See what's new.",
   linkUrl:
-    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-dev&utm_campaign=ccip-ga",
+    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ccip-ga",
 }
