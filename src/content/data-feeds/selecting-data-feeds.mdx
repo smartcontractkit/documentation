@@ -235,9 +235,21 @@ The [Fast Gas Data Feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-g
 
 ## Exchange Rate Feeds
 
-These feeds relay a value across blockchains from a specified contract. Chainlink Labs does not control this contract, and therefore, users are encouraged to research the originating contract and function and implement circuit breakers in case the reported value falls outside of expected bounds.
+The architecture of exchange rate feeds differs from that of standard market rate Chainlink Price Feeds.
+
+**Market rate feeds** (e.g., Chainlink Price Feeds) deliver price updates based on the volume-based price discovery of a specific asset. Price data is [aggregated from across multiple sources](https://blog.chain.link/chainlink-price-feeds-secure-defi/), including centralized and decentralized exchanges, to provide an accurate representation of an asset's market-wide price.
+
+**Exchange rate feeds** are tied to specific protocols or ecosystems and report the internal redemption rates for an asset (i.e., the value/rate at which an asset can be redeemed or exchanged within that protocol's ecosystem). This data is sourced directly from a specified smart contract on a source chain and relayed to a destination chain.
+
+Exchange rate feeds are useful in circumstances such as:
+
+- **Pricing yield-bearing assets:** Multiplying a yield-bearing asset's exchange rate by the underlying asset's market rate can be used to calculate the yield-bearing asset's current price. This methodology can reduce certain pricing volatility risks associated with lower-liquidity yield-bearing assets.
+- **Enabling cross-chain staking:** For example, liquid staking tokens (LSTs) or liquid restaking tokens (LRTs) can be minted at the exchange rate on a layer 2, while Chainlink CCIP transfers the underlying asset to a layer 1 for staking.
+- **Improving liquidity pool performance for yield-bearing assets:** Exchange rate feeds can be utilized to programmatically adjust swap curves to maximize liquidity efficiency.
 
 <Aside type="note">
-  The best practices above are provided for informational purposes only. You are responsible for reviewing the quality
-  of the data that you integrate into your smart contracts.
+  Users must be aware that both market rate and exchange rate pricing methodologies have unique risk considerations and
+  mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for decisions
+  relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project, contact us
+  [here](https://chain.link/contact).
 </Aside>
