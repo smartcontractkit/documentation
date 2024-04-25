@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/KeeperCompatibleInterface.sol";
