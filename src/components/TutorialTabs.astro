@@ -1,0 +1,82 @@
+---
+export interface Props {
+  tutorials: {
+    remix?: string
+    hardhat?: string
+    foundry?: string
+  }
+}
+
+const { tutorials } = Astro.props as Props
+
+const currentUrl = Astro.request.url
+console.log(currentUrl)
+
+const tutorialDetails = [
+  {
+    name: "Remix",
+    url: tutorials.remix,
+  },
+  {
+    name: "Hardhat",
+    url: tutorials.hardhat,
+  },
+  {
+    name: "Foundry",
+    url: tutorials.foundry,
+  },
+].filter((tutorial): tutorial is { name: string; url: string } => tutorial.url !== undefined)
+---
+
+<div class="tutorial-table">
+  {
+    tutorialDetails.map((tutorial) => (
+      <a href={tutorial.url} class={`tutorial-column ${currentUrl.endsWith(tutorial.url) ? "active" : ""}`}>
+        <div>{tutorial.name}</div>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .tutorial-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+
+  .tutorial-column {
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid var(--gray-200);
+    color: var(--gray-500);
+    font-size: 1rem;
+    line-height: 24px;
+    margin-bottom: 16px;
+    padding: 9px 20px;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+  }
+
+  .tutorial-column.active {
+    color: var(--blue-600);
+    border-bottom-color: var(--blue-600);
+  }
+
+  @media (max-width: 768px) {
+    .tutorial-table {
+      padding: 0.5rem;
+    }
+
+    .tutorial-column {
+      padding: 9px 10px;
+    }
+
+    .tutorial-table {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+  }
+</style>
