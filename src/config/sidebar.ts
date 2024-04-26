@@ -233,11 +233,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
-          title: "Fetch and decode reports via a REST API",
+          title: "Fetch and decode reports (REST API)",
           url: "data-streams/tutorials/streams-direct-api",
         },
         {
-          title: "Stream and decode reports via WebSocket",
+          title: "Stream and decode reports (WebSocket)",
           url: "data-streams/tutorials/streams-direct-ws",
         },
         {
