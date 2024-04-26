@@ -212,12 +212,46 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/getting-started",
         },
         {
-          title: "Stream IDs",
+          title: "Getting Started (Hardhat CLI)",
+          url: "data-streams/getting-started-hardhat",
+        },
+        {
+          title: "Data Streams Feed IDs",
           url: "data-streams/stream-ids",
+        },
+        {
+          title: "Billing",
+          url: "data-streams/billing",
         },
         {
           title: "Release Notes",
           url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Fetch and decode reports (REST API)",
+          url: "data-streams/tutorials/streams-direct-api",
+        },
+        {
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/streams-direct-ws",
+        },
+        {
+          title: "Verify report data onchain",
+          url: "data-streams/tutorials/streams-direct-onchain-verification",
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Architecture",
+          url: "data-streams/architecture",
         },
       ],
     },
@@ -229,8 +263,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/report-schema",
         },
         {
-          title: "Interfaces",
-          url: "data-streams/reference/interfaces",
+          title: "Streams Trade Interface",
+          url: "data-streams/reference/streams-trade-interface",
+        },
+        {
+          title: "Streams Direct Interface",
+          url: "data-streams/reference/streams-direct-interface-api",
+          children: [
+            {
+              title: "REST API",
+              url: "data-streams/reference/streams-direct-interface-api",
+            },
+            {
+              title: "WebSocket",
+              url: "data-streams/reference/streams-direct-interface-ws",
+            },
+            {
+              title: "Onchain report data verification",
+              url: "data-streams/reference/streams-direct-onchain-verification",
+            },
+          ],
         },
       ],
     },
