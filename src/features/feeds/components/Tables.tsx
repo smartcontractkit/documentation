@@ -14,23 +14,30 @@ const verifierProxies = new Map<string, string>([
 
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
-  verified: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
-      <a href="/data-feeds/selecting-data-feeds#-verified-feeds" alt="Verified" target="_blank">
+  low: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Low Market Risk">
+      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" alt="Low Market Risk" target="_blank">
         🟢
       </a>
     </span>
   ),
-  monitored: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Monitored">
-      <a href="/data-feeds/selecting-data-feeds#-monitored-feeds" alt="Monitored" target="_blank">
+  medium: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Medium Market Risk">
+      <a href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds" alt="Medium Market Risk" target="_blank">
         🟡
       </a>
     </span>
   ),
-  provisional: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Provisional">
-      <a href="/data-feeds/selecting-data-feeds#-provisional-feeds" alt="Provisional" target="_blank">
+  high: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="High Market Risk">
+      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" alt="High Market Risk" target="_blank">
+        🔴
+      </a>
+    </span>
+  ),
+  new: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="New Token">
+      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" alt="New Token" target="_blank">
         🟠
       </a>
     </span>
@@ -39,13 +46,6 @@ const feedCategories = {
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom">
       <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
         🔵
-      </a>
-    </span>
-  ),
-  specialized: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Specialized">
-      <a href="/data-feeds/selecting-data-feeds#-specialized-feeds" alt="Specialized" target="_blank">
-        ⚫
       </a>
     </span>
   ),
@@ -264,22 +264,12 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           </div>
           <div>
             <dt>
-              <span class="label">Attestation:</span>
+              <span class="label">
+                {proxy.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
+              </span>
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
-          {proxy.docs.marketHours && (
-            <div>
-              <dt>
-                <span class="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
-                  {proxy.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          )}
         </dl>
       </div>
     </td>
@@ -349,7 +339,6 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
         {proxy.pair[0]}/{proxy.pair[1]}
-        {proxy.docs.schema ? <div>Schema: {proxy.docs.schema}</div> : ""}
       </div>
       {proxy.docs.shutdownDate && (
         <div className={clsx(feedList.shutDate)}>

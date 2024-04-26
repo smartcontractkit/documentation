@@ -34,7 +34,9 @@ export const evmProducts = [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "optimism", title: "Optimism" },
       { id: "bnb-chain", title: "BNB Chain" },
-      { id: "base", title: "BASE" },
+      { id: "base", title: "Base" },
+      { id: "wemix", title: "Wemix" },
+      { id: "kroma", title: "Kroma" },
     ],
   },
   {
@@ -88,6 +90,8 @@ export const evmProducts = [
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
       { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "base", title: "BASE" },
     ],
   },
   {

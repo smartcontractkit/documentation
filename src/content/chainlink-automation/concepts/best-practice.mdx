@@ -26,7 +26,9 @@ If your upkeep uses [StreamsLookup](/chainlink-automation/reference/automation-i
 
 ### Avoid "flickering" custom logic upkeeps
 
-The Automation DON will evaluate your upkeep regularly and will try to perform it when eligible. However, if the state on chain changes and makes your upkeep ineligible before execution happens, the upkeep might not get performed. For best results, ensure the `checkUpkeep` remains true until execution.
+The Automation DON evaluates your upkeep regularly. When your upkeep is eligible, the DON attempts to perform the upkeep. For best results, ensure that `checkUpkeep` remains true until execution.
+
+If the state of your upkeep "flickers" by rapidly alternating between true and false, then your upkeep is at risk of not being performed. "Flickering" upkeeps might cause unintended consequences because there is latency between observing the state of the chain, getting consensus (v2 and later) on what needs to happen, and confirming the transaction onchain.
 
 ### Always test your contracts
 
@@ -34,6 +36,10 @@ As with all smart contract testing, it is important to test the boundaries of yo
 
 Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Automation Network will continue to operate under stress, but so should your contract. For a list of supported testnet blockchains, please review the [supported networks page](/chainlink-automation/overview/supported-networks).
 
-### Using ERC-677 Tokens
+### Using ERC-677 tokens
 
 For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](/resources/link-token-contracts) for the testnet that you want to use from our faucet.
+
+### Automation v1 upkeep revalidation
+
+If your upkeep is on Automation v1, we recommend that you revalidate the conditions specified in `checkUpkeep` in your `performUpkeep` function. Automation v1 uses a turn taking system where nodes rotate to monitor your upkeep. It does not use consensus.

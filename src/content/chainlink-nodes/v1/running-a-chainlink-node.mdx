@@ -20,7 +20,7 @@ metadata:
 import { Aside } from "@components"
 import { Tabs } from "@components/Tabs"
 
-This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia or Goerli testnet.
+This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia.
 
 <Aside type="note" title="Running from source">
   To run a Chainlink node from source, use the [following
@@ -75,15 +75,9 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
           {/* prettier-ignore */}
             <Tabs client:visible>
                 <Fragment slot="tab.1">Sepolia</Fragment>
-                <Fragment slot="tab.2">Goerli</Fragment>
                 <Fragment slot="panel.1">
                 ```shell Sepolia
                 mkdir ~/.chainlink-sepolia
-                ```
-                </Fragment>
-                <Fragment slot="panel.2">
-                ```shell Goerli
-                mkdir ~/.chainlink-goerli
                 ```
                 </Fragment>
             </Tabs>
@@ -94,7 +88,6 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
         {/* prettier-ignore */}
           <Tabs client:visible>
               <Fragment slot="tab.1">Sepolia</Fragment>
-              <Fragment slot="tab.2">Goerli</Fragment>
               <Fragment slot="panel.1">
               ```shell Sepolia
               echo "[Log]
@@ -117,28 +110,6 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
               " > ~/.chainlink-sepolia/config.toml
               ```
               </Fragment>
-              <Fragment slot="panel.2">
-              ```shell Goerli
-              echo "[Log]
-              Level = 'warn'
-
-              [WebServer]
-              AllowOrigins = '*'
-              SecureCookies = false
-
-              [WebServer.TLS]
-              HTTPSPort = 0
-
-              [[EVM]]
-              ChainID = '5'
-
-              [[EVM.Nodes]]
-              Name = 'Goerli'
-              WSURL = 'wss://CHANGE_ME'
-              HTTPURL = 'https://CHANGE_ME'
-              " > ~/.chainlink-goerli/config.toml
-              ```
-              </Fragment>
 
           </Tabs>
 
@@ -147,7 +118,6 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
         {/* prettier-ignore */}
           <Tabs client:visible>
               <Fragment slot="tab.1">Sepolia</Fragment>
-              <Fragment slot="tab.2">Goerli</Fragment>
               <Fragment slot="panel.1">
               ```shell Sepolia
               echo "[Password]
@@ -155,15 +125,6 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
               [Database]
               URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
               " > ~/.chainlink-sepolia/secrets.toml
-              ```
-              </Fragment>
-              <Fragment slot="panel.2">
-              ```shell Goerli
-              echo "[Password]
-              Keystore = 'mysecretkeystorepassword'
-              [Database]
-              URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
-              " > ~/.chainlink-goerli/secrets.toml
               ```
               </Fragment>
           </Tabs>
@@ -180,7 +141,6 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
         {/* prettier-ignore */}
           <Tabs client:visible>
               <Fragment slot="tab.1">Sepolia</Fragment>
-              <Fragment slot="tab.2">Goerli</Fragment>
               <Fragment slot="panel.1">
               ```shell Sepolia
               echo "CHANGE_THIS_EXAMPLE_EMAIL
@@ -188,18 +148,11 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
               " > ~/.chainlink-sepolia/.api
               ```
               </Fragment>
-              <Fragment slot="panel.2">
-              ```shell Goerli
-              echo "CHANGE_THIS_EXAMPLE_EMAIL
-              CHANGE_THIS_EXAMPLE_PASSWORD
-              " > ~/.chainlink-goerli/.api
-              ```
-              </Fragment>
           </Tabs>
 
 1.  Start the Chainlink Node by running the Docker image.
 
-    Change the version number in `smartcontract/chainlink:2.8.0` with the version of the Docker image that you need to run. For most new nodes, use version `2.0.0` or later. Tag versions are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
+    Change the version number in `smartcontract/chainlink:2.10.0` with the version of the Docker image that you need to run. For most new nodes, use version `2.0.0` or later. Tag versions are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
     Chainlink Nodes running `2.0.0` and later require the `-config` and `-secrets` flags after the `node` part of the command.
 
@@ -208,15 +161,9 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
           {/* prettier-ignore */}
             <Tabs client:visible>
                 <Fragment slot="tab.1">Sepolia</Fragment>
-                <Fragment slot="tab.2">Goerli</Fragment>
                 <Fragment slot="panel.1">
                 ```shell Sepolia
-                cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.8.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
-                ```
-                </Fragment>
-                <Fragment slot="panel.2">
-                ```shell Goerli
-                cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-goerli:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.8.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
+                cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.10.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
                 ```
                 </Fragment>
             </Tabs>
@@ -233,7 +180,7 @@ should use one of the supported [testnets](/resources/link-token-contracts) for 
 
     ```shell
     CONTAINER ID   IMAGE                           COMMAND                  CREATED         STATUS                   PORTS                                       NAMES
-    867e792d6f78   smartcontract/chainlink:2.8.0   "chainlink node -con…"   2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:6688->6688/tcp, :::6688->6688/tcp   chainlink
+    867e792d6f78   smartcontract/chainlink:2.10.0   "chainlink node -con…"   2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:6688->6688/tcp, :::6688->6688/tcp   chainlink
     ```
 
 1.  You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). Use the API

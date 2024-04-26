@@ -19,6 +19,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/getting-started",
         },
         {
+          title: "Developer Responsibilities",
+          url: "data-feeds/developer-responsibilities",
+        },
+        {
           title: "Price Feeds",
           url: "data-feeds/price-feeds",
         },
@@ -185,6 +189,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=dataFeeds",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=dataFeeds",
         },
@@ -200,8 +208,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
+          title: "Getting Started (Remix IDE)",
           url: "data-streams/getting-started",
+        },
+        {
+          title: "Getting Started (Hardhat CLI)",
+          url: "data-streams/getting-started-hardhat",
         },
         {
           title: "Stream IDs",
@@ -292,6 +304,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=dataStreams",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=dataStreams",
         },
@@ -317,6 +333,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "chainlink-automation/overview/supported-networks",
+        },
+        {
+          title: "Best Practices",
+          url: "chainlink-automation/concepts/best-practice",
         },
         {
           title: "Release Notes",
@@ -367,6 +387,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
         },
+        {
+          title: "Using the StreamsLookup error handler",
+          url: "chainlink-automation/guides/streams-lookup-error-handler",
+        },
       ],
     },
     {
@@ -379,10 +403,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Architecture",
           url: "chainlink-automation/concepts/automation-architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
@@ -463,6 +483,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=automation",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=automation",
         },
@@ -484,6 +508,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "chainlink-functions/supported-networks",
+        },
+        {
+          title: "Service Limits",
+          url: "chainlink-functions/resources/service-limits",
         },
         {
           title: "Service Responsibility",
@@ -511,16 +539,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-query-parameters",
         },
         {
-          title: "Return Custom Data Types",
-          url: "chainlink-functions/tutorials/api-custom-response",
-        },
-        {
           title: "POST Data to an API",
           url: "chainlink-functions/tutorials/api-post-data",
         },
         {
           title: "Using DON-hosted Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets",
+        },
+        {
+          title: "Using Imports with Functions",
+          url: "chainlink-functions/tutorials/importing-packages",
+        },
+        {
+          title: "Return multiple responses and decode them in your smart contract",
+          url: "chainlink-functions/tutorials/abi-decoding",
         },
         {
           title: "Offchain secrets - Using Gists",
@@ -546,14 +578,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Automate your Functions (Custom Logic Automation)",
           url: "chainlink-functions/tutorials/automate-functions-custom-logic",
         },
-        {
-          title: "Using Imports with Functions",
-          url: "chainlink-functions/tutorials/importing-packages",
-        },
-        {
-          title: "Return multiple responses and decode them in your smart contract",
-          url: "chainlink-functions/tutorials/abi-decoding",
-        },
       ],
     },
     {
@@ -574,10 +598,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
-        },
-        {
-          title: "Service Limits",
-          url: "chainlink-functions/resources/service-limits",
         },
       ],
     },
@@ -656,6 +676,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help?parent=chainlinkFunctions" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=chainlinkFunctions" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=chainlinkFunctions",
         },
         {
           title: "Contributing to Chainlink",
@@ -812,6 +836,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=vrf",
+        },
+        {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=vrf",
         },
@@ -835,18 +863,22 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/supported-networks",
           children: [
             {
-              title: "Mainnet v1.2.0",
+              title: "Mainnet",
               url: "ccip/supported-networks/v1_2_0/mainnet",
             },
             {
-              title: "Mainnet v1.0.0 (Deprecated)",
-              url: "ccip/supported-networks/v1_0_0/mainnet",
-            },
-            {
-              title: "Testnet v1.2.0",
+              title: "Testnet",
               url: "ccip/supported-networks/v1_2_0/testnet",
             },
           ],
+        },
+        {
+          title: "Service Limits",
+          url: "ccip/service-limits",
+        },
+        {
+          title: "Service Responsibility",
+          url: "ccip/service-responsibility",
         },
         {
           title: "Billing",
@@ -874,8 +906,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Transfer Tokens between EOAs",
-          url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+          title: "Offchain",
+          url: "ccip/tutorials/offchain",
+          children: [
+            {
+              title: "Transfer Tokens between EOAs",
+              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+            },
+            {
+              title: "Checking CCIP Message Status",
+              url: "ccip/tutorials/get-status-offchain",
+            },
+          ],
         },
         {
           title: "Transfer USDC with Data",
@@ -892,6 +934,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Manual Execution",
           url: "ccip/tutorials/manual-execution",
+        },
+        {
+          title: "Optimizing Gas Limit Settings in CCIP Messages",
+          url: "ccip/tutorials/ccipreceive-gaslimit",
         },
         {
           title: "Acquire Test Tokens",
@@ -917,10 +963,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "ccip/best-practices",
-        },
-        {
-          title: "Service Limits",
-          url: "ccip/service-limits",
         },
       ],
     },
@@ -1012,6 +1054,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help?parent=ccip" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration?parent=ccip",
         },
         {
           title: "Contributing to Chainlink",
@@ -1305,6 +1351,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Getting Help", url: "resources/getting-help" },
             { title: "Hackathon Resources", url: "resources/hackathon-resources" },
           ],
+        },
+        {
+          title: "Integrating EVM Networks",
+          url: "resources/network-integration",
         },
         {
           title: "Contributing to Chainlink",

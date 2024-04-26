@@ -12,6 +12,38 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.10.0 nodes - 2024-04-08
+
+**[v2.10.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.10.0)**
+
+### Added
+
+- Gas bumping logic to the `SuggestedPriceEstimator`. The bumping mechanism for this estimator refetches the price from the RPC and adds a buffer on top using the greater of `BumpPercent` and `BumpMin`.
+- Added a new configuration field named `NodeIsSyncingEnabled` for `EVM.NodePool` that will check on every reconnection to an RPC if it's syncing and should not be transitioned to `Alive` state. Disabled by default.
+- Add preliminary support for "llo" job type (Data Streams V1)
+- Add `LogPrunePageSize` parameter to the EVM configuration. This parameter controls the number of logs removed during prune phase in LogPoller. Default value is 0, which deletes all logs at once - exactly how it used to work, so it doesn't require any changes on the product's side.
+- Add Juels Fee Per Coin data source caching for OCR2 Feeds. Cache is time based and is turned on by default with default cache refresh of 5 minutes. Cache can be configured through pluginconfig using "juelsPerFeeCoinCacheDuration" and "juelsPerFeeCoinCacheDisabled" tags. Duration tag accepts values between "30s" and "20m" with default of "0s" that is overridden on cache startup to 5 minutes.
+- Add rebalancer support for feeds manager ocr2 plugins.
+
+### Fixed
+
+- `P2P.V2` is required in configuration when either `OCR` or `OCR2` are enabled. The node will fail to boot if `P2P.V2` is not enabled.
+- Removed unnecessary gas price warnings in gas estimators when EIP-1559 mode is enabled.
+
+### Changed
+
+- Minimum required version of Postgres is now `>= 12`. Postgres 11 reached end-of-life (EOL) in November 2023. Added a new version check that will prevent Chainlink from running on EOL'd Postgres. If you are running Postgres `<= 11` you must upgrade to the latest version. The check can be forcibly overridden by setting `SKIP_PG_VERSION_CHECK=true`.
+- Updated the `LimitDefault` and `LimitMax` configs types to `uint64`
+
+## Changes in v2.9.1 nodes - 2024-03-07
+
+**[v2.9.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.9.1)**
+
+### Changed
+
+- `eth_call` RPC requests are now sent with both `input` and `data` fields to increase compatibility with servers that recognize only one.
+- GasEstimator will now include Type `0x3` (Blob) transactions in the gas calculations to estimate it more accurately.
+
 ## Changes in v2.9.0 nodes - 2024-02-22
 
 **[v2.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.9.0)**
@@ -130,7 +162,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Corrected Ethereum Sepolia `LinkContractAddress` to `0x779877A7B0D9E8603169DdbD7836e478b4624789`
 - Fixed a bug that caused the Telemetry Manager to report incorrect health
 
-### Upcoming Required Configuration Changes
+### Upcoming required configuration changes
 
 Starting in `v2.9.0`:
 
@@ -182,7 +214,7 @@ Starting in `v2.9.0`:
 - `P2P.V1` is now disabled (`Enabled = false`) by default. It must be explicitly enabled with `true` to be used. However, it is deprecated and will be removed in the future.
 - `P2P.V2` is now enabled (`Enabled = true`) by default.
 
-### Upcoming Required Configuration Changes
+### Upcoming required configuration changes
 
 Starting in `v2.9.0`:
 
@@ -619,7 +651,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
   For backward compatibility, you can bypass this check at your own risk by setting `SKIP_DATABASE_PASSWORD_COMPLEXITY_CHECK=true`.
 
-- The following environment variables are deprecated and will be removed in a future release. They are are replaced by the following command line arguments:
+- The following environment variables are deprecated and will be removed in a future release. They are replaced by the following command line arguments:
 
   - `INSECURE_SKIP_VERIFY`: Replaced by the `--insecure-skip-verify` CLI argument
   - `CLIENT_NODE_URL`: Replaced by the `--remote-node-url URL` CLI argument
