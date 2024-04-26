@@ -10,7 +10,11 @@ export interface Props {
 const { tutorials } = Astro.props as Props
 
 const currentUrl = Astro.request.url
-console.log(currentUrl)
+
+const isActive = (tutorialUrl) => {
+  const url = new URL(currentUrl)
+  return url.pathname.endsWith(tutorialUrl)
+}
 
 const tutorialDetails = [
   {
@@ -31,7 +35,7 @@ const tutorialDetails = [
 <div class="tutorial-table">
   {
     tutorialDetails.map((tutorial) => (
-      <a href={tutorial.url} class={`tutorial-column ${currentUrl.endsWith(tutorial.url) ? "active" : ""}`}>
+      <a href={tutorial.url} class={`tutorial-column ${isActive(tutorial.url) ? "active" : ""}`}>
         <div>{tutorial.name}</div>
       </a>
     ))
@@ -50,8 +54,8 @@ const tutorialDetails = [
   .tutorial-column {
     text-align: center;
     cursor: pointer;
-    border-bottom: 2px solid var(--gray-200);
-    color: var(--gray-500);
+    border-bottom: 2px solid var(--gray-200, rgb(236, 237, 239));
+    color: var(--gray-500, rgb(133, 138, 149));
     font-size: 1rem;
     line-height: 24px;
     margin-bottom: 16px;
@@ -62,8 +66,8 @@ const tutorialDetails = [
   }
 
   .tutorial-column.active {
-    color: var(--blue-600);
-    border-bottom-color: var(--blue-600);
+    color: var(--blue-600, rgb(55, 91, 210));
+    border-bottom-color: var(--blue-600, rgb(55, 91, 210));
   }
 
   @media (max-width: 768px) {
