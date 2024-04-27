@@ -9,11 +9,16 @@ export interface Props {
 
 const { tutorials } = Astro.props as Props
 
-const currentUrl = Astro.request.url
+const currentPath = Astro.url.pathname
+
+const normalizeUrl = (url) => {
+  return url.trim().replace(/\/$/, "")
+}
 
 const isActive = (tutorialUrl) => {
-  const url = new URL(currentUrl)
-  return url.pathname.endsWith(tutorialUrl)
+  const normalizedCurrentPath = normalizeUrl(currentPath)
+  const normalizedTutorialUrl = normalizeUrl(tutorialUrl)
+  return normalizedCurrentPath === normalizedTutorialUrl
 }
 
 const tutorialDetails = [
