@@ -755,6 +755,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
           title: "Migration from V2",
           url: "vrf/v2-5/migration-from-v2",
         },
@@ -773,18 +777,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "V2.5 Billing",
           url: "vrf/v2-5/billing",
-        },
-        {
-          title: "Create and manage V2.5 subscriptions",
-          url: "vrf/v2-5/subscription/create-manage",
+          children: [
+            {
+              title: "Arbitrum gas estimation with VRF",
+              url: "vrf/v2-5/arbitrum-cost-estimation",
+            },
+          ],
         },
         {
           title: "Release Notes",
           url: "vrf/release-notes",
-        },
-        {
-          title: "Arbitrum gas estimation with VRF",
-          url: "vrf/v2-5/arbitrum-cost-estimation",
         },
       ],
     },
