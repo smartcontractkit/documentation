@@ -23,9 +23,7 @@ This guide explains how to generate random numbers using the _direct funding_ me
   code.
 </Aside>
 
-## VRF direct funding
-
-Unlike the [subscription method](/vrf/v2-5/overview/subscription), the direct funding method does not require you to create subscriptions and pre-fund them. Instead, you must directly fund consuming contracts with LINK tokens before they request randomness. Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Learn [how to estimate costs](/vrf/v2-5/billing).
+Unlike the [subscription method](/vrf/v2-5/overview/subscription), the direct funding method does not require you to create subscriptions and pre-fund them. Instead, you must directly fund consuming contracts with native tokens or LINK before they request randomness. Because the consuming contract directly pays for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Learn [how to estimate costs](/vrf/v2-5/billing).
 
 ## Request and receive data
 
@@ -46,11 +44,11 @@ The Chainlink VRF v2.5 solution uses both offchain and onchain components:
 
 Set up your consuming contract:
 
-1. Your contract must inherit [VRFV2PlusWrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol).
+1. Your contract must inherit [VRFV2PlusWrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol).
 
 1. Your contract must implement the `fulfillRandomWords` function, which is the _callback VRF function_. Here, you add logic to handle the random values after they are returned to your contract.
 
-1. Submit your VRF request by calling the `requestRandomness` function in the [VRFV2PlusWrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract. Include the following parameters in your request:
+1. Submit your VRF request by calling the `requestRandomness` function in the [VRFV2PlusWrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract. Include the following parameters in your request:
 
    - `requestConfirmations`: The number of block confirmations the VRF service will wait to respond. The minimum and maximum confirmations for your network can be found [here](/vrf/v2-5/supported-networks#configurations).
    - `callbackGasLimit`: The maximum amount of gas to pay for completing the callback VRF function.
@@ -61,9 +59,9 @@ Set up your consuming contract:
 
 After you submit your request, it is processed using the [Request & Receive Data](#request-and-receive-data) cycle:
 
-1. The consuming contract calls the [VRFV2PlusWrapper](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Learn [how to estimate transaction costs](/vrf/v2-5/billing).
+1. The consuming contract calls the [VRFV2PlusWrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Learn [how to estimate transaction costs](/vrf/v2-5/billing).
 
-1. The consuming contract calls the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/token/ERC677/LinkToken.sol) `transferAndCall` function to pay the wrapper with the calculated request price. This method sends LINK tokens and executes the [VRFV2PlusWrapper](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol) `onTokenTransfer` logic.
+1. The consuming contract calls the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/token/ERC677/LinkToken.sol) `transferAndCall` function to pay the wrapper with the calculated request price. This method sends LINK tokens and executes the [VRFV2PlusWrapper](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol) `onTokenTransfer` logic.
 
 1. The VRFV2PlusWrapper's `onTokenTransfer` logic triggers the [VRF 2.5 Coordinator](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/dev/VRFCoordinatorV2_5.sol) `requestRandomWords` function to request randomness.
 
