@@ -9,8 +9,7 @@ whatsnext:
   }
 ---
 
-import { CodeSample, CopyText } from "@components"
-import { Tabs } from "@components/Tabs"
+import { CopyText } from "@components"
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
@@ -19,8 +18,9 @@ In this tutorial, you'll learn how to use Chainlink Data Streams with the _[Stre
 
 <DataStreams section="asideDisclaimer" />
 
-## Before you begin
+## Requirements
 
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
 - **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
 
@@ -28,65 +28,32 @@ In this tutorial, you'll learn how to use Chainlink Data Streams with the _[Stre
 
 ### Set up your Go project
 
-1.  Create and navigate to your project directory:
+1. Clone the [repository](https://github.com/smartcontractkit/smart-contract-examples) that contains the project setup for this guide and change directories to the `websocket` example:
 
-    ```bash
-    mkdir data-streams-direct-ws && cd data-streams-direct-ws
-    ```
+   ```bash
+   git clone https://github.com/smartcontractkit/smart-contract-examples.git
+   cd smart-contract-examples/data-streams/streams-direct/websocket
+   ```
 
-1.  Initialize a Go module:
+1. Execute the command below to download dependencies and generate the `go.sum` file:
 
-    ```bash
-    go mod init data-streams-direct-ws
-    ```
+   ```bash
+   go mod tidy
+   ```
 
-1.  Open the `go.mod` file at the root of your project directory and include the necessary module and package information:
+   Your project directory should now have the following structure:
 
-    <CodeSample src="samples/DataStreams/StreamsDirect/ws/mod.go" />
-
-1.  Create `client` and `internal` subfolders within your project directory:
-
-    ```bash
-    mkdir client internal
-    ```
-
-1.  Create a `clientWs.go` file in the `client` subfolder and a `decoder.go` file in the `internal` subfolder:
-
-    ```bash
-    touch client/clientWs.go
-    touch internal/decoder.go
-    ```
-
-1.  Insert the provided code into `clientWs.go` and `decoder.go` to allow your application to establish a WebSocket connection, listen for new reports, and decode them:
-
-    <Tabs sharedStore="package" client:visible>
-      <Fragment slot="tab.1">client/clientWs.go</Fragment>
-      <Fragment slot="tab.2">internal/decoder.go</Fragment>
-      <Fragment slot="panel.1">
-        <CodeSample src="samples/DataStreams/StreamsDirect/ws/clientWs.go" />
-      </Fragment>
-      <Fragment slot="panel.2">
-        <CodeSample src="samples/DataStreams/StreamsDirect/decoder.go" />
-      </Fragment>
-    </Tabs>
-
-1.  Execute the command below to download dependencies and generate the `go.sum` file:
-
-    ```bash
-    go mod tidy
-    ```
-
-    Your project directory should now have the following structure:
-
-    ```plaintext
-    data-streams-direct-ws/
+   ```plaintext
+    websocket/
     ├── client/
     │   └── clientWs.go
-    ├── go.mod
-    ├── go.sum
     ├── internal/
     │   └── decoder.go
-    ```
+    ├── decodeFullReportHex.go
+    ├── go.mod
+    ├── go.sum
+    └── main.go
+   ```
 
 ### Set environment variables
 
@@ -103,17 +70,7 @@ Set the required environment variables in your terminal session to authenticate 
 
 ### Establish a WebSocket connection and listen for real-time reports
 
-1.  Create `main.go` at the root of your project directory:
-
-    ```bash
-    touch main.go
-    ```
-
-1.  Open `main.go` and insert the following code to establish a WebSocket connection and listen for real-time data reports from the Data Streams Aggregation Network:
-
-    <CodeSample src="samples/DataStreams/StreamsDirect/ws/wsConnectAndListen.go" />
-
-1.  For this example, you will read from the ETH/USD Data Streams feed on Arbitrum Sepolia. This feed ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets.
+For this example, you will read from the ETH/USD Data Streams feed on Arbitrum Sepolia. This feed ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets.
 
     Launch the WebSocket listener by running the following command in your terminal:
 
@@ -153,18 +110,19 @@ go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78
 
 ### Decode the reports
 
-1.  Create `decodeFullReportHex.go` at the root of your project directory:
+1.  Open `decodeFullReportHex.go` file located at the root of your project directory.
 
-    ```bash
-    touch decodeFullReportHex.go
-    ```
+1.  Replace the `fullReportHex` variable value within the `main` function with the hexadecimal value you saved earlier from your WebSocket message output, without the `0x` prefix. E.g.:
 
-1.  - Open `decodeFullReportHex.go` and insert the sample code provided below. It uses the `DecodeFullReportAndReportData` function from the `internal` package to decode the `FullReport` part of the message.
-    - Replace the `fullReportHex` variable value with the hexadecimal value you saved earlier from your WebSocket message output, without the `0x` prefix.
+        ```go
+        [...]
 
-      {" "}
+        func main() {
+        // Sample FullReport payload extracted from the WebSocket message as a hex string
+        fullReportHex := "0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49ab07000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c5a0000000000000000000000000000000000000000000000000000000066138c5a00000000000000000000000000000000000000000000000000001a8cf593f46c000000000000000000000000000000000000000000000000001419360d1b077c000000000000000000000000000000000000000000000000000000006614ddda0000000000000000000000000000000000000000000000b9b286b0a60b5f3ca00000000000000000000000000000000000000000000000b9ae8a4a15117180000000000000000000000000000000000000000000000000b9b4eabe86f969652000000000000000000000000000000000000000000000000000000000000000023ede508913fc4066c754edba91d60e12c71911d616231da453e27eba07f34538dc3f32ae21d6ab44cff5fbba64b240f38252ee0a483c6450518257dc748926e900000000000000000000000000000000000000000000000000000000000000021650e1dc132ec7d7ef19672d3ae8c4e0bd1a069439d017664bb665d29a3b415163c6aa6172b2fb6e1658dee2e09292b741fc81cd17cce224e6e790fe3749df2f"
 
-      <CodeSample src="samples/DataStreams/StreamsDirect/ws/decodeFullReportHex.go" />
+        [...]
+        ```
 
 1.  Run the decoding script by executing the following command in your terminal:
 
