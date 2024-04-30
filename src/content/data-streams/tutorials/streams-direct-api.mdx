@@ -211,13 +211,13 @@ production environment, you should verify the data onchain to ensure its integri
 
 ### Fetching a report
 
-The application fetches a report from the Data Streams Aggregation Network using either the `FetchSingleReportSingleFeed` function for a single feed or the `FetchSingleReportMultipleFeeds` function for multiple feeds, found in the `client` package. This step involves sending an API request and receiving a response with the report data in either a `SingleReport` struct (single feed) or a `BulkReportResponse` struct (multiple feeds).
+The application fetches a report from the Data Streams Aggregation Network using either the [`FetchSingleReportSingleFeed`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/api/client/client.go#L69) function for a single feed or the [`FetchSingleReportManyFeeds`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/api/client/client.go#L120) function for multiple feeds, found in the `client` package. This step involves sending an API request and receiving a response with the report data in either a [`SingleReport`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/api/client/client.go#L22) struct (single feed) or a [`BulkReportResponse`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/api/client/client.go#L33) struct (multiple feeds).
 
 The response includes a `FullReport` blob containing the encoded report's context and observations.
 
 ### Decoding a report
 
-When the application successfully fetches the report, it decodes the report with the `DecodeFullReportAndReportData` function from the `internal` package. The process includes:
+When the application successfully fetches the report, it decodes the report with the [`DecodeFullReportAndReportData`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/api/internal/decoder.go#L102) function from the `internal` package. The process includes:
 
 1. **`FullReport` blob decoding**: It first decodes the `FullReport` blob into a `FullReport` struct, extracting the report context (including the feed ID(s) and the report version) and the report data. In this example, the feed uses the `V3` report version.
 
