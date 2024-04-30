@@ -4,8 +4,6 @@ date: Last Modified
 title: "VRF Security Considerations"
 ---
 
-import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
-
 Gaining access to high quality randomness onchain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
@@ -13,7 +11,7 @@ Gaining access to high quality randomness onchain requires a solution like Chain
 - [Do not allow re-requesting or cancellation of randomness](#do-not-allow-re-requesting-or-cancellation-of-randomness)
 - [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
 - [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
-- [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
+- [Use `VRFConsumerBaseV2Plus` in your contract to interact with the VRF service](#use-vrfconsumerbasev2plus-in-your-contract-to-interact-with-the-vrf-service)
 
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
@@ -33,7 +31,7 @@ You must choose an appropriate confirmation time for the randomness requests you
 
 ## Do not allow re-requesting or cancellation of randomness
 
-Any re-request or cancellation of randomness is an incorrect use of VRFv2. dApps that implement the ability to cancel or re-request randomness for specific commitments must consider the additional attack vectors created by this capability. For example, you must prevent the ability for any party to discard unfavorable randomness.
+Any re-request or cancellation of randomness is an incorrect use of VRF v2.5. dApps that implement the ability to cancel or re-request randomness for specific commitments must consider the additional attack vectors created by this capability. For example, you must prevent the ability for any party to discard unfavorable randomness.
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 
@@ -53,10 +51,6 @@ Otherwise, the cryptoeconomic security properties may be violated by an attacker
 
 If your `fulfillRandomWords()` implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you, your users, or an [Automation Node](/chainlink-automation).
 
-## Use `VRFConsumerBaseV2` in your contract, to interact with the VRF service
+## Use `VRFConsumerBaseV2Plus` in your contract, to interact with the VRF service
 
-If you implement the [subscription method](/vrf/v2/subscription), use `VRFConsumerBaseV2`. It includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2`. Similarly, don't override `rawFulfillRandomness`.
-
-## Use `VRFv2WrapperConsumer.sol` in your contract, to interact with the VRF service
-
-If you implement the [direct funding method](/vrf/v2/direct-funding), use `VRFv2WrapperConsumer`. It includes a check to ensure the randomness is fulfilled by the `VRFV2Wrapper`. For this reason, it is a best practice to inherit from `VRFv2WrapperConsumer`. Similarly, don't override `rawFulfillRandomWords`.
+If you implement the [subscription method](/vrf/v2-5/overview/subscription), use `VRFConsumerBaseV2Plus`. It includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2_5`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2Plus`. Similarly, don't override `rawFulfillRandomness`.
