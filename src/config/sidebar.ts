@@ -741,18 +741,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "V2.5 Overview",
+          title: "Introduction to VRF",
           url: "vrf",
-          children: [
-            {
-              title: "Subscription overview",
-              url: "vrf/v2-5/overview/subscription",
-            },
-            {
-              title: "Direct funding overview",
-              url: "vrf/v2-5/overview/direct-funding",
-            },
-          ],
         },
         {
           title: "Migration from V2",
@@ -775,16 +765,38 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/billing",
         },
         {
-          title: "Create and manage V2.5 subscriptions",
-          url: "vrf/v2-5/subscription/create-manage",
-        },
-        {
           title: "Release Notes",
           url: "vrf/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Learn VRF V2.5",
+      contents: [
+        {
+          title: "Introduction to subscription",
+          url: "vrf/v2-5/overview/subscription",
+        },
+        {
+          title: "Introduction to direct funding",
+          url: "vrf/v2-5/overview/direct-funding",
         },
         {
           title: "Arbitrum gas estimation with VRF",
           url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
+      ],
+    },
+    {
+      section: "Build with VRF 2.5",
+      contents: [
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
+          title: "Migrate from VRF v1",
+          url: "vrf/v2-5/migration-from-v1",
         },
       ],
     },
