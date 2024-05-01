@@ -1,0 +1,94 @@
+---
+section: vrf
+date: Last Modified
+title: "Migrating from VRF v1"
+---
+
+import { TabsContent } from "@components/Tabs"
+
+## Comparison between VRF v1 and VRF v2.5
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+Chainlink VRF v2.5 includes several improvements and changes to the way you fund and request randomness for your smart contracts.
+
+- **Subscription management:** Chainlink VRF v2.5 introduces a [Subscription Manager](https://vrf.chain.link) application that allows smart contract applications to pre-fund multiple requests for randomness using either a LINK token balance or a native token balance. This reduces the gas fees for VRF requests by eliminating the need to transfer tokens for each individual request. You transfer tokens to the subscription balance only when it requires additional funding.
+
+- **Variable Callback Gas Limit:** Chainlink VRF v2.5 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the callback request function that receives the random values. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain you use. See the gas limits on the [VRF V2.5 Supported Networks](/vrf/v2-5/supported-networks) page.
+
+- **More configuration capability:** You can define how many block confirmations must pass before verifiable randomness is generated and delivered onchain when your application makes a request transaction. The range is from 3 to 200 blocks. VRF V1 always waited 10 blocks on Ethereum before delivering onchain randomness. Select a value that protects your application from block re-organizations while still providing sufficiently low latency from request to response. See the [Security Considerations](/vrf/v2-5/security) page to learn more.
+
+- **Multiple Random Outputs in a Single Request:** The [VRF Coordinator contracts](/vrf/v2-5/supported-networks) in VRF v2.5 allow you to request multiple random numbers (multi-word) in a single onchain transaction, which reduces gas costs. The fulfillment is also a single transaction, which reduces the latency of responses.
+
+- **Unified Billing - Delegate Subscription Balance to Multiple Addresses:** Chainlink VRF v2.5 allows up to 100 smart contract addresses to fund their requests for verifiable randomness from a single subscription, which is managed by the subscription owner. Your subscription has balances for LINK and for native tokens.
+
+  </Fragment>
+<Fragment slot="panel.2">
+The main similarity between VRF v1 and the VRF v2.5 Direct funding method is that consuming contracts must be funded to pay for requests. However, Chainlink VRF v2.5 includes several improvements:
+
+- **Native token billing:** Chainlink VRF v2.5 lets you fund your consuming contract with either LINK or native tokens to pay for VRF requests.
+
+- **Variable Callback Gas Limit:** Chainlink VRF v2.5 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the callback request function that receives the random values. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain that you use. See the gas limits on the [Supported networks](/vrf/v2-5/supported-networks) page.
+
+- **More configuration capability:** You can define how many block confirmations must pass before verifiable randomness is generated and delivered onchain when your application makes a request transaction. The range is from 3 to 200 blocks. VRF V1 always waited 10 blocks on Ethereum before delivering onchain randomness. Select a value that protects your application from block re-organizations while still providing sufficiently low latency from request to response. See the [Security Considerations](/vrf/v2-5/security) page to learn more.
+
+- **Multiple Random Outputs in a Single Request:** The [VRF Wrapper contracts](/vrf/v2-5/supported-networks) in VRF v2.5 allow you to request multiple random numbers (multi-word) in a single onchain transaction, which reduces gas costs. The fulfillment is also a single transaction, which reduces the latency of responses.
+  </Fragment>
+</TabsContent>
+
+## Updating your applications to use VRF v2
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+To modify your existing smart contract code to work with VRF v2.5, complete the following changes. See the [Migration from V2](/vrf/v2-5/migration-from-v2) guide for an example.
+
+1. Set up and fund a subscription in the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
+   {/* prettier-ignore */}
+
+   <div class="remix-callout">
+     <a href="https://vrf.chain.link">Open the Subscription Manager</a>
+   </div>
+
+1. Import the [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol) contract and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+
+1. Import the VRF v2.5 coordinator, [`VRFCoordinatorV2_5`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFCoordinatorV2_5.sol). This interface includes the new `requestRandomWords` function.
+
+1. Add a `VRFConsumerBaseV2Plus` constructor, passing in the LINK token address for the network you're using.
+
+1. Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters:
+
+   {/* prettier-ignore */}
+   ```solidity
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_vrfSubscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
+        );
+        ```
+
+1. Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.
+
+   </Fragment>
+<Fragment slot="panel.2">
+To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/vrf/v2/direct-funding/examples/get-a-random-number) guide for an example.
+
+1. Import and inherit the new [`VRFV2WrapperConsumerBase.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+
+1. Add a `VRFV2WrapperConsumerBase` constructor as shown in the [Get a Random Number](/vrf/v2/direct-funding/examples/get-a-random-number) example and use the correct VRF v2 Direct funding configuration.
+
+1. You can still call the `requestRandomness` function. However, the v2 `requestRandomness` function requires several different parameters (`callbackGasLimit` , `requestConfirmations` , `numWords`). See the [Supported networks](/vrf/v2/direct-funding/supported-networks) page to adjust them for your own needs.
+
+1. Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.
+   </Fragment>
+</TabsContent>
