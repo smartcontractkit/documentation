@@ -849,10 +849,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ccip: [
     {
       section: "Chainlink CCIP",
-      contents: [],
-    },
-    {
-      section: "Learn",
       contents: [
         {
           title: "Overview",
@@ -861,18 +857,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Getting Started",
           url: "ccip/getting-started",
-        },
-        {
-          title: "Key Concepts",
-          url: "ccip/concepts",
-        },
-        {
-          title: "Architecture",
-          url: "ccip/architecture",
-        },
-        {
-          title: "Billing",
-          url: "ccip/billing",
         },
         {
           title: "Supported Networks",
@@ -889,6 +873,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Best Practices",
+          url: "ccip/best-practices",
+        },
+        {
           title: "Service Limits",
           url: "ccip/service-limits",
         },
@@ -897,18 +885,31 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/service-responsibility",
         },
         {
+          title: "Billing",
+          url: "ccip/billing",
+        },
+        {
           title: "Release Notes",
           url: "ccip/release-notes",
         },
       ],
     },
     {
-      section: "Build",
+      section: "Learn",
       contents: [
         {
-          title: "Best Practices",
-          url: "ccip/best-practices",
+          title: "Key Concepts",
+          url: "ccip/concepts",
         },
+        {
+          title: "Architecture",
+          url: "ccip/architecture",
+        },
+      ],
+    },
+    {
+      section: "Build",
+      contents: [
         {
           title: "Acquire Test Tokens",
           url: "ccip/test-tokens",
