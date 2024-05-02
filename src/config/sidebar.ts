@@ -951,22 +951,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Cross-chain messaging",
-          url: "ccip/tutorials/offchain",
-          children: [
-            {
-              title: "Send Arbitrary Data",
-              url: "ccip/tutorials/send-arbitrary-data",
-            },
-            {
-              title: "Send Arbitrary Data with Acknowledgment of Receipt",
-              url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
-            },
-            {
-              title: "Optimizing Gas Limit Settings in CCIP Messages",
-              url: "ccip/tutorials/ccipreceive-gaslimit",
-            },
-          ],
+          title: "Send Arbitrary Data",
+          url: "ccip/tutorials/send-arbitrary-data",
+        },
+        {
+          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+        },
+        {
+          title: "Optimizing Gas Limit Settings in CCIP Messages",
+          url: "ccip/tutorials/ccipreceive-gaslimit",
         },
         {
           title: "Manual Execution",
