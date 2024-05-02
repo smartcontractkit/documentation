@@ -25,22 +25,29 @@ const tutorialDetails = [
   {
     name: "Remix",
     url: tutorials.remix,
+    icon: "/images/tutorial-icons/remix-icn.png",
   },
   {
     name: "Hardhat",
     url: tutorials.hardhat,
+    icon: "/images/tutorial-icons/hardhat-icn.png",
   },
   {
     name: "Foundry",
     url: tutorials.foundry,
+    icon: "/images/tutorial-icons/foundry-icn.png",
   },
-].filter((tutorial): tutorial is { name: string; url: string } => tutorial.url !== undefined)
+].filter(
+  (tutorial): tutorial is { name: string; url: string; icon: string } =>
+    tutorial.url !== undefined && tutorial.icon !== undefined
+)
 ---
 
 <div class="tutorial-table">
   {
     tutorialDetails.map((tutorial) => (
       <a href={tutorial.url} class={`tutorial-column ${isActive(tutorial.url) ? "active" : ""}`}>
+        <img src={tutorial.icon} alt={`${tutorial.name} icon`} class="tutorial-icon" />
         <div>{tutorial.name}</div>
       </a>
     ))
@@ -57,6 +64,9 @@ const tutorialDetails = [
   }
 
   .tutorial-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     cursor: pointer;
     border-bottom: 2px solid var(--gray-200, rgb(236, 237, 239));
@@ -68,6 +78,12 @@ const tutorialDetails = [
     text-decoration: none;
     -webkit-font-smoothing: antialiased;
     box-sizing: border-box;
+  }
+
+  .tutorial-icon {
+    margin-right: 10px;
+    width: 23px;
+    height: 23px;
   }
 
   .tutorial-column.active {
@@ -82,10 +98,16 @@ const tutorialDetails = [
 
     .tutorial-column {
       padding: 9px 10px;
+      flex-direction: column;
     }
 
     .tutorial-table {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .tutorial-icon {
+      margin-right: 0;
+      margin-bottom: 5px;
     }
   }
 </style>
