@@ -801,52 +801,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "V2 Subscription Method",
+      section: "All VRF V2 documentation",
       contents: [
         {
-          title: "Introduction",
+          title: "VRF V2 Subscription",
           url: "vrf/v2/subscription",
         },
         {
-          title: "Get a Random Number",
-          url: "vrf/v2/subscription/examples/get-a-random-number",
-        },
-        {
-          title: "Programmatic Subscription",
-          url: "vrf/v2/subscription/examples/programmatic-subscription",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/subscription/examples/test-locally",
-        },
-        {
-          title: "Subscription Manager UI",
-          url: "vrf/v2/subscription/ui",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/subscription/supported-networks",
-        },
-      ],
-    },
-    {
-      section: "V2 Direct Funding Method",
-      contents: [
-        {
-          title: "Introduction",
+          title: "VRF V2 Direct Funding",
           url: "vrf/v2/direct-funding",
-        },
-        {
-          title: "Get a Random Number",
-          url: "vrf/v2/direct-funding/examples/get-a-random-number",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/direct-funding/examples/test-locally",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/direct-funding/supported-networks",
         },
       ],
     },
@@ -1439,17 +1402,53 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   legacy: [
     {
-      section: "VRF v1 [DEPRECATED]",
+      section: "V2 Subscription Method",
       contents: [
-        { title: "Introduction to Chainlink VRF", url: "vrf/v1/introduction" },
+        {
+          title: "Introduction",
+          url: "vrf/v2/subscription",
+        },
         {
           title: "Get a Random Number",
-          url: "vrf/v1/examples/get-a-random-number",
+          url: "vrf/v2/subscription/examples/get-a-random-number",
         },
-        { title: "Security Considerations", url: "vrf/v1/security" },
-        { title: "Best Practices", url: "vrf/v1/best-practices" },
-        { title: "Supported Networks", url: "vrf/v1/supported-networks" },
-        { title: "API Reference", url: "vrf/v1/api-reference" },
+        {
+          title: "Programmatic Subscription",
+          url: "vrf/v2/subscription/examples/programmatic-subscription",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
+          title: "Subscription Manager UI",
+          url: "vrf/v2/subscription/ui",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/subscription/supported-networks",
+        },
+      ],
+    },
+    {
+      section: "V2 Direct Funding Method",
+      contents: [
+        {
+          title: "Introduction",
+          url: "vrf/v2/direct-funding",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/direct-funding/supported-networks",
+        },
       ],
     },
     {
