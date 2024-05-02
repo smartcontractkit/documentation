@@ -916,7 +916,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Cross-chain tokens",
-          url: "ccip/tutorials/offchain",
+          url: "ccip/tutorials/transfer-tokens",
           children: [
             {
               title: "Transfer Tokens",
