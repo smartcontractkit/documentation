@@ -7,9 +7,18 @@ const SupportedNetworksConcepts = await Astro.glob("./Supported-networks-concept
 const SupportedNetworksConceptsComponent = SupportedNetworksConcepts[0].Content
 const ImportCCIPPackage = await Astro.glob("./ImportCCIPPackage.mdx")
 const ImportCCIPPackageComponent = ImportCCIPPackage[0].Content
-
+const TalkToExpert = await Astro.glob("./Talk-Expert.mdx")
+const TalkToExpertComponent = TalkToExpert[0].Content
+const UseSimulator = await Astro.glob("./Use-Simulator.mdx")
+const UseSimulatorComponent = UseSimulator[0].Content
 export type Props = {
-  callout?: "extraArgsCallout" | "thirdPartyApps" | "supportedNetworksConcepts" | "importCCIPPackage"
+  callout?:
+    | "extraArgsCallout"
+    | "thirdPartyApps"
+    | "supportedNetworksConcepts"
+    | "importCCIPPackage"
+    | "talkToExpert"
+    | "useSimulator"
 }
 const { callout } = Astro.props as Props
 ---
@@ -18,3 +27,5 @@ const { callout } = Astro.props as Props
 {callout === "thirdPartyApps" && <ThirdPartyAppsComponent />}
 {callout === "supportedNetworksConcepts" && <SupportedNetworksConceptsComponent />}
 {callout === "importCCIPPackage" && <ImportCCIPPackageComponent />}
+{callout === "talkToExpert" && <TalkToExpertComponent />}
+{callout === "useSimulator" && <UseSimulatorComponent />}

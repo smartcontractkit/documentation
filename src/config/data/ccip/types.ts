@@ -98,3 +98,13 @@ export enum Environment {
 export enum Version {
   V1_2_0 = "1.2.0",
 }
+
+export interface CCIPSendErrorEntry {
+  error: string
+  parameters?: Array<{
+    type: string
+    name: string
+  }>
+  errorSelector?: string
+  description: string
+}

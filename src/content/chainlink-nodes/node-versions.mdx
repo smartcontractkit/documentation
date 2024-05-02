@@ -12,6 +12,26 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.11.0 nodes - 2024-05-01
+
+**[v2.11.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.11.0)**
+
+### Added
+
+- Added a tx simulation feature to the chain client to enable testing for zk out-of-counter (OOC) errors
+- Add the `pool_rpc_node_highest_finalized_block` metric that tracks the highest finalized block seen per RPC. If `FinalityTagEnabled = true`, a positive NodePool.FinalizedBlockPollInterval is needed to collect the metric. If the finality tag is not enabled, the metric is populated with a calculated latest finalized block based on the latest head and finality depth.
+
+### Updated
+
+- Moved `JuelsPerFeeCoinCacheDuration` under the `JuelsPerFeeCoinCache` struct in config. Rename `JuelsPerFeeCoinCacheDuration` to updateInterval. Add `stalenessAlertThreshold` to `JuelsPerFeeCoinCache` config. The `StalenessAlertThreshold` config option has a default of 24 hours which means that it doesn't have to be set unless we want to override the duration after which a stale cache should start throwing errors.
+- Updated config for Polygon zkEVM chains.
+- HeadTracker now respects the `FinalityTagEnabled` config option. If the flag is enabled, HeadTracker backfills blocks up to the latest finalized block provided by the corresponding RPC call. To address potential misconfigurations, `HistoryDepth` is now calculated from the latest finalized block instead of the head. Note that consumers like TXM and LogPoller do not fully use the Finality Tag yet.
+- Change LimitTransfer gasLimit type from uint32 to uint64
+
+### Upcoming changes in v2.13.0
+
+- The `xdai` `ChainType` has been renamed to `gnosis` to match the chain's new name. The old value is still supported but has been deprecated and will be removed in v2.13.0.
+
 ## Changes in v2.10.0 nodes - 2024-04-08
 
 **[v2.10.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.10.0)**
