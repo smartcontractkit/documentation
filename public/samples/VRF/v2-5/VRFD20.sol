@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -23,8 +22,6 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 
 contract VRFD20 is VRFConsumerBaseV2Plus {
     uint256 private constant ROLL_IN_PROGRESS = 42;
-
-    IVRFCoordinatorV2Plus COORDINATOR;
 
     // Your subscription ID.
     uint256 s_subscriptionId;
@@ -71,7 +68,6 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
      * @param subscriptionId subscription id that this consumer contract can use
      */
     constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        COORDINATOR = IVRFCoordinatorV2Plus(vrfCoordinator);
         s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
     }
@@ -89,7 +85,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     ) public onlyOwner returns (uint256 requestId) {
         require(s_results[roller] == 0, "Already rolled");
         // Will revert if subscription is not set and funded.
-        requestId = COORDINATOR.requestRandomWords(
+        requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
                 subId: s_subscriptionId,

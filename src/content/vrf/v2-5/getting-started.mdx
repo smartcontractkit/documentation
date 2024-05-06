@@ -23,8 +23,6 @@ import { Aside, CodeSample } from "@components"
   you begin.
 </Aside>
 
-<p style="text-align:center">VRF v2.5 - Developer Walkthrough</p>
-
 In this guide, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
 
 ## How is randomness generated on blockchains? What is Chainlink VRF?
@@ -63,7 +61,7 @@ The contract has the following functions:
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
 For this example, create a new subscription on the Sepolia testnet as explained [here](/vrf/v2-5/subscription/create-manage).
 
-### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
+### Importing `VRFConsumerBaseV2Plus` and `IVRFCoordinatorV2Plus`
 
 Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use:
 
@@ -92,7 +90,6 @@ This example is adapted for [Sepolia testnet](/vrf/v2-5/supported-networks#sepol
 ```solidity
 uint256 s_subscriptionId;
 address s_owner;
-IVRFCoordinatorV2Plus COORDINATOR;
 address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
 bytes32 s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
 uint32 callbackGasLimit = 40000;
@@ -102,7 +99,6 @@ uint32 numWords =  1;
 
 - `uint256 s_subscriptionId`: The subscription ID that this contract uses for funding requests. Initialized in the `constructor`.
 - `address s_owner`: The address of the owner of the contract that you will deploy. This is initialized in the `constructor`, and it will be the address you use when deploying the contract.
-- `IVRFCoordinatorV2Plus COORDINATOR`: The address of the Chainlink VRF Coordinator contract that this contract will use. Initialized in the `constructor`.
 - `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
 - `bytes32 s_keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the offchain VRF job that runs in response to requests.
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
@@ -122,8 +118,8 @@ mapping(address => uint256) private s_results;
 
 ### Initializing the contract
 
-The coordinator and subscription id must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2Plus` properly, you must also pass the VRF coordinator address into its constructor.
-The address that creates the smart contract is the owner of the contract. the modifier `onlyOwner()` checks that only the owner is allowed to do some tasks.
+The coordinator and subscription ID must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2Plus` properly, you must also pass the VRF coordinator address into its constructor.
+The address that creates the smart contract is the owner of the contract.
 
 {/* prettier-ignore */}
 ```solidity
@@ -140,16 +136,10 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
 
     // constructor
     constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        COORDINATOR = IVRFCoordinatorV2Plus(vrfCoordinator);
         s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
     }
-
-    //...
-    modifier onlyOwner() {
-        require(msg.sender == s_owner);
-        _;
-    }
+    ...
 }
 ```
 
@@ -193,7 +183,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
         require(s_results[roller] == 0, "Already rolled");
         // Will revert if subscription is not set and funded.
 
-       requestId = COORDINATOR.requestRandomWords(
+       requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
                 subId: s_subscriptionId,
@@ -246,7 +236,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     // ...
 
     // fulfillRandomWords function
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
 
         // transform the result to a number between 1 and 20 inclusively
         uint256 d20Value = (randomWords[0] % 20) + 1;

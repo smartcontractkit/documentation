@@ -2,7 +2,6 @@
 // An example of a consumer contract that relies on a subscription for funding.
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -28,7 +27,6 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     }
     mapping(uint256 => RequestStatus)
         public s_requests; /* requestId --> requestStatus */
-    IVRFCoordinatorV2Plus COORDINATOR;
 
     // Your subscription ID.
     uint256 s_subscriptionId;
@@ -65,9 +63,6 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     constructor(
         uint256 subscriptionId
     ) VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) {
-        COORDINATOR = IVRFCoordinatorV2Plus(
-            0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
-        );
         s_subscriptionId = subscriptionId;
     }
 
@@ -79,7 +74,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     {
         // Will revert if subscription is not set and funded.
         // To enable payment in native tokens, set nativePayment to true.
-        requestId = COORDINATOR.requestRandomWords(
+        requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: keyHash,
                 subId: s_subscriptionId,
