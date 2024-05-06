@@ -170,9 +170,4 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
         ];
         return houseNames[id - 1];
     }
-
-    modifier onlyOwner() {
-        require(msg.sender == s_owner);
-        _;
-    }
 }
