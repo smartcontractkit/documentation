@@ -24,7 +24,7 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 contract VRFD20 is VRFConsumerBaseV2Plus {
     uint256 private constant ROLL_IN_PROGRESS = 42;
 
-    VRFCoordinatorV2Interface COORDINATOR;
+    IVRFCoordinatorV2Plus COORDINATOR;
 
     // Your subscription ID.
     uint256 s_subscriptionId;
@@ -51,7 +51,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     uint16 requestConfirmations = 3;
 
     // For this example, retrieve 1 random value in one request.
-    // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+    // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
     uint32 numWords = 1;
     address s_owner;
 
@@ -64,7 +64,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     event DiceLanded(uint256 indexed requestId, uint256 indexed result);
 
     /**
-     * @notice Constructor inherits VRFConsumerBaseV2
+     * @notice Constructor inherits VRFConsumerBaseV2Plus
      *
      * @dev NETWORK: Sepolia
      *
@@ -122,7 +122,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
      */
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         uint256 d20Value = (randomWords[0] % 20) + 1;
         s_results[s_rollers[requestId]] = d20Value;
