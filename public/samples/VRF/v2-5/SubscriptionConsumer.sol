@@ -31,7 +31,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     // Your subscription ID.
     uint256 s_subscriptionId;
 
-    // past requests Id.
+    // Past request IDs.
     uint256[] public requestIds;
     uint256 public lastRequestId;
 

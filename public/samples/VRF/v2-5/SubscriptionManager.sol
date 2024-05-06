@@ -55,7 +55,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinatorV2Plus);
         LINKTOKEN = LinkTokenInterface(link_token_contract);
         //Create a new subscription when you deploy the contract.
-        createNewSubscription();
+        _createNewSubscription();
     }
 
     // Assumes the subscription is funded sufficiently.
@@ -83,7 +83,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
     }
 
     // Create a new subscription when the contract is initially deployed.
-    function createNewSubscription() private onlyOwner {
+    function _createNewSubscription() private onlyOwner {
         s_subscriptionId = s_vrfCoordinator.createSubscription();
         // Add this contract as a consumer of its own subscription.
         s_vrfCoordinator.addConsumer(s_subscriptionId, address(this));

@@ -50,7 +50,6 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     // For this example, retrieve 1 random value in one request.
     // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
     uint32 numWords = 1;
-    address s_owner;
 
     // map rollers to requestIds
     mapping(uint256 => address) private s_rollers;
@@ -65,10 +64,9 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
      *
      * @dev NETWORK: Sepolia
      *
-     * @param subscriptionId subscription id that this consumer contract can use
+     * @param subscriptionId subscription ID that this consumer contract can use
      */
     constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
     }
 
@@ -133,7 +131,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     function house(address player) public view returns (string memory) {
         require(s_results[player] != 0, "Dice not rolled");
         require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
-        return getHouseName(s_results[player]);
+        return _getHouseName(s_results[player]);
     }
 
     /**
@@ -141,7 +139,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
      * @param id uint256
      * @return house name string
      */
-    function getHouseName(uint256 id) private pure returns (string memory) {
+    function _getHouseName(uint256 id) private pure returns (string memory) {
         string[20] memory houseNames = [
             "Targaryen",
             "Lannister",
