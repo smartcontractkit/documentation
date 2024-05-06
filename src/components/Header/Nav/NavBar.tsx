@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { ProductsNav, SubProductsNav } from "./config"
 import styles from "./navBar.module.css"
 import { clsx } from "./utils"
@@ -6,6 +6,8 @@ import { useScrollDirection } from "./useScrollDirection"
 import { useScrollPosition } from "./useScrollPosition"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
 import { useHideHeader } from "./useHideHeader"
+import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
+import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
 
 export type SearchTrigger = React.ReactNode
 
@@ -20,7 +22,8 @@ export type NavBarProps = {
 export const navBarHeight = 64
 
 export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProductsNav }: NavBarProps) => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const scrollDirection = useScrollDirection()
   const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
@@ -31,6 +34,10 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
     isAtTopOfPage,
     isAtBottomOfPage,
   })
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen)
+  }
 
   return (
     <>
@@ -47,6 +54,9 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
               />
             </div>
             <div className={styles.rightSection}>
+              <button className={styles.quickLinksButton} onClick={toggleModal}>
+                <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
+              </button>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" />
               <a
@@ -62,6 +72,17 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
         </div>
       </header>
       <div className={styles.headerPlaceholder} />
+
+      {isModalOpen && (
+        <div className={styles.modalOverlay} onClick={toggleModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeButton} onClick={toggleModal}>
+              &times;
+            </button>
+            <ProductChainTable />
+          </div>
+        </div>
+      )}
     </>
   )
 }
