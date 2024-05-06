@@ -48,14 +48,15 @@ Because a proxy has references to current and all previous underlying aggregator
 
 {/* prettier-ignore */}
 ```solidity
-roundId = uint80((uint256(phaseId) << 64) | aggregatorRoundId);
+return uint80((uint256(phase) << PHASE_OFFSET) | originalId);
 ```
 
 where:
 
-- `phaseId` is incremented each time the underlying aggregator implementation is updated. It is used as a key to find the aggregator address.
-- `aggregatorRoundId` is the aggregator `roundId`. The id starts at 1.
-- `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
+- `phase` is incremented each time the underlying aggregator implementation is updated. It is used as a key to find the aggregator address.
+- `originalId` is the aggregator `roundId`. The id starts at 1.
+
+From the above formula, you can think of it as returning a large number containing the `phase` and the aggregator `roundId`.
 
 <Aside type="note" title="Note">
   The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId`
