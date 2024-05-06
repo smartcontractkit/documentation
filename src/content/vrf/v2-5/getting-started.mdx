@@ -15,7 +15,7 @@ metadata:
   image: "/files/2a242f1-link.png"
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Aside, CodeSample, ClickToZoom } from "@components"
 
 <Aside type="note" title="Requirements">
   This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart
@@ -38,7 +38,7 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 ## What is the payment process for generating a random number?
 
 VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF requests, so that funding of all your application requests are managed in a single location.
-To learn more about VRF requests funding, see [Subscriptions limits](/vrf/v2/subscription#subscription-limits).
+To learn more about VRF requests funding, see [Subscription limits](/vrf/v2-5/overview/subscription#subscription-limits).
 
 ## How can I use Chainlink VRF?
 
@@ -54,26 +54,27 @@ The contract has the following functions:
 - `fulfillRandomWords`: The function that the Oracle uses to send the result back
 - `house`: To see the assigned house of an address
 
-**Note**: to jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix.
+**Note**: to jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/VRFD20.sol) in remix.
 
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
 For this example, create a new subscription on the Sepolia testnet as explained [here](/vrf/v2-5/subscription/create-manage).
 
-### Importing `VRFConsumerBaseV2Plus` and `IVRFCoordinatorV2Plus`
+Your subscription has two balances - one for LINK and one for the native token you're using (in this case, Sepolia ETH). You can choose to pay for VRF requests using either balance.
+
+### Importing contracts
 
 Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use:
 
 - [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol) that must be imported and extended from the contract that you create.
-- [`IVRFCoordinatorV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol) that must be imported to communicate with the VRF coordinator.
+- [`VRFV2PlusClient`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol) to format your requests to VRF.
 
 {/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -89,7 +90,6 @@ This example is adapted for [Sepolia testnet](/vrf/v2-5/supported-networks#sepol
 {/* prettier-ignore */}
 ```solidity
 uint256 s_subscriptionId;
-address s_owner;
 address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
 bytes32 s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
 uint32 callbackGasLimit = 40000;
@@ -98,7 +98,6 @@ uint32 numWords =  1;
 ```
 
 - `uint256 s_subscriptionId`: The subscription ID that this contract uses for funding requests. Initialized in the `constructor`.
-- `address s_owner`: The address of the owner of the contract that you will deploy. This is initialized in the `constructor`, and it will be the address you use when deploying the contract.
 - `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
 - `bytes32 s_keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the offchain VRF job that runs in response to requests.
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
@@ -118,7 +117,7 @@ mapping(address => uint256) private s_results;
 
 ### Initializing the contract
 
-The coordinator and subscription ID must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2Plus` properly, you must also pass the VRF coordinator address into its constructor.
+The subscription ID must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2Plus` properly, you must also pass the VRF coordinator address into its constructor.
 The address that creates the smart contract is the owner of the contract.
 
 {/* prettier-ignore */}
@@ -126,7 +125,6 @@ The address that creates the smart contract is the owner of the contract.
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -136,7 +134,6 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
 
     // constructor
     constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
     }
     ...
@@ -156,12 +153,13 @@ You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rol
 
 Only the owner of the contract can execute the `rollDice` function.
 
+This `rollDice` function is configured so that you pay for VRF requests using LINK by default. If you want to pay for your VRF request with Sepolia ETH instead, set `nativePayment` to `true`.
+
 {/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -190,6 +188,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
                 requestConfirmations: requestConfirmations,
                 callbackGasLimit: callbackGasLimit,
                 numWords: numWords,
+                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
                 extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
             })
         );
@@ -214,7 +213,6 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -261,7 +259,6 @@ To have a list of the house's names, create the `getHouseName` function that is 
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -337,7 +334,11 @@ You have now completed all necessary functions to generate randomness and assign
 
 ## How do I deploy to testnet?
 
-You will deploy this contract on the Sepolia test network. You must have some Sepolia testnet ETH in your MetaMask account to pay for the gas. Testnet ETH is also available from several [public faucets](https://faucetlink.to/sepolia).
+You will deploy this contract on the Sepolia test network. You must have some Sepolia testnet ETH in your MetaMask account to pay for the gas for each contract interaction with the Sepolia network.
+
+You can choose to pay for your VRF requests in either Sepolia ETH or testnet LINK. The `rollDice` function is written to use LINK by default. If you want to change to using Sepolia, set `nativePayment` to `true` before deploying your contract.
+
+You can request both testnet LINK and testnet ETH from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia). Testnet ETH is also available from several [public faucets](https://faucetlink.to/sepolia).
 
 This deployment is slightly different than the example in the [Deploy Your First Contract](/quickstarts/deploy-your-first-contract) guide. In this case, you pass in parameters to the constructor upon deployment.
 
@@ -349,7 +350,7 @@ Select the `VRFD20` contract or the name that you gave to your contract.
 
 Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription ID.
 
-![Remix contract parameters to deploy](/files/intermediates-tutorial-02.png)
+<ClickToZoom src="/images/vrf/v2-5-deploy-with-sub-id.png" alt="Remix contract parameters to deploy" />
 
 Then click the `Deploy` button and use your MetaMask account to confirm the transaction.
 
@@ -358,7 +359,7 @@ Then click the `Deploy` button and use your MetaMask account to confirm the tran
   Networks](/vrf/v2-5/supported-networks#configurations).
 </Aside>
 
-At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.
+At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK or Sepolia ETH balance in your subscription. If you click `rollDice`, the transaction will revert.
 
 ## How do I add my contract to my subscription account?
 
@@ -372,10 +373,10 @@ After you open the deployed contract tab in the bottom left, the function button
 
 It takes a few minutes for the transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
 
-## Further Reading
+## Further reading
 
 To read more about generating random numbers in Solidity, read our blog posts:
 
 - [35+ Blockchain RNG Use Cases Enabled by Chainlink VRF](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/)
 - [How to Build Dynamic NFTs on Polygon](https://blog.chain.link/how-to-build-dynamic-nfts-on-polygon/)
-- [Chainlink VRF v2 Now Live on Ethereum Mainnet](https://blog.chain.link/vrf-v2-mainnet-launch/)
+- [Scaling Onchain Verifiable Randomness With Chainlink VRF v2.5]https://blog.chain.link/introducing-vrf-v2-5/)
