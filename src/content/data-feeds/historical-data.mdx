@@ -44,17 +44,16 @@ The examples in this document name the aggregator `roundId` as `aggregatorRoundI
 
 ### `roundId` in proxy
 
-Because a proxy has references to current and all previous underlying aggregators, it needs a way to fetch data from the correct aggregator. The `roundId` is computed in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) as shown in the following example:
+Because a proxy has references to current and all previous underlying aggregators, it needs a way to fetch data from the correct aggregator. The `roundId` is computed in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/AggregatorProxy.sol) as shown in the following example:
 
 {/* prettier-ignore */}
 ```solidity
-return uint80((uint256(phase) << PHASE_OFFSET) | originalId);
-```
+return uint80(uint256(_phase) << PHASE_OFFSET | _originalId);```
 
 where:
 
-- `phase` is incremented each time the underlying aggregator implementation is updated. It is used as a key to find the aggregator address.
-- `originalId` is the aggregator `roundId`. The id starts at 1.
+- `_phase` is incremented each time the underlying aggregator implementation is updated. It is used as a key to find the aggregator address.
+- `_originalId` is the aggregator `roundId`. The ID starts at 1.
 
 From the above formula, you can think of it as returning a large number containing the `phase` and the aggregator `roundId`.
 
