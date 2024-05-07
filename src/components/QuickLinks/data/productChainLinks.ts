@@ -68,7 +68,7 @@ export const productChainLinks = {
     celo: "/resources/link-token-contracts#celo",
     ethereum: "/resources/link-token-contracts#ethereum",
     fantom: "/resources/link-token-contracts#fantom",
-    "gnosis-chain": "/resources/link-token-contracts##gnosis-chain-xdai",
+    "gnosis-chain": "/resources/link-token-contracts#gnosis-chain-xdai",
     kroma: "/resources/link-token-contracts#kroma",
     linea: "/resources/link-token-contracts#linea",
     metis: "/resources/link-token-contracts#metis",
