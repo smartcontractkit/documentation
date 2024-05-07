@@ -19,7 +19,6 @@ const getLINKTokenLink = (chainId: string) => {
 
 const ProductChainTable = () => (
   <div className={styles.container}>
-    <h2>Quick links for builders</h2>
     <table className={styles.table}>
       <thead>
         <tr>
