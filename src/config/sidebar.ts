@@ -234,12 +234,42 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/getting-started-hardhat",
         },
         {
-          title: "Stream IDs",
+          title: "Data Streams Feed IDs",
           url: "data-streams/stream-ids",
+        },
+        {
+          title: "Billing",
+          url: "data-streams/billing",
         },
         {
           title: "Release Notes",
           url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Fetch and decode reports (REST API)",
+          url: "data-streams/tutorials/streams-direct-api",
+        },
+        {
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/streams-direct-ws",
+        },
+        {
+          title: "Verify report data onchain",
+          url: "data-streams/tutorials/streams-direct-onchain-verification",
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Architecture",
+          url: "data-streams/architecture",
         },
       ],
     },
@@ -251,8 +281,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/report-schema",
         },
         {
-          title: "Interfaces",
-          url: "data-streams/reference/interfaces",
+          title: "Streams Trade Interface",
+          url: "data-streams/reference/streams-trade-interface",
+        },
+        {
+          title: "Streams Direct Interface",
+          url: "data-streams/reference/streams-direct-interface-api",
+          children: [
+            {
+              title: "REST API",
+              url: "data-streams/reference/streams-direct-interface-api",
+            },
+            {
+              title: "WebSocket",
+              url: "data-streams/reference/streams-direct-interface-ws",
+            },
+            {
+              title: "Onchain report data verification",
+              url: "data-streams/reference/streams-direct-onchain-verification",
+            },
+          ],
         },
       ],
     },
@@ -353,6 +401,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/supported-networks",
         },
         {
+          title: "Best Practices",
+          url: "chainlink-automation/concepts/best-practice",
+        },
+        {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
@@ -417,10 +469,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Architecture",
           url: "chainlink-automation/concepts/automation-architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
@@ -708,36 +756,58 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   vrf: [
     {
-      section: "Chainlink VRF",
+      section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "Overview",
+          title: "V2.5 Overview",
           url: "vrf",
+          children: [
+            {
+              title: "Subscription overview",
+              url: "vrf/v2-5/overview/subscription",
+            },
+            {
+              title: "Direct funding overview",
+              url: "vrf/v2-5/overview/direct-funding",
+            },
+          ],
         },
         {
-          title: "Getting Started",
-          url: "vrf/v2/getting-started",
+          title: "Migration from V2",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "V2.5 Supported Networks",
+          url: "vrf/v2-5/supported-networks",
         },
         {
           title: "Security Considerations",
-          url: "vrf/v2/security",
+          url: "vrf/v2-5/security",
         },
         {
           title: "Best Practices",
-          url: "vrf/v2/best-practices",
+          url: "vrf/v2-5/best-practices",
         },
         {
-          title: "Billing",
-          url: "vrf/v2/estimating-costs",
+          title: "V2.5 Billing",
+          url: "vrf/v2-5/billing",
+        },
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
         },
         {
           title: "Release Notes",
           url: "vrf/release-notes",
         },
+        {
+          title: "Arbitrum gas estimation with VRF",
+          url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
       ],
     },
     {
-      section: "Subscription Method",
+      section: "V2 Subscription Method",
       contents: [
         {
           title: "Introduction",
@@ -770,7 +840,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Direct Funding Method",
+      section: "V2 Direct Funding Method",
       contents: [
         {
           title: "Introduction",

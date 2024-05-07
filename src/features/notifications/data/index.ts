@@ -1,9 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "Chainlink Data Streams have officially launched on mainnet.",
+  description: "CCIP is now live for all developers.",
   type: "info",
-  linkText: "Sign up for early access.",
+  linkText: "See what's new.",
   linkUrl:
-    "https://chainlinkcommunity.typeform.com/datastreams?utm_medium=referral&utm_source=chainlink-docs&ref_id=docs",
+    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ccip-ga",
 }

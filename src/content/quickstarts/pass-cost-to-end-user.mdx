@@ -7,7 +7,7 @@ time: "30 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Accordion, Aside, ClickToZoom } from "@components"
+import { Accordion, Aside, ClickToZoom, CopyText } from "@components"
 import { TabsContent } from "@components/Tabs"
 
 ## Objective
@@ -158,7 +158,7 @@ This gives you an existing [Foundry](https://github.com/foundry-rs/foundry) proj
    | Parameter      | Description                                                 | Example                                     |
    | -------------- | ----------------------------------------------------------- | ------------------------------------------- |
    | `RPC_URL`      | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
-   | `PRIVATE_KEY`  | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `PRIVATE_KEY`  | The private key of the account you want to deploy from. <br/> Add `0x` before your key.  | `0xabc123abc123abc123abc123abc123...`       |
    | `EXPLORER_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
 
 </Accordion>
@@ -175,7 +175,7 @@ This command will install the project dependencies, which include [chainlink](ht
 
 </Accordion>
 
-<Accordion title="Install dependencies" number={4}>
+<Accordion title="Deploy the contract" number={4}>
 
 ### Deploy the contract
 
@@ -193,7 +193,7 @@ make deploy
 
 Test the contract as the end-user.
 
-1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Polygon Mumbai you can open the [0x0ed18e80aacede8cb52a6043976c255eff6fedbf](https://mumbai.polygonscan.com/address/0x0ed18e80aacede8cb52a6043976c255eff6fedbf#writeContract) contract.
+1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Ethereum Sepolia you can open the [0x779877A7B0D9E8603169DdbD7836e478b4624789](https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789#writeContract) contract.
 
 1. Connect your wallet to the scanning app so you can run write functions.
 
@@ -203,7 +203,7 @@ Test the contract as the end-user.
      style="max-width: 50%;"
    />
 
-1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and `5000000000000000000` Juels (5 LINK) as variables. Click **Write** to run the function. Metamask asks you to approve the transaction.
+1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and <CopyText text="5000000000000000000" code/> Juels (5 LINK) as variables. Click **Write** to run the function. MetaMask asks you to approve the transaction.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/approve-link-spend.webp"
@@ -233,9 +233,9 @@ Test the contract as the end-user.
 
 1. If the transaction is successful, you will see a **View your transaction** button.
 
-1. On the **Read Contract** tab for your deployed contract, view the `lastRequestId` value.
+1. On the **Read Contract** tab for your deployed contract, view and copy `lastRequestId` value.
 
-1. Use this value to find the request status and view the random value.
+1. Use this value to find the request status and view the random value. Expand `getRequestStatus`, enter the `_requestId`, and click **Query**. The `randomWords` value displays in the response below the **Query** button.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/request-status-with-answer.webp"
