@@ -24,16 +24,16 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     uint256 private constant ROLL_IN_PROGRESS = 42;
 
     // Your subscription ID.
-    uint256 s_subscriptionId;
+    uint256 public s_subscriptionId;
 
     // Sepolia coordinator. For other networks,
     // see https://docs.chain.link/vrf/v2-5/supported-networks#configurations
-    address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+    address public vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
 
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/vrf/v2-5/supported-networks#configurations
-    bytes32 s_keyHash =
+    bytes32 public s_keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
 
     // Depends on the number of requested values that you want sent to the
@@ -42,14 +42,14 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 callbackGasLimit = 40000;
+    uint32 public callbackGasLimit = 40000;
 
     // The default is 3, but you can set this higher.
-    uint16 requestConfirmations = 3;
+    uint16 public requestConfirmations = 3;
 
     // For this example, retrieve 1 random value in one request.
     // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
-    uint32 numWords = 1;
+    uint32 public numWords = 1;
 
     // map rollers to requestIds
     mapping(uint256 => address) private s_rollers;

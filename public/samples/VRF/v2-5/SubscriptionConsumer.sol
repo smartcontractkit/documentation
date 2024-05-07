@@ -29,7 +29,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
         public s_requests; /* requestId --> requestStatus */
 
     // Your subscription ID.
-    uint256 s_subscriptionId;
+    uint256 public s_subscriptionId;
 
     // Past request IDs.
     uint256[] public requestIds;
@@ -38,7 +38,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf/v2-5/supported-networks
-    bytes32 keyHash =
+    bytes32 public keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
 
     // Depends on the number of requested values that you want sent to the
@@ -47,14 +47,14 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 callbackGasLimit = 100000;
+    uint32 public callbackGasLimit = 100000;
 
     // The default is 3, but you can set this higher.
-    uint16 requestConfirmations = 3;
+    uint16 public requestConfirmations = 3;
 
     // For this example, retrieve 2 random values in one request.
     // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
-    uint32 numWords = 2;
+    uint32 public numWords = 2;
 
     /**
      * HARDCODED FOR SEPOLIA
