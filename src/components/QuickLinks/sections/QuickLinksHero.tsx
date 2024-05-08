@@ -4,6 +4,9 @@ const QuickLinksHero = () => {
   return (
     <section id="quick-links-hero" className={styles.quickLinksHero}>
       <div>
+        <a href="/" className={styles.backLink}>
+          &larr; Docs home page
+        </a>
         <h2>
           Quick links for <span>Builders</span>
         </h2>
@@ -11,9 +14,6 @@ const QuickLinksHero = () => {
           Find all the supported networks at a glance, and the network-specific information you need to build your
           project.
         </p>
-      </div>
-      <div>
-        <img src="/images/hero-background.svg" alt="" />
       </div>
     </section>
   )

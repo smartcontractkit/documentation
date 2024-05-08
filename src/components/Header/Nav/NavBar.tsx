@@ -79,7 +79,9 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
             <button className={styles.closeButton} onClick={toggleModal}>
               &times;
             </button>
-            <h2 className={styles.modalTitle}>Quick links for builders</h2>
+            <h2 className={styles.modalTitle}>
+              Quick links for <span>Builders</span>
+            </h2>
             <p className={styles.modalDescription}>
               Find all the supported networks at a glance, and the network-specific information you need to build your
               project.
