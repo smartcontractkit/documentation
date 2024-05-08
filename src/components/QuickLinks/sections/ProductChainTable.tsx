@@ -22,9 +22,13 @@ const ProductChainTable = () => (
     <table className={styles.table}>
       <thead>
         <tr>
-          <th className={styles.networkHeaderCell}>Network / Product</th>
+          <th className={`${styles.networkHeaderCell} ${styles.stickyHeader}`}>Network / Product</th>
           {evmProducts.map((product) => (
-            <th key={product.title} className={styles.productHeaderCell}>
+            <th
+              key={product.title}
+              title={product.title}
+              className={`${styles.productHeaderCell} ${styles.stickyHeader}`}
+            >
               <a href={`/${product.learnMorelink}`} className={styles.productLink}>
                 <div className={styles.productHeader}>
                   <img src={product.image.src} alt={`${product.title} logo`} className={styles.icon} />
@@ -33,7 +37,7 @@ const ProductChainTable = () => (
               </a>
             </th>
           ))}
-          <th className={styles.linkTokenHeaderCell}>
+          <th title="LINK Token Contracts" className={`${styles.linkTokenHeaderCell} ${styles.stickyHeader}`}>
             <a href="/resources/link-token-contracts" className={styles.productLink}>
               <div className={styles.productHeader}>
                 <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.icon} />

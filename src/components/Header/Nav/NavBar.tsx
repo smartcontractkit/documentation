@@ -75,18 +75,20 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
 
       {isModalOpen && (
         <div className={styles.modalOverlay} onClick={toggleModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalContentWrapper} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeButton} onClick={toggleModal}>
               &times;
             </button>
-            <h2 className={styles.modalTitle}>
-              Quick links for <span>Builders</span>
-            </h2>
-            <p className={styles.modalDescription}>
-              Find all the supported networks at a glance, and the network-specific information you need to build your
-              project.
-            </p>
-            <ProductChainTable />
+            <div className={styles.modalContent}>
+              <h2 className={styles.modalTitle}>
+                Quick links for <span>Builders</span>
+              </h2>
+              <p className={styles.modalDescription}>
+                Find all the supported networks at a glance, and the network-specific information you need to build your
+                project.
+              </p>
+              <ProductChainTable />
+            </div>
           </div>
         </div>
       )}
