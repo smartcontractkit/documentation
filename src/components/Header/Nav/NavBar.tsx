@@ -54,9 +54,19 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
               />
             </div>
             <div className={styles.rightSection}>
-              <button className={styles.quickLinksButton} onClick={toggleModal}>
-                <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
-              </button>
+              <div className={styles.quickLinksWrapper}>
+                <button className={styles.quickLinksButton} onClick={toggleModal}>
+                  <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
+                </button>
+                <span className={styles.quickLinksTooltip}>
+                  <img
+                    src="https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat"
+                    className={styles.infoIcon}
+                    alt="Info"
+                  />
+                  Quick links for Builders
+                </span>
+              </div>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" />
               <a
