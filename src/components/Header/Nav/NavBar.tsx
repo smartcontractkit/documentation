@@ -92,16 +92,8 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
               />
             </div>
             <div className={styles.rightSection}>
-              <div id="weglot" className={styles.weglotContainer} />
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
-              <a
-                rel="noreferrer noopener"
-                target="_blank"
-                className={clsx(styles.button)}
-                href="https://github.com/smartcontractkit/documentation"
-              >
-                <img width="24px" height="24px" src="/assets/github.svg" />
-              </a>
+              <div id="weglot" className={styles.weglotContainer} />
               <div className={styles.quickLinksWrapper}>
                 <button className={styles.quickLinksButton} onClick={toggleModal}>
                   <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
@@ -115,6 +107,14 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
                   Quick links for Builders
                 </span>
               </div>
+              <a
+                rel="noreferrer noopener"
+                target="_blank"
+                className={clsx(styles.button)}
+                href="https://github.com/smartcontractkit/documentation"
+              >
+                <img width="24px" height="24px" src="/assets/github.svg" />
+              </a>
             </div>
           </div>
         </div>
