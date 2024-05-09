@@ -70,11 +70,11 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
         // Will revert if subscription is not set and funded.
         s_requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
-                keyHash: keyHash,
+                keyHash: s_keyHash,
                 subId: s_subscriptionId,
-                requestConfirmations: requestConfirmations,
-                callbackGasLimit: callbackGasLimit,
-                numWords: numWords,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
+                numWords: NUM_WORDS,
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
@@ -90,7 +90,7 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
      */
     function fulfillRandomWords(
         uint256 /* requestId */,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         s_randomWords = randomWords;
         emit ReturnedRandomness(randomWords);
