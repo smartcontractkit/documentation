@@ -30,6 +30,11 @@ const docsSubProductsNav = [
     href: "/chainlink-nodes",
   },
   {
+    label: "General",
+    href: "/getting-started/conceptual-overview",
+    hideFromDropdown: true,
+  },
+  {
     label: "Overview",
     href: "/",
     hideFromDropdown: true,
