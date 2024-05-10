@@ -17,7 +17,7 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
  */
 contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
     // Your subscription ID.
-    uint64 immutable s_subscriptionId;
+    uint256 immutable s_subscriptionId;
 
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
@@ -53,7 +53,7 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
      * @param keyHash - the gas lane to use, which specifies the maximum gas price to bump to
      */
     constructor(
-        uint64 subscriptionId,
+        uint256 subscriptionId,
         address vrfCoordinator,
         bytes32 keyHash
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {

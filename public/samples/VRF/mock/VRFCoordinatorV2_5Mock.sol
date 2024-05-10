@@ -270,7 +270,9 @@ contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
     }
 
     /**
-     * @inheritdoc IVRFSubscriptionV2Plus
+     * @notice Remove a consumer from a VRF subscription.
+     * @param _subId - ID of the subscription
+     * @param _consumer - Consumer to remove from the subscription
      */
     function removeConsumer(
         uint256 _subId,
@@ -300,7 +302,9 @@ contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
     }
 
     /**
-     * @inheritdoc IVRFSubscriptionV2Plus
+     * @notice Cancel a subscription
+     * @param _subId - ID of the subscription
+     * @param _to - Where to send the remaining LINK to
      */
     function cancelSubscription(
         uint256 _subId,
