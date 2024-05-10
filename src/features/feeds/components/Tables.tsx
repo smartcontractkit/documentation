@@ -15,42 +15,42 @@ const verifierProxies = new Map<string, string>([
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   low: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Low Market Risk">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure.">
       <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" alt="Low Market Risk" target="_blank">
         🟢
       </a>
     </span>
   ),
   medium: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Medium Market Risk">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk.">
       <a href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds" alt="Medium Market Risk" target="_blank">
         🟡
       </a>
     </span>
   ),
   high: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="High Market Risk">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks.">
       <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" alt="High Market Risk" target="_blank">
         🔴
       </a>
     </span>
   ),
   new: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="New Token">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use.">
       <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" alt="New Token" target="_blank">
         🟠
       </a>
     </span>
   ),
   custom: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case.">
       <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
         🔵
       </a>
     </span>
   ),
   deprecating: (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Deprecating">
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more.">
       <a href="/data-feeds/deprecating-feeds" alt="Deprecating" target="_blank">
         ⭕
       </a>
