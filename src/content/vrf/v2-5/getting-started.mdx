@@ -42,7 +42,7 @@ To learn more about VRF requests funding, see [Subscription limits](/vrf/v2-5/ov
 
 ## How can I use Chainlink VRF?
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](/vrf/v2/subscription/examples/get-a-random-number). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application has a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
+In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application has a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
 
 After the contract requests randomness from Chainlink VRF, the result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
 
@@ -54,7 +54,7 @@ The contract has the following functions:
 - `fulfillRandomWords`: The function that the Oracle uses to send the result back
 - `house`: To see the assigned house of an address
 
-**Note**: to jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/VRFD20.sol) in remix.
+**Note**: to jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/VRFD20.sol) in Remix.
 
 ### Create and fund a subscription
 
@@ -234,7 +234,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
     // ...
 
     // fulfillRandomWords function
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
 
         // transform the result to a number between 1 and 20 inclusively
         uint256 d20Value = (randomWords[0] % 20) + 1;

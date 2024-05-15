@@ -117,7 +117,7 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
      */
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] calldata randomWords
+        uint256[] memory randomWords
     ) internal override {
         uint256 d20Value = (randomWords[0] % 20) + 1;
         s_results[s_rollers[requestId]] = d20Value;
