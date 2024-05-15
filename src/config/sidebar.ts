@@ -734,36 +734,58 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   vrf: [
     {
-      section: "Chainlink VRF",
+      section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "Overview",
+          title: "V2.5 Overview",
           url: "vrf",
+          children: [
+            {
+              title: "Subscription overview",
+              url: "vrf/v2-5/overview/subscription",
+            },
+            {
+              title: "Direct funding overview",
+              url: "vrf/v2-5/overview/direct-funding",
+            },
+          ],
         },
         {
-          title: "Getting Started",
-          url: "vrf/v2/getting-started",
+          title: "Migration from V2",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "V2.5 Supported Networks",
+          url: "vrf/v2-5/supported-networks",
         },
         {
           title: "Security Considerations",
-          url: "vrf/v2/security",
+          url: "vrf/v2-5/security",
         },
         {
           title: "Best Practices",
-          url: "vrf/v2/best-practices",
+          url: "vrf/v2-5/best-practices",
         },
         {
-          title: "Billing",
-          url: "vrf/v2/estimating-costs",
+          title: "V2.5 Billing",
+          url: "vrf/v2-5/billing",
+        },
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
         },
         {
           title: "Release Notes",
           url: "vrf/release-notes",
         },
+        {
+          title: "Arbitrum gas estimation with VRF",
+          url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
       ],
     },
     {
-      section: "Subscription Method",
+      section: "V2 Subscription Method",
       contents: [
         {
           title: "Introduction",
@@ -796,7 +818,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Direct Funding Method",
+      section: "V2 Direct Funding Method",
       contents: [
         {
           title: "Introduction",
