@@ -24,6 +24,7 @@ export type SupportedChain =
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"
+  | "POLYGON_AMOY"
   | "GNOSIS_MAINNET"
   | "GNOSIS_CHIADO"
   | "AVALANCHE_MAINNET"
