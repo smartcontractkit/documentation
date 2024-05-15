@@ -10,7 +10,7 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
-export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
+export type DataFeedType = "default" | "por" | "rates" | "streams"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -99,7 +99,6 @@ export const FeedList = ({
   useOutsideAlerter(wrapperRef)
   const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
-  const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
@@ -114,8 +113,6 @@ export const FeedList = ({
                 if (isStreams) return chain.tags?.includes("streams")
 
                 if (isPor) return chain.tags?.includes("proofOfReserve")
-
-                if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
 
                 if (isRates) return chain.tags?.includes("rates")
 
@@ -166,8 +163,6 @@ export const FeedList = ({
           if (isStreams) return network.tags?.includes("streams")
 
           if (isPor) return network.tags?.includes("proofOfReserve")
-
-          if (isNftFloor) return network.tags?.includes("nftFloorPrice")
 
           if (isRates) return network.tags?.includes("rates")
 
