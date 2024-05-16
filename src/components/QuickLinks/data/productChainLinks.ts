@@ -52,7 +52,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/data-feeds/price-feeds/addresses?network=polygon",
       scroll: "/data-feeds/price-feeds/addresses?network=scroll",
       solana: "/data-feeds/price-feeds/addresses?network=solana",
-      // starknet: "/data-feeds/price-feeds/addresses?network=starknet",
+      starknet: "/data-feeds/price-feeds/addresses?network=starknet",
       zksync: "/data-feeds/price-feeds/addresses?network=zksync",
     },
   },
