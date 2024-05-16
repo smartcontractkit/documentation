@@ -144,7 +144,7 @@ export const chainNames: Record<string, string> = {
   polygon: "Polygon",
   scroll: "Scroll",
   solana: "Solana",
-  starknet: "StarkNet",
+  starknet: "Starknet",
   wemix: "Wemix",
   zksync: "zkSync",
 }
