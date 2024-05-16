@@ -18,7 +18,7 @@ export const PauseNotice = ({
   value,
   heartbeat,
   buffer,
-  currencyName,
+  ripcordApi,
 }: {
   value: number
   list?: boolean
@@ -27,7 +27,7 @@ export const PauseNotice = ({
   feedAddress: string
   heartbeat: number
   buffer: number
-  currencyName: string
+  ripcordApi: string
 }) => {
   const [ripCord, setRipCord] = useState<boolean>(false)
   const date = Math.floor(new Date().getTime() / 1000)
@@ -36,12 +36,9 @@ export const PauseNotice = ({
 
   useEffect(() => {
     const fetchRipCord = async () => {
-      const res = await fetch(
-        `https://api.real-time-reserves.verinumus.io/v1/chainlink/proof-of-reserves/${currencyName}`,
-        {
-          method: "GET",
-        }
-      )
+      const res = await fetch(ripcordApi, {
+        method: "GET",
+      })
       const fecthedProofOfReserveData = await res.json()
       setRipCord(fecthedProofOfReserveData.ripcord ?? false)
     }

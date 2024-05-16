@@ -9,31 +9,11 @@ export type Props = {
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
-import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
-const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
 ---
-
-{
-  dataFeedType === "por"
-    ? feedItems.map((feedItem: FeedDataItem) => {
-        const [feedAddress] = Object.keys(feedItem)
-        return (
-          <CheckHeartbeat
-            client:only="preact"
-            {feedAddress}
-            supportedChain="ETHEREUM_MAINNET"
-            feedName="TUSD Reserves"
-            currencyName={feedItem[feedAddress]}
-          />
-        )
-      })
-    : ""
-}
 
 {
   ecosystem === "deprecating" ? (

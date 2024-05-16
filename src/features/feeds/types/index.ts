@@ -41,6 +41,7 @@ interface Proxy {
   feedCategory: FeedCategory
   feedType: ProxyFeedType
   shutdownDate?: string
+  ripcordApi?: string
 }
 
 export interface Network {

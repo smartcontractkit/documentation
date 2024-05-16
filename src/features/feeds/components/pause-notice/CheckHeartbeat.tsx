@@ -11,14 +11,16 @@ export const CheckHeartbeat = ({
   feedAddress,
   supportedChain,
   feedName,
+  heartbeat,
   list,
-  currencyName,
+  ripcordApi,
 }: {
   feedAddress: string
   supportedChain: SupportedChain
   feedName: string
+  heartbeat: number
   list?: boolean
-  currencyName: string
+  ripcordApi: string
 }) => {
   const [latestUpdateTimestamp, setLatestUpdateTimestamp] = useState<number | undefined>(undefined)
   const getLatestTimestamp = useCallback(async () => {
@@ -58,9 +60,9 @@ export const CheckHeartbeat = ({
         type="alert"
         feedName={feedName}
         feedAddress={feedAddress}
-        heartbeat={86400}
+        heartbeat={heartbeat}
         buffer={900}
-        currencyName={currencyName}
+        ripcordApi={ripcordApi}
       />
     </div>
   ) : null
