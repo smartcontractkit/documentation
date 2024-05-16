@@ -31,10 +31,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/proof-of-reserve",
         },
         {
-          title: "NFT Floor Price Feeds",
-          url: "data-feeds/nft-floor-price",
-        },
-        {
           title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds",
         },
@@ -54,10 +50,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Proof of Reserve Addresses",
           url: "data-feeds/proof-of-reserve/addresses",
-        },
-        {
-          title: "NFT Floor Price Addresses",
-          url: "data-feeds/nft-floor-price/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
