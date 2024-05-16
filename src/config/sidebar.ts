@@ -747,7 +747,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Getting Started with Chainlink VRF 2.5",
+          title: "Getting Started with Chainlink VRF V2.5",
           url: "vrf/v2-5/getting-started",
         },
         {
