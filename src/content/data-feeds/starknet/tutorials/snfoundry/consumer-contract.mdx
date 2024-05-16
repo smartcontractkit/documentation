@@ -1,0 +1,189 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Deploy and Interact with a Consumer Contract using Starknet Foundry"
+whatsnext:
+  {
+    "Starknet Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses?network=starknet",
+    "Experiment with Starknet Devnet RS": "/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+  }
+metadata:
+  description: "Deploy and Interact with a Data Feeds Consumer Contract on StarkNet using Starknet Foundry."
+---
+
+import { CodeSample, CopyText } from "@components"
+
+This example uses a local OpenZeppelin account to deploy and interact with a consumer contract onchain. This contract retrieves data from a specified Chainlink data feed on Starknet Sepolia and stores the information for the latest round of data.
+
+## Requirements
+
+### Set up your environment
+
+This guide uses the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit and the [Scarb](https://github.com/software-mansion/scarb) project management tool so you can compile, deploy, and interact with your Starknet smart contracts.
+
+- **Starknet Foundry**: Install Starknet Foundry **v0.21.0**. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
+
+- **Scarb**: Install Scarb **v2.6.4**. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
+
+Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.html) tool version manager to install both Starknet Foundry and Scarb. Read the setup instructions for [Starknet Foundry](https://github.com/foundry-rs/asdf-starknet-foundry) and [Scarb](https://docs.swmansion.com/scarb/download.html#install-via-asdf) for more information.
+
+### Clone and configure the code examples repository
+
+1. Clone the [chainlink-starknet](https://github.com/smartcontractkit/chainlink-starknet/) repository, which includes the example contracts for this guide:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/chainlink-starknet.git
+   ```
+
+1. Navigate to the `aggregator_consumer` directory:
+
+   ```bash
+   cd chainlink-starknet/examples/contracts/aggregator_consumer/
+   ```
+
+After you prepare the requirements, make sure the required tools are configured correctly by running the tests:
+
+    ```bash
+    make test
+    ```
+
+The contracts should compile successfully and the tests should pass.
+
+## Tutorial
+
+### Create, deploy, and fund an account
+
+1. Run the [`create-account`](https://github.com/smartcontractkit/chainlink-starknet/blob/c97baa6e52c7e6e01ea0235bf0e71abae23e3c00/examples/contracts/aggregator_consumer/Makefile#L22) script to create a new OpenZeppelin local account for the Sepolia testnet:
+
+   ```bash
+   make create-account
+   ```
+
+   The account details are stored locally in your `~/.starknet_accounts/starknet_open_zeppelin_accounts.json` file.
+
+   Expect an output similar to the following:
+
+   ```bash
+   command: account create
+   address: 0x3e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d
+   max_fee: 9529927566560
+   message: Account successfully created. Prefund generated address with at least <max_fee> tokens. It is good to send more in the case of higher demand.
+
+   Your accounts:
+   {
+     "alpha-sepolia": {
+       "testnet-account": {
+         "address": "0x3e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d",
+         "class_hash": "0x4c6d6cf894f8bc96bb9c525e6853e5483177841f7388f74a46cfda6f028c755",
+         "deployed": false,
+         "legacy": false,
+         "private_key": <PRIVATE_KEY>,
+         "public_key": "0x2972c3cb7aa85403fa1e038f9ce7a93f025ea57017eb7ef735bae989bfb15bd",
+         "salt": "0x61a062d2dd4e7656"
+       }
+     }
+   }
+   ```
+
+   From the output, note:
+
+   - Your account address. In this example, it is `0x03e7ee3d05d3efae4e493c9733c8c391d4a5cc63d34f95a164c832060fcdd43d`, with an added zero after `0x`.
+   - The `max_fee` value, which is the minimum amount of testnet ETH required to deploy the account.
+
+1. Fund the newly created account with testnet ETH to cover the account deployment, the consumer contract deployment, and the network interaction costs.
+
+   Go to the Blast [Starknet Sepolia ETH Faucet](https://blastapi.io/faucets/starknet-sepolia-eth) and enter your account address to receive testnet ETH. Wait a few seconds for the transaction to complete.
+
+   Alternatively, you can transfer ETH tokens from a Starknet-compatible wallet, such as [Argent](https://www.argent.xyz/) or [Braavos](https://braavos.app/), or use the [StarkGate bridge](https://starkgate.starknet.io/) to transfer testnet ETH from Ethereum Sepolia to Starknet Sepolia. If you need testnet ETH on Ethereum Sepolia, you can use the [Chainlink faucet](https://faucets.chain.link/sepolia).
+
+1. Deploy your account to Starknet Sepolia:
+
+   ```bash
+   make deploy-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   command: account deploy
+   transaction_hash: 0x541ffae49f77dd942376391286052d9fb87dc8d6848139ab1508c114e3aa005
+   ```
+
+   Wait a few seconds for the transaction to complete.
+
+### Deploy and interact with a consumer contract
+
+The consumer contract contains two functions that you interact with in this example:
+
+- `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the `_answer` internal storage variable.
+- `read_answer` reads the stored `_answer` value.
+
+1. Navigate to `/scripts/src/consumer/` and open the [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) script.
+
+1. Update the `aggregator_address` variable within the `main` function with the ETH / USD Chainlink proxy aggregator contract address on Starknet Sepolia : <CopyText text="0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44" code/>.
+
+1. Run the [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) script to deploy a consumer contract to Starknet Sepolia. Use the following command:
+
+   ```bash
+   make ac-deploy NETWORK=testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Declaring and deploying AggregatorConsumer
+   Declaring contract...
+
+   Class hash = 2231728956022539490111802723283413449895905447951536434260474920103409356221
+
+   Deploying contract...
+   Transaction hash = 0x46b39d79cf90ed75fbae5d097d6026cf7ab1184e852d36aed336528fc77220d
+   Waiting for transaction to be accepted (59 retries / 295s left until timeout)
+
+   AggregatorConsumer deployed at address: 2956260449156927152048242588422796467290585049226993045191257886158889626959
+
+   command: script run
+   status: success
+   ```
+
+   The consumer address is represented in its decimal form: `2956260449156927152048242588422796467290585049226993045191257886158889626959`. You can use a [converter tool](https://www.rapidtables.com/convert/number/decimal-to-hex.html) to get the hexadecimal format. In this example, the hexadecimal equivalent is `0x06892f22691473dc5a413a7626062604155516ec91a82d3734dc68bcf3d72d4f`. Save your consumer address for the next steps.
+
+1. In `/scripts/src/consumer/`, open the [`set_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/set_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
+
+1. Run the following command to update the answer:
+
+   ```bash
+   make ac-set-answer NETWORK=testnet
+   ```
+
+   This command runs the [`set_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/set_answer.cairo) script to retrieve the latest `answer` from the ETH / USD aggregator contract and stores it in the internal storage variable `_answer` of your consumer contract.
+
+   Expect an output similar to the following:
+
+   ```bash
+   Result::Ok(CallResult { data: [3374557091160001179079409876363576078229871685244120671563970051729036896526] })
+   Result::Ok(CallResult { data: [340282366920938463463374607431768224268, 354661371569, 54349, 1711716556, 1711716514] })
+   Transaction hash = 0x20edd6388041d78a36f153a7694fd8c0849d81aff3fc2d5a0606d7275ea4837
+   Waiting for transaction to be accepted (59 retries / 295s left until timeout)
+   Result::Ok(InvokeResult { transaction_hash: 930889525374955449815155593419397099236202282693723934594292211164864202807 })
+   command: script run
+   status: success
+   ```
+
+1. In `/scripts/src/consumer/`, open the [`read_answer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/read_answer.cairo) script and update the `consumer_address` variable with your deployed consumer address.
+
+1. Run the following command to read the stored `answer` value from your consumer contract:
+
+   ```bash
+   make ac-read-answer NETWORK=testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Result::Ok(CallResult { data: [354661371569] })
+   command: script run
+   status: success
+   ```
+
+   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the Show more details checkbox.
