@@ -100,11 +100,29 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "StarkNet Guides",
+      section: "Starknet Guides",
       contents: [
         {
-          title: "Using Data Feeds on StarkNet",
+          title: "Data Feeds on Starknet",
           url: "data-feeds/starknet",
+        },
+        {
+          title: "Starknet Foundry Guides",
+          url: "data-feeds/starknet/tutorials/snfoundry/",
+          children: [
+            {
+              title: "Read Data from Chainlink Data Feeds (Offchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/read-data",
+            },
+            {
+              title: "Deploy and interact with a Consumer Contract (Onchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/consumer-contract",
+            },
+            {
+              title: "Experiment on a Devnet",
+              url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+            },
+          ],
         },
       ],
     },
