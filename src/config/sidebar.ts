@@ -31,10 +31,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/proof-of-reserve",
         },
         {
-          title: "NFT Floor Price Feeds",
-          url: "data-feeds/nft-floor-price",
-        },
-        {
           title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds",
         },
@@ -54,10 +50,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Proof of Reserve Addresses",
           url: "data-feeds/proof-of-reserve/addresses",
-        },
-        {
-          title: "NFT Floor Price Addresses",
-          url: "data-feeds/nft-floor-price/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -108,11 +100,29 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "StarkNet Guides",
+      section: "Starknet Guides",
       contents: [
         {
-          title: "Using Data Feeds on StarkNet",
+          title: "Data Feeds on Starknet",
           url: "data-feeds/starknet",
+        },
+        {
+          title: "Starknet Foundry Guides",
+          url: "data-feeds/starknet/tutorials/snfoundry/",
+          children: [
+            {
+              title: "Read Data from Chainlink Data Feeds (Offchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/read-data",
+            },
+            {
+              title: "Deploy and interact with a Consumer Contract (Onchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/consumer-contract",
+            },
+            {
+              title: "Experiment on a Devnet",
+              url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+            },
+          ],
         },
       ],
     },
@@ -753,6 +763,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "vrf/v2-5/overview/direct-funding",
             },
           ],
+        },
+        {
+          title: "Getting Started with Chainlink VRF V2.5",
+          url: "vrf/v2-5/getting-started",
         },
         {
           title: "Migration from V2",

@@ -1,0 +1,233 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Experiment with Data Feeds using Starknet Foundry and Starknet Devnet RS"
+whatsnext: { "Starknet Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses?network=starknet" }
+metadata:
+  description: "Experiment with Chainlink Data Feeds on a Devnet using Starknet Devnet RS."
+---
+
+import { CodeSample, CopyText, Aside } from "@components"
+
+This guide employs [Starknet Devnet RS](https://github.com/0xSpaceShard/starknet-devnet-rs), a local Docker-based testnet environment for Starknet. It provides code examples, [scripts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/aggregator_consumer/scripts/src), and [commands](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/Makefile) that enable you to deploy and experiment with your own aggregator and consumer contracts. You can use a set of prefunded accounts to interact with Chainlink Data Feeds on Starknet without deploying to a live network.
+
+## Requirements
+
+### Set up your environment
+
+This guide uses the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit and the [Scarb](https://github.com/software-mansion/scarb) project management tool so you can compile, deploy, and interact with your Starknet smart contracts.
+
+- **Starknet Foundry**: Install Starknet Foundry **v0.21.0**. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal and [install the required version](https://github.com/foundry-rs/starknet-foundry#installation) if necessary.
+
+- **Scarb**: Install Scarb **v2.6.4**. You can check your current version by running <CopyText text="scarb --version" code/> in your terminal and [install the required version](https://docs.swmansion.com/scarb/download.html#install-via-installation-script) if necessary.
+
+Alternatively, you can use the [asdf](https://asdf-vm.com/guide/introduction.html) tool version manager to install both Starknet Foundry and Scarb. Read the setup instructions for [Starknet Foundry](https://github.com/foundry-rs/asdf-starknet-foundry) and [Scarb](https://docs.swmansion.com/scarb/download.html#install-via-asdf) for more information.
+
+- **Docker**: Install [Docker Desktop](https://docs.docker.com/get-docker/). You will run Starknet Devnet RS in a Docker container.
+
+### Clone and configure the code examples repository
+
+1. Clone the [chainlink-starknet](https://github.com/smartcontractkit/chainlink-starknet/) repository, which includes the example contracts for this guide:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/chainlink-starknet.git
+   ```
+
+1. Navigate to the `aggregator_consumer` directory:
+
+   ```bash
+   cd chainlink-starknet/examples/contracts/aggregator_consumer/
+   ```
+
+1. Open your `snfoundry.toml` file and locate the `[sncast.devnet]` section. Make sure the `url` points to the correct endpoint for connecting to the Starknet node running inside the Docker container. By default, it is:
+
+   ```bash
+   [sncast.default]
+   url = "http://127.0.0.1:5050/rpc"
+   ```
+
+After you prepare the requirements, check to make sure the required tools are configured correctly by running the tests:
+
+    ```bash
+    make test
+    ```
+
+The contracts should compile successfully and the tests should pass.
+
+## Tutorial
+
+<Aside type="note" title="Contract addresses for Starknet Devnet RS">
+  If you followed the [onchain](/data-feeds/starknet/tutorials/snfoundry/consumer-contract) guide, [clone the
+  chainlink-starknet
+  repository](/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs#clone-and-configure-the-code-examples-repository)
+  again to make sure you start from a clean state. By default, some addresses used in this guide are hardcoded to work
+  with the Starknet Devnet RS environment.
+</Aside>
+
+### Run Starknet Devnet RS and add a prefunded account
+
+1. Make sure Docker Desktop is running.
+
+1. Execute the following command to run a Starknet Devnet RS container:
+
+   ```bash
+   make devnet
+   ```
+
+   Note: Executing this command when a container is running stops and recreates the container, which helps restart from a clean state.
+
+1. The Starknet devnet container includes a set of prefunded accounts. To execute the scripts from this guide, add one of these accounts to a local `accounts.json` file by running the following command:
+
+   ```bash
+   make add-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Importing a prefunded account from starknet devnet container...
+
+   command: account add
+
+   Your accounts:
+
+   {
+   "alpha-goerli": {
+      "devnet-account": {
+         "address": "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
+         "class_hash": "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+         "deployed": true,
+         "legacy": false,
+         "private_key": "0x57b2f8431c772e647712ae93cc616638",
+         "public_key": "0x374f7fcb50bc2d6b8b7a267f919232e3ac68354ce3eafe88d3df323fc1deb23"
+      }
+   }
+   }
+   ```
+
+### Deploy and interact with a mock aggregator contract
+
+1. Declare and deploy a mock aggregator contract to the devnet by using the [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) script. Run the following command:
+
+   ```bash
+   make ma-deploy NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Declaring and deploying MockAggregator
+   Declaring contract...
+   Transaction hash = 0x1d4cb925322e0f9645cf0bf4028b7fca963b5325cc685784c0f6e22628de8ad
+   Class hash = 3238358970964595466962588940073124312643094641461979698784985925711454737896
+   Deploying contract...
+   Transaction hash = 0x6b065766a26105fbd9bf55be46675d2c2b4b0dd9a85db5ab0b6a1f8ad04f743
+   MockAggregator deployed at address: 1708487128334545444076626254389547159540422020354796381590079145465639129383
+
+   command: script run
+   status: success
+   ```
+
+1. Read the latest round of data by using the [`read_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/aggregator/read_latest_round.cairo) script. Run the following command:
+
+   ```bash
+   make agg-read-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Result::Ok(CallResult { data: [0, 0, 0, 0, 0] })
+   command: script run
+   status: success
+   ```
+
+   The default data on the mock aggregator contract is all set to zeros.
+
+1. Set the latest round of data to values defined in the [`set_latest_round`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/set_latest_round.cairo) script. Run the following command:
+
+   ```bash
+   make ma-set-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Transaction hash = 0x3f01f4595dcf20b4f355720540d5279efc0fff306d4e848dda4550cdd2a5367
+   Result::Ok(InvokeResult { transaction_hash: 1781197671452105104356220458359085564429259248315865550090042149835146679143 })
+   command: script run
+   status: success
+   ```
+
+1. Read the latest round of data again to verify the updated values:
+
+   ```bash
+   make agg-read-latest-round NETWORK=devnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Result::Ok(CallResult { data: [1, 1, 12345, 1711716556, 1711716514] })
+   command: script run
+   status: success
+   ```
+
+### Deploy and interact with a mock aggregator and a mock consumer contract
+
+The mock aggregator consumer contract is initialized with the address of an aggregator mock contract during the contract's constructor call and contains two functions:
+
+- `set_answer` retrieves the latest `answer` from the specified aggregator contract and stores it in the internal storage variable `_answer`.
+- `read_answer` reads the stored `_answer` value.
+
+1. Run the following command to (re)start the Starknet Devnet RS container:
+
+   ```bash
+   make devnet
+   ```
+
+1. If you haven't already, add a prefunded account to the local `accounts.json` file using the following command:
+
+   ```bash
+   make add-account
+   ```
+
+1. Declare and deploy both a mock aggregator and a consumer contracts to the devnet by running the following command:
+
+   ```bash
+   make devnet-deploy
+   ```
+
+   This command executes both [`deploy_mock_aggregator`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/mock_aggregator/deploy_mock_aggregator.cairo) and [`deploy_aggregator_consumer`](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/scripts/src/consumer/deploy_aggregator_consumer.cairo) scripts.
+
+   Expect an output similar to the following:
+
+   ```bash
+   Declaring and deploying MockAggregator
+   Declaring contract...
+   Transaction hash = 0x568d29d07128cba750845b57a4bb77a31f628b6f4288861d8b31d12e71e4c3b
+   Deploying contract...
+   Transaction hash = 0xfbc49eb82894a704ce536ab904cdee0fd021b0fba335900f8b9b12cfcd005f
+   MockAggregator deployed at address: 1566652744716179301065270359129119857774335542042051464747302084192731701184
+
+   command: script run
+   status: success
+
+   Declaring and deploying AggregatorConsumer
+   Declaring contract...
+   Transaction hash = 0x3f11f08103e263690b1eeac76c25ce7b003c86d2d1c0492815d1ddb39f58e8e
+   Deploying contract...
+   Transaction hash = 0xfe5b1ed51a435117098343b5d0fdc1c32fd493f1220ff2c69c732f5bb805d8
+   AggregatorConsumer deployed at address: 2775662320989421053891107164335108610292525354452508848326323790006553228656
+
+   command: script run
+   status: success
+   ```
+
+Once the contracts are deployed, experiment with both contracts and the available [scripts](https://github.com/smartcontractkit/chainlink-starknet/tree/develop/examples/contracts/aggregator_consumer/scripts/src) and [commands](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/examples/contracts/aggregator_consumer/Makefile) as needed for your projects.
+
+For instance, you can set new values for the latest round of data on the aggregator contract, retrieve and set the `answer` on the consumer contract, and read the `answer` from the consumer contract:
+
+```bash
+make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && make ac-read-answer NETWORK=devnet
+```
