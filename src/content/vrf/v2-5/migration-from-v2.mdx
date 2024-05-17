@@ -4,11 +4,11 @@ date: Last Modified
 title: "Migrating from VRF v2"
 ---
 
-import VrfCommon from "@features/vrf/v2-5/VrfCommon.astro"
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
 import { Aside, CodeSample } from "@components"
 import { Tabs, TabsContent } from "@components/Tabs"
 
-<VrfCommon callout="security" />
+<Vrf2_5Common callout="security" />
 
 ## Benefits of VRF v2.5
 
@@ -245,7 +245,6 @@ Compare the major changes between V2.5 and V2:
 pragma solidity 0.8.19;
 
 ///// UPDATE IMPORTS TO V2.5 /////
-import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -261,9 +260,8 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 ///// INHERIT NEW CONSUMER BASE CONTRACT /////
 contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
 ...
-
-    ///// USE NEW COORDINATOR /////
-    IVRFCoordinatorV2Plus COORDINATOR;
+    ///// No need to declare a coordinator variable /////
+    ///// Use the `s_vrfCoordinator` from VRFConsumerBaseV2Plus.sol /////
 
     ///// SUBSCRIPTION ID IS NOW UINT256 /////
     uint256 s_subscriptionId;
@@ -278,16 +276,13 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
 
     ...
 
-    ///// USE NEW CONSUMER BASE AND COORDINATOR CONSTRUCTORS /////
+    ///// USE NEW CONSUMER BASE CONSTRUCTOR /////
     constructor(
         ///// UPDATE TO UINT256 /////
         uint256 subscriptionId
     )
         VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B)
     {
-        COORDINATOR = IVRFCoordinatorV2Plus(
-            0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
-        );
         s_subscriptionId = subscriptionId;
     }
 
@@ -298,7 +293,8 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     {
         ///// UPDATE TO NEW V2.5 REQUEST FORMAT /////
         // To enable payment in native tokens, set nativePayment to true.
-        requestId = COORDINATOR.requestRandomWords(
+        // Use the `s_vrfCoordinator` from VRFConsumerBaseV2Plus.sol
+        requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: keyHash,
                 subId: s_subscriptionId,
