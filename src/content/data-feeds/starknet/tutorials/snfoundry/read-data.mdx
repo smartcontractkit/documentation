@@ -1,0 +1,54 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Read Data from Data Feeds on Starknet using Starknet Foundry"
+whatsnext:
+  {
+    "Starknet Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses?network=starknet",
+    "Deploy and interact with a Consumer Contract": "/data-feeds/starknet/tutorials/snfoundry/consumer-contract",
+    "Experiment with Starknet Devnet RS": "/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+  }
+metadata:
+  description: "Read Data from Chainlink Data Feeds on StarkNet using Starknet Foundry."
+---
+
+import { CodeSample, CopyText } from "@components"
+
+In this example, you will read from a Chainlink price feed on Starknet using the Starknet Foundry toolkit. You will call the `latest_round_data` function on the ETH / USD aggregator proxy contract to read the latest round of data.
+
+## Requirements
+
+Make sure you have the [Starknet Foundry](https://github.com/foundry-rs/starknet-foundry) toolkit installed. You can check your current version by running <CopyText text="snforge --version" code/> or <CopyText text="sncast --version" code/> in your terminal. Follow the [installation](https://github.com/foundry-rs/starknet-foundry#installation) guide if necessary.
+
+## Tutorial
+
+Run the following command to read data from the ETH / USD data feed proxy contract:
+
+```bash
+sncast \
+  --url https://starknet-sepolia.public.blastapi.io/rpc/v0_7 \
+  call \
+  --contract-address 0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44 \
+  --function "latest_round_data" \
+```
+
+Expect an output similar to the following:
+
+```bash
+command: call
+response: [0x10000000000000000000000000000320c, 0x5293770eb1, 0xd44d, 0x6606b8cc, 0x6606b8a2]
+```
+
+The example output contains an array with the hex-encoded latest round of data for the ETH / USD price feed. The array contains the following values:
+
+| Value name   | Hex-encoded value                     | Decoded value                             | Description                                                                                                      |
+| ------------ | ------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `round_id`   | `0x10000000000000000000000000000320c` | `340282366920938463463374607431768224268` | The unique identifier of the data round                                                                          |
+| `answer`     | `0x5293770eb1`                        | `354661371569`                            | The actual data provided by the data feed, representing the latest price of an asset in the case of a price feed |
+| `block_num`  | `0xd44d`                              | `54349`                                   | The block number at which the data was recorded on the blockchain                                                |
+| `started_at` | `0x6606b8cc`                          | `1711716556`                              | The Unix timestamp indicating when the data round started                                                        |
+| `updated_at` | `0x6606b8a2`                          | `1711716514`                              | The Unix timestamp indicating when the data was last updated                                                     |
+
+For a complete list of Chainlink Price Feeds available on Starknet, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=starknet) page.
+
+Note: This example uses a [Blast API](https://blastapi.io/public-api/starknet) RPC endpoint. You can interact with the network using any other Starknet Sepolia RPC provider, such as [Alchemy](https://www.alchemy.com/starknet) or [Infura](https://www.infura.io/networks/ethereum/starknet).
