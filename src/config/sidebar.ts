@@ -830,6 +830,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/subscription/supported-networks",
         },
         {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+        {
           title: "Migrating from VRF v1",
           url: "vrf/v2/subscription/migration-from-v1",
         },
@@ -853,6 +857,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "vrf/v2/direct-funding/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
         },
         {
           title: "Migrating from VRF v1",
