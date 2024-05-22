@@ -16,7 +16,7 @@ metadata:
 import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
 import { Aside, CodeSample } from "@components"
 
-This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2.5. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/vrf/v2/subscription/examples/programmatic-subscription) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
+This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2.5. The guide uses the Subscription Manager to create and manage your subscription. Alternatively, you can also [create and manage subscriptions programmatically](/vrf/v2-5/subscriptions/create-manage#create-a-subscription-programmatically). To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
 <Vrf2_5Common callout="uicallout" />
 
@@ -102,7 +102,12 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
-1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`.
+1. Expand the `requestRandomWords()` function to send the request for random values to Chainlink VRF. Use `enableNativePayment` to specify whether you want to pay in native tokens or LINK:
+
+   - To use native tokens, set `enableNativePayment` to `true`.
+   - To use LINK, set `enableNativePayment` to `false`.
+
+   When you click **transact**, MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`.
 
    Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID at [vrf.chain.link](https://vrf.chain.link/).
 
@@ -112,7 +117,7 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Call `getRequestStatus()` specifying the `requestId` to display the random words.
 
-You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Programmatic Subscription](/vrf/v2/subscription/examples/programmatic-subscription) page.
+You deployed a simple contract that can request and receive random values from Chainlink VRF. Next, learn how to [create and manage subscriptions programmatically](/vrf/v2-5/subscriptions/create-manage#create-a-subscription-programmatically) by using a smart contract instead of the Subscription Manager.
 
 <Aside type="note" title="Note on Requesting Randomness">
   Do not allow re-requesting or cancellation of randomness. For more information, see the [VRF Security
@@ -139,7 +144,10 @@ The parameters define how your requests will be processed. You can find the valu
 
 The contract includes the following functions:
 
-- `requestRandomWords()`: Takes your specified parameters and submits the request to the VRF coordinator contract.
+- `requestRandomWords(bool enableNativePayment)`: Takes your specified parameters and submits the request to the VRF coordinator contract. Use `enableNativePayment` to specify for each request whether you want to pay in native tokens or LINK:
+
+  - To use native tokens, set `enableNativePayment` to `true`.
+  - To use LINK, set `enableNativePayment` to `false`.
 
 - `fulfillRandomWords()`: Receives random values and stores them with your contract.
 
