@@ -67,13 +67,12 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     }
 
     // Assumes the subscription is funded sufficiently.
-    function requestRandomWords()
-        external
-        onlyOwner
-        returns (uint256 requestId)
-    {
+    // @param enableNativePayment: Set to `true` to enable payment in native tokens, or
+    // `false` to pay in LINK
+    function requestRandomWords(
+        bool enableNativePayment
+    ) external onlyOwner returns (uint256 requestId) {
         // Will revert if subscription is not set and funded.
-        // To enable payment in native tokens, set nativePayment to true.
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: keyHash,
@@ -82,7 +81,9 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
                 callbackGasLimit: callbackGasLimit,
                 numWords: numWords,
                 extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                    VRFV2PlusClient.ExtraArgsV1({
+                        nativePayment: enableNativePayment
+                    })
                 )
             })
         );
