@@ -154,7 +154,15 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
         </Fragment>
         </Tabs>
 
-</Fragment>
+1.  When using the [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) package version 1.1.1 and later, update your `fulfillRandomWords` function signature to match the `VRFConsumerBaseV2Plus` contract, which has changed to:
+
+        ```
+        function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+        ```
+
+        In the `@chainlink/contracts` package version 1.1.0 and earlier, the `randomWords` parameter has a `memory` storage location.
+
+    </Fragment>
 <Fragment slot="panel.2">
 
 1.  Import the [`VRFV2PlusWrapperConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract and remove the v2 `VRFV2WrapperConsumerBase` import.
