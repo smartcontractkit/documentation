@@ -52,27 +52,40 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
     uint32 numWords = 2;
 
-    // Address LINK - hardcoded for Arbitrum Sepolia
-    address linkAddress = 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E;
+    // Address LINK - hardcoded for Sepolia
+    address linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
 
-    // address WRAPPER - hardcoded for Arbitrum Sepolia
-    address wrapperAddress = 0x29576aB8152A09b9DC634804e4aDE73dA1f3a3CC;
+    // address WRAPPER - hardcoded for Sepolia
+    address wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
 
     constructor()
         ConfirmedOwner(msg.sender)
         VRFV2PlusWrapperConsumerBase(wrapperAddress)
     {}
 
-    function requestRandomWords() external onlyOwner returns (uint256) {
+    function requestRandomWords(
+        bool enableNativePayment
+    ) external onlyOwner returns (uint256) {
         bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
-            VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+            VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
         );
-        (uint256 requestId, uint256 reqPrice) = requestRandomness(
-            callbackGasLimit,
-            requestConfirmations,
-            numWords,
-            extraArgs
-        );
+        uint256 requestId;
+        uint256 reqPrice;
+        if (enableNativePayment) {
+            (requestId, reqPrice) = requestRandomnessPayInNative(
+                callbackGasLimit,
+                requestConfirmations,
+                numWords,
+                extraArgs
+            );
+        } else {
+            (requestId, reqPrice) = requestRandomness(
+                callbackGasLimit,
+                requestConfirmations,
+                numWords,
+                extraArgs
+            );
+        }
         s_requests[requestId] = RequestStatus({
             paid: reqPrice,
             randomWords: new uint256[](0),
@@ -119,5 +132,19 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
         );
+    }
+
+    /// @notice withdrawNative withdraws the amount specified in amount to the owner
+    /// @param amount the amount to withdraw, in wei
+    function withdrawNative(uint256 amount) external onlyOwner {
+        (bool success, ) = payable(owner()).call{value: amount}("");
+        // solhint-disable-next-line gas-custom-errors
+        require(success, "withdrawNative failed");
+    }
+
+    event Received(address, uint256);
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
     }
 }

@@ -79,7 +79,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
 
     function fulfillRandomWords(
         uint256 /* requestId */,
-        uint256[] calldata randomWords
+        uint256[] memory randomWords
     ) internal override {
         s_randomWords = randomWords;
     }
