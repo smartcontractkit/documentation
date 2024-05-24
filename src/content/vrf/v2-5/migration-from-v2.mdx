@@ -157,16 +157,6 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
 </Fragment>
 <Fragment slot="panel.2">
 
-<Aside type="caution" title="Outdated V2.5 direct funding interface and wrapper in chainlink 1.1.0 package">
-  The [`chainlink/contracts` 1.1.0 package](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.0) currently has an outdated interface and wrapper for V2.5 direct funding. If you deploy contracts for direct funding with these outdated interfaces, your `requestRandomness` function will revert.
-
-Use this interface and wrapper:
-
-- `VRFV2PlusWrapperConsumerBase.sol`: https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol
-- `IVRFV2PlusWrapper.sol`: https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFV2PlusWrapper.sol
-
-</Aside>
-
 1.  Import the [`VRFV2PlusWrapperConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract and remove the v2 `VRFV2WrapperConsumerBase` import.
 
 1.  Add a `VRFV2PlusWrapperConsumerBase` constructor, passing in the VRF wrapper address for the network you're using. Unlike V2, you don't have to pass the LINK token address to the constructor.
@@ -396,16 +386,6 @@ The example `DirectFundingConsumer` contract shows the migration steps above, ap
 Open the full example `DirectFundingConsumer` contract:
 
 <CodeSample src="samples/VRF/v2-5/DirectFundingConsumer.sol" showButtonOnly />
-
-<Aside type="caution" title="Outdated V2.5 direct funding interface and wrapper in chainlink 1.1.0 package">
-  The [`chainlink/contracts` 1.1.0 package](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.0) currently has an outdated interface and wrapper for V2.5 direct funding. If you deploy contracts for direct funding with these outdated interfaces, your `requestRandomness` function will revert.
-
-Use this interface and wrapper:
-
-- `VRFV2PlusWrapperConsumerBase.sol`: https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol
-- `IVRFV2PlusWrapper.sol`: https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFV2PlusWrapper.sol
-
-</Aside>
 
 Compare the major changes between V2.5 and V2:
 
