@@ -751,18 +751,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "V2.5 Overview",
+          title: "Introduction to VRF",
           url: "vrf",
-          children: [
-            {
-              title: "Subscription overview",
-              url: "vrf/v2-5/overview/subscription",
-            },
-            {
-              title: "Direct funding overview",
-              url: "vrf/v2-5/overview/direct-funding",
-            },
-          ],
+        },
+        {
+          title: "Getting Started*",
+          url: "vrf",
         },
         {
           title: "Getting Started with Chainlink VRF V2.5",
@@ -789,16 +783,58 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/billing",
         },
         {
-          title: "Create and manage V2.5 subscriptions",
-          url: "vrf/v2-5/subscription/create-manage",
-        },
-        {
           title: "Release Notes",
           url: "vrf/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Learn VRF V2.5",
+      contents: [
+        {
+          title: "Introduction to subscription",
+          url: "vrf/v2-5/overview/subscription",
+        },
+        {
+          title: "Introduction to direct funding",
+          url: "vrf/v2-5/overview/direct-funding",
         },
         {
           title: "Arbitrum gas estimation with VRF",
           url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
+        {
+          title: "Subscription Manager UI*",
+          url: "vrf/v2/subscription/ui",
+        },
+      ],
+    },
+    {
+      section: "Build with VRF 2.5",
+      contents: [
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
+          title: "Get a Random Number*",
+          url: "vrf/v2/subscription/examples/get-a-random-number",
+        },
+        {
+          title: "Test Subscription Locally Using a Mock Contract*",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
+          title: "Test Direct Funding Locally Using a Mock Contract*",
+          url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
+          title: "Migrating from VRF v1 to subscriptions*",
+          url: "vrf/v2/subscription/migration-from-v1",
+        },
+        {
+          title: "Migrating from VRF v1 with direct funding",
+          url: "vrf/v2/direct-funding/migration-from-v1",
         },
       ],
     },
