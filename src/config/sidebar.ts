@@ -810,11 +810,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Get a random number with subscription",
-          url: "vrf/v2-5/subscription/examples/get-a-random-number",
+          url: "vrf/v2-5/subscription/get-a-random-number",
         },
         {
           title: "Get a random number with direct funding",
-          url: "vrf/v2-5/direct-funding/examples/get-a-random-number",
+          url: "vrf/v2-5/direct-funding/get-a-random-number",
         },
       ],
     },
