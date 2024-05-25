@@ -751,18 +751,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "V2.5 Overview",
+          title: "Introduction to VRF",
           url: "vrf",
-          children: [
-            {
-              title: "Subscription overview",
-              url: "vrf/v2-5/overview/subscription",
-            },
-            {
-              title: "Direct funding overview",
-              url: "vrf/v2-5/overview/direct-funding",
-            },
-          ],
         },
         {
           title: "Getting Started with Chainlink VRF V2.5",
@@ -789,16 +779,42 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/billing",
         },
         {
-          title: "Create and manage V2.5 subscriptions",
-          url: "vrf/v2-5/subscription/create-manage",
-        },
-        {
           title: "Release Notes",
           url: "vrf/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Learn VRF V2.5",
+      contents: [
+        {
+          title: "Introduction to subscription",
+          url: "vrf/v2-5/overview/subscription",
+        },
+        {
+          title: "Introduction to direct funding",
+          url: "vrf/v2-5/overview/direct-funding",
         },
         {
           title: "Arbitrum gas estimation with VRF",
           url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
+      ],
+    },
+    {
+      section: "Build with VRF 2.5",
+      contents: [
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
+          title: "Get a random number with subscription",
+          url: "vrf/v2-5/subscription/get-a-random-number",
+        },
+        {
+          title: "Get a random number with direct funding",
+          url: "vrf/v2-5/direct-funding/get-a-random-number",
         },
       ],
     },
@@ -830,6 +846,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/subscription/supported-networks",
         },
         {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+        {
           title: "Migrating from VRF v1",
           url: "vrf/v2/subscription/migration-from-v1",
         },
@@ -853,6 +873,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Supported Networks",
           url: "vrf/v2/direct-funding/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
         },
         {
           title: "Migrating from VRF v1",
