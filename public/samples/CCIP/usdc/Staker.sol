@@ -3,13 +3,18 @@ pragma solidity 0.8.19;
 
 import {ERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IStaker} from "./IStaker.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
+
+interface IStaker {
+    function stake(address beneficiary, uint256 amount) external;
+
+    function redeem() external;
+}
 
 /// @title - A simple Staker contract for staking usc tokens and redeeming the staker contracts
 contract Staker is IStaker, ERC20 {
