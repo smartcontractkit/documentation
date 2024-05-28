@@ -1,43 +1,27 @@
 ---
 export interface Props {
-  tutorials: {
-    remix?: string
-    hardhat?: string
-    foundry?: string
-  }
+  tutorials: Array<{
+    name: string
+    url: string
+    icon: string
+  }>
 }
 
 const { tutorials } = Astro.props as Props
 
 const currentPath = Astro.url.pathname
 
-const normalizeUrl = (url) => {
+const normalizeUrl = (url: string) => {
   return url.trim().replace(/\/$/, "")
 }
 
-const isActive = (tutorialUrl) => {
+const isActive = (tutorialUrl: string) => {
   const normalizedCurrentPath = normalizeUrl(currentPath)
   const normalizedTutorialUrl = normalizeUrl(tutorialUrl)
   return normalizedCurrentPath === normalizedTutorialUrl
 }
 
-const tutorialDetails = [
-  {
-    name: "Remix",
-    url: tutorials.remix,
-    icon: "/images/tutorial-icons/remix-icn.png",
-  },
-  {
-    name: "Hardhat",
-    url: tutorials.hardhat,
-    icon: "/images/tutorial-icons/hardhat-icn.png",
-  },
-  {
-    name: "Foundry",
-    url: tutorials.foundry,
-    icon: "/images/tutorial-icons/foundry-icn.png",
-  },
-].filter(
+const tutorialDetails = tutorials.filter(
   (tutorial): tutorial is { name: string; url: string; icon: string } =>
     tutorial.url !== undefined && tutorial.icon !== undefined
 )
@@ -78,6 +62,11 @@ const tutorialDetails = [
     text-decoration: none;
     -webkit-font-smoothing: antialiased;
     box-sizing: border-box;
+  }
+
+  .tutorial-column:hover:not(.active) {
+    color: var(--blue-700);
+    border-bottom-color: var(--blue-700);
   }
 
   .tutorial-icon {
