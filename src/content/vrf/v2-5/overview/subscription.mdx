@@ -8,12 +8,12 @@ metadata:
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF v2.5(an RNG). This guide uses the subscription method."
 ---
 
-import VrfCommon from "@features/vrf/v2-5/VrfCommon.astro"
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
 import { Aside, ClickToZoom } from "@components"
 import { TabsContent } from "@components/Tabs"
 import { YouTube } from "@astro-community/astro-embed-youtube"
 
-<VrfCommon callout="security" />
+<Vrf2_5Common callout="security" />
 
 This section explains how to generate random numbers using the subscription method.
 
@@ -34,7 +34,7 @@ Subscriptions have the following core concepts:
 - **Consumers:** Consuming contracts that are approved to use funding from your subscription account.
 - **Subscription balance:** The amount of funds in LINK or native tokens maintained on your subscription account. Your subscription can maintain balances for both LINK and native tokens. Requests from consuming contracts will continue to be funded until the balance runs out, so be sure to maintain sufficient funds in your subscription balance to pay for the requests and keep your applications running.
 
-For Chainlink VRF v2.5 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. Gas cost calculation includes the following variables:
+For Chainlink VRF v2.5 to fulfill your requests, you must maintain a sufficient amount of LINK or native tokens in your subscription balance. Gas cost calculation includes the following variables:
 
 - **Gas price:** The current gas price, which fluctuates depending on network conditions.
 
@@ -118,9 +118,9 @@ Subscriptions are required to maintain a minimum balance, and they can support a
 
 #### Minimum subscription balance
 
-Each subscription must maintain a minimum balance to fund requests from consuming contracts. This minimum balance requirement serves as a buffer against gas volatility by ensuring that all your requests have more than enough funding to go through. If your balance is below the minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests automatically process as long as they have not expired.
+Each subscription must maintain a minimum balance to fund requests from consuming contracts. This minimum balance requirement serves as a buffer against gas volatility by ensuring that all your requests have more than enough funding to go through. If your balance is below the minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK or native tokens to a subscription, pending requests automatically process as long as they have not expired.
 
-In the Subscription Manager, the minimum subscription balance is displayed as the **Max Cost**, and it indicates the amount of LINK you need to add for a pending request to process. After the request is processed, only the amount actually consumed by the request is deducted from your balance. For example, if you are paying for your VRF requests in LINK and your minimum balance is 10 LINK, but your subscription balance is 5 LINK, you need to add at least 5 more LINK for your request to process. This does not mean that your request will ultimately cost 10 LINK. If the request ultimately costs 3 LINK after it has processed, then 3 LINK is deducted from your subscription balance. The same concept applies if you are paying in native tokens.
+In the Subscription Manager, the minimum subscription balance is displayed as the **Max Cost**, and it indicates the amount of LINK or native tokens you need to add for a pending request to process. After the request is processed, only the amount actually consumed by the request is deducted from your balance. For example, if you are paying for your VRF requests in LINK and your minimum balance is 10 LINK, but your subscription balance is 5 LINK, you need to add at least 5 more LINK for your request to process. This does not mean that your request will ultimately cost 10 LINK. If the request ultimately costs 3 LINK after it has processed, then 3 LINK is deducted from your subscription balance. The same concept applies if you are paying in native tokens.
 
 The minimum subscription balance must be sufficient for each new consuming contract that you add to a subscription. For example, the minimum balance for a subscription that supports 20 consuming contracts needs to cover all the requests for all 20 contracts, while a subscription with one consuming contract only needs to cover that one contract.
 
