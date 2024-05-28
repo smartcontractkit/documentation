@@ -142,6 +142,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "GNOSIS_MAINNET"
     case "xdai-testnet-chiado":
       return "GNOSIS_CHIADO"
+    case "celo-mainnet":
+      return "CELO_MAINNET"
     case "celo-testnet-alfajores":
       return "CELO_ALFAJORES"
     default:
@@ -191,6 +193,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "xdai-mainnet"
     case "GNOSIS_CHIADO":
       return "xdai-testnet-chiado"
+    case "CELO_MAINNET":
+      return "celo-mainnet"
     case "CELO_ALFAJORES":
       return "celo-testnet-alfajores"
     default:
