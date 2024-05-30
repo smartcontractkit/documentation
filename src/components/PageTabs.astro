@@ -1,13 +1,13 @@
 ---
 export interface Props {
-  tutorials: Array<{
+  pages: Array<{
     name: string
     url: string
-    icon: string
+    icon?: string // icon is optional
   }>
 }
 
-const { tutorials } = Astro.props as Props
+const { pages } = Astro.props as Props
 
 const currentPath = Astro.url.pathname
 
@@ -15,31 +15,28 @@ const normalizeUrl = (url: string) => {
   return url.trim().replace(/\/$/, "")
 }
 
-const isActive = (tutorialUrl: string) => {
+const isActive = (pageUrl: string) => {
   const normalizedCurrentPath = normalizeUrl(currentPath)
-  const normalizedTutorialUrl = normalizeUrl(tutorialUrl)
-  return normalizedCurrentPath === normalizedTutorialUrl
+  const normalizedPageUrl = normalizeUrl(pageUrl)
+  return normalizedCurrentPath === normalizedPageUrl
 }
 
-const tutorialDetails = tutorials.filter(
-  (tutorial): tutorial is { name: string; url: string; icon: string } =>
-    tutorial.url !== undefined && tutorial.icon !== undefined
-)
+const pageDetails = pages.filter((page): page is { name: string; url: string; icon?: string } => page.url !== undefined)
 ---
 
-<div class="tutorial-table">
+<div class="pages-table">
   {
-    tutorialDetails.map((tutorial) => (
-      <a href={tutorial.url} class={`tutorial-column ${isActive(tutorial.url) ? "active" : ""}`}>
-        <img src={tutorial.icon} alt={`${tutorial.name} icon`} class="tutorial-icon" />
-        <div>{tutorial.name}</div>
+    pageDetails.map((page) => (
+      <a href={page.url} class={`page-column ${isActive(page.url) ? "active" : ""}`}>
+        {page.icon && <img src={page.icon} alt={`${page.name} icon`} class="page-icon" />}
+        <div>{page.name}</div>
       </a>
     ))
   }
 </div>
 
 <style>
-  .tutorial-table {
+  .pages-table {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1rem;
@@ -47,7 +44,7 @@ const tutorialDetails = tutorials.filter(
     padding: 1rem;
   }
 
-  .tutorial-column {
+  .page-column {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,37 +61,37 @@ const tutorialDetails = tutorials.filter(
     box-sizing: border-box;
   }
 
-  .tutorial-column:hover:not(.active) {
+  .page-column:hover:not(.active) {
     color: var(--blue-700);
     border-bottom-color: var(--blue-700);
   }
 
-  .tutorial-icon {
+  .page-icon {
     margin-right: 10px;
     width: 23px;
     height: 23px;
   }
 
-  .tutorial-column.active {
+  .page-column.active {
     color: var(--blue-600, rgb(55, 91, 210));
     border-bottom-color: var(--blue-600, rgb(55, 91, 210));
   }
 
   @media (max-width: 768px) {
-    .tutorial-table {
+    .pages-table {
       padding: 0.5rem;
     }
 
-    .tutorial-column {
+    .page-column {
       padding: 9px 10px;
       flex-direction: column;
     }
 
-    .tutorial-table {
+    .pages-table {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 
-    .tutorial-icon {
+    .page-icon {
       margin-right: 0;
       margin-bottom: 5px;
     }
