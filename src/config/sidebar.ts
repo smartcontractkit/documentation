@@ -813,6 +813,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/subscription/get-a-random-number",
         },
         {
+          title: "Test locally with a subscription mock contract",
+          url: "vrf/v2-5/subscription/test-locally",
+        },
+        {
           title: "Get a random number with direct funding",
           url: "vrf/v2-5/direct-funding/get-a-random-number",
         },
