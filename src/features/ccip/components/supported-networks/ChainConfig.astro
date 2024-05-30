@@ -60,6 +60,10 @@ const feeTokensWithAddresses = feeTokens.map((feeToken) => {
   }
 })
 
+const nativeTokenHasAddress = feeTokensWithAddresses.some(
+  (feeToken) => feeToken.token.toLowerCase() === nativeCurrency.symbol.toLowerCase()
+)
+
 const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
 ---
 
@@ -92,10 +96,14 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
                 </tr>
               ))
             }
-            <tr>
-              <td>{nativeCurrency.symbol}</td>
-              <td>Native gas token</td>
-            </tr>
+            {
+              !nativeTokenHasAddress && (
+                <tr>
+                  <td>{nativeCurrency.symbol}</td>
+                  <td>Native gas token</td>
+                </tr>
+              )
+            }
           </tbody>
         </table>
       </td>

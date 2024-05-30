@@ -37,6 +37,7 @@ export const evmProducts = [
       { id: "base", title: "BASE" },
       { id: "wemix", title: "Wemix" },
       { id: "kroma", title: "Kroma" },
+      { id: "celo", title: "Celo" },
     ],
   },
   {

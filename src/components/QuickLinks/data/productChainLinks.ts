@@ -23,6 +23,7 @@ export const productChainLinks: ProductChainLinks = {
       arbitrum: "/ccip/supported-networks/v1_2_0/mainnet#arbitrum-mainnet",
       avalanche: "/ccip/supported-networks/v1_2_0/mainnet#avalanche-mainnet",
       "bnb-chain": "/ccip/supported-networks/v1_2_0/mainnet#bnb-chain-mainnet",
+      celo: "/ccip/supported-networks/v1_2_0/mainnet#celo-mainnet",
       base: "/ccip/supported-networks/v1_2_0/mainnet#base-mainnet",
       ethereum: "/ccip/supported-networks/v1_2_0/mainnet#ethereum-mainnet",
       kroma: "/ccip/supported-networks/v1_2_0/mainnet#kroma-mainnet",
