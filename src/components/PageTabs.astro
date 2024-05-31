@@ -1,0 +1,99 @@
+---
+export interface Props {
+  pages: Array<{
+    name: string
+    url: string
+    icon?: string // icon is optional
+  }>
+}
+
+const { pages } = Astro.props as Props
+
+const currentPath = Astro.url.pathname
+
+const normalizeUrl = (url: string) => {
+  return url.trim().replace(/\/$/, "")
+}
+
+const isActive = (pageUrl: string) => {
+  const normalizedCurrentPath = normalizeUrl(currentPath)
+  const normalizedPageUrl = normalizeUrl(pageUrl)
+  return normalizedCurrentPath === normalizedPageUrl
+}
+
+const pageDetails = pages.filter((page): page is { name: string; url: string; icon?: string } => page.url !== undefined)
+---
+
+<div class="pages-table">
+  {
+    pageDetails.map((page) => (
+      <a href={page.url} class={`page-column ${isActive(page.url) ? "active" : ""}`}>
+        {page.icon && <img src={page.icon} alt={`${page.name} icon`} class="page-icon" />}
+        <div>{page.name}</div>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .pages-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+
+  .page-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid var(--gray-200, rgb(236, 237, 239));
+    color: var(--gray-500, rgb(133, 138, 149));
+    font-size: 1rem;
+    line-height: 24px;
+    margin-bottom: 16px;
+    padding: 9px 20px;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+  }
+
+  .page-column:hover:not(.active) {
+    color: var(--blue-700);
+    border-bottom-color: var(--blue-700);
+  }
+
+  .page-icon {
+    margin-right: 10px;
+    width: 23px;
+    height: 23px;
+  }
+
+  .page-column.active {
+    color: var(--blue-600, rgb(55, 91, 210));
+    border-bottom-color: var(--blue-600, rgb(55, 91, 210));
+  }
+
+  @media (max-width: 768px) {
+    .pages-table {
+      padding: 0.5rem;
+    }
+
+    .page-column {
+      padding: 9px 10px;
+      flex-direction: column;
+    }
+
+    .pages-table {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .page-icon {
+      margin-right: 0;
+      margin-bottom: 5px;
+    }
+  }
+</style>

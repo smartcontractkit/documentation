@@ -190,3 +190,22 @@ Chainlink CCIP has been purposely designed to take a security-first approach to 
 If the fee paid on the source blockchain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
 Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The Smart Execution time window parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of Smart Execution time window due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/). Read the [manual execution](/ccip/concepts/manual-execution) conceptual guide to learn more.
+
+## CCIP Upgradability
+
+### What can be upgraded
+
+Upgradability in the context of CCIP refers to the ability to upgrade CCIP’s operational scope, feature set, security, or reliability. These updates are applied via changes to the following items:
+
+- **Smart Contract Configuration:** Configuration can be updated via dedicated functions exposed by the smart contract. Examples are updates to the rate limits for a specific lane, the list of supported tokens, and the OnRamp contract to call for a given destination blockchain.
+- **Smart Contract Code:** Once deployed, smart contract code cannot be modified or upgraded. The only option is to deploy a new version of the contract (e.g., OnRamp, OffRamp, Token Pool) and redirect the calling contract to the newly deployed contract via a configuration change. _**One exception**_ is the _**Router**_ contract, which is the primary interface for CCIP users on both the source and destination blockchains. The contract remains static and consistent over time to ensure reliability and stability for developers who integrate with it.
+
+### Implementation process
+
+All onchain configuration changes and upgrades to CCIP must pass through a Role-based Access Control Timelock (RBACTimelock) smart contract.
+
+Any proposal must either (1) be proposed by a dedicated ManyChainMultiSig (MCMS) contract and then be subjected to a review period enforced by the RBACTimelock, during which a quorum of node operators securing CCIP are able to veto the proposal; or (2) be proposed by a dedicated MCMS contract and be explicitly approved by a quorum of independent signers, including multiple node operators securing CCIP, providing an alternative path during time-sensitive circumstances.
+
+Any onchain update that passes the timelock review period without a veto becomes executable by anyone, which can be done by running a [timelock-worker](https://github.com/smartcontractkit/timelock-worker) to process executable upgrades.
+
+[Documentation](https://github.com/smartcontractkit/ccip-owner-contracts/blob/main/README.md) and [source code](https://github.com/smartcontractkit/ccip-owner-contracts/blob/440fb434c617fa95dc2fe21adb32adb3a47aba8d/src/ManyChainMultiSig.sol) relating to the CCIP owner contracts can be read on GitHub. The proposer multisig on Ethereum can be found on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract), where configuration details can also be read.
