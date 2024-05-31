@@ -12,8 +12,8 @@ import { SubProductContent } from "./SubProductContent"
 import externalArrow from "../../../../../assets/icons/external-arrow.svg"
 
 type Page = {
-  label: string;
-  href: string;
+  label: string
+  href: string
 }
 
 export type SubProducts = {

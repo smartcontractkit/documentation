@@ -4,7 +4,7 @@ type LinksConfig = {
   actionButton?: { label: string; href: string }
 }
 
-export type Item = { label: string; icon?: string; href: string; }
+export type Item = { label: string; icon?: string; href: string }
 
 export type ProductItem = Item & {
   subProducts?: {

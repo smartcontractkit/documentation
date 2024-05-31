@@ -3,8 +3,8 @@ import { BackArrowIcon } from "./BackArrowIcon"
 import styles from "./subProductContent.module.css"
 
 type Page = {
-  label: string;
-  href: string;
+  label: string
+  href: string
 }
 
 type Props = {
@@ -27,12 +27,14 @@ export const SubProductContent = ({ subProducts, onSubproductClick }: Props) => 
       </button>
       {subProducts.items.map(({ label, pages }) => (
         <div key={label}>
-        <h3 key={label} className={clsx(styles.section)}>{label}</h3>
-        {pages?.map(({ label, href }) => (
-          <a key={label} className={clsx(styles.link, "subproduct-link")} href={"/" + href}>
+          <h3 key={label} className={clsx(styles.section)}>
             {label}
-          </a>
-        ))}
+          </h3>
+          {pages?.map(({ label, href }) => (
+            <a key={label} className={clsx(styles.link, "subproduct-link")} href={"/" + href}>
+              {label}
+            </a>
+          ))}
         </div>
       ))}
     </>
