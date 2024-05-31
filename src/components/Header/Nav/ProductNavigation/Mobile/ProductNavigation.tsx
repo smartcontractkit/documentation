@@ -10,6 +10,7 @@ import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
 import externalArrow from "../../../../../assets/icons/external-arrow.svg"
+import { MenuIcon } from "./MenuIcon"
 
 type Page = {
   label: string
@@ -61,7 +62,7 @@ export function ProductNavigation({ productsNav }: Props) {
           className={"text-300"}
           style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
         >
-          Documentation
+          <MenuIcon />
         </span>
         <CaretIcon
           style={{
