@@ -9,7 +9,6 @@ import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
-import externalArrow from "../../../../../assets/icons/external-arrow.svg"
 import { MenuIcon } from "./MenuIcon"
 
 type Page = {
