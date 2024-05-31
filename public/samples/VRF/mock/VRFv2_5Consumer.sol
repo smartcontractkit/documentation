@@ -41,7 +41,6 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
 
     uint256[] public s_randomWords;
     uint256 public s_requestId;
-    address s_owner;
 
     event ReturnedRandomness(uint256[] randomWords);
 
@@ -58,7 +57,6 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
         bytes32 keyHash
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         s_keyHash = keyHash;
-        s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
     }
 
