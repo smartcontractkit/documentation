@@ -89,7 +89,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
                   title="Documentation Home"
                   style={{ display: "flex" }}
                   src="/chainlink-docs.svg"
-                  height={28}
+                  height={30}
                 />
               </a>
             </div>

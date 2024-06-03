@@ -9,7 +9,6 @@ import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
-import { MenuIcon } from "./MenuIcon"
 
 type Page = {
   label: string
@@ -57,12 +56,13 @@ export function ProductNavigation({ productsNav }: Props) {
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
       <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
-        <span
-          className={"text-300"}
-          style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
-        >
-          <MenuIcon />
-        </span>
+        <img
+          alt="Documentation Home"
+          title="Documentation Home"
+          style={{ display: "flex" }}
+          src="/chainlink-docs.svg"
+          height={30}
+        />
         <CaretIcon
           style={{
             color: "var(--color-text-primary)",

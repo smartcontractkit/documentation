@@ -37,23 +37,23 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
+  const label = subProductTrigger?.label || "Resources"
+  const icon = subProductTrigger?.label ? subProductTrigger.icon : undefined
+
   return (
     <>
       <Root className={clsx(styles.root, styles.alignLeft)}>
         <List className={styles.list}>
-          {subProductTrigger && subProductsNav && (
-            <>
-              <Item>
-                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
-                  <Trigger icon={subProductTrigger.icon} label={subProductTrigger.label} />
-                </RadixTrigger>
-                <RadixContent className={styles.content}>
-                  <SubProductContent subProductsNav={subProductsNav} />
-                </RadixContent>
-              </Item>
-            </>
-          )}
-
+          <Item>
+            <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
+              <Trigger icon={icon} label={label} />
+            </RadixTrigger>
+            {(subProductTrigger || label === "Resources") && subProductsNav && (
+              <RadixContent className={styles.content}>
+                <SubProductContent subProductsNav={subProductsNav} />
+              </RadixContent>
+            )}
+          </Item>
           <Indicator className={styles.indicator}>
             <div className={styles.arrow} />
           </Indicator>
