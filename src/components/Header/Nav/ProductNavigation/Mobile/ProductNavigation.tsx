@@ -1,7 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog"
-import React from "react"
+import React, { useEffect } from "react"
 import { ProductsNav } from "../../config"
 import { SearchTrigger } from "../../NavBar"
+import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
 import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
@@ -23,6 +24,7 @@ export type SubProducts = {
 type Props = {
   searchTrigger?: SearchTrigger
   productsNav: ProductsNav
+  path: string
 }
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
@@ -30,12 +32,40 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav }: Props) {
+export function ProductNavigation({ productsNav, path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
   const [producsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
+
+  useEffect(() => {
+    const foundSubProduct = productsNav.categories.find((category) =>
+      category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
+    )
+
+    if (foundSubProduct) {
+      const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
+
+      if (subProduct?.subProducts?.items) {
+        const safeSubProducts: SubProducts = {
+          label: subProduct.subProducts.label,
+          items: subProduct.subProducts.items.map((item) => ({
+            label: item.label,
+            href: item.href || "#",
+            pages:
+              item.pages?.map((page) => ({
+                label: page.label,
+                href: page.href,
+              })) || [],
+          })),
+        }
+
+        setSubProducts(safeSubProducts)
+        setProductsSlidePosition("submenu")
+      }
+    }
+  }, [path, productsNav])
 
   const onProductClick = React.useCallback((subProducts: SubProducts) => {
     setSubProducts(subProducts)
@@ -49,6 +79,7 @@ export function ProductNavigation({ productsNav }: Props) {
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
     if (!newOpenState) {
+      setProductsSlidePosition("main")
       setShowSearch(false)
     }
   }
