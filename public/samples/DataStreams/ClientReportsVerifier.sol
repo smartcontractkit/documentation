@@ -82,6 +82,11 @@ contract ClientReportsVerifier {
     error NothingToWithdraw(); // Thrown when a withdrawal attempt is made but the contract holds no tokens of the specified type.
     error NotOwner(address caller); // Thrown when a caller tries to execute a function that is restricted to the contract's owner.
 
+    /**
+     * @dev Represents a data report from a Data Streams feed.
+     * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the feed.
+     * For more information, see https://docs.chain.link/data-streams/stream-ids.
+     */
     struct Report {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
@@ -89,9 +94,9 @@ contract ClientReportsVerifier {
         uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native token (WETH/ETH)
         uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK
         uint32 expiresAt; // Latest timestamp where the report can be verified onchain
-        int192 price; // DON consensus median price, carried to 8 decimal places
-        int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation
-        int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation
+        int192 price; // DON consensus median price (8 or 18 decimals)
+        int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals)
+        int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18 decimals)
     }
 
     IVerifierProxy public s_verifierProxy;

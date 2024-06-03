@@ -43,20 +43,20 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 callbackGasLimit = 100000;
+    uint32 public callbackGasLimit = 100000;
 
     // The default is 3, but you can set this higher.
-    uint16 requestConfirmations = 3;
+    uint16 public requestConfirmations = 3;
 
     // For this example, retrieve 2 random values in one request.
     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
-    uint32 numWords = 2;
+    uint32 public numWords = 2;
 
     // Address LINK - hardcoded for Sepolia
-    address linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+    address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
 
     // address WRAPPER - hardcoded for Sepolia
-    address wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+    address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
 
     constructor()
         ConfirmedOwner(msg.sender)
