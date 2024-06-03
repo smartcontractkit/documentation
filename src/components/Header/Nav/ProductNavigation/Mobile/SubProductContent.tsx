@@ -30,7 +30,7 @@ export const SubProductContent = ({ subProducts, onSubproductClick, currentPath 
           <h3 className={styles.section}>{label}</h3>
           {pages?.map(({ label, href }) => {
             const adjustedHref = "/" + href
-            const isActive = currentPath === adjustedHref
+            const isActive = currentPath.replace(/\/$/, "") === adjustedHref.replace(/\/$/, "")
 
             const linkStyle = {
               backgroundColor: isActive ? "var(--blue-100)" : "transparent",
