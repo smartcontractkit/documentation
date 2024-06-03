@@ -9,16 +9,16 @@ type Page = {
 
 type Props = {
   onSubproductClick: () => void
-  subProducts?:
-    | {
-        label: string
-        items: { label: string; icon?: string; href: string; pages?: Page[] }[]
-      }
-    | undefined
+  subProducts?: {
+    label: string
+    items: { label: string; icon?: string; href: string; pages?: Page[] }[]
+  }
+  currentPath: string
 }
 
-export const SubProductContent = ({ subProducts, onSubproductClick }: Props) => {
+export const SubProductContent = ({ subProducts, onSubproductClick, currentPath }: Props) => {
   if (!subProducts) return null
+
   return (
     <>
       <button key="back" className={styles.back} onClick={onSubproductClick}>
@@ -27,14 +27,23 @@ export const SubProductContent = ({ subProducts, onSubproductClick }: Props) => 
       </button>
       {subProducts.items.map(({ label, pages }) => (
         <div key={label}>
-          <h3 key={label} className={clsx(styles.section)}>
-            {label}
-          </h3>
-          {pages?.map(({ label, href }) => (
-            <a key={label} className={clsx(styles.link, "subproduct-link")} href={"/" + href}>
-              {label}
-            </a>
-          ))}
+          <h3 className={styles.section}>{label}</h3>
+          {pages?.map(({ label, href }) => {
+            const adjustedHref = "/" + href
+            const isActive = currentPath === adjustedHref
+
+            const linkStyle = {
+              backgroundColor: isActive ? "var(--blue-100)" : "transparent",
+              color: isActive ? "var(--blue-600)" : "inherit",
+              fontWeight: isActive ? "500" : "normal",
+            }
+
+            return (
+              <a key={label} style={linkStyle} className={`${styles.link} subproduct-link`} href={adjustedHref}>
+                {label}
+              </a>
+            )
+          })}
         </div>
       ))}
     </>

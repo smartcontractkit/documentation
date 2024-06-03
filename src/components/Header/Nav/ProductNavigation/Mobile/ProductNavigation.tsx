@@ -119,7 +119,11 @@ export function ProductNavigation({ productsNav, path }: Props) {
                   <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
                 </ul>
                 <div className={clsx(styles.subProductContent)}>
-                  <SubProductContent subProducts={subProducts} onSubproductClick={onSubproductClick} />
+                  <SubProductContent
+                    subProducts={subProducts}
+                    onSubproductClick={onSubproductClick}
+                    currentPath={path}
+                  />
                 </div>
               </div>
             </div>
