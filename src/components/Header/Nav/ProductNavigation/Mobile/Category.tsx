@@ -24,7 +24,16 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
       <button
         className={clsx(styles.link, "product-link")}
         style={{ marginTop: "var(--space-0x)" }}
-        onClick={() => onProductClick(subProducts)}
+        onClick={() =>
+          onProductClick({
+            ...subProducts,
+            items:
+              subProducts.items?.map((item) => ({
+                ...item,
+                href: item.href || "/",
+              })) || [],
+          })
+        }
         data-testid="sub-product-navigation-trigger-mobile"
       >
         {itemComponent}

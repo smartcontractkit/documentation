@@ -6,10 +6,15 @@ type LinksConfig = {
 
 export type Item = { label: string; icon?: string; href: string }
 
+export type Page = {
+  label: string
+  href: string
+}
+
 export type ProductItem = Item & {
   subProducts?: {
     label: string
-    items: Item[]
+    items?: { label: string; href?: string; pages?: Page[] }[]
   }
 }
 
