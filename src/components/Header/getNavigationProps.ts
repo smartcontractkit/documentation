@@ -172,6 +172,11 @@ const docsSections = [
         },
       },
       {
+        label: "Quickstarts",
+        href: "/quickstarts",
+        icon: nodesLogo.src,
+      },
+      {
         label: "General",
         href: "/resources",
         subProducts: {
