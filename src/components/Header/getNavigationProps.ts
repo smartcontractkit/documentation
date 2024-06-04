@@ -4,7 +4,9 @@ import functionsLogo from "../../assets/product-logos/functions-logo.svg"
 import automationLogo from "../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
-import nodesLogo from "../../assets/product-logos/general-logo.svg"
+import generalLogo from "../../assets/product-logos/general-logo.svg"
+import nodesLogo from "../../assets/product-logos/node-logo.svg"
+import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
 
 const desktopSubProductsNav = [
@@ -46,7 +48,7 @@ const desktopSubProductsNav = [
   {
     label: "Quickstarts",
     href: "/quickstarts",
-    icon: nodesLogo.src,
+    icon: quickstartLogo.src,
   },
   {
     label: "Documentation",
@@ -174,11 +176,12 @@ const docsSections = [
       {
         label: "Quickstarts",
         href: "/quickstarts",
-        icon: nodesLogo.src,
+        icon: quickstartLogo.src,
       },
       {
         label: "General",
         href: "/resources",
+        icon: generalLogo.src,
         subProducts: {
           label: "General",
           href: "/resources",
