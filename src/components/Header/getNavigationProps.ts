@@ -174,11 +174,6 @@ const docsSections = [
         },
       },
       {
-        label: "Quickstarts",
-        href: "/quickstarts",
-        icon: quickstartLogo.src,
-      },
-      {
         label: "General",
         href: "/resources",
         icon: generalLogo.src,
@@ -193,6 +188,11 @@ const docsSections = [
             })),
           })),
         },
+      },
+      {
+        label: "Quickstarts",
+        href: "/quickstarts",
+        icon: quickstartLogo.src,
       },
     ],
   },
