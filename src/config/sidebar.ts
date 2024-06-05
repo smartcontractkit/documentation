@@ -143,10 +143,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataFeeds",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataFeeds",
         },
@@ -218,12 +214,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started (Remix IDE)",
+          title: "Getting Started",
           url: "data-streams/getting-started",
-        },
-        {
-          title: "Getting Started (Hardhat CLI)",
-          url: "data-streams/getting-started-hardhat",
         },
         {
           title: "Data Streams Feed IDs",
@@ -299,10 +291,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataStreams",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataStreams",
@@ -484,10 +472,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=automation",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=automation",
@@ -680,10 +664,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=chainlinkFunctions",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
         },
@@ -813,6 +793,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/subscription/get-a-random-number",
         },
         {
+          title: "Test locally with a subscription mock contract",
+          url: "vrf/v2-5/subscription/test-locally",
+        },
+        {
           title: "Get a random number with direct funding",
           url: "vrf/v2-5/direct-funding/get-a-random-number",
         },
@@ -887,10 +871,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=vrf",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=vrf",
@@ -1107,10 +1087,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=ccip",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=ccip",
@@ -1404,10 +1380,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "General Documentation",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview",

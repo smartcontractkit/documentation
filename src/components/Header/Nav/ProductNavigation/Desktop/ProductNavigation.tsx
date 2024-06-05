@@ -5,10 +5,10 @@ import { Divider } from "../../Divider"
 import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
 import { extendRadixComponent } from "../extendRadixComponent"
-import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
 import { Trigger } from "./Trigger"
+import externalArrow from "../../../../../assets/icons/external-arrow.svg"
 
 type Props = {
   path: string
@@ -37,66 +37,23 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
+  const label = subProductTrigger?.label || "Resources"
+  const icon = subProductTrigger?.label ? subProductTrigger.icon : undefined
+
   return (
     <>
-      <a
-        rel="noreferrer noopener"
-        target="_blank"
-        className={clsx("home-logo", styles.logo)}
-        href="https://chain.link/"
-      >
-        <img
-          alt="Chainlink Home"
-          title="Chainlink Home"
-          style={{ display: "flex" }}
-          src="/assets/icons/chainlink-logo.svg"
-          height={28}
-        />
-      </a>
-      <Root className={clsx(styles.root, !subProductTrigger && styles.alignLeft)}>
-        <List className={styles.list}>
-          <Divider className={styles.divider} />
-          <Item>
-            <RadixTrigger className="nav-product" ref={productMenuRef}>
-              <Trigger className={styles.productTrigger} label="Developer Hub" />
-            </RadixTrigger>
-            <RadixContent className={styles.content}>
-              <ProductContent categories={productsNav.categories} />
-            </RadixContent>
-          </Item>
-
-          <Indicator className={styles.indicator}>
-            <div className={styles.arrow} />
-          </Indicator>
-        </List>
-
-        <div className={styles.viewportPosition}>
-          <Viewport className={styles.navigationViewport} />
-        </div>
-      </Root>
-
       <Root className={clsx(styles.root, styles.alignLeft)}>
-        <Divider className={styles.divider} />
         <List className={styles.list}>
           <Item>
-            <NavigationMenu.Link className={styles.button} href="/">
-              Docs
-            </NavigationMenu.Link>
+            <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
+              <Trigger icon={icon} label={label} />
+            </RadixTrigger>
+            {(subProductTrigger || label === "Resources") && subProductsNav && (
+              <RadixContent className={styles.content}>
+                <SubProductContent subProductsNav={subProductsNav} />
+              </RadixContent>
+            )}
           </Item>
-          {subProductTrigger && subProductsNav && (
-            <>
-              <Divider className={styles.divider} />
-              <Item>
-                <RadixTrigger className="nav-subproduct" ref={subProductMenuRef}>
-                  <Trigger label={subProductTrigger.label} />
-                </RadixTrigger>
-                <RadixContent className={styles.content}>
-                  <SubProductContent subProductsNav={subProductsNav} />
-                </RadixContent>
-              </Item>
-            </>
-          )}
-
           <Indicator className={styles.indicator}>
             <div className={styles.arrow} />
           </Indicator>
@@ -105,6 +62,13 @@ export const ProductNavigation = ({ path, setNavMenuOpen, productsNav, subProduc
         <div className={styles.viewportPosition}>
           <Viewport className={styles.navigationViewport} />
         </div>
+        <Divider className={styles.divider} />
+        <NavigationMenu.Link className={styles.button} href="https://dev.chain.link" target="_blank">
+          Developer Hub
+          <div>
+            <img src={externalArrow.src}></img>
+          </div>
+        </NavigationMenu.Link>
       </Root>
     </>
   )

@@ -24,6 +24,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/ccip/supported-networks/v1_2_0/mainnet#avalanche-mainnet",
       "bnb-chain": "/ccip/supported-networks/v1_2_0/mainnet#bnb-chain-mainnet",
       celo: "/ccip/supported-networks/v1_2_0/mainnet#celo-mainnet",
+      "gnosis-chain": "/ccip/supported-networks/v1_2_0/mainnet#gnosis-mainnet",
       base: "/ccip/supported-networks/v1_2_0/mainnet#base-mainnet",
       ethereum: "/ccip/supported-networks/v1_2_0/mainnet#ethereum-mainnet",
       kroma: "/ccip/supported-networks/v1_2_0/mainnet#kroma-mainnet",
