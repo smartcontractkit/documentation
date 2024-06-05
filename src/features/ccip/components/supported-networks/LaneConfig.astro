@@ -4,7 +4,7 @@ import {
   Environment,
   Version,
   PoolType,
-  LaneConfig,
+  type LaneConfig,
   determineTokenMechanism,
   TokenMechanism,
 } from "@config/data/ccip/"
@@ -14,6 +14,7 @@ import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
 import { Tooltip } from "@features/common/Tooltip"
+import TokenSearch from "./TokenSearch"
 
 type ConfigProps = {
   laneConfig: LaneConfig
@@ -242,7 +243,8 @@ if (supportedTokens) {
         <p>
           <strong>Transferable tokens</strong>
         </p>
-        <div style="overflow-x: auto;width: 100%">
+        <TokenSearch tokens={tokensWithExtraInfo} client:load />
+        {/* <div style="overflow-x: auto;width: 100%">
           <table>
             <thead>
               <tr>
@@ -279,33 +281,28 @@ if (supportedTokens) {
               </tr>
             </thead>
             <tbody>
-              {tokensWithExtraInfo.map((tokenWithExtraInfo) => {
+              {filteredTokens.map((token) => {
                 return (
                   <tr>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.token}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      <Address
-                        contractUrl={getExplorerAddressUrl(explorerUrl)(tokenWithExtraInfo.address)}
-                        endLength={4}
-                      />
+                      <Address contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)} endLength={4} />
                     </td>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.decimals}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.poolMechanism}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                        ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
-                          " " +
-                          tokenWithExtraInfo.token
+                      {token.rateLimiterConfig?.isEnabled
+                        ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.token
                         : "N/A"}
                     </td>
                     <td>
-                      {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
+                      {token.rateLimiterConfig?.isEnabled
                         ? (() => {
                             const { rateSecond, maxThroughput } = displayRate(
-                              tokenWithExtraInfo.rateLimiterConfig.capacity,
-                              tokenWithExtraInfo.rateLimiterConfig.rate,
-                              tokenWithExtraInfo.token,
-                              tokenWithExtraInfo.decimals
+                              token.rateLimiterConfig.capacity,
+                              token.rateLimiterConfig.rate,
+                              token.token,
+                              token.decimals
                             )
 
                             return (
@@ -324,7 +321,7 @@ if (supportedTokens) {
               })}
             </tbody>
           </table>
-        </div>
+        </div> */}
       </>
     </>
   ) : (
