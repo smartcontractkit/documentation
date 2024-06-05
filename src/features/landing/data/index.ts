@@ -38,6 +38,7 @@ export const evmProducts = [
       { id: "wemix", title: "Wemix" },
       { id: "kroma", title: "Kroma" },
       { id: "celo", title: "Celo" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
     ],
   },
   {
