@@ -8,7 +8,7 @@ import { Aside } from "@components"
 
 Oracles must deploy an onchain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
-When the _Basic Request_ model was introduced, node operators had to deploy the legacy [Oracle contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/Operator.sol).
+When the _Basic Request_ model was introduced, node operators had to deploy the legacy [Oracle contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/Operator.sol).
 
 <Aside type="note">
   <p>Node operators must use _Operator.sol_ instead of _Oracle.sol_.</p>
@@ -20,13 +20,13 @@ In addition to replacing oracle contracts, operator contracts come with addition
 
 ### Multi-word response
 
-In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes.
+In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes.
 
-[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
+[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
 
 ### Factory deployment
 
-To deploy an _Oracle_ contract, each node operator has to manually compile and deploy [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol).
+To deploy an _Oracle_ contract, each node operator has to manually compile and deploy [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.4/Oracle.sol).
 The vast number of Solidity versions and steps involved in verifying the contract made it difficult for a client to verify that the deployed contract had not been tampered with.
 To fix this, node operators can use a [factory](/chainlink-nodes/contracts/operatorfactory) to deploy an instance of the _operator_ contract. Moreover, the factory exposes a getter for clients to check if it deployed a specific _operator_ contract address.
 
@@ -50,7 +50,7 @@ As discussed in the [forwarder](/chainlink-nodes/contracts/forwarder) contracts 
 
 ## API reference
 
-The operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
+The operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
 
 ### Methods
 
@@ -64,7 +64,7 @@ The operator contract inherits [AuthorizedReceiver](https://github.com/smartcont
 function oracleRequest(address sender, uint256 payment, bytes32 specId, address callbackAddress, bytes4 callbackFunctionId, uint256 nonce, uint256 dataVersion, bytes data) external
 ```
 
-Creates the Chainlink request. This is backwards compatible API with [Oracle.sol contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/Oracle.sol), but the behavior changes because `callbackAddress` is assumed to be the same as the request sender.
+Creates the Chainlink request. This is backwards compatible API with [Oracle.sol contracts](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.4/Oracle.sol), but the behavior changes because `callbackAddress` is assumed to be the same as the request sender.
 
 ##### Parameters
 

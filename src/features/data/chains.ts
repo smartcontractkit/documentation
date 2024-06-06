@@ -1,6 +1,6 @@
 import { ChainMetadata } from "./api"
 
-type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates" | "streams")[]
+type ChainTags = ("default" | "proofOfReserve" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -36,7 +36,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    tags: ["default", "proofOfReserve", "rates"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -45,7 +45,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
+        tags: ["proofOfReserve"],
       },
       {
         name: "Sepolia Testnet",
@@ -186,7 +186,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "nftFloorPrice", "streams"],
+    tags: ["default", "rates", "streams", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -195,7 +195,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["nftFloorPrice", "streams"],
+        tags: ["streams", "proofOfReserve"],
       },
       {
         name: "Arbitrum Sepolia",
@@ -430,6 +430,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "starknet",
+    label: "Starknet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://status.starknet.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Starknet Sepolia testnet",
+        explorerUrl: "https://sepolia.starkscan.co/contract/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
+        queryString: "starknet-sepolia-testnet",
+      },
+    ],
+  },
+  {
     page: "solana",
     label: "Solana",
     title: "Solana Data Feeds",
@@ -463,7 +481,7 @@ export const ALL_CHAINS: Chain[] = [
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -472,7 +490,7 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
+        tags: ["proofOfReserve"],
       },
       {
         name: "BNB Chain Mainnet",

@@ -14,7 +14,7 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
   ({ item: { label, icon, href, subProducts }, onProductClick }, forwardedRef) => {
     const itemComponent = (
       <>
-        {icon && <img height={24} width={24} src={`/assets/icons/${icon}-navbar-icon.svg`} />}
+        {icon && <img height={24} width={24} src={icon} />}
         <span style={{ flex: 1, textAlign: "start" }} className="text-300">
           {label}
         </span>
@@ -24,7 +24,16 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
       <button
         className={clsx(styles.link, "product-link")}
         style={{ marginTop: "var(--space-0x)" }}
-        onClick={() => onProductClick(subProducts)}
+        onClick={() =>
+          onProductClick({
+            ...subProducts,
+            items:
+              subProducts.items?.map((item) => ({
+                ...item,
+                href: item.href || "/",
+              })) || [],
+          })
+        }
         data-testid="sub-product-navigation-trigger-mobile"
       >
         {itemComponent}

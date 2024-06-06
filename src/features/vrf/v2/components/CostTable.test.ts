@@ -12,7 +12,7 @@ describe("getGasCalculatorUrl", () => {
       networkType: "testnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-sepolia.json",
       queryString: "ethereum-sepolia",
-      tags: ["proofOfReserve", "nftFloorPrice"],
+      tags: ["proofOfReserve"],
     }
     const method = "vrfSubscription"
 

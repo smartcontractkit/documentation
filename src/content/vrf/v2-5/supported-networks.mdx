@@ -8,12 +8,12 @@ metadata:
   image: "/files/OpenGraph_V3.png"
 ---
 
-import VrfCommon from "@features/vrf/v2-5/VrfCommon.astro"
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
 import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
 import { Address, Aside, CopyText } from "@components"
 import { TabsContent } from "@components/Tabs"
 
-<VrfCommon callout="security" />
+<Vrf2_5Common callout="security" />
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
@@ -29,8 +29,6 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
 ## Configurations
-
-<VrfCommon callout="availability" />
 
 VRF v2.5 coordinators for subscription funding are available on several networks.
 
@@ -63,7 +61,9 @@ VRF v2.5 coordinators for subscription funding are available on several networks
 | LINK Token                 | <Address contractUrl="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA" urlId="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" urlClass="erc-token-address"/>  |
 | VRF Wrapper                | <Address contractUrl="https://etherscan.io/address/0x02aae1A04f9828517b3007f83f6181900CaD910c" />                                                                                |
 | VRF Coordinator       | <Address contractUrl="https://etherscan.io/address/0xD7f86b4b8Cae7D942340FF628F82735b7a20893a"  />                                                                                 |
-| 30 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                       |
+| 200 gwei Key Hash     | <CopyText text="0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9" code/>                                                                                       |
+| 500 gwei Key Hash    | <CopyText text="0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b" code/>                                                                                       |
+| 1000 gwei Key Hash    | <CopyText text="0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f" code/>                                                                                       |
 | Premium percentage <br/> (paying with ETH) | 24                                                                                       |
 | Premium percentage <br/> (paying with LINK) | 20                                                                                       |
 | Minimum Confirmations      | 3                                                                                                                                                                                |
@@ -92,7 +92,7 @@ VRF v2.5 coordinators for subscription funding are available on several networks
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/> |
 | VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B" />                                                                                       |
-| 30 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                                      |
+| 100 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                                      |
 | Premium percentage <br/> (paying with Sepolia ETH)   | 24                                                                                      |
 | Premium percentage <br/> (paying with testnet LINK)  | 20                                                                                      |
 | Max Gas Limit         | 2,500,000                                                                                                                                                                                       |
@@ -106,7 +106,7 @@ VRF v2.5 coordinators for subscription funding are available on several networks
 | LINK Token                 | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/>  |
 | VRF Wrapper                | <Address contractUrl="https://sepolia.etherscan.io/address/0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1" />                                                                                |
 | VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B"  />                                                                                 |
-| 30 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                       |
+| 100 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                       |
 | Premium percentage <br/> (paying with Sepolia ETH) | 24                                                                                       |
 | Premium percentage <br/> (paying with testnet LINK) | 20                                                                                       |
 | Minimum Confirmations      | 3                                                                                                                                                                                |
@@ -178,17 +178,18 @@ VRF v2.5 coordinators for subscription funding are available on several networks
   Testnet LINK is available from https://faucets.chain.link/bnb-chain-testnet
 </Aside>
 
-| Item                  | Value                                                                                                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| LINK Token            | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" />                                                                                   |
-| 50 gwei Key Hash      | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code/>                                                                                                 |
-| Premium percentage <br/> (paying with testnet BNB)    | 60                                                                              |
-| Premium percentage <br/> (paying with testnet LINK)   | 50                                                                               |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                  |
-| Minimum Confirmations | 3                                                                                                                                                                                          |
-| Maximum Confirmations | 200                                                                                                                                                                                        |
-| Maximum Random Values | 500                                                                                                                                                                                        |
+| Item                                                | Value                                                                                                                                                                                      |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| LINK Token                                          | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/> |
+| VRF Coordinator                                     | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" />                                                                                   |
+| 50 gwei Key Hash                                    | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code/>                                                                                                 |
+| Premium percentage <br/> (paying with testnet BNB)  | 60                                                                                                                                                                                         |
+| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                                                                                                                         |
+| Max Gas Limit                                       | 2,500,000                                                                                                                                                                                  |
+| Minimum Confirmations                               | 3                                                                                                                                                                                          |
+| Maximum Confirmations                               | 200                                                                                                                                                                                        |
+| Maximum Random Values                               | 500                                                                                                                                                                                        |
+
 </Fragment>
 <Fragment slot="panel.2">
 | Item                       | Value                                                                                                                                                                            |
@@ -319,9 +320,9 @@ VRF v2.5 coordinators for subscription funding are available on several networks
 <Fragment slot="panel.2">
 | Item                       | Value                                                                                                                                                                            |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://testnet.snowtrace.io/address/0x327B83F409E1D5f13985c6d0584420FA648f1F56" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" />                                                                                |
+| LINK Token                 | <Address contractUrl="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3" urlId="43114_0x5947BB275c521040051D82396192181b413227A3" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://snowtrace.io/address/0x62Fb87c10A917580cA99AB9a86E213Eb98aa820C" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://snowtrace.io/address/0xE40895D055bccd2053dD0638C9695E326152b1A4" />                                                                                |
 | 200 gwei Key Hash     | <CopyText text="0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102" code/>                                                                                             |
 | 500 gwei Key Hash     | <CopyText text="0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d" code/>                                                                                             |
 | 1000 gwei Key Hash    | <CopyText text="0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c" code/>                                                                                             |                                                                            |
@@ -351,7 +352,6 @@ VRF v2.5 coordinators for subscription funding are available on several networks
 | Item                  | Value                                                                                                                                                                                          |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
-|                       |
 | VRF Coordinator       | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" />                                                                                      |
 | 300 gwei Key Hash     | <CopyText text="0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887" code/>                                                                                                     |
 | Premium percentage <br/> (paying with testnet AVAX)  | 60                                                                                       |

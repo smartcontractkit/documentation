@@ -40,8 +40,9 @@ const CopyContainer = ({ text, code, format, formatType }: Props) => {
           display: inline-flex;
           align-items: center;
           gap: var(--space-1x);
-          word-break: break-word;
-          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-break: break-all;
         }
 
         .copyBtn {

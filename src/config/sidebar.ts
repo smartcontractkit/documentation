@@ -31,10 +31,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/proof-of-reserve",
         },
         {
-          title: "NFT Floor Price Feeds",
-          url: "data-feeds/nft-floor-price",
-        },
-        {
           title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds",
         },
@@ -54,10 +50,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Proof of Reserve Addresses",
           url: "data-feeds/proof-of-reserve/addresses",
-        },
-        {
-          title: "NFT Floor Price Addresses",
-          url: "data-feeds/nft-floor-price/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -108,11 +100,29 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "StarkNet Guides",
+      section: "Starknet Guides",
       contents: [
         {
-          title: "Using Data Feeds on StarkNet",
+          title: "Data Feeds on Starknet",
           url: "data-feeds/starknet",
+        },
+        {
+          title: "Starknet Foundry Guides",
+          url: "data-feeds/starknet/tutorials/snfoundry/",
+          children: [
+            {
+              title: "Read Data from Chainlink Data Feeds (Offchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/read-data",
+            },
+            {
+              title: "Deploy and interact with a Consumer Contract (Onchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/consumer-contract",
+            },
+            {
+              title: "Experiment on a Devnet",
+              url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+            },
+          ],
         },
       ],
     },
@@ -132,10 +142,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataFeeds",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataFeeds",
@@ -208,12 +214,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started (Remix IDE)",
+          title: "Getting Started",
           url: "data-streams/getting-started",
-        },
-        {
-          title: "Getting Started (Hardhat CLI)",
-          url: "data-streams/getting-started-hardhat",
         },
         {
           title: "Data Streams Feed IDs",
@@ -289,10 +291,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataStreams",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataStreams",
@@ -474,10 +472,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=automation",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=automation",
@@ -670,10 +664,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=chainlinkFunctions",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
         },
@@ -741,18 +731,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "V2.5 Overview",
+          title: "Introduction to VRF",
           url: "vrf",
-          children: [
-            {
-              title: "Subscription overview",
-              url: "vrf/v2-5/overview/subscription",
-            },
-            {
-              title: "Direct funding overview",
-              url: "vrf/v2-5/overview/direct-funding",
-            },
-          ],
+        },
+        {
+          title: "Getting Started with Chainlink VRF V2.5",
+          url: "vrf/v2-5/getting-started",
         },
         {
           title: "Migration from V2",
@@ -775,16 +759,46 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/billing",
         },
         {
-          title: "Create and manage V2.5 subscriptions",
-          url: "vrf/v2-5/subscription/create-manage",
-        },
-        {
           title: "Release Notes",
           url: "vrf/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Learn VRF V2.5",
+      contents: [
+        {
+          title: "Introduction to subscription",
+          url: "vrf/v2-5/overview/subscription",
+        },
+        {
+          title: "Introduction to direct funding",
+          url: "vrf/v2-5/overview/direct-funding",
         },
         {
           title: "Arbitrum gas estimation with VRF",
           url: "vrf/v2-5/arbitrum-cost-estimation",
+        },
+      ],
+    },
+    {
+      section: "Build with VRF 2.5",
+      contents: [
+        {
+          title: "Create and manage V2.5 subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
+          title: "Get a random number with subscription",
+          url: "vrf/v2-5/subscription/get-a-random-number",
+        },
+        {
+          title: "Test locally with a subscription mock contract",
+          url: "vrf/v2-5/subscription/test-locally",
+        },
+        {
+          title: "Get a random number with direct funding",
+          url: "vrf/v2-5/direct-funding/get-a-random-number",
         },
       ],
     },
@@ -816,6 +830,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/subscription/supported-networks",
         },
         {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+        {
           title: "Migrating from VRF v1",
           url: "vrf/v2/subscription/migration-from-v1",
         },
@@ -841,6 +859,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/direct-funding/supported-networks",
         },
         {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+        {
           title: "Migrating from VRF v1",
           url: "vrf/v2/direct-funding/migration-from-v1",
         },
@@ -849,10 +871,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=vrf",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=vrf",
@@ -1069,10 +1087,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=ccip",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=ccip",
@@ -1366,10 +1380,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "General Documentation",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview",
