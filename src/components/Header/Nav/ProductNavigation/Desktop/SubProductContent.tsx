@@ -20,6 +20,7 @@ export const SubProductContent = ({ subProductsNav }: { subProductsNav: SubProdu
         .map((item) => (
           <NavigationMenu.Link key={item.label} asChild>
             <a className={clsx(styles.link, "subproduct-link")} href={item.href}>
+              <img className={clsx(styles.icon, "subproduct-icon")} src={item.icon}></img>
               {item.label}
             </a>
           </NavigationMenu.Link>

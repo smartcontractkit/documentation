@@ -58,8 +58,8 @@ export const PauseNotice = ({
             <img class={styles.icon} src={icons[type].src} />
             <p class={styles.notice}>
               The <a href={`https://etherscan.io/address/${feedAddress}`}>{feedName} feed</a> is paused due to lack of
-              attestation data. Read the <a href="/data-feeds/proof-of-reserve">Proof of Reserves</a> page to learn more
-              about data attestation types.
+              reporting data. Read the <a href="/data-feeds/proof-of-reserve">Proof of Reserves</a> page to learn more
+              about data reporting types.
             </p>
           </div>
         </>
@@ -69,7 +69,7 @@ export const PauseNotice = ({
         <>
           <span
             class={styles.banner + " " + styles.tooltip + " " + styles[type]}
-            tooltip-text="This feed is paused due to lack of attestation data."
+            tooltip-text="This feed is paused due to lack of reporting data."
           >
             <img class={styles.iconSmall} src={icons[type].src} />
             <p class={styles.notice}>Paused</p>

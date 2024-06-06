@@ -1,168 +1,224 @@
-const devHubProductsUrl = "https://dev.chain.link/products/"
+import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
+import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
+import functionsLogo from "../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../assets/product-logos/automation-logo.svg"
+import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
+import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
+import generalLogo from "../../assets/product-logos/general-logo.svg"
+import nodesLogo from "../../assets/product-logos/node-logo.svg"
+import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
+import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
 
-const docsSubProductsNav = [
+const desktopSubProductsNav = [
   {
     label: "Data Feeds",
     href: "/data-feeds",
+    icon: dataFeedsLogo.src,
   },
   {
     label: "Data Streams",
     href: "/data-streams",
+    icon: dataStreamsLogo.src,
   },
   {
     label: "CCIP",
     href: "/ccip",
+    icon: ccipLogo.src,
   },
   {
     label: "Functions",
     href: "/chainlink-functions",
-  },
-  {
-    label: "VRF",
-    href: "/vrf",
+    icon: functionsLogo.src,
   },
   {
     label: "Automation",
     href: "/chainlink-automation",
+    icon: automationLogo.src,
   },
   {
-    label: "Nodes",
+    label: "VRF",
+    href: "/vrf",
+    icon: vrfLogo.src,
+  },
+  {
+    label: "Chainlink Nodes",
     href: "/chainlink-nodes",
+    icon: nodesLogo.src,
   },
   {
-    label: "Overview",
+    label: "Quickstarts",
+    href: "/quickstarts",
+    icon: quickstartLogo.src,
+  },
+  {
+    label: "Documentation",
     href: "/",
     hideFromDropdown: true,
   },
 ]
 
-const devHubResourcesUrl = "https://dev.chain.link/resources/"
-
-const quickStartsSubProductsNav = [
-  {
-    label: "All Resources",
-    href: devHubResourcesUrl,
-  },
-  {
-    label: "Guides",
-    href: devHubResourcesUrl + "guides",
-  },
-  {
-    label: "Courses",
-    href: devHubResourcesUrl + "courses",
-  },
-  {
-    label: "Beginner Tutorials",
-    href: devHubResourcesUrl + "beginner-tutorials",
-  },
-  {
-    label: "Tech Talks",
-    href: devHubResourcesUrl + "tech-talks",
-  },
+const docsSections = [
   {
     label: "Documentation",
-    href: "https://docs.chain.link",
-  },
-  {
-    label: "QuickStarts",
-    href: devHubResourcesUrl + "quickstarts",
-  },
-  {
-    label: "Case Studies",
-    href: devHubResourcesUrl + "case-studies",
-  },
-  {
-    label: "Blogs",
-    href: devHubResourcesUrl + "blogs",
-  },
-  {
-    label: "Videos",
-    href: devHubResourcesUrl + "videos",
-  },
-  {
-    label: "QuickStarts",
-    href: "/quickstarts",
-    hideFromDropdown: true,
-  },
-]
-
-const devHubCategories = [
-  {
-    label: "Developer Hub",
     items: [
       {
-        label: "Home",
-        icon: "home",
-        href: "https://dev.chain.link/",
-      },
-      {
-        label: "Docs",
-        icon: "documentation",
-        href: "https://docs.chain.link",
+        label: "Data Feeds",
+        href: "/data-feeds",
+        icon: dataFeedsLogo.src,
         subProducts: {
-          label: "Docs",
-          items: docsSubProductsNav,
+          label: "Data Feeds",
+          href: "/data-feeds",
+          items: sidebar.dataFeeds?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
         },
       },
       {
-        label: "All Resources",
-        icon: "resources",
-        href: "https://dev.chain.link/resources",
+        label: "Data Streams",
+        href: "/data-streams",
+        icon: dataStreamsLogo.src,
+        subProducts: {
+          label: "Data Streams",
+          href: "/data-streams",
+          items: sidebar.dataStreams?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
       },
-    ],
-  },
-  {
-    label: "Product Resources",
-    items: [
       {
         label: "CCIP",
-        icon: "ccip",
-        href: devHubProductsUrl + "ccip",
-      },
-      {
-        label: "Data",
-        icon: "data",
-        href: devHubProductsUrl + "data",
+        href: "/ccip",
+        icon: ccipLogo.src,
+        subProducts: {
+          label: "CCIP",
+          href: "/ccip",
+          items: sidebar.ccip?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
       },
       {
         label: "Functions",
-        icon: "functions",
-        href: devHubProductsUrl + "functions",
+        href: "/chainlink-functions",
+        icon: functionsLogo.src,
+        subProducts: {
+          label: "Functions",
+          href: "/chainlink-functions",
+          items: sidebar.chainlinkFunctions?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
       },
       {
         label: "Automation",
-        icon: "automation",
-        href: devHubProductsUrl + "automation",
+        href: "/chainlink-automation",
+        icon: automationLogo.src,
+        subProducts: {
+          label: "Automation",
+          href: "/chainlink-automation",
+          items: sidebar.automation?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
       },
       {
         label: "VRF",
-        icon: "vrf",
-        href: devHubProductsUrl + "vrf",
+        href: "/vrf",
+        icon: vrfLogo.src,
+        subProducts: {
+          label: "VRF",
+          href: "/vrf",
+          items: sidebar.vrf?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
+      },
+      {
+        label: "Chainlink Nodes",
+        href: "/chainlink-nodes",
+        icon: nodesLogo.src,
+        subProducts: {
+          label: "Chainlink Nodes",
+          href: "/chainlink-nodes",
+          items: sidebar.nodeOperator?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
       },
       {
         label: "General",
-        icon: "general",
-        href: devHubProductsUrl + "general",
+        href: "/resources",
+        icon: generalLogo.src,
+        subProducts: {
+          label: "General",
+          href: "/resources",
+          items: sidebar.global?.map((item) => ({
+            label: item.section,
+            pages: item.contents.map((page) => ({
+              label: page.title,
+              href: page.url,
+            })),
+          })),
+        },
+      },
+      {
+        label: "Quickstarts",
+        href: "/quickstarts",
+        icon: quickstartLogo.src,
       },
     ],
   },
 ]
 
-const quickStartsProductsNav = {
-  trigger: { label: "All Resources", icon: "resources" },
-  categories: devHubCategories,
-}
+/*
+  {
+    label: "Learning Resources",
+    items: [
+      {
+        label: "Developer Hub",
+        icon: nodesLogo.src,
+        href: "https://dev.chain.link",
+        external: true,
+      },
+  ]
+  }
+*/
 
-const docsProductsNav = {
+const desktopProductsNav = {
   trigger: { label: "Docs", icon: "docs" },
-  categories: devHubCategories,
+  categories: docsSections,
 }
 
-const quickStartsProps = { productsNav: quickStartsProductsNav, subProductsNav: quickStartsSubProductsNav }
-const docsProps = { productsNav: docsProductsNav, subProductsNav: docsSubProductsNav }
+const docsProps = { productsNav: desktopProductsNav, subProductsNav: desktopSubProductsNav }
 
 export const getNavigationProps = (path: string) => {
-  const isQuickStarts = path.startsWith("/quickstarts")
-
-  return isQuickStarts ? quickStartsProps : docsProps
+  return docsProps
 }

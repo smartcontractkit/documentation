@@ -60,7 +60,7 @@ The response should be similar to the following:
 ]
 ```
 
-Fetch the _id_ of the first element. To consume an API, your contract must import [ChainlinkClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
+Fetch the _id_ of the first element. To consume an API, your contract must import [ChainlinkClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
 
 - Link token address
 - Oracle address
@@ -91,7 +91,7 @@ To use this contract:
 
 1. Call the `id` function to confirm that the `id` state variable is not set.
 
-1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req.add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request. It uses [JSONPath expression](https://jsonpath.com/) with comma `,` delimited string for nested objects, for example: `'0,id'`.
+1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req._add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request. It uses [JSONPath expression](https://jsonpath.com/) with comma `,` delimited string for nested objects, for example: `'0,id'`.
 
 1. After few seconds, call the `id` function. You should get a non-empty response: _bitcoin_
 

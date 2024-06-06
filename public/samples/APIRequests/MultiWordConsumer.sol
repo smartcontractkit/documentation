@@ -46,8 +46,8 @@ contract MultiWordConsumer is ChainlinkClient, ConfirmedOwner {
      *
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
-        setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        _setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "53f9755920cd451a8fe46f5087468395";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
@@ -56,27 +56,27 @@ contract MultiWordConsumer is ChainlinkClient, ConfirmedOwner {
      * @notice Request mutiple parameters from the oracle in a single transaction
      */
     function requestMultipleParameters() public {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfillMultipleParameters.selector
         );
-        req.add(
+        req._add(
             "urlBTC",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC"
         );
-        req.add("pathBTC", "BTC");
-        req.add(
+        req._add("pathBTC", "BTC");
+        req._add(
             "urlUSD",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
         );
-        req.add("pathUSD", "USD");
-        req.add(
+        req._add("pathUSD", "USD");
+        req._add(
             "urlEUR",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=EUR"
         );
-        req.add("pathEUR", "EUR");
-        sendChainlinkRequest(req, fee); // MWR API.
+        req._add("pathEUR", "EUR");
+        _sendChainlinkRequest(req, fee); // MWR API.
     }
 
     /**
@@ -104,7 +104,7 @@ contract MultiWordConsumer is ChainlinkClient, ConfirmedOwner {
      * Allow withdraw of Link tokens from the contract
      */
     function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
         require(
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
