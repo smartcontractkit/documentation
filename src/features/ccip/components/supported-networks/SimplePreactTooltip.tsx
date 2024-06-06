@@ -22,7 +22,7 @@ export const SimplePreactTooltip = ({
     width: "0.8em",
     height: "0.8em",
     marginLeft: "2px",
-    marginRight: "5px",
+    marginRight: "4px",
   }
 
   const defaultTooltipStyle = {
