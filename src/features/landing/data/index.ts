@@ -107,6 +107,7 @@ export const evmProducts = [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "optimism", title: "Optimism" },
       { id: "base", title: "BASE" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
     ],
     video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
