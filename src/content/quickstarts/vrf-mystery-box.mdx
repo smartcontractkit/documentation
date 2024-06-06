@@ -11,11 +11,17 @@ import { Accordion, Aside, CodeSample } from "@components"
 
 ## Overview
 
-This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF 2.5](https://docs.chain.link/vrf).
+This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF V2.5](https://docs.chain.link/vrf).
 
 Smart contracts are based on the gas efficient [ERC721Psi](https://github.com/estarriolvetch/ERC721Psi). It's super easy to deploy and configure with most of the steps automated in the deploy script.
 
-Some of the key features of this template include private minting stage with a merkle tree, rate limited batch minting, delayed reveal with randomization technique to save gas, provenance hash to verify the authenticity of the metadata, royalties for secondary sales, and configurable parameters.
+The key features of this template include:
+- a private minting stage with a merkle tree
+- rate limited batch minting
+- delayed reveal with randomization technique to save gas
+- provenance hash to verify the authenticity of the metadata
+- royalties for secondary sales 
+- configurable parameters
 
 ## Objective
 
@@ -90,7 +96,7 @@ Set the parameters for the NFT contract. If you don't have a VRF subscription, d
 | `NFT_MAX_MINT_PER_USER` | The maximum number of tokens that can be minted per user address                                                          | `10`                  |
 | `NFT_FEE`               | The fee for minting a token in ETH                                                                                        | `0.01`                 |
 | `NFT_ROYALTY_BPS`       | The royalty fee for selling a token in basis points                                                                       | `500`                 |
-| `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF 2.5 subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `79850349243438349975305816782035019118399435445660033947721688676378382535454`                 |
+| `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF V2.5 subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `79850349243438349975305816782035019118399435445660033947721688676378382535454`                 |
 
 
 </Accordion>
@@ -139,7 +145,7 @@ npx hardhat run scripts/deploy.ts --network <network>
 
 In addition to deploying the contract, the deploy script also completes the following steps automatically:
 
-1.  Create and fund a 2.5 VRF subscription if one is not provided. Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/) to get LINK. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link) to see the additional balance needed.
+1.  Create and fund a VRF V2.5 subscription if one is not provided. Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/) to get LINK. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link) to see the additional balance needed.
 
 1.  Add the deployed contract address as a consumer to the VRF subscription. If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addConsumerToSubscription` function in the deploy script and add the contract address manually.
 
