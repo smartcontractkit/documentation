@@ -50,7 +50,7 @@ const display = (bigNum: string, decimals: number = 18) => {
   return utils.commify(numberWithoutDecimals)
 }
 
-const formatTime = (seconds: number) => {
+export const formatTime = (seconds: number) => {
   const minute = 60
   const hour = 3600 // 60*60
 
@@ -165,6 +165,8 @@ if (supportedTokens) {
     .filter((item): item is TokenExtraInfo => item !== null && item.token !== undefined)
     .sort((itemA, itemB) => itemA.token.localeCompare(itemB.token, undefined, { sensitivity: "base" }))
 }
+
+// const filteredTokens = tokensWithExtraInfo
 ---
 
 <table>
@@ -243,7 +245,7 @@ if (supportedTokens) {
         <p>
           <strong>Transferable tokens</strong>
         </p>
-        <TokenSearch tokens={tokensWithExtraInfo} client:load />
+        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:load />
         {/* <div style="overflow-x: auto;width: 100%">
           <table>
             <thead>

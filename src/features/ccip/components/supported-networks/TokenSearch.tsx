@@ -3,6 +3,9 @@ import { useState } from "preact/hooks"
 import { FunctionComponent } from "preact"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
+import { SupportedChain } from "@config"
+import { getExplorer, getExplorerAddressUrl } from "@features/utils"
+import { SimplePreactAddress } from "./SimplePreactAddress"
 import { SimplePreactTooltip } from "./SimplePreactTooltip"
 
 interface TokenExtraInfo {
@@ -19,6 +22,7 @@ interface TokenExtraInfo {
 
 interface TokenSearchProps {
   tokens: TokenExtraInfo[]
+  sourceChain: SupportedChain
 }
 
 const normalizeNumber = (bigNum: BigNumber, decimals = 18) => {
@@ -77,9 +81,13 @@ const displayRate = (capacity: string, rate: string, symbol: string, decimals = 
   }
 }
 
-const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens }) => {
+const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredTokens, setFilteredTokens] = useState(tokens)
+
+  const explorerUrl = getExplorer(sourceChain)
+
+  if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
   const handleInput = (event) => {
     const newSearchTerm = event.currentTarget.value.toLowerCase()
@@ -136,7 +144,13 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens }) => {
                 filteredTokens.map((token) => (
                   <tr>
                     <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{token.address}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <SimplePreactAddress
+                        address={token.address}
+                        contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)}
+                        endLength={4}
+                      />
+                    </td>
                     <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
                     <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
