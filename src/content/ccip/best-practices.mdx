@@ -6,8 +6,9 @@ whatsnext: { "Supported networks": "/ccip/supported-networks" }
 ---
 
 import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
+<CcipCommon callout="talkToExpert" />
 
 <Aside type="note" title="Interfaces and Applications">
   Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
@@ -16,13 +17,19 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
   visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
 </Aside>
 
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
 ## Verify destination chain
 
 Before calling the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
 
+**Example**: For an example of how to verify the destination chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
+
 ## Verify source chain
 
 When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+**Example**: For an example of how to verify the source chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
 
 ## Verify sender
 
@@ -30,9 +37,13 @@ When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#c
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
+**Example**: For an example of how to verify the sender of the incoming CCIP message, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
+
 ## Verify router addresses
 
 When you implement the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
+
+**Example**: For an example of how to verify the router, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
 
 ## Setting `gasLimit`
 
@@ -46,6 +57,8 @@ To estimate the accurate gas limit for your destination contract, consider the f
 - Conducting [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking).
 - Using [Hardhat plugin for gas tests](https://github.com/cgewecke/eth-gas-reporter).
 - Using a blockchain explorer to look up the gas consumption of a particular internal transaction.
+
+**Example**: For an example of how to estimate the gas limit, refer to the [Optimizing Gas Limit Settings in CCIP Messages](/ccip/tutorials/ccipreceive-gaslimit) guide.
 
 ## Using `extraArgs`
 
@@ -63,7 +76,7 @@ Although CCIP has been thoroughly reviewed and audited, inherent risks might sti
 
 ## Review and audit your code
 
-Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
+Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
 
 ## Soak test your dApps
 

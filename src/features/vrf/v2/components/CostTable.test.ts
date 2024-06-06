@@ -5,19 +5,19 @@ import { ChainNetwork } from "~/features/data/chains"
 describe("getGasCalculatorUrl", () => {
   test("works with testnet", () => {
     const mainChainName = "ethereum"
-    const networkName = "goerli"
+    const networkName = "sepolia"
     const chainNetwork: ChainNetwork = {
-      name: "Goerli Testnet",
-      explorerUrl: "https://goerli.etherscan.io/address/%s",
+      name: "Sepolia Testnet",
+      explorerUrl: "https://sepolia.etherscan.io/address/%s",
       networkType: "testnet",
-      rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
-      queryString: "ethereum-goerli",
-      tags: ["proofOfReserve", "nftFloorPrice"],
+      rddUrl: "https://reference-data-directory.vercel.app/feeds-sepolia.json",
+      queryString: "ethereum-sepolia",
+      tags: ["proofOfReserve"],
     }
     const method = "vrfSubscription"
 
     expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method })).toEqual(
-      "https://vrf.chain.link/api/calculator?networkName=ethereum&networkType=goerli&method=subscription"
+      "https://vrf.chain.link/api/calculator?networkName=ethereum&networkType=sepolia&method=subscription"
     )
   })
 

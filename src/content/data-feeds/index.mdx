@@ -9,7 +9,6 @@ whatsnext:
     "Read the API reference for using Data Feeds": "/data-feeds/api-reference",
     "Find Rate Price Feed Addresses": "/data-feeds/price-feeds/addresses",
     "Find Rate Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses",
-    "Find Rate NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses",
     "Find Rate and Volatility Feed Addresses": "/data-feeds/rates-feeds/addresses",
     "Learn how to use Data Feeds on L2 networks": "/data-feeds/l2-sequencer-feeds",
   }
@@ -26,7 +25,7 @@ import button from "@chainlink/design-system/button.module.css"
   Data Feeds with your applications.
 </Aside>
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, NFT floor prices, and L2 sequencer health.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
 If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
@@ -36,7 +35,6 @@ Data feeds provide many different types of data for your applications.
 
 - [Price Feeds](#price-feeds)
 - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
-- [NFT Floor Price Feeds](#nft-floor-price-feeds)
 - [Rate and Volatility Feeds](#rate-and-volatility-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
@@ -60,14 +58,6 @@ To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/data-fee
 
 See the [Proof of Reserve Contract Addresses](/data-feeds/proof-of-reserve/addresses) page for a list of available networks and addresses.
 
-### NFT Floor Price Feeds
-
-NFT Floor Price Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/data-feeds/price-feeds) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
-
-To learn more, see the [NFT Floor Price Feeds](/data-feeds/nft-floor-price) documentation.
-
-See the [NFT Floor Price Contract Addresses](/data-feeds/nft-floor-price/addresses) page for a list of available networks and addresses.
-
 ### Rate and Volatility Feeds
 
 Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
@@ -86,8 +76,8 @@ To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptim
 
 Data Feeds are an example of a decentralized oracle network and include the following components:
 
-- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
-- **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
+- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
+- **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on Github is a common example.
 - **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
 To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.

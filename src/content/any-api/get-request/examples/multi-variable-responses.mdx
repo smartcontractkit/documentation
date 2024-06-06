@@ -50,7 +50,7 @@ The response should be similar to the following:
 ```
 
 The request above shows how to get the price of _ETH_ against _BTC_. Now let say we want the price of _ETH_ against several currencies: _BTC_, _USD_, and _EUR_. Our contract will have to support receiving multiple responses.
-To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
+To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
 
 - Link token address
 - Oracle address
@@ -85,8 +85,8 @@ To use this contract:
 
 1. Run the `requestMultipleParameters` function. This builds the `Chainlink.Request` using the correct parameters:
 
-   - The `req.add("urlBTC", "CRYPTOCOMPARE_ETH_BTC_URL")` request parameter provides the oracle node with the [url](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC) where to fetch the _ETH-BTC_ price. Same logic for `req.add("urlEUR", "CRYPTOCOMPARE_ETH_BTC_URL")` and `req.add("urlUSD", "CRYPTOCOMPARE_ETH_BTC_URL")`.
-   - THe `req.add('pathBTC', 'BTC')` request parameter tells the oracle node where to fetch the _ETH-BTC_ price in the _json_ response. Same logic for `req.add('pathUSD', 'EUR')` and `req.add('pathEUR', 'USD')`.
+   - The `req._add("urlBTC", "CRYPTOCOMPARE_ETH_BTC_URL")` request parameter provides the oracle node with the [url](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC) where to fetch the _ETH-BTC_ price. Same logic for `req._add("urlEUR", "CRYPTOCOMPARE_ETH_BTC_URL")` and `req._add("urlUSD", "CRYPTOCOMPARE_ETH_BTC_URL")`.
+   - THe `req._add('pathBTC', 'BTC')` request parameter tells the oracle node where to fetch the _ETH-BTC_ price in the _json_ response. Same logic for `req._add('pathUSD', 'EUR')` and `req._add('pathEUR', 'USD')`.
      Because you provide the URLs and paths, the `MultiWordConsumer` in the example can call any public API as long as the URLs and paths are correct.
 
 1. After few seconds, call the `btc`, `usd` , and `eur` functions. You should get a non-zero responses.
