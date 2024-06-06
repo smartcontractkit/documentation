@@ -31,9 +31,7 @@ export const SimplePreactTooltip = ({
     color: "var(--color-text-secondary)",
     padding: "8px 12px",
     borderRadius: "4px",
-    bottom: "110%",
-    left: "50%",
-    transform: "translateX(-50%) translateY(0)",
+    right: "20%",
     whiteSpace: "normal",
     display: isVisible ? "block" : "none",
     fontSize: "12px",
@@ -41,6 +39,7 @@ export const SimplePreactTooltip = ({
     maxWidth: "200px",
     textAlign: "center",
     boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    zIndex: "1000",
     ...tooltipStyle,
   }
 

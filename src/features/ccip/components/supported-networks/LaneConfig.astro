@@ -50,7 +50,7 @@ const display = (bigNum: string, decimals: number = 18) => {
   return utils.commify(numberWithoutDecimals)
 }
 
-export const formatTime = (seconds: number) => {
+const formatTime = (seconds: number) => {
   const minute = 60
   const hour = 3600 // 60*60
 
@@ -165,8 +165,6 @@ if (supportedTokens) {
     .filter((item): item is TokenExtraInfo => item !== null && item.token !== undefined)
     .sort((itemA, itemB) => itemA.token.localeCompare(itemB.token, undefined, { sensitivity: "base" }))
 }
-
-// const filteredTokens = tokensWithExtraInfo
 ---
 
 <table>
@@ -246,84 +244,6 @@ if (supportedTokens) {
           <strong>Transferable tokens</strong>
         </p>
         <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:load />
-        {/* <div style="overflow-x: auto;width: 100%">
-          <table>
-            <thead>
-              <tr>
-                <th>Symbol</th>
-                <th>Token&nbsp;Address</th>
-                <th>Decimals</th>
-                <th>
-                  <Tooltip
-                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock"
-                    label="Mechanism"
-                    style={{ marginTop: "0", minWidth: "7em", maxWidth: "10em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-                <th>
-                  <Tooltip
-                    tip="Maximum amount per transaction"
-                    label="Rate Limit Capacity"
-                    style={{ marginTop: "0", minWidth: "11em", maxWidth: "15em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-                <th>
-                  <Tooltip
-                    tip="Rate at which available capacity is replenished"
-                    label="Rate Limit Refill Rate"
-                    style={{ marginTop: "0", minWidth: "12em", maxWidth: "15em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTokens.map((token) => {
-                return (
-                  <tr>
-                    <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <Address contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)} endLength={4} />
-                    </td>
-                    <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      {token.rateLimiterConfig?.isEnabled
-                        ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.token
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {token.rateLimiterConfig?.isEnabled
-                        ? (() => {
-                            const { rateSecond, maxThroughput } = displayRate(
-                              token.rateLimiterConfig.capacity,
-                              token.rateLimiterConfig.rate,
-                              token.token,
-                              token.decimals
-                            )
-
-                            return (
-                              <Tooltip
-                                tip={maxThroughput}
-                                label={rateSecond}
-                                style={{ marginTop: "0", whiteSpace: "nowrap", minWidth: "15em", maxWidth: "15em" }}
-                                client:load
-                              />
-                            )
-                          })()
-                        : "N/A"}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div> */}
       </>
     </>
   ) : (
