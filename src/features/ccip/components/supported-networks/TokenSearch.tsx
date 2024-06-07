@@ -1,12 +1,12 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
-import { FunctionComponent } from "preact"
+import { h, FunctionComponent } from "preact"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { SupportedChain } from "@config"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
-import { SimplePreactAddress } from "./SimplePreactAddress"
-import { SimplePreactTooltip } from "./SimplePreactTooltip"
+import Address from "@components/Address"
+import { SimplePreactTooltip } from "@features/common/Tooltip"
 
 interface TokenExtraInfo {
   token: string
@@ -89,7 +89,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
 
   if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
-  const handleInput = (event) => {
+  const handleInput = (event: h.JSX.TargetedEvent<HTMLInputElement>) => {
     const newSearchTerm = event.currentTarget.value.toLowerCase()
     setSearchTerm(newSearchTerm)
     const newFilteredTokens = tokens.filter((token) => token.token.toLowerCase().includes(newSearchTerm))
@@ -161,7 +161,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                 <tr>
                   <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
-                    <SimplePreactAddress
+                    <Address
                       address={token.address}
                       contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)}
                       endLength={4}
