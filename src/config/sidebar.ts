@@ -235,16 +235,32 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
-          title: "Fetch and decode reports (REST API)",
-          url: "data-streams/tutorials/streams-direct-api",
+          title: "Streams Trade",
+          url: "data-streams/tutorials/streams-trade",
+          children: [
+            {
+              title: "Handle StreamsLookup errors",
+              url: "data-streams/tutorials/streams-trade-lookup-error-handler",
+            },
+          ],
         },
         {
-          title: "Stream and decode reports (WebSocket)",
-          url: "data-streams/tutorials/streams-direct-ws",
-        },
-        {
-          title: "Verify report data onchain",
-          url: "data-streams/tutorials/streams-direct-onchain-verification",
+          title: "Streams Direct",
+          url: "data-streams/tutorials/streams-direct",
+          children: [
+            {
+              title: "Fetch and decode reports (REST API)",
+              url: "data-streams/tutorials/streams-direct-api",
+            },
+            {
+              title: "Stream and decode reports (WebSocket)",
+              url: "data-streams/tutorials/streams-direct-ws",
+            },
+            {
+              title: "Verify report data onchain",
+              url: "data-streams/tutorials/streams-direct-onchain-verification",
+            },
+          ],
         },
       ],
     },
@@ -270,7 +286,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Streams Direct Interface",
-          url: "data-streams/reference/streams-direct-interface-api",
+          url: "data-streams/reference/streams-direct",
           children: [
             {
               title: "REST API",
