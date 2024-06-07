@@ -290,15 +290,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "REST API",
-              url: "data-streams/reference/streams-direct-interface-api",
+              url: "data-streams/reference/streams-direct/streams-direct-interface-api",
             },
             {
               title: "WebSocket",
-              url: "data-streams/reference/streams-direct-interface-ws",
+              url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
             },
             {
               title: "Onchain report data verification",
-              url: "data-streams/reference/streams-direct-onchain-verification",
+              url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
         },
