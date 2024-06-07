@@ -236,29 +236,29 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Streams Trade",
-          url: "data-streams/tutorials/streams-trade",
+          url: "data-streams/tutorials/streams-trade/",
           children: [
             {
               title: "Handle StreamsLookup errors",
-              url: "data-streams/tutorials/streams-trade-lookup-error-handler",
+              url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
             },
           ],
         },
         {
           title: "Streams Direct",
-          url: "data-streams/tutorials/streams-direct",
+          url: "data-streams/tutorials/streams-direct/",
           children: [
             {
               title: "Fetch and decode reports (REST API)",
-              url: "data-streams/tutorials/streams-direct-api",
+              url: "data-streams/tutorials/streams-direct/streams-direct-api",
             },
             {
               title: "Stream and decode reports (WebSocket)",
-              url: "data-streams/tutorials/streams-direct-ws",
+              url: "data-streams/tutorials/streams-direct/streams-direct-ws",
             },
             {
               title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct-onchain-verification",
+              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
             },
           ],
         },
