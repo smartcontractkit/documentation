@@ -76,7 +76,7 @@ const displayRate = (capacity: string, rate: string, symbol: string, decimals = 
   const displayTime = `${formatTime(totalRefillTime)}`
 
   return {
-    rateSecond: `${rateNormalized} ${symbol}/second`,
+    rateSecond: `${utils.commify(rateNormalized)} ${symbol}/second`,
     maxThroughput: `Refills from 0 to ${utils.commify(capacityNormalized)} ${symbol} in ${displayTime}`,
   }
 }
