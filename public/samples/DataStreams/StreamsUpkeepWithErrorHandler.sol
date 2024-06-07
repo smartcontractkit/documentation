@@ -65,21 +65,11 @@ interface IVerifierProxy {
 // CONTRACT IMPLEMENTATION
 // ==========================
 
-contract StreamsLookupChainlinkAutomation is
+contract StreamsUpkeepWithErrorHandler is
     ILogAutomation,
     StreamsLookupCompatibleInterface
 {
-    struct BasicReport {
-        bytes32 feedId; // The feed ID the report has data for
-        uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
-        uint32 observationsTimestamp; // Latest timestamp for which price is applicable
-        uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native token (WETH/ETH)
-        uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK
-        uint32 expiresAt; // Latest timestamp where the report can be verified on-chain
-        int192 price; // DON consensus median price, carried to 18 decimal places
-    }
-
-    struct PremiumReport {
+    struct Report {
         bytes32 feedId; // The feed ID the report has data for
         uint32 validFromTimestamp; // Earliest timestamp for which price is applicable
         uint32 observationsTimestamp; // Latest timestamp for which price is applicable
@@ -96,14 +86,17 @@ contract StreamsLookupChainlinkAutomation is
     }
 
     event PriceUpdate(int192 indexed price);
+    event ErrorTestLog(uint indexed errorCode);
 
     IVerifierProxy public verifier;
 
     address public FEE_ADDRESS;
     string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDs";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "timestamp";
+    uint256 public s_error;
+    bool public s_isError;
     string[] public feedIds = [
-        "0x00027bbaff688c906a3e20a34fe951715d1018d262a5b66e38eda027a674cd1b" // Ex. Basic ETH/USD price report
+        "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" // Ex. ETH/USD Feed ID
     ];
 
     constructor(address _verifier) {
@@ -142,6 +135,9 @@ contract StreamsLookupChainlinkAutomation is
 
     /**
      * @notice Determines the need for upkeep in response to an error from Data Streams.
+     * @dev This function serves as an example of how errors can be handled offchain.
+     * @dev Developers can parameterize this logic as needed.
+     * @dev All error codes are documented at: https://docs.chain.link/chainlink-automation/guides/streams-lookup-error-handler#error-codes
      * @param errorCode The error code returned by the Data Streams lookup.
      * @param extraData Additional context or data related to the error condition.
      * @return upkeepNeeded Boolean indicating whether upkeep is needed based on the error.
@@ -150,16 +146,24 @@ contract StreamsLookupChainlinkAutomation is
     function checkErrorHandler(
         uint errorCode,
         bytes calldata extraData
-    ) external returns (bool upkeepNeeded, bytes memory performData) {
-        // Add custom logic to handle errors offchain here
-        bool _upkeepNeeded = true;
+    ) external view returns (bool upkeepNeeded, bytes memory performData) {
+        bool _upkeepNeeded = false;
         bool reportSuccess = false;
-        if (errorCode == 808400) {
-            // Handle bad request errors code offchain.
-            // In this example, no upkeep needed for bad request errors.
-            _upkeepNeeded = false;
+        if (errorCode == 0) {
+            // If there is no error, proceed with the performUpkeep and
+            // the report decoding/verification
+            _upkeepNeeded = true;
+            reportSuccess = true;
+        } else if (errorCode == 808400 || errorCode == 808401) {
+            // Mark upkeep as needed for bad requests (808400) and incorrect feed ID (808401)
+            // to handle these specific errors onchain.
+            _upkeepNeeded = true;
+            // Note that reportSuccess remains false.
         } else {
-            // Handle other errors as needed.
+            // For other error codes, decide not to perform upkeep.
+            // This is the default behavior, explicitly noted for clarity in this example.
+            _upkeepNeeded = false;
+            reportSuccess = false;
         }
         return (
             _upkeepNeeded,
@@ -167,7 +171,6 @@ contract StreamsLookupChainlinkAutomation is
         );
     }
 
-    // function will be performed on-chain
     function performUpkeep(bytes calldata performData) external {
         // Decode incoming performData
         (bool reportSuccess, bytes memory payload) = abi.decode(
@@ -215,9 +218,9 @@ contract StreamsLookupChainlinkAutomation is
             );
 
             // Decode verified report data into BasicReport struct
-            BasicReport memory verifiedReport = abi.decode(
+            Report memory verifiedReport = abi.decode(
                 verifiedReportData,
-                (BasicReport)
+                (Report)
             );
 
             // Log price from report
@@ -229,8 +232,12 @@ contract StreamsLookupChainlinkAutomation is
                 (uint, bytes)
             );
             // Custom logic to handle error codes
+            s_error = errorCode;
+            s_isError = true;
         }
     }
 
     fallback() external payable {}
+
+    receive() external payable {}
 }
