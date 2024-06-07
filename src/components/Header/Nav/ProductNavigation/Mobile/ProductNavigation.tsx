@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React, { useEffect } from "react"
-import { ProductsNav } from "../../config"
+import { ProductsNav, SubProducts } from "../../config"
 import { SearchTrigger } from "../../NavBar"
 import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
@@ -8,18 +8,8 @@ import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
-import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
-
-type Page = {
-  label: string
-  href: string
-}
-
-export type SubProducts = {
-  label: string
-  items: { label: string; href: string; pages?: Page[] }[]
-}
+import styles from "./productNavigation.module.css"
 
 type Props = {
   searchTrigger?: SearchTrigger
@@ -36,44 +26,61 @@ export function ProductNavigation({ productsNav, path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
-  const [producsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
+  const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
 
   useEffect(() => {
+    console.log("Checking productsNav for path:", path)
+    console.log("productsNav:", productsNav)
+
     const foundSubProduct = productsNav.categories.find((category) =>
       category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
     )
 
+    console.log("Found category with subProducts:", foundSubProduct)
+
     if (foundSubProduct) {
       const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
 
-      if (subProduct?.subProducts?.items) {
-        const safeSubProducts: SubProducts = {
-          label: subProduct.subProducts.label,
-          items: subProduct.subProducts.items.map((item) => ({
-            label: item.label,
-            href: item.href || "#",
-            pages:
-              item.pages?.map((page) => ({
-                label: page.label,
-                href: page.href,
-              })) || [],
+      console.log("Found subProduct:", subProduct)
+
+      if (subProduct?.subProducts) {
+        const items = subProduct.subProducts.map((subProductItem) => ({
+          label: subProductItem.label,
+          href: subProductItem.href || "#",
+          pages: subProductItem.items.map((page) => ({
+            label: page.label,
+            href: page.href,
+            children: page.children || [],
           })),
+        }))
+
+        const safeSubProducts: SubProducts = {
+          label: subProduct.label,
+          items,
         }
+
+        console.log("Prepared subProducts for state:", safeSubProducts)
 
         setSubProducts(safeSubProducts)
         setProductsSlidePosition("submenu")
       }
+    } else {
+      console.log("No matching subProduct found for path:", path)
+      setSubProducts(undefined)
     }
   }, [path, productsNav])
 
   const onProductClick = React.useCallback((subProducts: SubProducts) => {
+    console.log("Product clicked:", subProducts)
     setSubProducts(subProducts)
     setProductsSlidePosition("submenu")
   }, [])
 
   const onSubproductClick = () => {
+    console.log("Navigating back to main menu")
     setProductsSlidePosition("main")
+    setSubProducts(undefined)
   }
 
   const handleOpenChange = (newOpenState: boolean) => {
@@ -81,6 +88,7 @@ export function ProductNavigation({ productsNav, path }: Props) {
     if (!newOpenState) {
       setProductsSlidePosition("main")
       setShowSearch(false)
+      setSubProducts(undefined)
     }
   }
 
@@ -114,7 +122,7 @@ export function ProductNavigation({ productsNav, path }: Props) {
                 overflow: "hidden",
               }}
             >
-              <div className={clsx(styles.content, styles[producsSlidePosition])}>
+              <div className={clsx(styles.content, styles[productsSlidePosition])}>
                 <ul className={clsx(styles.productContent)}>
                   <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
                 </ul>
