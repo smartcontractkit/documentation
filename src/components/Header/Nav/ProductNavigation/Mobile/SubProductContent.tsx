@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import { BackArrowIcon } from "./BackArrowIcon"
 import { Page } from "../../config"
 import styles from "./subProductContent.module.css"
@@ -17,6 +17,14 @@ const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
     const adjustedHref = "/" + href
     const isActive = currentPath.replace(/\/$/, "") === adjustedHref.replace(/\/$/, "")
 
+    const linkRef = useRef<HTMLAnchorElement>(null)
+
+    useEffect(() => {
+      if (isActive && linkRef.current) {
+        linkRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }, [isActive])
+
     const linkStyle = {
       backgroundColor: isActive ? "var(--blue-100)" : "transparent",
       color: isActive ? "var(--blue-600)" : "inherit",
@@ -26,7 +34,7 @@ const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
 
     return (
       <React.Fragment key={label}>
-        <a style={linkStyle} className={`${styles.link} subproduct-link`} href={adjustedHref}>
+        <a ref={linkRef} style={linkStyle} className={`${styles.link} subproduct-link`} href={adjustedHref}>
           {label}
         </a>
         {children && renderPages(children, currentPath, true)}
