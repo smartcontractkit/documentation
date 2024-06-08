@@ -24,13 +24,15 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
       const subProductItems = subProducts as unknown as SubProductItem[]
       const mappedSubProducts: SubProducts = {
         label,
-        items: subProductItems.flatMap((subProductItem) =>
-          subProductItem.items.map((item) => ({
+        items: subProductItems.map((subProductItem) => ({
+          label: subProductItem.label,
+          href: subProductItem.href || "#",
+          pages: subProductItem.items.map((item) => ({
             label: item.label,
             href: item.href || "/",
-            pages: item.children || [],
-          }))
-        ),
+            children: item.children || [],
+          })),
+        })),
       }
       onProductClick(mappedSubProducts)
     }

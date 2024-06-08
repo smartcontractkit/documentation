@@ -47,7 +47,7 @@ export function ProductNavigation({ productsNav, path }: Props) {
       if (subProduct?.subProducts) {
         const items = subProduct.subProducts.map((subProductItem) => ({
           label: subProductItem.label,
-          href: subProductItem.href || "#",
+          href: "#",
           pages: subProductItem.items.map((page) => ({
             label: page.label,
             href: page.href,
