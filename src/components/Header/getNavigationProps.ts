@@ -38,7 +38,6 @@ const getSubProducts = (sectionData) => {
     label: item.section,
     items: mapContents(item.contents),
   }))
-  console.log("Structured SubProducts Data:", structuredData)
   return structuredData
 }
 
@@ -169,8 +168,6 @@ const desktopProductsNav = {
   trigger: { label: "Docs", icon: "docs" },
   categories: docsSections,
 }
-
-console.log(docsSections)
 
 const docsProps = { productsNav: desktopProductsNav, subProductsNav: desktopSubProductsNav }
 

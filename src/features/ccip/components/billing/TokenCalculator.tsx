@@ -52,8 +52,6 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
 
       const networkFee = calculateNetworkFeesForTokenMechanism(mechanism, sourceBlockchain, destinationBlockchain)
 
-      console.log({ fees: { token, mechanism, fee: networkFee } })
-
       return { fees: { token, mechanism, fee: networkFee } }
     },
   }

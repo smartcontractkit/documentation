@@ -30,19 +30,12 @@ export function ProductNavigation({ productsNav, path }: Props) {
   const closeButtonRef = React.useRef(null)
 
   useEffect(() => {
-    console.log("Checking productsNav for path:", path)
-    console.log("productsNav:", productsNav)
-
     const foundSubProduct = productsNav.categories.find((category) =>
       category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
     )
 
-    console.log("Found category with subProducts:", foundSubProduct)
-
     if (foundSubProduct) {
       const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
-
-      console.log("Found subProduct:", subProduct)
 
       if (subProduct?.subProducts && Array.isArray(subProduct.subProducts)) {
         const items = subProduct.subProducts.map((subProductItem) => ({
@@ -60,25 +53,20 @@ export function ProductNavigation({ productsNav, path }: Props) {
           items,
         }
 
-        console.log("Prepared subProducts for state:", safeSubProducts)
-
         setSubProducts(safeSubProducts)
         setProductsSlidePosition("submenu")
       }
     } else {
-      console.log("No matching subProduct found for path:", path)
       setSubProducts(undefined)
     }
   }, [path, productsNav])
 
   const onProductClick = React.useCallback((subProducts: SubProducts) => {
-    console.log("Product clicked:", subProducts)
     setSubProducts(subProducts)
     setProductsSlidePosition("submenu")
   }, [])
 
   const onSubproductClick = () => {
-    console.log("Navigating back to main menu")
     setProductsSlidePosition("main")
     setSubProducts(undefined)
   }

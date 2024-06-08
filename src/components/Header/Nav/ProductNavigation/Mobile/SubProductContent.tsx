@@ -24,8 +24,6 @@ const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
       marginLeft: indent ? "20px" : "0",
     }
 
-    console.log("Rendering page:", label, href, children)
-
     return (
       <React.Fragment key={label}>
         <a style={linkStyle} className={`${styles.link} subproduct-link`} href={adjustedHref}>
@@ -39,11 +37,8 @@ const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
 
 export const SubProductContent = ({ subProducts, onSubproductClick, currentPath }: Props) => {
   if (!subProducts) {
-    console.log("No subProducts to render")
     return null
   }
-
-  console.log("Rendering subProducts:", subProducts)
 
   return (
     <>
