@@ -44,7 +44,7 @@ export function ProductNavigation({ productsNav, path }: Props) {
 
       console.log("Found subProduct:", subProduct)
 
-      if (subProduct?.subProducts) {
+      if (subProduct?.subProducts && Array.isArray(subProduct.subProducts)) {
         const items = subProduct.subProducts.map((subProductItem) => ({
           label: subProductItem.label,
           href: "#",

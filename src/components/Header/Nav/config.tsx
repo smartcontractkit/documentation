@@ -15,14 +15,15 @@ export type Item = { label: string; icon?: string; href: string; children?: Page
 export type SubProductItem = {
   label: string
   href?: string
-  items: Item[]
+  items: {
+    label: string
+    href: string
+    children?: Page[]
+  }[]
 }
 
 export type ProductItem = Item & {
-  subProducts?: {
-    label: string
-    items: SubProductItem[]
-  }
+  subProducts?: SubProductItem[]
 }
 
 export type ProductsNav = {
