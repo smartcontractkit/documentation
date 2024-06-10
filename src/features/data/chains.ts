@@ -186,7 +186,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "streams"],
+    tags: ["default", "rates", "streams", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -195,7 +195,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["streams"],
+        tags: ["streams", "proofOfReserve"],
       },
       {
         name: "Arbitrum Sepolia",

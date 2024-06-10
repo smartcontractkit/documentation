@@ -82,7 +82,18 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
       <header className={styles.header} ref={navRef}>
         <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
           <div className={styles.container}>
-            <div className={styles.leftSection}>
+            <div className={styles.logoSection}>
+              <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
+                <img
+                  alt="Documentation Home"
+                  title="Documentation Home"
+                  style={{ display: "flex" }}
+                  src="/chainlink-docs.svg"
+                  height={30}
+                />
+              </a>
+            </div>
+            <div className={styles.menuSection}>
               <ProductNavigation
                 path={path}
                 searchTrigger={searchTrigger}

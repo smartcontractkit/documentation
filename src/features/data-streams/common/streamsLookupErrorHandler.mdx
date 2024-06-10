@@ -1,0 +1,152 @@
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+The Chainlink Automation StreamsLookup error handler provides insight into potential errors or edge cases in StreamsLookup upkeeps. The table below outlines a range of error codes and the behavior associated with the codes. Use the `checkErrorHandler` function to specify how you want to respond to the error codes. `checkErrorHandler` is simulated offchain and determines what action for Automation to take onchain in `performUpkeep`.
+
+<Aside type="caution" title="Developer responsibility">
+  Developers implementing Chainlink products are solely responsible for maintaining the security and user experience of
+  their applications. Developers must monitor and mitigate any potential application code risks that may, among other
+  things, result in unanticipated application behavior, including by instituting requisite [risk mitigation
+  processes](/data-feeds/selecting-data-feeds#risk-mitigation) including, but not limited to, data quality checks,
+  circuit breakers, and appropriate contingency logic for their use case.
+</Aside>
+
+## Error handler
+
+When Automation detects an event, it runs the `checkLog` function, which includes a [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) custom error. The StreamsLookup revert enables your upkeep to fetch a report from Data Streams. If reports are fetched successfully, the [`checkCallback`](/chainlink-automation/reference/automation-interfaces#checkcallback-function) function is evaluated offchain. Otherwise, the `checkErrorHandler` function is evaluated offchain to determine what Automation should do next. Both of these functions have the same output types (`bool upkeepNeeded, bytes memory performData`), which Automation uses to run `performUpkeep` onchain. The [example code](#example-code) also shows each function outlined in the diagram below:
+
+<ClickToZoom
+  src="/images/automation/streamslookup-errorhandler-horizontal.png"
+  alt="Error handler flow diagram"
+  style="display: block; margin-left: auto; margin-right: auto;"
+/>
+
+If the Automation network fails to get the requested reports, an error code is sent to the `checkErrorHandler` function in your contract. If your contract doesn't have the `checkErrorHandler` function, nothing will happen. If your contract has the `checkErrorHandler` function, it is evaluated offchain to determine what to do next. For example, you could intercept or ignore certain errors and decide not to run `performUpkeep` in those cases, in order to save time and gas. For other errors, you can execute an alternative path within `performUpkeep`, and the upkeep runs the custom logic you define in your `performUpkeep` function to handle those errors.
+
+1. Add the `checkErrorHandler` function in your contract to specify how you want to handle [error codes](#error-codes). For example, you could decide to ignore any codes related to bad requests or incorrect input, without running `performUpkeep` onchain:
+
+   ```solidity
+   /**
+    * @notice Determines the need for upkeep in response to an error from Data Streams.
+    * @param errorCode The error code returned by the Data Streams lookup.
+    * @param extraData Additional context or data related to the error condition.
+    * @return upkeepNeeded Boolean indicating whether upkeep is needed based on the error.
+    * @return performData Data to be used if upkeep is performed, encoded with success state and error context.
+    */
+   function checkErrorHandler(
+     uint errorCode,
+     bytes calldata extraData
+   ) external returns (bool upkeepNeeded, bytes memory performData) {
+     // Add custom logic to handle errors offchain here
+     bool _upkeepNeeded = true;
+     bool reportSuccess = false;
+     if (errorCode == 808400) {
+       // Handle bad request errors code offchain.
+       // In this example, no upkeep needed for bad request errors.
+       _upkeepNeeded = false;
+     } else {
+       // Handle other errors as needed.
+     }
+     return (_upkeepNeeded, abi.encode(reportSuccess, abi.encode(errorCode, extraData)));
+   }
+   ```
+
+1. Define custom logic for the alternative path within `performUpkeep`, to handle any error codes you did not intercept offchain in `checkErrorHandler`:
+
+   ```solidity
+   // function will be performed on-chain
+   function performUpkeep(bytes calldata performData) external {
+     // Decode incoming performData
+     (bool reportSuccess, bytes memory payload) = abi.decode(performData, (bool, bytes));
+
+     if (reportSuccess) {
+       // Decode the performData bytes passed in by CL Automation.
+       // This contains the data returned by your implementation in checkCallback().
+       (bytes[] memory signedReports, bytes memory extraData) = abi.decode(payload, (bytes[], bytes));
+       // Logic to verify and decode report
+       // ...
+     } else {
+       // Handle error condition
+       (uint errorCode, bytes memory extraData) = abi.decode(payload, (uint, bytes));
+       // Custom logic to handle error codes
+     }
+   }
+   ```
+
+### Testing checkErrorHandler
+
+`checkErrorHandler` is simulated offchain. When `upkeepNeeded` returns `true`, Automation runs `performUpkeep` onchain using the `performData` from `checkErrorHandler`. If the `checkErrorHandler` function itself reverts, `performUpkeep` does not run.
+
+If you need to force errors in StreamsLookup while testing, you can try the following methods:
+
+- Not specifying any `feedID` to force error code 808400 (`ErrCodeStreamsBadRequest`)
+- Specifying an incorrect `feedID` to force error code 808401 (`ErrCodeStreamsBadRequest`)
+- Specifying a future timestamp to force error code 808206 (where partial content is received) for both single `feedID` and bulk `feedID` requests
+- Specifying old timestamps for reports not available anymore yields either error code 808504 (no response) or 808600 (bad response), depending on which service calls the timeout request
+
+If your [StreamsLookup revert](/chainlink-automation/reference/automation-interfaces#streamslookup-revert) function is defined incorrectly in your smart contracts, the nodes will not be able to decode it.
+
+## Error codes
+
+<table>
+  <thead>
+    <tr>
+      <th>Error code</th>
+      <th>Retries</th>
+      <th>Possible cause of error</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No error</td>
+      <td>N/A</td>
+      <td>No error</td>
+    </tr>
+    <tr>
+      <td rowspan="3">ErrCodeStreamsBadRequest: 808400</td>
+      <td rowspan="3">No</td>
+      <td>User requested 0 feeds</td>
+    </tr>
+    <tr>
+      <td>User error, incorrect parameter input</td>
+    </tr>
+    <tr>
+      <td>Issue with encoding http url (bad characters)</td>
+    </tr>
+    <tr>
+      <td>ErrCodeStreamsUnauthorized: 808401</td>
+      <td>No</td>
+      <td>Key access issue or incorrect feedID</td>
+    </tr>
+    <tr>
+      <td>808206</td>
+      <td>Log trigger - after retries; Conditional immediately</td>
+      <td>Requested m reports but only received n (partial)</td>
+    </tr>
+    <tr>
+      <td>8085XX (e.g 808500)</td>
+      <td>Log trigger - after retries; Conditional immediately</td>
+      <td>No response</td>
+    </tr>
+    <tr id="808600">
+      <td>ErrCodeStreamsBadResponse: 808600</td>
+      <td>No</td>
+      <td>Error in reading body of returned response, but service is up</td>
+    </tr>
+    <tr id="808601">
+      <td>ErrCodeStreamsTimeout: 808601</td>
+      <td>No</td>
+      <td>No valid report is received for 10 seconds</td>
+    </tr>
+    <tr id="808700">
+      <td>ErrCodeStreamsUnknownError: 808700</td>
+      <td>No</td>
+      <td>Unknown</td>
+    </tr>
+  </tbody>
+</table>
+
+## Example code
+
+This example code includes the `revert StreamsLookup`, `checkCallback`, `checkErrorHandler` and `performUpkeep` functions. The full code example is available [here](https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataStreams/StreamsUpkeepWithErrorHandler.sol).
+
+<CodeSample src="samples/DataStreams/StreamsUpkeepWithErrorHandler.sol" />

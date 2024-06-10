@@ -1,7 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog"
-import React from "react"
+import React, { useEffect } from "react"
 import { ProductsNav } from "../../config"
 import { SearchTrigger } from "../../NavBar"
+import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
 import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
@@ -10,14 +11,20 @@ import { ProductContent } from "./ProductContent"
 import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
 
+type Page = {
+  label: string
+  href: string
+}
+
 export type SubProducts = {
   label: string
-  items: { label: string; href: string }[]
+  items: { label: string; href: string; pages?: Page[] }[]
 }
 
 type Props = {
   searchTrigger?: SearchTrigger
   productsNav: ProductsNav
+  path: string
 }
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
@@ -25,12 +32,40 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav }: Props) {
+export function ProductNavigation({ productsNav, path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
   const [producsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
+
+  useEffect(() => {
+    const foundSubProduct = productsNav.categories.find((category) =>
+      category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
+    )
+
+    if (foundSubProduct) {
+      const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
+
+      if (subProduct?.subProducts?.items) {
+        const safeSubProducts: SubProducts = {
+          label: subProduct.subProducts.label,
+          items: subProduct.subProducts.items.map((item) => ({
+            label: item.label,
+            href: item.href || "#",
+            pages:
+              item.pages?.map((page) => ({
+                label: page.label,
+                href: page.href,
+              })) || [],
+          })),
+        }
+
+        setSubProducts(safeSubProducts)
+        setProductsSlidePosition("submenu")
+      }
+    }
+  }, [path, productsNav])
 
   const onProductClick = React.useCallback((subProducts: SubProducts) => {
     setSubProducts(subProducts)
@@ -44,34 +79,21 @@ export function ProductNavigation({ productsNav }: Props) {
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
     if (!newOpenState) {
+      setProductsSlidePosition("main")
       setShowSearch(false)
     }
   }
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <a
-        rel="noreferrer noopener"
-        target="_blank"
-        className={clsx("home-logo", styles.logo)}
-        href="https://chain.link/"
-      >
-        <img
-          alt="Chainlink Home"
-          title="Chainlink Home"
-          style={{ display: "flex" }}
-          src="/assets/icons/chainlink.svg"
-          height={24}
-          width={24}
-        />
-      </a>
       <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
-        <span
-          className={"text-300"}
-          style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
-        >
-          Developer Hub
-        </span>
+        <img
+          alt="Documentation Home"
+          title="Documentation Home"
+          style={{ display: "flex" }}
+          src="/chainlink-docs.svg"
+          height={30}
+        />
         <CaretIcon
           style={{
             color: "var(--color-text-primary)",
@@ -97,7 +119,11 @@ export function ProductNavigation({ productsNav }: Props) {
                   <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
                 </ul>
                 <div className={clsx(styles.subProductContent)}>
-                  <SubProductContent subProducts={subProducts} onSubproductClick={onSubproductClick} />
+                  <SubProductContent
+                    subProducts={subProducts}
+                    onSubproductClick={onSubproductClick}
+                    currentPath={path}
+                  />
                 </div>
               </div>
             </div>
@@ -105,7 +131,6 @@ export function ProductNavigation({ productsNav }: Props) {
           <Close ref={closeButtonRef} className={styles.closeButton}>
             <img src="/assets/icons/close.svg" />
           </Close>
-
           <BottomBar />
         </Dialog.Content>
       </Portal>
