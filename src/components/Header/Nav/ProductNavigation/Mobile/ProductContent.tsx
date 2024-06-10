@@ -1,6 +1,5 @@
-import { ProductsNav } from "../../config"
+import { ProductsNav, SubProducts } from "../../config"
 import { Category } from "./Category"
-import { SubProducts } from "./ProductNavigation"
 
 type Props = {
   onProductClick: (subProducts: SubProducts) => void

@@ -9,6 +9,38 @@ import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
 
+interface Page {
+  label: string
+  href: string
+  children?: Page[]
+}
+
+const mapContents = (contents: any[]): Page[] => {
+  return contents.map((page) => {
+    const label = page.title || "No Label"
+    const href = page.url || "#"
+
+    const pageWithChildren: Page = {
+      label,
+      href,
+    }
+
+    if (page.children && Array.isArray(page.children)) {
+      pageWithChildren.children = mapContents(page.children)
+    }
+
+    return pageWithChildren
+  })
+}
+
+const getSubProducts = (sectionData) => {
+  const structuredData = sectionData.map((item) => ({
+    label: item.section,
+    items: mapContents(item.contents),
+  }))
+  return structuredData
+}
+
 const desktopSubProductsNav = [
   {
     label: "Data Feeds",
@@ -65,129 +97,49 @@ const docsSections = [
         label: "Data Feeds",
         href: "/data-feeds",
         icon: dataFeedsLogo.src,
-        subProducts: {
-          label: "Data Feeds",
-          href: "/data-feeds",
-          items: sidebar.dataFeeds?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.dataFeeds),
       },
       {
         label: "Data Streams",
         href: "/data-streams",
         icon: dataStreamsLogo.src,
-        subProducts: {
-          label: "Data Streams",
-          href: "/data-streams",
-          items: sidebar.dataStreams?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.dataStreams),
       },
       {
         label: "CCIP",
         href: "/ccip",
         icon: ccipLogo.src,
-        subProducts: {
-          label: "CCIP",
-          href: "/ccip",
-          items: sidebar.ccip?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.ccip),
       },
       {
         label: "Functions",
         href: "/chainlink-functions",
         icon: functionsLogo.src,
-        subProducts: {
-          label: "Functions",
-          href: "/chainlink-functions",
-          items: sidebar.chainlinkFunctions?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.chainlinkFunctions),
       },
       {
         label: "Automation",
         href: "/chainlink-automation",
         icon: automationLogo.src,
-        subProducts: {
-          label: "Automation",
-          href: "/chainlink-automation",
-          items: sidebar.automation?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.automation),
       },
       {
         label: "VRF",
         href: "/vrf",
         icon: vrfLogo.src,
-        subProducts: {
-          label: "VRF",
-          href: "/vrf",
-          items: sidebar.vrf?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.vrf),
       },
       {
         label: "Chainlink Nodes",
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
-        subProducts: {
-          label: "Chainlink Nodes",
-          href: "/chainlink-nodes",
-          items: sidebar.nodeOperator?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.nodeOperator),
       },
       {
         label: "General",
         href: "/resources",
         icon: generalLogo.src,
-        subProducts: {
-          label: "General",
-          href: "/resources",
-          items: sidebar.global?.map((item) => ({
-            label: item.section,
-            pages: item.contents.map((page) => ({
-              label: page.title,
-              href: page.url,
-            })),
-          })),
-        },
+        subProducts: getSubProducts(sidebar.global),
       },
       {
         label: "Quickstarts",

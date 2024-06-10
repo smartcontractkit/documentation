@@ -1,9 +1,8 @@
 import React from "react"
-import { ProductItem } from "../../config"
+import { ProductItem, SubProducts, SubProductItem } from "../../config"
 import { clsx } from "../../utils"
 import { CaretRightIcon } from "./CaretRightIcon"
 import styles from "./category.module.css"
-import { SubProducts } from "./ProductNavigation"
 
 type ListItemProps = {
   item: ProductItem
@@ -20,20 +19,29 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
         </span>
       </>
     )
+
+    const handleProductClick = () => {
+      const subProductItems = subProducts as unknown as SubProductItem[]
+      const mappedSubProducts: SubProducts = {
+        label,
+        items: subProductItems.map((subProductItem) => ({
+          label: subProductItem.label,
+          href: subProductItem.href || "#",
+          pages: subProductItem.items.map((item) => ({
+            label: item.label,
+            href: item.href || "/",
+            children: item.children || [],
+          })),
+        })),
+      }
+      onProductClick(mappedSubProducts)
+    }
+
     return subProducts ? (
       <button
         className={clsx(styles.link, "product-link")}
         style={{ marginTop: "var(--space-0x)" }}
-        onClick={() =>
-          onProductClick({
-            ...subProducts,
-            items:
-              subProducts.items?.map((item) => ({
-                ...item,
-                href: item.href || "/",
-              })) || [],
-          })
-        }
+        onClick={handleProductClick}
         data-testid="sub-product-navigation-trigger-mobile"
       >
         {itemComponent}
