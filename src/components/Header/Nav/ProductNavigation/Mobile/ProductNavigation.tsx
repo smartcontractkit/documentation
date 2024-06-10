@@ -1,23 +1,20 @@
 import * as Dialog from "@radix-ui/react-dialog"
-import React from "react"
-import { ProductsNav } from "../../config"
+import React, { useEffect } from "react"
+import { ProductsNav, SubProducts } from "../../config"
 import { SearchTrigger } from "../../NavBar"
+import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
 import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
 import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
-import styles from "./productNavigation.module.css"
 import { SubProductContent } from "./SubProductContent"
-
-export type SubProducts = {
-  label: string
-  items: { label: string; href: string }[]
-}
+import styles from "./productNavigation.module.css"
 
 type Props = {
   searchTrigger?: SearchTrigger
   productsNav: ProductsNav
+  path: string
 }
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
@@ -25,12 +22,44 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav }: Props) {
+export function ProductNavigation({ productsNav, path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
-  const [producsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
+  const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
+
+  useEffect(() => {
+    const foundSubProduct = productsNav.categories.find((category) =>
+      category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
+    )
+
+    if (foundSubProduct) {
+      const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
+
+      if (subProduct?.subProducts && Array.isArray(subProduct.subProducts)) {
+        const items = subProduct.subProducts.map((subProductItem) => ({
+          label: subProductItem.label,
+          href: "#",
+          pages: subProductItem.items.map((page) => ({
+            label: page.label,
+            href: page.href,
+            children: page.children || [],
+          })),
+        }))
+
+        const safeSubProducts: SubProducts = {
+          label: subProduct.label,
+          items,
+        }
+
+        setSubProducts(safeSubProducts)
+        setProductsSlidePosition("submenu")
+      }
+    } else {
+      setSubProducts(undefined)
+    }
+  }, [path, productsNav])
 
   const onProductClick = React.useCallback((subProducts: SubProducts) => {
     setSubProducts(subProducts)
@@ -39,39 +68,28 @@ export function ProductNavigation({ productsNav }: Props) {
 
   const onSubproductClick = () => {
     setProductsSlidePosition("main")
+    setSubProducts(undefined)
   }
 
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
     if (!newOpenState) {
+      setProductsSlidePosition("main")
       setShowSearch(false)
+      setSubProducts(undefined)
     }
   }
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <a
-        rel="noreferrer noopener"
-        target="_blank"
-        className={clsx("home-logo", styles.logo)}
-        href="https://chain.link/"
-      >
-        <img
-          alt="Chainlink Home"
-          title="Chainlink Home"
-          style={{ display: "flex" }}
-          src="/assets/icons/chainlink.svg"
-          height={24}
-          width={24}
-        />
-      </a>
       <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
-        <span
-          className={"text-300"}
-          style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
-        >
-          Developer Hub
-        </span>
+        <img
+          alt="Documentation Home"
+          title="Documentation Home"
+          style={{ display: "flex" }}
+          src="/chainlink-docs.svg"
+          height={30}
+        />
         <CaretIcon
           style={{
             color: "var(--color-text-primary)",
@@ -92,12 +110,16 @@ export function ProductNavigation({ productsNav }: Props) {
                 overflow: "hidden",
               }}
             >
-              <div className={clsx(styles.content, styles[producsSlidePosition])}>
+              <div className={clsx(styles.content, styles[productsSlidePosition])}>
                 <ul className={clsx(styles.productContent)}>
                   <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
                 </ul>
                 <div className={clsx(styles.subProductContent)}>
-                  <SubProductContent subProducts={subProducts} onSubproductClick={onSubproductClick} />
+                  <SubProductContent
+                    subProducts={subProducts}
+                    onSubproductClick={onSubproductClick}
+                    currentPath={path}
+                  />
                 </div>
               </div>
             </div>
@@ -105,7 +127,6 @@ export function ProductNavigation({ productsNav }: Props) {
           <Close ref={closeButtonRef} className={styles.closeButton}>
             <img src="/assets/icons/close.svg" />
           </Close>
-
           <BottomBar />
         </Dialog.Content>
       </Portal>
