@@ -148,6 +148,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CELO_ALFAJORES"
     case "ethereum-testnet-sepolia-mode-1":
       return "MODE_SEPOLIA"
+    case "ethereum-mainnet-mode-1":
+      return "MODE_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -201,6 +203,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "celo-testnet-alfajores"
     case "MODE_SEPOLIA":
       return "ethereum-testnet-sepolia-mode-1"
+    case "MODE_MAINNET":
+      return "ethereum-mainnet-mode-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
