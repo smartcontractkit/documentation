@@ -54,7 +54,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/data-feeds/price-feeds/addresses?network=polygon",
       scroll: "/data-feeds/price-feeds/addresses?network=scroll",
       solana: "/data-feeds/price-feeds/addresses?network=solana",
-      starknet: "/data-feeds/price-feeds/addresses?network=starknet",
+      // starknet: "/data-feeds/price-feeds/addresses?network=starknet",
       zksync: "/data-feeds/price-feeds/addresses?network=zksync",
     },
   },
@@ -147,7 +147,7 @@ export const chainNames: Record<string, string> = {
   polygon: "Polygon",
   scroll: "Scroll",
   solana: "Solana",
-  starknet: "Starknet",
+  // starknet: "Starknet",
   wemix: "Wemix",
   zksync: "zkSync",
 }
