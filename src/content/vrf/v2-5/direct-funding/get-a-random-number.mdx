@@ -1,0 +1,129 @@
+---
+section: vrf
+date: Last Modified
+title: "Get a Random Number"
+whatsnext:
+  {
+    "Security Considerations": "/vrf/v2-5/security",
+    "Best Practices": "/vrf/v2-5/best-practices",
+    "Migrating from V2": "/vrf/v2-5/migration-from-v2",
+    "Supported Networks": "/vrf/v2-5/supported-networks",
+  }
+metadata:
+  description: "How to generate a random number inside a smart contract using Chainlink VRF v2.5 - Direct funding method."
+---
+
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
+import { Aside, CodeSample } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2.5 without managing a subscription. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
+
+## Requirements
+
+This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:
+
+- [The Remix IDE](https://remix.ethereum.org/)
+- [MetaMask](https://metamask.io/)
+- [Sepolia testnet ETH](/resources/link-token-contracts/#sepolia-testnet)
+
+If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview) guide to learn the basics.
+
+## Create and deploy a VRF compatible contract
+
+For this example, use the [DirectFundingConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/DirectFundingConsumer.sol) sample contract. This contract imports the following dependencies:
+
+- `VRFV2PlusWrapperConsumerBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol)
+- `VRFV2PlusClient.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol)
+
+The contract also includes pre-configured values for the necessary request parameters such as `callbackGasLimit`, `requestConfirmations`, the number of random words `numWords`, the VRF v2.5 Wrapper address `wrapperAddress`, and the LINK token address `linkAddress`. You can change these parameters if you want to experiment on different testnets.
+
+Build and deploy the contract on Sepolia.
+
+1. Open the [`DirectFundingConsumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/DirectFundingConsumer.sol) in Remix.
+
+   {/* prettier-ignore */}
+   <CodeSample src="samples/VRF/v2-5/DirectFundingConsumer.sol" showButtonOnly/>
+
+1. On the **Compile** tab in Remix, compile the `DirectFundingConsumer` contract.
+
+1. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Web3 Environment** and select the `DirectFundingConsumer` contract from the contract list.
+
+1. Click the **Deploy** button to deploy your contract onchain. MetaMask opens and asks you to confirm the transaction.
+
+1. After you deploy your contract, copy the address from the **Deployed Contracts** list in Remix. Before you can request randomness from VRF v2.5, you must fund your consuming contract with enough tokens in order to request for randomness. Next, [fund your contract](#fund-your-contract).
+
+## Fund your contract
+
+Requests for randomness will fail unless your consuming contract has enough tokens. VRF V2.5 allows you to use either native tokens or LINK to pay for your requests.
+
+1. [Acquire testnet LINK and Sepolia ETH](https://faucets.chain.link/sepolia).
+1. [Fund your contract](/resources/fund-your-contract) with either testnet LINK or Sepolia ETH, depending on how you want to pay for your VRF requests. For this example, fund your contract with 2 LINK or 0.01 Sepolia ETH. (The actual request cost is closer to 0.877 LINK or 0.001 ETH. You can [withdraw the excess funds](#clean-up) after you're done with this contract.)
+
+## Request random values
+
+The deployed contract requests random values from Chainlink VRF, receives those values, builds a struct `RequestStatus` containing them, and stores the struct in a mapping `s_requests`. Run the `requestRandomWords()` function on your contract to start the request.
+
+1.  Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
+
+1.  Expand the `requestRandomWords()` function. For `enableNativePayment`, fill in `true` if you're paying for your request with Sepolia ETH, or `false` if you're paying with testnet LINK. Click **transact** to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction.
+
+    After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`. Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
+
+1.  To fetch the request ID of your request, call `lastRequestId()`.
+
+1.  After the oracle returns the random values to your contract, the mapping `s_requests` is updated. The received random values are stored in `s_requests[_requestId].randomWords`.
+
+1.  Call `getRequestStatus()` and specify the `requestId` to display the random words.
+
+<Aside type="note" title="Note on Requesting or Cancelling Randomness">
+  Do not allow re-requesting or cancellation of randomness. For more information, see the [VRF Security
+  Considerations](/vrf/v2-5/security#do-not-allow-re-requesting-or-cancellation-of-randomness) page.
+</Aside>
+
+## Analyzing the contract
+
+In this example, the consuming contract uses static configuration parameters.
+
+<CodeSample src="samples/VRF/v2-5/DirectFundingConsumer.sol" />
+
+The parameters define how your requests will be processed. You can find the values for your network in the [Supported networks](/vrf/v2-5/supported-networks) page.
+
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract minus the `wrapperGasOverhead`. See the [VRF v2.5 Direct funding limits](/vrf/v2-5/overview/direct-funding#limits) for more details. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your consuming contract is still charged for the work done to generate your requested random values.
+
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
+
+- `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
+
+The contract includes the following functions:
+
+- `requestRandomWords()`: Takes your specified parameters and submits the request to the VRF v2.5 Wrapper contract.
+
+- `fulfillRandomWords()`: Receives random values and stores them with your contract.
+
+- `getRequestStatus()`: Retrive request details for a given `_requestId`.
+
+- `withdrawLink()`: At any time, the owner of the contract can withdraw the outstanding LINK balance from it.
+
+- `withdrawNative()`: At any time, the owner of the contract can withdraw the outstanding native token balance from it.
+
+<Aside type="note" title="Security Considerations">
+  Be sure to review your contracts to make sure they follow the best practices on the [security
+  considerations](/vrf/v2-5/security) page.
+</Aside>
+
+## Clean up
+
+After you are done with this contract, you can retrieve the remaining testnet tokens to use with other examples:
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="feePaymentType" client:visible>
+<Fragment slot="tab.1">LINK</Fragment>
+<Fragment slot="tab.2">Native tokens</Fragment>
+<Fragment slot="panel.1">
+Call the `withdrawLink()` function. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, the remaining LINK will be transferred from your consuming contract to your wallet address.
+</Fragment>
+<Fragment slot="panel.2">
+Call `getBalance` to retrieve your contract's ETH balance in wei, and then pass that into the `withdrawNative()` function. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, the remaining Sepolia ETH will be transferred from your consuming contract to your wallet address.
+</Fragment>
+</TabsContent>

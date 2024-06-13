@@ -186,7 +186,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "streams"],
+    tags: ["default", "rates", "streams", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -195,7 +195,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["streams"],
+        tags: ["streams", "proofOfReserve"],
       },
       {
         name: "Arbitrum Sepolia",
@@ -429,24 +429,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
-  {
-    page: "starknet",
-    label: "Starknet",
-    title: "StarkNet Data Feeds",
-    img: "/assets/chains/starknet.svg",
-    networkStatusUrl: "https://status.starknet.io/",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Starknet Sepolia testnet",
-        explorerUrl: "https://sepolia.starkscan.co/contract/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
-        queryString: "starknet-sepolia-testnet",
-      },
-    ],
-  },
+  // {
+  //   page: "starknet",
+  //   label: "Starknet",
+  //   title: "StarkNet Data Feeds",
+  //   img: "/assets/chains/starknet.svg",
+  //   networkStatusUrl: "https://status.starknet.io/",
+  //   tags: ["default"],
+  //   supportedFeatures: ["feeds"],
+  //   networks: [
+  //     {
+  //       name: "Starknet Sepolia testnet",
+  //       explorerUrl: "https://sepolia.starkscan.co/contract/%s",
+  //       networkType: "testnet",
+  //       rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
+  //       queryString: "starknet-sepolia-testnet",
+  //     },
+  //   ],
+  // },
   {
     page: "solana",
     label: "Solana",

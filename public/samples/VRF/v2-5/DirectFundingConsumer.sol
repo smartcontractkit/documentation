@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 /**
@@ -16,215 +17,6 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
-
-/**
- * Import IVRFV2PlusWrapper which is not yet available in the chainlink/contracts package.
- * https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFV2PlusWrapper.sol
- */
-
-interface IVRFV2PlusWrapper {
-    /**
-     * @return the request ID of the most recent VRF V2 request made by this wrapper. This should only
-     * be relied option within the same transaction that the request was made.
-     */
-    function lastRequestId() external view returns (uint256);
-
-    /**
-     * @notice Calculates the price of a VRF request with the given callbackGasLimit at the current
-     * @notice block.
-     *
-     * @dev This function relies on the transaction gas price which is not automatically set during
-     * @dev simulation. To estimate the price at a specific gas price, use the estimatePrice function.
-     *
-     * @param _callbackGasLimit is the gas limit used to estimate the price.
-     * @param _numWords is the number of words to request.
-     */
-    function calculateRequestPrice(
-        uint32 _callbackGasLimit,
-        uint32 _numWords
-    ) external view returns (uint256);
-
-    /**
-     * @notice Calculates the price of a VRF request in native with the given callbackGasLimit at the current
-     * @notice block.
-     *
-     * @dev This function relies on the transaction gas price which is not automatically set during
-     * @dev simulation. To estimate the price at a specific gas price, use the estimatePrice function.
-     *
-     * @param _callbackGasLimit is the gas limit used to estimate the price.
-     * @param _numWords is the number of words to request.
-     */
-    function calculateRequestPriceNative(
-        uint32 _callbackGasLimit,
-        uint32 _numWords
-    ) external view returns (uint256);
-
-    /**
-     * @notice Estimates the price of a VRF request with a specific gas limit and gas price.
-     *
-     * @dev This is a convenience function that can be called in simulation to better understand
-     * @dev pricing.
-     *
-     * @param _callbackGasLimit is the gas limit used to estimate the price.
-     * @param _numWords is the number of words to request.
-     * @param _requestGasPriceWei is the gas price in wei used for the estimation.
-     */
-    function estimateRequestPrice(
-        uint32 _callbackGasLimit,
-        uint32 _numWords,
-        uint256 _requestGasPriceWei
-    ) external view returns (uint256);
-
-    /**
-     * @notice Estimates the price of a VRF request in native with a specific gas limit and gas price.
-     *
-     * @dev This is a convenience function that can be called in simulation to better understand
-     * @dev pricing.
-     *
-     * @param _callbackGasLimit is the gas limit used to estimate the price.
-     * @param _numWords is the number of words to request.
-     * @param _requestGasPriceWei is the gas price in wei used for the estimation.
-     */
-    function estimateRequestPriceNative(
-        uint32 _callbackGasLimit,
-        uint32 _numWords,
-        uint256 _requestGasPriceWei
-    ) external view returns (uint256);
-
-    /**
-     * @notice Requests randomness from the VRF V2 wrapper, paying in native token.
-     *
-     * @param _callbackGasLimit is the gas limit for the request.
-     * @param _requestConfirmations number of request confirmations to wait before serving a request.
-     * @param _numWords is the number of words to request.
-     */
-    function requestRandomWordsInNative(
-        uint32 _callbackGasLimit,
-        uint16 _requestConfirmations,
-        uint32 _numWords,
-        bytes calldata extraArgs
-    ) external payable returns (uint256 requestId);
-
-    function link() external view returns (address);
-
-    function linkNativeFeed() external view returns (address);
-}
-
-/**
- * Import VRFV2PlusWrapperConsumerBase which is not yet available in the chainlink/contracts package.
- * https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol
- */
-
-abstract contract VRFV2PlusWrapperConsumerBase {
-    error OnlyVRFWrapperCanFulfill(address have, address want);
-
-    LinkTokenInterface internal immutable i_linkToken;
-    IVRFV2PlusWrapper public immutable i_vrfV2PlusWrapper;
-
-    /**
-     * @param _vrfV2PlusWrapper is the address of the VRFV2Wrapper contract
-     */
-    constructor(address _vrfV2PlusWrapper) {
-        IVRFV2PlusWrapper vrfV2PlusWrapper = IVRFV2PlusWrapper(
-            _vrfV2PlusWrapper
-        );
-
-        i_linkToken = LinkTokenInterface(vrfV2PlusWrapper.link());
-        i_vrfV2PlusWrapper = vrfV2PlusWrapper;
-    }
-
-    /**
-     * @dev Requests randomness from the VRF V2+ wrapper.
-     *
-     * @param _callbackGasLimit is the gas limit that should be used when calling the consumer's
-     *        fulfillRandomWords function.
-     * @param _requestConfirmations is the number of confirmations to wait before fulfilling the
-     *        request. A higher number of confirmations increases security by reducing the likelihood
-     *        that a chain re-org changes a published randomness outcome.
-     * @param _numWords is the number of random words to request.
-     *
-     * @return requestId is the VRF V2+ request ID of the newly created randomness request.
-     */
-    // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore
-    function requestRandomness(
-        uint32 _callbackGasLimit,
-        uint16 _requestConfirmations,
-        uint32 _numWords,
-        bytes memory extraArgs
-    ) internal returns (uint256 requestId, uint256 reqPrice) {
-        reqPrice = i_vrfV2PlusWrapper.calculateRequestPrice(
-            _callbackGasLimit,
-            _numWords
-        );
-        i_linkToken.transferAndCall(
-            address(i_vrfV2PlusWrapper),
-            reqPrice,
-            abi.encode(
-                _callbackGasLimit,
-                _requestConfirmations,
-                _numWords,
-                extraArgs
-            )
-        );
-        return (i_vrfV2PlusWrapper.lastRequestId(), reqPrice);
-    }
-
-    // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore
-    function requestRandomnessPayInNative(
-        uint32 _callbackGasLimit,
-        uint16 _requestConfirmations,
-        uint32 _numWords,
-        bytes memory extraArgs
-    ) internal returns (uint256 requestId, uint256 requestPrice) {
-        requestPrice = i_vrfV2PlusWrapper.calculateRequestPriceNative(
-            _callbackGasLimit,
-            _numWords
-        );
-        return (
-            i_vrfV2PlusWrapper.requestRandomWordsInNative{value: requestPrice}(
-                _callbackGasLimit,
-                _requestConfirmations,
-                _numWords,
-                extraArgs
-            ),
-            requestPrice
-        );
-    }
-
-    /**
-     * @notice fulfillRandomWords handles the VRF V2 wrapper response. The consuming contract must
-     * @notice implement it.
-     *
-     * @param _requestId is the VRF V2 request ID.
-     * @param _randomWords is the randomness result.
-     */
-    // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore
-    function fulfillRandomWords(
-        uint256 _requestId,
-        uint256[] memory _randomWords
-    ) internal virtual;
-
-    function rawFulfillRandomWords(
-        uint256 _requestId,
-        uint256[] memory _randomWords
-    ) external {
-        address vrfWrapperAddr = address(i_vrfV2PlusWrapper);
-        if (msg.sender != vrfWrapperAddr) {
-            revert OnlyVRFWrapperCanFulfill(msg.sender, vrfWrapperAddr);
-        }
-        fulfillRandomWords(_requestId, _randomWords);
-    }
-
-    /// @notice getBalance returns the native balance of the consumer contract
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    /// @notice getLinkToken returns the link token contract
-    function getLinkToken() public view returns (LinkTokenInterface) {
-        return i_linkToken;
-    }
-}
 
 contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     event RequestSent(uint256 requestId, uint32 numWords);
@@ -251,36 +43,49 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 callbackGasLimit = 100000;
+    uint32 public callbackGasLimit = 100000;
 
     // The default is 3, but you can set this higher.
-    uint16 requestConfirmations = 3;
+    uint16 public requestConfirmations = 3;
 
     // For this example, retrieve 2 random values in one request.
     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
-    uint32 numWords = 2;
+    uint32 public numWords = 2;
 
-    // Address LINK - hardcoded for Arbitrum Sepolia
-    address linkAddress = 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E;
+    // Address LINK - hardcoded for Sepolia
+    address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
 
-    // address WRAPPER - hardcoded for Arbitrum Sepolia
-    address wrapperAddress = 0x29576aB8152A09b9DC634804e4aDE73dA1f3a3CC;
+    // address WRAPPER - hardcoded for Sepolia
+    address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
 
     constructor()
         ConfirmedOwner(msg.sender)
         VRFV2PlusWrapperConsumerBase(wrapperAddress)
     {}
 
-    function requestRandomWords() external onlyOwner returns (uint256) {
+    function requestRandomWords(
+        bool enableNativePayment
+    ) external onlyOwner returns (uint256) {
         bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
-            VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+            VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
         );
-        (uint256 requestId, uint256 reqPrice) = requestRandomness(
-            callbackGasLimit,
-            requestConfirmations,
-            numWords,
-            extraArgs
-        );
+        uint256 requestId;
+        uint256 reqPrice;
+        if (enableNativePayment) {
+            (requestId, reqPrice) = requestRandomnessPayInNative(
+                callbackGasLimit,
+                requestConfirmations,
+                numWords,
+                extraArgs
+            );
+        } else {
+            (requestId, reqPrice) = requestRandomness(
+                callbackGasLimit,
+                requestConfirmations,
+                numWords,
+                extraArgs
+            );
+        }
         s_requests[requestId] = RequestStatus({
             paid: reqPrice,
             randomWords: new uint256[](0),
@@ -327,5 +132,19 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
         );
+    }
+
+    /// @notice withdrawNative withdraws the amount specified in amount to the owner
+    /// @param amount the amount to withdraw, in wei
+    function withdrawNative(uint256 amount) external onlyOwner {
+        (bool success, ) = payable(owner()).call{value: amount}("");
+        // solhint-disable-next-line gas-custom-errors
+        require(success, "withdrawNative failed");
+    }
+
+    event Received(address, uint256);
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
     }
 }

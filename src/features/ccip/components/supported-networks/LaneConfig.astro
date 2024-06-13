@@ -4,7 +4,7 @@ import {
   Environment,
   Version,
   PoolType,
-  LaneConfig,
+  type LaneConfig,
   determineTokenMechanism,
   TokenMechanism,
 } from "@config/data/ccip/"
@@ -14,6 +14,7 @@ import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
 import { Tooltip } from "@features/common/Tooltip"
+import TokenSearch from "./TokenSearch"
 
 type ConfigProps = {
   laneConfig: LaneConfig
@@ -242,89 +243,7 @@ if (supportedTokens) {
         <p>
           <strong>Transferable tokens</strong>
         </p>
-        <div style="overflow-x: auto;width: 100%">
-          <table>
-            <thead>
-              <tr>
-                <th>Symbol</th>
-                <th>Token&nbsp;Address</th>
-                <th>Decimals</th>
-                <th>
-                  <Tooltip
-                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock"
-                    label="Mechanism"
-                    style={{ marginTop: "0", minWidth: "7em", maxWidth: "10em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-                <th>
-                  <Tooltip
-                    tip="Maximum amount per transaction"
-                    label="Rate Limit Capacity"
-                    style={{ marginTop: "0", minWidth: "11em", maxWidth: "15em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-                <th>
-                  <Tooltip
-                    tip="Rate at which available capacity is replenished"
-                    label="Rate Limit Refill Rate"
-                    style={{ marginTop: "0", minWidth: "12em", maxWidth: "15em" }}
-                    labelStyle={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                    client:load
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {tokensWithExtraInfo.map((tokenWithExtraInfo) => {
-                return (
-                  <tr>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.token}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <Address
-                        contractUrl={getExplorerAddressUrl(explorerUrl)(tokenWithExtraInfo.address)}
-                        endLength={4}
-                      />
-                    </td>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.decimals}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{tokenWithExtraInfo.poolMechanism}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                        ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
-                          " " +
-                          tokenWithExtraInfo.token
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                        ? (() => {
-                            const { rateSecond, maxThroughput } = displayRate(
-                              tokenWithExtraInfo.rateLimiterConfig.capacity,
-                              tokenWithExtraInfo.rateLimiterConfig.rate,
-                              tokenWithExtraInfo.token,
-                              tokenWithExtraInfo.decimals
-                            )
-
-                            return (
-                              <Tooltip
-                                tip={maxThroughput}
-                                label={rateSecond}
-                                style={{ marginTop: "0", whiteSpace: "nowrap", minWidth: "15em", maxWidth: "15em" }}
-                                client:load
-                              />
-                            )
-                          })()
-                        : "N/A"}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:load />
       </>
     </>
   ) : (

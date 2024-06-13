@@ -1,0 +1,19 @@
+---
+const uicallout = await Astro.glob("./ui-callout.mdx")
+const UICalloutComponent = uicallout[0].Content
+
+const security = await Astro.glob("./security.mdx")
+const SecurityComponent = security[0].Content
+
+const supportednetworks = await Astro.glob("./supported-networks.mdx")
+const SupportedNetworksComponent = supportednetworks[0].Content
+
+export type Props = {
+  callout?: "uicallout" | "security" | "supportednetworks"
+}
+const { callout } = Astro.props as Props
+---
+
+{callout === "uicallout" && <UICalloutComponent />}
+{callout === "security" && <SecurityComponent />}
+{callout === "supportednetworks" && <SupportedNetworksComponent />}
