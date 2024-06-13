@@ -38,6 +38,29 @@ Complete the following tasks to test your VRF v2.5 consumer locally:
 1. Request random words from your consumer contract.
 1. Call the VRFCoordinatorV2_5Mock [fulfillRandomWords function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol#L102) to fulfill your consumer contract request.
 
+### Preview the code (optional)
+
+You can preview the code for the contracts you will deploy in this tutorial, or skip this step and proceed to [setting up your test environment](#prerequisites).
+
+_DirectFundingConsumerV2_5_ is the consuming contract that requests and directly pays the VRF service for random values:
+
+<CodeSample src="samples/VRF/mock/v2-5/DirectFundingConsumerV2_5.sol" />
+
+The other contracts are simply imported from their source in the `chainlink/contracts` npm package:
+
+- The _MockV3Aggregator_ contract allows you to simulate an oracle price feed without interacting with the existing Chainlink network.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/MockV3Aggregator.sol" />
+- Deploying _LinkToken_ in your test environment allows you to mock transferring LINK to test contracts.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/LinkToken.sol" />
+- As the VRF v2.5 direct funding [end-to-end diagram](/vrf/v2-5/direct-funding#request-and-receive-data) explains, the _VRFV2PlusWrapper_ acts as a wrapper for the coordinator contract.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/VRFV2PlusWrapper.sol" />
+- This contract mocks the VRF V2.5 Coordinator contract.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/VRFCoordinatorV2_5Mock.sol" />
+
 ## Prerequisites
 
 This guide will require you to finetune the gas limit when fulfilling requests. When writing, manually setting up the gas limits on Remix IDE is not supported, so you will use Remix IDE in conjunction with [MetaMask](https://metamask.io/).
@@ -92,7 +115,7 @@ Hardhat lets you run an Ethereum blockchain locally for testing. Use the [Hardha
 
 1. Follow the MetaMask [official guide](https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC#h_01G63GGJ83DGDRCS2ZWXM37CV5) to add a custom network manually.
 
-   <ClickToZoom src="/images/vrf/mock/metamaskcustomnetwork.jpg" />
+   <ClickToZoom src="/images/vrf/v2-5/mock/metamask-local-settings.png" />
 
 1. Import the first Hardhat test account into MetaMask.
 
@@ -117,35 +140,54 @@ Hardhat lets you run an Ethereum blockchain locally for testing. Use the [Hardha
 
    1. Your MetaMask is connected to the Hardhat test account, and you should have access to the newly imported account.
 
-      <ClickToZoom src="/images/vrf/mock/metamaskganacheaccount.jpg" />{" "}
+      <ClickToZoom src="/images/vrf/v2-5/mock/metamask-imported-account.png" />{" "}
 
 ## Testing
 
-### Open the contracts on Remix IDE
+### Open the contracts in Remix IDE
 
-Open _VRFCoordinatorV2_5Mock_ and compile in Remix:
+For this tutorial, there are five contracts to open within the same Remix workspace. The fastest way to do this is to clone the documentation repo locally, and then in Remix, upload the specific subdirectory of sample code used for both local testing tutorials (`public/samples/VRF/mock/v2-5`). (Alternatively, you can open one of the contracts in Remix, and then add the other four contracts manually within the same directory. All the code is shown in the optional [code preview](#preview-the-code-optional).)
 
-<CodeSample src="samples/VRF/mock/VRFCoordinatorV2_5Mock.sol" />
+1. Clone the documentation repo:
 
-Open _MockV3Aggregator_ and compile in Remix:
+   ```sh
+   git clone https://github.com/smartcontractkit/documentation.git
+   ```
 
-<CodeSample src="samples/VRF/mock/MockV3Aggregator.sol" />
+1. [Open Remix](https://remix.ethereum.org/).
+1. On the _FILE EXPLORER_ tab, create a new Remix workspace for this tutorial, or use the default workspace.
+1. Click the **Upload folder** button, navigate to where you cloned the `documentation` repo, and then select the `public/samples/VRF/mock/v2-5` subdirectory.
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-upload-folder.png" />
+1. Remix prompts you to confirm that you would like to upload 6 files from `v2-5`. Click **Upload**.
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-folder-upload-confirmation.png" />
+1. Your Remix file explorer should show the `v2-5` directory containing all the contracts you need for this tutorial. The _VRFv2_5Consumer.sol_ file is not used in this tutorial, so you can delete it from your Remix workspace:
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-subdirectory-delete-sub.png" />
+1. Your Remix file explorer shows only the five contracts you need for this tutorial:
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-subdirectory-df.png" />
+1. Click the name of each file to open the code in your Remix file explorer. Remix flags some errors that we resolve in the next section.
 
-Open _LinkToken_ and compile in Remix:
+### Compile the contracts
 
-<CodeSample src="samples/VRF/mock/LinkToken.sol" />
+In this section, you will make a few adjustments to compile all of the contracts. Remix indicates that each contract is compiled successfully with a green checkmark icon on the _SOLIDITY COMPILER_ tab. Otherwise, it shows a yellow "warning" icon or a red "error" icon.
 
-Open _VRFV2PlusWrapper_ and compile in Remix:
-
-<CodeSample src="samples/VRF/mock/VRFV2PlusWrapper.sol" />
-
-Open _DirectFundingConsumerV2_5_ and compile in Remix:
-
-<CodeSample src="samples/VRF/mock/DirectFundingConsumerV2_5.sol" />
-
-Your Remix IDE file explorer should display the opened contracts:
-
-<ClickToZoom src="/images/vrf/mock/v2-df-remix-fileexplorer.jpg" />
+1. In Remix, within the _FILE EXPLORER_ tab, select the _DirectFundingConsumerV2_5_ contract.
+1. Navigate to the _SOLIDITY COMPILER_ tab and select version `0.8.19`:
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-compiler-select-0-8-19.png" />
+1. Compile _DirectFundingConsumerV2_5.sol_: click the blue **Compile DirectFundingConsumerV2_5.sol** button or use your keyboard shortcut for "save" (Ctrl+S or Command+S).
+1. In the _FILE EXPLORER_ tab, select the _VRFCoordinatorV2_5Mock.sol_ contract.
+1. In the _Solidity Compiler_ tab, you will see a warning indicating that the contract size is too large to deploy. Expand the _Advanced Configurations_ section and check the _Enable optimization_ box, using the default `200` runs:
+   <ClickToZoom src="/images/vrf/v2-5/mock/enable-optimization.png" />
+1. Compile the _VRFCoordinatorV2_5Mock_ contract.
+1. In the _FILE EXPLORER_ tab, select the _MockV3Aggregator.sol_ contract, and then compile it using your "save" keyboard shortcut.
+1. Select _LinkToken.sol_ and compile it using your "save" keyboard shortcut.
+1. Compiling _VRFV2PlusWrapper.sol_ currently requires a workaround to resolve its Solidity version mismatch with `Ownable` using `0.8.20`:
+   1. In the _FILE EXPLORER_ tab, navigate to `OVM_GasPriceOracle.sol`. The full path is `@chainlink/contracts/src/v0.8/vendor/@eth-optimism/contracts/v0.8.9/contracts/L2/predeploys/OVM_GasPriceOracle.sol`:
+      <ClickToZoom src="/images/vrf/v2-5/mock/remix-ovm-gaspriceoracle.png" />
+   1. At the top of this file, change the import statement to:
+      ```
+      import {Ownable} from "@openzeppelin/contracts@4.9.6/access/Ownable.sol";
+      ```
+   1. _VRFV2PlusWrapper.sol_ successfully compiles when this dependency uses an earlier version of `Ownable.sol`.
 
 ### Select the correct Remix IDE environment
 
@@ -281,6 +323,8 @@ When deployed, the _VRFV2PlusWrapper_ contract creates a new subscription and ad
 
 ### Deploy the VRF consumer contract
 
+_DirectFundingConsumerV2_5_ is the consuming contract that requests and directly pays the VRF service for random values.
+
 1. In the file explorer, open _DirectFundingConsumerV2_5.sol_.
 
 1. Under _DEPLOY & RUN TRANSACTIONS_, select _DirectFundingConsumerV2_5_.
@@ -301,6 +345,8 @@ When deployed, the _VRFV2PlusWrapper_ contract creates a new subscription and ad
 
 ### Fund your VRF consumer contract
 
+Use the _LinkToken_ contract to transfer LINK to your consumer contract:
+
 1. Under _Deployed Contracts_, open the functions list of your deployed _LinkToken_ contract.
 
 1. Click on _transfer_ and fill in the `_to` with your consumer contract address and `_value` with LINK tokens amount. For this example, you can set the `_value` to `10000000000000000000` (10 LINK).
@@ -313,7 +359,7 @@ When deployed, the _VRFV2PlusWrapper_ contract creates a new subscription and ad
 
 ### Request random words
 
-Request three random words.
+Request three random words:
 
 1. Under _Deployed Contracts_, open the functions list of your deployed _DirectFundingConsumerV2_5_ contract.
 
