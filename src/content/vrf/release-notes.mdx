@@ -6,6 +6,20 @@ isMdx: true
 whatsnext: { "Migrate to VRF V2.5": "/vrf/v2-5/migration-from-v2" }
 ---
 
+## 2024-05-24 - Updated VRF V2.5 contracts
+
+The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) package version 1.1.1 is now available. It includes the updated wrapper and interface contracts for VRF 2.5 direct funding, which had not been included in the `@chainlink/contracts` package version 1.1.0. The `DirectFundingConsumer.sol` example contract has been updated to reflect this.
+
+The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) also includes an updated function signature for `fulfillRandomWords` in the `VRFConsumerBaseV2Plus` contract, which applies only to subscription users. This function signature has **not** changed in the `VRFV2PlusWrapperConsumerBase`, so this does not affect direct funding users.
+
+When using package version 1.1.1 and later, update your `fulfillRandomWords` function signature to match the `VRFConsumerBaseV2Plus` contract, which has changed to:
+
+```
+function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+```
+
+In the `@chainlink/contracts` package version 1.1.0 and earlier, the `randomWords` parameter has a `memory` storage location.
+
 ## 2024-04-29 - VRF V2.5 released on Ethereum, BNB Chain, Polygon, Avalanche and Arbitrum
 
 VRF V2.5 is available on Ethereum, BNB Chain, Polygon, Avalanche and Arbitrum mainnets and testnets.

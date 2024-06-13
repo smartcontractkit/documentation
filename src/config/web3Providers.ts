@@ -9,6 +9,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BNB_MAINNET: () => new providers.JsonRpcProvider("https://bsc.nodereal.io/"),
   BNB_TESTNET: () => new providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/"),
   POLYGON_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon"),
+  POLYGON_AMOY: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon_amoy"),
   GNOSIS_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/gnosis"),
   GNOSIS_CHIADO: () => new providers.JsonRpcProvider("https://rpc.chiadochain.net"),
   AVALANCHE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche"),
