@@ -70,7 +70,7 @@ contract DirectFundingConsumerV2_5 is
         if (enableNativePayment) {
             uint256 calculatedRequestPrice = i_vrfV2PlusWrapper
                 .calculateRequestPriceNative(_callbackGasLimit, _numWords);
-            uint256 balance = i_linkToken.balanceOf(address(this));
+            uint256 balance = address(this).balance;
             if (calculatedRequestPrice > balance)
                 revert InsufficientFunds(balance, calculatedRequestPrice);
             (requestId, reqPrice) = requestRandomnessPayInNative(
@@ -82,7 +82,7 @@ contract DirectFundingConsumerV2_5 is
         } else {
             uint256 calculatedRequestPrice = i_vrfV2PlusWrapper
                 .calculateRequestPrice(_callbackGasLimit, _numWords);
-            uint256 balance = address(this).balance;
+            uint256 balance = i_linkToken.balanceOf(address(this));
             if (calculatedRequestPrice > balance)
                 revert InsufficientFunds(balance, calculatedRequestPrice);
             (requestId, reqPrice) = requestRandomness(
