@@ -7,7 +7,10 @@ metadata:
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 import ContentCommon from "@features/common/ContentCommon.astro"
-import { CodeSample, ClickToZoom, Aside } from "@components"
+import { CodeSample, CopyText, ClickToZoom, Aside } from "@components"
+import { linkEth } from "@features/data"
+import { LatestPrice } from "@features/feeds"
+import button from "@chainlink/design-system/button.module.css"
 
 <VrfCommon callout="directFunding" />
 
@@ -195,15 +198,15 @@ Under _DEPLOY & RUN TRANSACTIONS_:
 
 1. Set the Environment to _Injected Provider - MetaMask_:
 
-   <ClickToZoom src="/images/vrf/mock/injectedmetamask.jpg" />
+   <ClickToZoom src="/images/vrf/v2-5/mock/injected-metamask.png" />
 
 1. On MetaMask, connect your Hardhat test account to the Remix IDE.
 
-   <ClickToZoom src="/images/vrf/mock/ganacheremixconnect.jpg" />
+   <ClickToZoom src="/images/vrf/v2-5/mock/metamask-connect-imported-account.png" />
 
-1. Click on Connect. The Remix IDE environment should be set to the correct environment, and the account should be the Hardhat test account.
+1. Click Connect. The Remix IDE environment should be set to the correct environment, and the account should be the Hardhat test account.
 
-   <ClickToZoom src="/images/vrf/mock/remixenvinjected.jpg" />
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-imported-account-connected.png" />
 
 ### Deploy VRFCoordinatorV2_5Mock
 
@@ -211,19 +214,34 @@ Under _DEPLOY & RUN TRANSACTIONS_:
 
 1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFCoordinatorV2_5Mock_.
 
-   <ClickToZoom src="/images/vrf/mock/v2-deploymockdf.jpg" />
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-coordinator-mock-selected.png" />
 
-1. Under _DEPLOY_, fill in the `_BASEFEE` and `_GASPRICELINK`. These variables are used in the _VRFCoordinatorV2_5Mock_ contract to represent the base fee and the gas price (in LINK tokens) for the VRF requests. You can set: `_BASEFEE=100000000000000000` and `_GASPRICELINK=1000000000`.
+1. Under _DEPLOY_, fill in the `_BASEFEE`, `_GASPRICELINK` and `_WEIPERUNITLINK`. These variables are used in the _VRFCoordinatorV2_5Mock_ contract to represent the base fee, the gas price (in LINK tokens), and the current LINK/ETH price for the VRF requests.
 
-1. Click on _transact_ to deploy the _VRFCoordinatorV2Mock_ contract.
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-deployment-parameters.png" />
 
-1. A MetaMask popup will open. Click on _Confirm_.
+   You can set:
+
+   - `_BASEFEE` to <CopyText text="100000000000000000" code/>
+   - `_GASPRICELINK` to <CopyText text="1000000000" code/>
+   - `_WEIPERUNITLINK` to the current LINK/ETH price. Click the "Latest Price" button to view it:
+     {" "}
+     <LatestPrice client:idle feedAddress={linkEth.link.eth.sepolia.address} supportedChain="ETHEREUM_SEPOLIA" />
+
+1. Click _transact_ to deploy the _VRFCoordinatorV2Mock_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
 
 1. Once deployed, you should see the _VRFCoordinatorV2Mock_ contract under _Deployed Contracts_.
 
-   <ClickToZoom src="/images/vrf/mock/v2-deployedmockdf.jpg" />
-
 1. Note the address of the deployed contract.
+
+#### Create a subscription
+
+1. In the _Deployed Contracts_ section, expand your deployed _VRFCoordinatorV2Mock_ contract.
+1. Click the orange **createSubscription** button and confirm the transaction in MetaMask.
+1. The output or logs for this function may not show the resulting subscription ID in Remix. Click the blue **getActiveSubscriptionIds** button and fill in `0` for `startIndex` and `1` for `maxCount`. This will display the subscription ID for the subscription you just created:
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-get-active-sub-ids.png" />
 
 ### Deploy MockV3Aggregator
 
@@ -237,13 +255,11 @@ The _MockV3Aggregator_ contract is designed for testing purposes, allowing you t
 
 1. Under _DEPLOY_, fill in `_DECIMALS` and `_INITIALANSWER`. These variables are used in the _MockV3Aggregator_ contract to represent the number of decimals the aggregator's answer should have and the most recent price feed answer. You can set: `_DECIMALS=18` and `_INITIALANSWER=3000000000000000` (We are considering that `1 LINK = 0.003 native gas tokens`).
 
-1. Click on _transact_ to deploy the _MockV3Aggregator_ contract.
+1. Click _transact_ to deploy the _MockV3Aggregator_ contract.
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. A MetaMask popup will open. Click _Confirm_.
 
 1. Once deployed, you should see the _MockV3Aggregator_ contract under _Deployed Contracts_.
-
-   <ClickToZoom src="/images/vrf/mock/v2-deployedaggregatormock.jpg" />
 
 1. Note the address of the deployed contract.
 
@@ -257,13 +273,11 @@ The Chainlink VRF v2.5 direct funding method requires your consumer contract to 
 
    <ClickToZoom src="/images/vrf/mock/v2-deploylink.jpg" />
 
-1. Under _DEPLOY_, click on _transact_ to deploy the _LinkToken_ contract.
+1. Under _DEPLOY_, click _transact_ to deploy the _LinkToken_ contract.
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. A MetaMask popup will open. Click _Confirm_.
 
 1. Once deployed, you should see the _LinkToken_ contract under _Deployed Contracts_.
-
-   <ClickToZoom src="/images/vrf/mock/v2-deployedlink.jpg" />
 
 1. Note the address of the deployed contract.
 
@@ -271,45 +285,85 @@ The Chainlink VRF v2.5 direct funding method requires your consumer contract to 
 
 As the VRF v2.5 direct funding [end-to-end diagram](/vrf/v2-5/direct-funding#request-and-receive-data) explains, the _VRFV2PlusWrapper_ acts as a wrapper for the coordinator contract.
 
+Unlike in VRF v2, the v2.5 wrapper contract requires an existing subscription ID for deployment, so you'll need to create a subscription first. If you missed it, [create a subscription](#create-a-subscription) and then return to this section.
+
 1. Open _VRFV2PlusWrapper.sol_.
 
 1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFV2PlusWrapper_.
 
-   <ClickToZoom src="/images/vrf/mock/v2-deploywrapper.jpg" />
+1. Under _DEPLOY_, fill in the following parameters:
 
-1. Under _DEPLOY_, fill in `_LINK` with the _LinkToken_ contract address, `_LINKETHFEED` with the _MockV3Aggregator_ contract address, and `_COORDINATOR` with the _VRFCoordinatorV2_5Mock_ contract address.
+   - `_LINK` with the _LinkToken_ contract address
+   - `_LINKETHFEED` with the _MockV3Aggregator_ contract address
+   - `_COORDINATOR` with the _VRFCoordinatorV2_5Mock_ contract address
+   - `_SUBID` with the subscription ID
 
-1. Click on _transact_ to deploy the _VRFV2PlusWrapper_ contract.
+     {" "}
+     <ClickToZoom src="/images/vrf/v2-5/mock/wrapper-deployment-params.png" />
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. Click _transact_ to deploy the _VRFV2PlusWrapper_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
 
 1. Once deployed, you should see the _VRFV2PlusWrapper_ contract under _Deployed Contracts_.
 
-   <ClickToZoom src="/images/vrf/mock/v2-deployedwrapper.jpg" />
-
 1. Note the address of the deployed contract.
+
+1. Add your newly deployed wrapper contract as a consumer to the subscription:
+   1. In the _Deployed Contracts_ section, expand your deployed _VRFCoordinatorV2Mock_ contract.
+   1. Click the **addConsumer** button and provide your subscription ID and the address of the wrapper contract you just deployed.
+   1. Click _transact_ and confirm the transaction in MetaMask.
 
 ### Configure the VRFV2PlusWrapper
 
 1. Under _Deployed Contracts_, open the functions list of your deployed _VRFV2PlusWrapper_ contract.
 
-1. Click on `setConfig` and fill in `_wrapperGasOverhead` with `60000`, `_coordinatorGasOverhead` with `52000`, `_wrapperPremiumPercentage` with `10`, `_keyHash` with `0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`, and `_maxNumWords` with `10`. **Note** on these variables:
+1. Click `setConfig` and fill in the following parameters. You can find the wrapper addresses for all supported networks on the [Supported Networks](/vrf/v2-5/supported-networks) page with links to the block explorer. In the block explorer, select **Contract** and **Read Contract**, then expand the `getConfig` function and click **Query**. For Sepolia, the config values are found [here](https://sepolia.etherscan.io/address/0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1#readContract#F7) in Sepolia Etherscan and are also listed below:
+
+   - `_wrapperGasOverhead` with `13400`
+   - `_coordinatorGasOverheadNative` with `90000`
+   - `_coordinatorGasOverheadLink` with `112000`
+   - `_coordinatorGasOverheadPerWord` with `435`
+   - `_coordinatorNativePremiumPercentage` with `24`
+   - `_coordinatorLinkPremiumPercentage` with `20`
+   - `_keyHash` with `0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae`
+   - `_maxNumWords` with `10`
+   - `stalenessSeconds` with `172800`
+   - `fallbackWeiPerUnitLink` with `5347462396894712`
+   - `fulfillmentFlatFeeNativePPM` with `0`
+   - `fulfillmentFlatFeeLinkDiscountPPM` with `0`
+     **Note** on these variables:
 
    1. `_wrapperGasOverhead`: This variable reflects the gas overhead of the wrapper's fulfillRandomWords function. The cost for this gas is passed to the user.
 
-   1. `_coordinatorGasOverhead`: This variable reflects the gas overhead of the coordinator's `fulfillRandomWords` function. The cost for this gas is billed to the _VRFV2PlusWrapper_ subscription and must, therefore, be included in the VRF v2.5 direct funding requests pricing.
+   1. Coordinator gas overhead: These variables reflect the gas overhead of the coordinator's `fulfillRandomWords` function. The cost for this gas is billed to the _VRFV2PlusWrapper_ subscription and must, therefore, be included in the VRF v2.5 direct funding requests pricing.
 
-   1. `_wrapperPremiumPercentage`: This variable is the premium ratio in percentage. For example, a value of 0 indicates no premium. A value of 15 indicates a 15 percent premium.
+      - `_coordinatorGasOverheadLink`: Coordinator gas overhead when paying for VRF requests with LINK.
+      - `_coordinatorGasOverheadNative`: Coordinator gas overhead when paying for VRF requests with native tokens (in this case, Sepolia ETH).
+      - `_coordinatorGasOverheadPerWord`: Additional coordinator gas overhead amount per random value ("word") requested from VRF.
+
+   1. Premium percentage: These variables are the premium ratio in percentage. For example, a value of 0 indicates no premium. A value of 15 indicates a 15 percent premium.
+
+      - `_coordinatorLinkPremiumPercentage`: Premium percentage when paying with LINK.
+      - `_coordinatorNativePremiumPercentage`: Premium percentage when paying with native tokens.
 
    1. `_keyHash`: The gas lane key hash value is the maximum gas price you are willing to pay for a request in wei.
 
    1. `_maxNumWords`: This variable is the maximum number of words requested in a VRF v2.5 direct funding request.
 
-   <ClickToZoom src="/images/vrf/mock/v2-wrappersetconfig.jpg" />
+   1. `stalenessSeconds`: The time threshold past which the price feed is considered stale, and we must use the `fallbackWeiPerUnitLink` value instead.
 
-1. click on _transact_.
+   1. `fallbackWeiPerUnitLink`: The conversion value used if the price feed is stale.
 
-1. A MetaMask popup will open. Click on _Confirm_.
+   1. Fulfillment flat fees: Additional flat fees applied on top of the premium percentage. Currently, these parameters are both set to zero for both LINK payments and native token payments, respectively:
+      - `fulfillmentFlatFeeLinkDiscountPPM`
+      - `fulfillmentFlatFeeNativePPM`
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/wrapper-set-config.png" />
+
+1. Click _transact_.
+
+1. A MetaMask popup will open. Click _Confirm_.
 
 ### Fund the VRFV2PlusWrapper subscription
 
@@ -317,9 +371,9 @@ When deployed, the _VRFV2PlusWrapper_ contract creates a new subscription and ad
 
 1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2_5Mock_ contract.
 
-1. Click `fundSubscription` to fund the _VRFV2PlusWrapper_ subscription. In this example, you can set the `_subid` to `1` (which is your newly created subscription ID) and the `_amount` to `10000000000000000000` (10 LINK).
+1. Click `fundSubscription` to fund the _VRFV2PlusWrapper_ subscription. Fill in your subscription ID for `_subid`, and set the `_amount` to `10000000000000000000` (10 LINK).
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. A MetaMask popup will open. Click _Confirm_.
 
 ### Deploy the VRF consumer contract
 
@@ -333,9 +387,9 @@ _DirectFundingConsumerV2_5_ is the consuming contract that requests and directly
 
 1. Under _DEPLOY_, fill in `_LINKADDRESS_` with the _LinkToken_ contract address, and `_WRAPPERADDRESS_` with the deployed _VRFV2PlusWrapper_ address.
 
-1. Click on _transact_ to deploy the _DirectFundingConsumerV2_5_ contract.
+1. Click _transact_ to deploy the _DirectFundingConsumerV2_5_ contract.
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. A MetaMask popup will open. Click _Confirm_.
 
 1. Once deployed, you should see the _DirectFundingConsumerV2_5_ contract under _Deployed Contracts_.
 
@@ -349,13 +403,13 @@ Use the _LinkToken_ contract to transfer LINK to your consumer contract:
 
 1. Under _Deployed Contracts_, open the functions list of your deployed _LinkToken_ contract.
 
-1. Click on _transfer_ and fill in the `_to` with your consumer contract address and `_value` with LINK tokens amount. For this example, you can set the `_value` to `10000000000000000000` (10 LINK).
+1. Click _transfer_ and fill in the `_to` with your consumer contract address and `_value` with LINK tokens amount. For this example, you can set the `_value` to `10000000000000000000` (10 LINK).
 
    <ClickToZoom src="/images/vrf/mock/v2-linktransfer.jpg" />
 
-1. Click on _transact_.
+1. Click _transact_.
 
-1. A MetaMask popup will open. Click on _Confirm_.
+1. A MetaMask popup will open. Click _Confirm_.
 
 ### Request random words
 
@@ -367,7 +421,7 @@ Request three random words:
 
    <ClickToZoom src="/images/vrf/mock/v2-requestrandomwordsdf.jpg" />
 
-1. Click on _transact_.
+1. Click _transact_.
 
 1. A MetaMask popup will open.
 
@@ -384,7 +438,7 @@ Request three random words:
 
    </Aside>
 
-1. Click on _Confirm_.
+1. Click _Confirm_.
 
 1. In the Remix IDE console, read your transaction logs to find the VRF request ID. In this example, the request ID is _1_.
 
@@ -402,7 +456,7 @@ Because you are testing on a local blockchain environment, you must fulfill the 
 
    <ClickToZoom src="/images/vrf/mock/v2-fulfillrandomwordsdf.jpg" />
 
-1. Click on `transact`.
+1. Click `transact`.
 
 1. A MetaMask popup will open.
 
@@ -419,7 +473,7 @@ Because you are testing on a local blockchain environment, you must fulfill the 
 
    </Aside>
 
-1. Click on _Confirm_.
+1. Click _Confirm_.
 
 1. In the Remix IDE console, read your transaction logs to find the random words.
 
@@ -429,11 +483,11 @@ Because you are testing on a local blockchain environment, you must fulfill the 
 
 1. Under _Deployed Contracts_, open the functions list of your deployed _DirectFundingConsumerV2_5_ contract.
 
-1. Click on `lastRequestId` to display the last request ID. In this example, the output is _1_.
+1. Click `lastRequestId` to display the last request ID. In this example, the output is _1_.
 
    <ClickToZoom src="/images/vrf/mock/v2-deployedconsumerrequestiddf.jpg" />
 
-1. Click on `getRequestStatus` with `_requestId` equal to `1`:
+1. Click `getRequestStatus` with `_requestId` equal to `1`:
 
    <ClickToZoom src="/images/vrf/mock/v2-deployedconsumerrequeststatusdf.jpg" />
 
