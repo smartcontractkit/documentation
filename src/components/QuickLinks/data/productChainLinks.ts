@@ -151,4 +151,5 @@ export const chainNames: Record<string, string> = {
   starknet: "Starknet",
   wemix: "Wemix",
   zksync: "zkSync",
+  mode: "Mode",
 }
