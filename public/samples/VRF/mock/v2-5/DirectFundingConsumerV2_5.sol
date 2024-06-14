@@ -22,9 +22,11 @@ contract DirectFundingConsumerV2_5 is
         uint256[] randomWords,
         uint256 payment
     );
-    error InsufficientFunds(uint256 balance, uint256 paid);
+    error InsufficientFunds(uint256 balance, uint256 calculatedRequestPrice);
     error RequestNotFound(uint256 requestId);
     error LinkTransferError(address sender, address receiver, uint256 amount);
+    error FailedToWithdrawEth(address sender, address receiver, uint256 amount);
+    error NothingToWithdraw();
 
     struct RequestStatus {
         uint256 paid; // amount paid in link
@@ -65,40 +67,40 @@ contract DirectFundingConsumerV2_5 is
         );
         uint256 requestId;
         uint256 reqPrice;
-        uint256 paid;
         if (enableNativePayment) {
+            uint256 calculatedRequestPrice = i_vrfV2PlusWrapper
+                .calculateRequestPriceNative(_callbackGasLimit, _numWords);
+            uint256 balance = i_linkToken.balanceOf(address(this));
+            if (calculatedRequestPrice > balance)
+                revert InsufficientFunds(balance, calculatedRequestPrice);
             (requestId, reqPrice) = requestRandomnessPayInNative(
                 _callbackGasLimit,
                 _requestConfirmations,
                 _numWords,
                 extraArgs
             );
-            paid = i_vrfV2PlusWrapper.calculateRequestPriceNative(
-                _callbackGasLimit,
-                _numWords
-            );
         } else {
+            uint256 calculatedRequestPrice = i_vrfV2PlusWrapper
+                .calculateRequestPrice(_callbackGasLimit, _numWords);
+            uint256 balance = address(this).balance;
+            if (calculatedRequestPrice > balance)
+                revert InsufficientFunds(balance, calculatedRequestPrice);
             (requestId, reqPrice) = requestRandomness(
                 _callbackGasLimit,
                 _requestConfirmations,
                 _numWords,
                 extraArgs
             );
-            paid = i_vrfV2PlusWrapper.calculateRequestPrice(
-                _callbackGasLimit,
-                _numWords
-            );
         }
-        uint256 balance = i_linkToken.balanceOf(address(this));
-        if (balance < paid) revert InsufficientFunds(balance, paid);
+
         s_requests[requestId] = RequestStatus({
-            paid: paid,
+            paid: reqPrice,
             randomWords: new uint256[](0),
             fulfilled: false
         });
         requestIds.push(requestId);
         lastRequestId = requestId;
-        emit RequestSent(requestId, _numWords, paid);
+        emit RequestSent(requestId, _numWords, reqPrice);
         return requestId;
     }
 
@@ -133,10 +135,11 @@ contract DirectFundingConsumerV2_5 is
      * Allow withdraw of Link tokens from the contract
      */
     function withdrawLink(address _receiver) public onlyOwner {
-        bool success = i_linkToken.transfer(
-            _receiver,
-            i_linkToken.balanceOf(address(this))
-        );
+        uint256 amount = i_linkToken.balanceOf(address(this));
+        // Revert if there is nothing to withdraw
+        if (amount == 0) revert NothingToWithdraw();
+
+        bool success = i_linkToken.transfer(_receiver, amount);
         if (!success)
             revert LinkTransferError(
                 msg.sender,
@@ -144,4 +147,20 @@ contract DirectFundingConsumerV2_5 is
                 i_linkToken.balanceOf(address(this))
             );
     }
+
+    function withdraw(address _receiver) public onlyOwner {
+        // Retrieve the balance of this contract
+        uint256 amount = address(this).balance;
+
+        // Revert if there is nothing to withdraw
+        if (amount == 0) revert NothingToWithdraw();
+
+        // Attempt to send the funds, capturing the success status and discarding any return data
+        (bool sent, ) = _receiver.call{value: amount}("");
+
+        // Revert if the send failed, with information about the attempted transfer
+        if (!sent) revert FailedToWithdrawEth(msg.sender, _receiver, amount);
+    }
+
+    receive() external payable {}
 }
