@@ -31,6 +31,7 @@ export const productChainLinks: ProductChainLinks = {
       optimism: "/ccip/supported-networks/v1_2_0/mainnet#optimism-mainnet",
       polygon: "/ccip/supported-networks/v1_2_0/mainnet#polygon-mainnet",
       wemix: "/ccip/supported-networks/v1_2_0/mainnet#wemix-mainnet",
+      mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
     },
   },
   "Data Feeds": {
