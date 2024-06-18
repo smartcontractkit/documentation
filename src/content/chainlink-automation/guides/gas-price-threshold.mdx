@@ -58,47 +58,45 @@ To set the maximum gas price on an upkeep, follow these steps:
 Currently, the only parameter that you can set in your upkeep's offchain config is `maxGasPrice`. You need to format your offchain config as a JSON object and CBOR encode it before you update it on the registry.
 
 1.  Format your offchain config as JSON. For example: `{"maxGasPrice": 100000000000}`.
-    Use quotation marks only around the key, `”maxGasPrice”`. Do not use quotation marks around the value of the maximum gas price you are setting.
+    Use quotation marks only around the key, `"maxGasPrice"`. Do not use quotation marks around the value of the maximum gas price you are setting.
 
 1.  Encode the JSON object using CBOR encoding:
 
-    {/* prettier-ignore */}
-    <Tabs sharedStore="language" client:visible>
-    <Fragment slot="tab.1">Solidity</Fragment>
-    <Fragment slot="tab.2">Go</Fragment>
-    <Fragment slot="panel.1">
-    ```solidity
-    // SPDX-License-Identifier: MIT
-    pragma solidity 0.8.19;
+        {/* prettier-ignore */}
+        <Tabs sharedStore="scLang" client:visible>
+        <Fragment slot="tab.1">Solidity</Fragment>
+        <Fragment slot="tab.2">Go</Fragment>
+        <Fragment slot="panel.1">
+        ```solidity
+        // SPDX-License-Identifier: MIT
+        pragma solidity 0.8.19;
 
-    import { CBOR } from "../../vendor/solidity-cborutils/v2.0.0/CBOR.sol"
+        import { CBOR } from "../../vendor/solidity-cborutils/v2.0.0/CBOR.sol"
 
-    contract CBOREncoder {
-    using CBOR for CBOR.CBORBuffer;
+        contract CBOREncoder {
+        using CBOR for CBOR.CBORBuffer;
 
-    /// @notice encodes a max gas price to CBOR encoded bytes
-    /// @param maxGasPrice The max gas price
-    /// @return CBOR encoded bytes and the struct depth
-    function encode(uint256 maxGasPrice, uint256 capacity) external pure returns (bytes memory, uint256) {
-    CBOR.CBORBuffer memory buffer = CBOR.create(capacity);
-    buffer.writeString("maxGasPrice");
-    buffer.writeUInt256(maxGasPrice);
-    return (buffer.buf.buf, buffer.depth);
-    }
-    }
-
-    ````
-    </Fragment>
-    <Fragment slot="panel.2">
-    For Go, create a simple struct like this and encode it with the cbor package.
-    ```go
-    type UpkeepOffchainConfig struct {
-        MaxGasPrice *big.Int `json:"maxGasPrice" cbor:"maxGasPrice"`
-    }
-    ````
-
-    </Fragment>
-</Tabs>
+        // @notice encodes a max gas price to CBOR encoded bytes
+        // @param maxGasPrice The max gas price
+        // @return CBOR encoded bytes and the struct depth
+        function encode(uint256 maxGasPrice, uint256 capacity) external pure returns (bytes memory, uint256) {
+        CBOR.CBORBuffer memory buffer = CBOR.create(capacity);
+        buffer.writeString("maxGasPrice");
+        buffer.writeUInt256(maxGasPrice);
+        return (buffer.buf.buf, buffer.depth);
+        }
+        }
+        ```
+        </Fragment>
+        <Fragment slot="panel.2">
+        For Go, create a simple struct like this and encode it with the cbor package.
+        ```go
+        type UpkeepOffchainConfig struct {
+            MaxGasPrice *big.Int `json:"maxGasPrice" cbor:"maxGasPrice"`
+        }
+        ```
+        </Fragment>
+        </Tabs>
 
 ### Send the request
 
@@ -106,12 +104,16 @@ Call `setUpkeepOffchainConfig` on the registry. You can do this directly with Me
 
 ### Code example
 
-To run this example, install its dependencies: `npm install ethers cbor`.
+To run this example, install its dependencies:
+
+```sh
+npm install ethers cbor
+```
 
 {/* prettier-ignore */}
 ```typescript
 const { ethers } = require("ethers")
-const cbor = require("cbor")
+const { cbor } = require("cbor")
 
 // Replace with your own provider
 const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID")
@@ -166,7 +168,6 @@ async function setUpkeepOffchainConfig() {
     console.error("Error sending transaction:", error)
   }
 }
-
 // Call the function
 setUpkeepOffchainConfig()
 ```
@@ -175,6 +176,6 @@ setUpkeepOffchainConfig()
 
 To remove the maximum gas price, you can set the value of your `offchainConfig` back to `0x`:
 
-- Format your request as JSON ({"maxGasPrice": 0x})
+- Format your request as JSON (`{"maxGasPrice": 0x}`)
 - Encode this request with CBOR encoding.
 - Run `setUpkeepOffchainConfig` on the registry using your upkeep ID and the CBOR encoded value for `0x`.
