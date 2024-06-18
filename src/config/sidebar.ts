@@ -450,6 +450,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/manage-upkeeps",
         },
         {
+          title: "Set a gas price threshold on your upkeep",
+          url: "chainlink-automation/guides/gas-price-threshold",
+        },
+        {
           title: "Using the StreamsLookup error handler",
           url: "chainlink-automation/guides/streams-lookup-error-handler",
         },
