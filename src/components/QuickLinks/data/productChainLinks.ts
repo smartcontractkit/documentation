@@ -117,6 +117,7 @@ export const productChainLinks: ProductChainLinks = {
     kroma: "/resources/link-token-contracts#kroma",
     linea: "/resources/link-token-contracts#linea",
     metis: "/resources/link-token-contracts#metis",
+    mode: "/resources/link-token-contracts#mode",
     moonbeam: "/resources/link-token-contracts#moonbeam",
     moonriver: "/resources/link-token-contracts#moonriver",
     optimism: "/resources/link-token-contracts#optimism",
