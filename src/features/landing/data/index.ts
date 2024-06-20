@@ -79,7 +79,10 @@ export const evmProducts = [
       ["Available Schemas", "data-streams/reference/report-schema"],
       ["Interface Reference", "data-streams/reference/interfaces"],
     ],
-    chains: [{ id: "arbitrum", title: "Arbitrum" }],
+    chains: [
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "avalanche", title: "Avalanche" },
+    ],
   },
   {
     title: "Functions",

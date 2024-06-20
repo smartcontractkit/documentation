@@ -287,6 +287,21 @@ const StreamsNetworksData = [
       explorerUrl: "https://sepolia.arbiscan.io/address/%s",
     },
   },
+  {
+    network: "Avalanche",
+    logoUrl: "/assets/chains/avalanche.svg",
+    networkStatus: "https://status.avax.network/",
+    mainnet: {
+      label: "Avalanche Mainnet",
+      verifierProxy: "0x79BAa65505C6682F16F9b2C7F8afEBb1821BE3f6",
+      explorerUrl: "https://snowtrace.io/address/%s",
+    },
+    testnet: {
+      label: "Avalanche Fuji Testnet",
+      verifierProxy: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A",
+      explorerUrl: "https://testnet.snowtrace.io/address/%s",
+    },
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {

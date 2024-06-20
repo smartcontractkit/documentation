@@ -133,7 +133,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve", "rates"],
+    tags: ["default", "proofOfReserve", "rates", "streams"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -142,7 +142,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "streams"],
       },
       {
         name: "Avalanche Testnet",
@@ -150,7 +150,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["proofOfReserve", "rates"],
+        tags: ["proofOfReserve", "rates", "streams"],
       },
     ],
     label: "Avalanche",
