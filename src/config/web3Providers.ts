@@ -38,4 +38,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   KROMA_SEPOLIA: () => new providers.JsonRpcProvider("https://api.sepolia.kroma.network"),
   WEMIX_MAINNET: () => new providers.JsonRpcProvider("https://api.wemix.com"),
   WEMIX_TESTNET: () => new providers.JsonRpcProvider("https://api.test.wemix.com"),
+  MODE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.mode.network"),
+  MODE_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.mode.network"),
 }
