@@ -298,7 +298,7 @@ const StreamsNetworksData = [
     },
     testnet: {
       label: "Avalanche Fuji Testnet",
-      verifierProxy: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A",
+      verifierProxy: "0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3",
       explorerUrl: "https://testnet.snowtrace.io/address/%s",
     },
   },
