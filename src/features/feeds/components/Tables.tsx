@@ -379,7 +379,7 @@ const StreamsTHead = () => (
   </thead>
 )
 
-const StreamsTr = ({ network, proxy, showExtraDetails }) => (
+const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -458,7 +458,7 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           ) : (
             ""
           )}
-          {proxy.docs.clicProductName ? (
+          {isMainnet && proxy.docs.clicProductName ? (
             <div>
               <dt>
                 <span class="label">Full name:</span>
@@ -560,7 +560,7 @@ export const MainnetTable = ({
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
-                    {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet />}
                     {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                   </>
@@ -621,7 +621,7 @@ export const TestnetTable = ({
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet={false} />}
               {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
