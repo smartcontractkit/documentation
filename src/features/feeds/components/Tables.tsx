@@ -458,6 +458,16 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           ) : (
             ""
           )}
+          {proxy.docs.clicProductName ? (
+            <div>
+              <dt>
+                <span class="label">Full name:</span>
+              </dt>
+              <dd>{proxy.docs.clicProductName}</dd>
+            </div>
+          ) : (
+            ""
+          )}
           {proxy.decimals ? (
             <div>
               <dt>
