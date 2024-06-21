@@ -62,7 +62,8 @@ export const productChainLinks: ProductChainLinks = {
     learnMorelink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
-      arbitrum: "/data-streams/stream-ids?network=arbitrum",
+      arbitrum: "/data-streams/stream-ids",
+      avalanche: "/data-streams/stream-ids",
     },
   },
   Functions: {
