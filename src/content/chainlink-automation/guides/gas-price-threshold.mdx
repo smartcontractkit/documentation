@@ -15,17 +15,18 @@ whatsnext:
 import { Aside, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
 
-You can set a gas price threshold on your upkeep to prevent your upkeep from being serviced when gas prices exceed the _maximum gas price_ you specify. (This is a different gas setting than the upkeep gas limit, which limits the _amount_ of gas used.) You can set a maximum gas price on conditional upkeeps and log trigger upkeeps.
+You can set a gas price threshold for your upkeep to prevent it from being serviced when gas prices exceed the _maximum gas price_ you specify. You can set a maximum gas price on conditional upkeeps and log trigger upkeeps.
+**Note:** This is a different gas setting than the upkeep gas limit, which limits the _amount_ of gas used.
 
 After you set your maximum gas price, it takes a few minutes to go into effect as it syncs with the nodes. Updating your maximum gas price does not impact any upkeep where the execution is in-flight.
 
 ## Limitations
 
-Do not set a gas price threshold when speed of execution is important. The gas price threshold can significantly delay your execution for conditional upkeeps and prevent execution entirely for log trigger upkeeps.
+Do not set a gas price threshold when speed of execution is important. The gas price threshold can significantly delay the execution of conditional upkeeps and prevent execution entirely for log trigger upkeeps.
 
 ### Gas prices spike after your transaction is in flight
 
-Due to the decentralized nature of the Automation network and its transaction manager, it is possible that your upkeep will be performed at a gas price higher than the maximum gas price you set. This edge case can happen when:
+Due to the decentralized nature of the Automation network and its transaction manager, your upkeep may be performed at a gas price higher than the maximum gas price you set. This edge case can happen when:
 
 1. The Automation network determines that the upkeep should be performed while the onchain gas price is below your threshold. After that check occurs, the `performUpkeep` transaction is in flight (in the mempool).
 1. After the transaction is already in flight, gas prices start spiking and move above your threshold. To ensure that the node's sending key nonce does not become blocked, the node automatically increases the gas to confirm the transaction and prevent the nonce from blocking subsequent transactions.
@@ -68,7 +69,7 @@ npm install
 - `YOUR_RPC_URL`: The RPC URL for your provider (such as Alchemy or Infura)
 - `YOUR_PRIVATE_KEY`: Your wallet's private key
 - `YOUR_UPKEEP_ID`: The ID of the Automation upkeep you want to configure.
-- Within the `offchainConfig` variable, set your `maxGasPrice` in wei. Do not use quotation marks around the value you set for maxGasPrice. If this string is formatted incorrectly, the feature does not work. Here's an example of correct formatting: `{"maxGasPrice":2000000000}`
+- Within the `offchainConfig` variable, set your `maxGasPrice` in wei. Do not use quotation marks around the value you set for `maxGasPrice`. If this string is formatted incorrectly, the feature does not work. Here's an example of correct formatting: `{"maxGasPrice":2000000000}`
 
 1. Run the script:
 
@@ -92,7 +93,7 @@ const offchainConfig = 0
 
 ## Create a new upkeep with a gas price threshold
 
-To create a new upkeep with a gas threshold in place, you can [create a conditional upkeep or log trigger upkeep programmatically](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). (The [Chainlink Automation App](https://automation.chain.link/) does not yet support setting a gas price threshold when creating a new upkeep.)
+To create a new upkeep with a gas threshold in place, you can [create a conditional upkeep or log trigger upkeep programmatically](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). **Note:** The [Chainlink Automation App](https://automation.chain.link/) does not yet support setting a gas price threshold when creating a new upkeep.
 
 You need to format and encode your offchain config before you set the `offchainConfig` parameter. You can adjust [the gas threshold script](#run-the-script) to get the encoded value for your offchain config and set that as the `offchainConfig` variable when [creating your new upkeep](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep), or you can encode your config using the Solidity or Go examples below.
 
