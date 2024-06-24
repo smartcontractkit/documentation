@@ -21,7 +21,7 @@ After you set your maximum gas price, it takes a few minutes to go into effect a
 
 ## Limitations
 
-Do not use the gas price control when speed of execution is important. The gas price control can significantly delay your execution for conditional upkeeps and prevent execution entirely for log trigger upkeeps.
+Do not set a gas price threshold when speed of execution is important. The gas price threshold can significantly delay your execution for conditional upkeeps and prevent execution entirely for log trigger upkeeps.
 
 ### Gas prices spike after your transaction is in flight
 
@@ -78,16 +78,23 @@ node index.js
 
 ### Remove the maximum gas price
 
-To remove the maximum gas price, you can set the value of your `offchainConfig` back to `0x00`:
+To remove the maximum gas price from your upkeep, set the value of your `offchainConfig` back to `0x00`:
 
 - Encode this request with CBOR encoding.
 - Run `setUpkeepOffchainConfig` on the registry using your upkeep ID and the CBOR encoded value for `0x00`.
 
-If you're using [the gas threshold script](#run-the-script), set the `offchainConfig` variable in the script to `0`.
+If you're using [the gas threshold script](#run-the-script), set the `offchainConfig` variable in the script to `0`:
+
+```js
+// Change this value from `{"maxGasPrice":2000000000}` to `0`:
+const offchainConfig = 0
+```
 
 ## Create a new upkeep with a gas price threshold
 
-To create a new upkeep with a gas threshold in place, you can [create a conditional upkeep or log trigger upkeep programmatically](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). You need to format and encode your offchain config before you set the `offchainConfig` parameter:
+To create a new upkeep with a gas threshold in place, you can [create a conditional upkeep or log trigger upkeep programmatically](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). (The [Chainlink Automation App](https://automation.chain.link/) does not yet support setting a gas price threshold when creating a new upkeep.)
+
+You need to format and encode your offchain config before you set the `offchainConfig` parameter. You can adjust [the gas threshold script](#run-the-script) to get the encoded value for your offchain config and set that as the `offchainConfig` variable when [creating your new upkeep](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep), or you can encode your config using the Solidity or Go examples below.
 
 ### Format and encode your offchain config
 
@@ -107,7 +114,7 @@ Currently, the only parameter that you can set in your upkeep's offchain config 
         // SPDX-License-Identifier: MIT
         pragma solidity 0.8.19;
 
-        import { CBOR } from "../../vendor/solidity-cborutils/v2.0.0/CBOR.sol"
+        import { CBOR } from "@chainlink/contracts/src/v0.8/vendor/solidity-cborutils/v2.0.0/CBOR.sol"
 
         contract CBOREncoder {
         using CBOR for CBOR.CBORBuffer;
@@ -125,7 +132,7 @@ Currently, the only parameter that you can set in your upkeep's offchain config 
         ```
         </Fragment>
         <Fragment slot="panel.2">
-        For Go, create a simple struct like this and encode it with the cbor package.
+        For Go, create a simple struct like this and encode it with the [cbor package](https://github.com/fxamacker/cbor).
         ```go
         type UpkeepOffchainConfig struct {
             MaxGasPrice *big.Int `json:"maxGasPrice" cbor:"maxGasPrice"`
