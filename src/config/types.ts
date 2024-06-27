@@ -17,6 +17,7 @@ export type SupportedTechnology =
   | "SCROLL"
   | "WEMIX"
   | "KROMA"
+  | "MODE"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -53,6 +54,8 @@ export type SupportedChain =
   | "WEMIX_TESTNET"
   | "KROMA_MAINNET"
   | "KROMA_SEPOLIA"
+  | "MODE_MAINNET"
+  | "MODE_SEPOLIA"
 
 export type Chains = Record<
   SupportedTechnology,
