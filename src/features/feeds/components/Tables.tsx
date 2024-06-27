@@ -7,11 +7,6 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
-const verifierProxies = new Map<string, string>([
-  ["0x534a7FF707Bc862cAB0Dda546F1B817Be5235b66", "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C"],
-  ["0xA403a4a521be034B4A0D54019aF469A207094246", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"],
-])
-
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   low: (
@@ -294,6 +289,90 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
   </tr>
 )
 
+const StreamsNetworksData = [
+  {
+    network: "Arbitrum",
+    logoUrl: "/assets/chains/arbitrum.svg",
+    networkStatus: "https://arbiscan.freshstatus.io/",
+    mainnet: {
+      label: "Arbitrum Mainnet",
+      verifierProxy: "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C",
+      explorerUrl: "https://arbiscan.io/address/%s",
+    },
+    testnet: {
+      label: "Arbitrum Sepolia",
+      verifierProxy: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A",
+      explorerUrl: "https://sepolia.arbiscan.io/address/%s",
+    },
+  },
+]
+
+export const StreamsVerifierProxyTable = () => {
+  return (
+    <table class={clsx(feedList.verifierProxyTable, tableStyles.table)}>
+      <thead>
+        <tr>
+          <th>Network</th>
+          <th>Verifier proxy address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {StreamsNetworksData.map((network) => (
+          <tr key={network.network}>
+            <td class={tableStyles.pairCol} style={{ textAlign: "center" }}>
+              <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
+              <div className={tableStyles.assetPair}>{network.network}</div>
+            </td>
+            <td style="width:80%;">
+              <div className={tableStyles.assetAddress}>
+                <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
+                <a
+                  style={{ fontSize: "0.9em" }}
+                  class={tableStyles.addressLink}
+                  href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
+                  target="_blank"
+                >
+                  {network.mainnet.verifierProxy}
+                </a>
+                <button
+                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                  data-clipboard-text={network.mainnet.verifierProxy}
+                  onClick={() => navigator.clipboard.writeText(network.mainnet.verifierProxy)}
+                >
+                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                </button>
+              </div>
+              <div className={tableStyles.assetAddress}>
+                <span style="font-size: 0.9em;">{network.testnet.label}: </span>
+                <a
+                  style={{ fontSize: "0.9em" }}
+                  class={tableStyles.addressLink}
+                  href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
+                  target="_blank"
+                >
+                  {network.testnet.verifierProxy}
+                </a>
+                <button
+                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                  data-clipboard-text={network.testnet.verifierProxy}
+                  onClick={() => navigator.clipboard.writeText(network.testnet.verifierProxy)}
+                >
+                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                </button>
+              </div>
+              <div className={tableStyles.assetAddress}>
+                <span style="font-size: 0.9em; padding-top: 1em;">
+                  Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
+                </span>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 const StreamsTHead = () => (
   <thead>
     <tr>
@@ -303,7 +382,7 @@ const StreamsTHead = () => (
   </thead>
 )
 
-const StreamsTr = ({ network, proxy, showExtraDetails }) => (
+const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -326,24 +405,6 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.feedId}
-        >
-          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-        </button>
-      </div>
-      <div className={tableStyles.assetAddress}>
-        <span class="label">Verifier proxy address:</span>
-        <a
-          style="font-size: 0.75em;"
-          class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", verifierProxies.get(proxy.contractAddress))}
-          target="_blank"
-        >
-          {verifierProxies.get(proxy.contractAddress)}
-        </a>
-        <button
-          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={verifierProxies.get(proxy.contractAddress)}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
@@ -400,14 +461,12 @@ const StreamsTr = ({ network, proxy, showExtraDetails }) => (
           ) : (
             ""
           )}
-          {proxy.name ? (
+          {isMainnet && proxy.docs.clicProductName ? (
             <div>
               <dt>
                 <span class="label">Full name:</span>
               </dt>
-              <dd>
-                <span style="font-size: 0.9em;">{proxy.docs.clicProductName}</span>
-              </dd>
+              <dd>{proxy.docs.clicProductName}</dd>
             </div>
           ) : (
             ""
@@ -504,7 +563,7 @@ export const MainnetTable = ({
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
-                    {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet />}
                     {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                   </>
@@ -565,7 +624,7 @@ export const TestnetTable = ({
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet={false} />}
               {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
