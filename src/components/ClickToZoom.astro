@@ -1,17 +1,18 @@
 ---
 export type Props = {
   src: string
+  backupSrc?: string
   alt?: string
   style?: string
 }
-const { src, alt, style } = Astro.props as Props
+const { src, backupSrc, alt, style } = Astro.props as Props
 
 /**
  * This component adds the classNames required by the scripts/click-to-zoom.ts script.
  */
 ---
 
-<img src={src} alt={alt} style={style} class="click-to-zoom" />
+<img src={src} alt={alt} style={style} class="click-to-zoom" onerror="javascript:this.src='{backupSrc}'" />
 
 <style>
   .click-to-zoom {
