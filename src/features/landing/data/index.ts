@@ -1,15 +1,15 @@
-import ccipLogo from "../assets/ccip-logo.svg"
-import vrfLogo from "../assets/vrf-logo.svg"
-import functionsLogo from "../assets/functions-logo.svg"
-import automationLogo from "../assets/automation-logo.svg"
-import dataFeedsLogo from "../assets/data-feeds-logo.svg"
-import ccipShape from "../assets/ccip-shape.svg"
-import vrfShape from "../assets/vrf-shape.svg"
-import functionsShape from "../assets/functions-shape.svg"
-import automationShape from "../assets/automation-shape.svg"
-import dataFeedShape from "../assets/data-feeds-shape.svg"
-import dataStreamsLogo from "../assets/data-streams-logo.svg"
-import dataStreamsShape from "../assets/data-streams-shape.svg"
+import ccipLogo from "../../../assets/product-logos/ccip-logo.svg"
+import vrfLogo from "../../../assets/product-logos/vrf-logo.svg"
+import functionsLogo from "../../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../../assets/product-logos/automation-logo.svg"
+import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
+import ccipShape from "../../../assets/product-logos/ccip-shape.svg"
+import vrfShape from "../../../assets/product-logos/vrf-shape.svg"
+import functionsShape from "../../../assets/product-logos/functions-shape.svg"
+import automationShape from "../../../assets/product-logos/automation-shape.svg"
+import dataFeedShape from "../../../assets/product-logos/data-feeds-shape.svg"
+import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
+import dataStreamsShape from "../../../assets/product-logos/data-streams-shape.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
@@ -35,6 +35,11 @@ export const evmProducts = [
       { id: "optimism", title: "Optimism" },
       { id: "bnb-chain", title: "BNB Chain" },
       { id: "base", title: "BASE" },
+      { id: "wemix", title: "Wemix" },
+      { id: "kroma", title: "Kroma" },
+      { id: "celo", title: "Celo" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
+      { id: "mode", title: "Mode" },
     ],
   },
   {
@@ -48,15 +53,16 @@ export const evmProducts = [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "optimism", title: "Optimism" },
       { id: "gnosis-chain", title: "Gnosis Chain" },
-      { id: "harmony", title: "Harmony" },
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
       { id: "base", title: "BASE" },
       { id: "celo", title: "Celo" },
+      { id: "polygonzkevm", title: "Polygon zkEVM" },
       { id: "scroll", title: "Scroll" },
       { id: "linea", title: "Linea" },
-      { id: "starknet", title: "StarkNet" },
+      { id: "zksync", title: "zkSync" },
+      // { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
@@ -74,7 +80,10 @@ export const evmProducts = [
       ["Available Schemas", "data-streams/reference/report-schema"],
       ["Interface Reference", "data-streams/reference/interfaces"],
     ],
-    chains: [{ id: "arbitrum", title: "Arbitrum" }],
+    chains: [
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "avalanche", title: "Avalanche" },
+    ],
   },
   {
     title: "Functions",
@@ -86,6 +95,9 @@ export const evmProducts = [
       { id: "ethereum", title: "Ethereum" },
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "base", title: "BASE" },
     ],
   },
   {
@@ -94,13 +106,19 @@ export const evmProducts = [
     learnMorelink: "chainlink-automation",
     image: automationLogo,
     shape: automationShape,
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "optimism", title: "Optimism" }],
+    chains: [
+      ...baseChains,
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "base", title: "BASE" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
+    ],
     video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
     title: "VRF",
     description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFTs.",
-    learnMorelink: "/vrf",
+    learnMorelink: "vrf",
     image: vrfLogo,
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],

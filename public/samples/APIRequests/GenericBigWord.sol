@@ -1,8 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {Chainlink, ChainlinkClient} from "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -37,8 +38,8 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      *
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
-        setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        _setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "7da2702f37fd48e5b1b9a5715e3509b6";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
@@ -47,17 +48,17 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      * @notice Request variable bytes from the oracle
      */
     function requestBytes() public {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfillBytes.selector
         );
-        req.add(
+        req._add(
             "get",
             "https://ipfs.io/ipfs/QmZgsvrA1o1C8BGCrx6mHTqR1Ui1XqbCrtbMVrRLHtuPVD?filename=big-api-response.json"
         );
-        req.add("path", "image");
-        sendChainlinkRequest(req, fee);
+        req._add("path", "image");
+        _sendChainlinkRequest(req, fee);
     }
 
     event RequestFulfilled(bytes32 indexed requestId, bytes indexed data);
@@ -79,7 +80,7 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      * Allow withdraw of Link tokens from the contract
      */
     function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
         require(
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"

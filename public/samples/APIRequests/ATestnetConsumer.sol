@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.19;
 
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {Chainlink, ChainlinkClient} from "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
@@ -26,25 +27,25 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
      * @dev Check https://docs.chain.link/docs/link-token-contracts/ for LINK address for the right network
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
     }
 
     function requestEthereumPrice(
         address _oracle,
         string memory _jobId
     ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
+        Chainlink.Request memory req = _buildChainlinkRequest(
             stringToBytes32(_jobId),
             address(this),
             this.fulfillEthereumPrice.selector
         );
-        req.add(
+        req._add(
             "get",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
         );
-        req.add("path", "USD");
-        req.addInt("times", 100);
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+        req._add("path", "USD");
+        req._addInt("times", 100);
+        _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
     function fulfillEthereumPrice(
@@ -56,11 +57,11 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     }
 
     function getChainlinkToken() public view returns (address) {
-        return chainlinkTokenAddress();
+        return _chainlinkTokenAddress();
     }
 
     function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        LinkTokenInterface link = LinkTokenInterface(_chainlinkTokenAddress());
         require(
             link.transfer(msg.sender, link.balanceOf(address(this))),
             "Unable to transfer"
@@ -73,7 +74,7 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
         bytes4 _callbackFunctionId,
         uint256 _expiration
     ) public onlyOwner {
-        cancelChainlinkRequest(
+        _cancelChainlinkRequest(
             _requestId,
             _payment,
             _callbackFunctionId,

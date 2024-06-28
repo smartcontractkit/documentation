@@ -54,8 +54,8 @@ This core adapter compares a user-specified value with the value from the previo
 
 {/* prettier-ignore */}
 ```solidity
-req.addInt("value", 10000);
-req.add("operator", "gte");
+req._addInt("value", 10000);
+req._add("operator", "gte");
 ```
 
 ## Copy
@@ -91,7 +91,7 @@ Or the following for a single comma-delimited string:
 
 {/* prettier-ignore */}
 ```solidity
-req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
+req._add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
 
 <Aside type="note">
@@ -121,7 +121,7 @@ You could get the `"value"` by:
 
 {/* prettier-ignore */}
 ```solidity
-req.add("copyPath", "endpoint.0.path");
+req._add("copyPath", "endpoint.0.path");
 ```
 
 ## EthBool
@@ -181,16 +181,16 @@ The core adapter will report the body of a successful `GET` request to the speci
 - `headers`: takes a object containing keys as strings and values as arrays of strings.
 
 <Aside type="note" title="Headers">
-  Currently not available on-chain. Available for job specs only.
+  Currently not available onchain. Available for job specs only.
 </Aside>
 
 #### Solidity Example
 
 {/* prettier-ignore */}
 ```solidity
-req.add("get", "http://example.com");
-req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
-req.add("extPath", "price/BTC/USD");
+req._add("get", "http://example.com");
+req._add("queryParams", "firstKey=firstVal&secondKey=secondVal");
+req._add("extPath", "price/BTC/USD");
 ```
 
 #### Job Specification Example
@@ -227,15 +227,15 @@ The core adapter will report the body of a successful `POST` request to the spec
 - `extPath`: takes a slash-delimited string or array of strings to be appended to the job's URL.
 - `body`: the JSON body (as a string) that will be used as the data in the request.
 
-<Aside type="note">[Headers & Body] Currently not available on-chain. Available for job specs only.</Aside>
+<Aside type="note">[Headers & Body] Currently not available onchain. Available for job specs only.</Aside>
 
 #### Solidity Example
 
 {/* prettier-ignore */}
 ```solidity
-req.add("post", "http://post.example.com");
-req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
-req.add("extPath", "price/BTC/USD");
+req._add("post", "http://post.example.com");
+req._add("queryParams", "firstKey=firstVal&secondKey=secondVal");
+req._add("extPath", "price/BTC/USD");
 ```
 
 #### Job Specification Example
@@ -294,7 +294,7 @@ Or the following for a single comma-delimited string:
 
 {/* prettier-ignore */}
 ```solidity
-req.add("path", "RAW,ETH,USD,LASTMARKET");
+req._add("path", "RAW,ETH,USD,LASTMARKET");
 ```
 
 <Aside type="note">
@@ -317,7 +317,7 @@ req.add("path", "RAW,ETH,USD,LASTMARKET");
 
 {/* prettier-ignore */}
 ```solidity
-req.add("path", "3,standardId");
+req._add("path", "3,standardId");
 ```
 
 The above example parses the 4th object of the following JSON response and returns 677 as a result:

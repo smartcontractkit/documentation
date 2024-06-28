@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
 /**
@@ -50,7 +50,7 @@ contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
 
     /// @notice Update the request settings
     /// @dev Only callable by the owner of the contract
-    /// @param _request The new encoded CBOR request to be set. The request is encoded off-chain
+    /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
     /// @param _subscriptionId The new subscription ID to be set
     /// @param _gasLimit The new gas limit to be set
     /// @param _donID The new job ID to be set

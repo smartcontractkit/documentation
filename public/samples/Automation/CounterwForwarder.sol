@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.19;
 
 /**
  * @dev Example contract which uses the Forwarder
@@ -13,10 +13,10 @@ pragma solidity ^0.8.7;
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
 
-contract CounterwForwarder is AutomationCompatibleInterface, Ownable {
+contract CounterwForwarder is AutomationCompatibleInterface, OwnerIsCreator {
     uint256 public counter; // counter counts the number of upkeeps performed
     uint256 public interval; // interval specifies the time between upkeeps
     uint256 public lastTimeStamp; // lastTimeStamp tracks the last upkeep performed

@@ -19,27 +19,26 @@ The code for reading Data Feeds is the same across all EVM-compatible blockchain
 - **Feed contract address:** This determines which data feed your smart contract will read. Contract addresses are different for each network. You can find the availble contract addresses on the following pages:
   - [Price Feed Addresses](/data-feeds/price-feeds/addresses)
   - [Proof of Reserve Feed Addresses](/data-feeds/proof-of-reserve/addresses)
-  - [NFT Floor Price Feed Addresses](/data-feeds/nft-floor-price/addresses)
 
 The examples in this document indicate these variables, but you can modify the examples to work on different networks and read different feeds.
 
 This guide shows example code that reads data feeds using the following languages:
 
-- On-chain consumer contracts:
+- Onchain consumer contracts:
   - [Solidity](#solidity)
   - [Vyper](#vyper)
-- Off-chain reads using Web3 packages:
+- Offchain reads using Web3 packages:
   - [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
   - [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
   - [Golang](#golang) with [go-ethereum](https://github.com/ethereum/go-ethereum)
 
-## Reading data feeds on-chain
+## Reading data feeds onchain
 
-These code examples demonstrate how to deploy a consumer contract on-chain that reads a data feed and stores the value.
+These code examples demonstrate how to deploy a consumer contract onchain that reads a data feed and stores the value.
 
 ### Solidity
 
-To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
+To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
 <CodeSample src="samples/DataFeeds/DataConsumerV3.sol" />
 
@@ -50,7 +49,7 @@ The `latestRoundData` function returns five values representing information abou
 To consume price data, your smart contract should import `AggregatorV3Interface` which defines the external functions implemented by Data Feeds. You can find it [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/AggregatorV3Interface.vy).
 You can find a `PriceConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/PriceConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
 
-## Reading data feeds off-chain
+## Reading data feeds offchain
 
 These code examples demonstrate how to read data feeds directly off chain using Web3 packages for each language.
 
@@ -104,7 +103,7 @@ If you require a denomination other than what is provided, you can use two data 
 
 <CodeSample src="samples/DataFeeds/PriceConverter.sol" />
 
-## More Aggregator Functions
+## More aggregator functions
 
 Getting the latest price is not the only data that aggregators can retrieve. You can also retrieve historical price data. To learn more, see the [Historical Price Data](/data-feeds/historical-data) page.
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBase.sol";
+import {VRFConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBase.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -24,18 +24,18 @@ contract RandomNumberConsumer is VRFConsumerBase {
     /**
      * Constructor inherits VRFConsumerBase
      *
-     * Network: Goerli
-     * Chainlink VRF Coordinator address: 0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4
-     * LINK token address: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
-     * Key Hash: 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a
+     * Network: Sepolia
+     * Chainlink VRF Coordinator address: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909
+     * LINK token address: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+     * Key Hash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c
      */
     constructor()
         VRFConsumerBase(
-            0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4, // VRF Coordinator
-            0x326C977E6efc84E512bB9C30f76E30c160eD06FB // LINK Token
+            0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625, // VRF Coordinator
+            0x779877A7B0D9E8603169DdbD7836e478b4624789 // LINK Token
         )
     {
-        keyHash = 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a;
+        keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
         fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
     }
 

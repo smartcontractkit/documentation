@@ -6,7 +6,16 @@ import { MetaMaskInpageProvider } from "@metamask/providers"
 import { ethers, Contract, utils } from "ethers"
 import { burnMintAbi } from "@features/abi"
 import { SupportedChain } from "@config"
-import { allChains, getBnMParams, getLnMParams, isBnMOrLnMRdd, isLnM, isBnM, isBnMOrLnM } from "@config/data/ccip"
+import {
+  getAllChains,
+  getBnMParams,
+  getLnMParams,
+  isBnMOrLnMRdd,
+  isLnM,
+  isBnM,
+  isBnMOrLnM,
+  Version,
+} from "@config/data/ccip"
 import { Toast } from "./Toast"
 import {
   directoryToSupportedChain,
@@ -48,7 +57,9 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     detailsElementRef.current.open = false
   }, [detailsElementRef])
 
-  const supportedChains = allChains.map((element) => directoryToSupportedChain(element))
+  const supportedChains = getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map(
+    (element) => directoryToSupportedChain(element)
+  )
 
   const supportedChainFromHexChainId = (chainHexId: string) => {
     const supportedChain = supportedChains.find((supportedChain) => {
@@ -148,7 +159,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
   const addBnMAssetToWallet = async () => {
     if (!activeChain) return
 
-    const params = getBnMParams(activeChain)
+    const params = getBnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     validateEthereumApi(window.ethereum)
     const success = await window.ethereum.request({
@@ -167,7 +178,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
 
   const addLnMAssetToWallet = async () => {
     if (!activeChain) return
-    const params = getLnMParams(activeChain)
+    const params = getLnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     validateEthereumApi(window.ethereum)
     const success = await window.ethereum.request({
@@ -189,7 +200,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setMintBnMTokenButtonDisabled(true)
     if (!activeChain) return
 
-    const params = getBnMParams(activeChain)
+    const params = getBnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipBNMContractAddress } = params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -229,7 +240,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setMintLnMTokenButtonDisabled(true)
     if (!activeChain) return
 
-    const params = getLnMParams(activeChain)
+    const params = getLnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipLNMContractAddress } = params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -321,8 +332,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         <div className={styles["dropdown-container"]}>
           {activeChain ? (
             <ul style={{ listStyle: "none" }}>
-              {allChains.map((chainRdd) => {
-                if (isBnMOrLnMRdd(chainRdd)) {
+              {getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
+                if (isBnMOrLnMRdd({ chainRdd, version: Version.V1_2_0 })) {
                   const supportedChain = directoryToSupportedChain(chainRdd)
                   const supportedChainTitle = getTitle(supportedChain)
                   const activeChainTitle = getTitle(activeChain)
@@ -380,10 +391,10 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         </div>
       </details>
       {activeChain !== undefined ? (
-        isBnMOrLnM(activeChain) ? (
+        isBnMOrLnM({ chain: activeChain, version: Version.V1_2_0 }) ? (
           <>
             <div className="add-asset-button-container">
-              {activeChain && isBnM(activeChain) && (
+              {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
                 <div class="add-to-wallet-button">
                   <button
                     className={button.secondary}
@@ -399,7 +410,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   </button>
                 </div>
               )}
-              {activeChain && isLnM(activeChain).supported && (
+              {activeChain && isLnM({ chain: activeChain, version: Version.V1_2_0 }).supported && (
                 <div class="add-to-wallet-button">
                   <hr />
                   <button
@@ -411,7 +422,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   >
                     Add CCIP-LnM to wallet
                   </button>
-                  {isLnM(activeChain).supportedChainForLock === activeChain ? (
+                  {isLnM({ chain: activeChain, version: Version.V1_2_0 }).supportedChainForLock === activeChain ? (
                     <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
                       {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
                     </button>
@@ -432,8 +443,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         <>
           <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
           <ul style={{ marginTop: "1.5rem" }}>
-            {allChains.map((chainRdd) => {
-              if (isBnMOrLnMRdd(chainRdd)) {
+            {getAllChains({ mainnetVersion: Version.V1_2_0, testnetVersion: Version.V1_2_0 }).map((chainRdd) => {
+              if (isBnMOrLnMRdd({ chainRdd, version: Version.V1_2_0 })) {
                 const supportedChain = directoryToSupportedChain(chainRdd)
                 const supportedChainTitle = getTitle(supportedChain)
                 const chainIcon = getChainIcon(supportedChain)

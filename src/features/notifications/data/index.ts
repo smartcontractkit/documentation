@@ -1,9 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "The Constellation Hackathon is on:",
+  description: "CCIP is now live for all developers.",
   type: "info",
-  linkText: "Compete for $500K+ in prizes.",
+  linkText: "See what's new.",
   linkUrl:
-    "https://chain.link/hackathon/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=constellation-hackathon",
+    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ccip-ga",
 }

@@ -10,7 +10,7 @@ import { Tabs } from "@components/Tabs"
 
 You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
 
-## Maintenance and Image Update Example
+## Maintenance and image update example
 
 <Aside type="note" title="Docker">
   This example uses Docker to run the Chainlink node, see the [Running a Chainlink
@@ -43,8 +43,7 @@ Now start the second instance of the node. The local port option has been modifi
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.2">Goerli</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
     cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it
@@ -52,12 +51,6 @@ Now start the second instance of the node. The local port option has been modifi
     ```
   </Fragment>
   <Fragment slot="panel.2">
-    ```shell Goerli
-    cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
-    ```
-  </Fragment>
-  <Fragment slot="panel.3">
     ```shell Mainnet
     cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
     smartcontract/chainlink local n
@@ -82,8 +75,7 @@ Next, run the container again with the local port 6688 in order to go back to no
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.2">Goerli</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
     cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it
@@ -91,12 +83,6 @@ Next, run the container again with the local port 6688 in order to go back to no
     ```
   </Fragment>
   <Fragment slot="panel.2">
-    ```shell Goerli
-    cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
-    ```
-  </Fragment>
-  <Fragment slot="panel.3">
     ```shell Mainnet
     cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
     smartcontract/chainlink local n
@@ -106,7 +92,7 @@ Next, run the container again with the local port 6688 in order to go back to no
 
 When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
 
-## Failover Node Example
+## Failover node example
 
 <Aside type="note" title="Docker">
   This example uses Docker to run the Chainlink node, see the [Running a Chainlink
@@ -115,15 +101,14 @@ When the log messages on the first node indicate that it is waiting for the data
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
-Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/chainlink-nodes/v1/configuration/#database_locking_mode) for more information about this configuration variable.
+Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/chainlink-nodes/v1/configuration) for more information about this configuration variable.
 
 Run the Chainlink node with a name option specified:
 
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.2">Goerli</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
     cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v
@@ -131,12 +116,6 @@ Run the Chainlink node with a name option specified:
     ```
   </Fragment>
   <Fragment slot="panel.2">
-    ```shell Goerli
-    cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink
-    -it --env-file=.env smartcontract/chainlink local n
-    ```
-  </Fragment>
-  <Fragment slot="panel.3">
     ```shell Mainnet
     cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it
     --env-file=.env smartcontract/chainlink local n
@@ -162,8 +141,7 @@ This will remain your primary Chainlink container, and should always use port 66
 {/* prettier-ignore */}
 <Tabs client:visible>
   <Fragment slot="tab.1">Sepolia</Fragment>
-  <Fragment slot="tab.2">Goerli</Fragment>
-  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
     cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v
@@ -171,12 +149,6 @@ This will remain your primary Chainlink container, and should always use port 66
     ```
   </Fragment>
   <Fragment slot="panel.2">
-    ```shell Goerli
-    cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink
-    -it --env-file=.env smartcontract/chainlink local n
-    ```
-  </Fragment>
-  <Fragment slot="panel.3">
     ```shell Mainnet
     cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it
     --env-file=.env smartcontract/chainlink local n

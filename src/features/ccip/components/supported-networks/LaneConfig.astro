@@ -1,23 +1,42 @@
 ---
-import { LaneConfig } from "@config/data/ccip/types"
-import { loadReferenceData, Environment } from "@config/data/ccip/"
+import {
+  loadReferenceData,
+  Environment,
+  Version,
+  PoolType,
+  type LaneConfig,
+  determineTokenMechanism,
+  TokenMechanism,
+} from "@config/data/ccip/"
 import { SupportedChain } from "@config"
-import { Address, Aside } from "@components"
+import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
 import { Tooltip } from "@features/common/Tooltip"
+import TokenSearch from "./TokenSearch"
 
 type ConfigProps = {
   laneConfig: LaneConfig
   sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
+  destinationChainRefId: string // id in reference directory
+  destinationChainSelector: string
   environment: Environment
+  version: Version
 }
 
 const contactUrl = "https://chainlinkcommunity.typeform.com/ccip-form?typeform-source=docs.chain.link#ref_id=ccip_docs"
-const { laneConfig, sourceChain, environment, sourceChainRefId } = Astro.props as ConfigProps
-const { rateLimiterConfig, supportedTokens } = laneConfig
+const {
+  laneConfig,
+  sourceChain,
+  environment,
+  sourceChainRefId,
+  destinationChainRefId,
+  version,
+  destinationChainSelector,
+} = Astro.props as ConfigProps
+const { rateLimiterConfig, supportedTokens, onRamp } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
@@ -79,43 +98,89 @@ const explorerUrl = getExplorer(sourceChain)
 
 if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
-let tokensWithExtraInfo: {
+const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp)
+
+interface TokenExtraInfo {
   token: string
-  address: any
+  address: string
   rateLimiterConfig: { capacity: string; isEnabled: boolean; rate: string }
   name?: string
   decimals: number
-}[] = []
+  poolMechanism?: string
+}
 
-const tokensReferenceData = loadReferenceData(environment).tokensReferenceData
+let tokensWithExtraInfo: TokenExtraInfo[] = []
+
+const determineMechanism = (
+  supportedToken: string,
+  sourcePoolType: PoolType | undefined,
+  destinationPoolType: PoolType | undefined
+): string => {
+  const mechanism = determineTokenMechanism(sourcePoolType, destinationPoolType)
+  if (
+    mechanism === TokenMechanism.NoPoolSourceChain ||
+    mechanism === TokenMechanism.NoPoolDestinationChain ||
+    mechanism === TokenMechanism.NoPoolsOnBothChains ||
+    mechanism === TokenMechanism.Unsupported
+  ) {
+    console.error(`Error: ${mechanism} for token ${supportedToken} on ${sourceChainRefId} to ${destinationChainRefId}`)
+    return ""
+  }
+
+  return mechanism
+}
+
+const tokensReferenceData = loadReferenceData({ environment, version }).tokensReferenceData
 if (supportedTokens) {
-  tokensWithExtraInfo = Object.keys(supportedTokens)
-    .filter((supportedToken) => {
+  tokensWithExtraInfo = Object.entries(supportedTokens)
+    .filter(([supportedToken]) => {
       const tokenData = tokensReferenceData[supportedToken]
-      if (!tokenData) {
-        console.error(`Token data not found for supportedToken: ${supportedToken}`)
-        return false
-      }
-      if (!tokenData[sourceChainRefId]) {
-        console.error(
-          `Chain reference data not found for supportedToken: ${supportedToken}, chainRefId: ${sourceChainRefId}`
-        )
+      if (!tokenData || !tokenData[sourceChainRefId]) {
+        console.error(`Data not found for supportedToken: ${supportedToken}, chainRefId: ${sourceChainRefId}`)
         return false
       }
 
       return !tokenData[sourceChainRefId].allowListEnabled
     })
-    .map((supportedToken) => {
-      const { tokenAddress, decimals } = tokensReferenceData[supportedToken][sourceChainRefId]
+    .map(([supportedToken, { rateLimiterConfig }]): TokenExtraInfo | null => {
+      const tokenData = tokensReferenceData[supportedToken]
+      const sourceData = tokenData[sourceChainRefId]
+      const destinationData = tokenData[destinationChainRefId]
+
+      if (!sourceData || !destinationData) {
+        console.error(`Pool type not found for token: ${supportedToken}`)
+        return null
+      }
+
+      const mechanism = determineMechanism(supportedToken, sourceData.poolType, destinationData.poolType)
+
       return {
         token: supportedToken,
-        address: tokenAddress,
-        rateLimiterConfig: supportedTokens[supportedToken].rateLimiterConfig,
-        decimals: decimals,
+        address: sourceData.tokenAddress,
+        rateLimiterConfig: rateLimiterConfig,
+        decimals: sourceData.decimals,
+        poolMechanism: mechanism,
       }
     })
+    .filter((item): item is TokenExtraInfo => item !== null && item.token !== undefined)
+    .sort((itemA, itemB) => itemA.token.localeCompare(itemB.token, undefined, { sensitivity: "base" }))
 }
 ---
+
+<table>
+  <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>OnRamp address</td>
+      <td><Address contractUrl={onRampExplorerUrl} /></td>
+    </tr>
+    <tr>
+      <td>Destination chain selector</td>
+      <td><CopyText text={destinationChainSelector} code /></td>
+    </tr>
+  </tbody>
+</table>
+<br />
 
 {
   tokensWithExtraInfo.length > 0 ? (
@@ -156,7 +221,17 @@ if (supportedTokens) {
                         client:load
                       />
                     </td>
-                    <td>{display(rateLimiterConfig.rate)} USD/second</td>
+                    <td>
+                      {(() => {
+                        const { rateSecond, maxThroughput } = displayRate(
+                          rateLimiterConfig.capacity,
+                          rateLimiterConfig.rate,
+                          "USD"
+                        )
+
+                        return <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
+                      })()}
+                    </td>
                   </>
                 </tr>
               </>
@@ -166,72 +241,9 @@ if (supportedTokens) {
       ) : null}
       <>
         <p>
-          <strong>Supported tokens</strong>
+          <strong>Transferable tokens</strong>
         </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Token Address</th>
-              <th>Decimals</th>
-              <th>
-                <Tooltip
-                  tip="Maximum amount per transaction"
-                  label="Rate Limit Capacity"
-                  style={{ marginTop: "0" }}
-                  client:load
-                />
-              </th>
-              <th>
-                <Tooltip
-                  tip="Rate at which available capacity is replenished"
-                  label="Rate Limit Refill Rate"
-                  style={{ marginTop: "0" }}
-                  client:load
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {tokensWithExtraInfo.map((tokenWithExtraInfo) => {
-              return (
-                <tr>
-                  <td>{tokenWithExtraInfo.token}</td>
-                  <td>
-                    <Address
-                      contractUrl={getExplorerAddressUrl(explorerUrl)(tokenWithExtraInfo.address)}
-                      endLength={4}
-                    />
-                  </td>
-                  <td>{tokenWithExtraInfo.decimals}</td>
-                  <td>
-                    {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                      ? display(tokenWithExtraInfo.rateLimiterConfig.capacity, tokenWithExtraInfo.decimals) +
-                        " " +
-                        tokenWithExtraInfo.token
-                      : "N/A"}
-                  </td>
-                  <td>
-                    {tokenWithExtraInfo.rateLimiterConfig?.isEnabled
-                      ? (() => {
-                          const { rateSecond, maxThroughput } = displayRate(
-                            tokenWithExtraInfo.rateLimiterConfig.capacity,
-                            tokenWithExtraInfo.rateLimiterConfig.rate,
-                            tokenWithExtraInfo.token,
-                            tokenWithExtraInfo.decimals
-                          )
-
-                          return (
-                            <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
-                          )
-                        })()
-                      : "N/A"}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:load />
       </>
     </>
   ) : (

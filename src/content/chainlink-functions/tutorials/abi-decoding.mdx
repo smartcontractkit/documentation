@@ -1,0 +1,316 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Return multiple responses and decode them in your smart contract"
+metadata:
+  linkToWallet: true
+whatsnext:
+  {
+    "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials",
+    "Read the Architecture to understand how Chainlink Functions operates": "/chainlink-functions/resources/architecture",
+  }
+---
+
+import { Aside, CopyText, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+
+In the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial, we explored the fundamentals of module imports. This tutorial will teach you how to use the Ethers library [encode](https://docs.ethers.org/v6/api/abi/abi-coder/#AbiCoder-encode) function to perform ABI encoding of several responses. Then, you will use the [ABI specifications](https://docs.soliditylang.org/en/v0.8.24/abi-spec.html) in Solidity to decode the responses in your smart contract.
+
+<Aside type="caution">
+  Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
+  for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
+  user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
+  fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
+  library or a compromised repository from which the dependency is downloaded.
+</Aside>
+
+## Prerequisites
+
+This tutorial assumes you have completed the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial. Also,
+check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription
+Manager](https://functions.chain.link/). If your subscription runs out of LINK, follow the [Fund a
+Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+
+In this tutorial, you will use a different Chainlink Functions consumer contract, which shows how to use ABI decoding to decode the response received from Chainlink Functions:
+
+1. [Open the FunctionsConsumerDecoder.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol) in Remix.
+
+   <CodeSample src="samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol" showButtonOnly={true} />
+
+1. Compile the contract.
+1. Open MetaMask and select the _Ethereum Sepolia_ network.
+1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Ethereum Sepolia_.
+1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Ethereum Sepolia_, the router address is <CopyText text="0xb83E47C2bC239B3bf370bc41e1459A34b41238D0" code/>.
+1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Ethereum Sepolia_.
+1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address.
+1. Add your consumer contract address to your subscription on _Ethereum Sepolia_.
+
+## Tutorial
+
+This tutorial demonstrates using the [ethers](https://www.npmjs.com/package/ethers) library to interact with smart contract functions through a JSON RPC provider. It involves calling the [`latestRoundData`](/data-feeds/api-reference#latestrounddata), [`decimals`](/data-feeds/api-reference#decimals), and [`description`](/data-feeds/api-reference#description) functions of a price feed contract based on the `AggregatorV3Interface`.
+After retrieving the necessary data, the guide shows how to use ABI encoding to encode these responses into a single hexadecimal string and then convert this string to a [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array). This step ensures compliance with the [Chainlink Functions API requirements](/chainlink-functions/api-reference/javascript-source#data-encoding-functions), which specify that the source code must return a Uint8Array representing the bytes for on-chain use.
+
+You can locate the scripts used in this tutorial in the [_examples/12-abi-encoding_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/12-abi-encoding).
+
+To run the example:
+
+1. Make sure you have correctly set up your environment first. If you haven't already, follow the [Set up your environment](/chainlink-functions/tutorials/importing-packages#set-up-your-environment) section of the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial.
+1. Open the file `request.js`, located in the [`12-abi-encoding`](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/12-abi-encoding) folder.
+1. Replace the consumer contract address and the subscription ID with your own values.
+
+   ```javascript
+   const consumerAddress = "0x5fC6e53646CC53f0C3575fd2c71b5056c4823f5c" // REPLACE this with your Functions consumer address
+   const subscriptionId = 139 // REPLACE this with your subscription ID
+   ```
+
+1. Make a request:
+
+   ```shell
+   node examples/12-abi-encoding/request.js
+   ```
+
+   The script runs your function in a sandbox environment before making an onchain transaction:
+
+   ```text
+   $ node examples/12-abi-encoding/request.js
+   secp256k1 unavailable, reverting to browser version
+   Start simulation...
+   Simulation result {
+     capturedTerminalOutput: 'Fetched BTC / USD price: dataFeedResponse.answer\n' +
+       'Updated at: 1712941559\n' +
+       'Decimals: 8\n' +
+       'Description: BTC / USD\n',
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000'
+   }
+   ✅ Decoded response to bytes:  0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
+
+   Estimate request costs...
+   Fulfillment cost estimated to 1.007671833192655 LINK
+
+   Make request...
+
+   ✅ Functions request sent! Transaction hash 0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1
+
+   ✅ Request 0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b successfully fulfilled. Cost is 0.282344694329387405 LINK.Complete reponse:  {
+     requestId: '0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b',
+     subscriptionId: 2303,
+     totalCostInJuels: 282344694329387405n,
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000',
+     errorString: '',
+     returnDataBytesHexstring: '0x',
+     fulfillmentCode: 0
+   }
+
+   ✅ Raw response:  0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
+
+   ✅ Fetched BTC / USD price: 6855664389252 (updatedAt: 1712941559) (decimals: 8) (description: BTC / USD)
+   ```
+
+   The output of the example gives you the following information:
+
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The fulfillment costs are estimated before making the request.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1`, and the request ID is `0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b`.
+
+   - The DON successfully fulfilled your request. The total cost was: `0.282344694329387405 LINK`.
+   - The consumer contract received a response in hexadecimal string with a value of `0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000`. This value is the ABI encoded response of the `latestRoundData`, `decimals`, and `description` of the _BTC / USD_ price feed. This value is then decoded and stored in the consumer contract.
+   - The script calls the consumer contract to fetch the decoded values and then logs them to the console. The output is `Fetched BTC / USD price: 6855664389252 (updatedAt: 1712941559) (decimals: 8) (description: BTC / USD)`.
+
+## Examine the code
+
+### FunctionsConsumerDecoder.sol
+
+<CodeSample src="samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol" />
+
+This Solidity contract is similar to the [FunctionsConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumer.sol) contract used in the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial. The main difference is the processing of the response in the `fulfillRequest` function:
+
+- It uses Solidity `abi.decode` to decode the `response` to retrieve the `answer`, `updatedAt`, `decimals`, and `description`.
+
+  ```solidity
+  (
+    uint256 answer,
+    uint256 updatedAt,
+    uint8 decimals,
+    string memory description
+  ) = abi.decode(response, (uint256, uint256, uint8, string));
+  ```
+
+- Then stores the decoded values in the contract state.
+
+  ```solidity
+  s_answer = answer;
+  s_updatedAt = updatedAt;
+  s_decimals = decimals;
+  s_description = description;
+  ```
+
+### JavaScript example
+
+#### source.js
+
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/12-abi-encoding/source.js). The code is self-explanatory and has comments to help you understand all the steps.
+
+<ChainlinkFunctions section="deno-importe-notes" />
+
+The example `source.js` file is similar to the one used in the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages#sourcejs) tutorial. It uses a JSON RPC call to the [`latestRoundData`](/data-feeds/api-reference#latestrounddata), [`decimals`](/data-feeds/api-reference#decimals), and [`description`](/data-feeds/api-reference#description) functions of a [Chainlink Data Feed](/data-feeds). It then uses the `ethers` library to encode the response of these functions into a single hexadecimal string.
+
+```javascript
+const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
+  ["uint256", "uint256", "uint8", "string"],
+  [dataFeedResponse.answer, dataFeedResponse.updatedAt, decimals, description]
+)
+```
+
+Finally, it uses the `ethers` library [`getBytes`](https://docs.ethers.org/v6/api/utils/#getBytes) to convert the hexadecimal string to a `Uint8Array`:
+
+```javascript
+return ethers.getBytes(encoded)
+```
+
+#### request.js
+
+This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/12-abi-encoding/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html): Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/12-abi-encoding/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/functionsDecoder.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerDecoder contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x5fC6e53646CC53f0C3575fd2c71b5056c4823f5c" // REPLACE this with your Functions consumer address
+const subscriptionId = 139 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Sepolia.
+   - `donId`: Identifier of the DON that will fulfill your requests on Sepolia.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a local sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.bytes` in this example).
+
+1. Estimating the costs:
+
+   - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost`.
+   - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
+
+1. Making a Chainlink Functions request:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Call the `sendRequest` function of your consumer contract.
+
+1. Waiting for the response:
+
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.bytes` in this example).
+
+1. Read the decoded response:
+
+   - Call the `s_answer`, `s_updatedAt`, `s_decimals`, and `s_description` functions of your consumer contract to fetch the decoded values.
+   - Log the decoded values to the console.
+
+## Handling complex data types with ABI Encoding and Decoding
+
+This section details the process of encoding complex data types into [`Uint8Array` typed arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) to fulfill the Ethereum Virtual Machine (EVM) data handling requirements for transactions and smart contract interactions. It will then outline the steps for decoding these byte arrays to align with corresponding structures defined in Solidity.
+
+Consider a scenario where a contract needs to interact with a data structure that encapsulates multiple properties, including nested objects:
+
+```json
+{
+  "id": 1,
+  "metadata": {
+    "description": "Decentralized Oracle Network",
+    "awesome": true
+  }
+}
+```
+
+Transferring and storing this kind of structured data requires encoding it into a format (array of 8-bit unsigned integers) that smart contracts can accept and process.
+
+### Encoding in JavaScript
+
+Because Chainlink Functions supports important external modules, you can import a web3 library such as `ethers.js` and perform encoding.
+To encode complex data structures, you can use the [`defaultAbiCoder.encode`](https://docs.ethers.org/v6/api/abi/abi-coder/#AbiCoder-encode) function from the `ethers.js` library. The function takes two arguments:
+
+- An array of Solidity data types.
+- The corresponding data in JavaScript format.
+
+and returns the encoded data as a hexadecimal string.
+
+Here's how you can encode the aforementioned complex data:
+
+```javascript
+const { ethers } = await import("npm:ethers@6.10.0") // Import ethers.js v6.10.0
+
+const abiCoder = ethers.AbiCoder.defaultAbiCoder()
+
+// Define the data structure
+const complexData = {
+  id: 1,
+  metadata: {
+    description: "Decentralized Oracle Network",
+    awesome: true,
+  },
+}
+
+// Define the Solidity types for encoding
+const types = ["tuple(uint256 id, tuple(string description, bool awesome) metadata)"]
+
+// Encoding the data
+const encodedData = abiCoder.encode(types, [complexData])
+```
+
+After encoding the data, it's necessary to format it as a `Uint8Array` array for smart contract interactions and blockchain transactions. In Solidity, the data type for byte arrays data is `bytes`. However, when working in a JavaScript environment, such as when using the `ethers.js` library, the equivalent data structure is a `Uint8Array`.
+
+The `ethers.js` library provides the [`getBytes`](https://docs.ethers.org/v6/api/utils/#getBytes) function to convert encoded hexadecimal strings into a `Uint8Array`:
+
+```javascript
+return ethers.getBytes(encodedData) // Return the encoded data converted into a Uint8Array
+```
+
+### Decoding in Solidity
+
+The encoded data can be decoded using the `abi.decode` function. To decode the data, you'll need to handle the decoding in your `fulfillRequest` function:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+contract DataDecoder {
+  // Example of a structure to hold the complex data
+  struct Metadata {
+    string description;
+    bool awesome;
+  }
+
+  struct ComplexData {
+    uint256 id;
+    Metadata metadata;
+  }
+
+  // ... other contract functions (including the send request function)
+
+  // Fulfill function (callback function)
+  function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
+    // Decode the response
+    ComplexData memory metadata = abi.decode(response, (ComplexData));
+    // ... rest of the function
+  }
+}
+```

@@ -15,7 +15,7 @@ import { Aside, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts) completes off-chain computation and aggregation, it returns the result to your smart contract.
+This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts) completes offchain computation and aggregation, it returns the result to your smart contract.
 
 <ChainlinkFunctions section="prerequisites-guides" />
 
@@ -41,41 +41,35 @@ To run the example:
    node examples/1-simple-computation/request.js
    ```
 
-   The script runs your function in a sandbox environment before making an on-chain transaction:
+   The script runs your function in a sandbox environment before making an onchain transaction:
 
    ```text
    $ node examples/1-simple-computation/request.js
+
    secp256k1 unavailable, reverting to browser version
    Start simulation...
-   Performing simulation with the following versions:
-   deno 1.36.3 (release, aarch64-apple-darwin)
-   v8 11.6.189.12
-   typescript 5.1.6
-
-
    Simulation result {
-     capturedTerminalOutput: 'calculate geometric mean of 1,2,3,4,5,6,7,8,9,10\ngeometric mean is: 4.53\n',
-     responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5'
+   capturedTerminalOutput: 'calculate geometric mean of 1,2,3,4,5,6,7,8,9,10\ngeometric mean is: 4.53\n',
+   responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5'
    }
    ✅ Decoded response to uint256:  453n
 
    Estimate request costs...
-   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Fulfillment cost estimated to 0.000000000000215 LINK
+   Fulfillment cost estimated to 1.004325887213695 LINK
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b
+   ✅ Functions request sent! Transaction hash 0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22
 
-   ✅ Request 0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe fulfilled with code: 0. Cost is 0.000038017374812478 LINK. Complete response:  {
-     requestId: '0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe',
-     subscriptionId: 3,
-     totalCostInJuels: 38017374812478n,
-     responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5',
-     errorString: '',
-     returnDataBytesHexstring: '0x',
-     fulfillmentCode: 0
+   ✅ Request 0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715 successfully fulfilled. Cost is 0.240613623834519812 LINK.Complete reponse:  {
+   requestId: '0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715',
+   subscriptionId: 2303,
+   totalCostInJuels: 240613623834519812n,
+   responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5',
+   errorString: '',
+   returnDataBytesHexstring: '0x',
+   fulfillmentCode: 0
    }
 
    ✅ Decoded response to uint256:  453n
@@ -85,10 +79,10 @@ To run the example:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b](https://mumbai.polygonscan.com/tx/0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b) and the request ID is `0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22](https://sepolia.etherscan.io/tx/0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22) and the request ID is `0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.000038017374812478 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000000001c5`. Decoding it off-chain to `uint256` gives you a result: `453`.
+   - The DON successfully fulfilled your request. The total cost was: `0.240613623834519812 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000000001c5`. Decoding it offchain to `uint256` gives you a result: `453`.
 
 ## Examine the code
 
@@ -100,7 +94,7 @@ To run the example:
 
 #### source.js
 
-The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/1-simple-computation/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: It is important to note that the custom source code you want to execute in a Functions request can use vanilla [Deno](https://deno.land/) but cannot use any require statements or imported modules.
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/1-simple-computation/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: Functions requests with custom source code can use vanilla [Deno](https://deno.land/) but cannot use any require statements. Import statements and imported modules are supported only on testnets.
 
 The main steps are:
 
@@ -112,7 +106,7 @@ The main steps are:
   - `Functions.encodeInt256`: Takes a JavaScript integer number and returns a Buffer of 32 bytes representing an int256 type in Solidity.
   - `Functions.encodeString`: Takes a JavaScript string and returns a Buffer representing a string type in Solidity.
 
-  **Note**: You are not required to use these encoding functions as long as the JavaScript code returns a Buffer representing the bytes array returned on-chain. Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
+  **Note**: You are not required to use these encoding functions as long as the JavaScript code returns a Buffer representing the bytes array returned onchain. Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
 
 #### request.js
 
@@ -133,13 +127,13 @@ const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function can be broken into five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
+   - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

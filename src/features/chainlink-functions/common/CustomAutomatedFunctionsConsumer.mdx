@@ -2,15 +2,15 @@ import { CodeSample } from "@components"
 
 <CodeSample src="samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol" />
 
-- To write an automated Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol). You can read the API reference of [FunctionsClient](/chainlink-functions/api-reference/functions-client).
+- To write an automated Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol). You can read the API reference of [FunctionsClient](/chainlink-functions/api-reference/functions-client).
 
   The contract is available in an NPM package, so you can import it from within your project.
 
   ```
-  import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+  import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
   ```
 
-- To write a compatible Automations contract, your contract must import [AutomationCompatibleInterface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol).
+- To write a compatible Automations contract, your contract must import [AutomationCompatibleInterface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol).
 
   The contract is available in an NPM package, so you can import it from within your project.
 
@@ -20,7 +20,7 @@ import { CodeSample } from "@components"
 
 - The `lastBlockNumber` is stored in the contract. It represents the block number of the last time `performUpkeep` was triggered.
 
-- The encoded `request`, `subscriptionId`, `gasLimit`, and `jobId` are stored in the contract storage. The contract owner sets these variables by calling the `updateRequest` function. **Note**: The request (source code, secrets, if any, and arguments) is encoded off-chain.
+- The encoded `request`, `subscriptionId`, `gasLimit`, and `jobId` are stored in the contract storage. The contract owner sets these variables by calling the `updateRequest` function. **Note**: The request (source code, secrets, if any, and arguments) is encoded offchain.
 
 - The latest request id, latest received response, and latest received error (if any) are defined as state variables:
 
@@ -36,6 +36,13 @@ import { CodeSample } from "@components"
   event Response(bytes32 indexed requestId, bytes response, bytes err);
   ```
 
+- We define two events that your smart contract emits when sending a request to Chainlink Functions fails:
+
+  ```
+  event RequestRevertedWithErrorMsg(string reason);
+  event RequestRevertedWithoutErrorMsg(bytes data);
+  ```
+
 - Pass the router address for your network when you deploy the contract:
 
   ```
@@ -44,14 +51,15 @@ import { CodeSample } from "@components"
 
 - The three remaining functions are:
 
-  - `checkUpkeep` for checking off-chain if `performUpkeep` should be executed. `performUpkeep` should only be executed if the current block number is higher than the block number of the last execution.
+  - `checkUpkeep` for checking offchain if `performUpkeep` should be executed. `performUpkeep` should only be executed if the current block number is higher than the block number of the last execution.
 
-  - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function.
+  - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function. **Note**: We use _try and catch_ to gracefully handle reverts of `i_router.sendRequest` by emitting an event. We also update the `lastBlockNumber`, even when `i_router.sendRequest` is unsuccessful.
 
-  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError` before emitting the `Response` event.
+  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError`, then increments the response counter `s_responseCounter` before emitting the `Response` event.
 
     ```
     s_lastResponse = response;
     s_lastError = err;
+    s_responseCounter = s_responseCounter + 1;
     emit Response(requestId, s_lastResponse, s_lastError);
     ```

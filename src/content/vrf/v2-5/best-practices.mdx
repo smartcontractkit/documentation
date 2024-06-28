@@ -1,0 +1,230 @@
+---
+section: vrf
+date: Last Modified
+title: "VRF Best Practices"
+metadata:
+  title: "Chainlink VRF API Reference"
+  description: "Best practices for using Chainlink VRF."
+---
+
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
+import { CodeSample } from "@components"
+
+<Vrf2_5Common callout="security" />
+
+These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
+
+## Getting a random number within a range
+
+If you need to generate a random number within a given range, use [modulo](https://docs.soliditylang.org/en/v0.8.7/types.html#modulo) to define the limits of your range. Below you can see how to get a random number in a range from 1 to 50.
+
+{/* prettier-ignore */}
+```solidity
+function fulfillRandomWords(
+  uint256, /* requestId */
+  uint256[] memory randomWords
+) internal override {
+  // Assuming only one random word was requested.
+  s_randomRange = (randomWords[0] % 50) + 1;
+}
+```
+
+## Getting multiple random values
+
+If you want to get multiple random values from a single VRF request, you can request this directly with the `numWords` argument:
+
+- If you are using the VRF v2.5 subscription method, see the [full example code](/vrf/v2-5/migration-from-v2#compare-example-code) for an example where one request returns multiple random values.
+
+## Processing simultaneous VRF requests
+
+If you want to have multiple VRF requests processing simultaneously, create a mapping between `requestId` and the response. You might also create a mapping between the `requestId` and the address of the requester to track which address made each request.
+
+{/* prettier-ignore */}
+```solidity
+mapping(uint256 => uint256[]) public s_requestIdToRandomWords;
+mapping(uint256 => address) public s_requestIdToAddress;
+uint256 public s_requestId;
+
+function requestRandomWords() external onlyOwner returns (uint256) {
+  uint256 requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+          keyHash: keyHash,
+          subId: s_vrfSubscriptionId,
+          requestConfirmations: requestConfirmations,
+          callbackGasLimit: callbackGasLimit,
+          numWords: numWords,
+          extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true})) // new parameter
+      })
+  );
+  s_requestIdToAddress[requestId] = msg.sender;
+
+  // Store the latest requestId for this example.
+  s_requestId = requestId;
+
+  // Return the requestId to the requester.
+  return requestId;
+}
+
+function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+  // You can return the value to the requester,
+  // but this example simply stores it.
+  s_requestIdToRandomWords[requestId] = randomWords;
+}
+```
+
+You could also map the `requestId` to an index to keep track of the order in which a request was made.
+
+{/* prettier-ignore */}
+```solidity
+mapping(uint256 => uint256) s_requestIdToRequestIndex;
+mapping(uint256 => uint256[]) public s_requestIndexToRandomWords;
+uint256 public requestCounter;
+
+function requestRandomWords() external onlyOwner {
+  uint256 requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+          keyHash: keyHash,
+          subId: s_vrfSubscriptionId,
+          requestConfirmations: requestConfirmations,
+          callbackGasLimit: callbackGasLimit,
+          numWords: numWords,
+          extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true})) // new parameter
+      })
+  );
+  s_requestIdToRequestIndex[requestId] = requestCounter;
+  requestCounter += 1;
+}
+
+function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+  uint256 requestNumber = s_requestIdToRequestIndex[requestId];
+  s_requestIndexToRandomWords[requestNumber] = randomWords;
+}
+```
+
+## Processing VRF responses through different execution paths
+
+If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`. See the following example:
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+// It shows how to setup multiple execution paths for handling a response.
+pragma solidity 0.8.19;
+
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+contract VRFv2MultiplePaths is VRFConsumerBaseV2Plus {
+
+    // Your subscription ID.
+    uint256 s_subscriptionId;
+
+    // Sepolia coordinator. For other networks,
+    // see https://docs.chain.link/docs/vrf/v2-5/supported-networks
+    address vrfCoordinatorV2Plus = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+
+    // The gas lane to use, which specifies the maximum gas price to bump to.
+    // For a list of available gas lanes on each network,
+    // see https://docs.chain.link/docs/vrf/v2-5/supported-networks
+    bytes32 keyHash =
+        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+    uint32 callbackGasLimit = 100000;
+
+    // The default is 3, but you can set this higher.
+    uint16 requestConfirmations = 3;
+
+    // For this example, retrieve 1 random value in one request.
+    // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+    uint32 numWords = 1;
+
+    enum Variable {
+        A,
+        B,
+        C
+    }
+
+    uint256 public variableA;
+    uint256 public variableB;
+    uint256 public variableC;
+
+    mapping(uint256 => Variable) public requests;
+
+    // events
+    event FulfilledA(uint256 requestId, uint256 value);
+    event FulfilledB(uint256 requestId, uint256 value);
+    event FulfilledC(uint256 requestId, uint256 value);
+
+    constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinatorV2Plus) {
+        s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinatorV2Plus);
+        s_subscriptionId = subscriptionId;
+    }
+
+    function updateVariable(uint256 input) public {
+      uint256 requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({
+            keyHash: keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: requestConfirmations,
+            callbackGasLimit: callbackGasLimit,
+            numWords: numWords,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true}))
+          })
+        );
+
+        if (input % 2 == 0) {
+            requests[requestId] = Variable.A;
+        } else if (input % 3 == 0) {
+            requests[requestId] = Variable.B;
+        } else {
+            requests[requestId] = Variable.C;
+        }
+    }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
+        Variable variable = requests[requestId];
+        if (variable == Variable.A) {
+            fulfillA(requestId, randomWords[0]);
+        } else if (variable == Variable.B) {
+            fulfillB(requestId, randomWords[0]);
+        } else if (variable == Variable.C) {
+            fulfillC(requestId, randomWords[0]);
+        }
+    }
+
+    function fulfillA(uint256 requestId, uint256 randomWord) private {
+        // execution path A
+        variableA = randomWord;
+        emit FulfilledA(requestId, randomWord);
+    }
+
+    function fulfillB(uint256 requestId, uint256 randomWord) private {
+        // execution path B
+        variableB = randomWord;
+        emit FulfilledB(requestId, randomWord);
+    }
+
+    function fulfillC(uint256 requestId, uint256 randomWord) private {
+        // execution path C
+        variableC = randomWord;
+        emit FulfilledC(requestId, randomWord);
+    }
+}
+```

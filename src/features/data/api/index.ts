@@ -1,7 +1,6 @@
 import { Chain } from "../chains"
 
 interface Docs {
-  nftFloorUnits: any
   assetName?: string
   feedCategory?: string
   feedType?: string
@@ -48,7 +47,9 @@ export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | an
     network?.rddUrl
       ? getFeedsMetadata(network?.rddUrl).then((metadata) => ({
           ...network,
-          metadata: metadata.filter((meta) => meta.docs?.hidden !== true),
+          metadata: metadata.filter(
+            (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
+          ),
         }))
       : undefined
   )

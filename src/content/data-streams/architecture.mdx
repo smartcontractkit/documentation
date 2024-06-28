@@ -1,0 +1,77 @@
+---
+section: dataStreams
+title: "Data Streams Architecture"
+whatsnext:
+  {
+    "Find the list of available stream IDs.": "/data-streams/stream-ids",
+    "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
+  }
+---
+
+import { Aside, ClickToZoom } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+## High Level Architecture
+
+Chainlink Data Streams has the following core components:
+
+- **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Streams Aggregation Network rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a concensus about the median price of an asset, sign a report including that data, and deliver the report to the Data Streams Aggregation Network.
+- **The Chainlink Data Streams Aggregation Network:** The Data Streams Aggregation Network stores the signed reports and makes them available for retrieval. It can deliver these reports to Chainlink Automation upon request (Streams Trade) or provide direct access via the API (Streams Direct).
+- **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached concensus to the point where you use the data in your application.
+
+## Streams Trade Architecture
+
+Using Chainlink Automation with Data Streams automates trade execution and mitigates frontrunning by executing the transaction before the data is recorded onchain. Chainlink Automation requests data from the Data Streams Aggregation Network. It executes transactions only in response to the data and the verified report, so the transaction is executed correctly and independently from the decentralized application itself.
+
+<ClickToZoom
+  src="/images/data-streams/data-streams-trade-architecture-v3.webp"
+  alt="Chainlink Data Streams - Streams Trade Architecture"
+/>
+
+#### Example trading flow using Streams Trade
+
+One example of how to use Data Streams with Automation is in a decentralized exchange. An example flow might work using the following process:
+
+<ClickToZoom
+  src="/images/data-streams/streams-trade-sequence-diagram.webp"
+  alt="Chainlink Data Streams - Streams Trade Example Trading Flow"
+/>
+
+1. A user initiates a trade by confirming an `initiateTrade` transaction in their wallet.
+1. The onchain contract for the decentralized exchange responds by emitting a [log trigger](/chainlink-automation/concepts/automation-concepts#upkeeps-and-triggers) event.
+1. The Automation upkeep monitors the contract for the event. When Automation detects the event, it runs the `checkLog` function specified in the upkeep contract. The upkeep is defined by the decentralized exchange.
+1. The `checkLog` function uses a `revert` with a custom error called `StreamsLookup`. This approach aligns with [EIP-3668](https://eips.ethereum.org/EIPS/eip-3668#use-of-revert-to-convey-call-information) and conveys the required information through the data in the `revert` custom error.
+1. Automation monitors the `StreamsLookup` custom error that triggers Data Streams to process the offchain data request. Data Streams then returns the requested signed report in the `checkCallback` function for Automation.
+1. Automation passes the report to the Automation Registry, which executes the `performUpkeep` function defined by the decentralized exchange. The report is included as a variable in the `performUpkeep` function.
+1. The `performUpkeep` function calls the `verify` function on the Data Streams onchain verifier contract and passes the report as a variable.
+1. The verifier contract returns a `verifierResponse` bytes value to the upkeep.
+1. If the response indicates that the report is valid, the upkeep executes the user's requested trade. If the response is invalid, the upkeep rejects the trade and notifies the user.
+
+This is one example of how you can combine Data Streams and Automation, but the systems are highly configurable. You can write your own log triggers or [custom logic triggers](/chainlink-automation/guides/register-upkeep) to initiate Automation upkeeps for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
+
+Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Data Streams using the Streams Trade implementation.
+
+## Streams Direct Architecture
+
+<DataStreams section="streamsDirectEarlyAccess" />
+
+#### Example of offchain price updates with Streams Direct
+
+Streams Direct enables seamless offchain price updates through a mechanism designed for real-time data delivery. Here is an example of how your Client will benefit from low-latency market data directly from the Data Streams Aggregation Network.
+
+1. The Client opens a WebSocket connection to the Data Streams Aggregation Network to subscribe to new reports with low latency.
+
+1. The Data Streams Aggregation Network sends price reports via WebSocket, which gives the Client instant access to updated market data.
+
+1. The Client stores the price reports in a cache for quick access and use, which preserves data integrity over time.
+
+1. The Client regularly queries `/client/bulk` for any missed reports to ensure data completeness.
+
+1. If the Data Streams Aggregation Network identifies missed reports, it sends back an array of these reports. This mechanism allows the Client to update its cache and to keep the data set complete and up-to-date.
+
+<ClickToZoom
+  src="/images/data-streams/streams-direct-offchain-price-updates-v3.webp"
+  alt="Chainlink Data Streams - Streams Direct Off-Chain Price Updates"
+/>

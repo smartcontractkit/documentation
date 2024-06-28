@@ -1,6 +1,6 @@
 import React from "react"
 import { NavBar as Nav } from "./Nav"
-import { Search } from "./AlgoSearch/Search"
+import { Search } from "./aiSearch/Search"
 import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
@@ -43,8 +43,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
                 full_name: false,
                 with_name: true,
                 is_dropdown: true,
-                with_flags: true,
-                flag_type: "circle",
+                with_flags: false,
               },
               location: {
                 target: "#weglot",

@@ -108,16 +108,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ETHEREUM_SEPOLIA"
     case "ethereum-mainnet-optimism-1":
       return "OPTIMISM_MAINNET"
-    case "ethereum-testnet-goerli-optimism-1":
-      return "OPTIMISM_GOERLI"
+    case "ethereum-testnet-sepolia-optimism-1":
+      return "OPTIMISM_SEPOLIA"
     case "ethereum-mainnet-arbitrum-1":
       return "ARBITRUM_MAINNET"
-    case "ethereum-testnet-goerli-arbitrum-1":
-      return "ARBITRUM_GOERLI"
+    case "ethereum-testnet-sepolia-arbitrum-1":
+      return "ARBITRUM_SEPOLIA"
     case "matic-mainnet":
       return "POLYGON_MAINNET"
-    case "matic-testnet":
-      return "POLYGON_MUMBAI"
+    case "polygon-testnet-amoy":
+      return "POLYGON_AMOY"
     case "avalanche-mainnet":
       return "AVALANCHE_MAINNET"
     case "avalanche-fuji-testnet":
@@ -128,8 +128,28 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BNB_TESTNET"
     case "ethereum-mainnet-base-1":
       return "BASE_MAINNET"
-    case "ethereum-testnet-goerli-base-1":
-      return "BASE_GOERLI"
+    case "ethereum-testnet-sepolia-base-1":
+      return "BASE_SEPOLIA"
+    case "wemix-mainnet":
+      return "WEMIX_MAINNET"
+    case "wemix-testnet":
+      return "WEMIX_TESTNET"
+    case "ethereum-mainnet-kroma-1":
+      return "KROMA_MAINNET"
+    case "ethereum-testnet-sepolia-kroma-1":
+      return "KROMA_SEPOLIA"
+    case "xdai-mainnet":
+      return "GNOSIS_MAINNET"
+    case "xdai-testnet-chiado":
+      return "GNOSIS_CHIADO"
+    case "celo-mainnet":
+      return "CELO_MAINNET"
+    case "celo-testnet-alfajores":
+      return "CELO_ALFAJORES"
+    case "ethereum-testnet-sepolia-mode-1":
+      return "MODE_SEPOLIA"
+    case "ethereum-mainnet-mode-1":
+      return "MODE_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -143,16 +163,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia"
     case "OPTIMISM_MAINNET":
       return "ethereum-mainnet-optimism-1"
-    case "OPTIMISM_GOERLI":
-      return "ethereum-testnet-goerli-optimism-1"
+    case "OPTIMISM_SEPOLIA":
+      return "ethereum-testnet-sepolia-optimism-1"
     case "ARBITRUM_MAINNET":
       return "ethereum-mainnet-arbitrum-1"
-    case "ARBITRUM_GOERLI":
-      return "ethereum-testnet-goerli-arbitrum-1"
+    case "ARBITRUM_SEPOLIA":
+      return "ethereum-testnet-sepolia-arbitrum-1"
     case "POLYGON_MAINNET":
       return "matic-mainnet"
-    case "POLYGON_MUMBAI":
-      return "matic-testnet"
+    case "POLYGON_AMOY":
+      return "polygon-testnet-amoy"
     case "AVALANCHE_MAINNET":
       return "avalanche-mainnet"
     case "AVALANCHE_FUJI":
@@ -163,8 +183,28 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "bsc-testnet"
     case "BASE_MAINNET":
       return "ethereum-mainnet-base-1"
-    case "BASE_GOERLI":
-      return "ethereum-testnet-goerli-base-1"
+    case "BASE_SEPOLIA":
+      return "ethereum-testnet-sepolia-base-1"
+    case "WEMIX_MAINNET":
+      return "wemix-mainnet"
+    case "WEMIX_TESTNET":
+      return "wemix-testnet"
+    case "KROMA_MAINNET":
+      return "ethereum-mainnet-kroma-1"
+    case "KROMA_SEPOLIA":
+      return "ethereum-testnet-sepolia-kroma-1"
+    case "GNOSIS_MAINNET":
+      return "xdai-mainnet"
+    case "GNOSIS_CHIADO":
+      return "xdai-testnet-chiado"
+    case "CELO_MAINNET":
+      return "celo-mainnet"
+    case "CELO_ALFAJORES":
+      return "celo-testnet-alfajores"
+    case "MODE_SEPOLIA":
+      return "ethereum-testnet-sepolia-mode-1"
+    case "MODE_MAINNET":
+      return "ethereum-mainnet-mode-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
