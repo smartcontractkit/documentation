@@ -5,12 +5,18 @@ const StreamsLookupInterfaceComponent = StreamsLookupInterface[0].Content
 const iLogAutomation = await Astro.glob("./iLogAutomation.mdx")
 const ILogAutomationComponent = iLogAutomation[0].Content
 
+const deprecationCallout = await Astro.glob("./deprecation.mdx")
+const DeprecationCalloutComponent = deprecationCallout[0].Content
+
 export type Props = {
   section?: "ilogautomation" | "streamslookup"
+  callout?: "deprecation"
 }
-const { section } = Astro.props as Props
+const { section, callout } = Astro.props as Props
 ---
 
 {section === "ilogautomation" && <ILogAutomationComponent />}
 
 {section === "streamslookup" && <StreamsLookupInterfaceComponent />}
+
+{callout === "deprecation" && <DeprecationCalloutComponent />}

@@ -405,7 +405,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/automation-release-notes",
         },
         {
-          title: "Migrate to Automation V2",
+          title: "Migrate to Automation v2.1",
           url: "chainlink-automation/guides/migrate-to-v2",
         },
       ],
