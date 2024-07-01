@@ -3,6 +3,13 @@
 import { HardhatUserConfig } from "hardhat/config"
 import "@nomicfoundation/hardhat-toolbox"
 
+const compilerSettings = {
+  optimizer: {
+    enabled: true,
+    runs: 1000,
+  },
+}
+
 const config: HardhatUserConfig = {
   paths: {
     root: "./",
@@ -16,11 +23,11 @@ const config: HardhatUserConfig = {
       { version: "0.6.6" },
       { version: "0.6.12" },
       { version: "0.7.6" },
-      { version: "0.8.7" },
       { version: "0.8.6" },
-      { version: "0.8.16" },
-      { version: "0.8.19" },
-      { version: "0.8.20" },
+      { version: "0.8.7" },
+      { version: "0.8.16", settings: compilerSettings },
+      { version: "0.8.19", settings: compilerSettings },
+      { version: "0.8.20", settings: compilerSettings },
     ],
   },
 }
