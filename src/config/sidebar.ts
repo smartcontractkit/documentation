@@ -405,7 +405,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/automation-release-notes",
         },
         {
-          title: "Migrate to Automation V2",
+          title: "Migrate to Automation v2.1",
           url: "chainlink-automation/guides/migrate-to-v2",
         },
       ],
@@ -448,6 +448,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
+        },
+        {
+          title: "Set a gas price threshold on your upkeep",
+          url: "chainlink-automation/guides/gas-price-threshold",
         },
         {
           title: "Using the StreamsLookup error handler",
