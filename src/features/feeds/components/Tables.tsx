@@ -5,9 +5,12 @@ import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
 import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
-const feedItems = monitoredFeeds.mainnet
+const verifierProxies = new Map<string, string>([
+  ["0x534a7FF707Bc862cAB0Dda546F1B817Be5235b66", "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C"],
+  ["0xA403a4a521be034B4A0D54019aF469A207094246", "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"],
+])
+
 const feedCategories = {
   low: (
     <span
@@ -210,21 +213,16 @@ const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }
 const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
-      {feedItems.map((feedItem: FeedDataItem) => {
-        const [feedAddress] = Object.keys(feedItem)
-        if (feedAddress === proxy.proxyAddress) {
-          return (
-            <CheckHeartbeat
-              feedAddress={proxy.proxyAddress}
-              supportedChain="ETHEREUM_MAINNET"
-              feedName="TUSD Reserves"
-              list
-              currencyName={feedItem[feedAddress]}
-            />
-          )
-        }
-        return ""
-      })}
+      {proxy.docs.ripcordApi && (
+        <CheckHeartbeat
+          feedAddress={proxy.proxyAddress}
+          supportedChain={network.name.toUpperCase().replace(/ /g, "_")}
+          feedName={proxy.name}
+          heartbeat={proxy.heartbeat}
+          list
+          ripcordApi={proxy.docs.ripcordApi}
+        />
+      )}
       <div className={tableStyles.assetPair}>
         {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
