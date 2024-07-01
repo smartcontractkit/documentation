@@ -31,6 +31,7 @@ export const productChainLinks: ProductChainLinks = {
       optimism: "/ccip/supported-networks/v1_2_0/mainnet#optimism-mainnet",
       polygon: "/ccip/supported-networks/v1_2_0/mainnet#polygon-mainnet",
       wemix: "/ccip/supported-networks/v1_2_0/mainnet#wemix-mainnet",
+      mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
     },
   },
   "Data Feeds": {
@@ -62,7 +63,8 @@ export const productChainLinks: ProductChainLinks = {
     learnMorelink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
-      arbitrum: "/data-streams/stream-ids?network=arbitrum",
+      arbitrum: "/data-streams/stream-ids",
+      avalanche: "/data-streams/stream-ids",
     },
   },
   Functions: {
@@ -116,6 +118,7 @@ export const productChainLinks: ProductChainLinks = {
     kroma: "/resources/link-token-contracts#kroma",
     linea: "/resources/link-token-contracts#linea",
     metis: "/resources/link-token-contracts#metis",
+    mode: "/resources/link-token-contracts#mode",
     moonbeam: "/resources/link-token-contracts#moonbeam",
     moonriver: "/resources/link-token-contracts#moonriver",
     optimism: "/resources/link-token-contracts#optimism",
@@ -150,4 +153,5 @@ export const chainNames: Record<string, string> = {
   // starknet: "Starknet",
   wemix: "Wemix",
   zksync: "zkSync",
+  mode: "Mode",
 }
