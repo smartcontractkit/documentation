@@ -1,5 +1,7 @@
+import { forEachChild } from "typescript"
+
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".click-to-zoom").forEach((element: HTMLImageElement) => {
+  document.querySelectorAll(".click-to-zoom-wrapper").forEach((element: HTMLPictureElement) => {
     element.addEventListener("click", () => {
       if (element.classList.contains("expanded")) return
 
@@ -8,12 +10,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.createElement("div")
       wrapper.id = "expanded-image-wrapper"
 
-      // create image node
+      // create picture node
+      const picture = document.createElement("picture")
+      picture.className = "expanded"
+
+      Array.from(element.getElementsByTagName("source")).forEach((source: HTMLSourceElement) => {
+        const zoomedSource = document.createElement("source")
+        zoomedSource.type = source.type
+        zoomedSource.srcset = source.srcset
+        picture.appendChild(zoomedSource)
+      })
+
       const img = document.createElement("img")
-      img.src = element.src
-      img.className = "expanded"
+      img.src = element.getElementsByTagName("img")[0].src
       img.id = "expanded-image-preview"
-      wrapper.appendChild(img)
+      picture.appendChild(img)
+
+      wrapper.appendChild(picture)
 
       // setup events to close the preview
       wrapper.onclick = () => {

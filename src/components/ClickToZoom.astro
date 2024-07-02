@@ -1,17 +1,25 @@
 ---
 export type Props = {
   src: string
+  sources?: string[]
   alt?: string
   style?: string
 }
-const { src, alt, style } = Astro.props as Props
+const { src, sources, alt, style } = Astro.props as Props
 
 /**
  * This component adds the classNames required by the scripts/click-to-zoom.ts script.
+ * Preferred image sources can be specified in `sources[]` and display them only if the
+ * browser supports the format.
+ *
+ * Supported formats: https://www.iana.org/assignments/media-types/media-types.xhtml#image
  */
 ---
 
-<img src={src} alt={alt} style={style} class="click-to-zoom" />
+<picture class="click-to-zoom-wrapper">
+  {sources?.map((source) => <source type={`image/${source.split(".").pop()}`} srcset={source} />)}
+  <img src={src} alt={alt} style={style} class="click-to-zoom" decoding="async" />
+</picture>
 
 <style>
   .click-to-zoom {
