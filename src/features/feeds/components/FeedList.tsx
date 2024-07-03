@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsVerifierProxyTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
@@ -102,6 +102,80 @@ export const FeedList = ({
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
+
+  if (dataFeedType === "streams") {
+    const mainnetFeeds: ChainNetwork[] = []
+    const testnetFeeds: ChainNetwork[] = []
+
+    chainMetadata.processedData?.networks.forEach((network) => {
+      if (network.name.includes("Arbitrum")) {
+        if (network.networkType === "mainnet") {
+          mainnetFeeds.push(network)
+        } else if (network.networkType === "testnet") {
+          testnetFeeds.push(network)
+        }
+      }
+    })
+
+    return (
+      <>
+        <SectionWrapper title="Verifier Proxy Addresses" depth={2}>
+          <StreamsVerifierProxyTable />
+        </SectionWrapper>
+
+        <SectionWrapper title="Mainnet Data Streams Feeds" depth={2}>
+          <div className={feedList.tableFilters}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="search"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                onInput={(event) => {
+                  setSearchValue((event.target as HTMLInputElement).value)
+                  setCurrentPage("1")
+                }}
+              />
+            </form>
+          </div>
+          {mainnetFeeds.length ? (
+            mainnetFeeds.map((network) => (
+              <MainnetTable
+                selectedFeedCategories={
+                  Array.isArray(selectedFeedCategories)
+                    ? selectedFeedCategories
+                    : selectedFeedCategories
+                    ? [selectedFeedCategories]
+                    : []
+                }
+                network={network}
+                showExtraDetails={showExtraDetails}
+                dataFeedType={dataFeedType}
+                ecosystem={ecosystem}
+                lastAddr={lastAddr}
+                firstAddr={firstAddr}
+                addrPerPage={addrPerPage}
+                currentPage={Number(currentPage)}
+                paginate={paginate}
+                searchValue={typeof searchValue === "string" ? searchValue : ""}
+              />
+            ))
+          ) : (
+            <p>No Mainnet feeds available.</p>
+          )}
+        </SectionWrapper>
+
+        <SectionWrapper title="Testnet Data Streams Feeds" depth={2}>
+          {testnetFeeds.length ? (
+            testnetFeeds.map((network) => (
+              <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+            ))
+          ) : (
+            <p>No Testnet feeds available.</p>
+          )}
+        </SectionWrapper>
+      </>
+    )
+  }
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
