@@ -1,0 +1,52 @@
+---
+section: dataStreams
+title: "Data Streams Liquidity-Weighted Bid-Ask Prices (LWBA)"
+whatsnext:
+  {
+    "Find the list of available stream IDs.": "/data-streams/stream-ids",
+    "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
+  }
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+Chainlink Data Streams provides [reports](/data-streams/reference/report-schema) with a benchmark price (the median price) and _Liquidity-Weighted Bid and Ask (LWBA)_ prices. These three prices form a pricing spread that offers protocols insight into market activity based on the current state of the order books.
+
+## Bid and Ask prices
+
+### What are Bid and Ask prices?
+
+Bid and ask prices represent the most fundamental elements of a market's pricing mechanism.
+
+- The bid price refers to the maximum price that a buyer is willing to pay for an asset. It is the buyer's best offer and the price at which they are ready to purchase.
+- The ask price is the minimum price at which a seller is willing to sell their asset. It represents the lowest price at which the seller would agree to sell.
+
+### Key characteristics
+
+- **Price spread**: The difference between the ask and the bid prices is the _spread_. A narrower spread typically indicates a more liquid market, whereas a wider spread can signify less liquidity or higher volatility.
+- **Market orders**: When traders place market orders to buy or sell immediately, they accept the best available ask or bid prices from the market. This interaction drives immediate transactions but can also impact the market price if the order size is substantial compared to the available volume.
+- **Liquidity and volume**: Bid and ask prices are not static and can fluctuate based on the asset's trading volume and market liquidity. High liquidity generally leads to a tighter spread, which eases transactions to occur without significantly affecting the market price.
+
+### Role in Chainlink Data Streams
+
+In Chainlink Data Streams, bid and ask prices are crucial for constructing Liquidity-Weighted Bid and Ask (LWBA) prices.
+
+## What is a Liquidity-Weighted price?
+
+A Liquidity-Weighted price adjusts the bid and ask prices based on the available liquidity at each price level in the order books. This method weights price data by the volume of assets available at each price point, and provides a more accurate reflection of market conditions where larger orders would significantly impact the price.
+
+## What are the benefits of Liquidity-Weighted Bid and Ask prices?
+
+Liquidity-weighted prices help in several key areas:
+
+- **Accuracy**: They offer a more precise measure of the market price that considers the volume available at different price levels and allows for true market sentiment to be reflected.
+- **Risk Management**: They consider the market's depth and help protocols assess and manage their risk more effectively and dynamically during periods of high volatility.
+- **Efficiency**: Liquidity-weighted prices facilitate smarter order execution, which can minimize slippage and improve transaction costs for traders and protocols alike.
+
+## Use case examples
+
+- **Derivatives trading**: Platforms can use LWBA prices to set more accurate strike prices in options markets or fair settlement prices in futures contracts.
+- **Liquidity provision**: Automated market makers (AMMs) and other liquidity providers can use these prices to adjust their funding rates or rebalance their liquidity pools to align more closely with current market conditions.
+- **Loan collateralization**: Lending platforms might use liquidity-weighted prices to determine more realistic valuations for collateral during loan issuance and liquidation processes, thereby reducing the risk of unfair liquidations.
