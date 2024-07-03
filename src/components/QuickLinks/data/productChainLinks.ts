@@ -65,6 +65,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       arbitrum: "/data-streams/stream-ids",
       avalanche: "/data-streams/stream-ids",
+      base: "/data-streams/stream-ids",
     },
   },
   Functions: {

@@ -83,6 +83,7 @@ export const evmProducts = [
     chains: [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "base", title: "Base" },
     ],
   },
   {

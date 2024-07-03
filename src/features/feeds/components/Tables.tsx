@@ -321,18 +321,18 @@ const StreamsNetworksData = [
     },
   },
   {
-    network: "Optimism",
-    logoUrl: "/assets/chains/optimism.svg",
+    network: "Base",
+    logoUrl: "/assets/chains/base.svg",
     networkStatus: "https://optimistic.freshstatus.io/",
     mainnet: {
-      label: "Optimism Mainnet",
-      verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
-      explorerUrl: "https://optimistic.etherscan.io/address/%s",
+      label: "Base Mainnet",
+      verifierProxy: "0xDE1A28D87Afd0f546505B28AB50410A5c3a7387a",
+      explorerUrl: "https://etherscan.io/address/%s",
     },
     testnet: {
-      label: "Optimism Sepolia",
-      verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
-      explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+      label: "Base Sepolia",
+      verifierProxy: "0x8Ac491b7c118a0cdcF048e0f707247fD8C9575f9",
+      explorerUrl: "https://sepolia.etherscan.io/address/%s",
     },
   },
 ]
