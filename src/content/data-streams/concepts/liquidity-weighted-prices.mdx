@@ -51,43 +51,55 @@ Liquidity-weighted Bid and Ask prices help in several key areas:
 - **Liquidity provision**: Automated market makers (AMMs) and other liquidity providers can use these prices to adjust their funding rates or rebalance their liquidity pools to align more closely with current market conditions.
 - **Loan collateralization**: Lending platforms might use liquidity-weighted prices to determine more realistic valuations for collateral during loan issuance and liquidation processes, thereby reducing the risk of unfair liquidations.
 
-## Practical examples of LWBA
+## Practical examples of LWBA prices
 
 To better understand how LWBA prices are calculated and used, consider the following examples that illustrate their application in different market scenarios. Each example explains the calculation and highlights trading and risk management benefits.
 
 ### Example 1: Market volatility
 
-**Scenario**: Assume the market experiences a sudden drop, leading to a scenario where most buy orders accumulate at a lower price point. The order book shows 10 units at $0.99 but a more substantial 100 units at $0.90.
+**Scenario**: Assume the market experiences a sudden drop, leading to a scenario where most buy orders accumulate at a lower price point. Similarly, sellers might be inclined to lower their ask prices to exit positions quickly. The order book shows 10 units at $0.99 but a more substantial 100 units at $0.90.
 
 **Order book**:
-| Price | Quantity |
-| ----------------------- | --------- |
-| $0.99 | 10 |
-| $0.90 | 100 |
 
-**LWBA Price Calculation**: ((10 x 0.99) + (100 \* 0.90)) / 110 = $0.909
+| Type | Price | Quantity |
+| ---- | ----- | -------- |
+| Bid  | $0.99 | 10       |
+| Bid  | $0.90 | 100      |
+| Ask  | $1.01 | 15       |
+| Ask  | $1.05 | 85       |
 
-The LWBA price of $0.909 is closer to most of the market volume. It offers a more cautious and realistic price for trading decisions during volatile conditions. This helps traders and protocols manage risk by pricing assets closer to the most liquid market level and prevents decisions based on unusually high prices that could result in losses if the market continues to drop.
+**LWBA Price Calculation**:
+
+- Bid = ((10 x 0.99) + (100 x 0.90)) / 110 = $0.909
+- Ask = ((15 x 1.01) + (85 x 1.05)) / 100 = $1.044
+
+The LWBA bid price of $0.909 and ask price of $1.044 provide a realistic snapshot of the market under volatile conditions. This dual perspective helps traders and protocols manage risk by pricing assets closer to the most liquid market levels and offers a more cautious approach to valuation during market drops.
 
 ### Example 2: Market stability
 
-**Scenario**: In a stable market, traders place the bulk of buy orders close to the highest price. The order book now has 90 units at $0.98 and 10 units at $0.99.
+**Scenario**: In a stable market, traders place the bulk of buy and sell orders close to the current market prices, leading to high liquidity near these levels.
 
 **Order book**:
-| Price | Quantity |
-| ----------------------- | --------- |
-| $0.99 | 10 |
-| $0.98 | 90 |
 
-**LWBA Price Calculation**: ((10 x 0.99) + (90 \* 0.98)) / 100 = $0.981
+| Type | Price | Quantity |
+| ---- | ----- | -------- |
+| Bid  | $0.98 | 90       |
+| Bid  | $0.99 | 10       |
+| Ask  | $1.00 | 50       |
+| Ask  | $1.01 | 50       |
 
-The LWBA price effectively reflects the concentration of liquidity near the top price point and offers a reliable pricing point that minimizes slippage and improves transaction cost efficiency. In stable markets, this pricing accuracy allows traders to execute orders close to their desired price points and enhances profitability and market predictiveness.
+**LWBA Price Calculation**:
+
+- Bid = ((10 x 0.99) + (90 x 0.98)) / 100 = $0.981
+- Ask = ((50 x 1.00) + (50 x 1.01)) / 100 = $1.005
+
+The LWBA bid price of $0.981 and ask price of $1.005 reflect the concentration of liquidity near the top price points. This pricing accuracy allows traders to execute orders close to their desired price points with minimal slippage and enhances transaction cost efficiency and market predictiveness in stable conditions.
 
 ### Conclusion
 
-| Example | Weighted Bid Price | Market condition | Key benefit                                    |
-| ------- | ------------------ | ---------------- | ---------------------------------------------- |
-| 1       | $0.909             | High volatility  | Aligns price with majority liquidity           |
-| 2       | $0.981             | Market stability | Minimizes slippage and improves price accuracy |
+| Example | Weighted Bid Price | Weighted Ask Price | Market condition | Key benefit                                    |
+| ------- | ------------------ | ------------------ | ---------------- | ---------------------------------------------- |
+| 1       | $0.909             | $1.044             | High volatility  | Aligns price with majority liquidity           |
+| 2       | $0.981             | $1.005             | Market stability | Minimizes slippage and improves price accuracy |
 
 In these examples, Liquidity-Weighted Bid and Ask prices adjust dynamically based on the actual distribution of orders within the market. By reflecting real-time liquidity and volume, these prices provide protocols and traders with critical information that enhances pricing accuracy, reduces trading risks, and increases efficiency across various market conditions.
