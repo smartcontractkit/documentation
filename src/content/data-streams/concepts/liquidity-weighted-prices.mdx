@@ -37,9 +37,9 @@ In Chainlink Data Streams, bid and ask prices are crucial for constructing Liqui
 
 A Liquidity-Weighted price adjusts the bid and ask prices based on the available liquidity at each price level in the order books. This method weights price data by the volume of assets available at each price point, and provides a more accurate reflection of market conditions where larger orders would significantly impact the price.
 
-## What are the benefits of Liquidity-Weighted Bid and Ask prices?
+## What are the benefits of LWBA prices?
 
-Liquidity-weighted prices help in several key areas:
+Liquidity-weighted Bid and Ask prices help in several key areas:
 
 - **Accuracy**: They offer a more precise measure of the market price that considers the volume available at different price levels and allows for true market sentiment to be reflected.
 - **Risk Management**: They consider the market's depth and help protocols assess and manage their risk more effectively and dynamically during periods of high volatility.
@@ -50,3 +50,44 @@ Liquidity-weighted prices help in several key areas:
 - **Derivatives trading**: Platforms can use LWBA prices to set more accurate strike prices in options markets or fair settlement prices in futures contracts.
 - **Liquidity provision**: Automated market makers (AMMs) and other liquidity providers can use these prices to adjust their funding rates or rebalance their liquidity pools to align more closely with current market conditions.
 - **Loan collateralization**: Lending platforms might use liquidity-weighted prices to determine more realistic valuations for collateral during loan issuance and liquidation processes, thereby reducing the risk of unfair liquidations.
+
+## Practical examples of LWBA
+
+To better understand how LWBA prices are calculated and used, consider the following examples that illustrate their application in different market scenarios. Each example explains the calculation and highlights trading and risk management benefits.
+
+### Example 1: Market volatility
+
+**Scenario**: Assume the market experiences a sudden drop, leading to a scenario where most buy orders accumulate at a lower price point. The order book shows 10 units at $0.99 but a more substantial 100 units at $0.90.
+
+**Order book**:
+| Price | Quantity |
+| ----------------------- | --------- |
+| $0.99 | 10 |
+| $0.90 | 100 |
+
+**LWBA Price Calculation**: ((10 x 0.99) + (100 \* 0.90)) / 110 = $0.909
+
+The LWBA price of $0.909 is closer to most of the market volume. It offers a more cautious and realistic price for trading decisions during volatile conditions. This helps traders and protocols manage risk by pricing assets closer to the most liquid market level and prevents decisions based on unusually high prices that could result in losses if the market continues to drop.
+
+### Example 2: Market stability
+
+**Scenario**: In a stable market, traders place the bulk of buy orders close to the highest price. The order book now has 90 units at $0.98 and 10 units at $0.99.
+
+**Order book**:
+| Price | Quantity |
+| ----------------------- | --------- |
+| $0.99 | 10 |
+| $0.98 | 90 |
+
+**LWBA Price Calculation**: ((10 x 0.99) + (90 \* 0.98)) / 100 = $0.981
+
+The LWBA price effectively reflects the concentration of liquidity near the top price point and offers a reliable pricing point that minimizes slippage and improves transaction cost efficiency. In stable markets, this pricing accuracy allows traders to execute orders close to their desired price points and enhances profitability and market predictiveness.
+
+### Conclusion
+
+| Example | Weighted Bid Price | Market condition | Key benefit                                    |
+| ------- | ------------------ | ---------------- | ---------------------------------------------- |
+| 1       | $0.909             | High volatility  | Aligns price with majority liquidity           |
+| 2       | $0.981             | Market stability | Minimizes slippage and improves price accuracy |
+
+In these examples, Liquidity-Weighted Bid and Ask prices adjust dynamically based on the actual distribution of orders within the market. By reflecting real-time liquidity and volume, these prices provide protocols and traders with critical information that enhances pricing accuracy, reduces trading risks, and increases efficiency across various market conditions.
