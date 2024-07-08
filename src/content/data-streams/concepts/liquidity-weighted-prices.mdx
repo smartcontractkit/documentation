@@ -12,30 +12,32 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
 
-Chainlink Data Streams provides [reports](/data-streams/reference/report-schema) with a benchmark price (the median price) and _Liquidity-Weighted Bid and Ask (LWBA)_ prices. These three prices form a pricing spread that offers protocols insight into market activity based on the current state of the order books.
+Chainlink Data Streams provides [reports](/data-streams/reference/report-schema) with a _Mid_ and _Liquidity-Weighted Bid and Ask (LWBA)_ prices. These three prices form a pricing spread that offers protocols insight into market activity based on the current state of the order books.
 
 ## Bid and Ask prices
 
 ### What are Bid and Ask prices?
 
-Bid and ask prices represent the most fundamental elements of a market's pricing mechanism.
+Bid and Ask prices appear in the order book of an exchange and represent the trading orders buyers and sellers actively submit. These prices drive potential market transactions.
 
-- The bid price refers to the maximum price that a buyer is willing to pay for an asset. It is the buyer's best offer and the price at which they are ready to purchase.
-- The ask price is the minimum price at which a seller is willing to sell their asset. It represents the lowest price at which the seller would agree to sell.
+On an exchange, the Mid price in the order book is derived from the midpoint between the best Bid and the best Ask price. While the Mid price serves as a useful reference, for instance, in calculating funding rates, it is important to note that it is not a price at which trades should be executed. Actual trades must match an open bid or ask.
+
+- **Bid price**: The Bid price refers to the maximum price that a buyer is willing to pay for an asset. It represents the highest price at which a buyer would agree to buy.
+- **Ask price**: The Ask price is the minimum price at which a seller is willing to sell their asset. It represents the lowest price at which a seller would agree to sell.
 
 ### Key characteristics
 
-- **Price spread**: The difference between the ask and the bid prices is the _spread_. A narrower spread typically indicates a more liquid market, whereas a wider spread can signify less liquidity or higher volatility.
-- **Market orders**: When traders place market orders to buy or sell immediately, they accept the best available ask or bid prices from the market. This interaction drives immediate transactions but can also impact the market price if the order size is substantial compared to the available volume.
-- **Liquidity and volume**: Bid and ask prices are not static and can fluctuate based on the asset's trading volume and market liquidity. High liquidity generally leads to a tighter spread, which eases transactions to occur without significantly affecting the market price.
+- **Price spread**: The difference between the Ask and the Bid prices is the _spread_. A narrower spread typically indicates a more liquid market, whereas a wider spread can signify less liquidity or higher volatility.
+- **Market orders**: When traders place market orders to buy or sell immediately, they accept the best available Ask or Bid prices from the market. This interaction drives immediate transactions but can also impact the market price if the order size is substantial compared to the available volume.
+- **Liquidity and volume**: Bid and Ask prices are not static and can fluctuate based on the asset's trading volume and market liquidity. High liquidity generally results in a narrower spread, which enables more trading activity near this spread and facilitates smoother transactions without substantial impacts on the market price.
 
 ### Role in Chainlink Data Streams
 
-In Chainlink Data Streams, bid and ask prices are crucial for constructing Liquidity-Weighted Bid and Ask (LWBA) prices.
+In Chainlink Data Streams, Bid and Ask prices play a pivotal role in the construction of Liquidity-Weighted Bid and Ask (LWBA) prices.
 
 ## What is a Liquidity-Weighted price?
 
-A Liquidity-Weighted price adjusts the bid and ask prices based on the available liquidity at each price level in the order books. This method weights price data by the volume of assets available at each price point, and provides a more accurate reflection of market conditions where larger orders would significantly impact the price.
+A Liquidity-Weighted price considers the Bid and Ask prices based on the available liquidity at each price level in the order books. This method weights price data by the volume of assets available at each price point, and provides a more accurate reflection of market conditions where larger orders would significantly impact the price.
 
 ## What are the benefits of LWBA prices?
 
@@ -43,17 +45,17 @@ Liquidity-weighted Bid and Ask prices help in several key areas:
 
 - **Accuracy**: They offer a more precise measure of the market price that considers the volume available at different price levels and allows for true market sentiment to be reflected.
 - **Risk Management**: They consider the market's depth and help protocols assess and manage their risk more effectively and dynamically during periods of high volatility.
-- **Efficiency**: Liquidity-weighted prices facilitate smarter order execution, which can minimize slippage and improve transaction costs for traders and protocols alike.
+- **Efficiency**: Liquidity-weighted prices facilitate smarter order execution, which accurately reflects realistic slippage and enhances the trading experience for traders and protocols by closely mirroring actual market conditions.
 
 ## Use case examples
 
 - **Derivatives trading**: Platforms can use LWBA prices to set more accurate strike prices in options markets or fair settlement prices in futures contracts.
-- **Liquidity provision**: Automated market makers (AMMs) and other liquidity providers can use these prices to adjust their funding rates or rebalance their liquidity pools to align more closely with current market conditions.
+- **Liquidity provision**: Automated market makers (AMMs) and other liquidity providers can use these prices to quote more accurate and realistic prices that reflect current market conditions.
 - **Loan collateralization**: Lending platforms might use liquidity-weighted prices to determine more realistic valuations for collateral during loan issuance and liquidation processes, thereby reducing the risk of unfair liquidations.
 
 ## Practical examples of LWBA prices
 
-To better understand how LWBA prices are calculated and used, consider the following examples that illustrate their application in different market scenarios. Each example explains the calculation, highlights trading and risk management benefits, and discusses the spread between bid and ask prices.
+To better understand how LWBA prices are calculated and used, consider the following examples that illustrate their application in different market scenarios. Each example explains the calculation, highlights trading and risk management benefits, and discusses the spread between Bid and Ask prices.
 
 ### Example 1: Market volatility
 
@@ -75,7 +77,7 @@ To better understand how LWBA prices are calculated and used, consider the follo
 
 **Spread Calculation**: Ask - Bid = $1.044 - $0.909 = $0.135
 
-The LWBA bid price of $0.909 and ask price of $1.044 provide a realistic snapshot of the market under volatile conditions. The spread of $0.135 illustrates a wider gap due to high volatility, impacts liquidity and indicates a less efficient market. This dual perspective helps traders and protocols manage risk by pricing assets closer to the most liquid market levels and offers a more cautious approach to valuation during market drops.
+The LWBA Bid price of $0.909 and Ask price of $1.044 provide a realistic snapshot of the market under volatile conditions. The spread of $0.135 illustrates a wider gap due to high volatility, impacts liquidity and indicates a less efficient market. This dual perspective helps traders and protocols manage risk by pricing assets closer to the most liquid market levels and offers a more cautious approach to valuation during market drops.
 
 ### Example 2: Market stability
 
@@ -97,7 +99,7 @@ The LWBA bid price of $0.909 and ask price of $1.044 provide a realistic snapsho
 
 **Spread Calculation**: Ask - Bid = $1.005 - $0.981 = $0.024
 
-The LWBA bid price of $0.981 and ask price of $1.005 reflect the concentration of liquidity near the top price points, with a narrow spread of $0.024 that indicates a highly liquid and efficient market. This pricing accuracy allows traders to execute orders close to their desired price points with minimal slippage and enhances transaction cost efficiency and market predictiveness in stable conditions.
+The LWBA Bid price of $0.981 and Ask price of $1.005 reflect the concentration of liquidity near the top price points, with a narrow spread of $0.024 that indicates a highly liquid and efficient market. This pricing accuracy allows traders to execute orders close to their desired price points with minimal slippage and enhances transaction cost efficiency and market predictiveness in stable conditions.
 
 ### Conclusion
 
