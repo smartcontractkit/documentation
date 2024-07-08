@@ -48,7 +48,7 @@ contract DataConsumerWithSequencerCheck {
 
         // Answer == 0: Sequencer is up
         // Answer == 1: Sequencer is down
-        bool isSequencerUp = answer == 0;
+        bool isSequencerUp = startedAt > 0 && answer == 0;
         if (!isSequencerUp) {
             revert SequencerDown();
         }
