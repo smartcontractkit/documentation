@@ -150,6 +150,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MODE_SEPOLIA"
     case "ethereum-mainnet-mode-1":
       return "MODE_MAINNET"
+    case "ethereum-mainnet-blast-1":
+      return "BLAST_MAINNET"
+    case "ethereum-testnet-sepolia-blast-1":
+      return "BLAST_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
