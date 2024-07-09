@@ -209,6 +209,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-mode-1"
     case "MODE_MAINNET":
       return "ethereum-mainnet-mode-1"
+    case "BLAST_MAINNET":
+      return "ethereum-mainnet-blast-1"
+    case "BLAST_SEPOLIA":
+      return "ethereum-testnet-sepolia-blast-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
