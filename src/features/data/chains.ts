@@ -445,13 +445,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-starknet-1.json",
         queryString: "starknet-mainnet",
       },
-      {
-        name: "Starknet Sepolia testnet",
-        explorerUrl: "https://sepolia.starkscan.co/contract/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
-        queryString: "starknet-sepolia-testnet",
-      },
     ],
   },
   {
