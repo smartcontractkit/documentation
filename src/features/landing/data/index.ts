@@ -35,6 +35,7 @@ export const evmProducts = [
       { id: "optimism", title: "Optimism" },
       { id: "bnb-chain", title: "BNB Chain" },
       { id: "base", title: "BASE" },
+      { id: "blast", title: "Blast" },
       { id: "wemix", title: "Wemix" },
       { id: "kroma", title: "Kroma" },
       { id: "celo", title: "Celo" },

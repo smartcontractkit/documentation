@@ -26,6 +26,7 @@ export const productChainLinks: ProductChainLinks = {
       celo: "/ccip/supported-networks/v1_2_0/mainnet#celo-mainnet",
       "gnosis-chain": "/ccip/supported-networks/v1_2_0/mainnet#gnosis-mainnet",
       base: "/ccip/supported-networks/v1_2_0/mainnet#base-mainnet",
+      blast: "/ccip/supported-networks/v1_2_0/mainnet#blast-mainnet",
       ethereum: "/ccip/supported-networks/v1_2_0/mainnet#ethereum-mainnet",
       kroma: "/ccip/supported-networks/v1_2_0/mainnet#kroma-mainnet",
       optimism: "/ccip/supported-networks/v1_2_0/mainnet#optimism-mainnet",
@@ -111,6 +112,7 @@ export const productChainLinks: ProductChainLinks = {
     avalanche: "/resources/link-token-contracts#avalanche",
     base: "/resources/link-token-contracts#base",
     "bnb-chain": "/resources/link-token-contracts#bnb-chain",
+    blast: "/resources/link-token-contracts#blast",
     celo: "/resources/link-token-contracts#celo",
     ethereum: "/resources/link-token-contracts#ethereum",
     fantom: "/resources/link-token-contracts#fantom",
@@ -154,4 +156,5 @@ export const chainNames: Record<string, string> = {
   wemix: "Wemix",
   zksync: "zkSync",
   mode: "Mode",
+  blast: "Blast",
 }
