@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.7;
 
-import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
-import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
+import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @title The EthBalanceMonitor contract
@@ -29,14 +29,14 @@ contract EthBalanceMonitor is
     event FundsWithdrawn(uint256 amountWithdrawn, address payee);
     event TopUpSucceeded(address indexed recipient);
     event TopUpFailed(address indexed recipient);
-    event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
+    event ForwarderAddressUpdated(address oldAddress, address newAddress);
     event MinWaitPeriodUpdated(
         uint256 oldMinWaitPeriod,
         uint256 newMinWaitPeriod
     );
 
     error InvalidWatchList();
-    error OnlyKeeperRegistry();
+    error OnlyForwarder();
     error DuplicateAddress(address duplicate);
 
     struct Target {
@@ -46,20 +46,15 @@ contract EthBalanceMonitor is
         uint56 lastTopUpTimestamp; // enough space for 2 trillion years
     }
 
-    address private s_keeperRegistryAddress;
+    address private s_forwarderAddress;
     uint256 private s_minWaitPeriodSeconds;
     address[] private s_watchList;
     mapping(address => Target) internal s_targets;
 
     /**
-     * @param keeperRegistryAddress The address of the Chainlink Automation registry contract
      * @param minWaitPeriodSeconds The minimum wait period for addresses between funding
      */
-    constructor(
-        address keeperRegistryAddress,
-        uint256 minWaitPeriodSeconds
-    ) ConfirmedOwner(msg.sender) {
-        setKeeperRegistryAddress(keeperRegistryAddress);
+    constructor(uint256 minWaitPeriodSeconds) ConfirmedOwner(msg.sender) {
         setMinWaitPeriodSeconds(minWaitPeriodSeconds);
     }
 
@@ -193,7 +188,7 @@ contract EthBalanceMonitor is
      */
     function performUpkeep(
         bytes calldata performData
-    ) external override onlyKeeperRegistry whenNotPaused {
+    ) external override onlyForwarder whenNotPaused {
         address[] memory needsFunding = abi.decode(performData, (address[]));
         topUp(needsFunding);
     }
@@ -220,17 +215,14 @@ contract EthBalanceMonitor is
     }
 
     /**
-     * @notice Sets the Chainlink Automation registry address
+     * @notice Sets the upkeep's unique forwarder address
+     * for upkeeps in Automation versions 2.0 and later
+     * https://docs.chain.link/chainlink-automation/guides/forwarder
      */
-    function setKeeperRegistryAddress(
-        address keeperRegistryAddress
-    ) public onlyOwner {
-        require(keeperRegistryAddress != address(0));
-        emit KeeperRegistryAddressUpdated(
-            s_keeperRegistryAddress,
-            keeperRegistryAddress
-        );
-        s_keeperRegistryAddress = keeperRegistryAddress;
+    function setForwarderAddress(address forwarderAddress) public onlyOwner {
+        require(forwarderAddress != address(0));
+        emit ForwarderAddressUpdated(s_forwarderAddress, forwarderAddress);
+        s_forwarderAddress = forwarderAddress;
     }
 
     /**
@@ -242,14 +234,14 @@ contract EthBalanceMonitor is
     }
 
     /**
-     * @notice Gets the Chainlink Automation registry address
+     * @notice Gets the forwarder address of the Chainlink Automation upkeep
      */
-    function getKeeperRegistryAddress()
+    function getForwarderAddress()
         external
         view
-        returns (address keeperRegistryAddress)
+        returns (address forwarderAddress)
     {
-        return s_keeperRegistryAddress;
+        return s_forwarderAddress;
     }
 
     /**
@@ -304,9 +296,9 @@ contract EthBalanceMonitor is
         _unpause();
     }
 
-    modifier onlyKeeperRegistry() {
-        if (msg.sender != s_keeperRegistryAddress) {
-            revert OnlyKeeperRegistry();
+    modifier onlyForwarder() {
+        if (msg.sender != s_forwarderAddress) {
+            revert OnlyForwarder();
         }
         _;
     }

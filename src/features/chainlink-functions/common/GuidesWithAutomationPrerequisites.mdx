@@ -1,0 +1,86 @@
+import { CodeSample, CopyText, Aside } from "@components"
+
+## Prerequisites
+
+<Aside type="note">
+  You might skip these prerequisites if you have followed one of these [guides](/chainlink-functions/tutorials). You can
+  check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription
+  Manager](https://functions.chain.link/). If your subscription runs out of LINK, follow the [Fund a
+  Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+</Aside>
+
+### Set up your environment
+
+You must provide the private key from a testnet wallet to run the examples in this documentation. Install a Web3 wallet, configure [Node.js](https://nodejs.org/en/download/), clone the [smartcontractkit/smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples.git) repository, and configure a `.env.enc` file with the required environment variables.
+
+Install and configure your Web3 wallet for Sepolia:
+
+1. [Install Deno](https://docs.deno.com/runtime/manual/) so you can compile and simulate your Functions source code on your local machine.
+
+1. [Install the MetaMask wallet](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum Web3 wallet.
+
+1. Set the network for your wallet to the Sepolia testnet. If you need to add Sepolia to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#sepolia-testnet) page.
+
+   - <a
+       class="erc-token-address"
+       id="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789"
+       href="/resources/link-token-contracts#sepolia-testnet"
+     >
+       Sepolia testnet and LINK token contract
+     </a>
+
+1. Request testnet LINK and ETH from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia).
+
+Install the required frameworks and dependencies:
+
+1. [Install the latest release of Node.js 20](https://nodejs.org/en/download/). Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions with `nvm use 20`.
+
+   **Note**: To ensure you are running the correct version in a terminal, type `node -v`.
+
+   ```shell
+   node -v
+   ```
+
+   ```shell
+   $ node -v
+   v20.9.0
+   ```
+
+1. In a terminal, clone the [smart-contract examples](https://github.com/smartcontractkit/smart-contract-examples.git) repository and change directories. This example repository imports the [Chainlink Functions Toolkit NPM package](https://www.npmjs.com/package/@chainlink/functions-toolkit). You can import this package to your own projects to enable them to work with Chainlink Functions.
+
+   ```shell
+   git clone https://github.com/smartcontractkit/smart-contract-examples.git && \
+   cd ./smart-contract-examples/functions-examples/
+   ```
+
+1. Run `npm install` to install the dependencies.
+
+   ```shell
+   npm install
+   ```
+
+1. For higher security, the examples repository encrypts your environment variables at rest.
+
+   1. Set an encryption password for your environment variables.
+
+      ```shell
+      npx env-enc set-pw
+      ```
+
+   1. Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Sepolia network.
+
+      - `ETHEREUM_SEPOLIA_RPC_URL`: Set a URL for the Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+      - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note**: Your private key is needed to sign any transactions you make such as making requests.
+
+      ```shell
+      npx env-enc set
+      ```
+
+### Create and fund a Functions subscription
+
+After you configure your local environment, create a Functions subscription to pay for the work done by the DON. Follow the [Managing Functions Subscriptions](/chainlink-functions/resources/subscriptions#create-a-subscription) guide to accept the Chainlink Functions Terms of Service (ToS), create a subscription, and fund it.
+
+**Note**: If you followed the previous tutorials, then you can reuse an existing subscription.
+
+You will add your consumer contract to a subscription later in this guide using the [Chainlink Functions Subscription Manager](https://functions.chain.link/).

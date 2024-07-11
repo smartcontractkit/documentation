@@ -1,6 +1,6 @@
 import { ChainMetadata } from "./api"
 
-type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates" | "streams")[]
+type ChainTags = ("default" | "proofOfReserve" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -36,7 +36,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    tags: ["default", "proofOfReserve", "rates"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -45,7 +45,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
+        tags: ["proofOfReserve"],
       },
       {
         name: "Sepolia Testnet",
@@ -54,14 +54,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
         queryString: "ethereum-sepolia",
         tags: ["rates"],
-      },
-      {
-        name: "Goerli Testnet",
-        explorerUrl: "https://goerli.etherscan.io/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
-        queryString: "ethereum-goerli",
-        tags: ["proofOfReserve", "nftFloorPrice"],
       },
     ],
     label: "Ethereum",
@@ -97,7 +89,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -109,12 +101,12 @@ export const CHAINS: Chain[] = [
         tags: ["proofOfReserve"],
       },
       {
-        name: "Mumbai Testnet",
-        explorerUrl: "https://mumbai.polygonscan.com/address/%s",
+        name: "Amoy Testnet",
+        explorerUrl: "https://amoy.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
-        queryString: "polygon-mumbai",
-        tags: ["proofOfReserve", "nftFloorPrice", "rates"],
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
+        queryString: "polygon-amoy",
+        tags: ["proofOfReserve"],
       },
     ],
   },
@@ -141,7 +133,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve", "rates"],
+    tags: ["default", "proofOfReserve", "rates", "streams"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -150,7 +142,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "streams"],
       },
       {
         name: "Avalanche Testnet",
@@ -158,7 +150,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["proofOfReserve", "rates"],
+        tags: ["proofOfReserve", "rates", "streams"],
       },
     ],
     label: "Avalanche",
@@ -194,7 +186,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "nftFloorPrice", "streams"],
+    tags: ["default", "rates", "streams", "proofOfReserve"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -203,7 +195,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["nftFloorPrice", "streams"],
+        tags: ["streams", "proofOfReserve"],
       },
       {
         name: "Arbitrum Sepolia",
@@ -237,13 +229,6 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-optimism-1.json",
         queryString: "optimism-sepolia",
-      },
-      {
-        name: "Optimism Goerli",
-        explorerUrl: "https://goerli-optimism.etherscan.io/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-optimism-1.json",
-        queryString: "optimism-goerli",
       },
     ],
   },
@@ -392,13 +377,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
         queryString: "linea-mainnet",
       },
-      {
-        name: "Linea Goerli testnet",
-        explorerUrl: "https://goerli.lineascan.build/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-linea-1.json",
-        queryString: "linea-goerli-testnet",
-      },
     ],
   },
   {
@@ -414,17 +392,15 @@ export const CHAINS: Chain[] = [
         name: "zkSync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
       },
       {
-        name: "zkSync Goerli testnet",
-        explorerUrl: "https://goerli.explorer.zksync.io/address/%s",
+        name: "zkSync Sepolia testnet",
+        explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-zksync-1.json",
-        queryString: "zksync-goerli-testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-zksync-1.json",
+        queryString: "zksync-sepolia-testnet",
       },
     ],
   },
@@ -441,35 +417,34 @@ export const CHAINS: Chain[] = [
         name: "Polygon zkEVM Mainnet",
         explorerUrl: "https://zkevm.polygonscan.com/address/%s",
         networkType: "mainnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-mainnet",
       },
       {
-        name: "Polygon zkEVM testnet",
-        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
+        name: "Polygon zkEVM Cardona Testnet",
+        explorerUrl: "https://cardona-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-polygon-zkevm-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-testnet",
       },
     ],
   },
   {
     page: "starknet",
-    label: "StarkNet",
+    label: "Starknet",
     title: "StarkNet Data Feeds",
     img: "/assets/chains/starknet.svg",
-    networkStatusUrl: "https://testnet.starkscan.co/stats",
+    networkStatusUrl: "https://status.starknet.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "StarkNet testnet",
-        explorerUrl: "https://testnet.starkscan.co/contract/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
-        queryString: "starknet-testnet",
+        name: "Starknet Mainnet",
+        explorerUrl: "https://starkscan.co/contract/%s",
+        networkType: "mainnet",
+        rddUrl:
+          "https://reference-data-directory-14ncv8xqc-chainlinklabs.vercel.app/feeds-ethereum-mainnet-starknet-1.json",
+        queryString: "starknet-mainnet",
       },
     ],
   },
@@ -507,7 +482,7 @@ export const ALL_CHAINS: Chain[] = [
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -516,7 +491,7 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
+        tags: ["proofOfReserve"],
       },
       {
         name: "BNB Chain Mainnet",
@@ -623,16 +598,14 @@ export const ALL_CHAINS: Chain[] = [
         name: "zkSync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
       },
       {
         name: "Polygon zkEVM Mainnet",
         explorerUrl: "https://zkevm.polygonscan.com/address/%s",
         networkType: "mainnet",
-        rddUrl:
-          "https://reference-data-directory-qy7u5hvya-chainlinklabs.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
         queryString: "polygon-zkevm-mainnet",
       },
       {

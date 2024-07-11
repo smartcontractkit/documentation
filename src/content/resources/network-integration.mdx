@@ -1,0 +1,134 @@
+---
+section: global
+date: Last Modified
+title: "Integrating EVM Networks With Chainlink Services"
+---
+
+import { Aside } from "@components"
+
+Before an EVM blockchain network can integrate with Chainlink, it must meet certain technical requirements. These requirements are critical for Chainlink nodes and Chainlink services to function correctly on a given network.
+
+<Aside type="note" title="Disclaimer">
+  The standard EVM requirements required to integrate EVM blockchain networks with Chainlink services can vary, are
+  subject to change, and are provided here for reference purposes only. Chainlink services may have unique requirements
+  that are in addition to the requirements discussed herein.
+</Aside>
+
+## Standard EVM requirements
+
+### Solidity global variables and opcode implementation
+
+Solidity global variables and opcode implementation constructs must meet the following requirements in order for Chainlink services to operate correctly and as expected:
+
+- **Global variables:** Support all global variables as specified in the Solidity [Block and Transaction Properties](https://docs.soliditylang.org/en/latest/units-and-global-variables.html#block-and-transaction-properties) documentation. For example, the following variables must be supported:
+  - `block.blockhash` must return the hash of the requested block for the last 256 blocks
+  - `block.number` must return the respective chain's block number
+  - `block.chainID` must return the current chain ID
+  - `block.timestamp` must return the current block timestamp as seconds since unix epoch
+- **Opcodes:** Support all opcodes and expected behaviors from the [OpCodes.sol](https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/contracts/OpCodes.sol) contract
+- **Precompiles:** Must support all precompile contracts and expected behaviors listed in the Solidity [Mathematical and Cryptographic Functions](https://docs.soliditylang.org/en/latest/units-and-global-variables.html#mathematical-and-cryptographic-functions) documentation
+- **Contract size:** Must support the maximum contract size defined in [EIP-170](https://eips.ethereum.org/EIPS/eip-170)
+- **Nonce:** The transaction nonce must increase as transactions are confirmed and propagated to all nodes in the network.
+
+### Finality
+
+Blockchain development teams must ensure that blocks with a commitment level of _finalized_ are actually final. The properties of the finality mechanism, including underlying assumptions and conditions under which finality violations could occur, must be clearly documented and communicated to application developers in the blockchain ecosystem.
+
+Furthermore, this information should be accessible through RPC API tags _finalized_ from the [JSON-RPC specification tags](#support-the-ethereum-json-rpc-specification) described later in this document.
+
+### Standardized RPCs with SLAs
+
+Chainlink nodes use RPCs to communicate with the chain and perform soak testing. It is not possible to ensure the functionality of Chainlink services if RPCs are unstable, underperforming, or nonexistent. RPCs must meet the following requirements:
+
+**Dedicated RPC node:**
+
+- The chain must provide instructions and hardware requirements to set up and run a full node.
+- The archive node setup must also be provided and allow queries of blocks from genesis with transaction history and logs.
+- The RPC node must enable and allow configurable settings for the following items:
+  - Batch calls
+  - Log lookbacks
+  - HTTPS and WSS connections
+
+**RPC providers:**
+
+- Three separate independent RPC providers must be available.
+- RPC providers must ensure there is no rate limit.
+- RPC providers must have a valid SSL certificate.
+- During the trailing 30 days, the RPC providers must meet the following RPC performance requirements:
+  - Uptime: At least 99.9%
+  - Throughput: Support at least 300 calls per second
+  - Latency: Less than 250ms
+  - Support SLA: For SEV1 issues, provide a Time to Answer (TTA) of at most 1 hour
+
+### Support the Ethereum JSON-RPC Specification
+
+The chain must support the [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc). Chainlink services use several methods to operate on the chain and require a specific response format to those calls in line with the JSON RPC standard of Ethereum. If a response does not match this required format, the call fails and the Chainlink node will stop functioning properly.
+
+The following methods are specifically required and must follow the [Ethereum RPC API specification](https://ethereum.github.io/execution-apis/api-documentation/):
+
+- [GetCode](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_getcode)
+- [Call](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_call)
+- [ChainID](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_chainid)
+- [SendTransaction](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_sendtransaction)
+- [SendRawTransaction](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_sendrawtransaction)
+- [GetTransactionReceipt](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_gettransactionreceipt)
+- [GetTransactionByHash](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_gettransactionbyhash)
+- [EstimateGas](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_estimategas)
+- [GasPrice](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_gasprice)
+- [GetTransactionCount](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_gettransactioncount)
+- [GetLogs](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_getlogs)
+  - Must follow the spec as defined in [EIP-1474](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md?plain=1#L856). The "latest" block number returned by `GetBlockByNumber` must also be served by `GetLogs` with logs.
+  - Must accept the `blockhash` param as defined in [EIP-234](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-234.md)
+- [GetBalance](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_getbalance)
+- [GetBlockByNumber](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_getblockbynumber)
+- [GetBlockByHash](https://ethereum.org/en/developers/docs/apis/json-rpc#eth_getblockbyhash)
+
+The above RPC methods must have the expected request and response params with expected data types and values as described in the [Execution-api spec](https://github.com/ethereum/execution-apis/tree/main/tests) and [Ethereum RPC API Spec](https://ethereum.github.io/execution-apis/api-documentation/).
+
+The network must also support the following items:
+
+- **Subscription Methods:** [Websocket JSON-RPC subscription methods](https://geth.ethereum.org/docs/interacting-with-geth/rpc/pubsub)
+  - `eth_subscribe` with support for subscription to `newHeads` and `logs`
+- **Tags:** The RPC methods must support the `finalized`, `latest`, and `pending` tags where applicable. They must also support natural numbers for blocks.
+- **Batch Requests:** Must support batching of requests for the `GetLogs` and `GetBlockByNumber` methods.
+- **Response size:** Any RPC request including the batch requests must be within the allowed size limit of around 173MB.
+
+### `eth_sendRawTransaction` error message mapping to Geth client error messages
+
+Chains must provide an error message mapping between their specific implementation to the error messages detailed below.
+
+When the `eth_sendRawTransaction` call fails, Chainlink nodes must be able to recognize these error categories and determine the next appropriate action. If the error categories are different or cannot be mapped correctly, the Chainlink node will stop functioning properly and stop sending transactions to the chain. The following error messages are specifically critical:
+
+| Error                               | Description                                                                                                                                                      |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NonceTooLow`                       | Returned when the nonce used for the transaction is too low to use. This nonce likely has been already used on the chain previously.                             |
+| `NonceTooHigh`                      | Returned when the nonce used for the transaction is higher than what the chain can use right now.                                                                |
+| `ReplacementTransactionUnderpriced` | Returned when the transaction gas price used is too low. There is another transaction with the same nonce in the queue, with a higher price.                     |
+| `LimitReached`                      | Returned when there are too many outstanding transactions on the node.                                                                                           |
+| `TransactionAlreadyInMempool`       | Returned when this current transaction was already received and stored.                                                                                          |
+| `TerminallyUnderpriced`             | Returned when the transaction's gas price is too low and won't be accepted by the node.                                                                          |
+| `InsufficientEth`                   | Returned when the account doesn't have enough funds to send this transaction.                                                                                    |
+| `TxFeeExceedsCap`                   | Returned when the transaction gas fees exceed the configured cap by this node, and won't be accepted.                                                            |
+| `L2FeeTooLow`                       | Specific for Ethereum L2s only. Returned when the gas fees are too low, When this error occurs the Suggested Gas Price is fetched again transaction is retried.  |
+| `L2FeeTooHigh`                      | Specific for Ethereum L2s only. Returned when the total fee is too high. When this error occurs the Suggested Gas Price is fetched again transaction is retried. |
+| `L2Full`                            | Specific for Ethereum L2s only. The node is too full, and cannot handle more transactions.                                                                       |
+| `TransactionAlreadyMined`           | Returned when the current transaction was already accepted and mined into a block.                                                                               |
+| `Fatal`                             | Return when something is seriously wrong with the transaction, and the transaction will never be accepted in the current format.                                 |
+
+For examples of how other chains or clients are using these categories, see the [error.go](https://github.com/ethereum/go-ethereum/blob/master/core/error.go) file in the [go-ethereum repo](https://github.com/ethereum/go-ethereum) on GitHub.
+
+For chains with zk-proofs, chains must reject transactions that cause zk-proof overflow with a uniquely identifiable error message.
+
+Any other reasons why transactions might be rejected by a node or sequencer other than malformed input/gasLimits must be detailed.
+
+### Clarify use of transaction types
+
+For [transaction types](https://github.com/ethereum/go-ethereum/blob/master/core/types/transaction.go#L48-51) other than `0x0 - Legacy`, `0x1 - Access List`, `0x2 - Dynamic`, and `0x3 - Blob`, networks must clarify how each transaction type is used. Chainlink nodes must know if the chain uses other types for regular transactions with regular gas so it can correctly estimate gas costs.
+
+### Multi-signature wallet support
+
+The chain must provide a supported and audited multi-signature wallet implementation with a UI.
+
+### Block explorer support
+
+The chain must provide a block explorer and support for contract and verification APIs.

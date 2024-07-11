@@ -1,7 +1,6 @@
 ---
 import { ChainConfig } from "@config/data/ccip/types"
 import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
-import { SupportedChain } from "@config"
 import { Address, CopyText, Accordion } from "@components"
 import {
   getTitle,
@@ -15,19 +14,23 @@ import LaneConfig from "./LaneConfig.astro"
 
 type ConfigProps = {
   chainConfig: ChainConfig
-  sourceChain: SupportedChain // key in SupportedChain
   sourceChainRefId: string // id in reference directory
   environment: Environment
   version: Version
 }
 
-const { chainConfig, sourceChain, environment, sourceChainRefId, version } = Astro.props as ConfigProps
+const { chainConfig, environment, sourceChainRefId, version } = Astro.props as ConfigProps
 const { router, chainSelector, feeTokens } = chainConfig
-const explorerUrl = getExplorer(sourceChain)
-if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
+const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
+const sourceChainTitle = getTitle(sourceChainKey)
+if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
+const sourceChainIcon = getChainIcon(sourceChainKey)
+if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
+const explorerUrl = getExplorer(sourceChainKey)
+if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChainKey}`)
 const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router)
-const nativeCurrency = getNativeCurrency(sourceChain)
-if (!nativeCurrency) throw Error(`Native currency not found for ${sourceChain}`)
+const nativeCurrency = getNativeCurrency(sourceChainKey)
+if (!nativeCurrency) throw Error(`Native currency not found for ${sourceChainKey}`)
 // sort tokens - LINK first
 feeTokens.sort((feeToken1, feeToken2) => {
   if (feeToken1 === "LINK") {
@@ -57,6 +60,10 @@ const feeTokensWithAddresses = feeTokens.map((feeToken) => {
   }
 })
 
+const nativeTokenHasAddress = feeTokensWithAddresses.some(
+  (feeToken) => feeToken.token.toLowerCase() === nativeCurrency.symbol.toLowerCase()
+)
+
 const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
 ---
 
@@ -68,11 +75,11 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
       <td><Address contractUrl={routerExplorerUrl} /></td>
     </tr>
     <tr>
-      <td>Chain Selector</td>
+      <td>Chain selector</td>
       <td><CopyText text={chainSelector} code /></td>
     </tr>
     <tr>
-      <td>Supported Fee tokens</td>
+      <td>Fee tokens</td>
       <td>
         <table>
           <tbody>
@@ -89,7 +96,14 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
                 </tr>
               ))
             }
-            <tr><td>{nativeCurrency.symbol}</td></tr>
+            {
+              !nativeTokenHasAddress && (
+                <tr>
+                  <td>{nativeCurrency.symbol}</td>
+                  <td>Native gas token</td>
+                </tr>
+              )
+            }
           </tbody>
         </table>
       </td>
@@ -100,20 +114,20 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
 
 {
   Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
-    const chainKey = directoryToSupportedChain(destinationChainRefId)
-    const chainTitle = getTitle(chainKey)
-    if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
-    const chainIcon = getChainIcon(chainKey)
-    if (!chainIcon) throw Error(`Icon not found for chain ${chainKey}`)
-    const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
-    const sourceChainTitle = getTitle(sourceChainKey)
-    if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
-    const sourceChainIcon = getChainIcon(sourceChainKey)
-    if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
-    const id = `${sourceChain}-${chainKey}`.replace(/_/g, "-").toLowerCase()
+    const destinationChainKey = directoryToSupportedChain(destinationChainRefId)
+    const destinationChainTitle = getTitle(destinationChainKey)
+    if (!destinationChainTitle) throw Error(`Title not found for chain ${destinationChainKey}`)
+    const destinationChainIcon = getChainIcon(destinationChainKey)
+    if (!destinationChainIcon) throw Error(`Icon not found for chain ${destinationChainKey}`)
+    const id = `${sourceChainKey}-${destinationChainKey}`.replace(/_/g, "-").toLowerCase()
+    const destinationChainSelector = loadReferenceData({ environment, version }).chainsReferenceData[
+      destinationChainRefId
+    ].chainSelector
+    if (!destinationChainSelector) throw Error(`Chain selector not found for chain ${destinationChainKey}`)
+
     return (
       <>
-        <Accordion title={`From ${sourceChainTitle} to ${chainTitle}`} contentReference={id}>
+        <Accordion title={`From ${sourceChainTitle} to ${destinationChainTitle}`} contentReference={id}>
           <div slot="title" style="display: flex; align-items: center;">
             <div class="logo-title-container">
               <img src={sourceChainIcon} class="logo-image" />
@@ -121,14 +135,16 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
             </div>
             <span class="arrow">➡️</span>
             <div class="logo-title-container">
-              <img src={chainIcon} class="logo-image" />
-              <span>{chainTitle}</span>
+              <img src={destinationChainIcon} class="logo-image" />
+              <span>{destinationChainTitle}</span>
             </div>
           </div>
           <LaneConfig
             laneConfig={laneConfig}
-            sourceChain={sourceChain}
+            sourceChain={sourceChainKey}
             sourceChainRefId={sourceChainRefId}
+            destinationChainRefId={destinationChainRefId}
+            destinationChainSelector={destinationChainSelector}
             environment={environment}
             version={version}
           />
