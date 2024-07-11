@@ -4,12 +4,13 @@ import { ProductsNav, SubProducts } from "../../config"
 import { SearchTrigger } from "../../NavBar"
 import { isMatchedPath } from "../../isMatchedPath"
 import { clsx } from "../../utils"
-import { CaretIcon } from "../CaretIcon"
 import { extendRadixComponent } from "../extendRadixComponent"
-import { BottomBar } from "./BottomBar"
 import { ProductContent } from "./ProductContent"
-import { SubProductContent } from "./SubProductContent"
 import styles from "./productNavigation.module.css"
+import { MenuIcon } from "./MenuIcon"
+import { BackArrowIcon } from "./BackArrowIcon"
+import { CaretRightIcon } from "./CaretRightIcon"
+import MegaMenu from "./MegaMenu"
 
 type Props = {
   searchTrigger?: SearchTrigger
@@ -22,9 +23,8 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav, path }: Props) {
+export function ProductNavigation({ productsNav, path, searchTrigger }: Props) {
   const [open, setOpen] = React.useState(false)
-  const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
@@ -53,30 +53,16 @@ export function ProductNavigation({ productsNav, path }: Props) {
           items,
         }
 
-        setSubProducts(safeSubProducts)
         setProductsSlidePosition("submenu")
       }
-    } else {
-      setSubProducts(undefined)
     }
   }, [path, productsNav])
-
-  const onProductClick = React.useCallback((subProducts: SubProducts) => {
-    setSubProducts(subProducts)
-    setProductsSlidePosition("submenu")
-  }, [])
-
-  const onSubproductClick = () => {
-    setProductsSlidePosition("main")
-    setSubProducts(undefined)
-  }
 
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
     if (!newOpenState) {
       setProductsSlidePosition("main")
       setShowSearch(false)
-      setSubProducts(undefined)
     }
   }
 
@@ -90,17 +76,12 @@ export function ProductNavigation({ productsNav, path }: Props) {
           src="/chainlink-docs.svg"
           height={30}
         />
-        <CaretIcon
-          style={{
-            color: "var(--color-text-primary)",
-            fill: "var(--color-text-primary)",
-          }}
-        />
+        <MenuIcon />
       </Trigger>
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content className={clsx(styles.menuContent)}>
+        <Dialog.Content className={styles.menuContent}>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{
@@ -111,23 +92,57 @@ export function ProductNavigation({ productsNav, path }: Props) {
               }}
             >
               <div className={clsx(styles.content, styles[productsSlidePosition])}>
-                <ul className={clsx(styles.productContent)}>
-                  <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
-                </ul>
-                <div className={clsx(styles.subProductContent)}>
-                  <SubProductContent
-                    subProducts={subProducts}
-                    onSubproductClick={onSubproductClick}
-                    currentPath={path}
-                  />
+                <div>
+                  <div className={styles.header}>
+                    <img
+                      alt="Documentation Home"
+                      title="Documentation Home"
+                      style={{ display: "flex" }}
+                      src="/chainlink-docs.svg"
+                      height={30}
+                    />
+                    <Close ref={closeButtonRef} className={styles.closeButton}>
+                      <img src="/assets/icons/close.svg" />
+                    </Close>
+                  </div>
+                  <ul className={clsx(styles.productContent)}>
+                    <button
+                      className={styles.productContentLink}
+                      onClick={() => setProductsSlidePosition("submenu")}
+                      data-testid="sub-product-navigation-trigger-mobile"
+                    >
+                      Resources
+                      <CaretRightIcon />
+                    </button>
+                    <a href="" className={styles.productContentLink}>
+                      Docs
+                    </a>
+                    <a href="" className={styles.productContentLink}>
+                      Demos
+                    </a>
+                    <a href="" className={styles.productContentLink}>
+                      Tools
+                    </a>
+                    <a href="" className={styles.productContentLink}>
+                      ChainLog
+                    </a>
+                  </ul>
+                </div>
+                <div className={clsx(styles.subProductContentPage)}>
+                  <div className={styles.header}>
+                    <button key="back" className={styles.back} onClick={() => setProductsSlidePosition("main")}>
+                      <BackArrowIcon />
+                    </button>
+                    <span className={styles.subProductContentTitle}>Resources</span>
+                    <span></span> {/* Spacer */}
+                  </div>
+                  <div className={styles.subProductContent}>
+                    <MegaMenu />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <Close ref={closeButtonRef} className={styles.closeButton}>
-            <img src="/assets/icons/close.svg" />
-          </Close>
-          <BottomBar />
         </Dialog.Content>
       </Portal>
     </Root>

@@ -2,28 +2,44 @@
 import ProductTabs from "../features/landing/sections/ProductTabs.astro"
 import LandingLayout from "../layouts/LandingLayout.astro"
 import HeroCTA from "../features/landing/sections/HeroCTA.astro"
+import BaseLayout from "~/layouts/BaseLayout.astro"
+
+import * as CONFIG from "../config"
+
+const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 ---
 
-<LandingLayout>
-  <HeroCTA />
-  <div class="home-wrapper" id="article">
-    <ProductTabs />
-  </div>
-</LandingLayout>
+<BaseLayout title={formattedContentTitle}>
+  <main>
+    <div class="heroContainer">
+      <div class="hero">
+        <h2>What are you <br />building?</h2>
+        <ProductTabs />
+      </div>
+    </div>
+    <div class="recommended">
+      <h4>Recommended reading</h4>
+      <h2>We think you'd love to explore</h2>
+      <h5>Popular searches</h5>
+      <div>
+        <a href="/resources/link-token-contracts"> LINK token contract</a>
+        <a href="/chainlink-automation">Automations</a>
+        <a href="/resources/create-a-chainlinked-project">NPM packages</a>
+        <a href="/architecture-overview/architecture-overview">Architecture</a>
+        <a href="/ccip">CCIP contracts</a>
+        <a href="/ccip/api-reference/errors">Function errors</a>
+        <a href="/getting-started/conceptual-overview">Getting started</a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
 
 <style>
-  .home-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-12x);
-  }
-
   body {
-    background-color: #f5f7fd;
+    background-color: white;
     z-index: 10;
   }
   body:after {
-    background-image: url("/images/homepage-shape.svg");
     background-repeat: no-repeat;
     position: absolute;
     width: calc(100% + 275px);
@@ -35,5 +51,131 @@ import HeroCTA from "../features/landing/sections/HeroCTA.astro"
     bottom: auto;
     left: -275px;
     overflow: hidden;
+  }
+
+  .heroContainer {
+    padding-top: var(--space-24x);
+  }
+
+  .hero {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding-left: var(--space-6x);
+    padding-right: var(--space-6x);
+  }
+
+  .hero h2 {
+    font-family: var(--font-family-text);
+    font-style: normal;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 61.6px;
+    display: flex;
+    align-items: center;
+    letter-spacing: -2.7px;
+    margin-bottom: var(--space-8x);
+    color: #0c162c;
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+  }
+
+  .recommended {
+    max-width: var(--max-width);
+    padding-left: var(--space-6x);
+    padding-right: var(--space-6x);
+  }
+
+  .recommended h4 {
+    color: var(--color-gray-600);
+    font-size: var(--space-3);
+    text-transform: uppercase;
+    letter-spacing: 1.28px;
+    font-weight: var(--font-weight-medium);
+  }
+
+  .recommended h5 {
+    color: var(--color-gray-600);
+    font-size: var(--space-3);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 1.28px;
+    margin-top: var(--space-16x);
+    font-family: var(--font-family-text);
+    display: block;
+  }
+
+  .recommended h3 {
+    color: var(--gray-900);
+    font-size: var(--space-8x);
+    letter-spacing: -0.96px;
+    font-weight: var(--font-weight-medium);
+  }
+
+  .recommended div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4x);
+    margin-top: var(--space-8x);
+  }
+
+  .recommended a {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-4x) var(--space-5x);
+    box-shadow: 0px var(--space-3x) var(--space-8x) calc(-1 * var(--space-3x)) #0c162c1f;
+    border-radius: var(--space-1x);
+    color: var(--blue-800);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .recommended a:hover {
+    box-shadow: 0px var(--space-3x) var(--space-8x) calc(-1 * var(--space-3x)) #0c162c2f;
+    color: var(--blue-700);
+  }
+
+  @media (min-width: 50em) {
+    .hero {
+      max-width: var(--fullwidth-max-width);
+    }
+
+    .recommended {
+      margin: var(--space-20x) auto;
+      max-width: var(--fullwidth-max-width);
+    }
+
+    .heroContainer {
+      background: linear-gradient(180deg, #f1f5fe 0%, white 100%);
+    }
+
+    .hero h2 {
+      font-size: 90px;
+      line-height: 99px;
+    }
+
+    .recommended h3 {
+      font-size: var(--space-12x);
+    }
+
+    .recommended h4 {
+      font-size: var(--space-4);
+    }
+
+    .recommended h5 {
+      display: none;
+    }
+  }
+  @media (min-width: 72em) {
+    .hero {
+      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
+
+    .recommended {
+      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
   }
 </style>

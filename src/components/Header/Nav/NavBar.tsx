@@ -8,6 +8,7 @@ import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
 import { useHideHeader } from "./useHideHeader"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
 import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
+import { Search } from "../aiSearch/Search"
 
 declare const Weglot: any
 
@@ -19,11 +20,25 @@ export type NavBarProps = {
   onHideChange?: (hidden: boolean) => void
   productsNav: ProductsNav
   subProductsNav: SubProductsNav
+  showMegaMenu: () => void
+  isMegamenuOpen: boolean
+  exitMegamenu: () => void
 }
 
 export const navBarHeight = 64
 
-export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProductsNav }: NavBarProps) => {
+const SearchButton = <Search variant="default" />
+
+export const NavBar = ({
+  path,
+  searchTrigger,
+  onHideChange,
+  productsNav,
+  subProductsNav,
+  showMegaMenu,
+  isMegamenuOpen,
+  exitMegamenu,
+}: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
@@ -82,7 +97,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
       <header className={styles.header} ref={navRef}>
         <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
           <div className={styles.container}>
-            <div className={styles.logoSection}>
+            <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
                 <img
                   alt="Documentation Home"
@@ -100,15 +115,19 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
                 setNavMenuOpen={setIsMenuOpen}
                 productsNav={productsNav}
                 subProductsNav={subProductsNav}
+                showMegaMenu={showMegaMenu}
+                isMegamenuOpen={isMegamenuOpen}
+                exitMegamenu={exitMegamenu}
               />
             </div>
-            <div className={styles.rightSection}>
+            <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" className={styles.weglotContainer} />
               <div className={styles.quickLinksWrapper}>
                 <button className={styles.quickLinksButton} onClick={toggleModal}>
-                  <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
+                  <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Search" />
                 </button>
+                <Search variant="mobile" />
                 <span className={styles.quickLinksTooltip}>
                   <img
                     src="https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat"

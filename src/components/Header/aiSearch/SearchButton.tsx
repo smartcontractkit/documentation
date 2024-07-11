@@ -1,6 +1,7 @@
 import { clsx } from "~/lib"
 import styles from "./searchButton.module.css"
 import { useEffect, useState } from "react"
+import SearchIcon from "../../QuickLinks/assets/search-icon.svg"
 
 const searchIcon = (
   <svg
@@ -25,7 +26,7 @@ const searchIcon = (
   </svg>
 )
 
-export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) => {
+export const SearchButton = ({ variant }: { variant: "default" | "mobile" }) => {
   const [isMac, setIsMac] = useState(false)
   useEffect(() => {
     const checkIsMac = typeof navigator !== "undefined" ? navigator.userAgent.toUpperCase().indexOf("MAC") >= 0 : false
@@ -58,15 +59,8 @@ export const SearchButton = ({ variant }: { variant: "default" | "bottomBar" }) 
       <div className={styles.shortcut}>{isMac ? "⌘" : "Ctrl+"}K</div>
     </button>
   ) : (
-    <button className={clsx(styles.bottomBar, "search-widget-trigger")}>
-      {searchIcon}
-      <span
-        style={{
-          color: "var(--color-text-primary)",
-        }}
-      >
-        Search
-      </span>
+    <button className={clsx(styles.mobile, "search-widget-trigger")}>
+      <img src={SearchIcon.src} alt="Search" />
     </button>
   )
 }

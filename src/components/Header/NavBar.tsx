@@ -1,14 +1,16 @@
-import React from "react"
+import React, { useState } from "react"
 import { NavBar as Nav } from "./Nav"
 import { Search } from "./aiSearch/Search"
 import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
+import MegaMenu from "./Nav/ProductNavigation/Desktop/MegaMenu"
 
 declare const Weglot: any
 
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
   const navRef = React.useRef(null)
+  const [showMegaMenu, setShowMegaMenu] = useState(false)
 
   const { setNavBarInfo } = useNavBar()
 
@@ -68,7 +70,11 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
         path={path}
         searchTrigger={showSearch ? <Search /> : undefined}
         onHideChange={onHideChange}
+        isMegamenuOpen={showMegaMenu}
+        showMegaMenu={() => setShowMegaMenu(true)}
+        exitMegamenu={() => setShowMegaMenu(false)}
       />
+      {showMegaMenu && <MegaMenu cancel={() => setShowMegaMenu(false)} />}
     </span>
   )
 }

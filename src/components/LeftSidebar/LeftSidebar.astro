@@ -3,6 +3,7 @@ import { Sections } from "~/content/config"
 import { SIDEBAR, MENU, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 import ActiveIcon from "./ActiveIcon.astro"
+import DocsPicker from "../DocsSwitcher/DocsPicker"
 export type Props = {
   currentPage: string
   section?: Sections
@@ -54,49 +55,54 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
 ---
 
 <nav aria-labelledby="grid-left">
-  <ul class="nav-groups" data-sticky>
-    {
-      sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
-        <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
-          <details
-            open={!!flattenChildren(s.contents).filter((object) => isCurrentPageMatch(object.url, currentPage)).length}
-          >
-            <summary class="nav-group-title">{s.section}</summary>
-            <ul class="nav-group-entries">
-              {s.contents &&
-                s.contents.map((child) => (
-                  <>
-                    <li>
-                      <a
-                        class="nav-link"
-                        href={`${Astro.site?.pathname}${child.url}`}
-                        aria-current={isCurrentPageMatch(child.url, currentPage) ? "page" : "false"}
-                      >
-                        <ActiveIcon />
-                        {child.title}
-                      </a>
-                    </li>
-                    {child.children &&
-                      child.children.map((childItem) => (
-                        <li>
-                          <a
-                            class="nav-link nested"
-                            href={`${Astro.site?.pathname}${childItem.url}`}
-                            aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
-                          >
-                            <ActiveIcon />
-                            {childItem.title}
-                          </a>
-                        </li>
-                      ))}
-                  </>
-                ))}
-            </ul>
-          </details>
-        </li>
-      ))
-    }
-  </ul>
+  <div class="nav-groups" data-sticky>
+    <DocsPicker client:load pathname={Astro.url.pathname} />
+    <ul>
+      {
+        sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
+          <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
+            <details
+              open={
+                !!flattenChildren(s.contents).filter((object) => isCurrentPageMatch(object.url, currentPage)).length
+              }
+            >
+              <summary class="nav-group-title">{s.section}</summary>
+              <ul class="nav-group-entries">
+                {s.contents &&
+                  s.contents.map((child) => (
+                    <>
+                      <li>
+                        <a
+                          class="nav-link"
+                          href={`${Astro.site?.pathname}${child.url}`}
+                          aria-current={isCurrentPageMatch(child.url, currentPage) ? "page" : "false"}
+                        >
+                          <ActiveIcon />
+                          {child.title}
+                        </a>
+                      </li>
+                      {child.children &&
+                        child.children.map((childItem) => (
+                          <li>
+                            <a
+                              class="nav-link nested"
+                              href={`${Astro.site?.pathname}${childItem.url}`}
+                              aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
+                            >
+                              <ActiveIcon />
+                              {childItem.title}
+                            </a>
+                          </li>
+                        ))}
+                    </>
+                  ))}
+              </ul>
+            </details>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </nav>
 
 <style>
@@ -107,7 +113,7 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
 
   .nav-groups {
     padding: var(--doc-padding) var(--space-8x) var(--doc-padding) 0;
-    max-height: 100vh;
+    height: 100vh;
     max-height: 100dvh;
     top: 0;
     overflow-y: auto;

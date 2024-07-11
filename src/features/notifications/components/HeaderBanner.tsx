@@ -36,9 +36,6 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
   if (!bannerContent) return null
   return (
     <div className={headerbanner.container} style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}>
-      <div className={headerbanner.badge} style={{ backgroundColor: bannerTypes[bannerContent.type].alertColour }}>
-        <span className="text-100">{bannerTypes[bannerContent.type].alertText}</span>
-      </div>
       <p>
         {bannerContent.description}{" "}
         {bannerContent.linkUrl && (
