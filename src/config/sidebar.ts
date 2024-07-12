@@ -831,11 +831,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "VRF V2 Subscription Method",
-          url: "/vrf/v2/subscription",
+          url: "vrf/v2/subscription",
         },
         {
           title: "VRF V2 Direct Funding Method",
-          url: "/vrf/v2/direct-funding",
+          url: "vrf/v2/direct-funding",
         },
       ],
     },
