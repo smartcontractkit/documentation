@@ -80,7 +80,7 @@ Streams Direct enables seamless offchain price updates through a mechanism desig
 
 Active-active is a system configuration strategy where redundant systems remain active simultaneously to serve requests. Incoming requests are distributed across all active resources and load-balanced to provide high availability, scalability, and fault-tolerance. This strategy is the opposite of active-passive where a secondary system remains inactive until the primary system fails.
 
-The Data Streams API services leverages a highly available and resilient architecture using an active-active setup across multiple distributed and fully isolated origins.This setup ensures that the service stays operational even if one origin fails, ensuring robust fault tolerance and high availability. This setup encompasses both REST and WebSocket APIs, seamlessly managed by a global load balancer that ensures automated and transparent failovers. Additionally, for advanced use cases, the service publishes available origins via HTTP headers, enabling customers to interact directly with specific origin locations if needed.
+The Data Streams API services uses an active-active setup as a highly available and resilient architecture across multiple distributed and fully-isolated origins. This setup ensures that the service is operational even if one origin fails, which provides robust fault tolerance and high availability. This configuration applies to both the REST API and the WebSocket API. The system is seamlessly managed by a global load balancer to provide automated and transparent failovers. For advanced use cases, the service publishes available origins using HTTP headers, which enables you to interact directly with specific origin locations if necessary.
 
 #### Active-Active Setup
 
@@ -88,21 +88,21 @@ The API service is deployed across multiple distributed data centers. Each activ
 
 #### Global Load Balancer
 
-A global load balancer sits in front of the distributed deployments, directing incoming traffic to the healthiest available site based on real-time health checks and observed load.
+A global load balancer sits in front of the distributed deployments. The load balancer directs incoming traffic to the healthiest available site based on real-time health checks and observed load.
 
 - **Automated Failover:** In the event of a site failure, traffic is seamlessly rerouted to operational sites without user intervention.
-- **Load Distribution:** Requests are balanced across all active sites to optimize resource utilization and response times.
+- **Load Distribution:** Requests are balanced across all active sites to optimize resource usage and response times.
 
 #### Origin Publishing
 
-To facilitate advanced interactions, the service includes the origin information of all of the available origins in the HTTP headers of API responses. This feature allows customers to explicitly target specific deployments if desired. It allows for concurrent WebSocket consumption from multiple sites, ensuring fault tolerant WebSocket subscriptions and low latency and minimizing the risk of report gaps.
+To enable advanced interactions, the service includes the origin information for all of the available origins in the HTTP headers of API responses. This feature allows customers to explicitly target specific deployments if desired. It allows for concurrent WebSocket consumption from multiple sites, ensuring fault tolerant WebSocket subscriptions, low-latency, and minimized risk of report gaps.
 
-#### Automatic Failover Scenarios
+#### Example Failover Scenarios
 
 Automatic failover handles availability and traffic routing in the following scenarios:
 
-- **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user, ensuring uninterrupted service. WebSockets will experience a reconnect and failed REST requests needs to be retried.
+- **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user and ensures uninterrupted service. During automatic failover, WebSockets experience a reconnect. Failed REST requests must be retried.
 
 - **Manual Trafic Steering:** In the event that a customer wants to bypass the load balancer and target a specific site, they can use the origin headers to direct their requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
 
-- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, clients can subscribe simultaneously to up to two available origins simultaneously merging the report stream locally by discarding duplicate reports per feed by comparing the latest consumed timestamp.
+- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consume timestamp for each feed and discards duplicate reports before merging the report stream locally.
