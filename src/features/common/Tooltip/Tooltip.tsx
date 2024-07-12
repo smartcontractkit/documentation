@@ -4,8 +4,6 @@ export const Tooltip = ({
   label,
   tip,
   imgURL = "https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat",
-  width = 12,
-  height = 12,
   style = {},
   labelStyle = {},
 }) => {
@@ -13,6 +11,7 @@ export const Tooltip = ({
   const containerStyle = {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
   }
 
   const textStyle = {

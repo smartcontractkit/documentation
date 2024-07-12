@@ -13,6 +13,17 @@ export const priceFeedAddresses = {
   },
 }
 
+export const linkEth = {
+  link: {
+    eth: {
+      sepolia: {
+        address: "0x42585eD362B3f1BCa95c640FdFf35Ef899212734",
+        historicalRound: "36893488147419106612",
+      },
+    },
+  },
+}
+
 export const registryAddresses = {
   "link-usd": {
     baseSymbol: "LINK",

@@ -116,6 +116,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ARBITRUM_SEPOLIA"
     case "matic-mainnet":
       return "POLYGON_MAINNET"
+    case "polygon-testnet-amoy":
+      return "POLYGON_AMOY"
     case "avalanche-mainnet":
       return "AVALANCHE_MAINNET"
     case "avalanche-fuji-testnet":
@@ -140,6 +142,18 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "GNOSIS_MAINNET"
     case "xdai-testnet-chiado":
       return "GNOSIS_CHIADO"
+    case "celo-mainnet":
+      return "CELO_MAINNET"
+    case "celo-testnet-alfajores":
+      return "CELO_ALFAJORES"
+    case "ethereum-testnet-sepolia-mode-1":
+      return "MODE_SEPOLIA"
+    case "ethereum-mainnet-mode-1":
+      return "MODE_MAINNET"
+    case "ethereum-mainnet-blast-1":
+      return "BLAST_MAINNET"
+    case "ethereum-testnet-sepolia-blast-1":
+      return "BLAST_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -161,6 +175,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-arbitrum-1"
     case "POLYGON_MAINNET":
       return "matic-mainnet"
+    case "POLYGON_AMOY":
+      return "polygon-testnet-amoy"
     case "AVALANCHE_MAINNET":
       return "avalanche-mainnet"
     case "AVALANCHE_FUJI":
@@ -185,6 +201,18 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "xdai-mainnet"
     case "GNOSIS_CHIADO":
       return "xdai-testnet-chiado"
+    case "CELO_MAINNET":
+      return "celo-mainnet"
+    case "CELO_ALFAJORES":
+      return "celo-testnet-alfajores"
+    case "MODE_SEPOLIA":
+      return "ethereum-testnet-sepolia-mode-1"
+    case "MODE_MAINNET":
+      return "ethereum-mainnet-mode-1"
+    case "BLAST_MAINNET":
+      return "ethereum-mainnet-blast-1"
+    case "BLAST_SEPOLIA":
+      return "ethereum-testnet-sepolia-blast-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

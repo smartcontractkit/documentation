@@ -12,6 +12,71 @@ import { Aside } from "@components"
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.13.0 nodes - 2024-07-01
+
+**[v2.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.13.0)**
+
+### Breaking Change
+
+- Removed the `xdai` ChainType config option. Moving forward, only `gnosis` can be used.
+
+### Added
+
+- Added a mechanism to validate forwarders for OCR2 and fallback to EOA if necessary
+- Added an auto-purge feature to the EVM TXM that identifies terminally stuck transactions either through a chain specific method or heurisitic then purges them to unblock the nonce. Included four new toml configs under `Transactions.AutoPurge` to configure this new feature: `Enabled`, `Threshold`, `MinAttempts`, and `DetectionApiUrl`.
+- Add option to include `GasPriceSubunits` pipeline to include `gasPriceSubunits` in median ocr2 transmission. Use this only with the Starknet chain for now.
+- Added config option `HeadTracker.FinalityTagBypass` to force `HeadTracker` to track blocks up to `FinalityDepth` even if `FinalityTagsEnabled = true`. This option is a temporary measure to address high CPU usage on chains with extremely large actual finality depth (gap between the current head and the latest finalized block).
+- Added config option `HeadTracker.MaxAllowedFinalityDepth` maximum gap between current head to the latest finalized block that `HeadTracker` considers healthy.
+
+### Updated
+
+- Fixed CPU usage issues caused by inefficiencies in `HeadTracker`. HeadTracker's support of finality tags caused a drastic increase in the number of tracked blocks on the Arbitrum chain (from 50 to 12,000), which led to a 30% increase in CPU usage. The fix improves the data structure for tracking blocks and makes lookup more efficient. `BenchmarkHeadTracker_Backfill` shows a 40x time reduction.
+- Fixed metric description on `mercury_transmit_queue_load`
+
+### DB Updated
+
+- Improve handling of Postgres connection settings and driver versions.
+
+## Changes in v2.12.0 nodes - 2024-06-05
+
+**[v2.12.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.12.0)**
+
+### Added
+
+- [#12867](https://github.com/smartcontractkit/chainlink/pull/12867) [`27d9413286`](https://github.com/smartcontractkit/chainlink/commit/27d941328655e0cde608c1eff47de736c11e2e58) Added a new CLI command, blocks find-lca, which finds the latest block that is available in both the database and on the chain for the specified chain. Added a new CLI command, node remove-blocks, which removes all blocks and logs greater than or equal to the specified block number. #nops #added
+- [#12533](https://github.com/smartcontractkit/chainlink/pull/12533) [`ccb8cd85fe`](https://github.com/smartcontractkit/chainlink/commit/ccb8cd85fef8e3bbe3fb5580277a7bd7f477e6bb) Re-enable abandoned transaction tracker
+- #12760 3f4573479c Enable configurable client error regexes for error classification. New toml configuration options for [EVM.NodePool.Errors] to pass regexes on NonceTooLow, NonceTooHigh, ReplacementTransactionUnderpriced, LimitReached, TransactionAlreadyInMempool, TerminallyUnderpriced, InsufficientEth, TxFeeExceedsCap, L2FeeTooLow, L2FeeTooHigh, L2Full, TransactionAlreadyMined, Fatal, and ServiceUnavailable.
+- [#12767](https://github.com/smartcontractkit/chainlink/pull/12767) [`8db5ccfb39`](https://github.com/smartcontractkit/chainlink/commit/8db5ccfb39f86c9817fcad28292dbe6500821810) Validate user email before asking for a password in the chainlink CLI.
+
+### Updated
+
+- [#12605](https://github.com/smartcontractkit/chainlink/pull/12605) [`1d9dd466e2`](https://github.com/smartcontractkit/chainlink/commit/1d9dd466e2933b7558949554b882f29f63d90b9f) core/chains/evm/logpoller: Stricter finality checks in LogPoller, to be more robust during rpc failover events
+- [#12595](https://github.com/smartcontractkit/chainlink/pull/12595) [`e6d4814bda`](https://github.com/smartcontractkit/chainlink/commit/e6d4814bda908f1c0582b914d5aa803cecf333be) Move JuelsPerFeeCoinCacheDuration under JuelsPerFeeCoinCache struct in config. Rename JuelsPerFeeCoinCacheDuration to updateInterval. Add stalenessAlertThreshold to JuelsPerFeeCoinCache config. StalenessAlertThreshold cfg option has a default of 24 hours which means that it doesn't have to be set unless we want to override the duration after which a stale cache should start throwing errors.
+
+### Upcoming change in 2.13.0
+
+- [#12093](https://github.com/smartcontractkit/chainlink/pull/12093) [`3f6d901fe6`](https://github.com/smartcontractkit/chainlink/commit/3f6d901fe676698769cb6713250152e322747145) The xdai ChainType has been renamed to gnosis to match the chain's new name. The old value is still supported but has been deprecated and will be removed in v2.13.0.
+
+## Changes in v2.11.0 nodes - 2024-05-01
+
+**[v2.11.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.11.0)**
+
+### Added
+
+- Added a tx simulation feature to the chain client to enable testing for zk out-of-counter (OOC) errors
+- Add the `pool_rpc_node_highest_finalized_block` metric that tracks the highest finalized block seen per RPC. If `FinalityTagEnabled = true`, a positive NodePool.FinalizedBlockPollInterval is needed to collect the metric. If the finality tag is not enabled, the metric is populated with a calculated latest finalized block based on the latest head and finality depth.
+
+### Updated
+
+- Moved `JuelsPerFeeCoinCacheDuration` under the `JuelsPerFeeCoinCache` struct in config. Rename `JuelsPerFeeCoinCacheDuration` to updateInterval. Add `stalenessAlertThreshold` to `JuelsPerFeeCoinCache` config. The `StalenessAlertThreshold` config option has a default of 24 hours which means that it doesn't have to be set unless we want to override the duration after which a stale cache should start throwing errors.
+- Updated config for Polygon zkEVM chains.
+- HeadTracker now respects the `FinalityTagEnabled` config option. If the flag is enabled, HeadTracker backfills blocks up to the latest finalized block provided by the corresponding RPC call. To address potential misconfigurations, `HistoryDepth` is now calculated from the latest finalized block instead of the head. Note that consumers like TXM and LogPoller do not fully use the Finality Tag yet.
+- Change LimitTransfer gasLimit type from uint32 to uint64
+
+### Upcoming changes in v2.13.0
+
+- The `xdai` `ChainType` has been renamed to `gnosis` to match the chain's new name. The old value is still supported but has been deprecated and will be removed in v2.13.0.
+
 ## Changes in v2.10.0 nodes - 2024-04-08
 
 **[v2.10.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.10.0)**
