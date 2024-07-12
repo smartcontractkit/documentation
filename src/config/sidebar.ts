@@ -271,6 +271,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Architecture",
           url: "data-streams/architecture",
         },
+        {
+          title: "Liquidity-Weighted Ask and Bid prices",
+          url: "data-streams/concepts/liquidity-weighted-prices",
+        },
       ],
     },
     {
