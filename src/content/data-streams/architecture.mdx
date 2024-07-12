@@ -30,7 +30,7 @@ Using Chainlink Automation with Data Streams automates trade execution and mitig
   alt="Chainlink Data Streams - Streams Trade Architecture"
 />
 
-#### Example trading flow using Streams Trade
+### Example trading flow using Streams Trade
 
 One example of how to use Data Streams with Automation is in a decentralized exchange. An example flow might work using the following process:
 
@@ -57,7 +57,7 @@ Read the [Getting Started](/data-streams/getting-started) guide to learn how to 
 
 <DataStreams section="streamsDirectEarlyAccess" />
 
-#### Example of offchain price updates with Streams Direct
+### Example of offchain price updates with Streams Direct
 
 Streams Direct enables seamless offchain price updates through a mechanism designed for real-time data delivery. Here is an example of how your Client will benefit from low-latency market data directly from the Data Streams Aggregation Network.
 
@@ -75,3 +75,32 @@ Streams Direct enables seamless offchain price updates through a mechanism desig
   src="/images/data-streams/streams-direct-offchain-price-updates-v3.webp"
   alt="Chainlink Data Streams - Streams Direct Off-Chain Price Updates"
 />
+
+### Active-Active Multi-Site Deployment
+
+The Data Streams API services leverages a highly available and resilient architecture using an active-active setup across multiple distributed and fully isolated origins.This setup ensures that the service stays operational even if one origin fails, ensuring robust fault tolerance and high availability. This setup encompasses both REST and WebSocket APIs, seamlessly managed by a global load balancer that ensures automated and transparent failovers. Additionally, for advanced use cases, the service publishes available origins via HTTP headers, enabling customers to interact directly with specific origin locations if needed.
+
+#### Active-Active Setup
+
+The API service is deployed across multiple distributed data centers. Each active deployment is fully isolated and capable of handling requests independently. This redundancy ensures that the service can withstand the failure of any single site without interrupting service availability.
+
+#### Global Load Balancer
+
+A global load balancer sits in front of the distributed deployments, directing incoming traffic to the healthiest available site based on real-time health checks and observed load.
+
+- **Automated Failover:** In the event of a site failure, traffic is seamlessly rerouted to operational sites without user intervention.
+- **Load Distribution:** Requests are balanced across all active sites to optimize resource utilization and response times.
+
+#### Origin Publishing
+
+To facilitate advanced interactions, the service includes the origin information of all of the available origins in the HTTP headers of API responses. This feature allows customers to explicitly target specific deployments if desired. It allows for concurrent WebSocket consumption from multiple sites, ensuring fault tolerant WebSocket subscriptions and low latency and minimizing the risk of report gaps.
+
+#### Automatic Failover Scenarios
+
+Automatic failover handles availability and traffic routing in the following scenarios:
+
+- **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user, ensuring uninterrupted service. WebSockets will experience a reconnect and failed REST requests needs to be retried.
+
+- **Manual Trafic Steering:** In the event that a customer wants to bypass the load balancer and target a specific site, they can use the origin headers to direct their requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
+
+- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, clients can subscribe simultaneously to up to two available origins simultaneously merging the report stream locally by discarding duplicate reports per feed by comparing the latest consumed timestamp.
