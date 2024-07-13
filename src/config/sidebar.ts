@@ -1491,22 +1491,5 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "API Reference", url: "vrf/v1/api-reference" },
       ],
     },
-    {
-      section: "v1 JSON Jobs [REMOVED]",
-      contents: [
-        {
-          title: "Job Specifications",
-          url: "chainlink-nodes/oracle-jobs/v1/job-specifications",
-        },
-        {
-          title: "Core Adapters",
-          url: "chainlink-nodes/oracle-jobs/v1/adapters",
-        },
-        {
-          title: "Initiators",
-          url: "chainlink-nodes/oracle-jobs/v1/initiators",
-        },
-      ],
-    },
   ],
 }
