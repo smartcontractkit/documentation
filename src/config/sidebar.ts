@@ -1232,6 +1232,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Job and Task Reference",
       contents: [
         {
+          title: "Migrating to v2 Jobs",
+          url: "chainlink-nodes/oracle-jobs/migration-v1-v2",
+        },
+        {
           title: "Jobs",
           url: "chainlink-nodes/oracle-jobs/jobs",
           children: [
