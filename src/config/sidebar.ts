@@ -755,19 +755,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "Introduction to VRF",
+          title: "Overview",
           url: "vrf",
         },
         {
-          title: "Getting Started with Chainlink VRF V2.5",
+          title: "Getting Started",
           url: "vrf/v2-5/getting-started",
         },
         {
-          title: "Migration from V2",
+          title: "Migrating from V2",
           url: "vrf/v2-5/migration-from-v2",
         },
         {
-          title: "V2.5 Supported Networks",
+          title: "Supported Networks",
           url: "vrf/v2-5/supported-networks",
         },
         {
@@ -779,7 +779,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/best-practices",
         },
         {
-          title: "V2.5 Billing",
+          title: "Billing",
           url: "vrf/v2-5/billing",
         },
         {
@@ -809,7 +809,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Build with VRF 2.5",
       contents: [
         {
-          title: "Create and manage V2.5 subscriptions",
+          title: "Create and manage subscriptions",
           url: "vrf/v2-5/subscription/create-manage",
         },
         {
@@ -1232,10 +1232,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Job and Task Reference",
       contents: [
         {
-          title: "Migrating to v2 Jobs",
-          url: "chainlink-nodes/oracle-jobs/migration-v1-v2",
-        },
-        {
           title: "Jobs",
           url: "chainlink-nodes/oracle-jobs/jobs",
           children: [
@@ -1416,7 +1412,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   legacy: [
     {
-      section: "VRF V2 Subscription Method",
+      section: "VRF V2 Subscription Method [Legacy]",
       contents: [
         {
           title: "Introduction",
@@ -1453,7 +1449,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "VRF V2 Direct Funding Method",
+      section: "VRF V2 Direct Funding Method [Legacy]",
       contents: [
         {
           title: "Introduction",
