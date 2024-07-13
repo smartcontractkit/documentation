@@ -429,24 +429,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
-  // {
-  //   page: "starknet",
-  //   label: "Starknet",
-  //   title: "StarkNet Data Feeds",
-  //   img: "/assets/chains/starknet.svg",
-  //   networkStatusUrl: "https://status.starknet.io/",
-  //   tags: ["default"],
-  //   supportedFeatures: ["feeds"],
-  //   networks: [
-  //     {
-  //       name: "Starknet Sepolia testnet",
-  //       explorerUrl: "https://sepolia.starkscan.co/contract/%s",
-  //       networkType: "testnet",
-  //       rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
-  //       queryString: "starknet-sepolia-testnet",
-  //     },
-  //   ],
-  // },
+  {
+    page: "starknet",
+    label: "Starknet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://status.starknet.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Starknet Mainnet",
+        explorerUrl: "https://starkscan.co/contract/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-starknet-1.json",
+        queryString: "starknet-mainnet",
+      },
+    ],
+  },
   {
     page: "solana",
     label: "Solana",

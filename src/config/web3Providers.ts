@@ -40,4 +40,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   WEMIX_TESTNET: () => new providers.JsonRpcProvider("https://api.test.wemix.com"),
   MODE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.mode.network"),
   MODE_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.mode.network"),
+  BLAST_MAINNET: () => new providers.JsonRpcProvider("https://rpc.blast.io"),
+  BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
 }
