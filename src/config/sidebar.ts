@@ -1258,27 +1258,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "External Adapters",
-      contents: [
-        {
-          title: "Introduction",
-          url: "chainlink-nodes/external-adapters/external-adapters",
-        },
-        {
-          title: "External Adapters in Solidity",
-          url: "chainlink-nodes/external-adapters/contract-creators",
-        },
-        {
-          title: "Building External Adapters",
-          url: "chainlink-nodes/external-adapters/developers",
-        },
-        {
-          title: "Bridges: Adding External Adapters to Nodes",
-          url: "chainlink-nodes/external-adapters/node-operators",
-        },
-      ],
-    },
-    {
       section: "External Initiators",
       contents: [
         {
