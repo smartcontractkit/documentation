@@ -323,16 +323,16 @@ const StreamsNetworksData = [
   {
     network: "Base",
     logoUrl: "/assets/chains/base.svg",
-    networkStatus: "https://optimistic.freshstatus.io/",
+    networkStatus: "https://basescan.statuspage.io/",
     mainnet: {
       label: "Base Mainnet",
       verifierProxy: "0xDE1A28D87Afd0f546505B28AB50410A5c3a7387a",
-      explorerUrl: "https://etherscan.io/address/%s",
+      explorerUrl: "https://basescan.org/address/%s",
     },
     testnet: {
       label: "Base Sepolia",
       verifierProxy: "0x8Ac491b7c118a0cdcF048e0f707247fD8C9575f9",
-      explorerUrl: "https://sepolia.etherscan.io/address/%s",
+      explorerUrl: "https://sepolia.basescan.org/address/%s",
     },
   },
 ]
