@@ -63,7 +63,7 @@ export const evmProducts = [
       { id: "scroll", title: "Scroll" },
       { id: "linea", title: "Linea" },
       { id: "zksync", title: "zkSync" },
-      // { id: "starknet", title: "StarkNet" },
+      { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
