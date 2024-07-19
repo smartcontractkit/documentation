@@ -18,7 +18,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 Chainlink Data Streams has the following core components:
 
 - **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Streams Aggregation Network rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a concensus about the median price of an asset, sign a report including that data, and deliver the report to the Data Streams Aggregation Network.
-- **The Chainlink Data Streams Aggregation Network:** The Data Streams Aggregation Network stores the signed reports and makes them available for retrieval. It can deliver these reports to Chainlink Automation upon request (Streams Trade) or provide direct access via the API (Streams Direct).
+- **The Chainlink Data Streams Aggregation Network:** The Data Streams Aggregation Network stores the signed reports and makes them available for retrieval. The network uses an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) to ensure high availability and robust fault tolerance by operating multiple active sites in parallel. The network delivers these reports to Chainlink Automation upon request ([Streams Trade](/data-streams/architecture#streams-trade-architecture)) or provide direct access via the API ([Streams Direct](/data-streams/architecture#streams-direct-architecture)).
 - **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached concensus to the point where you use the data in your application.
 
 ## Streams Trade Architecture
@@ -30,7 +30,7 @@ Using Chainlink Automation with Data Streams automates trade execution and mitig
   alt="Chainlink Data Streams - Streams Trade Architecture"
 />
 
-#### Example trading flow using Streams Trade
+### Example trading flow using Streams Trade
 
 One example of how to use Data Streams with Automation is in a decentralized exchange. An example flow might work using the following process:
 
@@ -57,7 +57,7 @@ Read the [Getting Started](/data-streams/getting-started) guide to learn how to 
 
 <DataStreams section="streamsDirectEarlyAccess" />
 
-#### Example of offchain price updates with Streams Direct
+### Example of offchain price updates with Streams Direct
 
 Streams Direct enables seamless offchain price updates through a mechanism designed for real-time data delivery. Here is an example of how your Client will benefit from low-latency market data directly from the Data Streams Aggregation Network.
 
@@ -75,3 +75,34 @@ Streams Direct enables seamless offchain price updates through a mechanism desig
   src="/images/data-streams/streams-direct-offchain-price-updates-v3.webp"
   alt="Chainlink Data Streams - Streams Direct Off-Chain Price Updates"
 />
+
+## Active-Active Multi-Site Deployment
+
+Active-active is a system configuration strategy where redundant systems remain active simultaneously to serve requests. Incoming requests are distributed across all active resources and load-balanced to provide high availability, scalability, and fault tolerance. This strategy is the opposite of active-passive where a secondary system remains inactive until the primary system fails.
+
+The Data Streams API services use an active-active setup as a highly available and resilient architecture across multiple distributed and fully isolated origins. This setup ensures that the services are operational even if one origin fails, which provides robust fault tolerance and high availability. This configuration applies to both the [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api) and the [WebSocket API](/data-streams/reference/streams-direct/streams-direct-interface-ws). A global load balancer seamlessly manages the system to provide automated and transparent failovers. For advanced use cases, the service publishes available origins using HTTP headers, which enables you to interact directly with specific origin locations if necessary.
+
+### Active-Active Setup
+
+The API services are deployed across multiple distributed data centers. Each active deployment is fully isolated and capable of handling requests independently. This redundancy ensures that the service can withstand the failure of any single site without interrupting service availability.
+
+### Global Load Balancer
+
+A global load balancer sits in front of the distributed deployments. The load balancer directs incoming traffic to the healthiest available site based on real-time health checks and observed load.
+
+- **Automated Failover:** In the event of a site failure, traffic is seamlessly rerouted to operational sites without user intervention.
+- **Load Distribution:** Requests are balanced across all active sites to optimize resource usage and response times.
+
+### Origin Publishing
+
+To enable advanced interactions, the service includes the origin information for all of the available origins in the HTTP headers of API responses. This feature allows customers to explicitly target specific deployments if desired. It also allows for concurrent WebSocket consumption from multiple sites, ensuring fault tolerant WebSocket subscriptions, low-latency, and minimized risk of report gaps.
+
+### Example Failover Scenarios
+
+Automatic failover handles availability and traffic routing in the following scenarios:
+
+- **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user and ensures uninterrupted service. During automatic failover, WebSockets experience a reconnect. Failed REST requests must be retried.
+
+- **Manual Trafic Steering:** If you want to bypass the load balancer and target a specific site, you can use the origin headers to direct your requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
+
+- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each feed and discards duplicate reports before merging the report stream locally.
