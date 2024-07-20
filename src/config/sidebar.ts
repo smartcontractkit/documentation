@@ -1,4 +1,5 @@
 import { Sections } from "../content/config"
+import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
 export type SectionContent = {
   title: string
   url: string
@@ -9,6 +10,8 @@ type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
+
+const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   dataFeeds: [
@@ -1145,81 +1148,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    {
-      section: "API Reference",
-      contents: [
-        {
-          title: "Solidity",
-          url: "chainlink-local/api-reference/solidity",
-          children: [
-            {
-              title: "CCIP",
-              url: "chainlink-local/api-reference/solidity/ccip",
-              children: [
-                {
-                  title: "BurnMintERC677Helper",
-                  url: "chainlink-local/api-reference/solidity/ccip/burnminterc677helper",
-                },
-                { title: "CCIPLocalSimulator", url: "chainlink-local/api-reference/solidity/ccip/cciplocalsimulator" },
-                {
-                  title: "CCIPLocalSimulatorFork",
-                  url: "chainlink-local/api-reference/solidity/ccip/cciplocalsimulatorfork",
-                },
-                { title: "MockEvm2EvmOffRamp", url: "chainlink-local/api-reference/solidity/ccip/mockevm2evmofframp" },
-                { title: "Register", url: "chainlink-local/api-reference/solidity/ccip/register" },
-              ],
-            },
-            {
-              title: "Data Feeds",
-              url: "chainlink-local/api-reference/solidity/data-feeds",
-              children: [
-                {
-                  title: "MockOffchainAggregator",
-                  url: "chainlink-local/api-reference/solidity/data-feeds/mockoffchainaggregator",
-                },
-                {
-                  title: "MockV3Aggregator",
-                  url: "chainlink-local/api-reference/solidity/data-feeds/mockv3aggregator",
-                },
-                {
-                  title: "Interfaces",
-                  url: "chainlink-local/api-reference/solidity/data-feeds/interfaces",
-                  children: [
-                    {
-                      title: "AggregatorInterface",
-                      url: "chainlink-local/api-reference/solidity/data-feeds/interfaces/aggregatorinterface",
-                    },
-                    {
-                      title: "AggregatorV2V3Interface",
-                      url: "chainlink-local/api-reference/solidity/data-feeds/interfaces/aggregatorv2v3interface",
-                    },
-                    {
-                      title: "AggregatorV3Interface",
-                      url: "chainlink-local/api-reference/solidity/data-feeds/interfaces/aggregatorv3interface",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Shared",
-              url: "chainlink-local/api-reference/solidity/shared",
-              children: [
-                { title: "LinkToken", url: "chainlink-local/api-reference/solidity/shared/linktoken" },
-                { title: "WETH9", url: "chainlink-local/api-reference/solidity/shared/weth9" },
-              ],
-            },
-          ],
-        },
-        {
-          title: "JavaScript",
-          url: "chainlink-local/api-reference/javascript",
-          children: [
-            { title: "CCIPLocalSimulatorFork", url: "chainlink-local/api-reference/javascript/cciplocalsimulatorfork" },
-          ],
-        },
-      ],
-    },
+    { ...chainlinkLocalAPIReferenceTyped },
   ],
   nodeOperator: [
     {
