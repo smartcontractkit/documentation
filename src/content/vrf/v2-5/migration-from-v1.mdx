@@ -21,22 +21,22 @@ Chainlink VRF v2.5 includes several improvements and changes to the way you fund
 
 ### New billing options
 
-- **Native billing:** You have the option to use either native tokens or LINK to pay for VRF requests. To accommodate this, the premium fee has changed from a flat LINK premium amount per request, to a percentage-based premium per request. Refer to the [Billing](/vrf/v2-5/billing) page for more details. To find out the new premium percentages for the networks you use, see the [Supported Networks](/vrf/v2-5/supported-networks) page.
+- **Native billing:** You have the option to use either native tokens or LINK to pay for VRF requests. Instead of a flat LINK fee per request, there is percentage-based premium fee applied to each request. Refer to the [Billing](/vrf/v2-5/billing) page for more details. To find out the premium percentages for the networks you use, see the [Supported Networks](/vrf/v2-5/supported-networks) page.
 
 - **Subscription management:** Chainlink VRF v2.5 has a [Subscription Manager](https://vrf.chain.link) application that allows smart contract applications to pre-fund multiple requests for randomness using one subscription account. This reduces the gas fees for VRF requests by eliminating the need to transfer funds for each individual request. You transfer funds to the subscription balance only when it requires additional funding.
 
 - **Unified Billing - Delegate Subscription Balance to Multiple Addresses:** Chainlink VRF v2.5 allows up to 100 smart contract addresses to fund their requests for verifiable randomness from a single subscription account, which is managed by the subscription owner.
-
-For direct funding, the configurations for overhead gas have changed:
-
-- The amount of wrapper overhead gas is reduced compared to V2.
-- The amount of coordinator overhead gas used varies depending on the network used for your request, whether you're paying in LINK or native tokens, and how many random values you want in each VRF request. Refer to the [Billing](/vrf/v2-5/billing) page for more details and examples, and see the new configurations on the [Supported Networks](/vrf/v2-5/supported-networks) page.
 
 - **Variable Callback Gas Limit:** Chainlink VRF v2.5 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the callback request function that receives the random values. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain you use. See the gas limits on the [VRF Supported Networks](/vrf/v2-5/supported-networks) page.
 
 - **More configuration capability:** You can define how many block confirmations must pass before verifiable randomness is generated and delivered onchain when your application makes a request transaction. The range is from 3 to 200 blocks. VRF V1 always waited 10 blocks on Ethereum before delivering onchain randomness. Select a value that protects your application from block re-organizations while still providing sufficiently low latency from request to response. See the [Security Considerations](/vrf/v2-5/security) page to learn more.
 
 - **Multiple Random Outputs in a Single Request:** In VRF v2.5, you can request multiple random numbers (multi-word) in a single onchain transaction, which reduces gas costs. The fulfillment is also a single transaction, which reduces the latency of responses.
+
+For direct funding, the configurations for overhead gas have changed:
+
+- The amount of wrapper overhead gas is reduced compared to V2.
+- The amount of coordinator overhead gas used varies depending on the network used for your request, whether you're paying in LINK or native tokens, and how many random values you want in each VRF request. Refer to the [Billing](/vrf/v2-5/billing) page for more details and examples, and see the new configurations on the [Supported Networks](/vrf/v2-5/supported-networks) page.
 
 ### Updating your applications to use VRF v2.5
 
@@ -57,11 +57,17 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
      <a href="https://vrf.chain.link">Open the Subscription Manager</a>
    </div>
 
-1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+1. Add the following imports to your contract:
 
-1. Import the [`VRFCoordinatorV2Interface.sol` interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol). This interface includes the new `requestRandomWords` function.
+   - [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol). Remove the v1 `VRFConsumerBase.sol` import. `VRFConsumerBaseV2Plus` includes the `fulfillRandomWords` function. The `VRFConsumerBaseV2Plus` contract imports the `IVRFCoordinatorV2Plus` interface, which includes the `requestRandomWords` function.
+   - [`VRFV2PlusClient`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev//libraries/VRFV2PlusClient.sol) is a library used to format your VRF requests.
 
-1. Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/vrf/v2/subscription/examples/get-a-random-number) example.
+   ```solidity
+   import { VRFConsumerBaseV2Plus } from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+   import { VRFV2PlusClient } from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+   ```
+
+1. Add a `VRFConsumerBaseV2Plus` constructor, passing in the LINK token address for the network you're using. as shown in the [Get a Random Number](/vrf/v2-5/subscription/get-a-random-number) example.
 
 1. Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters. You must include a value for the new `extraArgs` key, which allows you to add extra arguments related to new VRF features. Use the `nativePayment` argument to enable or disable payment in native tokens.
 
