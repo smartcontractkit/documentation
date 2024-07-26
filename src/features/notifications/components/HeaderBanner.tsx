@@ -1,5 +1,8 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import headerbanner from "@chainlink/design-system/headerbanner.module.css"
+import headerbannerCustom from "./headerBanner.module.css"
+import { clsx } from "~/lib"
+import { CloseIcon } from "./CloseIcon"
 
 type BannerType = "info" | "success" | "warning" | "danger"
 export type BannerContent = {
@@ -9,33 +12,35 @@ export type BannerContent = {
   linkUrl?: string
 }
 
-const bannerTypes: Record<BannerType, { primaryColour: string; alertColour: string; alertText: string }> = {
+const bannerTypes: Record<BannerType, { primaryColour: string }> = {
   info: {
     primaryColour: "var(--blue-800)",
-    alertColour: "var(--blue-600)",
-    alertText: "NEW",
   },
   success: {
     primaryColour: "var(--green-600)",
-    alertColour: "var(--green-400)",
-    alertText: "NEW",
   },
   warning: {
     primaryColour: "var(--yellow-400)",
-    alertColour: "var(--yellow-300)",
-    alertText: "ALERT",
   },
   danger: {
     primaryColour: "var(--red-600)",
-    alertColour: "var(--red-400)",
-    alertText: "ALERT",
   },
 }
 
 export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bannerContent }) => {
-  if (!bannerContent) return null
+  const [isDismissed, setIsDismissed] = useState(true) // Change to false to show banner later to prevent flasing on page load for users who have already dismissed it
+  useEffect(() => {
+    const isDismissedLocalStorage = localStorage.getItem("headerBannerDismissed")
+    if (!isDismissedLocalStorage || isDismissedLocalStorage !== bannerContent?.description) {
+      setIsDismissed(false)
+    }
+  }, [isDismissed])
+  if (!bannerContent || isDismissed) return null
   return (
-    <div className={headerbanner.container} style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}>
+    <div
+      className={clsx(headerbanner.container, headerbannerCustom.container)}
+      style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}
+    >
       <p>
         {bannerContent.description}{" "}
         {bannerContent.linkUrl && (
@@ -44,6 +49,15 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
           </a>
         )}
       </p>
+      <button
+        className={headerbannerCustom.dismiss}
+        onClick={() => {
+          localStorage.setItem("headerBannerDismissed", bannerContent.description)
+          setIsDismissed(true)
+        }}
+      >
+        <CloseIcon />
+      </button>
     </div>
   ) as React.ReactElement // Explicitly assigning to ReactElement cause TS is confused otherwise
 }
