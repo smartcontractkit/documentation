@@ -1,9 +1,8 @@
 ---
 import { Sections } from "~/content/config"
-import { SIDEBAR, MENU, SectionContent } from "../../config"
+import { SIDEBAR, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 import ActiveIcon from "./ActiveIcon.astro"
-import DocsPicker from "../DocsSwitcher/DocsPicker"
 export type Props = {
   currentPage: string
   section?: Sections
@@ -56,7 +55,6 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
 
 <nav aria-labelledby="grid-left">
   <div class="nav-groups" data-sticky>
-    <DocsPicker client:load pathname={Astro.url.pathname} />
     <ul>
       {
         sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
