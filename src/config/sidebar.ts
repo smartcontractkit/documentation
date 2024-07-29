@@ -301,6 +301,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
             },
             {
+              title: "SDK Reference",
+              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
+            },
+            {
               title: "Onchain report data verification",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
