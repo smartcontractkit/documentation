@@ -44,7 +44,7 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
           <Item>
             <a
               className={clsx(styles.navLink, {
-                [styles.active]: isMegamenuOpen,
+                [styles.megaMenu]: isMegamenuOpen,
               })}
               onMouseEnter={showMegaMenu}
               role="button"
@@ -56,22 +56,22 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </a>
           </Item>
           <Item onMouseEnter={exitMegamenu}>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link" target="_blank">
+            <NavigationMenu.Link className={clsx(styles.navLink, styles.active)} href="/">
               Docs
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link" target="_blank">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/demos" target="_blank">
               Demos
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link" target="_blank">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/tools" target="_blank">
               Tools
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link" target="_blank">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/chainlog" target="_blank">
               ChainLog
             </NavigationMenu.Link>
           </Item>

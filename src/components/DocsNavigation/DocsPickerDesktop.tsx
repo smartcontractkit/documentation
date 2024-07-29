@@ -18,7 +18,8 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
       onMouseEnter={() => setProductMenuOpen(true)}
       onMouseLeave={() => setProductMenuOpen(false)}
     >
-      <img src={icon} alt="" className={styles.logo} /> {label}
+      <img src={icon} alt="" className={styles.logo} />
+      <span>{label}</span>
       <div className={styles.caret}>
         <span></span>
       </div>
@@ -28,7 +29,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
             {subProductsNav
               .filter((item) => !item.hideFromDropdown)
               .map((item) => (
-                <li className={styles.item} key={item.label}>
+                <li className={clsx(styles.item, { [styles.divider]: item.divider || false })} key={item.label}>
                   <a className={clsx(styles.link)} href={item.href}>
                     <img className={clsx(styles.icon)} src={item.icon}></img>
                     {item.label}

@@ -63,19 +63,25 @@ const desktopSubProductsNav = [
     icon: functionsLogo.src,
   },
   {
-    label: "Automation",
-    href: "/chainlink-automation",
-    icon: automationLogo.src,
-  },
-  {
     label: "VRF",
     href: "/vrf",
     icon: vrfLogo.src,
   },
   {
-    label: "Chainlink Nodes",
+    label: "Automation",
+    href: "/chainlink-automation",
+    icon: automationLogo.src,
+    divider: true,
+  },
+  {
+    label: "Nodes",
     href: "/chainlink-nodes",
     icon: nodesLogo.src,
+  },
+  {
+    label: "General",
+    href: "/resources",
+    icon: generalLogo.src,
   },
   {
     label: "Quickstarts",
@@ -118,19 +124,19 @@ const docsSections = [
         subProducts: getSubProducts(sidebar.chainlinkFunctions),
       },
       {
-        label: "Automation",
-        href: "/chainlink-automation",
-        icon: automationLogo.src,
-        subProducts: getSubProducts(sidebar.automation),
-      },
-      {
         label: "VRF",
         href: "/vrf",
         icon: vrfLogo.src,
         subProducts: getSubProducts(sidebar.vrf),
       },
       {
-        label: "Chainlink Nodes",
+        label: "Automation",
+        href: "/chainlink-automation",
+        icon: automationLogo.src,
+        subProducts: getSubProducts(sidebar.automation),
+      },
+      {
+        label: "Nodes",
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
         subProducts: getSubProducts(sidebar.nodeOperator),

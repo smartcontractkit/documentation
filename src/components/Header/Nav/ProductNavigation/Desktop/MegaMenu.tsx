@@ -63,7 +63,7 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/data-feeds/getting-started",
+            href: "/data-streams",
           },
           {
             label: "Learn",
