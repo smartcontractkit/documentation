@@ -767,6 +767,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/migration-from-v2",
         },
         {
+          title: "Migrating from V1",
+          url: "vrf/v2-5/migration-from-v1",
+        },
+        {
           title: "Supported Networks",
           url: "vrf/v2-5/supported-networks",
         },
