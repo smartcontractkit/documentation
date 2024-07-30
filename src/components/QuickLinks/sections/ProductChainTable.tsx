@@ -10,6 +10,12 @@ interface ProductData {
   chains: Record<string, string>
 }
 
+declare global {
+  interface Window {
+    dataLayer: any[]
+  }
+}
+
 const allChains = Array.from(
   new Set(
     Object.entries(productChainLinks)
@@ -24,6 +30,16 @@ const getProductChainLink = (productTitle: string, chainId: string) => {
 
 const getLINKTokenLink = (chainId: string) => {
   return productChainLinks.linkTokenContracts?.[chainId] || ""
+}
+
+const handleLinkClick = (productTitle: string, network: string, url: string) => {
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push({
+    event: "quick_link_clicked",
+    product: productTitle,
+    network: network,
+    url: url,
+  })
 }
 
 const ProductCard = ({ chainId }: { chainId: string }) => (
@@ -126,6 +142,9 @@ const ProductChainTable = () => (
                           className={styles.cellLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) =>
+                            handleLinkClick(productTitle, chainNames[chainId] || chainId, e.currentTarget.href)
+                          }
                         >
                           <div className={styles.supportedContainer}>
                             <img src={TickIcon.src} alt="Supported" className={styles.icon} />
@@ -143,6 +162,9 @@ const ProductChainTable = () => (
                     className={styles.cellLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) =>
+                      handleLinkClick("LINK Token Contracts", chainNames[chainId] || chainId, e.currentTarget.href)
+                    }
                   >
                     <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.linkTokenIcon} />
                     <img src={LinkIcon.src} alt="More info" className={styles.linkIcon} />
