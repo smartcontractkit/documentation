@@ -1,7 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "CCIP is now live for all developers.",
+  description:
+    "CCIP is now live for all develo now live for all develo now live for all develo now live for all develo now live for all develo now live for all develo now live for all develo now live for all develo now live for all develo now live for all developers.",
   type: "info",
   linkText: "See what's new.",
   linkUrl:
