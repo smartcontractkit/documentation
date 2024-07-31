@@ -249,7 +249,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
-              title: "Fetch and decode reports",
+              title: "Fetch and decode reports (REST API)",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
             },
             {
