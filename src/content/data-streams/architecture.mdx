@@ -17,9 +17,9 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 Chainlink Data Streams has the following core components:
 
-- **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Streams Aggregation Network rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a concensus about the median price of an asset, sign a report including that data, and deliver the report to the Data Streams Aggregation Network.
+- **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Streams Aggregation Network rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a consensus about the median price of an asset, sign a report including that data, and deliver the report to the Data Streams Aggregation Network.
 - **The Chainlink Data Streams Aggregation Network:** The Data Streams Aggregation Network stores the signed reports and makes them available for retrieval. The network uses an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) to ensure high availability and robust fault tolerance by operating multiple active sites in parallel. The network delivers these reports to Chainlink Automation upon request ([Streams Trade](/data-streams/architecture#streams-trade-architecture)) or provide direct access via the API ([Streams Direct](/data-streams/architecture#streams-direct-architecture)).
-- **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached concensus to the point where you use the data in your application.
+- **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached consensus to the point where you use the data in your application.
 
 ## Streams Trade Architecture
 
@@ -67,9 +67,11 @@ Streams Direct enables seamless offchain price updates through a mechanism desig
 
 1. The Client stores the price reports in a cache for quick access and use, which preserves data integrity over time.
 
-1. The Client regularly queries `/client/bulk` for any missed reports to ensure data completeness.
+1. The Client regularly queries the Data Streams Aggregation Network for any missed reports to ensure data completeness.
 
 1. If the Data Streams Aggregation Network identifies missed reports, it sends back an array of these reports. This mechanism allows the Client to update its cache and to keep the data set complete and up-to-date.
+
+[DIAGRAM TO BE UPDATED]
 
 <ClickToZoom
   src="/images/data-streams/streams-direct-offchain-price-updates-v3.webp"
