@@ -249,7 +249,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
-              title: "Fetch and decode reports (REST API)",
+              title: "Fetch and decode reports",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
             },
             {
@@ -272,7 +272,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
-          title: "Liquidity-Weighted Ask and Bid prices",
+          title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
       ],
