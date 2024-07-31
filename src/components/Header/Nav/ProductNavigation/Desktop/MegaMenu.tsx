@@ -17,7 +17,7 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/ccip/getting-started",
+            href: "/ccip",
           },
           {
             label: "Learn",
@@ -29,11 +29,11 @@ export const megaMenuSections = [
     bottomLinks: [
       {
         label: "View all resources",
-        href: "/cross-chain",
+        href: "https://dev.chain.link/resources",
       },
       {
         label: "Learn about Chainlink",
-        href: "#",
+        href: "https://dev.chain.link/products/general",
       },
     ],
   },
@@ -43,11 +43,11 @@ export const megaMenuSections = [
       {
         ...evmProducts.find((product) => product.title === "Data Feeds"),
         title: "Feeds",
-        docs: "/data-feeds/getting-started",
+        docs: "/data-feeds",
         links: [
           {
             label: "Docs",
-            href: "/data-feeds/getting-started",
+            href: "/data-feeds",
           },
           {
             label: "Learn",
@@ -59,7 +59,7 @@ export const megaMenuSections = [
       {
         ...evmProducts.find((product) => product.title === "Data Streams"),
         title: "Streams",
-        docs: "/data-feeds/getting-started",
+        docs: "/data-feeds",
         links: [
           {
             label: "Docs",
@@ -80,7 +80,7 @@ export const megaMenuSections = [
         links: [
           {
             label: "Learn",
-            href: "/data-feeds",
+            href: "https://dev.chain.link/products/data",
           },
         ],
       },
@@ -94,7 +94,7 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/chainlink-automation/getting-started",
+            href: "/chainlink-automation",
           },
           {
             label: "Learn",
@@ -107,7 +107,7 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/chainlink-functions/getting-started",
+            href: "/chainlink-functions",
           },
           {
             label: "Learn",
@@ -186,14 +186,16 @@ function MegaMenu({ cancel }: MegaMenuProps) {
         </div>
         <div className={styles.resourcesMenuContentFeatured}>
           <h2>Featured</h2>
-          <img src="/images/quick-start.png" alt="" className={styles.featuredImage} />
+          <img src="/images/megamenu-featured.png" alt="" className={styles.featuredImage} />
           <div className={styles.divider}></div>
 
-          <h3>Blockchain 101</h3>
+          <h3>Hardhat CLI for Data Streams</h3>
           <div className={styles.links}>
-            <a href="">Docs</a>
-            <span className={styles.verticalDivider}></span>
-            <a href="">SDK</a>
+            <a href="https://docs.chain.link/data-streams/getting-started-hardhat">Docs</a>
+          </div>
+          <h3>Try out Chainlink Automation</h3>
+          <div className={styles.links}>
+            <a href="https://docs.chain.link/chainlink-automation/overview/getting-started">Docs</a>
           </div>
         </div>
       </div>
