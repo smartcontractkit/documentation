@@ -17,6 +17,6 @@ type Props = {
 export const ProductNavigation = (props: Props) => (
   <>
     <Desktop {...props} />
-    <Mobile {...props} />
+    <Mobile />
   </>
 )

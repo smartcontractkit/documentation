@@ -11,51 +11,16 @@ import { BackArrowIcon } from "./BackArrowIcon"
 import { CaretRightIcon } from "./CaretRightIcon"
 import MegaMenu from "./MegaMenu"
 
-type Props = {
-  searchTrigger?: SearchTrigger
-  productsNav: ProductsNav
-  path: string
-}
-
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav, path, searchTrigger }: Props) {
+export function ProductNavigation() {
   const [open, setOpen] = React.useState(false)
   const [showSearch, setShowSearch] = React.useState(false)
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
-
-  useEffect(() => {
-    const foundSubProduct = productsNav.categories.find((category) =>
-      category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
-    )
-
-    if (foundSubProduct) {
-      const subProduct = foundSubProduct.items.find((item) => item.subProducts && isMatchedPath(path, item.href))
-
-      if (subProduct?.subProducts && Array.isArray(subProduct.subProducts)) {
-        const items = subProduct.subProducts.map((subProductItem) => ({
-          label: subProductItem.label,
-          href: "#",
-          pages: subProductItem.items.map((page) => ({
-            label: page.label,
-            href: page.href,
-            children: page.children || [],
-          })),
-        }))
-
-        const safeSubProducts: SubProducts = {
-          label: subProduct.label,
-          items,
-        }
-
-        setProductsSlidePosition("submenu")
-      }
-    }
-  }, [path, productsNav])
 
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
