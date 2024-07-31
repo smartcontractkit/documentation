@@ -177,6 +177,6 @@ const desktopProductsNav = {
 
 const docsProps = { productsNav: desktopProductsNav, subProductsNav: desktopSubProductsNav }
 
-export const getNavigationProps = (path: string) => {
+export const getNavigationProps = () => {
   return docsProps
 }

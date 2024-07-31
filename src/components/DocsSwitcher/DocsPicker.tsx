@@ -6,7 +6,7 @@ import { clsx } from "../Header/Nav/utils"
 
 function DocsPicker({ pathname }: { pathname: string }) {
   const [productMenuOpen, setProductMenuOpen] = useState(false)
-  const { subProductsNav } = getNavigationProps("/data-feeds")
+  const { subProductsNav } = getNavigationProps()
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
 
   const label = subProductTrigger?.label || "Resources"

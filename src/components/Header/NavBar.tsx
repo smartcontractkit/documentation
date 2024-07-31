@@ -66,7 +66,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
   return (
     <span ref={navRef}>
       <Nav
-        {...getNavigationProps(path)}
+        {...getNavigationProps()}
         path={path}
         searchTrigger={showSearch ? <Search /> : undefined}
         onHideChange={onHideChange}

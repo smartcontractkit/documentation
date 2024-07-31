@@ -1,8 +1,8 @@
 import { clsx } from "~/lib"
-import { useNavBar } from "../Header/useNavBar/useNavBar"
+import { useNavBar } from "../../Header/useNavBar/useNavBar"
 import DocsPickerDesktop from "./DocsPickerDesktop"
 import styles from "./docsNavigationDesktop.module.css"
-import QuickLinksModal from "../Header/Nav/QuickLinksModal"
+import QuickLinksModal from "../../Header/Nav/QuickLinksModal"
 import { useState } from "react"
 
 function DocsNavigationDesktop({ pathname }: { pathname: string }) {
