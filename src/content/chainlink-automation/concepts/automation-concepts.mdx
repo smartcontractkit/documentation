@@ -29,3 +29,21 @@ These are the jobs or tasks that you execute onchain. For example, you can call 
 ## Automation nodes
 
 Automation Nodes in the Chainlink Automation Network provide service to upkeeps that are funded and registered in the Automation registry. Automation Nodes use the same Node Operators as Chainlink Data Feeds.
+
+### Maximum logs processed for log trigger upkeeps
+
+Chainlink Automation nodes look back over a limited range of the latest blocks on any particular chain. During this process, the nodes process a limited number of logs per block per upkeep, using a minimum dequeue method to ensure that the latest logs are processed first. After this, the nodes may process additional remaining logs on a best effort basis, but this is not guaranteed. If you need all the remaining logs to be processed, configure a manual trigger as backup.
+
+Expect the following numbers of logs to be processed:
+
+| Chain     | Logs per block                             |
+| --------- | ------------------------------------------ |
+| Ethereum  | 20                                         |
+| BSC(BNB)  | 5                                          |
+| Polygon   | 5                                          |
+| Avalanche | 5                                          |
+| Fantom    | 1                                          |
+| Gnosis    | 1                                          |
+| Optimism  | 5                                          |
+| BASE      | 5                                          |
+| Arbitrum  | 1 log every 2 blocks, or 2 logs per second |
