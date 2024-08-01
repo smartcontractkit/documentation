@@ -767,6 +767,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/migration-from-v2",
         },
         {
+          title: "Migrating from V1",
+          url: "vrf/v2-5/migration-from-v1",
+        },
+        {
           title: "Supported Networks",
           url: "vrf/v2-5/supported-networks",
         },
@@ -1398,6 +1402,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "VRF V2 Subscription Method [Legacy]",
       contents: [
         {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
           title: "Introduction",
           url: "vrf/v2/subscription",
         },
@@ -1425,15 +1433,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "V2 Billing",
           url: "vrf/v2/estimating-costs",
         },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/subscription/migration-from-v1",
-        },
       ],
     },
     {
       section: "VRF V2 Direct Funding Method [Legacy]",
       contents: [
+        {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
         {
           title: "Introduction",
           url: "vrf/v2/direct-funding",
@@ -1453,10 +1461,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "V2 Billing",
           url: "vrf/v2/estimating-costs",
-        },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/direct-funding/migration-from-v1",
         },
       ],
     },
