@@ -1,0 +1,73 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIP local simulator"
+isIndex: false
+---
+
+To use Chainlink Local in a localhost environment in any smart contract development framework, user must import the CCIPLocalSimulator.sol singleton contract from the @chainlink/local package. Then deploy it on your local development network, and after that the simulator is ready for usage.
+
+Foundry:
+Copy
+pragma solidity ^0.8.19;
+
+import { CCIPLocalSimulator } from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol"
+
+contract Demo is Test {
+CCIPLocalSimulator public ccipLocalSimulator;
+
+    function setUp() public {
+        ccipLocalSimulator = new CCIPLocalSimulator();
+
+        (
+            uint64 chainSelector,
+            IRouterClient sourceRouter,
+            IRouterClient destinationRouter,
+            WETH9 wrappedNative,
+            LinkToken linkToken,
+            BurnMintERC677Helper ccipBnM,
+            BurnMintERC677Helper ccipLnM
+        ) = ccipLocalSimulator.configuration();
+
+    }
+
+}
+Hardhat:
+Create CCIPLocalSimulator.sol file inside the contracts folder and paste the following code:
+
+Copy
+pragma solidity ^0.8.19;
+
+import {CCIPLocalSimulator} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
+And then use it inside your JavaScript/TypeScript tests and scripts:
+
+Copy
+async function deploy() {
+const localSimulatorFactory = await ethers.getContractFactory("CCIPLocalSimulator");
+const localSimulator = await localSimulatorFactory.deploy();
+
+const config: {
+chainSelector*: bigint;
+sourceRouter*: string;
+destinationRouter*: string;
+wrappedNative*: string;
+linkToken*: string;
+ccipBnM*: string;
+ccipLnM\_: string;
+} = await localSimulator.configuration();
+
+return { localSimulator };
+}t
+Remix IDE:
+Create CCIPLocalSimulator.sol and paste the following code:
+
+Copy
+pragma solidity ^0.8.19;
+
+import {CCIPLocalSimulator} from  "https://github.com/smartcontractkit/chainlink-local/blob/main/src/ccip/CCIPLocalSimulator.sol";
+Compile it and deploy it to RemixVM. If deployment fails, go back to the "Solidity compiler" tab, toggle the "Advanced Configurations" and under "Compiler configuration" check the "Enable optimization" check box. Then compile it and try deploying it again.
+
+Calling the configuration() function
+After that deploy your smart contracts using addresses provided by the configuration() function (Router, LinkToken, etc.) and start interacting and testing your smart contracts.
+
+If you encounter the NotEnoughGasForCall custom error provided by the Router smart contract, scroll up to the "Gas Limit" section, select the "Custom" radio button and try again.
