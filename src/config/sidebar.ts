@@ -245,11 +245,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Streams Direct",
+          title: "Streams Direct SDK",
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
-              title: "Fetch and decode reports (REST API)",
+              title: "Fetch and decode reports",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
             },
             {
@@ -272,7 +272,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
-          title: "Liquidity-Weighted Ask and Bid prices",
+          title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
       ],
@@ -299,6 +299,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "WebSocket",
               url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
+            },
+            {
+              title: "SDK Reference",
+              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
             },
             {
               title: "Onchain report data verification",
