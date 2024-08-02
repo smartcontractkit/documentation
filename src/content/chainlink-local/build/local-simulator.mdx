@@ -5,9 +5,11 @@ title: "CCIP local simulator"
 isIndex: false
 ---
 
+import { ClickToZoom } from "@components"
 import { TabsContent } from "@components/Tabs"
 
-This guide explains how to use Chainlink Local to run CCIP in a localhost environment in any smart contract development framework.
+You can use Chainlink Local to run CCIP in a localhost environment in any smart contract development framework. This guide explains how to set up
+_local simulator mode_ to test CCIP locally in Foundry, Hardhat and Remix IDE.
 
 To set up local simulator mode:
 
@@ -23,7 +25,7 @@ After deployment, the simulator is ready to use.
 <Fragment slot="tab.1">Foundry</Fragment>
 <Fragment slot="tab.2">Hardhat</Fragment>
 <Fragment slot="panel.1">
-```
+```solidity
 pragma solidity ^0.8.19;
 
 import { CCIPLocalSimulator } from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol"
@@ -51,32 +53,31 @@ CCIPLocalSimulator public ccipLocalSimulator;
 ````
 </Fragment>
 <Fragment slot="panel.2">
-Create CCIPLocalSimulator.sol file inside the contracts folder and paste the following code:
-```solidity
-pragma solidity ^0.8.19;
+1. Create `CCIPLocalSimulator.sol` file inside the `contracts` folder and paste the following code:
+    ```solidity
+    pragma solidity ^0.8.19;
 
-import {CCIPLocalSimulator} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
-And then use it inside your JavaScript/TypeScript tests and scripts:
+    import {CCIPLocalSimulator} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
+    ```
+1. Use the local simulator package inside your JavaScript/TypeScript tests and scripts:
+    ```js
+    async function deploy() {
+    const localSimulatorFactory = await ethers.getContractFactory("CCIPLocalSimulator");
+    const localSimulator = await localSimulatorFactory.deploy();
 
-Copy
-async function deploy() {
-const localSimulatorFactory = await ethers.getContractFactory("CCIPLocalSimulator");
-const localSimulator = await localSimulatorFactory.deploy();
+    const config: {
+    chainSelector*: bigint;
+    sourceRouter*: string;
+    destinationRouter*: string;
+    wrappedNative*: string;
+    linkToken*: string;
+    ccipBnM*: string;
+    ccipLnM\_: string;
+    } = await localSimulator.configuration();
 
-const config: {
-chainSelector*: bigint;
-sourceRouter*: string;
-destinationRouter*: string;
-wrappedNative*: string;
-linkToken*: string;
-ccipBnM*: string;
-ccipLnM\_: string;
-} = await localSimulator.configuration();
-
-return { localSimulator };
-}
-````
-
+    return { localSimulator };
+    }
+    ```
 </Fragment>
 </TabsContent>
 
@@ -88,14 +89,21 @@ return { localSimulator };
    pragma solidity ^0.8.19;
 
    import { CCIPLocalSimulator } from "https://github.com/smartcontractkit/chainlink-local/blob/main/src/ccip/CCIPLocalSimulator.sol";
-   ```
+````
 
 1. Compile it and deploy it to Remix VM.
 
    If deployment fails, go back to the **Solidity Compile** tab, expand the **Advanced Configuration** menu, and under
    _Compiler configuration_, check the _Enable optimization_ check box. Compile it and try deploying it again.
 
-1. Deploy your smart contracts using addresses provided by the `configuration()` function (Router, LinkToken, etc.). After you deploy your smart contracts, thesimulator is set up and ready for you to start testing your smart contracts.
+1. Call the `configuration()` function to display all the addresses you need to deploy your smart contracts, such as the Router and LinkToken addresses:
+
+   <ClickToZoom src="/images/chainlink-local/ccip-local-sim-rm-1.png" alt="Calling the configuration function" />
+
+1. Deploy your smart contracts using the addresses shown by the `configuration()` function. After you deploy your smart contracts, the
+   simulator is set up and ready for you to start testing your smart contracts.
 
    If you encounter the `NotEnoughGasForCall` custom error provided by the Router smart contract, scroll up to the **Gas Limit** section,
    select the **Custom** radio button and try again.
+
+   <ClickToZoom src="/images/chainlink-local/ccip-local-sim-rm-2.png" alt="Setting a custom gas limit" />
