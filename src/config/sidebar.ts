@@ -1,5 +1,10 @@
 import { Sections } from "../content/config"
-export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
+export type SectionContent = {
+  title: string
+  url: string
+  highlightAsCurrent?: string[]
+  children?: { title: string; url: string }[]
+}
 type SectionEntry = {
   section: string
   contents: SectionContent[]
@@ -216,6 +221,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Getting Started",
           url: "data-streams/getting-started",
+          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
           title: "Data Streams Feed IDs",
