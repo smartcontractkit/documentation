@@ -2,15 +2,6 @@
 import { useState } from "preact/hooks"
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
-declare global {
-  interface Window {
-    dataLayer: Array<{
-      event: string
-      feedback_message?: string
-    }>
-  }
-}
-
 export const Feedback = () => {
   const [feedbackType, setFeedbackType] = useState("")
   const [feedbackGiven, setFeedbackGiven] = useState(false)
