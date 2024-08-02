@@ -1,0 +1,37 @@
+import { CodeSample, CopyText, ClickToZoom } from "@components"
+import ChainlinkLocal from "@features/chainlink-local/common/ChainlinkLocal.astro"
+
+CCIPLocalSimulatorFork.sol - usage with Foundry
+Note: the RPC URLs here must point to archive nodes.
+
+Foundry Fork-Testing Guide
+
+Note also that in Foundry, scripts are generally written in Solidity, which may be different from what you've come to expect after using tools like Hardhat.
+
+Copy
+pragma solidity ^0.8.19;
+
+import { CCIPLocalSimulatorFork } from "@chainlink/local/src/ccip/CCIPLocalSimulatorFork.sol"
+
+contract Demo is Test {
+CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
+
+    uint256 sepoliaFork;
+    uint256 arbSepoliaFork;
+
+    function setUp() public {
+        string memory ETHEREUM_SEPOLIA_RPC_URL = vm.envString("ETHEREUM_SEPOLIA_RPC_URL");
+        string memory ARBITRUM_SEPOLIA_RPC_URL = vm.envString("ARBITRUM_SEPOLIA_RPC_URL");
+        sepoliaFork = vm.createSelectFork(ETHEREUM_SEPOLIA_RPC_URL);
+        arbSepoliaFork = vm.createFork(ARBITRUM_SEPOLIA_RPC_URL);
+
+        ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+        vm.makePersistent(address(ccipLocalSimulatorFork));
+    }
+
+    function testDemo() public {
+        sender.transferTokensPayLINK(arbSepoliaChainSelector, alice, address(ccipBnM), amountToSend);
+        ccipLocalSimulatorFork.switchChainAndRouteMessage(arbSepoliaFork);
+    }
+
+}

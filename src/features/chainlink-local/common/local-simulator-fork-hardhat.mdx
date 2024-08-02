@@ -1,0 +1,59 @@
+import { CodeSample, CopyText, ClickToZoom } from "@components"
+import ChainlinkLocal from "@features/chainlink-local/common/ChainlinkLocal.astro"
+
+CCIPLocalSimulatorFork.js - usage with Hardhat
+To use it, you must run a local Hardhat node in one terminal, by running the npx hardhat node command. And then in the second terminal window run your tests or scripts using the --network localhost flag.
+
+Copy
+import {
+getEvm2EvmMessage,
+requestLinkFromTheFaucet,
+routeMessage
+} from "@chainlink/local/scripts/CCIPLocalSimulatorFork";
+
+// 1st Terminal: npx hardhat node
+// 2nd Terminal: npx hardhat run ./scripts/myScript.ts --network localhost
+
+async function main() {
+const ETHEREUM_SEPOLIA_RPC_URL = process.env.ETHEREUM_SEPOLIA_RPC_URL; // Archive node
+const ARBITRUM_SEPOLIA_RPC_URL = process.env.ARBITRUM_SEPOLIA_RPC_URL; // Archive node
+
+await network.provider.request({
+method: "hardhat_reset",
+params: [
+{
+forking: {
+jsonRpcUrl: ETHEREUM_SEPOLIA_RPC_URL,
+blockNumber: 5663645,
+},
+},
+],
+});
+
+const linkAmountForFees = 5000000000000000000n; // 5 LINK
+await requestLinkFromTheFaucet(linkTokenAddressSepolia, await CCIPSender_Unsafe.getAddress(), linkAmountForFees);
+
+const tx = await CCIPSender_Unsafe.send(CCIPReceiver_Unsafe.target, textToSend, arbSepoliaChainSelector, ccipBnMTokenAddressSepolia, amountToSend);
+const receipt = await tx.wait();
+if (!receipt) return;
+const evm2EvmMessage = getEvm2EvmMessage(receipt);
+
+console.log("-------------------------------------------");
+
+await network.provider.request({
+method: "hardhat_reset",
+params: [
+{
+forking: {
+jsonRpcUrl: ARBITRUM_SEPOLIA_RPC_URL,
+blockNumber: 33079804,
+},
+},
+],
+});
+
+// We must redeploy it because of the network reset but it will be deployed to the same address because of the CREATE opcode: address = keccak256(rlp([sender_address,sender_nonce]))[12:]
+CCIPReceiver_Unsafe = await CCIPReceiver_UnsafeFactory.deploy(ccipRouterAddressArbSepolia);
+
+if (!evm2EvmMessage) return;
+await routeMessage(ccipRouterAddressArbSepolia, evm2EvmMessage);
