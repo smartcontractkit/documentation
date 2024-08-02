@@ -14,6 +14,6 @@ type Props = {
 export const ProductNavigation = (props: Props) => (
   <>
     <Desktop {...props} />
-    <Mobile searchTrigger={props.searchTrigger} productsNav={props.productsNav} />
+    <Mobile {...props} />
   </>
 )

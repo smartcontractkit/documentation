@@ -3,12 +3,53 @@ section: vrf
 date: Last Modified
 title: "Chainlink VRF Release Notes"
 isMdx: true
-whatsnext:
-  {
-    "Get a Random Number (Direct funding)": "/vrf/v2/direct-funding/examples/get-a-random-number",
-    "Get a Random Number (Subscription)": "/vrf/v2/subscription/examples/get-a-random-number",
-  }
+whatsnext: { "Migrate to VRF V2.5": "/vrf/v2-5/migration-from-v2" }
 ---
+
+## 2024-07-15 - Deprecation announcement
+
+VRF V2 and V1 will be deprecated on November 29, 2024. Please [migrate to VRF V2.5](/vrf/v2-5/migration-from-v2) before then.
+
+The docs for VRF V2 are still available and have been moved to the legacy section:
+
+- [VRF V2 Subscription method](/vrf/v2/subscription)
+- [VRF V2 Direct funding method](/vrf/v2/direct-funding)
+
+## 2024-05-24 - Updated VRF V2.5 contracts
+
+The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) package version 1.1.1 is now available. It includes the updated wrapper and interface contracts for VRF 2.5 direct funding, which had not been included in the `@chainlink/contracts` package version 1.1.0. The `DirectFundingConsumer.sol` example contract has been updated to reflect this.
+
+The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) also includes an updated function signature for `fulfillRandomWords` in the `VRFConsumerBaseV2Plus` contract, which applies only to subscription users. This function signature has **not** changed in the `VRFV2PlusWrapperConsumerBase`, so this does not affect direct funding users.
+
+When using package version 1.1.1 and later, update your `fulfillRandomWords` function signature to match the `VRFConsumerBaseV2Plus` contract, which has changed to:
+
+```
+function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+```
+
+In the `@chainlink/contracts` package version 1.1.0 and earlier, the `randomWords` parameter has a `memory` storage location.
+
+## 2024-04-29 - VRF V2.5 released on Ethereum, BNB Chain, Polygon, Avalanche and Arbitrum
+
+VRF V2.5 is available on Ethereum, BNB Chain, Polygon, Avalanche and Arbitrum mainnets and testnets.
+
+The new version of Chainlink VRF implements the following changes:
+
+- Support for native gas token billing
+- Easy 1-click migration to future new versions
+- New [billing model](/vrf/v2-5/billing), where the premium is a percentage of the gas costs of the VRF callback instead of a flat fee
+- Gas optimizations
+
+Learn how to [migrate to VRF V2.5](/vrf/v2-5/migration-from-v2).
+
+## 2024-04-13 - Polygon testnet support changed
+
+The Mumbai network has stopped producing blocks, so example code will not function on this network. Check again soon
+for updates about future testnet support on Polygon.
+
+## 2024-03-29 - Fantom support changed
+
+Creating new Fantom subscriptions in the [VRF Subscription Manager](https://vrf.chain.link/) is no longer supported. Existing Fantom subscriptions are still supported.
 
 ## 2023-11-17 - Arbitrum testnet changed
 

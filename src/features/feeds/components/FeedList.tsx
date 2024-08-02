@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsVerifierProxyTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
@@ -10,7 +10,7 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
-export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
+export type DataFeedType = "default" | "por" | "rates" | "streams"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -37,7 +37,14 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
-  const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
+  const dataFeedCategory = [
+    { key: "low", name: "Low Market Risk" },
+    { key: "medium", name: "Medium Market Risk" },
+    { key: "high", name: "High Market Risk" },
+    { key: "custom", name: "Custom" },
+    { key: "new", name: "New Token" },
+    { key: "deprecating", name: "Deprecating" },
+  ]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
@@ -92,10 +99,83 @@ export const FeedList = ({
   useOutsideAlerter(wrapperRef)
   const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
-  const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
+
+  if (dataFeedType === "streams") {
+    const mainnetFeeds: ChainNetwork[] = []
+    const testnetFeeds: ChainNetwork[] = []
+
+    chainMetadata.processedData?.networks.forEach((network) => {
+      if (network.name.includes("Arbitrum")) {
+        if (network.networkType === "mainnet") {
+          mainnetFeeds.push(network)
+        } else if (network.networkType === "testnet") {
+          testnetFeeds.push(network)
+        }
+      }
+    })
+
+    return (
+      <>
+        <SectionWrapper title="Verifier Proxy Addresses" depth={2}>
+          <StreamsVerifierProxyTable />
+        </SectionWrapper>
+
+        <SectionWrapper title="Mainnet Data Streams Feeds" depth={2}>
+          <div className={feedList.tableFilters}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="search"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                onInput={(event) => {
+                  setSearchValue((event.target as HTMLInputElement).value)
+                  setCurrentPage("1")
+                }}
+              />
+            </form>
+          </div>
+          {mainnetFeeds.length ? (
+            mainnetFeeds.map((network) => (
+              <MainnetTable
+                selectedFeedCategories={
+                  Array.isArray(selectedFeedCategories)
+                    ? selectedFeedCategories
+                    : selectedFeedCategories
+                    ? [selectedFeedCategories]
+                    : []
+                }
+                network={network}
+                showExtraDetails={showExtraDetails}
+                dataFeedType={dataFeedType}
+                ecosystem={ecosystem}
+                lastAddr={lastAddr}
+                firstAddr={firstAddr}
+                addrPerPage={addrPerPage}
+                currentPage={Number(currentPage)}
+                paginate={paginate}
+                searchValue={typeof searchValue === "string" ? searchValue : ""}
+              />
+            ))
+          ) : (
+            <p>No Mainnet feeds available.</p>
+          )}
+        </SectionWrapper>
+
+        <SectionWrapper title="Testnet Data Streams Feeds" depth={2}>
+          {testnetFeeds.length ? (
+            testnetFeeds.map((network) => (
+              <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+            ))
+          ) : (
+            <p>No Testnet feeds available.</p>
+          )}
+        </SectionWrapper>
+      </>
+    )
+  }
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
@@ -107,8 +187,6 @@ export const FeedList = ({
                 if (isStreams) return chain.tags?.includes("streams")
 
                 if (isPor) return chain.tags?.includes("proofOfReserve")
-
-                if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
 
                 if (isRates) return chain.tags?.includes("rates")
 
@@ -160,8 +238,6 @@ export const FeedList = ({
 
           if (isPor) return network.tags?.includes("proofOfReserve")
 
-          if (isNftFloor) return network.tags?.includes("nftFloorPrice")
-
           if (isRates) return network.tags?.includes("rates")
 
           return true
@@ -189,14 +265,14 @@ export const FeedList = ({
                           <ul>
                             {dataFeedCategory.map((category) => (
                               <li>
-                                <button onClick={() => handleCategorySelection(category)}>
+                                <button onClick={() => handleCategorySelection(category.key)}>
                                   <input
                                     type="checkbox"
-                                    checked={selectedFeedCategories?.includes(category)}
+                                    checked={selectedFeedCategories?.includes(category.key)}
                                     readonly
                                     style="cursor:pointer;"
                                   />
-                                  <span> {category}</span>
+                                  <span> {category.name}</span>
                                 </button>
                               </li>
                             ))}

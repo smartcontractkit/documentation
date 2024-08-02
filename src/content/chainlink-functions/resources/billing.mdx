@@ -5,6 +5,7 @@ title: "Chainlink Functions Billing"
 ---
 
 import { Aside } from "@components"
+import { TabsContent } from "@components/Tabs"
 
 ## Request costs
 
@@ -26,10 +27,10 @@ Gas cost calculation includes the following variables:
 - Callback gas limit: The maximum amount of gas that can be used to call the `handleOracleFulfillment` callback function of the consumer contract in order to provide the response. See the [Cost Simulation](#cost-simulation-reservation) section.
 - Gas overhead: The amount of gas used by the FunctionsRouter and FunctionsCoordinator contracts. It is an estimate of the total gas cost of fulfilling a request.
 - Native to LINK translation: Your subscription balance can be billed only in LINK tokens.
-  - Translate the network's native gas tokens to LINK: The total gas cost in _native_ units is translated using the correct [Price Feed](/data-feeds/price-feeds/addresses). For example, on Sepolia, the translation uses the ETH/LINK Price Feed, and on Polygon Mumbai, the translation uses the MATIC/LINK Price Feed.
+  - Translate the network's native gas tokens to LINK: The total gas cost in _native_ units is translated using the correct [Price Feed](/data-feeds/price-feeds/addresses). For example, on Sepolia, the translation uses the ETH/LINK Price Feed, and on Polygon, the translation uses the MATIC/LINK Price Feed.
   - Fallback Wei to LINK ratio: In the unlikely event that the _Native to LINK_ price data feed is unavailable, the fallback translation is used. You can find this ratio by running the `getConfig` function in the FunctionsCoordinator contract. See the [Supported Networks](/chainlink-functions/supported-networks) page to find the contract addresses for each network.
 
-### Cost Simulation (Reservation)
+### Cost simulation (reservation)
 
 During the **request** step:
 
@@ -41,9 +42,11 @@ During the **request** step:
    total estimated cost in LINK = total estimated gas cost + premium fees
    ```
 
+   All networks have USD-denominated premium fees. This means that the fixed premium fee is denominated in USD, but no USD is ever used. The LINK equivalent of this fee is calculated at request time.
+
 1. The total estimated cost is then added to the subscription reservation.
 
-### Cost Calculation (Fulfillment)
+### Cost calculation (fulfillment)
 
 When a DON's oracle reports the response, subscription accounts are charged based on the gas amount used in the callback:
 
@@ -55,20 +58,24 @@ When a DON's oracle reports the response, subscription accounts are charged base
    total cost in LINK = total gas cost + premium fees
    ```
 
+   All networks have USD-denominated premium fees. This means that the fixed premium fee is denominated in USD, but no USD is ever used. The LINK equivalent of this fee is calculated at request time.
+
 1. The FunctionsRouter contract performs several accounting movements.
 
 ### Cost calculation example
 
 This is an example of cost estimation for a request and then cost calculation at fulfillment.
 
+For networks with USD-denominated premium fees, the premium fees are set in USD, but no USD is ever used. The LINK equivalent of the fee is calculated at request time, and then deducted from your subscription in LINK at response time.
+
 #### Cost Simulation (Reservation)
 
-| Parameter               | Value    |
-| ----------------------- | -------- |
-| Overestimated gas price | 9 gwei   |
-| Callback gas limit      | 300000   |
-| Gas overhead            | 185000   |
-| Premium fee             | 0.2 LINK |
+| Parameter               | Value         |
+| ----------------------- | ------------- |
+| Overestimated gas price | 9 gwei        |
+| Callback gas limit      | 300000        |
+| Gas overhead            | 185000        |
+| Premium fee             | 320 cents USD |
 
 1. Calculate the total estimated gas cost in LINK, using an overestimated gas price, the gas overhead, and the full callback gas limit:
 
@@ -84,23 +91,30 @@ This is an example of cost estimation for a request and then cost calculation at
    | ----------------------------- | --------------------- |
    | 0.004365 ETH / 0.007 ETH/LINK | 0.62 LINK             |
 
-1. Add the premium fee to get the estimated cost for a subscription reservation:
+1. Convert the USD-denominated premium fee to LINK using the [LINK/USD feed](https://data.chain.link/feeds/ethereum/mainnet/link-usd).
+   For this example, assume the feed returns a conversion value of $20.00 USD per 1 LINK:
 
-   | Adding LINK premium                 | Maximum request cost (LINK) |
+   | USD to LINK cost conversion | Premium fee (LINK) |
+   | --------------------------- | ------------------ |
+   | $3.20 USD / 20.00 USD/LINK  | 0.16 LINK          |
+
+1. Add the converted premium fee to get the estimated cost for a subscription reservation:
+
+   | Adding converted LINK premium       | Maximum request cost (LINK) |
    | ----------------------------------- | --------------------------- |
    | Total gas cost (LINK) + Premium fee |                             |
-   | 0.62 LINK + 0.2 LINK                | 0.82 LINK                   |
+   | 0.62 LINK + 0.16 LINK               | 0.78 LINK                   |
 
-For this example request, 0.82 LINK is reserved from your subscription balance, but not yet deducted. When the request is fulfilled, the exact request cost is deducted. The estimated cost of a request is overestimated to allow for 99% of gas price fluctuation increases in between request and response time.
+For this example request, 0.78 LINK is reserved from your subscription balance, but not yet deducted. When the request is fulfilled, the exact request cost is deducted. The estimated cost of a request is overestimated to allow for 99% of gas price fluctuation increases in between request and response time.
 
-#### Cost Calculation (Fulfillment)
+#### Cost calculation (fulfillment)
 
-| Parameter    | Value    |
-| ------------ | -------- |
-| Gas price    | 1.5 gwei |
-| Callback gas | 200000   |
-| Gas overhead | 185000   |
-| Premium fee  | 0.2 LINK |
+| Parameter                     | Value     |
+| ----------------------------- | --------- |
+| Gas price                     | 1.5 gwei  |
+| Callback gas                  | 200000    |
+| Gas overhead                  | 185000    |
+| Premium fee converted to LINK | 0.16 LINK |
 
 1. Calculate the total gas cost:
 
@@ -116,14 +130,14 @@ For this example request, 0.82 LINK is reserved from your subscription balance, 
    | ------------------------------ | --------------------- |
    | 0.0005775 ETH / 0.007 ETH/LINK | 0.0825 LINK           |
 
-1. Add the premium fee to get the total cost of a request:
+1. The premium fee was converted from USD to LINK at the time of the request. Add this converted premium fee to get the total cost of a request:
 
    | Adding premium fee                  | Total request cost (LINK) |
    | ----------------------------------- | ------------------------- |
    | Total gas cost (LINK) + premium fee |                           |
-   | 0.0825 LINK + 0.2 LINK              | 0.2825 LINK               |
+   | 0.0825 LINK + 0.16 LINK             | 0.2425 LINK               |
 
-This example request would cost 0.2825 LINK when it is fulfilled. The subscription reservation for the 0.82 LINK is released, and the actual cost of 0.2825 LINK is deducted from your subscription balance.
+This example request would cost 0.2425 LINK when it is fulfilled. The subscription reservation for the 0.78 LINK is released, and the actual cost of 0.2425 LINK is deducted from your subscription balance.
 
 ## Minimum balance for uploading encrypted secrets
 

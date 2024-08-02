@@ -1,7 +1,6 @@
 import { Chain } from "../chains"
 
 interface Docs {
-  nftFloorUnits: any
   assetName?: string
   feedCategory?: string
   feedType?: string
