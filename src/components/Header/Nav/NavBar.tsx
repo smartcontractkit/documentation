@@ -27,8 +27,6 @@ export type NavBarProps = {
 
 export const navBarHeight = 64
 
-const SearchButton = <Search variant="default" />
-
 export const NavBar = ({
   path,
   searchTrigger,
@@ -42,6 +40,7 @@ export const NavBar = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
+  const isInnerPage = path !== "/"
 
   const scrollDirection = useScrollDirection()
   const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
@@ -95,7 +94,9 @@ export const NavBar = ({
   return (
     <>
       <header className={styles.header} ref={navRef}>
-        <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
+        <div
+          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
+        >
           <div className={styles.container}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
