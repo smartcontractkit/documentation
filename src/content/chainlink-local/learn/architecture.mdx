@@ -5,8 +5,9 @@ title: "Architecture"
 isIndex: false
 ---
 
-Chainlink Local is a simulator for developers to be able to use Chainlink CCIP locally in Hardhat and Foundry. It is a set of smart contracts and scripts
-that aims to enable you to build, deploy and execute CCIP token transfers and arbitrary messages on a local Hardhat or Anvil (Foundry) node, both with and without forking.
+Chainlink Local is a simulator that allows you to use Chainlink CCIP locally in Hardhat and Foundry. It is a set of smart contracts and scripts
+that aims to enable you to build, deploy and execute CCIP token transfers and arbitrary messages on a local Hardhat or Anvil (Foundry) node, both
+with and without forking.
 
 User Contracts tested with Chainlink Local can be deployed to test networks without any modifications.
 
@@ -15,13 +16,14 @@ The simulator supports two modes:
 - **Local Simulator Mode**: working with mock contracts on a locally running development blockchain node running on localhost
 - **Local Forked Mode**: working with deployed Chainlink CCIP contracts using multiple forked networks
 
-When working in local simulator mode, the simulator pre-deploys a set of smart contracts to a blank Hardhat/Anvil network EVM state and exposes their details via a call to the
-[`configuration()` function](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#configuration). The simulator exposes two Router contracts named
-`sourceRouter` and `destinationRouter` to stay consistent with the mental model of routing cross-chain messages through two different Routers when using CCIP in production. However, in Chainlink Local,
-both are actually the same contract running on the local development blockchain node.
+When working in local simulator mode, the simulator pre-deploys a set of smart contracts to a blank Hardhat/Anvil network EVM state and exposes their details
+with a call to the [`configuration()` function](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#configuration). The simulator exposes two Router
+contracts named `sourceRouter` and `destinationRouter` to stay consistent with the mental model of routing cross-chain messages through two different Routers
+when using CCIP in production. However, in Chainlink Local, both are actually the same contract running on the local development blockchain node.
 
-When working in local forked mode, Chainlink Local creates multiple locally running blockchain networks.
-You need an archive node that has historical network state in the pinned block from which you have forked for local development - see [here](https://hardhat.org/hardhat-network/docs/guides/forking-other-networks)
+When working in local forked mode, Chainlink Local creates multiple locally running blockchain networks. You need an archive node that has historical
+network state in the pinned block from which you have forked for local development - see [here](https://hardhat.org/hardhat-network/docs/guides/forking-other-networks)
 and interact with the [CCIP contract addresses for testnet](/ccip/supported-networks/v1_2_0/testnet).
 
-CCIP Local Simulator Fork (smart contract for Foundry, and typescript script for Hardhat) exposes functionality to switch between forks and route messages to the destination blockchain.
+Local forked mode includes the CCIP Local Simulator Fork, which exposes functionality to switch between forks and route messages to the destination blockchain.
+For Foundry, it uses a smart contract, and for Hardhat it uses a Typescript script.
