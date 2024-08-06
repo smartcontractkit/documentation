@@ -80,14 +80,14 @@ The `setUp()` function is invoked before each test case to reinitialize all the 
    alice = makeAddr("alice");
    ```
 
-1. Initialize the [fork CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulatorFork). **Note**: `vm.makePersistent` is used to make the `ccipLocalSimulatorFork` address persistent across forks:
+1. Initialize the [fork CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulatorfork). **Note**: `vm.makePersistent` is used to make the `ccipLocalSimulatorFork` address persistent across forks:
 
    ```solidity
    ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
    vm.makePersistent(address(ccipLocalSimulatorFork));
    ```
 
-1. Retrieve and set up the network details for the destination chain. **Note**: [`Register.NetworkDetails`](/chainlink-local/api-reference/solidity/ccip/Register#networkdetails) is a struct that stores network details (such as chain selector, router address, link address, wrapped native address, or CCIP test tokens). This struct is returned by [`getNetworkDetails`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulatorFork#getNetworkDetails) based on chain IDs:
+1. Retrieve and set up the network details for the destination chain. **Note**: [`Register.NetworkDetails`](/chainlink-local/api-reference/solidity/ccip/Register#networkdetails) is a struct that stores network details (such as chain selector, router address, link address, wrapped native address, or CCIP test tokens). This struct is returned by [`getNetworkDetails`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulatorfork#getNetworkDetails) based on chain IDs:
 
    ```solidity
    Register.NetworkDetails memory destinationNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
@@ -209,7 +209,7 @@ The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer o
    assertEq(balanceOfAliceAfter, balanceOfAliceBefore - amountToSend);
    ```
 
-1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulatorFork#switchChainAndRouteMessage) function to switch to the destination fork and route the message to complete the transfer:
+1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulatorfork#switchChainAndRouteMessage) function to switch to the destination fork and route the message to complete the transfer:
 
    ```solidity
    ccipLocalSimulatorFork.switchChainAndRouteMessage(destinationFork);
@@ -257,5 +257,5 @@ The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer
 
 1. Stop impersonating Alice (sender). (This step is the same as in the previous test case.)
 1. Verify Alice (sender) balance. (This step is the same as in the previous test case.)
-1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulatorFork#switchChainAndRouteMessage) function to switch to the destination fork and route the message to complete the transfer. (This step is the same as in the previous test case.)
+1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulatorfork#switchChainAndRouteMessage) function to switch to the destination fork and route the message to complete the transfer. (This step is the same as in the previous test case.)
 1. Verify Bob (receiver) balance. (This step is the same as in the previous test case.)
