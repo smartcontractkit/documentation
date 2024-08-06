@@ -1153,11 +1153,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Build",
+      section: "Build - CCIP",
       contents: [
         {
-          title: "Architecture",
-          url: "chainlink-local/build/local-simulator",
+          title: "Foundry",
+          url: "chainlink-local/build/ccip/foundry",
+          children: [
+            {
+              title: "Using CCIP local simulator",
+              url: "chainlink-local/build/ccip/foundry/local-simulator",
+            },
+            {
+              title: "Using CCIP Local Simulator in Forked Environments",
+              url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
+            },
+          ],
         },
       ],
     },
