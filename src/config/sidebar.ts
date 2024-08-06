@@ -1,5 +1,10 @@
 import { Sections } from "../content/config"
-export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
+export type SectionContent = {
+  title: string
+  url: string
+  highlightAsCurrent?: string[]
+  children?: { title: string; url: string }[]
+}
 type SectionEntry = {
   section: string
   contents: SectionContent[]
@@ -216,6 +221,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Getting Started",
           url: "data-streams/getting-started",
+          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
           title: "Data Streams Feed IDs",
@@ -245,11 +251,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Streams Direct",
+          title: "Streams Direct SDK",
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
-              title: "Fetch and decode reports (REST API)",
+              title: "Fetch and decode reports",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
             },
             {
@@ -272,7 +278,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
-          title: "Liquidity-Weighted Ask and Bid prices",
+          title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
       ],
@@ -299,6 +305,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "WebSocket",
               url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
+            },
+            {
+              title: "SDK Reference",
+              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
             },
             {
               title: "Onchain report data verification",
@@ -755,19 +765,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink VRF v2.5",
       contents: [
         {
-          title: "Introduction to VRF",
+          title: "Overview",
           url: "vrf",
         },
         {
-          title: "Getting Started with Chainlink VRF V2.5",
+          title: "Getting Started",
           url: "vrf/v2-5/getting-started",
         },
         {
-          title: "Migration from V2",
+          title: "Migrating from V2",
           url: "vrf/v2-5/migration-from-v2",
         },
         {
-          title: "V2.5 Supported Networks",
+          title: "Migrating from V1",
+          url: "vrf/v2-5/migration-from-v1",
+        },
+        {
+          title: "Supported Networks",
           url: "vrf/v2-5/supported-networks",
         },
         {
@@ -779,7 +793,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2-5/best-practices",
         },
         {
-          title: "V2.5 Billing",
+          title: "Billing",
           url: "vrf/v2-5/billing",
         },
         {
@@ -809,7 +823,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Build with VRF 2.5",
       contents: [
         {
-          title: "Create and manage V2.5 subscriptions",
+          title: "Create and manage subscriptions",
           url: "vrf/v2-5/subscription/create-manage",
         },
         {
@@ -827,68 +841,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "V2 Subscription Method",
+      section: "VRF V2 [Legacy]",
       contents: [
         {
-          title: "Introduction",
+          title: "VRF V2 Subscription Method",
           url: "vrf/v2/subscription",
         },
         {
-          title: "Get a Random Number",
-          url: "vrf/v2/subscription/examples/get-a-random-number",
-        },
-        {
-          title: "Programmatic Subscription",
-          url: "vrf/v2/subscription/examples/programmatic-subscription",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/subscription/examples/test-locally",
-        },
-        {
-          title: "Subscription Manager UI",
-          url: "vrf/v2/subscription/ui",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/subscription/supported-networks",
-        },
-        {
-          title: "V2 Billing",
-          url: "vrf/v2/estimating-costs",
-        },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/subscription/migration-from-v1",
-        },
-      ],
-    },
-    {
-      section: "V2 Direct Funding Method",
-      contents: [
-        {
-          title: "Introduction",
+          title: "VRF V2 Direct Funding Method",
           url: "vrf/v2/direct-funding",
-        },
-        {
-          title: "Get a Random Number",
-          url: "vrf/v2/direct-funding/examples/get-a-random-number",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/direct-funding/examples/test-locally",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/direct-funding/supported-networks",
-        },
-        {
-          title: "V2 Billing",
-          url: "vrf/v2/estimating-costs",
-        },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/direct-funding/migration-from-v1",
         },
       ],
     },
@@ -1311,27 +1272,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "External Adapters",
-      contents: [
-        {
-          title: "Introduction",
-          url: "chainlink-nodes/external-adapters/external-adapters",
-        },
-        {
-          title: "External Adapters in Solidity",
-          url: "chainlink-nodes/external-adapters/contract-creators",
-        },
-        {
-          title: "Building External Adapters",
-          url: "chainlink-nodes/external-adapters/developers",
-        },
-        {
-          title: "Bridges: Adding External Adapters to Nodes",
-          url: "chainlink-nodes/external-adapters/node-operators",
-        },
-      ],
-    },
-    {
       section: "External Initiators",
       contents: [
         {
@@ -1469,6 +1409,72 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   legacy: [
     {
+      section: "VRF V2 Subscription Method [Legacy]",
+      contents: [
+        {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "Introduction",
+          url: "vrf/v2/subscription",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/subscription/examples/get-a-random-number",
+        },
+        {
+          title: "Programmatic Subscription",
+          url: "vrf/v2/subscription/examples/programmatic-subscription",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
+          title: "Subscription Manager UI",
+          url: "vrf/v2/subscription/ui",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/subscription/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+      ],
+    },
+    {
+      section: "VRF V2 Direct Funding Method [Legacy]",
+      contents: [
+        {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "Introduction",
+          url: "vrf/v2/direct-funding",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/direct-funding/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+      ],
+    },
+    {
       section: "VRF v1 [DEPRECATED]",
       contents: [
         { title: "Introduction to Chainlink VRF", url: "vrf/v1/introduction" },
@@ -1480,23 +1486,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Best Practices", url: "vrf/v1/best-practices" },
         { title: "Supported Networks", url: "vrf/v1/supported-networks" },
         { title: "API Reference", url: "vrf/v1/api-reference" },
-      ],
-    },
-    {
-      section: "v1 JSON Jobs [REMOVED]",
-      contents: [
-        {
-          title: "Job Specifications",
-          url: "chainlink-nodes/oracle-jobs/v1/job-specifications",
-        },
-        {
-          title: "Core Adapters",
-          url: "chainlink-nodes/oracle-jobs/v1/adapters",
-        },
-        {
-          title: "Initiators",
-          url: "chainlink-nodes/oracle-jobs/v1/initiators",
-        },
       ],
     },
   ],
