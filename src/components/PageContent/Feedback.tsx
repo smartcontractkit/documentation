@@ -1,62 +1,50 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
-import button from "@chainlink/design-system/button.module.css"
+import buttonStyles from "@chainlink/design-system/button.module.css"
+import styles from "./Feedback.module.css"
+import ThumbUpIcon from "./Assets/ThumbUpIcon"
+import ThumbDownIcon from "./Assets/ThumbDownIcon"
 
-const star = (
-  <svg style={{ width: "var(--space-6x)", height: "var(--space-6x)" }} viewBox="0 0 24 24">
-    <path
-      fill="currentColor"
-      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
-    />
-  </svg>
-)
-const starOutline = (
-  <svg style={{ width: "var(--space-6x)", height: "var(--space-6x)" }} viewBox="0 0 24 24">
-    <path
-      fill="currentColor"
-      d="M12,15.39L8.24,17.66L9.23,13.38L5.91,10.5L10.29,10.13L12,6.09L13.71,10.13L18.09,10.5L14.77,13.38L15.76,17.66M22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.45,13.97L5.82,21L12,17.27L18.18,21L16.54,13.97L22,9.24Z"
-    />
-  </svg>
-)
 export const Feedback = () => {
-  const [rating, setRating] = useState<number | undefined>(undefined)
-  const [isSent, setIsSent] = useState(false)
+  const [feedbackType, setFeedbackType] = useState("")
+  const [feedbackGiven, setFeedbackGiven] = useState(false)
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hoverState, setHoverState] = useState({ thumbUp: false, thumbDown: false })
 
-  function handleChange(selectedNumber: number) {
-    if (rating === selectedNumber + 1) {
-      setRating(undefined)
-      return
-    }
-    setRating(selectedNumber + 1)
-    setIsSent(false)
-    const path = "https://docs2-cl-default-rtdb.firebaseio.com/allratings.json"
-    const data = {
-      rating: selectedNumber,
-      time: Date.now(),
-      url: window.location.href,
-    }
-    fetch(path, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
+  const handleFeedback = (type) => {
+    setFeedbackType(type)
+    setShowFeedbackForm(true)
   }
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    const formData = new FormData(e.target)
+
+    const formData = new FormData(e.target as HTMLFormElement)
+    const messageValue = formData.get("msg")
+    const message = typeof messageValue === "string" ? messageValue : undefined
+
     const data = {
-      rating,
+      msg: message,
       time: Date.now(),
-      msg: formData.get("msg"),
       url: window.location.href,
+      type: feedbackType, // "positive" or "negative"
     }
 
-    const path = "https://docs2-cl-default-rtdb.firebaseio.com/feedback.json"
+    // Dispatch a custom event based on the feedback type
+    if (feedbackType === "positive") {
+      window.dataLayer.push({
+        event: "positive_feedback_submitted",
+        feedback_message: data.msg,
+      })
+    } else if (feedbackType === "negative") {
+      window.dataLayer.push({
+        event: "negative_feedback_submitted",
+        feedback_message: data.msg,
+      })
+    }
+
+    const path = "https://docs-feedbacks-22203-default-rtdb.firebaseio.com/feedback.json"
     setIsSubmitting(true)
     fetch(path, {
       method: "POST",
@@ -66,39 +54,51 @@ export const Feedback = () => {
       },
       body: JSON.stringify(data),
     })
-      .then(() => setIsSent(true))
+      .then(() => {
+        setFeedbackGiven(true)
+        setShowFeedbackForm(false)
+      })
+      .catch((error) => console.error("Error submitting feedback:", error))
       .finally(() => setIsSubmitting(false))
   }
+
   return (
     <>
-      <div style={{ display: "flex" }}>
-        {[...Array(5).keys()].map((i) => (
-          <div
-            onClick={() => {
-              handleChange(i)
-            }}
-            style={{
-              cursor: "pointer",
-            }}
-          >
-            {rating && rating >= i + 1 ? star : starOutline}
+      {!feedbackGiven && !showFeedbackForm && (
+        <div className={styles.feedbackContainer}>
+          <p className={styles.feedbackPrompt}>Was this page helpful?</p>
+          <div className={styles.feedbackButtons}>
+            <div
+              id="thumbUpFeedbackButton"
+              className={styles.feedbackButton}
+              onClick={() => handleFeedback("positive")}
+              onMouseEnter={() => setHoverState({ ...hoverState, thumbUp: true })}
+              onMouseLeave={() => setHoverState({ ...hoverState, thumbUp: false })}
+            >
+              <ThumbUpIcon isHovered={hoverState.thumbUp} />
+              <span>Yes</span>
+            </div>
+            <div
+              id="thumbDownFeedbackButton"
+              className={styles.feedbackButton}
+              onClick={() => handleFeedback("negative")}
+              onMouseEnter={() => setHoverState({ ...hoverState, thumbDown: true })}
+              onMouseLeave={() => setHoverState({ ...hoverState, thumbDown: false })}
+            >
+              <ThumbDownIcon isHovered={hoverState.thumbDown} />
+              <span>No</span>
+            </div>
           </div>
-        ))}
-      </div>
-      {!!rating && !isSent && (
-        <section
-          className="card"
-          style={{
-            padding: "var(--space-4x)",
-            marginRight: "var(--space-4x)",
-            width: "max-content",
-          }}
-        >
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-            <label htmlFor="name">Tell us more about your experience.</label>
-            <textarea name="msg" style={{ resize: "none" }} />
-            <button className={button.primary} disabled={isSubmitting}>
-              Submit
+        </div>
+      )}
+      {feedbackGiven && <p className={styles.feedbackPrompt}>Thank you for your feedback!</p>}
+      {showFeedbackForm && (
+        <section className={styles.card}>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <label htmlFor="msg">Tell us more about your experience.</label>
+            <textarea name="msg" className={styles.textarea} />
+            <button className={buttonStyles.primary} disabled={isSubmitting}>
+              Submit feedback
             </button>
           </form>
         </section>
