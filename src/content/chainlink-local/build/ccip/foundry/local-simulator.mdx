@@ -80,39 +80,39 @@ To transfer tokens using CCIP, we need the following:
 
 The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
 
-1. Initialize the [CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator) contract:
+1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator) contract:
 
-   ```solidity
-   ccipLocalSimulator = new CCIPLocalSimulator();
-   ```
+    ```solidity
+    ccipLocalSimulator = new CCIPLocalSimulator();
+    ```
 
-1. Invoke the [`configuration`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
+1.  Invoke the [`configuration`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
 
-   ```solidity
-   (
-       uint64 chainSelector,
-       IRouterClient sourceRouter,
-       ,
-       ,
-       LinkToken linkToken,
-       BurnMintERC677Helper ccipBnM,
-   ) = ccipLocalSimulator.configuration();
-   ```
+    ```solidity
+    (
+        uint64 chainSelector,
+        IRouterClient sourceRouter,
+        ,
+        ,
+        LinkToken linkToken,
+        BurnMintERC677Helper ccipBnM,
+    ) = ccipLocalSimulator.configuration();
+    ```
 
-**Note**: The [`configuration`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator#configuration) function also returns the destination router, WETH9, and CCIP-LnM contracts, but we are not using them in these test cases. Hence, there are commas in the return values.
+         **Note**: The [`configuration`](/chainlink-local/api-reference/solidity/ccip/CCIPLocalSimulator#configuration) function also returns the destination router, WETH9, and CCIP-LnM contracts, but we are not using them in these test cases. Hence, there are commas in the return values.
 
-1. Initialize the sender and receiver accounts:
+1.  Initialize the sender and receiver accounts:
 
-   ```solidity
-   alice = makeAddr("alice")
-   Bob = makeAddr("Bob")
-   ```
+    ```solidity
+    alice = makeAddr("alice")
+    Bob = makeAddr("Bob")
+    ```
 
-1. All the variables are stored in the contract state for use in the test cases.
+1.  All the variables are stored in the contract state for use in the test cases.
 
 ### Prepare scenario (helper function)
 
-The prepareScenario() function is invoked at the beginning of each test case. It performs the following actions:
+The `prepareScenario()` function is invoked at the beginning of each test case. It performs the following actions:
 
 1. Request CCIP-BnM tokens for Alice:
 
@@ -138,15 +138,13 @@ The prepareScenario() function is invoked at the beginning of each test case. It
 
 ### Test case 1: Transfer with LINK fees
 
-The test_transferTokensFromEoaToEoaPayFeesInLink function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK. Here are the steps involved in this test case:
+The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK. Here are the steps involved in this test case:
 
-1. Prepare the Scenario:
+1. Invoke the `prepareScenario()` function to set up the necessary variables:
 
-Invoke the prepareScenario() function to set up the necessary variables:
-
-    ```solidity
-    (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
-    ```
+   ```solidity
+   (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
+   ```
 
 1. Record the initial token balances of Alice and Bob:
 
@@ -216,7 +214,7 @@ Invoke the prepareScenario() function to set up the necessary variables:
 
 The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas. Here are the steps involved in this test case:
 
-1. Invoke the prepareScenario() function to set up the necessary variables. (This step is the same as in the previous test case.)
+1. Invoke the `prepareScenario()` function to set up the necessary variables. (This step is the same as in the previous test case.)
 1. Record the initial token balances of Alice and Bob. (This step is the same as in the previous test case.)
 1. Begin impersonating Alice and provide her with native gas to pay for the fees:
 
