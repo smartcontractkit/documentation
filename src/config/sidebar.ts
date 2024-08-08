@@ -1150,6 +1150,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Architecture",
           url: "chainlink-local/learn/architecture",
         },
+        {
+          title: "Contributing to Chainlink Local",
+          url: "chainlink-local/learn/contributing",
+        },
       ],
     },
     {
