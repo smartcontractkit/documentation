@@ -14,12 +14,13 @@ import LaneConfig from "./LaneConfig.astro"
 
 type ConfigProps = {
   chainConfig: ChainConfig
+  chainTitle: string
   sourceChainRefId: string // id in reference directory
   environment: Environment
   version: Version
 }
 
-const { chainConfig, environment, sourceChainRefId, version } = Astro.props as ConfigProps
+const { chainConfig, chainTitle, environment, sourceChainRefId, version } = Astro.props as ConfigProps
 const { router, chainSelector, feeTokens } = chainConfig
 const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
 const sourceChainTitle = getTitle(sourceChainKey)
@@ -72,11 +73,26 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
   <tbody>
     <tr>
       <td>Router address</td>
-      <td><Address contractUrl={routerExplorerUrl} /></td>
+      <td
+        ><Address
+          contractUrl={routerExplorerUrl}
+          eventName="ccip_routerAddress_copied"
+          additionalInfo={chainTitle}
+          client:only="preact"
+        /></td
+      >
     </tr>
     <tr>
       <td>Chain selector</td>
-      <td><CopyText text={chainSelector} code /></td>
+      <td
+        ><CopyText
+          text={chainSelector}
+          eventName="ccip_sourceChainSelector_copied"
+          additionalInfo={chainTitle}
+          code
+          client:only="preact"
+        /></td
+      >
     </tr>
     <tr>
       <td>Fee tokens</td>
