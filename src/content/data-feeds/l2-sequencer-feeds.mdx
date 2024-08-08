@@ -101,7 +101,7 @@ The `sequencerUptimeFeed` object returns the following values:
 - `answer`: A variable with a value of either `0` or `1`
   - 0: The sequencer is up
   - 1: The sequencer is down
-    `startedAt`: This timestamp indicates when the sequencer feed changed status. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
+- `startedAt`: This timestamp indicates when the sequencer feed changed status. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
   - The `startedAt` variable returns `0` only on Arbitrum when the Sequencer Uptime contract is not yet initialized. For L2 chains other than Arbitrum, `startedAt` is set to `block.timestamp` on construction and `startedAt` is never `0`. After the feed begins rounds, the `startedAt` timestamp will always indicate when the sequencer feed last changed status.
 
 If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest answer from the data feed using the `dataFeed` object.
