@@ -233,6 +233,12 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setToastMessage("1 CCIP-BnM has been sent to your wallet !")
     setIsLoading(LoadingState.END)
     setShowToast(true)
+
+    window.dataLayer.push({
+      event: "ccip_token_minted",
+      tokenType: "BnM",
+      chainId: activeChain,
+    })
   }
 
   const mintLnMTokens = async () => {
@@ -273,6 +279,12 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setToastMessage("1 CCIP-LnM has been sent to your wallet !")
     setIsLoading(LoadingState.END)
     setShowToast(true)
+
+    window.dataLayer.push({
+      event: "ccip_token_minted",
+      tokenType: "LnM",
+      chainId: activeChain,
+    })
   }
 
   const closeToast = () => {
