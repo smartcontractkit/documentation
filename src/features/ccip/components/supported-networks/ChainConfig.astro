@@ -1,5 +1,5 @@
 ---
-import { ChainConfig } from "@config/data/ccip/types"
+import type { ChainConfig } from "@config/data/ccip/types"
 import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { Address, CopyText, Accordion } from "@components"
 import {
@@ -66,6 +66,14 @@ const nativeTokenHasAddress = feeTokensWithAddresses.some(
 )
 
 const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
+
+const sortedLaneEntries = Object.entries(laneReferenceData).sort(
+  ([destinationChainRefIdA, laneConfigA], [destinationChainRefIdB, laneConfigB]) => {
+    const destinationChainTitleA = getTitle(directoryToSupportedChain(destinationChainRefIdA)) || ""
+    const destinationChainTitleB = getTitle(directoryToSupportedChain(destinationChainRefIdB)) || ""
+    return destinationChainTitleA.localeCompare(destinationChainTitleB)
+  }
+)
 ---
 
 <table>
@@ -129,7 +137,7 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
 <br />
 
 {
-  Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
+  sortedLaneEntries.map(([destinationChainRefId, laneConfig], index) => {
     const destinationChainKey = directoryToSupportedChain(destinationChainRefId)
     const destinationChainTitle = getTitle(destinationChainKey)
     if (!destinationChainTitle) throw Error(`Title not found for chain ${destinationChainKey}`)
