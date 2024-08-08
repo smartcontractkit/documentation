@@ -15,7 +15,6 @@ contract DataConsumerWithSequencerCheck {
 
     uint256 private constant GRACE_PERIOD_TIME = 3600;
 
-    // error InvalidUptimeFeedRound();
     error SequencerDown();
     error GracePeriodNotOver();
 
@@ -47,18 +46,8 @@ contract DataConsumerWithSequencerCheck {
             /*uint80 answeredInRound*/
         ) = sequencerUptimeFeed.latestRoundData();
 
-        // startedAt > 0: Round answer is valid
-        // You must define how best to handle an invalid round.
-        // Optionally, you can revert.
-        /*
-         * bool validRound = startedAt > 0;
-         * if (!validRound){
-         *     revert InvalidUptimeFeedRound();
-         * }
-         */
-
-        // answer == 0: Sequencer is up
-        // answer == 1: Sequencer is down
+        // Answer == 0: Sequencer is up
+        // Answer == 1: Sequencer is down
         bool isSequencerUp = answer == 0;
         if (!isSequencerUp) {
             revert SequencerDown();
