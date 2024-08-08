@@ -40,6 +40,7 @@ export type SupportedChain =
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
+  | "METIS_SEPOLIA"
   | "BASE_MAINNET"
   | "BASE_SEPOLIA"
   | "BLAST_MAINNET"
