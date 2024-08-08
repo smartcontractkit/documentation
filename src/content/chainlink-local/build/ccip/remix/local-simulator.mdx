@@ -6,7 +6,7 @@ isIndex: false
 ---
 
 import Common from "@features/chainlink-local/Common.astro"
-import { Aside, CodeSample } from "@components"
+import { Aside, CodeSample, ClickToZoom } from "@components"
 
 <Common callout="importPackage" />
 
@@ -40,23 +40,86 @@ At this point, you should have three files in your workspace:
 
 ## Deploy the contracts
 
-1.  Compile the contract.
+1.  Compile the contracts.
+1.  Under the **Deploy & Run Transactions** tab, make sure _Remix VM_ in the **Environment** list is selected. Remix will use a sandbox blockchain in the browser to deploy the contracts.
+1.  Deploy the [CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#cciplocalsimulator):
 
-    1.  In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
+    1. Select the `TestCCIPLocalSimulator.sol` file in the file explorer.
+    1. In the _Contract_ list, select `CCIPLocalSimulator`.
+    1. Click the **Deploy** button.
+    1. The `CCIPLocalSimulator` is shown in the **Deployed Contracts** section.
+    1. In the list of functions, click on [`configuration`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations
 
-1.  Deploy the `Sender.sol` contract.
+       <ClickToZoom
+         src="/images/chainlink-local/ccip/remix/cciplocalsimulator-configuration.jpg"
+         alt="RemixIDE CCIP Local Simulator configuration"
+       />
 
-    1.  [Open the `Sender.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Sender.sol) in Remix.
+1.  You will interact with the LINK token contract to fund the sender contract with LINK tokens. The LINK token contract is pre-deployed in the local simulator configuration. Hence, load the LINK token contract instance:
 
-    <CodeSample src="samples/CCIP/Sender.sol" showButtonOnly={true} />
+    1.  Select `LinkToken` in the _Contract_ list.
+    1.  Fill in _At Address_ with the address of the `LINK` token contract from the `CCIPLocalSimulator` configuration.
+    1.  Click on the **At Address** button.
+    1.  The `LinkToken` contract is shown in the **Deployed Contracts** section.
 
-    1.  Compile the contract.
+1.  Deploy the `Sender.sol` contract:
 
-    1.  In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_
-        in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
+    1.  Select the `Sender.sol` file in the file explorer.
+    1.  In the _Contract_ list, select `Sender`.
+    1.  Under the _Deploy_ section, fill in the constructor parameters:
+        - `_router`: The address of the `sourceRouter` contract from the `CCIPLocalSimulator` configuration.
+        - `_link`: The address of the `LINK` token contract from the `CCIPLocalSimulator` configuration.
+    1.  Click the **Deploy** button.
+    1.  The `Sender` contract is shown in the **Deployed Contracts** section.
 
-1.  Deploy the `Receiver.sol` contract.
+1.  Deploy the `Receiver.sol` contract:
 
-    1.  [Open the `Receiver.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Receiver.sol) in Remix.
+    1.  Select the `Receiver.sol` file in the file explorer.
+    1.  In the _Contract_ list, select `Receiver`.
+    1.  Under the _Deploy_ section, fill in the constructor parameters:
+        - `_router`: The address of the `destinationRouter` contract from the `CCIPLocalSimulator` configuration.
+    1.  Click the **Deploy** button.
+    1.  The `Receiver` contract is shown in the **Deployed Contracts** section.
 
-    <CodeSample src="samples/CCIP/Receiver.sol" showButtonOnly={true} />
+## Transfer data from the sender to the receiver
+
+1. Fund the sender contract with LINK tokens to pay for CCIP fees:
+
+   1. Copy the address of the `Sender` contract from the **Deployed Contracts** section.
+   1. In the `CCIPLocalSimulator` contract, fill in the [`requestLINKFromFaucet`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#requestlinkfromfaucet) function with:
+      - `to`: The address of the `Sender` contract.
+      - `amount`: The amount of LINK tokens to transfer. For instance <CopyText text="1000000000000000000" code/>.
+   1. Click the **Transact** button.
+
+1. Send data from the sender contract to the receiver contract:
+
+   1. Copy the address of the `Receiver` contract from the **Deployed Contracts** section.
+   1. In the `Sender` contract, fill in the `sendMessage` function with:
+
+      - `destinationChainSelector`: The destination chain selector. You can find it in the `CCIPLocalSimulator` configuration.
+      - `receiver`: The address of the `Receiver` contract.
+      - `text`: The text to send. For instance <CopyText text="Hello!" code/>.
+
+   1. RemixIDE fails to estimate the gas properly for the `sendMessage` function. Hence, you need to manually set the gas limit to <CopyText text="3000000" code/>.
+
+      <ClickToZoom
+        src="/images/chainlink-local/ccip/remix/sendMessage-estimateGas.jpg"
+        alt="RemixIDE CCIP Local sendMessage force gas limit"
+      />
+
+   1. Click the **Transact** button.
+
+1. Check the receiver contract to verify the data transfer:
+
+   1. In the `Receiver` contract, click on the `getLastReceivedMessageDetails` function.
+   1. The `getLastReceivedMessageDetails` function returns the text sent from the `Sender` contract.
+
+      <ClickToZoom
+        src="/images/chainlink-local/ccip/remix/receivedMessage.jpg"
+        alt="RemixIDE CCIP Local receivedMessage"
+      />
+
+## Next steps
+
+You have successfully tested the CCIP getting started guide within few minutes using RemixIDE. Testing locally is useful to debug your contracts and fix any issues before testing them on testnets, saving you time and resources.
+As an exercise, you can try any of the [CCIP guides](/ccip/tutorials) using the local simulator in RemixIDE.
