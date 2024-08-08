@@ -1183,6 +1183,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "RemixIDE",
+          url: "chainlink-local/build/ccip/remix",
+          children: [
+            {
+              title: "Using CCIP local simulator",
+              url: "chainlink-local/build/ccip/remix/local-simulator",
+            },
+          ],
+        },
       ],
     },
     { ...chainlinkLocalAPIReferenceTyped },
