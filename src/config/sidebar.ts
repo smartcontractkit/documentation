@@ -1169,6 +1169,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "Hardhat",
+          url: "chainlink-local/build/ccip/hardhat",
+          children: [
+            {
+              title: "Using CCIP local simulator",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator",
+            },
+            {
+              title: "Using CCIP Local Simulator in Forked Environments",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
+            },
+          ],
+        },
       ],
     },
     { ...chainlinkLocalAPIReferenceTyped },
