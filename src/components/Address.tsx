@@ -8,10 +8,20 @@ export type Props = {
   urlClass?: string
   urlId?: string
   eventName?: string
-  additionalInfo?: string
+  additionalInfo1?: string
+  additionalInfo2?: string
 }
 
-const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId, eventName, additionalInfo }: Props) => {
+const AddressComponent = ({
+  contractUrl,
+  address,
+  endLength,
+  urlClass,
+  urlId,
+  eventName,
+  additionalInfo1,
+  additionalInfo2,
+}: Props) => {
   address = address || contractUrl.split("/").pop()
 
   const handleClick = (e) => {
@@ -20,7 +30,8 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId, ev
     if (eventName !== undefined) {
       window.dataLayer.push({
         event: eventName,
-        additionalInfo,
+        additionalInfo1,
+        additionalInfo2,
       })
     }
   }
