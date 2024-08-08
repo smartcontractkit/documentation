@@ -7,10 +7,34 @@ export type Props = {
   endLength?: number
   urlClass?: string
   urlId?: string
+  eventName?: string
+  additionalInfo1?: string
+  additionalInfo2?: string
 }
 
-const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: Props) => {
+const AddressComponent = ({
+  contractUrl,
+  address,
+  endLength,
+  urlClass,
+  urlId,
+  eventName,
+  additionalInfo1,
+  additionalInfo2,
+}: Props) => {
   address = address || contractUrl.split("/").pop()
+
+  const handleClick = (e) => {
+    e.preventDefault()
+
+    if (eventName !== undefined) {
+      window.dataLayer.push({
+        event: eventName,
+        additionalInfo1,
+        additionalInfo2,
+      })
+    }
+  }
 
   return (
     <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
@@ -21,6 +45,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
         data-clipboard-text={address}
+        onClick={handleClick}
       >
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
       </button>
@@ -38,6 +63,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           align-items: center;
           gap: var(--space-1x);
           word-break: break-word;
+          margin-top: 0;
         }
 
         .copyBtn {
