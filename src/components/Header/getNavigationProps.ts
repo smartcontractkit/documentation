@@ -77,6 +77,7 @@ const desktopSubProductsNav = [
     href: "/chainlink-nodes",
     icon: nodesLogo.src,
   },
+  { label: "Chainlink Local", href: "/chainlink-local", icon: quickstartLogo.src },
   {
     label: "Quickstarts",
     href: "/quickstarts",
@@ -134,6 +135,12 @@ const docsSections = [
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
         subProducts: getSubProducts(sidebar.nodeOperator),
+      },
+      {
+        label: "Chainlink Local",
+        href: "/chainlink-local",
+        icon: quickstartLogo.src,
+        subProducts: getSubProducts(sidebar.chainlinkLocal),
       },
       {
         label: "General",

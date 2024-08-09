@@ -1,8 +1,9 @@
 ---
 import { Sections } from "~/content/config"
-import { SIDEBAR, MENU, SectionContent } from "../../config"
+import { SIDEBAR, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 import ActiveIcon from "./ActiveIcon.astro"
+
 export type Props = {
   currentPage: string
   section?: Sections
@@ -47,6 +48,19 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAs
 
   return false
 }
+
+// This function checks if any of the nested pages match the current page
+const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolean => {
+  return contents.some((content) => {
+    if (isCurrentPageMatch(content.url, currentPage)) {
+      return true
+    }
+    if (content.children && isAnyPageMatch(content.children, currentPage)) {
+      return true
+    }
+    return false
+  })
+}
 ---
 
 <nav aria-labelledby="grid-left">
@@ -68,7 +82,7 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAs
                   <>
                     <li>
                       <a
-                        class="nav-link"
+                        class={`nav-link ${isCurrentPageMatch(child.url, currentPage) ? "active" : ""}`}
                         href={`${Astro.site?.pathname}${child.url}`}
                         aria-current={
                           isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
@@ -78,19 +92,68 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAs
                         {child.title}
                       </a>
                     </li>
-                    {child.children &&
-                      child.children.map((childItem) => (
-                        <li>
-                          <a
-                            class="nav-link nested"
-                            href={`${Astro.site?.pathname}${childItem.url}`}
-                            aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
-                          >
-                            <ActiveIcon />
-                            {childItem.title}
-                          </a>
-                        </li>
-                      ))}
+                    {child.children && (
+                      <ul class="nav-group-entries nested">
+                        {child.children.map((childItem) => (
+                          <>
+                            <li>
+                              <a
+                                class={`nav-link ${
+                                  isCurrentPageMatch(childItem.url, currentPage) ? "active" : ""
+                                } nested`}
+                                href={`${Astro.site?.pathname}${childItem.url}`}
+                                aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
+                              >
+                                <ActiveIcon />
+                                {childItem.title}
+                              </a>
+                            </li>
+                            {childItem.children && (
+                              <ul class="nav-group-entries nested">
+                                {childItem.children.map((subChildItem) => (
+                                  <>
+                                    <li>
+                                      <a
+                                        class={`nav-link ${
+                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "active" : ""
+                                        } nested`}
+                                        href={`${Astro.site?.pathname}${subChildItem.url}`}
+                                        aria-current={
+                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "page" : "false"
+                                        }
+                                      >
+                                        <ActiveIcon />
+                                        {subChildItem.title}
+                                      </a>
+                                    </li>
+                                    {subChildItem.children && (
+                                      <ul class="nav-group-entries nested">
+                                        {subChildItem.children.map((deepChildItem) => (
+                                          <li>
+                                            <a
+                                              class={`nav-link ${
+                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "active" : ""
+                                              } nested`}
+                                              href={`${Astro.site?.pathname}${deepChildItem.url}`}
+                                              aria-current={
+                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "page" : "false"
+                                              }
+                                            >
+                                              <ActiveIcon />
+                                              {deepChildItem.title}
+                                            </a>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </>
+                                ))}
+                              </ul>
+                            )}
+                          </>
+                        ))}
+                      </ul>
+                    )}
                   </>
                 ))}
             </ul>
@@ -143,6 +206,10 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAs
     margin-bottom: var(--space-2x);
   }
 
+  .nav-group-entries.nested {
+    margin-left: var(--space-4x);
+  }
+
   details summary {
     cursor: pointer;
     display: flex;
@@ -182,12 +249,13 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAs
   .nav-link[aria-current="page"] {
     font-weight: 500;
   }
+
   :global(:root.theme-dark) .nav-link[aria-current="page"] {
     color: hsla(var(--color-base-white), 100%, 1);
   }
 
   .nav-link.nested {
-    padding-left: var(--space-5x);
+    padding-left: var(--space-4x);
   }
 </style>
 
