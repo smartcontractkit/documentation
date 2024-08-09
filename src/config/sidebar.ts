@@ -982,6 +982,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "Test CCIP Locally",
+          url: "ccip/tutorials/test-ccip-locally",
+        },
+        {
           title: "Offchain",
           url: "ccip/tutorials/offchain",
           children: [
@@ -1151,7 +1155,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/learn/architecture",
         },
         {
-          title: "Contributing to Chainlink Local",
+          title: "Contributing",
           url: "chainlink-local/learn/contributing",
         },
       ],
