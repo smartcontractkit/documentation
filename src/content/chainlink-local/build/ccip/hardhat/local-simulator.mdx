@@ -9,24 +9,26 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in a localhost environment within your Hardhat project. To get started quickly, we will use the [CCIP Starter Kit - Hardhat](https://github.com/smartcontractkit/ccip-starter-kit-hardhat). This project is a Hardhat boilerplate that includes the Chainlink Local package and several CCIP examples.
+You can use Chainlink Local to run CCIP in a localhost environment within your Hardhat project. To get started quickly, we will use the
+[CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat). This project is a Hardhat boilerplate that includes the
+Chainlink Local package and several CCIP examples.
 
 ## Prerequisites
 
-1. In a terminal, clone the [CCIP Starter Kit - Hardhat](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) repository and change directories.
+1. In a terminal, clone the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) repository and change directories:
 
    ```shell
    git clone https://github.com/smartcontractkit/ccip-starter-kit-hardhat && \
    cd ./ccip-starter-kit-hardhat/
    ```
 
-1. Run `npm install` to install the dependencies. This will install the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package and other required packages.
+1. Install the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package and other required packages:
 
    ```shell
    npm install
    ```
 
-1. Run `npm run compile` to compile the contracts.
+1. Compile the contracts:
 
    ```shell
    npm run compile
@@ -34,9 +36,11 @@ You can use Chainlink Local to run CCIP in a localhost environment within your H
 
 ## Test tokens transfers
 
-You will run a test to transfer tokens between two accounts. The test file `Example1.spec.ts` is located in the `./test/no-fork` directory. This file contains one test case:
+You will run a test to transfer tokens between two accounts. The test file `Example1.spec.ts` is located in the `./test/no-fork` directory.
+This file contains one test case:
 
-**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies that the sender account was debited and the receiver account was credited.
+**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test,
+it verifies that the sender account was debited and the receiver account was credited.
 
 For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
 
@@ -61,7 +65,7 @@ Example output:
 
 ## Examine the code
 
-### Set-up
+### Setup
 
 To transfer tokens using CCIP, we need the following:
 
@@ -72,7 +76,8 @@ To transfer tokens using CCIP, we need the following:
 - A sender account (Alice)
 - A receiver account (Bob)
 
-The deployFixture function is used to set up the initial state for the tests. This function deploys the CCIP local simulator contract and initializes the sender and receiver accounts.
+The `deployFixture` function is used to set up the initial state for the tests. This function deploys the CCIP local simulator contract and initializes
+the sender and receiver accounts.
 
 1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#cciplocalsimulator) contract:
 
@@ -89,7 +94,8 @@ The deployFixture function is used to set up the initial state for the tests. Th
 
 ### Test case: Transfer with LINK fees
 
-The `it("Should transfer CCIP test tokens from EOA to EOA")` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK. Here are the steps involved in this test case:
+The `it("Should transfer CCIP test tokens from EOA to EOA")` function tests the transfer of tokens between two externally owned accounts (EOA)
+while paying fees in LINK. Here are the steps involved in this test case:
 
 1. Invoke the `deployFixture` function to set up the necessary variables:
 
@@ -114,7 +120,10 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function tests the 
    ]
    ```
 
-1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details. We set data: `data: defaultAbiCoder.encode(["string"], [""])` because we are not sending any arbitrary data (only tokens). Additionally, `gasLimit` is set to `0` because we are sending tokens to an EOA and do not expect any execution of receiver logic:
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+
+   - Use an empty string for the `data` parameter because you are not sending any arbitrary data (only tokens).
+   - Set `gasLimit` to `0` because you are sending tokens to an EOA, which means you do not expect any execution of receiver logic (and therefore do not need gas for that).
 
    ```typescript
    const gasLimit = 0
@@ -154,4 +163,5 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function tests the 
 
 ## Next steps
 
-For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink local in forked environments, refer to the guide on [Using CCIP Local Simulator in Your Hardhat Project - Forked Environments](/chainlink-local/build/ccip/hardhat/local-simulator-fork) guide.
+For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink local in forked environments,
+refer to the guide on [Using CCIP Local Simulator in your Hardhat project with forked environments](/chainlink-local/build/ccip/hardhat/local-simulator-fork).

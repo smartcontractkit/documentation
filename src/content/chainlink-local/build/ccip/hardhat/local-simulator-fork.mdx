@@ -9,13 +9,17 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in forked environments within your Hardhat project. To get started quickly, we will use the [CCIP Starter Kit - Hardhat](https://github.com/smartcontractkit/ccip-starter-kit-hardhat). This project includes the `Example1.spec.tst` file located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments. Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, we will fork _Arbitrum Sepolia_ and _Ethereum Sepolia_.
+You can use Chainlink Local to run CCIP in forked environments within your Hardhat project. To get started quickly, we will use the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat).
+This project includes the `Example1.spec.tst` file located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
+Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, we will fork _Arbitrum Sepolia_ and _Ethereum Sepolia_.
 
 ## Prerequisites
 
-This guide assumes that you are familiar with the guide [Using CCIP Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator). If not, please get familiar with it and run all the prerequisites.
+This guide assumes that you are familiar with the guide [Using CCIP Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator).
+If not, please get familiar with it and run all the prerequisites.
 
-Additionally set an environment variable file. For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc). Use this tool to encrypt your environment variables at rest.
+Set an environment variable file. For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc).
+Use this tool to encrypt your environment variables at rest.
 
     1.  Set an encryption password for your environment variables.
 
@@ -30,11 +34,15 @@ Additionally set an environment variable file. For higher security, the examples
 
 ## Test tokens transfers
 
-You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example1.spec.ts` is located in the `./test/fork` directory. This file contains one test case:
+You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example1.spec.ts` is located in the `./test/fork` directory.
+This file contains one test case:
 
-**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies that the sender account was debited and the receiver account was credited.
+**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies
+that the sender account was debited and the receiver account was credited.
 
-In this test, we simulate a transfer of tokens from a an EOA on a source blockchain (which is a fork of _Arbitrum Sepolia_) to a an EOA on a destination blockchain (which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing a realistic testing scenario.
+In this test, we simulate a transfer of tokens from an Externally Owned Account (EOA) on a source blockchain (which is a fork of _Arbitrum Sepolia_) to an EOA on a destination blockchain
+(which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing
+a realistic testing scenario.
 
 For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
 
@@ -57,14 +65,14 @@ Example output:
       1 passing (11s)
       ```
 
-## Examine the Code
+## Examine the code
 
 To transfer tokens using CCIP in a forked environment, we need the following:
 
 - Destination chain selector
 - Source CCIP router
 - LINK token for paying CCIP fees
-- A test token contract (e.g., CCIP-BnM) on both source and destination chains
+- A test token contract (such as CCIP-BnM) on both source and destination chains
 - A sender account (Alice)
 - A receiver account (Bob)
 
@@ -109,7 +117,8 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up th
 
 1. Call the source router to estimate the fees.
 
-1. Call the [`requestLinkFromTheFaucet`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#requestlinkfromthefaucetlinkaddress-to-amount--promisestring) function to request LINK tokens for Alice.
+1. Call the [`requestLinkFromTheFaucet`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#requestlinkfromthefaucetlinkaddress-to-amount--promisestring)
+   function to request LINK tokens for Alice.
 
 1. Connect to the LINK contract and approve the LINK token for paying CCIP fees.
 
@@ -119,7 +128,8 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up th
 
 1. Wait for the transaction to be be included in a block.
 
-1. CAll the [`getEvm2EvmMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#getevm2evmmessagereceipt--evm2evmmessage--null) function to parse the transaction receipt and extract the `CCIPSendRequested` event and then decodes it to an object.
+1. CAll the [`getEvm2EvmMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#getevm2evmmessagereceipt--evm2evmmessage--null)
+   function to parse the transaction receipt and extract the `CCIPSendRequested` event and then decodes it to an object.
 
 1. Verify that Alice's balance has decreased by the amount sent.
 
@@ -138,7 +148,8 @@ await hre.network.provider.request({
 })
 ```
 
-1. Call the [`routeMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#routemessagerouteraddress-evm2evmmessage--promisevoid) function to route the message to the destination router.
+1. Call the [`routeMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#routemessagerouteraddress-evm2evmmessage--promisevoid) function
+   to route the message to the destination router.
 
 1. Connect to the CCIP-BnM contract using the CCIP-BnM destination address.
 
