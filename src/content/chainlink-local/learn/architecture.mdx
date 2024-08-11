@@ -7,33 +7,36 @@ isIndex: false
 
 import { ClickToZoom, Aside } from "@components"
 
-[Chainlink Local](https://github.com/smartcontractkit/chainlink-local) is a library that you can import into your development environment (e.g., Hardhat, Foundry, or RemixIDE) to use Chainlink services locally. It supports two primary modes for local testing: With and without forking.
+[Chainlink Local](https://github.com/smartcontractkit/chainlink-local) is a library that you can import into your development environment
+(such as Hardhat, Foundry, or Remix IDE) to use Chainlink services locally. It supports two primary modes: local testing with and without forking.
 This enables you to test Chainlink smart contracts and services, such as CCIP, either in a clean local blockchain state or by using a forked state from a live blockchain.
 
-User contracts tested with Chainlink Local can be deployed to test networks without any modifications.
+After testing with Chainlink Local, you can deploy your contracts to test networks without any modifications.
 
-## Chainlink Local Architecture
+## Local testing without forking
 
-### Local Testing (Without Forking)
+In this mode, you work with mock contracts on a locally running development blockchain node, such as Hardhat, Anvil (Foundry), or Remix IDE.
 
-In this mode, you work with mock contracts on a locally running development blockchain node, such as Hardhat, Anvil (Foundry), or RemixIDE.
-
-**How it works**: Simply import the Chainlink Local library and deploy a set of Chainlink smart contracts to a blank Hardhat/Anvil network EVM state as part of your tests. You can then deploy your smart contracts and start testing using them.
+**How it works**: Import the Chainlink Local library and deploy a set of Chainlink smart contracts to a blank Hardhat/Anvil network EVM state as part of your tests.
+You can then deploy your smart contracts and start testing with them.
 
        <ClickToZoom
          src="/images/chainlink-local/chainlink-local-no-fork.jpg"
          alt="Chainlink Local Architecture (Without Forking)"
        />
 
-### Local Testing (With Forking)
+## Local testing with forking
 
-In this mode, you work with deployed Chainlink smart contracts using one or multiple forked networks. This setup provides a more realistic testing environment by incorporating the state of a live blockchain.
+In this mode, you work with deployed Chainlink smart contracts using one or more forked networks. This setup provides a more realistic testing environment by incorporating
+the state of a live blockchain.
 
 <Aside type="note" title="Supported Development environments">
-  Chainlink Local does not support forking with RemixIDE. Forking is currently supported only for Hardhat and Foundry.
+  Chainlink Local does not support forking with Remix IDE. Forking is currently supported only for Hardhat and Foundry.
 </Aside>
 
-**How it works**: In your test scripts, you will fork one or multiple testnets to create locally running blockchain network(s). Chainlink Local provides the necessary interfaces to interact with the forked Chainlink services and utilities for testing in a forked environment. For example, in CCIP, Chainlink Local provides a utility function that helps you switch from one fork (e.g., source chain) to another fork (e.g., destination chain).
+**How it works**: In your test scripts, you fork one or more testnets to create locally running blockchain network(s). Chainlink Local provides the necessary interfaces
+to interact with the forked Chainlink services and utilities for testing in a forked environment. For example, in CCIP, Chainlink Local provides a utility function that helps
+you switch from one fork (as the source chain) to another fork (as the destination chain).
 
        <ClickToZoom
          src="/images/chainlink-local/chainlink-local-fork.jpg"
