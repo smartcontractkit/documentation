@@ -9,30 +9,33 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in a localhost environment within your Foundry project. To get started quickly, we will use the [CCIP Starter Kit - Foundry](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project is a Foundry boilerplate that includes the Chainlink Local package and several CCIP examples.
+You can use Chainlink Local to run CCIP in a localhost environment within your Foundry project. To get started quickly, we will use the
+[CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project is a Foundry boilerplate that includes the Chainlink Local
+package and several CCIP examples.
 
 ## Prerequisites
 
-1. In a terminal, clone the [CCIP Starter Kit - Foundry](https://github.com/smartcontractkit/ccip-starter-kit-foundry) repository and change directories.
+1. In a terminal, clone the [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry) repository and change directories.
 
    ```shell
    git clone https://github.com/smartcontractkit/ccip-starter-kit-foundry.git && \
    cd ./ccip-starter-kit-foundry/
    ```
 
-1. Run `npm install` to install the dependencies. This will install the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package and other required packages.
+1. Run `npm install` to install the dependencies. This command installs the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package
+   and other required packages:
 
    ```shell
    npm install
    ```
 
-1. Run `forge install` to install packages.
+1. Run `forge install` to install packages:
 
    ```shell
    forge install
    ```
 
-1. Run `forge build` to compile the contracts.
+1. Run `forge build` to compile the contracts:
 
    ```shell
    forge build
@@ -71,7 +74,7 @@ Example output:
 
 ## Examine the code
 
-### Set-up
+### Setup
 
 To transfer tokens using CCIP, we need the following:
 
@@ -169,7 +172,10 @@ The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer o
    ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
    ```
 
-1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details. We set data: `abi.encode("")` because we are not sending any arbitrary data (only tokens). Additionally, `extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))` is used because we are sending tokens to an EOA and do not expect any execution of receiver logic:
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+
+   - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
+   - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
 
    ```solidity
    Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
@@ -200,7 +206,7 @@ The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer o
    vm.stopPrank();
    ```
 
-1. Record the final token balances of Alice and Bob:
+1. Record the final token balances for Alice and Bob:
 
    ```solidity
    uint256 balanceOfAliceAfter = ccipBnMToken.balanceOf(alice);
@@ -216,7 +222,8 @@ The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer o
 
 ### Test case 2: Transfer with native gas fees
 
-The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas. Here are the steps involved in this test case:
+The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas.
+Here are the steps involved in this test case:
 
 1. Invoke the `prepareScenario()` function to set up the necessary variables. (This step is the same as in the previous test case.)
 1. Record the initial token balances of Alice and Bob. (This step is the same as in the previous test case.)
@@ -227,7 +234,8 @@ The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer
    deal(alice, 5 ether);
    ```
 
-1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure. This step is the same as in the previous test case. The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure. This step is the same as in the previous test case.
+   The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
 
    ```solidity
    Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
@@ -246,8 +254,9 @@ The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer
    router.ccipSend{value: fees}(destinationChainSelector, message);
    ```
 
-1. Stop impersonating Alice and verify Alice (sender) and Bob (receiver) token balances. (This step is the same as in the previous test case.)
+1. Stop impersonating Alice and verify the token balances for Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
 
 ## Next steps
 
-For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink local in forked environments, refer to the guide on [Using CCIP Local Simulator in Your Foundry Project - Forked Environments](/chainlink-local/build/ccip/foundry/local-simulator-fork) guide.
+For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink Local in forked environments, refer to
+the guide on [Using the CCIP Local Simulator in your Foundry project with forked environments](/chainlink-local/build/ccip/foundry/local-simulator-fork).
