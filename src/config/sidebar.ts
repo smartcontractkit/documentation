@@ -1172,11 +1172,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/foundry",
           children: [
             {
-              title: "Using CCIP local simulator",
+              title: "Using the CCIP Local Simulator",
               url: "chainlink-local/build/ccip/foundry/local-simulator",
             },
             {
-              title: "Using CCIP Local Simulator in Forked Environments",
+              title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
           ],
@@ -1186,21 +1186,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/hardhat",
           children: [
             {
-              title: "Using CCIP local simulator",
+              title: "Using the CCIP Local Simulator",
               url: "chainlink-local/build/ccip/hardhat/local-simulator",
             },
             {
-              title: "Using CCIP Local Simulator in Forked Environments",
+              title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
             },
           ],
         },
         {
-          title: "RemixIDE",
+          title: "Remix IDE",
           url: "chainlink-local/build/ccip/remix",
           children: [
             {
-              title: "Using CCIP local simulator",
+              title: "Using the CCIP Local Simulator",
               url: "chainlink-local/build/ccip/remix/local-simulator",
             },
           ],
