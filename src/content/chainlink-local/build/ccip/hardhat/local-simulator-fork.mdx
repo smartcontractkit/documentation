@@ -90,7 +90,7 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up th
    const [source, destination] = ["ethereumSepolia", "arbitrumSepolia"]
    ```
 
-1. Retrieve the necessary addresses and configurations (e.g., LINK token address, source router address...etc).
+1. Retrieve the necessary addresses and configurations (such as the LINK token address, source router address, and so on).
 
 1. Fork the source network:
 
@@ -128,25 +128,25 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up th
 
 1. Wait for the transaction to be be included in a block.
 
-1. CAll the [`getEvm2EvmMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#getevm2evmmessagereceipt--evm2evmmessage--null)
+1. Call the [`getEvm2EvmMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#getevm2evmmessagereceipt--evm2evmmessage--null)
    function to parse the transaction receipt and extract the `CCIPSendRequested` event and then decodes it to an object.
 
 1. Verify that Alice's balance has decreased by the amount sent.
 
 1. Fork and switch to the destination network:
 
-```typescript
-await hre.network.provider.request({
-  method: "hardhat_reset",
-  params: [
-    {
-      forking: {
-        jsonRpcUrl: getProviderRpcUrl(destination),
-      },
-    },
-  ],
-})
-```
+   ```typescript
+   await hre.network.provider.request({
+     method: "hardhat_reset",
+     params: [
+       {
+         forking: {
+           jsonRpcUrl: getProviderRpcUrl(destination),
+         },
+       },
+     ],
+   })
+   ```
 
 1. Call the [`routeMessage`](/chainlink-local/api-reference/javascript/cciplocalsimulatorfork#routemessagerouteraddress-evm2evmmessage--promisevoid) function
    to route the message to the destination router.
