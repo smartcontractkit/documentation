@@ -9,10 +9,11 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in forked environments within your Foundry project. To get started quickly, we will use the
+You can use Chainlink Local to run CCIP in forked environments within your Foundry project. To get started quickly, you will use the
 [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project includes the `Example01ForkTest` file
 located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
-Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, we will fork _Arbitrum Sepolia_
+
+Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, you will fork _Arbitrum Sepolia_
 and _Ethereum Sepolia_.
 
 ## Prerequisites
@@ -173,21 +174,21 @@ Here are the steps involved in this test case:
    (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
    ```
 
-1. Select the destination fork and record the initial token balance of Bob:
+1. Select the destination fork and record the initial token balance of Bob receiver:
 
    ```solidity
    vm.selectFork(destinationFork);
    uint256 balanceOfBobBefore = destinationCCIPBnMToken.balanceOf(bob);
    ```
 
-1. Select the source fork and record the initial token balance of Alice:
+1. Select the source fork and record the initial token balance of Alice (sender):
 
    ```solidity
    vm.selectFork(sourceFork);
    uint256 balanceOfAliceBefore = sourceCCIPBnMToken.balanceOf(alice);
    ```
 
-1. Request 10 LINK tokens from the CCIP local simulator faucet for Alice:
+1. Request 10 LINK tokens from the CCIP local simulator faucet for Alice (sender):
 
    ```solidity
    ccipLocalSimulatorFork.requestLinkFromFaucet(alice, 10 ether);
@@ -256,7 +257,7 @@ Here are the steps involved in this test case:
 1. Invoke the `prepareScenario()` function to set up the necessary variables. (This function is the same as in the previous test case.)
 1. Select the destination fork and record Bob's initial token balance. (This step is the same as in the previous test case.)
 1. Select the source fork and record Alice's initial token balance. (This step is the same as in the previous test case.)
-1. Begin impersonating Alice and provide her with native gas:
+1. Begin impersonating Alice (sender) and provide her with native gas:
 
    ```solidity
    vm.startPrank(alice);

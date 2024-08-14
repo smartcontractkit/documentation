@@ -9,7 +9,7 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in a localhost environment within your Foundry project. To get started quickly, we will use the
+You can use Chainlink Local to run CCIP in a localhost environment within your Foundry project. To get started quickly, you will use the
 [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project is a Foundry boilerplate that includes the Chainlink Local
 package and several CCIP examples.
 
@@ -121,13 +121,13 @@ The `setUp()` function is invoked before each test case to reinitialize all the 
 
 The `prepareScenario()` function is invoked at the beginning of each test case. It performs the following actions:
 
-1. Request CCIP-BnM tokens for Alice:
+1. Request CCIP-BnM tokens for Alice (sender):
 
    ```solidity
    ccipBnMToken.drip(alice);
    ```
 
-1. Approve the source router to spend tokens on behalf of Alice:
+1. Approve the source router to spend tokens on behalf of Alice (sender):
 
    ```solidity
    amountToSend = 100;
@@ -154,20 +154,20 @@ Here are the steps involved in this test case:
    (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
    ```
 
-1. Record the initial token balances for Alice and Bob:
+1. Record the initial token balances for Alice (sender) and Bob (receiver):
 
    ```solidity
    uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
    uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
    ```
 
-1. Begin impersonating Alice to perform the subsequent actions:
+1. Begin impersonating Alice (sender) to perform the subsequent actions:
 
    ```solidity
    vm.startPrank(alice);
    ```
 
-1. Request 5 LINK tokens from the CCIP Local Simulator faucet for Alice:
+1. Request 5 LINK tokens from the CCIP Local Simulator faucet for Alice (sender):
 
    ```solidity
    ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
@@ -201,13 +201,13 @@ Here are the steps involved in this test case:
    router.ccipSend(destinationChainSelector, message);
    ```
 
-1. Stop impersonating Alice:
+1. Stop impersonating (sender):
 
    ```solidity
    vm.stopPrank();
    ```
 
-1. Record the final token balances for Alice and Bob:
+1. Record the final token balances for Alice (sender) and Bob (receiver):
 
    ```solidity
    uint256 balanceOfAliceAfter = ccipBnMToken.balanceOf(alice);
@@ -227,8 +227,8 @@ The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer
 Here are the steps involved in this test case:
 
 1. Invoke the `prepareScenario()` function to set up the necessary variables. (This step is the same as in the previous test case.)
-1. Record the initial token balances of Alice and Bob. (This step is the same as in the previous test case.)
-1. Begin impersonating Alice and provide her with native gas to pay for the fees:
+1. Record the initial token balances of Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
+1. Begin impersonating Alice (sender) and provide her with native gas to pay for the fees:
 
    ```solidity
    vm.startPrank(alice);
@@ -255,7 +255,7 @@ Here are the steps involved in this test case:
    router.ccipSend{value: fees}(destinationChainSelector, message);
    ```
 
-1. Stop impersonating Alice and verify the token balances for Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
+1. Stop impersonating Alice (sender) and verify the token balances for Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
 
 ## Next steps
 
