@@ -81,6 +81,6 @@ const pinVersionsInSolidityFiles = (globPattern: string, versions: Dependencies)
   })
 }
 
-const packages = ["@chainlink/contracts", "@chainlink/contracts-ccip"]
+const packages = ["@chainlink/contracts", "@chainlink/contracts-ccip", "@chainlink/local"]
 const versions = getPackageVersions("package.json", packages)
 pinVersionsInSolidityFiles("dist/samples/**/*.sol", versions)
