@@ -231,6 +231,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/stream-ids",
         },
         {
+          title: "Developer Responsibilities",
+          url: "data-streams/developer-responsibilities",
+        },
+        {
           title: "Billing",
           url: "data-streams/billing",
         },
