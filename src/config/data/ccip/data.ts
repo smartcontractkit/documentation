@@ -49,17 +49,17 @@ export const networkFees: NetworkFees = {
     },
     [TokenMechanism.LockAndMint]: {
       fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
       nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
     },
     [TokenMechanism.BurnAndMint]: {
       fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
       nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
     },
     [TokenMechanism.BurnAndUnlock]: {
       fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "5.00 USD", linkFee: "4.50 USD" },
+      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
       nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
     },
     [TokenMechanism.NoPoolDestinationChain]: {
