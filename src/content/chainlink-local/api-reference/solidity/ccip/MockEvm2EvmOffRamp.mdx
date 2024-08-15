@@ -1,0 +1,181 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockEvm2EvmOffRamp API reference"
+isIndex: true
+---
+
+## MockEvm2EvmOffRamp
+
+This contract handles off-ramp processes for CCIP messages
+
+### DynamicConfig
+
+```solidity
+struct DynamicConfig {
+  uint32 permissionLessExecutionThresholdSeconds;
+  address router;
+  address priceRegistry;
+  uint16 maxNumberOfTokensPerMsg;
+  uint32 maxDataBytes;
+  uint32 maxPoolReleaseOrMintGas;
+}
+```
+
+### i_sourceChainSelector
+
+```solidity
+uint64 i_sourceChainSelector
+```
+
+_chain selector for the source chain_
+
+### s_ccipLocalSimulator
+
+```solidity
+address s_ccipLocalSimulator
+```
+
+_Address of the CCIP Local Simulator_
+
+### s_dynamicConfig
+
+```solidity
+struct MockEvm2EvmOffRamp.DynamicConfig s_dynamicConfig
+```
+
+_Dynamic configuration of the offramp_
+
+### CanOnlySimulatorCall
+
+```solidity
+error CanOnlySimulatorCall()
+```
+
+_Error thrown when a function can only be called by the simulator_
+
+### ReceiverError
+
+```solidity
+error ReceiverError(bytes error)
+```
+
+_Error thrown when there is an error in the receiver_
+
+#### Parameters
+
+| Name  | Type  | Description    |
+| ----- | ----- | -------------- |
+| error | bytes | The error data |
+
+### TokenHandlingError
+
+```solidity
+error TokenHandlingError(bytes error)
+```
+
+_Error thrown when there is an error in token handling_
+
+#### Parameters
+
+| Name  | Type  | Description    |
+| ----- | ----- | -------------- |
+| error | bytes | The error data |
+
+### UnsupportedToken
+
+```solidity
+error UnsupportedToken(contract IERC20 token)
+```
+
+_Error thrown when an unsupported token is encountered_
+
+#### Parameters
+
+| Name  | Type            | Description           |
+| ----- | --------------- | --------------------- |
+| token | contract IERC20 | The unsupported token |
+
+### constructor
+
+```solidity
+constructor(address ccipLocalSimulator, struct MockEvm2EvmOffRamp.DynamicConfig dynamicConfig, struct RateLimiter.Config config, uint64 sourceChainSelector, address[] sourceTokens, address[] pools) public
+```
+
+Constructor to initialize the contract.
+
+#### Parameters
+
+| Name                | Type                                    | Description                                                              |
+| ------------------- | --------------------------------------- | ------------------------------------------------------------------------ |
+| ccipLocalSimulator  | address                                 | Address of the CCIP local simulator.                                     |
+| dynamicConfig       | struct MockEvm2EvmOffRamp.DynamicConfig | Initial dynamic configuration parameters.                                |
+| config              | struct RateLimiter.Config               | Rate limiter configuration.                                              |
+| sourceChainSelector | uint64                                  | Source chain selector.                                                   |
+| sourceTokens        | address[]                               | List of supported tokens on the source chain.                            |
+| pools               | address[]                               | List of pools corresponding to the supported tokens on the source chain. |
+
+### executeSingleMessage
+
+```solidity
+function executeSingleMessage(struct Internal.EVM2EVMMessage message, bytes[] offchainTokenData) external
+```
+
+Executes a single CCIP message.
+
+#### Parameters
+
+| Name              | Type                           | Description                      |
+| ----------------- | ------------------------------ | -------------------------------- |
+| message           | struct Internal.EVM2EVMMessage | The CCIP message to be executed. |
+| offchainTokenData | bytes[]                        | Additional off-chain token data. |
+
+### \_releaseOrMintTokens
+
+```solidity
+function _releaseOrMintTokens(struct Client.EVMTokenAmount[] sourceTokenAmounts, bytes originalSender, address receiver, bytes[] sourceTokenData, bytes[] offchainTokenData) internal returns (struct Client.EVMTokenAmount[])
+```
+
+Uses pools to release or mint a number of different tokens to a receiver
+address.
+
+_This function wraps the token pool call in a try-catch block to gracefully
+handle any non-rate limiting errors that may occur. If we encounter a rate
+limiting related error we bubble it up. If we encounter a non-rate limiting
+error we wrap it in a TokenHandlingError._
+
+#### Parameters
+
+| Name               | Type                           | Description                                                      |
+| ------------------ | ------------------------------ | ---------------------------------------------------------------- |
+| sourceTokenAmounts | struct Client.EVMTokenAmount[] | List of tokens and amount values to be released/minted.          |
+| originalSender     | bytes                          | The message sender.                                              |
+| receiver           | address                        | The address that will receive the tokens.                        |
+| sourceTokenData    | bytes[]                        | Array of token data returned by token pools on the source chain. |
+| offchainTokenData  | bytes[]                        | Array of token data fetched offchain by the DON.                 |
+
+#### Return Values
+
+| Name | Type                           | Description                                                  |
+| ---- | ------------------------------ | ------------------------------------------------------------ |
+| [0]  | struct Client.EVMTokenAmount[] | destTokenAmounts - The amounts of tokens released or minted. |
+
+### getPoolBySourceToken
+
+```solidity
+function getPoolBySourceToken(contract IERC20 sourceToken) public view returns (contract IPool)
+```
+
+Get a token pool by its source token.
+
+#### Parameters
+
+| Name        | Type            | Description       |
+| ----------- | --------------- | ----------------- |
+| sourceToken | contract IERC20 | The source token. |
+
+#### Return Values
+
+| Name | Type           | Description                          |
+| ---- | -------------- | ------------------------------------ |
+| [0]  | contract IPool | pool - The corresponding token pool. |
