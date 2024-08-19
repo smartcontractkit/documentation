@@ -65,39 +65,68 @@ Clone the source and install the required packages:
 
 </Accordion>
 
-<Accordion title="Deploy and fund the AutomationStation contract" number={2}>
+<Accordion title="Deploy the AutomationStation contract" number={2}>
 
-1. Compile the contract:
+Deploy the AutomationStation contract to an Automation supported network by setting parameters
+within a deployment script, and then running the deployment script.
+
+1. Navigate to the `scripts/deployStation.ts` file to find the deployment script.
+1. Edit the deployment script, filling in the following required parameters for the `AutomationStation` constructor:
+
+  - `linkToken`: The address of the ERC-677 compatible LINK token. LINK token addresses are listed [here](/resources/link-token-contracts). (If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station).
+  - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks).
+  - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte function selector of `registerUpkeep`.
+  - `refuelAmount`: The amount of LINK tokens that will be added to an upkeep balance when it will be underfunded.
+  - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep after which it will be considered underfunded (more on the main station upkeep in the initialization section).
+  - `minDelayNextRefuel`: The minimum delay between consecutive refuels of the same upkeep (main station upkeep excluded).
+  - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar.
+1. Save your changes to the `scripts/deployStation.ts` file.
+1. Run the deployment script:
 
     ```sh
-    yarn compile
+    npx hardhat run scripts/deployStation.ts --network arbitrum_sepolia
     ```
 
-1. Deploy `AutomationStation.sol`, passing the following parameters to the constructor:
+You can view the supported networks for the deployment scripts inside the Hardhat configuration file (`hardhat.config.ts`) and add any required network if it is missing.
+</Accordion>
 
-  - `i_linkToken`: The [LINK token address](/resources/link-token-contracts) for the network you're using.
-  - `s_registerUpkeepSelector`: The function selector of the registrar's `registerUpkeep` function.
-  - `s_registrar`: The address of the Automation registrar
-  - `s_refuelConfig`: The `RefuelConfig` that specifies how much and how often to refuel your Automation Station
-      ```
-      RefuelConfig({
-            refuelAmount: refuelAmount,
-            stationUpkeepMinBalance: stationUpkeepMinBalance,
-            minDelayNextRefuel: minDelayNextRefuel
-        });
-      ```
+<Accordion title="Fund and initialize the AutomationStation" number={3}>
 
-1. Initialize and fund the AutomationStation upkeep by calling its `initialize` function.
+After deploying the `AutomationStation` contract, you need to fund the station contract before initializing it as an upkeep. During the initialization process, the main station upkeep will be registered. This upkeep will automate monitoring all the other registered upkeeps to ensure they are not underfunded; if they are, it will add funds to their balance.
+
+Before running the initialization script `scripts/initializeStation.ts`, you need to edit the following arguments:
+
+1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
+1. Edit the initialization script, filling in the following required parameters to register your deployed AutomationStation contract as an upkeep on Chainlink Automation:
+  - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
+  - `registrationParams`: The encoded registration parameters for the main station upkeep (the `adminAddress` and `upkeepContract` need to be the station address; an example of how to encode the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) is provided inside the script.
+1. Save your changes to the `scripts/initializeStation.ts` file.
+1. Run the initialization script:
+
+    ```sh
+    npx hardhat run scripts/initializeStation.ts --network arbitrum_sepolia
+    ```
 
 </Accordion>
 
-<Accordion title="Add upkeeps to monitor" number={3}>
+<Accordion title="Register new upkeeps" number={4}>
+
+Once initialized, the station's `registerUpkeep` function can be used to register a new Chainlink Automation upkeep. The station monitors the newly registered upkeep to ensure that the upkeep meets the minimum LINK token balance required for execution. If the balance falls below this threshold, the station uses its own LINK token balance to increase the upkeep balance until it meets the required minimum.
+
+To register a new upkeep, you will need to edit the necessary parameters inside `scripts/registerUpkeep.ts` and run the script. Once again, in the encoded `registrationParams`, the `adminAddress` must be the address of the station itself. The station must also hold an amount of LINK tokens greater than or equal to the `amount` parameter encoded in the `registrationParams`, and the allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to this amount.
+
+```
+npx hardhat run scripts/registerUpkeep.ts --network arbitrum_sepolia
+```
+</Accordion>
+
+<Accordion title="Add upkeeps to monitor" number={5}>
 
 1. Use the `addUpkeeps` function to add a list of existing upkeeps for your Automation Station to monitor.
 
 </Accordion>
 
-<Accordion title="Use batch functions" number={4}>
+<Accordion title="Use batch functions" number={6}>
 
 You can run the following functions to modify a batch of existing upkeeps:
 
@@ -108,7 +137,7 @@ You can run the following functions to modify a batch of existing upkeeps:
 
 </Accordion>
 
-<Accordion title="Dismantle the Automation Station" number={5}>
+<Accordion title="Dismantle the Automation Station" number={7}>
 
 1. Remove all the upkeeps that the Automation Station upkeep is monitoring, by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist.
 
