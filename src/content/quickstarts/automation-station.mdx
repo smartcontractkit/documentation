@@ -38,8 +38,9 @@ In this tutorial, you will deploy the [AutomationStation contract](https://githu
 Before you start this tutorial, complete the following items:
 
 - If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
-- Set up a cryptocurrency wallet
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
 - To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
+- Install [Nodejs](https://nodejs.org/en/)
 - Install [yarn](https://yarnpkg.com/getting-started/install)
 
 ## Steps to implement
@@ -48,7 +49,7 @@ Before you start this tutorial, complete the following items:
 
 Clone the source and install the required packages:
 
-1. Install [foundry](https://book.getfoundry.sh/getting-started/installation).
+1. Install [foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v`.
 
 1. Clone the `flashliquidity-automation` repo:
 
@@ -63,6 +64,14 @@ Clone the source and install the required packages:
     yarn setup
     ```
 
+1. Copy the `.env.example` file to `.env` at the root of the directory:
+
+    ```sh
+    cp .env.example .env
+    ```
+
+1. In the .env file, set your private key and the RPC URL for the network you're using.
+
 </Accordion>
 
 <Accordion title="Deploy the AutomationStation contract" number={2}>
@@ -71,15 +80,14 @@ Deploy the AutomationStation contract to an Automation supported network by sett
 within a deployment script, and then running the deployment script.
 
 1. Navigate to the `scripts/deployStation.ts` file to find the deployment script.
-1. Edit the deployment script, filling in the following required parameters for the `AutomationStation` constructor:
-
-  - `linkToken`: The address of the ERC-677 compatible LINK token. LINK token addresses are listed [here](/resources/link-token-contracts). (If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station).
-  - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks).
-  - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte function selector of `registerUpkeep`.
-  - `refuelAmount`: The amount of LINK tokens that will be added to an upkeep balance when it will be underfunded.
-  - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep after which it will be considered underfunded (more on the main station upkeep in the initialization section).
-  - `minDelayNextRefuel`: The minimum delay between consecutive refuels of the same upkeep (main station upkeep excluded).
-  - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar.
+1. Edit the deployment script, filling in the required parameters for the `AutomationStation` constructor. Make sure to format each value as a string:
+    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Arbitrum Sepolia (`'0xb1D4538B4571d411F07960EF2838Ce337FE1E80E'`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). (If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station).
+    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). (For Arbitrum Sepolia, the registrar address is `'0x881918E24290084409DaA91979A30e6f0dB52eBe'`.)
+    - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`. (Default value: `'0x3f678e11'`)
+    - `refuelAmount`: The amount of LINK tokens that the AutomationStation adds to an underfunded upkeep's balance. (Default value: `'1000000000000000000'` or 1 LINK)
+    - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `'1000000000000000000'` or 1 LINK)
+    - `minDelayNextRefuel`: The minimum delay time in seconds between consecutive refuels of the same upkeep (main station upkeep excluded). (Default value: `'600'` or 10 minutes)
+    - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar. (Default value: `'100000000000000000000'` or 100 LINK)
 1. Save your changes to the `scripts/deployStation.ts` file.
 1. Run the deployment script:
 
@@ -88,6 +96,13 @@ within a deployment script, and then running the deployment script.
     ```
 
 You can view the supported networks for the deployment scripts inside the Hardhat configuration file (`hardhat.config.ts`) and add any required network if it is missing.
+
+After you've run the deployment script successfully, the output shows the address of your AutomationStation contract:
+
+```sh
+Compiled 15 Solidity files successfully (evm target: paris).
+AutomationStation deployed to: 0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0
+```
 </Accordion>
 
 <Accordion title="Fund and initialize the AutomationStation" number={3}>
@@ -98,8 +113,8 @@ Before running the initialization script `scripts/initializeStation.ts`, you nee
 
 1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
 1. Edit the initialization script, filling in the following required parameters to register your deployed AutomationStation contract as an upkeep on Chainlink Automation:
-  - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
-  - `registrationParams`: The encoded registration parameters for the main station upkeep (the `adminAddress` and `upkeepContract` need to be the station address; an example of how to encode the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) is provided inside the script.
+    - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
+    - `registrationParams`: The encoded registration parameters for the main station upkeep (the `adminAddress` and `upkeepContract` need to be the station address; an example of how to encode the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) is provided inside the script.
 1. Save your changes to the `scripts/initializeStation.ts` file.
 1. Run the initialization script:
 
