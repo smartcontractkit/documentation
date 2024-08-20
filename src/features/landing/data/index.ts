@@ -41,6 +41,7 @@ export const evmProducts = [
       { id: "celo", title: "Celo" },
       { id: "gnosis-chain", title: "Gnosis Chain" },
       { id: "mode", title: "Mode" },
+      { id: "metis", title: "Metis" },
     ],
   },
   {
@@ -84,6 +85,7 @@ export const evmProducts = [
     chains: [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "base", title: "Base" },
     ],
   },
   {
