@@ -116,8 +116,29 @@ After deploying the `AutomationStation` contract, you need to fund the station c
 1. Send LINK to the contract address for your deployed AutomationStation. ([Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).)
 1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
 1. Edit the initialization script, filling in the following required parameters to register your deployed AutomationStation contract as an upkeep on Chainlink Automation:
+    - `stationAddr`: The contract address of your deployed AutomationStation.
     - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
-    - `registrationParams`: The encoded [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for the main station upkeep. The `adminAddress` and `upkeepContract` need to be the station's contract address. An example of how to encode the registration parameters is provided inside the script.
+    - `registrationParams`: The encoded [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for the main station upkeep. Fill in the station's contract address for both the `adminAddress` and `upkeepContract` fields. Use the following example to encode your
+    `registrationParams`:
+
+    ```ts
+    /** RegistrationParams inputs
+        * string name = "UpkeepName";
+        * bytes encryptedEmail = 0x;
+        * address upkeepContract = 0x...; // Use your station's contract address
+        * uint32 gasLimit = 500000;
+        * address adminAddress = 0x....; // Use your station's contract address
+        * uint8 triggerType = 0;
+        * bytes checkData = 0x;
+        * bytes triggerConfig = 0x;
+        * bytes offchainConfig = 0x;
+        * uint96 amount = 2000000000000000000;
+    */
+    const registrationParams = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["tuple(string,bytes,address,uint32,address,uint8,bytes,bytes,bytes,uint96)"],
+    [["UpkeepName", "0x", "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 1000000, "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 0, "0x", "0x", "0x", ethers.toBigInt("2000000000000000000")]]
+    );
+    ```
 1. Save your changes to the `scripts/initializeStation.ts` file.
 1. Run the initialization script:
 
@@ -125,6 +146,10 @@ After deploying the `AutomationStation` contract, you need to fund the station c
     npx hardhat run scripts/initializeStation.ts --network arbitrum_sepolia
     ```
 
+After you've run the initialization script successfully, the output shows the address of your AutomationStation upkeep ID:
+```
+AutomationStation upkeep ID:  69977649598121114714265686255859728297662756050495835634569048558432359297413
+```
 </Accordion>
 
 <Accordion title="Register new upkeeps" number={4}>
@@ -138,6 +163,28 @@ To register a new upkeep, edit the necessary parameters inside `scripts/register
     - The `adminAddress` must be the address of the station itself. 
     - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
     - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to   the `amount`.
+
+    Use the following example to encode your
+    `registrationParams`:
+
+    ```ts
+    /** RegistrationParams inputs
+        * string name = "UpkeepName";
+        * bytes encryptedEmail = 0x;
+        * address upkeepContract = 0x...; // Use your station's contract address
+        * uint32 gasLimit = 500000;
+        * address adminAddress = 0x....; // Use your station's contract address
+        * uint8 triggerType = 0;
+        * bytes checkData = 0x;
+        * bytes triggerConfig = 0x;
+        * bytes offchainConfig = 0x;
+        * uint96 amount = 2000000000000000000;
+    */
+    const registrationParams = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["tuple(string,bytes,address,uint32,address,uint8,bytes,bytes,bytes,uint96)"],
+    [["UpkeepName", "0x", "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 1000000, "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 0, "0x", "0x", "0x", ethers.toBigInt("2000000000000000000")]]
+    );
+    ```
 1. Run the upkeep registration script:
 
     ```sh
@@ -171,7 +218,7 @@ Unlike the `addUpkeeps` function, which simply updates the AutomationStation's i
 
 To use these functions:
 
-1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`. 1. Fill in the station address and the list of upkeep IDs that you want to manage.
+1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`. 1. Fill in the station's contract address and the list of upkeep IDs that you want to manage.
 1. Save your changes to the script file.
 1. Run the script:
 
