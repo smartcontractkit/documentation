@@ -113,10 +113,11 @@ AutomationStation deployed to: 0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0
 
 After deploying the `AutomationStation` contract, you need to fund the station contract before initializing it as an upkeep. During the initialization process, the main station upkeep is registered. This upkeep monitors all your other registered upkeeps to ensure they are not underfunded; if they are, it adds funds to their balance.
 
+1. Send LINK to the contract address for your deployed AutomationStation. ([Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).)
 1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
 1. Edit the initialization script, filling in the following required parameters to register your deployed AutomationStation contract as an upkeep on Chainlink Automation:
     - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
-    - `registrationParams`: The encoded registration parameters for the main station upkeep (the `adminAddress` and `upkeepContract` need to be the station address; an example of how to encode the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) is provided inside the script.
+    - `registrationParams`: The encoded [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for the main station upkeep. The `adminAddress` and `upkeepContract` need to be the station's contract address. An example of how to encode the registration parameters is provided inside the script.
 1. Save your changes to the `scripts/initializeStation.ts` file.
 1. Run the initialization script:
 
@@ -130,7 +131,7 @@ After deploying the `AutomationStation` contract, you need to fund the station c
 
 Once initialized, the station's `registerUpkeep` function can be used to register a new Chainlink Automation upkeep. The station monitors the newly registered upkeep to ensure that the upkeep meets the minimum LINK token balance required for execution. If the balance falls below this threshold, the station uses its own LINK token balance to increase the upkeep balance until it meets the required minimum.
 
-To register a new upkeep, you will need to edit the necessary parameters inside `scripts/registerUpkeep.ts` and run the script.
+To register a new upkeep, edit the necessary parameters inside `scripts/registerUpkeep.ts` and run the script.
 
 1. Navigate to the `scripts/registerUpkeep.ts` file to find the upkeep registration script.
 1. Fill in the encoded `registrationParams`.
@@ -146,7 +147,7 @@ To register a new upkeep, you will need to edit the necessary parameters inside 
 
 <Accordion title="Add existing upkeeps for balance monitoring" number={5}>
 
-Use the `addUpkeeps` function to add a list of existing upkeeps for your AutomationStation to monitor.
+Use the `addUpkeeps` function to add a list of existing upkeeps for your AutomationStation to monitor. This function does not directly modify any of your upkeeps in Chainlink Automation; instead, it adds upkeep IDs to the AutomationStation's `s_upkeepIds` list, which is then used for balance monitoring. 
 
 1. Navigate to the `scripts/addUpkeeps.ts` file.
 1. Fill in the address of your deployed AutomationStation contract and the list of upkeep IDs for the station to monitor.
@@ -168,9 +169,15 @@ Unlike the `addUpkeeps` function, which simply updates the AutomationStation's i
 - `withdrawUpkeeps` - Withdraws LINK from a specified list of canceled upkeeps
 - `migrateUpkeeps` - Migrates a specified list of upkeeps to a newer registry
 
-```
-npx hardhat run scripts/pauseUpkeeps.ts --network arbitrum_sepolia
-```
+To use these functions:
+
+1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`. 1. Fill in the station address and the list of upkeep IDs that you want to manage.
+1. Save your changes to the script file.
+1. Run the script:
+
+    ```
+    npx hardhat run scripts/pauseUpkeeps.ts --network arbitrum_sepolia
+    ```
 
 </Accordion>
 
