@@ -232,7 +232,14 @@ To use these functions:
 
 <Accordion title="Dismantle the Automation Station" number={7}>
 
-1. Remove all the upkeeps that the Automation Station upkeep is monitoring by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist.
+1. Remove upkeeps that the Automation Station upkeep is monitoring by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist:
+    1. In `scripts/removeUpkeep.ts`, fill in the station's contract address and the ID of the upkeep you want to remove, and save the file.
+    1. Run the script:
+        ```sh
+        npx hardhat run scripts/removeUpkeep.ts --network arbitrum_sepolia
+        ```
+
+Alternatively, you can use the `unregisterUpkeep` function (and its corresponding script, `unregisterUpkeep.ts`) to remove individual upkeeps from the station's watchlist _and_ cancel them in Chainlink Automation.
 
 1. When all upkeeps are removed from the station's watchlist, you can call the `dismantle` function:
     1. In `scripts/dismantleStation.ts`, fill in the station's contract address and save the file.
