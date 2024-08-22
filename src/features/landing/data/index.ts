@@ -124,7 +124,7 @@ export const evmProducts = [
     learnMorelink: "vrf",
     image: vrfLogo,
     shape: vrfShape,
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }, ],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
 ] as ProductCardProps[]
