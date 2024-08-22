@@ -162,7 +162,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                   <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     {token.rateLimiterConfig?.isEnabled
-                      ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.token
+                      ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.symbol
                       : "N/A"}
                   </td>
                   <td>
@@ -171,7 +171,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                           const { rateSecond, maxThroughput } = displayRate(
                             token.rateLimiterConfig.capacity,
                             token.rateLimiterConfig.rate,
-                            token.token,
+                            token.symbol,
                             token.decimals
                           )
                           return (
