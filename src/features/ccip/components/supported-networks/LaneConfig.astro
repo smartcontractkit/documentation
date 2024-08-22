@@ -14,6 +14,7 @@ import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
 import { Tooltip } from "@features/common/Tooltip"
+import { TokenExtraInfo } from "./types"
 import TokenSearch from "./TokenSearch"
 
 type ConfigProps = {
@@ -100,15 +101,6 @@ if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
 const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp)
 
-interface TokenExtraInfo {
-  token: string
-  address: string
-  rateLimiterConfig: { capacity: string; isEnabled: boolean; rate: string }
-  name?: string
-  decimals: number
-  poolMechanism?: string
-}
-
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
 const determineMechanism = (
@@ -156,6 +148,7 @@ if (supportedTokens) {
 
       return {
         token: supportedToken,
+        symbol: sourceData.symbol,
         address: sourceData.tokenAddress,
         rateLimiterConfig: rateLimiterConfig,
         decimals: sourceData.decimals,

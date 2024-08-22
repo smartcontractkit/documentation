@@ -7,18 +7,7 @@ import { SupportedChain } from "@config"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
 import Address from "@components/Address"
 import { SimplePreactTooltip } from "@features/common/Tooltip"
-
-interface TokenExtraInfo {
-  token: string
-  address: string
-  rateLimiterConfig: {
-    capacity: string
-    isEnabled: boolean
-    rate: string
-  }
-  decimals: number
-  poolMechanism?: string
-}
+import { TokenExtraInfo } from "./types"
 
 interface TokenSearchProps {
   tokens: TokenExtraInfo[]
@@ -92,7 +81,9 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
   const handleInput = (event: h.JSX.TargetedEvent<HTMLInputElement>) => {
     const newSearchTerm = event.currentTarget.value.toLowerCase()
     setSearchTerm(newSearchTerm)
-    const newFilteredTokens = tokens.filter((token) => token.token.toLowerCase().includes(newSearchTerm))
+    const newFilteredTokens = tokens.filter(
+      (token) => token.token.toLowerCase().includes(newSearchTerm) || token.symbol.toLowerCase().includes(newSearchTerm)
+    )
     setFilteredTokens(newFilteredTokens)
   }
 
@@ -159,7 +150,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
             {filteredTokens.length > 0 ? (
               filteredTokens.map((token) => (
                 <tr>
-                  <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{token.symbol}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     <Address
                       address={token.address}
@@ -174,7 +165,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                   <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     {token.rateLimiterConfig?.isEnabled
-                      ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.token
+                      ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.symbol
                       : "N/A"}
                   </td>
                   <td>
@@ -183,7 +174,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                           const { rateSecond, maxThroughput } = displayRate(
                             token.rateLimiterConfig.capacity,
                             token.rateLimiterConfig.rate,
-                            token.token,
+                            token.symbol,
                             token.decimals
                           )
                           return (
