@@ -8,8 +8,7 @@ export type Props = {
   urlClass?: string
   urlId?: string
   eventName?: string
-  additionalInfo1?: string
-  additionalInfo2?: string
+  additionalInfo?: Record<string, string>
 }
 
 const AddressComponent = ({
@@ -19,8 +18,7 @@ const AddressComponent = ({
   urlClass,
   urlId,
   eventName,
-  additionalInfo1,
-  additionalInfo2,
+  additionalInfo = {}, // Default to an empty object if not provided
 }: Props) => {
   address = address || contractUrl.split("/").pop()
 
@@ -28,11 +26,11 @@ const AddressComponent = ({
     e.preventDefault()
 
     if (eventName !== undefined) {
-      window.dataLayer.push({
+      const dataLayerEvent = {
         event: eventName,
-        additionalInfo1,
-        additionalInfo2,
-      })
+        ...additionalInfo,
+      }
+      window.dataLayer.push(dataLayerEvent)
     }
   }
 

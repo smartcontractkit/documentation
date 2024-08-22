@@ -7,11 +7,10 @@ export type Props = {
   format?: boolean // determine if formatting is needed
   formatType?: "bytes32"
   eventName?: string
-  additionalInfo1?: string
-  additionalInfo2?: string
+  additionalInfo?: Record<string, string>
 }
 
-const CopyContainer = ({ text, code, format, formatType, eventName, additionalInfo1, additionalInfo2 }: Props) => {
+const CopyContainer = ({ text, code, format, formatType, eventName, additionalInfo = {} }: Props) => {
   // Function to format text based on format type
   const formatText = (text: string, type: string | undefined) => {
     if (type === "bytes32" && text.length > 10) {
@@ -32,11 +31,11 @@ const CopyContainer = ({ text, code, format, formatType, eventName, additionalIn
     e.preventDefault()
 
     if (eventName !== undefined) {
-      window.dataLayer.push({
+      const dataLayerEvent = {
         event: eventName,
-        additionalInfo1,
-        additionalInfo2,
-      })
+        ...additionalInfo,
+      }
+      window.dataLayer.push(dataLayerEvent)
     }
   }
 

@@ -89,7 +89,9 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
         ><Address
           contractUrl={routerExplorerUrl}
           eventName="ccip_routerAddress_copied"
-          additionalInfo1={chainTitle}
+          additionalInfo={{
+            chainTitle: chainTitle,
+          }}
           client:only="preact"
         /></td
       >
@@ -101,7 +103,9 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
         ><CopyText
           text={chainSelector}
           eventName="ccip_sourceChainSelector_copied"
-          additionalInfo1={chainTitle}
+          additionalInfo={{
+            chainTitle: chainTitle,
+          }}
           code
           client:only="preact"
         /></td
@@ -116,7 +120,17 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
           client:load
         /></td
       >
-      <td><CopyText text={sourceChainId.toString()} code /></td>
+      <td
+        ><CopyText
+          text={sourceChainId.toString()}
+          eventName="ccip_chainId_copied"
+          additionalInfo={{
+            chainID: sourceChainId.toString(),
+          }}
+          code
+          client:only="preact"
+        /></td
+      >
     </tr>
     <tr>
       <td>Fee tokens</td>
