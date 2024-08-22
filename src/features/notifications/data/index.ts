@@ -1,9 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "CCIP is now live for all developers.",
+  description: "Developer Passes are now available for Chainlink SmartCon.",
   type: "info",
-  linkText: "See what's new.",
-  linkUrl:
-    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ccip-ga",
+  linkText: "Get yours today.",
+  linkUrl: "https://smartcon.chain.link/home?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=smartcon-2024",
 }
