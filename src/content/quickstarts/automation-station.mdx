@@ -162,7 +162,7 @@ To register a new upkeep, edit the necessary parameters inside `scripts/register
 1. Fill in the encoded `registrationParams`.
     - The `adminAddress` must be the address of the station itself. 
     - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
-    - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to   the `amount`.
+    - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to the `amount`.
 
     Use the following example to encode your
     `registrationParams`:
@@ -218,11 +218,12 @@ Unlike the `addUpkeeps` function, which simply updates the AutomationStation's i
 
 To use these functions:
 
-1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`. 1. Fill in the station's contract address and the list of upkeep IDs that you want to manage.
+1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`.
+1. Fill in the station's contract address and the list of upkeep IDs that you want to manage.
 1. Save your changes to the script file.
-1. Run the script:
+1. Run the script. For example, to run `pauseUpkeeps.ts`:
 
-    ```
+    ```sh
     npx hardhat run scripts/pauseUpkeeps.ts --network arbitrum_sepolia
     ```
 
@@ -230,8 +231,13 @@ To use these functions:
 
 <Accordion title="Dismantle the Automation Station" number={7}>
 
-1. Remove all the upkeeps that the Automation Station upkeep is monitoring, by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist.
+1. Remove all the upkeeps that the Automation Station upkeep is monitoring by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist.
 
-1. When all upkeeps are removed from the station's watchlist, you can call the `dismantle` function.
+1. When all upkeeps are removed from the station's watchlist, you can call the `dismantle` function:
+    1. In `scripts/dismantleStation.ts`, fill in the station's contract address and save the file.
+    1. Run the script:
+        ```sh
+        npx hardhat run scripts/dismantleStation.ts --network arbitrum_sepolia
+        ```
 
 </Accordion>
