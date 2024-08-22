@@ -159,7 +159,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                       eventName="ccip_tokenAddress_copied"
                       additionalInfo={{
                         sourceChain: sourceChain,
-                        token: token.token,
+                        token: token.symbol,
                       }}
                     />
                   </td>
