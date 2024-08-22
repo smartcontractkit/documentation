@@ -16,7 +16,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
     <div
       className={styles.container}
       onMouseEnter={() => setProductMenuOpen(true)}
-      onMouseLeave={() => setProductMenuOpen(false)}
+      onMouseLeave={() => setProductMenuOpen(true)}
     >
       <img src={icon} alt="" className={styles.logo} />
       <span>{label}</span>
@@ -25,11 +25,23 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
       </div>
       {productMenuOpen && (
         <div className={styles.menu}>
-          <ul>
+          <ul className={styles.column}>
             {subProductsNav
-              .filter((item) => !item.hideFromDropdown)
+              .filter((item) => !item.hideFromDropdown && item.col === 1)
               .map((item) => (
-                <li className={clsx(styles.item, { [styles.divider]: item.divider || false })} key={item.label}>
+                <li className={clsx(styles.item)} key={item.label}>
+                  <a className={clsx(styles.link)} href={item.href}>
+                    <img className={clsx(styles.icon)} src={item.icon}></img>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+          </ul>
+          <ul className={styles.column}>
+            {subProductsNav
+              .filter((item) => !item.hideFromDropdown && item.col === 2)
+              .map((item) => (
+                <li className={clsx(styles.item)} key={item.label}>
                   <a className={clsx(styles.link)} href={item.href}>
                     <img className={clsx(styles.icon)} src={item.icon}></img>
                     {item.label}
