@@ -44,7 +44,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
 
   useEffect(() => {
     if (
-      !window.location.hostname.includes("localhost") &&
+      // !window.location.hostname.includes("localhost") &&
       !window.location.hostname.includes("documentation-private-git-")
     ) {
       const script = document.createElement("script")
@@ -68,6 +68,31 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
             },
           ],
         })
+
+        // Polling to ensure the correct language is captured before pushing to the dataLayer
+        let attempts = 0
+        const maxAttempts = 15 // 15 attempts at 200ms each => 3 seconds
+
+        const pollLanguage = () => {
+          const selectedLanguageElement = document.querySelector(".wgcurrent")
+          const weglotSelectedLanguage = selectedLanguageElement ? selectedLanguageElement.getAttribute("data-l") : "en"
+
+          if (weglotSelectedLanguage !== "en" || attempts >= maxAttempts) {
+            // If language changes or max attempts reached, push to the dataLayer
+            window.dataLayer = window.dataLayer || []
+            window.dataLayer.push({
+              event: "page_view",
+              weglotSelectedLanguage: weglotSelectedLanguage,
+            })
+            console.log("Pushed to dataLayer:", weglotSelectedLanguage)
+          } else {
+            // Otherwise increment attempts and check again after a short delay
+            attempts += 1
+            setTimeout(pollLanguage, 200) // Poll every 200ms
+          }
+        }
+
+        pollLanguage()
       }
       document.body.appendChild(script)
 
