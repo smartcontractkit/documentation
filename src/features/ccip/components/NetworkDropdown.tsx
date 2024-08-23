@@ -235,9 +235,11 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setShowToast(true)
 
     window.dataLayer.push({
-      event: "ccip_token_minted",
-      tokenType: "BnM",
-      chainId: activeChain,
+      event: "docs_product_interaction",
+      product: "CCIP",
+      action: "ccip_token_minted",
+      extraInfo1: "BnM",
+      extraInfo2: activeChain, // chainId
     })
   }
 
@@ -281,9 +283,11 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setShowToast(true)
 
     window.dataLayer.push({
-      event: "ccip_token_minted",
-      tokenType: "LnM",
-      chainId: activeChain,
+      event: "docs_product_interaction",
+      product: "CCIP",
+      action: "ccip_token_minted",
+      extraInfo1: "LnM",
+      extraInfo2: activeChain, // chainId
     })
   }
 
