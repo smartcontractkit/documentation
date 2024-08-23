@@ -44,7 +44,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
 
   useEffect(() => {
     if (
-      // !window.location.hostname.includes("localhost") &&
+      !window.location.hostname.includes("localhost") &&
       !window.location.hostname.includes("documentation-private-git-")
     ) {
       const script = document.createElement("script")
@@ -84,7 +84,6 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
               event: "page_view",
               weglotSelectedLanguage: weglotSelectedLanguage,
             })
-            console.log("Pushed to dataLayer:", weglotSelectedLanguage)
           } else {
             // Otherwise increment attempts and check again after a short delay
             attempts += 1
