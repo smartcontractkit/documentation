@@ -159,7 +159,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                       eventName="docs_product_interaction"
                       additionalInfo={{
                         product: "CCIP",
-                        action: "ccip_tokenAddress_copied",
+                        action: "ccip_supportedTokenAddress_copied",
                         extraInfo1: sourceChain,
                         extraInfo2: token.symbol,
                       }}
