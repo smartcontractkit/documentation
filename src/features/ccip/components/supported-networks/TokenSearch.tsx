@@ -156,6 +156,13 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
                       address={token.address}
                       contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)}
                       endLength={4}
+                      eventName="docs_product_interaction"
+                      additionalInfo={{
+                        product: "CCIP",
+                        action: "ccip_supportedTokenAddress_copied",
+                        extraInfo1: sourceChain,
+                        extraInfo2: token.symbol,
+                      }}
                     />
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
