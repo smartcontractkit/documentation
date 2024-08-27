@@ -27,8 +27,6 @@ export type NavBarProps = {
 
 export const navBarHeight = 64
 
-const SearchButton = <Search variant="default" />
-
 export const NavBar = ({
   path,
   searchTrigger,
@@ -104,7 +102,7 @@ export const NavBar = ({
                   title="Documentation Home"
                   style={{ display: "flex" }}
                   src="/chainlink-docs.svg"
-                  height={30}
+                  height={32}
                 />
               </a>
             </div>

@@ -16,7 +16,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
     <div
       className={styles.container}
       onMouseEnter={() => setProductMenuOpen(true)}
-      onMouseLeave={() => setProductMenuOpen(true)}
+      onMouseLeave={() => setProductMenuOpen(false)}
     >
       <img src={icon} alt="" className={styles.logo} />
       <span>{label}</span>
