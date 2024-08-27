@@ -2,6 +2,28 @@
   {
     "category": "release",
     "changes": [],
+    "date": "2024-08-15",
+    "description": "VRF V2.5 is available on [BASE mainnet](https://docs.chain.link/vrf/v2-5/supported-networks#base-mainnet) and [BASE Sepolia testnet](https://docs.chain.link/vrf/v2-5/supported-networks#base-sepolia-testnet). See the [VRF V2.5 Supported Networks](https://docs.chain.link/vrf/v2-5/supported-networks) page to get configuration details for both subscription and direct funding.",
+    "relatedNetworks": ["base"],
+    "relatedTokens": [],
+    "title": "VRF V2.5 on BASE",
+    "topic": "vrf",
+    "urls": []
+  },
+  {
+    "category": "release",
+    "changes": [],
+    "date": "2024-08-15",
+    "description": "Chainlink Data Streams is available in Early Access on Base Mainnet and Base Sepolia testnet. Verifier proxy addresses and Feed IDs are available on the [Data Streams Feed IDs](data-streams/stream-ids) page.",
+    "relatedNetworks": ["base"],
+    "relatedTokens": [],
+    "title": "Data Streams on Base",
+    "topic": "data",
+    "urls": []
+  },
+  {
+    "category": "release",
+    "changes": [],
     "date": "2024-08-02",
     "description": "The [Data Streams SDK](https://docs.chain.link/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go is now available.",
     "relatedNetworks": ["ethereum"],
@@ -34,6 +56,23 @@
       {
         "href": "https://docs.chain.link/vrf/v2-5/migration-from-v1",
         "linkText": "Migrating from VRF v1",
+        "type": "docs"
+      }
+    ]
+  },
+  {
+    "category": "release",
+    "changes": [],
+    "date": "2024-05-24",
+    "description": "The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) package version 1.1.1 is now available. It includes the updated wrapper and interface contracts for VRF 2.5 direct funding, which had not been included in the `@chainlink/contracts` package version 1.1.0. The `DirectFundingConsumer.sol` example contract has been updated to reflect this. The [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) also includes an updated function signature for `fulfillRandomWords` in the `VRFConsumerBaseV2Plus` contract, which applies only to subscription users. This function signature has **not** changed in the `VRFV2PlusWrapperConsumerBase`, so this does not affect direct funding users. When using package version 1.1.1 and later, update your `fulfillRandomWords` function signature to match the `VRFConsumerBaseV2Plus` contract, which has changed to: `function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)`. In the `@chainlink/contracts` package version 1.1.0 and earlier, the `randomWords` parameter has a `memory` storage location.",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Updated VRF V2.5 contracts",
+    "topic": "vrf",
+    "urls": [
+      {
+        "href": "https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1",
+        "linkText": "Read the guide to learn how to install and use the SDK.",
         "type": "docs"
       }
     ]
@@ -246,7 +285,7 @@
     "category": "release",
     "changes": [],
     "date": "2024-07-01",
-    "description": "Chainlink CCIP is now Generally Available (GA) on mainnet and testnet.",
+    "description": "Chainlink Node v2.13.0 is now available.",
     "relatedNetworks": ["ethereum"],
     "relatedTokens": [],
     "title": "Chainlink Node v2.13.0",
@@ -313,7 +352,7 @@
   {
     "category": "deprecation",
     "changes": [],
-    "date": "2024-02-07",
+    "date": "2024-04-01",
     "description": "CCIP v1.0.0 is no longer supported on mainnet. You must use the new router addresses listed in the CCIP v1.2.0 configuration page.",
     "relatedNetworks": ["ethereum"],
     "relatedTokens": [],
@@ -326,6 +365,223 @@
         "type": "docs"
       }
     ]
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2024-03-11",
+    "description": "Chainlink CCIP is publicly available on Wemix and Kroma for both mainnet and testnet. See the [Supported Networks](https://docs.chain.link/ccip/supported-networks/v1_2_0/mainnet) page for network details.",
+    "relatedNetworks": ["wemix", "kroma"],
+    "relatedTokens": [],
+    "title": "Wemix and Kroma",
+    "topic": "ccip",
+    "urls": []
+  },
+  {
+    "category": "deprecation",
+    "changes": [],
+    "date": "2024-02-07",
+    "description": "CCIP v1.0.0 is no longer supported on **testnet**. You must use the new router addresses listed in the [CCIP v1.2.0 configuration page](https://docs.chain.link/ccip/supported-networks/v1_2_0/testnet).",
+    "relatedNetworks": [],
+    "relatedTokens": [],
+    "title": "v1.0.0 deprecated on testnet",
+    "topic": "ccip",
+    "urls": []
+  },
+  {
+    "category": "release",
+    "changes": [
+      {
+        "href": "https://docs.chain.link/ccip/supported-networks/v1_2_0/mainnet",
+        "linkDescription": "There is no change to the router interface, but you must use the new router addresses listed in the CCIP v1.2.0 configuration page.",
+        "linkText": "CCIP v1.2.0 configuration page",
+        "show-in-devhub": true,
+        "type": "docs"
+      },
+      {
+        "href": "https://docs.chain.link/ccip/supported-networks/v1_2_0/mainnet",
+        "linkDescription": "Added support for USDC transfers. USDC transfers are currently supported on several lanes. See to the Supported Networks page to get a specific lane's token addresses and rate limits.",
+        "linkText": "Supported Networks.",
+        "show-in-devhub": true,
+        "type": "docs"
+      },
+      {
+        "linkDescription": "We've simplified the message sequencing process in our CCIP message handling by removing the `strict` sequencing flag from the [extraArgs](https://docs.chain.link/ccip/api-reference/client#evmextraargsv1) field in [CCIP messages](https://docs.chain.link/ccip/api-reference/client#evm2anymessage).",
+        "show-in-devhub": true,
+        "type": "docs"
+      },
+      {
+        "linkDescription": "The gas limit and maximum message data length for CCIP messages have been adjusted on mainnets. These changes are detailed in the [Service Limits](/ccip/service-limits) documentation.",
+        "show-in-devhub": true,
+        "type": "docs"
+      },
+      {
+        "linkDescription": "To interact with CCIP v1.2.0 , use the [@chainlink/contract-ccip](https://www.npmjs.com/package/@chainlink/contracts-ccip) npm package.",
+        "show-in-devhub": true,
+        "type": "package"
+      }
+    ],
+    "date": "2024-01-15",
+    "description": "CCIP v1.0.0 has been deprecated on mainnet. You must use the new router addresses listed in this page **before March 31st, 2024**. Please note that there is no change to the router interface. The CCIP v1.0.0 mainnet routers will continue to function in parallel **until March 31st, 2024**, but we highly recommend switching to the v1.2.0 routers as soon as possible. If you currently use CCIP v1.0.0, use the [@chainlink/contracts-ccip npm package version 0.7.6](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/0.7.6). To migrate to v1.2.0, use [version 1.2.1 of the npm package](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.2.1) or later. Please refer to the [release notes](/ccip/release-notes) for a comprehensive overview of the enhancements and new features in v1.2.0.",
+    "relatedNetworks": [],
+    "relatedTokens": [],
+    "title": "v1.2.0 release on mainnet",
+    "topic": "ccip",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2023-12-15",
+    "description": "Chainlink CCIP is publicly available on Arbitrum Sepolia. See the [CCIP testnet configuration page](/ccip/supported-networks/testnet) for more information.",
+    "relatedNetworks": ["arbitrum"],
+    "relatedTokens": [],
+    "title": "Arbitrum Sepolia",
+    "topic": "ccip",
+    "urls": []
+  },
+  {
+    "category": "feature",
+    "changes": [],
+    "date": "2024-08-21",
+    "description": "The [Chainlink Functions Subscription Manager](https://functions.chain.link/) now supports [timing out requests manually](https://docs.chain.link/chainlink-functions/resources/subscriptions#time-out-pending-requests-manually). You can time out requests that are pending for longer than five minutes to unlock your subscription funds.",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Timing out requests manually",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "feature",
+    "changes": [],
+    "date": "2024-07-31",
+    "description": "Chainlink Functions now uses USD-denominated fixed premium fees on all [supported networks](https://docs.chain.link/chainlink-functions/supported-networks). This means that the premium fees are set in USD, but no USD is ever used. The LINK equivalent of the fee is calculated at request time, and then deducted from your subscription in LINK at response time. See the [example cost calculation](https://docs.chain.link/chainlink-functions/resources/billing#cost-calculation-example) for more information.\nThe networks that have just switched from LINK-denominated premium fees to USD-denominated premium fees are:\n\n- Ethereum mainnet and Sepolia testnet\n- Arbitrum mainnet\n- Avalanche mainnet",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "USD-denominated premium fees on all supported networks",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2024-04-26",
+    "description": "Chainlink Functions is available on [Polygon Amoy](https://docs.chain.link/chainlink-functions/supported-networks#polygon-amoy-testnet).",
+    "relatedNetworks": ["polygon"],
+    "relatedTokens": [],
+    "title": "Polygon Amoy support",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "deprecation",
+    "changes": [],
+    "date": "2024-04-13",
+    "description": "The Mumbai network has stopped producing blocks, so example code will not function on this network. Check again soon for updates about future testnet support on Polygon.",
+    "relatedNetworks": ["polygon"],
+    "relatedTokens": [],
+    "title": "Polygon testnet support",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2024-04-09",
+    "description": "Chainlink Functions is available on [Base Mainnet](https://docs.chain.link/chainlink-functions/supported-networks#base-mainnet).",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Base Mainnet support",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2024-03-22",
+    "description": "Chainlink Functions is available as an open beta on the [BASE Sepolia](https://docs.chain.link/chainlink-functions/supported-networks#base-sepolia-testnet) and [Optimism Sepolia](https://docs.chain.link/chainlink-functions/supported-networks#optimism-sepolia-testnet) testnets. These networks have USD-denominated fixed premium fees. This means that the premium fees are set in USD, but no USD is ever used. The LINK equivalent of the fee is calculated at request time, and then deducted from your subscription in LINK at response time. See the [example cost calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.",
+    "relatedNetworks": ["base", "optimism"],
+    "relatedTokens": [],
+    "title": "USD-denominated premium fees and new testnets",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "feature",
+    "changes": [],
+    "date": "2024-01-12",
+    "description": "You can use external module imports with Chainlink Functions source code on mainnet networks. See the [Using Imports with Functions](https://docs.chain.link/chainlink-functions/tutorials/importing-packages) tutorial to see an example of how to import and use imported modules with your Functions source code. This feature requires the [Functions Toolkit NPM package](https://www.npmjs.com/package/@chainlink/functions-toolkit/v/0.2.7) `v0.2.7` or later.",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Module imports supported on mainnet",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2024-01-10",
+    "description": "Chainlink Functions is available on [Arbitrum Mainnet](https://docs.chain.link/chainlink-functions/supported-networks#arbitrum-mainnet).",
+    "relatedNetworks": ["arbitrum"],
+    "relatedTokens": [],
+    "title": "Arbitrum Mainnet support",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "feature",
+    "changes": [],
+    "date": "2023-12-15",
+    "description": "You can use external module imports with Chainlink Functions source code on testnet networks. See the [Using Imports with Functions](https://docs.chain.link/chainlink-functions/tutorials/importing-packages) tutorial to see an example of how to import and use imported modules with your Functions source code. This feature requires the [Functions Toolkit NPM package](https://www.npmjs.com/package/@chainlink/functions-toolkit/v/0.2.7) `v0.2.7` or later. This feature is available only on testnets. Modules will not import or execute on Functions requests for mainnet networks at this time.",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Module imports for Functions on testnets",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "integration",
+    "changes": [],
+    "date": "2023-12-15",
+    "description": "Chainlink Functions is available on the [Arbitrum Sepolia](https://docs.chain.link/chainlink-functions/supported-networks#arbitrum-sepolia-testnet) testnet.",
+    "relatedNetworks": ["arbitrum"],
+    "relatedTokens": [],
+    "title": "Module imports for Functions on testnets",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "blog-post",
+    "changes": [],
+    "date": "2023-09-29",
+    "description": "Chainlink Functions is available as an open beta on several networks. See the [supported networks](/chainlink-functions/supported-networks) page for more a complete list.",
+    "relatedNetworks": ["avalanche", "polygon", "ethereum"],
+    "relatedTokens": [],
+    "title": "Functions Open Beta",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "blog-post",
+    "changes": [],
+    "date": "",
+    "description": "",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "",
+    "topic": "functions",
+    "urls": []
+  },
+  {
+    "category": "blog-post",
+    "changes": [],
+    "date": "",
+    "description": "",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "",
+    "topic": "functions",
+    "urls": []
   },
   {
     "category": "blog-post",
@@ -429,6 +685,17 @@
     "relatedNetworks": ["arbitrum"],
     "relatedTokens": [],
     "title": "VRF Quickstarts and Resources",
+    "topic": "vrf",
+    "urls": []
+  },
+  {
+    "category": "release",
+    "changes": [],
+    "date": "2023-10-02",
+    "description": "For VRF V2 subscription, the [Sepolia gas lane](/vrf/v2/subscription/supported-networks#sepolia-testnet) has increased from 30 gwei to 150 gwei. The key hash has otherwise remained the same.",
+    "relatedNetworks": ["ethereum"],
+    "relatedTokens": [],
+    "title": "Sepolia gas lane increase",
     "topic": "vrf",
     "urls": []
   }
