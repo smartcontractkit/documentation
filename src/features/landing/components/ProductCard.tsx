@@ -9,14 +9,15 @@ export type ProductCardProps = {
   description: string
   image: ImageMetadata
   shape: ImageMetadata
-  learnMorelink: string
+  docsLandingLink: string
+  learnMoreLink: string
   chains: { id: string; title: string }[]
 }
 
 export const ProductCard = (props: ProductCardProps) => {
   return (
     <div class={productCard.productCardWrapper}>
-      <a href={props.learnMorelink} class={productCard.productCard}>
+      <a href={props.docsLandingLink} class={productCard.productCard}>
         <div class={productCard.heading}>
           <img
             loading="lazy"

@@ -17,11 +17,11 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/ccip",
+            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMoreLink,
           },
         ],
       },
@@ -38,36 +38,34 @@ export const megaMenuSections = [
     ],
   },
   {
-    title: "Data Feeds",
+    title: "Data",
     items: [
       {
         ...evmProducts.find((product) => product.title === "Data Feeds"),
-        title: "Feeds",
-        docs: "/data-feeds",
+        title: "Data Feeds",
         links: [
           {
             label: "Docs",
-            href: "/data-feeds",
+            href: (evmProducts.find((product) => product.title === "Data Feeds") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Data Feeds") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "Data Feeds") || {})?.learnMoreLink,
           },
         ],
       },
 
       {
         ...evmProducts.find((product) => product.title === "Data Streams"),
-        title: "Streams",
-        docs: "/data-feeds",
+        title: "Data Streams",
         links: [
           {
             label: "Docs",
-            href: "/data-streams",
+            href: (evmProducts.find((product) => product.title === "Data Streams") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Data Streams") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "Data Streams") || {})?.learnMoreLink,
           },
         ],
       },
@@ -76,7 +74,7 @@ export const megaMenuSections = [
         title: "Data resources",
         image: resourcesLogo,
         description: "Global standard for building secure cross-chain applications.",
-        learnMorelink: "data-feeds",
+        learnMoreLink: "data-feeds",
         links: [
           {
             label: "Learn",
@@ -94,11 +92,11 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/chainlink-automation",
+            href: (evmProducts.find((product) => product.title === "Automation") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Automation") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "Automation") || {})?.learnMoreLink,
           },
         ],
       },
@@ -107,11 +105,11 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/chainlink-functions",
+            href: (evmProducts.find((product) => product.title === "Functions") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Functions") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "Functions") || {})?.learnMoreLink,
           },
         ],
       },
@@ -120,11 +118,11 @@ export const megaMenuSections = [
         links: [
           {
             label: "Docs",
-            href: "/vrf",
+            href: (evmProducts.find((product) => product.title === "VRF") || {})?.docsLandingLink,
           },
           {
             label: "Learn",
-            href: (evmProducts.find((product) => product.title === "VRF") || {})?.learnMorelink,
+            href: (evmProducts.find((product) => product.title === "VRF") || {})?.learnMoreLink,
           },
         ],
       },
@@ -186,7 +184,9 @@ function MegaMenu({ cancel }: MegaMenuProps) {
         </div>
         <div className={styles.resourcesMenuContentFeatured}>
           <h2>Featured</h2>
-          <img src="/images/megamenu-featured.png" alt="" className={styles.featuredImage} />
+          <a href="/ccip/getting-started">
+            <img src="/images/megamenu-featured.png" alt="" className={styles.featuredImage} />
+          </a>
           <div className={styles.divider}></div>
 
           <h3>Hardhat CLI for Data Streams</h3>

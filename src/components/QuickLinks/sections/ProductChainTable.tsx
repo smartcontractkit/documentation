@@ -5,7 +5,7 @@ import styles from "./ProductChainTable.module.css"
 import { chainNames, productChainLinks } from "../data/productChainLinks"
 
 interface ProductData {
-  learnMorelink: string
+  learnMoreLink: string
   logo: { src: string }
   chains: Record<string, string>
 }
@@ -98,7 +98,7 @@ const ProductChainTable = () => (
                     className={`${styles.productHeaderCell} ${styles.stickyHeader}`}
                   >
                     <a
-                      href={`/${product.learnMorelink}`}
+                      href={`/${product.learnMoreLink}`}
                       className={styles.productLink}
                       target="_blank"
                       rel="noopener noreferrer"

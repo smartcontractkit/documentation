@@ -105,7 +105,7 @@ export const NavBar = ({
                   title="Documentation Home"
                   style={{ display: "flex" }}
                   src="/chainlink-docs.svg"
-                  height={30}
+                  height={32}
                 />
               </a>
             </div>
