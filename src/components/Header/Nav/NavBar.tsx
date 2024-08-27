@@ -97,7 +97,7 @@ export const NavBar = ({
         <div
           className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
         >
-          <div className={styles.container}>
+          <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
                 <img
