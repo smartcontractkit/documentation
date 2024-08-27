@@ -38,7 +38,7 @@ export function ProductNavigation() {
           title="Documentation Home"
           style={{ display: "flex" }}
           src="/chainlink-docs.svg"
-          height={30}
+          height={32}
         />
         <MenuIcon />
       </Trigger>
@@ -63,7 +63,7 @@ export function ProductNavigation() {
                       title="Documentation Home"
                       style={{ display: "flex" }}
                       src="/chainlink-docs.svg"
-                      height={30}
+                      height={32}
                     />
                     <Close ref={closeButtonRef} className={styles.closeButton}>
                       <img src="/assets/icons/close.svg" />
