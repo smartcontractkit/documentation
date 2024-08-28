@@ -2087,7 +2087,18 @@ env is an example user specified key-value pair
 
 ```toml
 [Mercury]
+VerboseLogging = false # Default
 ```
+
+### VerboseLogging
+
+```toml
+VerboseLogging = false # Default
+```
+
+VerboseLogging enables detailed logging of mercury/LLO operations. These logs
+can be expensive since they may serialize large structs, so they are disabled
+by default.
 
 ## Mercury.Cache
 
@@ -7020,9 +7031,9 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 ChainType = 'scroll'
 FinalityDepth = 10
-FinalityTagEnabled = false
+FinalityTagEnabled = true
 LogBackfillBatchSize = 1000
-LogPollInterval = '3s'
+LogPollInterval = '5s'
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7049,25 +7060,25 @@ Enabled = false
 Enabled = true
 
 [GasEstimator]
-Mode = 'SuggestedPrice'
+Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
 PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '0'
+PriceMin = '1 wei'
 LimitDefault = 500000
 LimitMax = 500000
 LimitMultiplier = '1'
 LimitTransfer = 21000
-BumpMin = '5 gwei'
+BumpMin = '1 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-EIP1559DynamicFees = false
+EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
 
 [GasEstimator.BlockHistory]
 BatchSize = 25
-BlockHistorySize = 0
+BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
@@ -7111,9 +7122,9 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 ChainType = 'scroll'
 FinalityDepth = 10
-FinalityTagEnabled = false
+FinalityTagEnabled = true
 LogBackfillBatchSize = 1000
-LogPollInterval = '3s'
+LogPollInterval = '5s'
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7140,25 +7151,25 @@ Enabled = false
 Enabled = true
 
 [GasEstimator]
-Mode = 'SuggestedPrice'
+Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
 PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '0'
+PriceMin = '1 wei'
 LimitDefault = 500000
 LimitMax = 500000
 LimitMultiplier = '1'
 LimitTransfer = 21000
-BumpMin = '5 gwei'
+BumpMin = '1 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-EIP1559DynamicFees = false
+EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
 
 [GasEstimator.BlockHistory]
 BatchSize = 25
-BlockHistorySize = 0
+BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
@@ -7653,7 +7664,7 @@ Finality for a block is solely defined by the finality related tags provided by 
 FlagsContractAddress = '0xae4E781a6218A8031764928E88d457937A954fC3' # Example
 ```
 
-FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/v2.14.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
+FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/v2.15.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
 
 ### LinkContractAddress
 
