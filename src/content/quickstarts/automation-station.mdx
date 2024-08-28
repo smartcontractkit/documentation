@@ -11,7 +11,7 @@ import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
 
 ## Overview
 
-This tutorial shows how to create, manage, fund and batch migrate [Chainlink Automation](https://automation.chain.link) upkeeps using [FlashLiquidity](https://www.flashliquidity.finance/)'s [Automation Station](https://github.com/flashliquidity/flashliquidity-automation/tree/main).
+This tutorial shows how to create, manage, fund, and batch migrate [Chainlink Automation](https://automation.chain.link) upkeeps using [FlashLiquidity](https://www.flashliquidity.finance/)'s [Automation Station](https://github.com/flashliquidity/flashliquidity-automation/tree/main).
 
 
 {/* prettier-ignore */}
@@ -21,7 +21,7 @@ This tutorial shows how to create, manage, fund and batch migrate [Chainlink Aut
 
 ## Objective
 
-In this tutorial, you will deploy the [AutomationStation contract](https://github.com/flashliquidity/flashliquidity-automation/blob/main/contracts/AutomationStation.sol) and register it as an upkeep. This main station upkeep monitors the balances for all your other upkeeps and funds them when the balances are too low. The repo includes convenience scripts to help you run each AutomationStation function from the command-line.
+In this tutorial, you will deploy the [AutomationStation contract](https://github.com/flashliquidity/flashliquidity-automation/blob/main/contracts/AutomationStation.sol) and register it as an upkeep. This main station upkeep monitors the balances for all your other upkeeps and funds them when the balances are too low. The repo includes convenience scripts to help you run each AutomationStation function from the command line.
 
 <Aside type="caution" title="Disclaimer">
   This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
@@ -49,16 +49,16 @@ Before you start this tutorial, complete the following items:
 
 Clone the source and install the required packages:
 
-1. Install [foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v`.
+1. Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
 
-1. Clone the `flashliquidity-automation` repo:
+1. Clone the `flashliquidity-automation` repository:
 
     ```sh
     git clone https://github.com/flashliquidity/flashliquidity-automation.git && \
     cd flashliquidity-automation
     ```
 
-1. Install the other package dependencies:
+1. Install the dependencies:
 
     ```sh
     yarn setup
@@ -76,22 +76,22 @@ Clone the source and install the required packages:
 
 <Accordion title="Deploy the AutomationStation contract" number={2}>
 
-Deploy the AutomationStation contract to an Automation supported network by setting parameters
-within a deployment script, and then running the deployment script.
+Deploy the `AutomationStation` contract to an [Automation-supported network](https://docs.chain.link/chainlink-automation/overview/supported-networks) by setting parameters
+within a deployment script and then running the deployment script.
 
 1. Navigate to the `scripts/deployStation.ts` file to find the deployment script.
 1. Edit the deployment script, filling in the required parameters for the `AutomationStation` constructor. Make sure to format each value as a string.
 
-    At minimum, you need to fill in these two parameters:
-    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Arbitrum Sepolia (`'0xb1D4538B4571d411F07960EF2838Ce337FE1E80E'`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). (If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station).
-    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). (For Arbitrum Sepolia, the registrar address is `'0x881918E24290084409DaA91979A30e6f0dB52eBe'`.)
+    At a minimum, you need to fill in these two parameters:
+    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Arbitrum Sepolia (`0xb1D4538B4571d411F07960EF2838Ce337FE1E80E`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). Note: If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station.
+    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). For Arbitrum Sepolia, the registrar address is `0x881918E24290084409DaA91979A30e6f0dB52eBe`.
 
     The following parameters have default values in the script. Check that the settings related to refueling upkeeps and minimum balances make sense for your usage, and update them if necessary:
-    - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`, which stays the same across different networks. Leave this at its default value: `'0x3f678e11'`.
-    - `refuelAmount`: The amount of LINK tokens that the AutomationStation adds to an underfunded upkeep's balance. (Default value: `'1000000000000000000'` or 1 LINK)
-    - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `'1000000000000000000'` or 1 LINK)
-    - `minDelayNextRefuel`: The minimum delay time in seconds between consecutive refuels of the same upkeep (main station upkeep excluded). (Default value: `'600'` or 10 minutes)
-    - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar. (Default value: `'100000000000000000000'` or 100 LINK)
+    - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`, which stays the same across different networks. Leave this at its default value: `0x3f678e11`.
+    - `refuelAmount`: The amount of LINK tokens that the AutomationStation adds to an underfunded upkeep's balance. (Default value: `1000000000000000000` or 1 LINK)
+    - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `1000000000000000000` or 1 LINK)
+    - `minDelayNextRefuel`: The minimum delay time in seconds between consecutive refuels of the same upkeep (main station upkeep excluded). (Default value: `600` or 10 minutes)
+    - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar. (Default value: `100000000000000000000` or 100 LINK)
 1. Save your changes to the `scripts/deployStation.ts` file.
 1. Run the deployment script:
 
@@ -101,7 +101,7 @@ within a deployment script, and then running the deployment script.
 
 You can view the supported networks for the deployment scripts inside the Hardhat configuration file (`hardhat.config.ts`) and add any required network if it is missing.
 
-After you've run the deployment script successfully, the output shows the address of your AutomationStation contract:
+After you've run the deployment script successfully, the output shows the address of your `AutomationStation` contract:
 
 ```sh
 Compiled 15 Solidity files successfully (evm target: paris).
@@ -113,9 +113,9 @@ AutomationStation deployed to: 0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0
 
 After deploying the `AutomationStation` contract, you need to fund the station contract before initializing it as an upkeep. During the initialization process, the main station upkeep is registered. This upkeep monitors all your other registered upkeeps to ensure they are not underfunded; if they are, it adds funds to their balance.
 
-1. Send LINK to the contract address for your deployed AutomationStation. ([Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).)
+1. Send LINK to the contract address for your deployed AutomationStation. Note: [Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).
 1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
-1. Edit the initialization script, filling in the following required parameters to register your deployed AutomationStation contract as an upkeep on Chainlink Automation:
+1. Edit the initialization script, filling in the following required parameters to register your deployed `AutomationStation` contract as an upkeep on Chainlink Automation:
     - `stationAddr`: The contract address of your deployed AutomationStation.
     - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
     - `registrationParams`: The encoded [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for the main station upkeep. Fill in the station's contract address for both the `adminAddress` and `upkeepContract` fields. Use the following example to encode your
@@ -126,7 +126,7 @@ After deploying the `AutomationStation` contract, you need to fund the station c
         * string name = "UpkeepName";
         * bytes encryptedEmail = 0x;
         * address upkeepContract = 0x...; // Use your station's contract address
-        * uint32 gasLimit = 500000;
+        * uint32 gasLimit = 1000000;
         * address adminAddress = 0x....; // Use your station's contract address
         * uint8 triggerType = 0;
         * bytes checkData = 0x;
@@ -159,6 +159,7 @@ Once initialized, the station's `registerUpkeep` function can be used to registe
 To register a new upkeep, edit the necessary parameters inside `scripts/registerUpkeep.ts` and run the script.
 
 1. Navigate to the `scripts/registerUpkeep.ts` file to find the upkeep registration script.
+1. Enter the address of your deployed `AutomationStation` contract in the `stationAddr` variable.
 1. Fill in the encoded `registrationParams`.
     - The `adminAddress` must be the address of the station itself. 
     - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
@@ -172,7 +173,7 @@ To register a new upkeep, edit the necessary parameters inside `scripts/register
         * string name = "UpkeepName";
         * bytes encryptedEmail = 0x;
         * address upkeepContract = 0x...; // Use your station's contract address
-        * uint32 gasLimit = 500000;
+        * uint32 gasLimit = 1000000;
         * address adminAddress = 0x....; // Use your station's contract address
         * uint8 triggerType = 0;
         * bytes checkData = 0x;
@@ -202,7 +203,7 @@ New upkeep ID:  9920327572836725365875885970634720752209708153475268536569848594
 Use the `addUpkeeps` function to add a list of existing upkeeps for your AutomationStation to monitor. This function does not directly modify any of your upkeeps in Chainlink Automation; instead, it adds upkeep IDs to the AutomationStation's `s_upkeepIds` list, which is then used for balance monitoring. 
 
 1. Navigate to the `scripts/addUpkeeps.ts` file.
-1. Fill in the address of your deployed AutomationStation contract and the list of upkeep IDs for the station to monitor.
+1. Fill in the address of your deployed `AutomationStation` contract and the list of upkeep IDs for the station to monitor.
 1. Save your changes to the `scripts/addUpkeeps.ts` file.
 1. Run the script:
 
