@@ -108,3 +108,10 @@ export interface CCIPSendErrorEntry {
   errorSelector?: string
   description: string
 }
+
+export enum LaneStatus {
+  OPERATIONAL = "OPERATIONAL",
+  MAINTENANCE = "MAINTENANCE",
+  DEGRADED = "DEGRADED",
+  CURSED = "CURSED",
+}
