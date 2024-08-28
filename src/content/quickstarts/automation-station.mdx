@@ -21,7 +21,7 @@ This tutorial shows how to create, manage, fund, and batch migrate [Chainlink Au
 
 ## Objective
 
-In this tutorial, you will deploy the [AutomationStation contract](https://github.com/flashliquidity/flashliquidity-automation/blob/main/contracts/AutomationStation.sol) and register it as an upkeep. This main station upkeep monitors the balances for all your other upkeeps and funds them when the balances are too low. The repo includes convenience scripts to help you run each AutomationStation function from the command line.
+In this tutorial, you will deploy the [AutomationStation contract](https://github.com/flashliquidity/flashliquidity-automation/blob/main/contracts/AutomationStation.sol) and register it as an upkeep. This main station upkeep monitors the balances for all your other upkeeps and funds them when the balances are too low. The repository includes Hardhat tasks to help you run each AutomationStation function from the command line.
 
 <Aside type="caution" title="Disclaimer">
   This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
@@ -79,12 +79,12 @@ Clone the source and install the required packages:
 Deploy the `AutomationStation` contract to an [Automation-supported network](https://docs.chain.link/chainlink-automation/overview/supported-networks) by setting parameters
 within a deployment script and then running the deployment script.
 
-1. Navigate to the `scripts/deployStation.ts` file to find the deployment script.
+1. Navigate to the `deploy/deployStation.ts` file to find the deployment script.
 1. Edit the deployment script, filling in the required parameters for the `AutomationStation` constructor. Make sure to format each value as a string.
 
     At a minimum, you need to fill in these two parameters:
-    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Arbitrum Sepolia (`0xb1D4538B4571d411F07960EF2838Ce337FE1E80E`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). Note: If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station.
-    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). For Arbitrum Sepolia, the registrar address is `0x881918E24290084409DaA91979A30e6f0dB52eBe`.
+    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Sepolia (`0x779877A7B0D9E8603169DdbD7836e478b4624789`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). Note: If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station.
+    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). For Sepolia, the registrar address is `0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976`.
 
     The following parameters have default values in the script. Check that the settings related to refueling upkeeps and minimum balances make sense for your usage, and update them if necessary:
     - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`, which stays the same across different networks. Leave this at its default value: `0x3f678e11`.
@@ -92,11 +92,11 @@ within a deployment script and then running the deployment script.
     - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `1000000000000000000` or 1 LINK)
     - `minDelayNextRefuel`: The minimum delay time in seconds between consecutive refuels of the same upkeep (main station upkeep excluded). (Default value: `600` or 10 minutes)
     - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar. (Default value: `100000000000000000000` or 100 LINK)
-1. Save your changes to the `scripts/deployStation.ts` file.
+1. Save your changes to the `deploy/deployStation.ts` file.
 1. Run the deployment script:
 
     ```sh
-    npx hardhat run scripts/deployStation.ts --network arbitrum_sepolia
+    npx hardhat deploy --network sepolia
     ```
 
 You can view the supported networks for the deployment scripts inside the Hardhat configuration file (`hardhat.config.ts`) and add any required network if it is missing.
@@ -114,36 +114,16 @@ AutomationStation deployed to: 0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0
 After deploying the `AutomationStation` contract, you need to fund the station contract before initializing it as an upkeep. During the initialization process, the main station upkeep is registered. This upkeep monitors all your other registered upkeeps to ensure they are not underfunded; if they are, it adds funds to their balance.
 
 1. Send LINK to the contract address for your deployed AutomationStation. Note: [Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).
-1. Navigate to the `scripts/initializeStation.ts` file to find the initialization script.
-1. Edit the initialization script, filling in the following required parameters to register your deployed `AutomationStation` contract as an upkeep on Chainlink Automation:
-    - `stationAddr`: The contract address of your deployed AutomationStation.
-    - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). This parameter is optional; if you set it now, the Automation forwarder of the station will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps.
-    - `registrationParams`: The encoded [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for the main station upkeep. Fill in the station's contract address for both the `adminAddress` and `upkeepContract` fields. Use the following example to encode your
-    `registrationParams`:
-
-    ```ts
-    /** RegistrationParams inputs
-        * string name = "UpkeepName";
-        * bytes encryptedEmail = 0x;
-        * address upkeepContract = 0x...; // Use your station's contract address
-        * uint32 gasLimit = 1000000;
-        * address adminAddress = 0x....; // Use your station's contract address
-        * uint8 triggerType = 0;
-        * bytes checkData = 0x;
-        * bytes triggerConfig = 0x;
-        * bytes offchainConfig = 0x;
-        * uint96 amount = 2000000000000000000;
-    */
-    const registrationParams = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["tuple(string,bytes,address,uint32,address,uint8,bytes,bytes,bytes,uint96)"],
-    [["UpkeepName", "0x", "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 1000000, "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 0, "0x", "0x", "0x", ethers.toBigInt("2000000000000000000")]]
-    );
-    ```
-1. Save your changes to the `scripts/initializeStation.ts` file.
-1. Run the initialization script:
+1. When you run the `initialize` task, it registers your deployed `AutomationStation` contract as an upkeep on Chainlink Automation. You can pass in the following optional parameters:
+    - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). If you set this parameter now, the station's Automation forwarder will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps. The registry address for Sepolia is `0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad`.
+    - `amount`: The amount of LINK tokens to fund the main station upkeep. (Default value: `10000000000000000000` or 10 LINK tokens)
+    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions. (Default value: `750000`)
+    
+    If you need to change any other default values for your station upkeep, edit `registrationParams` in `tasks/initializeStation.ts` and refer to the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). By default, the station's contract address is used intentionally for both the `adminAddress` and `upkeepContract` fields.  
+1. Run the `initialize` task, passing in the Automation registry address for Sepolia, funding the main upkeep with 5 LINK, and setting a gas limit of `500000`:
 
     ```sh
-    npx hardhat run scripts/initializeStation.ts --network arbitrum_sepolia
+    npx hardhat initialize --registry 0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad --amount 5000000000000000000 --gasLimit 500000 --network sepolia
     ```
 
 After you've run the initialization script successfully, the output shows your AutomationStation upkeep ID:
@@ -154,42 +134,32 @@ AutomationStation upkeep ID:  69977649598121114714265686255859728297662756050495
 
 <Accordion title="Register new upkeeps" number={4}>
 
-Once initialized, the station's `registerUpkeep` function can be used to register a new Chainlink Automation upkeep. The station monitors the newly registered upkeep to ensure that the upkeep meets the minimum LINK token balance required for execution. If the balance falls below this threshold, the station uses its own LINK token balance to increase the upkeep balance until it meets the required minimum.
+After the station is initialized, you can use its `registerUpkeep` function to register a new Chainlink Automation upkeep. The station monitors the newly registered upkeep to ensure that the upkeep meets the minimum LINK token balance required for execution. If the balance falls below this threshold, the station uses its own LINK token balance to increase the upkeep balance until it meets the required minimum.
 
-To register a new upkeep, edit the necessary parameters inside `scripts/registerUpkeep.ts` and run the script.
+To register a new upkeep, run the `registerUpkeep` Hardhat task.
 
-1. Navigate to the `scripts/registerUpkeep.ts` file to find the upkeep registration script.
-1. Enter the address of your deployed `AutomationStation` contract in the `stationAddr` variable.
-1. Fill in the encoded `registrationParams`.
-    - The `adminAddress` must be the address of the station itself. 
-    - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
-    - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to the `amount`.
+1. You can pass the following arguments to set the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for your new upkeep:
 
-    Use the following example to encode your
-    `registrationParams`:
+    **Basic configurations**
+    - `name`: The name of the upkeep displayed in the Chainlink Automation App
+    - `contract`: The address of your Automation-compatible contract
+    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions
+    - `amount`: The LINK token amount to fund the upkeep. (Default value: `5000000000000000000` or 5 LINK)
+        - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
+        - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to the `amount`.
 
-    ```ts
-    /** RegistrationParams inputs
-        * string name = "UpkeepName";
-        * bytes encryptedEmail = 0x;
-        * address upkeepContract = 0x...; // Use your station's contract address
-        * uint32 gasLimit = 1000000;
-        * address adminAddress = 0x....; // Use your station's contract address
-        * uint8 triggerType = 0;
-        * bytes checkData = 0x;
-        * bytes triggerConfig = 0x;
-        * bytes offchainConfig = 0x;
-        * uint96 amount = 2000000000000000000;
-    */
-    const registrationParams = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["tuple(string,bytes,address,uint32,address,uint8,bytes,bytes,bytes,uint96)"],
-    [["UpkeepName", "0x", "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 1000000, "0x794Db242b1d75663E2d821B0105cFd4E5Bb182F0", 0, "0x", "0x", "0x", ethers.toBigInt("1000000000000000000")]]
-    );
-    ```
-1. Run the upkeep registration script:
+    **Advanced configurations**
+    - `checkData`: Used to specify static data to pass to your `checkUpkeep` or `checkLog` functions in order to [execute different code paths](/chainlink-automation/reference/automation-interfaces#checkdata). (Default value: `0x`)
+    - `triggerType`: Used to indicate whether an upkeep is a [log trigger upkeep](/chainlink-automation/guides/log-trigger). `0` is Conditional upkeep, `1` is Log trigger upkeep. (Default value: `0`)
+    - `triggerConfig`: The [configuration for your log trigger upkeep](/chainlink-automation/guides/register-upkeep-in-contract#log-trigger-upkeeps). Leave this at `0x` for conditional upkeeps. (Default value: `0x`)
+    - `offchainConfig`: Used to set an optional [gas price threshold](/chainlink-automation/guides/gas-price-threshold) for your upkeep. Leave this at `0x` otherwise. (Default value: `0x`)
+    
+    The default `adminAddress` is the station's contract address so that the station has permission to manage your new upkeep.
+
+1. Fill in the contract address for your upkeep and run the upkeep registration task:
 
     ```sh
-    npx hardhat run scripts/registerUpkeep.ts --network arbitrum_sepolia
+    npx hardhat registerUpkeep --name test --contract 0x0dd...c0d3 --gasLimit 1000000 --network sepolia
     ```
 
 After you've run the upkeep registration script successfully, the output shows your newly registered upkeep ID:
@@ -200,15 +170,13 @@ New upkeep ID:  9920327572836725365875885970634720752209708153475268536569848594
 
 <Accordion title="Add existing upkeeps for balance monitoring" number={5}>
 
-Use the `addUpkeeps` function to add a list of existing upkeeps for your AutomationStation to monitor. This function does not directly modify any of your upkeeps in Chainlink Automation; instead, it adds upkeep IDs to the AutomationStation's `s_upkeepIds` list, which is then used for balance monitoring. 
+Use the `addUpkeeps` task to add a list of existing upkeeps for your AutomationStation to monitor. This function does not directly modify any of your upkeeps in Chainlink Automation; instead, it adds upkeep IDs to the AutomationStation's `s_upkeepIds` watchlist, which is then used for balance monitoring. 
 
-1. Navigate to the `scripts/addUpkeeps.ts` file.
-1. Fill in the address of your deployed `AutomationStation` contract and the list of upkeep IDs for the station to monitor.
-1. Save your changes to the `scripts/addUpkeeps.ts` file.
-1. Run the script:
+1. Prepare the list of upkeep IDs for all the upkeeps that you want to add to the station's watchlist.
+1. Run the task:
 
     ```sh
-    npx hardhat run scripts/addUpkeeps.ts --network arbitrum_sepolia
+    npx hardhat addUpkeeps --network sepolia 0x...address1 0x...address2 0x...address3
     ```
 This script does not display any output, but you can verify that your upkeep IDs were added by checking the value of `s_upkeepIds`, or viewing your deployed station contract in the block explorer to confirm that the `addUpkeeps` function ran successfully.
 
@@ -225,13 +193,11 @@ Unlike the `addUpkeeps` function, which simply updates the AutomationStation's i
 
 To use these functions:
 
-1. Navigate to the corresponding file in the `scripts` directory. For `pauseUpkeeps`, go to `pauseUpkeeps.ts`.
-1. Fill in the station's contract address and the list of upkeep IDs for all the upkeeps that you want to manage.
-1. Save your changes to the script file.
-1. Run the script. For example, to run `pauseUpkeeps.ts`:
+1. Prepare the list of upkeep IDs for all the upkeeps that you want to manage.
+1. Run the corresponding Hardhat task for the batch function you want to execute on your list of upkeeps. For example, to run `pauseUpkeeps.ts`:
 
     ```sh
-    npx hardhat run scripts/pauseUpkeeps.ts --network arbitrum_sepolia
+    npx hardhat pauseUpkeeps --network sepolia 0x...address1 0x...address2 0x...address3
     ```
 
 </Accordion>
@@ -239,19 +205,18 @@ To use these functions:
 <Accordion title="Dismantle the Automation Station" number={7}>
 
 1. Remove upkeeps that the Automation Station upkeep is monitoring by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist:
-    1. In `scripts/removeUpkeep.ts`, fill in the station's contract address and the ID of the upkeep you want to remove, and save the file.
-    1. Run the script:
-        ```sh
-        npx hardhat run scripts/removeUpkeep.ts --network arbitrum_sepolia
-        ```
+    ```sh
+    npx hardhat removeUpkeep 12345...upkeepID --network sepolia
+    ```
 
-Alternatively, you can use the `unregisterUpkeep` function (and its corresponding script, `unregisterUpkeep.ts`) to remove individual upkeeps from the station's watchlist _and_ cancel them in Chainlink Automation.
+    Alternatively, you can run the `unregisterUpkeep` task to remove individual upkeeps from the station's watchlist _and_ cancel them in Chainlink Automation:
+    ```sh
+    npx hardhat unregisterUpkeep 12345...upkeepID --network sepolia
+    ```
 
-1. When all upkeeps are removed from the station's watchlist, you can call the `dismantle` function:
-    1. In `scripts/dismantleStation.ts`, fill in the station's contract address and save the file.
-    1. Run the script:
-        ```sh
-        npx hardhat run scripts/dismantleStation.ts --network arbitrum_sepolia
-        ```
+1. After all upkeeps are removed from the station's watchlist, you can dismantle the station by calling the `dismantle` function:
+    ```sh
+    npx hardhat dismantleStation --network sepolia
+    ```
 
 </Accordion>
