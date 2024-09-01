@@ -42,6 +42,7 @@ export const evmProducts = [
       { id: "gnosis-chain", title: "Gnosis Chain" },
       { id: "mode", title: "Mode" },
       { id: "metis", title: "Metis" },
+      { id: "zksync", title: "zkSync" },
     ],
   },
   {
