@@ -82,7 +82,9 @@ export const GET: APIRoute = async ({ request }) => {
         status: 200,
         headers: {
           ...commonHeaders,
-          "Cache-Control": "s-maxage=300, stale-while-revalidate=60", // Cache for 5 minutes, allow stale content for 1 minute
+          "Cache-Control": "s-max-age=300, stale-while-revalidate",
+          "CDN-Cache-Control": "max-age=300",
+          "Vercel-CDN-Cache-Control": "max-age=300",
         },
       })
     }
@@ -140,7 +142,9 @@ export const GET: APIRoute = async ({ request }) => {
         status: 200,
         headers: {
           ...commonHeaders,
-          "Cache-Control": "s-maxage=300, stale-while-revalidate=60", // Cache for 5 minutes, allow stale content for 1 minute
+          "Cache-Control": "s-max-age=300, stale-while-revalidate",
+          "CDN-Cache-Control": "max-age=300",
+          "Vercel-CDN-Cache-Control": "max-age=300",
         },
       })
     }
