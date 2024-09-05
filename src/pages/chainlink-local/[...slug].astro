@@ -1,0 +1,21 @@
+---
+import { CollectionEntry, getCollection } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+
+interface Props {
+  entry: CollectionEntry<"chainlink-local">
+}
+export async function getStaticPaths() {
+  const anyApiEntries = await getCollection("chainlink-local")
+  return anyApiEntries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }))
+}
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+---
+
+<DocsLayout frontmatter={entry.data} {headings}>
+  <Content />
+</DocsLayout>

@@ -10,12 +10,6 @@ interface ProductData {
   chains: Record<string, string>
 }
 
-declare global {
-  interface Window {
-    dataLayer: any[]
-  }
-}
-
 const allChains = Array.from(
   new Set(
     Object.entries(productChainLinks)

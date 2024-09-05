@@ -42,6 +42,7 @@ export const evmProducts = [
       { id: "celo", title: "Celo" },
       { id: "gnosis-chain", title: "Gnosis Chain" },
       { id: "mode", title: "Mode" },
+      { id: "metis", title: "Metis" },
     ],
   },
   {
@@ -87,6 +88,7 @@ export const evmProducts = [
     chains: [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "base", title: "Base" },
     ],
   },
   {
@@ -128,7 +130,7 @@ export const evmProducts = [
     learnMoreLink: "https://dev.chain.link/products/vrf",
     image: vrfLogo,
     shape: vrfShape,
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
 ] as ProductCardProps[]
