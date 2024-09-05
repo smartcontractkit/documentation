@@ -320,6 +320,21 @@ const StreamsNetworksData = [
       explorerUrl: "https://testnet.snowtrace.io/address/%s",
     },
   },
+  {
+    network: "Base",
+    logoUrl: "/assets/chains/base.svg",
+    networkStatus: "https://basescan.statuspage.io/",
+    mainnet: {
+      label: "Base Mainnet",
+      verifierProxy: "0xDE1A28D87Afd0f546505B28AB50410A5c3a7387a",
+      explorerUrl: "https://basescan.org/address/%s",
+    },
+    testnet: {
+      label: "Base Sepolia",
+      verifierProxy: "0x8Ac491b7c118a0cdcF048e0f707247fD8C9575f9",
+      explorerUrl: "https://sepolia.basescan.org/address/%s",
+    },
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {

@@ -12,12 +12,20 @@ type MainProps = {
 const { environment, version } = Astro.props as MainProps
 
 const chainsReferenceData = loadReferenceData({ environment, version }).chainsReferenceData
+
+const sortedEntries = Object.entries(chainsReferenceData).sort(
+  ([chainRefIdA, chainConfigA], [chainRefIdB, chainConfigB]) => {
+    const chainTitleA = getTitle(directoryToSupportedChain(chainRefIdA)) || ""
+    const chainTitleB = getTitle(directoryToSupportedChain(chainRefIdB)) || ""
+    return chainTitleA.localeCompare(chainTitleB)
+  }
+)
 ---
 
 <br />
 
 {
-  Object.entries(chainsReferenceData).map(([chainRefId, chainConfig], index) => {
+  sortedEntries.map(([chainRefId, chainConfig], index) => {
     const chainKey = directoryToSupportedChain(chainRefId)
     const chainTitle = getTitle(chainKey)
     if (!chainTitle) throw Error(`Title not found for chain ${chainKey}`)
@@ -33,6 +41,7 @@ const chainsReferenceData = loadReferenceData({ environment, version }).chainsRe
           </div>
           <ChainConfig
             chainConfig={chainConfig}
+            chainTitle={chainTitle}
             sourceChain={chainKey}
             sourceChainRefId={chainRefId}
             environment={environment}

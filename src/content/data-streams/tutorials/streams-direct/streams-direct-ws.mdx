@@ -1,7 +1,7 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Stream and decode reports via WebSocket"
+title: "Stream and decode reports via WebSocket using the SDK"
 whatsnext:
   {
     "Learn how to verify your data onchain": "/data-streams/reference/streams-direct/streams-direct-onchain-verification",
@@ -14,7 +14,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
 
-In this tutorial, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams#streams-direct-using-data-streams-with-your-own-bot) implementation_ and a [WebSocket connection](/data-streams/reference/streams-direct/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams#streams-direct-using-data-streams-with-your-own-bot)_ implementation and the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to subscribe to real-time reports via a [WebSocket connection](/data-streams/reference/streams-direct/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -24,170 +24,279 @@ In this tutorial, you'll learn how to use Chainlink Data Streams with the _[Stre
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
 - **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
 
-## Tutorial
+## Guide
 
 ### Set up your Go project
 
-1. Clone the [repository](https://github.com/smartcontractkit/smart-contract-examples) that contains the project setup for this guide and change directories to the `websocket` example:
+1. Create a new directory for your project and navigate to it:
 
    ```bash
-   git clone https://github.com/smartcontractkit/smart-contract-examples.git
-   cd smart-contract-examples/data-streams/streams-direct/websocket
+   mkdir my-data-streams-project
+   cd my-data-streams-project
    ```
 
-1. Execute the command below to download dependencies and generate the `go.sum` file:
+1. Initialize a new Go module:
+
+   ```bash
+   go mod init my-data-streams-project
+   ```
+
+1. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1. Create a new Go file, `stream-feeds.go`, in your project directory:
+
+   ```bash
+   touch stream-feeds.go
+   ```
+
+1. Insert the following code example and save your `stream-feeds.go` file:
+
+   ```go
+    package main
+
+    import (
+      "context"
+      "fmt"
+      "os"
+      "time"
+
+      streams "github.com/smartcontractkit/data-streams-sdk/go"
+      feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+      report "github.com/smartcontractkit/data-streams-sdk/go/report"
+      v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+    )
+
+    func main() {
+      if len(os.Args) < 2 {
+        fmt.Println("Usage: go run stream-feeds.go [FeedID1] [FeedID2] ...")
+        os.Exit(1)
+      }
+
+      // Set up the SDK client configuration
+      cfg := streams.Config{
+        ApiKey: "YOUR_API_KEY",
+        ApiSecret: "YOUR_API_SECRET",
+        WsURL: "wss://ws.testnet-dataengine.chain.link",
+        Logger: streams.LogPrintf,
+      }
+
+      // Create a new client
+      client, err := streams.New(cfg)
+      if err != nil {
+        cfg.Logger("Failed to create client: %v\n", err)
+        os.Exit(1)
+      }
+
+      // Parse the feed IDs from the command line arguments
+      var ids []feed.ID
+      for _, arg := range os.Args[1:] {
+        var fid feed.ID
+        if err := fid.FromString(arg); err != nil {
+          cfg.Logger("Invalid feed ID %s: %v\n", arg, err)
+          os.Exit(1)
+        }
+        ids = append(ids, fid)
+      }
+
+      ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+      defer cancel()
+
+      // Subscribe to the feeds
+      stream, err := client.Stream(ctx, ids)
+      if err != nil {
+        cfg.Logger("Failed to subscribe: %v\n", err)
+        os.Exit(1)
+      }
+
+      defer stream.Close()
+        for {
+            reportResponse, err := stream.Read(context.Background())
+            if err != nil {
+                cfg.Logger("Error reading from stream: %v\n", err)
+                continue
+            }
+
+            // Log the contents of the report before decoding
+            cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+                // Decode each report as it comes in
+                decodedReport, decodeErr := report.Decode[v3.Data](reportResponse.FullReport)
+                if decodeErr != nil {
+                    cfg.Logger("Failed to decode report: %v\n", decodeErr)
+                    continue
+                }
+
+            // Log the decoded report
+            cfg.Logger("\n--- Report Feed ID: %s ---\n" +
+              "------------------------------------------\n" +
+              "Observations Timestamp : %d\n" +
+              "Benchmark Price        : %s\n" +
+              "Bid                    : %s\n" +
+              "Ask                    : %s\n" +
+              "Valid From Timestamp   : %d\n" +
+              "Expires At             : %d\n" +
+              "Link Fee               : %s\n" +
+              "Native Fee             : %s\n" +
+              "------------------------------------------\n",
+              reportResponse.FeedID.String(),
+              decodedReport.Data.ObservationsTimestamp,
+              decodedReport.Data.BenchmarkPrice.String(),
+              decodedReport.Data.Bid.String(),
+              decodedReport.Data.Ask.String(),
+              decodedReport.Data.ValidFromTimestamp,
+              decodedReport.Data.ExpiresAt,
+              decodedReport.Data.LinkFee.String(),
+              decodedReport.Data.NativeFee.String(),
+            )
+
+            // Also, log the stream stats
+            cfg.Logger("\n--- Stream Stats ---\n" +
+            stream.Stats().String() + "\n" +
+            "--------------------------------------------------------------------------------------------------------------------------------------------\n",
+            )
+        }
+    }
+   ```
+
+1. Download the required dependencies and update the `go.mod` and `go.sum` files:
 
    ```bash
    go mod tidy
    ```
 
-   Your project directory should now have the following structure:
+1. Set up the SDK client configuration within `stream-feeds.go`:
 
-   ```plaintext
-    websocket/
-    ├── client/
-    │   └── clientWs.go
-    ├── internal/
-    │   └── decoder.go
-    ├── decodeFullReportHex.go
-    ├── go.mod
-    ├── go.sum
-    └── main.go
+   ```go
+    cfg := streams.Config{
+      ApiKey: "YOUR_API_KEY",
+      ApiSecret: "YOUR_API_SECRET",
+      WsURL: "wss://ws.testnet-dataengine.chain.link",
+      Logger: streams.LogPrintf,
+    }
    ```
 
-### Set environment variables
+   - Replace `ApiKey` and `ApiSecret` with your API credentials.
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/streams-direct/streams-direct-interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
 
-Set the required environment variables in your terminal session to authenticate with the Data Streams Aggregation Network:
+   See the [SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) page for more configuration options.
 
-    ```bash
-    export BASE_URL="ws.testnet-dataengine.chain.link"
-    export CLIENT_ID="YOUR_CLIENT_ID"
-    export CLIENT_SECRET="YOUR_CLIENT_SECRET"
-    ```
+1. For this example, you'll subscribe to the ETH/USD Data Streams feed. This feed ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets.
 
-    - `BASE_URL` is the WebSocket endpoint to subscribe to price updates. See the [Streams Direct Interface](/data-streams/reference/streams-direct/streams-direct-interface-ws#domains) guide for more information.
-    - Replace `CLIENT_ID` and `CLIENT_SECRET` with your API credentials.
+   Execute your application:
 
-### Establish a WebSocket connection and listen for real-time reports
+   ```bash
+   go run stream-feeds.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+   ```
 
-For this example, you will read from the ETH/USD Data Streams feed on Arbitrum Sepolia. This feed ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets.
+   Expect output similar to the following in your terminal:
 
-    Launch the WebSocket listener by running the following command in your terminal:
+   ```bash
+    2024-07-31T15:34:27-05:00 Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff15780000000000000000000000000000000000000000000000000000000035252f11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066aa9fd30000000000000000000000000000000000000000000000000000000066aa9fd300000000000000000000000000000000000000000000000000001c23cdce76d0000000000000000000000000000000000000000000000000001ba0a27c8b79d40000000000000000000000000000000000000000000000000000000066abf1530000000000000000000000000000000000000000000000af35b91cbc421fe2800000000000000000000000000000000000000000000000af354910dbd1830c200000000000000000000000000000000000000000000000af3629289cb2be3f800000000000000000000000000000000000000000000000000000000000000002e03c8b14707a80c59922eeb6b89c79dd8ac6b4b925203b3fe2f0903ba6765934aaf6c4170522c0e54abecb90e7ba7b26e27a83b12740e6a6fd5835c5ece9034c000000000000000000000000000000000000000000000000000000000000000252088e89df570d7022fd2bfc71eb53bfe72423ccba1834a785d80c278b334fab65d4acced307504358554844c2007ab0322b7ab2b7bfa2bc39563bf823654a36","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1722458067,"observationsTimestamp":1722458067}
 
-    ```bash
-    go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-    ```
+    2024-07-31T15:34:27-05:00
+    --- Report Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 ---
+    ------------------------------------------
+    Observations Timestamp : 1722458067
+    Benchmark Price        : 3232051369848762000000
+    Bid                    : 3232019831592780500000
+    Ask                    : 3232082908104743600000
+    Valid From Timestamp   : 1722458067
+    Expires At             : 1722544467
+    Link Fee               : 7776444105849300
+    Native Fee             : 30940102293200
+    ------------------------------------------
 
-    Expect output similar to the following in your terminal:
+    2024-07-31T15:34:27-05:00
+    --- Stream Stats ---
+    accepted: 1, deduplicated: 0, total_received 1, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
 
-        ```
-        Generating HMAC with the following:  GET /api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 <YOUR_CLIENT_ID> 1712557137856
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49aa08000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c540000000000000000000000000000000000000000000000000000000066138c5400000000000000000000000000000000000000000000000000001a8d2d99af3c0000000000000000000000000000000000000000000000000014193c2106c39c000000000000000000000000000000000000000000000000000000006614ddd40000000000000000000000000000000000000000000000b9b0fee093d4178d800000000000000000000000000000000000000000000000b9b0c6cc20c60f80400000000000000000000000000000000000000000000000b9b136f506e21f9ac00000000000000000000000000000000000000000000000000000000000000002cbfff26b44d58842991f29cd912099b90672f032fbca13b4d35b870c176b50b60396640cc31466f16bcd09a1afe01597fe194870af103d7d4f5c77648358559e000000000000000000000000000000000000000000000000000000000000000232408446b215b7e0ee343144575cb39c63f694ba162ac127336996e1f8b428547a2ce48e6acee6bcb3cab020f92c9bdf3d2fd5fd8e3b832d5c2267bbe5a3a633}}
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49aa0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c550000000000000000000000000000000000000000000000000000000066138c5500000000000000000000000000000000000000000000000000001a8d2d80abb80000000000000000000000000000000000000000000000000014193b117c4380000000000000000000000000000000000000000000000000000000006614ddd50000000000000000000000000000000000000000000000b9b0ff8f82d63faa400000000000000000000000000000000000000000000000b9b0c9ce73c00f5a000000000000000000000000000000000000000000000000b9b1355091ec6ced4000000000000000000000000000000000000000000000000000000000000000028b26f5ce5210ba244241da391b852d53bb97d76b561c752f12d147c0d0e07565294f878ac10b4f8f94940374339965d3cb1f7194b0d7303a081c26bdd3f4706e000000000000000000000000000000000000000000000000000000000000000278f418c832ad07cab0522e623875c0f5b4c4359cb0ad76c571dbaa02de699ec172b5e9bd4bfc7e2d6667301555434bd01db348112666c264891c59874272c520}}
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49aa10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c560000000000000000000000000000000000000000000000000000000066138c5600000000000000000000000000000000000000000000000000001a8cefac07b000000000000000000000000000000000000000000000000000141937477f35e0000000000000000000000000000000000000000000000000000000006614ddd60000000000000000000000000000000000000000000000b9b2afff39fd7358400000000000000000000000000000000000000000000000b9b293198c5103b0000000000000000000000000000000000000000000000000b9b2cce4e7a9e300800000000000000000000000000000000000000000000000000000000000000002753b3027be86222709eff93f98059486c278e442535b0c53127908dab09826f22e4fd9d1148550720de61813bd294e3084d724f3d83d972d5abe684a6d9d9ce900000000000000000000000000000000000000000000000000000000000000024236585d1840548b88d2dab324ecb414fbb898f6a9dc4a80979b8f9460802955389e98a95dd26ffc9813489dd2747b6394f95934034ebe1e47fa822bb7419b13}}
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49aa14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c570000000000000000000000000000000000000000000000000000000066138c5700000000000000000000000000000000000000000000000000001a8cef5e26300000000000000000000000000000000000000000000000000014191020cfc724000000000000000000000000000000000000000000000000000000006614ddd70000000000000000000000000000000000000000000000b9b2b21fed369590400000000000000000000000000000000000000000000000b9b28e01befceded800000000000000000000000000000000000000000000000b9b2d381feb661a9a00000000000000000000000000000000000000000000000000000000000000002c99d39f03b2e1dc88597401992d0ab2a2ebb829725a7aff4a5b2312dd9d79ccf0447a62620c088d68d577c63029cad7bd46e354775e9d5e1ddb30db3854bb9380000000000000000000000000000000000000000000000000000000000000002158b93031523cda28c976edd47c4b9b6500c13e65026422be3e623de4251fca45ed0107225c022c1a3480cdebc0cb86d5365bc8538702d13d7d80934c12a3275}}
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49aa18000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c580000000000000000000000000000000000000000000000000000000066138c5800000000000000000000000000000000000000000000000000001a8cf081ff1400000000000000000000000000000000000000000000000000141946a6b6b830000000000000000000000000000000000000000000000000000000006614ddd80000000000000000000000000000000000000000000000b9b2aa26b724837a200000000000000000000000000000000000000000000000b9ae56d1e39f64f0000000000000000000000000000000000000000000000000b9b39e26a94459d6a00000000000000000000000000000000000000000000000000000000000000002c633d7ac6c69851ef98d890df1b4ba2d31d9a44fcb4e7d40ed91a6a088cf66c58f194573f0ff92f72d87c49fbb07637a35591a7d5c0746666415a46d6a5300f800000000000000000000000000000000000000000000000000000000000000027be80f9819c263925579e18bae6660cd509f4723ffa2417efe9bcc659045af021e8dad3f288a6e166e1bc43fe8c0e0910becdc395f1ff09602ebec10da2dd120}}
-        2024/04/08 08:19:04 Websocket: Sending ping...
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49ab03000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c590000000000000000000000000000000000000000000000000000000066138c5900000000000000000000000000000000000000000000000000001a8cf0bc3f300000000000000000000000000000000000000000000000000014194ce58b2658000000000000000000000000000000000000000000000000000000006614ddd90000000000000000000000000000000000000000000000b9b2a88f4e6b50f2e00000000000000000000000000000000000000000000000b9aeb43cd0a5cd7ec00000000000000000000000000000000000000000000000b9b4d02e31df9123400000000000000000000000000000000000000000000000000000000000000002de39c78c325f14159a4dc9797ccafb0d18a5ec278cd13f5ebc43c3988ce27d304d5174161b14636fcfac22bc06ea83fefd630e6ff826dc5e8ee5fed38adb42f800000000000000000000000000000000000000000000000000000000000000021537709709f273854856f78e0c36acf6580eb87cb23798ff0f8d5fd14b14beed7439265bdd11aca9d9a7f981251fc995c687750cb324d0a61b1e70155d0075b1}}
-        2024/04/08 08:19:05 Websocket: Received pong...
-        Received the following message:  {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49ab07000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c5a0000000000000000000000000000000000000000000000000000000066138c5a00000000000000000000000000000000000000000000000000001a8cf593f46c000000000000000000000000000000000000000000000000001419360d1b077c000000000000000000000000000000000000000000000000000000006614ddda0000000000000000000000000000000000000000000000b9b286b0a60b5f3ca00000000000000000000000000000000000000000000000b9ae8a4a15117180000000000000000000000000000000000000000000000000b9b4eabe86f969652000000000000000000000000000000000000000000000000000000000000000023ede508913fc4066c754edba91d60e12c71911d616231da453e27eba07f34538dc3f32ae21d6ab44cff5fbba64b240f38252ee0a483c6450518257dc748926e900000000000000000000000000000000000000000000000000000000000000021650e1dc132ec7d7ef19672d3ae8c4e0bd1a069439d017664bb665d29a3b415163c6aa6172b2fb6e1658dee2e09292b741fc81cd17cce224e6e790fe3749df2f}}
-        ```
+    2024-07-31T15:34:28-05:00 Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff15780000000000000000000000000000000000000000000000000000000035252f14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066aa9fd40000000000000000000000000000000000000000000000000000000066aa9fd400000000000000000000000000000000000000000000000000001c23c416de34000000000000000000000000000000000000000000000000001ba0909c32d3c00000000000000000000000000000000000000000000000000000000066abf1540000000000000000000000000000000000000000000000af35f59d91552300000000000000000000000000000000000000000000000000af34696c66686640800000000000000000000000000000000000000000000000af3c6a5680c2a6000000000000000000000000000000000000000000000000000000000000000000020d3c5953a51793330c4bb5082d0e82eca98281d340d56088b5707dbc77e5c106311585b943ced71c62a3e6b100dc9316c3580354aee92626280228dd9b6a2c3900000000000000000000000000000000000000000000000000000000000000026398ed0026b877ba17280888f1c7f93f42ca4c3148cf33761412af03b19c08880e4ee75f222eb928db5429fc4339aa1e275bf5a5ffeb6345aa0acef594024abc","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1722458068,"observationsTimestamp":1722458068}
 
-    When you examine a message from the WebSocket connection's output, you notice that it contains two values:
+    2024-07-31T15:34:28-05:00
+    --- Report Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 ---
+    ------------------------------------------
+    Observations Timestamp : 1722458068
+    Benchmark Price        : 3232068400000000000000
+    Bid                    : 3231956881848792400000
+    Ask                    : 3232533600000000000000
+    Valid From Timestamp   : 1722458068
+    Expires At             : 1722544468
+    Link Fee               : 7776367327499200
+    Native Fee             : 30939939266100
+    ------------------------------------------
 
-    ```
-    {{0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49ab07000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c5a0000000000000000000000000000000000000000000000000000000066138c5a00000000000000000000000000000000000000000000000000001a8cf593f46c000000000000000000000000000000000000000000000000001419360d1b077c000000000000000000000000000000000000000000000000000000006614ddda0000000000000000000000000000000000000000000000b9b286b0a60b5f3ca00000000000000000000000000000000000000000000000b9ae8a4a15117180000000000000000000000000000000000000000000000000b9b4eabe86f969652000000000000000000000000000000000000000000000000000000000000000023ede508913fc4066c754edba91d60e12c71911d616231da453e27eba07f34538dc3f32ae21d6ab44cff5fbba64b240f38252ee0a483c6450518257dc748926e900000000000000000000000000000000000000000000000000000000000000021650e1dc132ec7d7ef19672d3ae8c4e0bd1a069439d017664bb665d29a3b415163c6aa6172b2fb6e1658dee2e09292b741fc81cd17cce224e6e790fe3749df2f}}
-    ```
+    2024-07-31T15:34:28-05:00
+    --- Stream Stats ---
+    accepted: 2, deduplicated: 0, total_received 2, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
 
-    - The first value `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` is the `feedId`. In this example, it is the ETH/USD feed on Arbitrum Sepolia.
-    - The second value is the `FullReport` payload in hexadecimal. It contains the encoded report data, which you'll decode in the next section. Save the `FullReport` payload value for the next step.
+    2024-07-31T15:34:29-05:00 Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff15780000000000000000000000000000000000000000000000000000000035252f19000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066aa9fd50000000000000000000000000000000000000000000000000000000066aa9fd500000000000000000000000000000000000000000000000000001c2232164340000000000000000000000000000000000000000000000000001ba02d9e17e83c0000000000000000000000000000000000000000000000000000000066abf1550000000000000000000000000000000000000000000000af3fbd367bea5ac0000000000000000000000000000000000000000000000000af3f1f78eb5653c0000000000000000000000000000000000000000000000000af405a99196de7800000000000000000000000000000000000000000000000000000000000000000020a7b2c4de654a6fb2e0b9c3706521a94bb852c705fe03e682da43301986c229f99b40a47c34b2d23c51e6323274d68b5c6d0d36dbc02586233d50dfc3ef193700000000000000000000000000000000000000000000000000000000000000002364b1b5d922cfe20faa94011a22324ed452fe17a0c1d1475a468974a39419aae33a027865c4a2738fbd59f2ce3a1c72435054a72084b4802f205fe7a690d1ecc","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1722458069,"observationsTimestamp":1722458069}
 
-**Note**: In this example, you listen to a single feed. You can listen to multiple feeds by providing the feed IDs as command line arguments separated by spaces. For example:
+    2024-07-31T15:34:29-05:00
+    --- Report Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 ---
+    ------------------------------------------
+    Observations Timestamp : 1722458069
+    Benchmark Price        : 3232773100000000000000
+    Bid                    : 3232728700000000000000
+    Ask                    : 3232817400000000000000
+    Valid From Timestamp   : 1722458069
+    Expires At             : 1722544469
+    Link Fee               : 7775942157527100
+    Native Fee             : 30933194785600
+    ------------------------------------------
 
-```bash
-go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
-```
+    2024-07-31T15:34:29-05:00
+    --- Stream Stats ---
+    accepted: 3, deduplicated: 0, total_received 3, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
 
-### Decode the reports
-
-1.  Open `decodeFullReportHex.go` file located at the root of your project directory.
-
-1.  Replace the `fullReportHex` variable value within the `main` function with the hexadecimal value you saved earlier from your WebSocket message output, without the `0x` prefix:
-
-        ```go
-        [...]
-
-        func main() {
-        // Sample FullReport payload extracted from the WebSocket message as a hex string
-        fullReportHex := "0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000001d49ab07000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066138c5a0000000000000000000000000000000000000000000000000000000066138c5a00000000000000000000000000000000000000000000000000001a8cf593f46c000000000000000000000000000000000000000000000000001419360d1b077c000000000000000000000000000000000000000000000000000000006614ddda0000000000000000000000000000000000000000000000b9b286b0a60b5f3ca00000000000000000000000000000000000000000000000b9ae8a4a15117180000000000000000000000000000000000000000000000000b9b4eabe86f969652000000000000000000000000000000000000000000000000000000000000000023ede508913fc4066c754edba91d60e12c71911d616231da453e27eba07f34538dc3f32ae21d6ab44cff5fbba64b240f38252ee0a483c6450518257dc748926e900000000000000000000000000000000000000000000000000000000000000021650e1dc132ec7d7ef19672d3ae8c4e0bd1a069439d017664bb665d29a3b415163c6aa6172b2fb6e1658dee2e09292b741fc81cd17cce224e6e790fe3749df2f"
-
-        [...]
-        ```
-
-1.  Run the decoding script by executing the following command in your terminal:
-
-    ```bash
-    go run decodeFullReportHex.go
-    ```
-
-    The `decodedReport` contains structured data about the report, including `FeedId` and `FeedVersion`.
-
-    Expect output similar to the following in your terminal:
-
-    ```
-    Decoded Report: &{FeedId:0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 FeedVersion:3 V2Report:<nil> V3Report:0x140001b4c60 Round:11 Epoch:1919476 Digest:[0 6 249 181 83 227 147 206 211 17 85 30 253 48 209 222 206 219 99 215 106 212 23 55 70 46 44 219 189 255 21 120]}
-    Valid From Timestamp: 1712557606
-    Observations Timestamp: 1712557606
-    Native Fee: 29191712479600
-    Link Fee: 5655191262392300
-    Expires At: 1712644006
-    Benchmark Price: 3425629793731062400000
-    Bid: 3425455500000000000000
-    Ask: 3425747100000000000000
-    ```
+   [...]
+   ```
 
 #### Decoded report details
 
 The decoded report details include:
 
-| Attribute              | Value                                                                | Description                                                                                                                                                                                                           |
-| ---------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feed ID                | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the Data Streams feed. In this example, the feed is ETH/USD on Arbitrum Sepolia with the Basic Report schema.                                                                               |
-| Feed Version           | `3`                                                                  | The feed report schema version.                                                                                                                                                                                       |
-| Valid From Timestamp   | `1712557606`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                               |
-| Observations Timestamp | `1712557606`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                  |
-| Native Fee             | `29191712479600`                                                     | The fee to pay in the native blockchain token (e.g., testnet ETH on Arbitrum Sepolia) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
-| Link Fee               | `5655191262392300`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.005655191262` LINK. **Note:** This example fee is not indicative of actual fees.                 |
-| Expires At             | `1712644006`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                      |
-| Benchmark Price        | `3425629793731062400000`                                             | The observed price in the report, with 18 decimals. For readability: `3,425.6297937310624` ETH per USD.                                                                                                               |
-| Bid                    | `3425455500000000000000`                                             | The simulated price impact of a buy order up to the X% depth of liquidity usage. For readability: `3,425.4555` ETH per USD.                                                                                           |
-| Ask                    | `3425747100000000000000`                                             | The simulated price impact of a sell order up to the X% depth of liquidity usage. For readability: `3,425.7471` ETH per USD.                                                                                          |
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the Data Streams feed. In this example, the feed is for ETH/USD.                                                                                                                             |
+| `Observations Timestamp` | `1722458069`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                   |
+| `Benchmark Price`        | `3232773100000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `3,232.7731000000000` USD per ETH.                                                                                                                |
+| `Bid`                    | `3232728700000000000000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,232.7287000000000` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices).    |
+| `Ask`                    | `3232817400000000000000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,232.8174000000000` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices). |
+| `Valid From Timestamp`   | `1722458069`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                |
+| `Expires At`             | `1722544469`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                       |
+| `Link Fee`               | `7775942157527100`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.0077759421575271` LINK.                                                                           |
+| `Native Fee`             | `30933194785600`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                  |
 
-### Verify report data onchain
+#### Payload for onchain verification
 
-In this tutorial, you log and decode the `FullReport` payloads to extract the reports data. In a
+In this guide, you log and decode the `fullReport` payload to extract the report data. In a
 production environment, you should verify the data onchain to ensure its integrity and authenticity. Refer to the
 [Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
 
 ## Explanation
 
-### Establishing a WebSocket connection and listening for message reports
+### Establishing a WebSocket connection and listening for reports
 
-The [`ConnectAndListen`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/websocket/client/clientWs.go#L70) function in the `client` package initializes the connection and enables the application to listen for messages from the Data Streams Aggregation Network via WebSocket.
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
 
-- Authentication and security: Uses HMAC headers, created with `CLIENT_ID` and `CLIENT_SECRET`, for secure, authenticated communication.
-- Continuous listening: After authentication, continuously listens for real-time report messages, which include the `feedId` and the encoded `FullReport`.
+Once the WebSocket connection is established, your application subscribes to one or more Data Streams feeds by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified feeds.
 
 ### Decoding a report
 
-The [`DecodeFullReportAndReportData`](https://github.com/smartcontractkit/smart-contract-examples/blob/c7a3acfecd30902b8fa7929d276a2b421a55fdec/data-streams/streams-direct/websocket/internal/decoder.go#L102) function in the `internal` package unpacks the `FullReport` payload, decodes the `FullReport`'s `ReportBlob`, and decodes the report data into a structured format:
+As data reports arrive via the established WebSocket connection, they are processed in real-time:
 
-1. It unpacks the `FullReport` payload that includes the report context, the report blob and raw signatures:
+- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
 
-   - Report context: The report context contains metadata such as the `feedId` and the report version.
-   - Cryptographic signatures: These signatures validate the data's integrity and authenticity.
-
-1. Report data decoding: The function proceeds to decode the report data into a structured format.
+- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L26) function parses and transforms the raw data into a structured format (`v3.Data`). This decoded data includes data such as the benchmark price and [bid and ask](/data-streams/concepts/liquidity-weighted-prices) prices.
 
 ### Handling the decoded data
 
