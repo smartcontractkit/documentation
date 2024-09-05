@@ -1,10 +1,96 @@
 ---
-import DocsLayout from "~/layouts/DocsLayout.astro"
+import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
+import Hero from "~/components/CCIP/Hero/Hero"
+import { getAllChains, Version } from "~/config/data/ccip"
+import { ALL_CHAINS, CHAINS, getNetworkFromQueryString } from "~/features/data/chains"
+import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
+import TokenCard from "~/components/CCIP/Cards/TokenCard"
+
 const entry = await getEntry("ccip", "index")
-const { Content, headings } = await entry.render()
+const { headings } = await entry.render()
+const chains = getAllChains({
+  mainnetVersion: Version.V1_2_0,
+  testnetVersion: Version.V1_2_0,
+})
+console.log(chains)
+const network = getNetworkFromQueryString(chains[1])
+console.log(network)
+ALL_CHAINS.forEach((chain) => {
+  console.log(chain)
+})
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
-  <Content />
-</DocsLayout>
+<CcipLayout frontmatter={entry.data} {headings}>
+  <Hero />
+  <section class="layout">
+    <div>
+      <h2>Networks</h2>
+      <div class="networks__grid">
+        {
+          CHAINS.map((network) => (
+            <NetworkCard name={network.title} totalLanes={0} totalTokens={0} logo={network.img} />
+          ))
+        }
+      </div>
+    </div>
+    <div>
+      <h2>Tokens</h2>
+      <div class="tokens__grid">
+        {CHAINS.map((network) => <TokenCard name={network.page} logo={network.img} />)}
+      </div>
+    </div>
+  </section>
+</CcipLayout>
+
+<style>
+  .layout {
+    --gutter: var(--space-6x);
+    --doc-padding: 2rem;
+    /* margin-bottom: 0; */
+    margin: var(--space-8x) auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gutter);
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+  }
+
+  .networks__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8x);
+  }
+
+  .tokens__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8x);
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: 1440px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-24x);
+    }
+
+    .networks__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6x);
+    }
+
+    .tokens__grid {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-6x);
+    }
+  }
+</style>
