@@ -2,42 +2,52 @@
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
 import Hero from "~/components/CCIP/Hero/Hero"
-import { getAllChains, Version } from "~/config/data/ccip"
-import { ALL_CHAINS, CHAINS, getNetworkFromQueryString } from "~/features/data/chains"
+import { Environment, getAllChains, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
+import { directoryToSupportedChain, getTitle, getChainIcon } from "~/features/utils"
 
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
-const chains = getAllChains({
-  mainnetVersion: Version.V1_2_0,
-  testnetVersion: Version.V1_2_0,
+const networks = getAllNetworks({ filter: "mainnet" })
+const supportedTokens = getAllSupportedTokens({
+  environment: Environment.Mainnet,
+  version: Version.V1_2_0,
 })
-console.log(chains)
-const network = getNetworkFromQueryString(chains[1])
-console.log(network)
-ALL_CHAINS.forEach((chain) => {
-  console.log(chain)
+
+const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+
+const allTokens = tokens.map((token) => {
+  return {
+    name: token,
+    logo: "/assets/chains/avalanche.svg",
+    totalNetworks: 0,
+  }
 })
 ---
 
 <CcipLayout frontmatter={entry.data} {headings}>
-  <Hero />
+  <Hero chains={networks} tokens={allTokens} client:load="react" />
   <section class="layout">
     <div>
-      <h2>Networks</h2>
+      <h2>Networks <span>({networks.length})</span></h2>
       <div class="networks__grid">
         {
-          CHAINS.map((network) => (
-            <NetworkCard name={network.title} totalLanes={0} totalTokens={0} logo={network.img} />
+          networks.map((chain) => (
+            <NetworkCard
+              name={chain.name}
+              totalLanes={chain.totalLanes}
+              totalTokens={chain.totalTokens}
+              logo={chain.logo}
+            />
           ))
         }
       </div>
     </div>
     <div>
-      <h2>Tokens</h2>
+      <h2>Tokens <span>({allTokens.length})</span></h2>
       <div class="tokens__grid">
-        {CHAINS.map((network) => <TokenCard name={network.page} logo={network.img} />)}
+        {allTokens.map((token) => <TokenCard name={token.name} logo={token.logo} />)}
       </div>
     </div>
   </section>
@@ -57,6 +67,12 @@ ALL_CHAINS.forEach((chain) => {
   .layout h2 {
     color: var(--gray-900);
     font-size: 22px;
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
   }
 
   .networks__grid {

@@ -31,7 +31,7 @@ import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json
 import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
 
 import { SupportedChain } from "@config/types"
-import { directoryToSupportedChain, supportedChainToChainInRdd } from "@features/utils"
+import { directoryToSupportedChain, getChainIcon, getTitle, supportedChainToChainInRdd } from "@features/utils"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -304,4 +304,37 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
       image: CCIPTokenImage,
     },
   }
+}
+
+export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) => {
+  const chains = getAllChains({
+    mainnetVersion: Version.V1_2_0,
+    testnetVersion: Version.V1_2_0,
+  })
+
+  const allChains: {
+    name: string
+    logo: string
+    totalLanes: number
+    totalTokens: number
+  }[] = []
+
+  for (const chain of chains) {
+    const directory = directoryToSupportedChain(chain)
+    const title = getTitle(directory)
+    if (filter) {
+      if (!title?.includes(filter)) {
+        continue
+      }
+    }
+    const logo = getChainIcon(directory)
+    allChains.push({
+      name: title?.replace(" mainnet", "") || "",
+      logo: logo || "",
+      totalLanes: 0,
+      totalTokens: 0,
+    })
+  }
+
+  return allChains
 }
