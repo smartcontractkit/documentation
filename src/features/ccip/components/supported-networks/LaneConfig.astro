@@ -13,7 +13,6 @@ import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
-import { Tooltip } from "@features/common/Tooltip"
 import { TokenExtraInfo } from "./types"
 import TokenSearch from "./TokenSearch"
 
@@ -37,7 +36,7 @@ const {
   version,
   destinationChainSelector,
 } = Astro.props as ConfigProps
-const { rateLimiterConfig, supportedTokens, onRamp } = laneConfig
+const { supportedTokens, onRamp, offRamp } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
@@ -100,6 +99,8 @@ const explorerUrl = getExplorer(sourceChain)
 if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChain}`)
 
 const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp)
+
+const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp)
 
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
@@ -180,94 +181,56 @@ if (supportedTokens) {
       >
     </tr>
     <tr>
-      <td>Destination chain selector</td>
+      <td>OffRamp address</td>
       <td
-        ><CopyText
-          text={destinationChainSelector}
-          code
+        ><Address
+          contractUrl={offRampExplorerUrl}
           eventName="docs_product_interaction"
           additionalInfo={{
             product: "CCIP",
-            action: "ccip_destinationChainSelector_copied",
+            action: "ccip_offRampAddress_copied",
             extraInfo1: sourceChain,
             extraInfo2: destinationChainRefId,
           }}
           client:only="preact"
         /></td
       >
+      <tr>
+        <td>Destination chain selector</td>
+        <td
+          ><CopyText
+            text={destinationChainSelector}
+            code
+            eventName="docs_product_interaction"
+            additionalInfo={{
+              product: "CCIP",
+              action: "ccip_destinationChainSelector_copied",
+              extraInfo1: sourceChain,
+              extraInfo2: destinationChainRefId,
+            }}
+            client:only="preact"
+          /></td
+        >
+      </tr>
     </tr>
   </tbody>
-</table>
-<br />
+  <br />
 
-{
-  tokensWithExtraInfo.length > 0 ? (
-    <>
-      {rateLimiterConfig && rateLimiterConfig.isEnabled ? (
-        <table>
-          <>
-            <thead>
-              <tr>
-                <>
-                  <th>Aggregate Rate Limit</th>
-                  <th>Value</th>
-                </>
-              </tr>
-            </thead>
-            <tbody>
-              <>
-                <tr>
-                  <>
-                    <td>
-                      <Tooltip
-                        tip="Maximum amount per transaction"
-                        label="Capacity"
-                        style={{ marginTop: "0" }}
-                        client:load
-                      />
-                    </td>
-                    <td>{display(rateLimiterConfig.capacity)} USD</td>
-                  </>
-                </tr>
-                <tr>
-                  <>
-                    <td>
-                      <Tooltip
-                        tip="Rate at which available capacity is replenished"
-                        label="Refill rate"
-                        style={{ marginTop: "0" }}
-                        client:load
-                      />
-                    </td>
-                    <td>
-                      {(() => {
-                        const { rateSecond, maxThroughput } = displayRate(
-                          rateLimiterConfig.capacity,
-                          rateLimiterConfig.rate,
-                          "USD"
-                        )
-
-                        return <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
-                      })()}
-                    </td>
-                  </>
-                </tr>
-              </>
-            </tbody>
-          </>
-        </table>
-      ) : null}
+  {
+    tokensWithExtraInfo.length > 0 ? (
       <>
-        <p>
-          <strong>Transferable tokens</strong>
-        </p>
-        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
+        <>
+          <p>
+            <strong>Transferable tokens</strong>
+          </p>
+          <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
+        </>
       </>
-    </>
-  ) : (
-    <Aside>
-      No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
-      their token listed.
-    </Aside>
-  )
-}
+    ) : (
+      <Aside>
+        No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
+        their token listed.
+      </Aside>
+    )
+  }
+</table>
