@@ -306,6 +306,31 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
   }
 }
 
+export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+  let tokensTestData
+  switch (filter) {
+    case "mainnet":
+      tokensTestData = tokensMainnetv120
+      break
+    case "testnet":
+      tokensTestData = tokensTestnetv120
+      break
+    default:
+      throw new Error(`Invalid testnet version: ${filter}`)
+  }
+
+  const tokensResult: string[] = []
+
+  for (const token in tokensTestData) {
+    const tokenData = tokensTestData[token]
+    if (tokenData[chain]) {
+      tokensResult.push(token)
+    }
+  }
+
+  return tokensResult
+}
+
 export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
@@ -328,11 +353,13 @@ export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) =
       }
     }
     const logo = getChainIcon(directory)
+    const token = getTokensOfChain({ chain, filter: "mainnet" })
+    console.log({ token })
     allChains.push({
       name: title?.replace(" mainnet", "") || "",
       logo: logo || "",
       totalLanes: 0,
-      totalTokens: 0,
+      totalTokens: token.length,
     })
   }
 
