@@ -195,7 +195,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
 
     /// @notice Sends data and transfer tokens to receiver on the destination chain.
     /// @notice Pay for fees in native gas.
-    /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or MATIC on Polygon.
+    /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or POL on Polygon.
     /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
     /// @param _receiver The address of the recipient on the destination blockchain.
     /// @param _text The string data to be sent.
