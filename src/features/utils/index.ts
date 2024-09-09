@@ -63,6 +63,14 @@ export const getTitle = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.title
 }
 
+export const getTokenIconUrl = (token: string) => {
+  if (!token) return
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${token.toLowerCase()}.webp?auto=compress%2Cformat`
+}
+
+export const fallbackTokenIconUrl =
+  "https://d2f70xi62kby8n.cloudfront.net/ccip-ui/ccip-hexagon-bg.svg?auto=compress%2Cformat"
+
 export const getChainId = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return
