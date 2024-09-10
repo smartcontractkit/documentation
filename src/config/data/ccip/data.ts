@@ -354,7 +354,7 @@ export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) =
     }
     const logo = getChainIcon(directory)
     const token = getTokensOfChain({ chain, filter: "mainnet" })
-    console.log({ token })
+
     allChains.push({
       name: title?.replace(" mainnet", "") || "",
       logo: logo || "",
