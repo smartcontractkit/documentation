@@ -19,7 +19,7 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
           <DocsPickerDesktop pathname={pathname} />
           <div className={styles.links}>
             <button className={styles.link} onClick={() => setIsModalOpen(true)}>
-              <img height={24} width={24} src="/assets/icons/quick-links.svg" />
+              <img height={20} width={20} src="/assets/icons/quick-links.svg" />
               <span>Quick Links</span>
             </button>
             <a
@@ -28,7 +28,7 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img height={24} width={24} src="/assets/icons/github-blue.svg" />
+              <img height={20} width={20} src="/assets/icons/github-blue.svg" />
               <span>Github</span>
             </a>
           </div>
