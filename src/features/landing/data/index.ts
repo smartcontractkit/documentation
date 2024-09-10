@@ -101,7 +101,6 @@ export const evmProducts = [
       { id: "arbitrum", title: "Arbitrum" },
       { id: "optimism", title: "Optimism" },
       { id: "base", title: "BASE" },
-      { id: "celo", title: "Celo" },
     ],
   },
   {
