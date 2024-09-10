@@ -6,6 +6,7 @@ import rehypeSlug from "rehype-slug"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
+import vercel from "@astrojs/vercel/serverless"
 import { RehypePlugins } from "@astrojs/markdown-remark"
 
 // https://astro.build/config
@@ -36,4 +37,8 @@ export default defineConfig({
     syntaxHighlight: "prism",
     smartypants: false,
   },
+  output: "hybrid",
+  adapter: vercel({
+    skewProtection: true,
+  }),
 })
