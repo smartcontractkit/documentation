@@ -331,7 +331,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: "ma
   return tokensResult
 }
 
-export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) => {
+export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "testnet" }) => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
@@ -354,10 +354,9 @@ export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) =
       }
     }
     const logo = getChainIcon(directory)
-    const token = getTokensOfChain({ chain, filter: "mainnet" })
-
+    const token = getTokensOfChain({ chain, filter })
     allChains.push({
-      name: title?.replace(" mainnet", "") || "",
+      name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
       logo: logo || "",
       totalLanes: 0,
       totalTokens: token.length,

@@ -8,9 +8,10 @@ import TokenCard from "~/components/CCIP/Cards/TokenCard"
 
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
-const networks = getAllNetworks({ filter: "mainnet" })
+const filterNetwork = window.url.searchParams.get("network") || "testnet"
+const networks = getAllNetworks({ filter: ["mainnet", "testnet"].includes(filterNetwork) ? filterNetwork : "mainnet" })
 const supportedTokens = getAllSupportedTokens({
-  environment: Environment.Mainnet,
+  environment: filterNetwork === "testnet" ? Environment.Testnet : Environment.Mainnet,
   version: Version.V1_2_0,
 })
 
@@ -29,7 +30,7 @@ const allTokens = tokens.map((token) => {
   <Hero chains={networks} tokens={allTokens} client:load />
   <section class="layout">
     <div>
-      <h2>Networks <span>({networks.length})</span></h2>
+      <h2>Networks {filterNetwork} <span>({networks.length})</span></h2>
       <div class="networks__grid">
         {
           networks.map((chain) => (
