@@ -10,8 +10,7 @@ import buttonStyles from "@chainlink/design-system/button.module.css"
 // disable unnecessary warnings
 ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR)
 
-const chainlinkLogo =
-  "https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa973e31adbc3414aa8f77d_Chainlink-webclip.png"
+const chainlinkLogo = "https://docs.chain.link/images/logo.png"
 
 const separator = "_"
 const addressPattern = "0x[0-9a-fA-F]{40}"

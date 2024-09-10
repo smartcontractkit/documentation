@@ -2,17 +2,19 @@ import React from "react"
 import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config"
 import { clsx } from "~/lib"
 import styles from "./category.module.css"
+import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
 
 type ListItemProps = {
   item: ProductItem
   onProductClick: (subProducts: SubProducts) => void
+  currentPath: string
 }
 
 const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
-  ({ item: { label, icon, href, subProducts }, onProductClick }, forwardedRef) => {
+  ({ item: { label, icon, href, subProducts }, onProductClick, currentPath }, forwardedRef) => {
     const itemComponent = (
       <>
-        {icon && <img height={24} width={24} src={icon} />}
+        {icon && <img height={20} width={20} src={icon} />}
         <span style={{ flex: 1, textAlign: "start" }} className="text-300">
           {label}
         </span>
@@ -38,7 +40,7 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
 
     return subProducts ? (
       <button
-        className={clsx(styles.link, "product-link")}
+        className={clsx(styles.link, "product-link", { [styles.active]: isMatchedPath(currentPath, href) })}
         style={{ marginTop: "var(--space-0x)" }}
         onClick={handleProductClick}
         data-testid="sub-product-navigation-trigger-mobile"
@@ -59,14 +61,15 @@ type CategoryProps = {
   label?: string
   items: ProductItem[]
   onProductClick: (subProducts: SubProducts) => void
+  currentPath: string
 }
 
-export const Category = ({ label, items, onProductClick }: CategoryProps) => {
+export const Category = ({ label, items, onProductClick, currentPath }: CategoryProps) => {
   return (
     <li className={styles.category}>
       {label && <p className={styles.label}>{label}</p>}
       {items.map((item) => (
-        <Item key={item.label} {...{ item, onProductClick }} />
+        <Item key={item.label} {...{ item, onProductClick, currentPath }} />
       ))}
     </li>
   )

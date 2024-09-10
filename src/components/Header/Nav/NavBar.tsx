@@ -2,10 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { ProductsNav, SubProductsNav } from "./config"
 import styles from "./navBar.module.css"
 import { clsx } from "./utils"
-import { useScrollDirection } from "./useScrollDirection"
-import { useScrollPosition } from "./useScrollPosition"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
-import { useHideHeader } from "./useHideHeader"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
 import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
 import { Search } from "../aiSearch/Search"
@@ -30,7 +27,6 @@ export const navBarHeight = 64
 export const NavBar = ({
   path,
   searchTrigger,
-  onHideChange,
   productsNav,
   subProductsNav,
   showMegaMenu,
@@ -41,16 +37,6 @@ export const NavBar = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
   const isInnerPage = path !== "/"
-
-  const scrollDirection = useScrollDirection()
-  const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
-  const { shouldHideHeader } = useHideHeader({
-    isMenuOpen,
-    scrollDirection,
-    onHideChange,
-    isAtTopOfPage,
-    isAtBottomOfPage,
-  })
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
@@ -94,9 +80,7 @@ export const NavBar = ({
   return (
     <>
       <header className={styles.header} ref={navRef}>
-        <div
-          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
-        >
+        <div className={clsx(styles.navBar, { [styles.noShadow]: isInnerPage })}>
           <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
@@ -122,30 +106,8 @@ export const NavBar = ({
               />
             </div>
             <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
-              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
               <div id="weglot" className={styles.weglotContainer} />
-              <div className={styles.quickLinksWrapper}>
-                <button className={styles.quickLinksButton} onClick={toggleModal}>
-                  <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Search" />
-                </button>
-                <Search variant="mobile" />
-                <span className={styles.quickLinksTooltip}>
-                  <img
-                    src="https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat"
-                    className={styles.infoIcon}
-                    alt="Info"
-                  />
-                  Quick links for Builders
-                </span>
-              </div>
-              <a
-                rel="noreferrer noopener"
-                target="_blank"
-                className={clsx(styles.button)}
-                href="https://github.com/smartcontractkit/documentation"
-              >
-                <img width="24px" height="24px" src="/assets/github.svg" />
-              </a>
+              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import styles from "./bottomBar.module.css"
 
 const ResourcesButton = () => (
   <a rel="noreferrer noopener" target="_blank" href="https://github.com/smartcontractkit/documentation">
-    <img height={24} width={24} src="/assets/icons/github-blue.svg" />
+    <img height={20} width={20} src="/assets/icons/github-blue.svg" />
     GitHub
   </a>
 )

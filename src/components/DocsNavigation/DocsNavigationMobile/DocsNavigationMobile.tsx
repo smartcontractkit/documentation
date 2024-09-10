@@ -12,7 +12,7 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
           [styles.hidden]: $navBarInfo.hidden,
         })}
       >
-        <div className={styles.container}>
+        <div className={styles.DocsPickerContainer}>
           <DocsPickerMobile path={pathname} />
         </div>
       </nav>

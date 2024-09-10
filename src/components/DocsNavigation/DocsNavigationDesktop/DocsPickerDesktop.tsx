@@ -14,7 +14,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
 
   return (
     <div
-      className={styles.container}
+      className={styles.docsPickerContainer}
       onMouseEnter={() => setProductMenuOpen(true)}
       onMouseLeave={() => setProductMenuOpen(false)}
     >
@@ -30,7 +30,10 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
               .filter((item) => !item.hideFromDropdown && item.col === 1)
               .map((item) => (
                 <li className={clsx(styles.item)} key={item.label}>
-                  <a className={clsx(styles.link)} href={item.href}>
+                  <a
+                    className={clsx(styles.link, { [styles.active]: isMatchedPath(pathname, item.href) })}
+                    href={item.href}
+                  >
                     <img className={clsx(styles.icon)} src={item.icon}></img>
                     {item.label}
                   </a>
