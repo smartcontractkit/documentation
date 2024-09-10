@@ -85,8 +85,8 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "polygon",
-    title: "Polygon (Matic) Data Feeds",
-    label: "Polygon (Matic)",
+    title: "Polygon Data Feeds",
+    label: "Polygon",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
     tags: ["default", "proofOfReserve"],
