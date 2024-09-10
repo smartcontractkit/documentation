@@ -1,19 +1,24 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
+import { v4 as uuidv4 } from "uuid"
 import buttonStyles from "@chainlink/design-system/button.module.css"
 import styles from "./Feedback.module.css"
 import ThumbUpIcon from "./Assets/ThumbUpIcon"
 import ThumbDownIcon from "./Assets/ThumbDownIcon"
 
 export const Feedback = () => {
-  const [feedbackType, setFeedbackType] = useState("")
+  const [feedbackType, setFeedbackType] = useState({ type: "", uuid: "" })
   const [feedbackGiven, setFeedbackGiven] = useState(false)
   const [showFeedbackForm, setShowFeedbackForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hoverState, setHoverState] = useState({ thumbUp: false, thumbDown: false })
 
   const handleFeedback = (type) => {
-    setFeedbackType(type)
+    const feedbackUUID = uuidv4()
+    setFeedbackType({
+      type,
+      uuid: feedbackUUID,
+    })
     setShowFeedbackForm(true)
   }
 
@@ -28,21 +33,16 @@ export const Feedback = () => {
       msg: message,
       time: Date.now(),
       url: window.location.href,
-      type: feedbackType, // "positive" or "negative"
+      type: feedbackType.type, // "positive" or "negative"
+      uuid: feedbackType.uuid,
     }
 
-    // Dispatch a custom event based on the feedback type
-    if (feedbackType === "positive") {
-      window.dataLayer.push({
-        event: "positive_feedback_submitted",
-        feedback_message: data.msg,
-      })
-    } else if (feedbackType === "negative") {
-      window.dataLayer.push({
-        event: "negative_feedback_submitted",
-        feedback_message: data.msg,
-      })
-    }
+    // Push to dataLayer
+    window.dataLayer.push({
+      event: feedbackType.type + "_feedback_submitted",
+      feedback_message: data.msg,
+      feedback_uuid: data.uuid,
+    })
 
     const path = "https://docs-feedbacks-22203-default-rtdb.firebaseio.com/feedback.json"
     setIsSubmitting(true)

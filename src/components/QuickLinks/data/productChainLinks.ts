@@ -33,6 +33,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/ccip/supported-networks/v1_2_0/mainnet#polygon-mainnet",
       wemix: "/ccip/supported-networks/v1_2_0/mainnet#wemix-mainnet",
       mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
+      metis: "/ccip/supported-networks/v1_2_0/mainnet#metis-mainnet",
     },
   },
   "Data Feeds": {
@@ -66,6 +67,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       arbitrum: "/data-streams/stream-ids",
       avalanche: "/data-streams/stream-ids",
+      base: "/data-streams/stream-ids",
     },
   },
   Functions: {
@@ -75,6 +77,7 @@ export const productChainLinks: ProductChainLinks = {
       arbitrum: "/chainlink-functions/supported-networks#arbitrum",
       avalanche: "/chainlink-functions/supported-networks#avalanche",
       base: "/chainlink-functions/supported-networks#base",
+      celo: "/chainlink-functions/supported-networks#celo",
       ethereum: "/chainlink-functions/supported-networks#ethereum",
       optimism: "/chainlink-functions/supported-networks#optimism",
       polygon: "/chainlink-functions/supported-networks#polygon",
@@ -92,7 +95,7 @@ export const productChainLinks: ProductChainLinks = {
       fantom: "/chainlink-automation/overview/supported-networks#fantom",
       "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis-chain-xdai",
       optimism: "/chainlink-automation/overview/supported-networks#optimism",
-      polygon: "/chainlink-automation/overview/supported-networks#polygon-matic",
+      polygon: "/chainlink-automation/overview/supported-networks#polygon",
     },
   },
   VRF: {
@@ -104,7 +107,7 @@ export const productChainLinks: ProductChainLinks = {
       "bnb-chain": "/vrf/v2-5/supported-networks#bnb-chain",
       ethereum: "/vrf/v2-5/supported-networks#ethereum-mainnet",
       fantom: "/vrf/v2/subscription/supported-networks#fantom-mainnet",
-      polygon: "/vrf/v2-5/supported-networks#polygon-matic-mainnet",
+      polygon: "/vrf/v2-5/supported-networks#polygon-mainnet",
     },
   },
   linkTokenContracts: {
@@ -125,7 +128,7 @@ export const productChainLinks: ProductChainLinks = {
     moonriver: "/resources/link-token-contracts#moonriver",
     optimism: "/resources/link-token-contracts#optimism",
     polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
-    polygon: "/resources/link-token-contracts#polygon-matic",
+    polygon: "/resources/link-token-contracts#polygon",
     scroll: "/resources/link-token-contracts#scroll",
     solana: "/resources/link-token-contracts#solana",
     wemix: "/resources/link-token-contracts#wemix",

@@ -1,7 +1,8 @@
 ---
-import { ChainConfig } from "@config/data/ccip/types"
+import type { ChainConfig } from "@config/data/ccip/types"
 import { loadReferenceData, Environment, Version } from "@config/data/ccip/"
 import { Address, CopyText, Accordion } from "@components"
+import { Tooltip } from "@features/common/Tooltip"
 import {
   getTitle,
   getExplorer,
@@ -9,17 +10,20 @@ import {
   getNativeCurrency,
   directoryToSupportedChain,
   getChainIcon,
+  getTokenIconUrl,
+  fallbackTokenIconUrl,
 } from "@features/utils"
 import LaneConfig from "./LaneConfig.astro"
 
 type ConfigProps = {
   chainConfig: ChainConfig
+  chainTitle: string
   sourceChainRefId: string // id in reference directory
   environment: Environment
   version: Version
 }
 
-const { chainConfig, environment, sourceChainRefId, version } = Astro.props as ConfigProps
+const { chainConfig, chainTitle, environment, sourceChainRefId, version } = Astro.props as ConfigProps
 const { router, chainSelector, feeTokens } = chainConfig
 const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
 const sourceChainTitle = getTitle(sourceChainKey)
@@ -65,6 +69,14 @@ const nativeTokenHasAddress = feeTokensWithAddresses.some(
 )
 
 const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
+
+const sortedLaneEntries = Object.entries(laneReferenceData).sort(
+  ([destinationChainRefIdA, laneConfigA], [destinationChainRefIdB, laneConfigB]) => {
+    const destinationChainTitleA = getTitle(directoryToSupportedChain(destinationChainRefIdA)) || ""
+    const destinationChainTitleB = getTitle(directoryToSupportedChain(destinationChainRefIdB)) || ""
+    return destinationChainTitleA.localeCompare(destinationChainTitleB)
+  }
+)
 ---
 
 <table>
@@ -72,11 +84,35 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
   <tbody>
     <tr>
       <td>Router address</td>
-      <td><Address contractUrl={routerExplorerUrl} /></td>
+      <td
+        ><Address
+          contractUrl={routerExplorerUrl}
+          eventName="docs_product_interaction"
+          additionalInfo={{
+            product: "CCIP",
+            action: "routerAddress_copied",
+            extraInfo1: sourceChainRefId,
+          }}
+          client:only="preact"
+        /></td
+      >
     </tr>
     <tr>
-      <td>Chain selector</td>
-      <td><CopyText text={chainSelector} code /></td>
+      <td><Tooltip tip="CCIP Blockchain identifier" label="Chain selector" style={{ marginTop: "0" }} client:load /></td
+      >
+      <td
+        ><CopyText
+          text={chainSelector}
+          eventName="docs_product_interaction"
+          additionalInfo={{
+            product: "CCIP",
+            action: "ccip_sourceChainSelector_copied",
+            extraInfo1: sourceChainRefId,
+          }}
+          code
+          client:only="preact"
+        /></td
+      >
     </tr>
     <tr>
       <td>Fee tokens</td>
@@ -86,11 +122,28 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
             {
               feeTokensWithAddresses.map((feeTokenWithAddress) => (
                 <tr>
-                  <td>{feeTokenWithAddress.token}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(feeTokenWithAddress.token)}`}
+                      alt={`${feeTokenWithAddress.token} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {feeTokenWithAddress.token}
+                  </td>
                   <td>
                     <Address
                       contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)}
                       endLength={7}
+                      eventName="docs_product_interaction"
+                      additionalInfo={{
+                        product: "CCIP",
+                        action: "ccip_feeToken_copied",
+                        extraInfo1: sourceChainRefId,
+                        extraInfo2: feeTokenWithAddress.token,
+                      }}
+                      client:only="preact"
                     />
                   </td>
                 </tr>
@@ -99,7 +152,16 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
             {
               !nativeTokenHasAddress && (
                 <tr>
-                  <td>{nativeCurrency.symbol}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                      alt={`${nativeCurrency.symbol} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {nativeCurrency.symbol}
+                  </td>
                   <td>Native gas token</td>
                 </tr>
               )
@@ -113,7 +175,7 @@ const laneReferenceData = loadReferenceData({ environment, version }).lanesRefer
 <br />
 
 {
-  Object.entries(laneReferenceData).map(([destinationChainRefId, laneConfig], index) => {
+  sortedLaneEntries.map(([destinationChainRefId, laneConfig], index) => {
     const destinationChainKey = directoryToSupportedChain(destinationChainRefId)
     const destinationChainTitle = getTitle(destinationChainKey)
     if (!destinationChainTitle) throw Error(`Title not found for chain ${destinationChainKey}`)
