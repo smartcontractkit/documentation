@@ -77,6 +77,7 @@ export const productChainLinks: ProductChainLinks = {
       arbitrum: "/chainlink-functions/supported-networks#arbitrum",
       avalanche: "/chainlink-functions/supported-networks#avalanche",
       base: "/chainlink-functions/supported-networks#base",
+      celo: "/chainlink-functions/supported-networks#celo",
       ethereum: "/chainlink-functions/supported-networks#ethereum",
       optimism: "/chainlink-functions/supported-networks#optimism",
       polygon: "/chainlink-functions/supported-networks#polygon",
