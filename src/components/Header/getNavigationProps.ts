@@ -150,6 +150,7 @@ const docsSections = [
         href: "/vrf",
         icon: vrfLogo.src,
         subProducts: getSubProducts(sidebar.vrf),
+        divider: true,
       },
       {
         label: "Automation",

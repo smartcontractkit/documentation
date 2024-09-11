@@ -1,4 +1,5 @@
 import styles from "./bottomBar.module.css"
+import { clsx } from "~/lib"
 
 const ResourcesButton = () => (
   <a rel="noreferrer noopener" target="_blank" href="https://github.com/smartcontractkit/documentation">
@@ -10,7 +11,7 @@ const ResourcesButton = () => (
 export const BottomBar = () => {
   const buttons = [<ResourcesButton />]
   return (
-    <div className={styles.bottomBar}>
+    <div className={clsx(styles.bottomBar, "text-200")}>
       <div>
         {buttons.map((ButtonComponent, index) => (
           <div key={index}>{ButtonComponent}</div>

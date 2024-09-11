@@ -11,11 +11,11 @@ type ListItemProps = {
 }
 
 const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
-  ({ item: { label, icon, href, subProducts }, onProductClick, currentPath }, forwardedRef) => {
+  ({ item: { label, icon, href, subProducts, divider = false }, onProductClick, currentPath }, forwardedRef) => {
     const itemComponent = (
       <>
         {icon && <img height={20} width={20} src={icon} />}
-        <span style={{ flex: 1, textAlign: "start" }} className="text-300">
+        <span style={{ flex: 1, textAlign: "start" }} className="text-200">
           {label}
         </span>
       </>
@@ -40,7 +40,10 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
 
     return subProducts ? (
       <button
-        className={clsx(styles.link, "product-link", { [styles.active]: isMatchedPath(currentPath, href) })}
+        className={clsx(styles.link, "product-link", {
+          [styles.active]: isMatchedPath(currentPath, href),
+          [styles.divider]: divider,
+        })}
         style={{ marginTop: "var(--space-0x)" }}
         onClick={handleProductClick}
         data-testid="sub-product-navigation-trigger-mobile"
