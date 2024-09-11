@@ -12,18 +12,22 @@ export type BannerContent = {
   linkUrl?: string
 }
 
-const bannerTypes: Record<BannerType, { primaryColour: string }> = {
+const bannerTypes: Record<BannerType, { primaryColour: string, textColour: string }> = {
   info: {
     primaryColour: "var(--blue-800)",
+    textColour: "var(--white)"
   },
   success: {
     primaryColour: "var(--green-600)",
+    textColour: "var(--white)"
   },
   warning: {
     primaryColour: "var(--yellow-400)",
+    textColour: "var(--black)"
   },
   danger: {
     primaryColour: "var(--red-600)",
+    textColour: "var(--black)"
   },
 }
 
@@ -41,10 +45,10 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
       className={clsx(headerbanner.container, headerbannerCustom.container)}
       style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}
     >
-      <p>
+      <p style={{ color: bannerTypes[bannerContent.type].textColour}}>
         {bannerContent.description}{" "}
         {bannerContent.linkUrl && (
-          <a target="_blank" href={bannerContent.linkUrl}>
+          <a target="_blank" href={bannerContent.linkUrl} style={{ color: bannerTypes[bannerContent.type].textColour, textDecoration: "underline"}}>
             {bannerContent.linkText}
           </a>
         )}
