@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from "react"
 import { ProductsNav, SubProductsNav } from "./config"
 import styles from "./navBar.module.css"
 import { clsx } from "./utils"
+import { useScrollDirection } from "./useScrollDirection"
+import { useScrollPosition } from "./useScrollPosition"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
+import { useHideHeader } from "./useHideHeader"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
 import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
 import { Search } from "../aiSearch/Search"
@@ -27,6 +30,7 @@ export const navBarHeight = 64
 export const NavBar = ({
   path,
   searchTrigger,
+  onHideChange,
   productsNav,
   subProductsNav,
   showMegaMenu,
@@ -37,6 +41,16 @@ export const NavBar = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
   const isInnerPage = path !== "/"
+
+  const scrollDirection = useScrollDirection()
+  const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
+  const { shouldHideHeader } = useHideHeader({
+    isMenuOpen,
+    scrollDirection,
+    onHideChange,
+    isAtTopOfPage,
+    isAtBottomOfPage,
+  })
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
@@ -80,7 +94,9 @@ export const NavBar = ({
   return (
     <>
       <header className={styles.header} ref={navRef}>
-        <div className={clsx(styles.navBar, { [styles.noShadow]: isInnerPage })}>
+        <div
+          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
+        >
           <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
