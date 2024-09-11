@@ -7,8 +7,6 @@ import { useScrollPosition } from "./useScrollPosition"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
 import { useHideHeader } from "./useHideHeader"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
-import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
-import { Search } from "../aiSearch/Search"
 
 declare const Weglot: any
 
