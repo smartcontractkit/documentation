@@ -149,18 +149,20 @@ function MegaMenu({ cancel }: MegaMenuProps) {
         <div className={styles.resourcesMenuContentMain}>
           {megaMenuSections.map((section) => (
             <div className={styles.resourcesMenuContentRow} key={section.title}>
-              <h2>{section.title}</h2>
+              <h2 className="label">{section.title}</h2>
               {section.items.map((item, index) => (
                 <Fragment key={index}>
                   <div className={styles.megaMenuLink}>
                     {item?.image?.src && <img src={item.image.src} alt={item.title} />}
-                    <h3>{item.title}</h3>
+                    <h3 className="heading-100">{item.title}</h3>
                   </div>
                   <div className={styles.links}>
-                    <p>{item.description}</p>
+                    <p className="paragraph-100">{item.description}</p>
                     {item.links.map((link, index) => (
                       <Fragment key={index}>
-                        <a href={link.href}>{link.label}</a>
+                        <a href={link.href} className="text-100">
+                          {link.label}
+                        </a>
                         {index < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
                       </Fragment>
                     ))}
@@ -170,7 +172,7 @@ function MegaMenu({ cancel }: MegaMenuProps) {
               {section.bottomLinks && (
                 <div className={styles.bottomLinks}>
                   {section.bottomLinks.map((link, index) => (
-                    <div className={styles.bottomLink} key={index}>
+                    <div className="label" key={index}>
                       <a href={link.href} target="_blank" rel="noopener noreferrer">
                         {link.label}
                       </a>
@@ -183,19 +185,23 @@ function MegaMenu({ cancel }: MegaMenuProps) {
           ))}
         </div>
         <div className={styles.resourcesMenuContentFeatured}>
-          <h2>Featured</h2>
+          <h2 className="label">Featured</h2>
           <a href="/ccip/getting-started">
             <img src="/images/megamenu-featured.png" alt="" className={styles.featuredImage} />
           </a>
           <div className={styles.divider}></div>
 
-          <h3>Hardhat CLI for Data Streams</h3>
+          <h3 className="heading-100">Hardhat CLI for Data Streams</h3>
           <div className={styles.links}>
-            <a href="https://docs.chain.link/data-streams/getting-started-hardhat">Docs</a>
+            <a href="https://docs.chain.link/data-streams/getting-started-hardhat" className="text-100">
+              Docs
+            </a>
           </div>
-          <h3>Try out Chainlink Automation</h3>
+          <h3 className="heading-100">Try out Chainlink Automation</h3>
           <div className={styles.links}>
-            <a href="https://docs.chain.link/chainlink-automation/overview/getting-started">Docs</a>
+            <a href="https://docs.chain.link/chainlink-automation/overview/getting-started" className="text-100">
+              Docs
+            </a>
           </div>
         </div>
       </div>

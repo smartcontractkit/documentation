@@ -9,7 +9,7 @@ function MegaMenu() {
       <div className={styles.resourcesMenuContentMain}>
         {megaMenuSections.map((section) => (
           <div className={styles.resourcesMenuContentRow} key={section.title}>
-            <h2>{section.title}</h2>
+            <h2 className="label">{section.title}</h2>
             {section.items.map((item, index) => (
               <MegaMenuItem
                 key={index}
@@ -23,13 +23,13 @@ function MegaMenu() {
         ))}
 
         <div className={styles.bottomLinks}>
-          <div className={styles.bottomLink}>
+          <div className="label">
             <a href="/cross-chain" target="_blank" rel="noopener noreferrer">
               View all resources
             </a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
-          <div className={styles.bottomLink}>
+          <div className="label">
             <a href="#" target="_blank" rel="noopener noreferrer">
               Learn about Chainlink
             </a>
@@ -70,16 +70,18 @@ function MegaMenuItem({
       <button className={styles.megaMenuButton} onClick={() => setOpen((state) => !state)}>
         <div className={styles.megaMenuLink}>
           <img src={image} alt={title} />
-          <h3>{title}</h3>
+          <h3 className="heading-100">{title}</h3>
         </div>
         <span>{open ? "-" : "+"}</span>
       </button>
       {open && (
         <div className={styles.links}>
-          <p>{description}</p>
+          <p className="paragraph-100">{description}</p>
           {links.map((link, index) => (
             <Fragment key={index}>
-              <a href={link.href}>{link.label}</a>
+              <a href={link.href} className="text-100">
+                {link.label}
+              </a>
               {index < links.length - 1 && <span className={styles.verticalDivider}></span>}
             </Fragment>
           ))}
