@@ -153,7 +153,7 @@ function MegaMenu({ cancel }: MegaMenuProps) {
               {section.items.map((item, index) => (
                 <Fragment key={index}>
                   <div className={styles.megaMenuLink}>
-                    <img src={item.image.src} alt={item.title} />
+                    {item?.image?.src && <img src={item.image.src} alt={item.title} />}
                     <h3>{item.title}</h3>
                   </div>
                   <div className={styles.links}>

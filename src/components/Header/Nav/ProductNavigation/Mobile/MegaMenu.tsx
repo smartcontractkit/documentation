@@ -13,8 +13,8 @@ function MegaMenu() {
             {section.items.map((item, index) => (
               <MegaMenuItem
                 key={index}
-                image={item.image.src}
-                title={item.title}
+                image={item.image?.src}
+                title={item?.title}
                 description={item.description}
                 links={item.links}
               />
@@ -59,10 +59,10 @@ function MegaMenuItem({
   description,
   links,
 }: {
-  image: string
-  title: string
-  description: string
-  links: { href: string; label: string }[]
+  image?: string
+  title?: string
+  description?: string
+  links: { label: string; href: string | undefined }[]
 }) {
   const [open, setOpen] = useState(false)
   return (
