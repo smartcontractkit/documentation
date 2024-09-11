@@ -10,6 +10,8 @@ import {
   getNativeCurrency,
   directoryToSupportedChain,
   getChainIcon,
+  getTokenIconUrl,
+  fallbackTokenIconUrl,
 } from "@features/utils"
 import LaneConfig from "./LaneConfig.astro"
 
@@ -120,7 +122,16 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
             {
               feeTokensWithAddresses.map((feeTokenWithAddress) => (
                 <tr>
-                  <td>{feeTokenWithAddress.token}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(feeTokenWithAddress.token)}`}
+                      alt={`${feeTokenWithAddress.token} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {feeTokenWithAddress.token}
+                  </td>
                   <td>
                     <Address
                       contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)}
@@ -141,7 +152,16 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
             {
               !nativeTokenHasAddress && (
                 <tr>
-                  <td>{nativeCurrency.symbol}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                      alt={`${nativeCurrency.symbol} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {nativeCurrency.symbol}
+                  </td>
                   <td>Native gas token</td>
                 </tr>
               )
