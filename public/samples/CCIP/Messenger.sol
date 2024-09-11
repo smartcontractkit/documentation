@@ -258,7 +258,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             Client.EVM2AnyMessage({
                 receiver: abi.encode(_receiver), // ABI-encoded receiver address
                 data: abi.encode(_text), // ABI-encoded string
-                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
                     // Additional arguments, setting gas limit
                     Client.EVMExtraArgsV1({gasLimit: 200_000})
