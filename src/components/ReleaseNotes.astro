@@ -1,0 +1,27 @@
+---
+import changelog from "../../public/changelog.json"
+import { marked } from "marked"
+import { Aside } from "@components"
+
+export type Props = {
+  topic: string
+  subTopic?: string
+}
+
+const { topic, subTopic } = Astro.props as Props
+
+const entries = changelog.filter(
+  (entry) => entry.topic === topic || (subTopic && subTopic ? entry.subTopic == subTopic : false)
+)
+---
+
+{
+  entries.map((entry) => (
+    <section>
+      <h2 id={entry.date + "-" + entry.title.toLowerCase().replace(/ /g, "-")}>
+        {entry.date} - {entry.title}
+      </h2>
+      <article set:html={marked.parse(entry.description)} />
+    </section>
+  ))
+}
