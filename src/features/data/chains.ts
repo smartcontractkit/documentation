@@ -434,7 +434,7 @@ export const CHAINS: Chain[] = [
     label: "Soneium",
     title: "Soneium Data Feeds",
     img: "/assets/chains/soneium.svg",
-    networkStatusUrl: "https://polygonscan.freshstatus.io/",
+    networkStatusUrl: "https://explorer-testnet.soneium.org",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
