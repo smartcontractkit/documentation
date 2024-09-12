@@ -407,7 +407,7 @@ export const CHAINS: Chain[] = [
   {
     page: "polygonzkevm",
     label: "Polygon zkEVM",
-    title: "Polygon zkEVM",
+    title: "Polygon zkEVM Data Feeds",
     img: "/assets/chains/polygonzkevm.svg",
     networkStatusUrl: "https://polygonscan.freshstatus.io/",
     tags: ["default"],
@@ -425,6 +425,24 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://cardona-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-polygon-zkevm-1.json",
+        queryString: "polygon-zkevm-testnet",
+      },
+    ],
+  },
+  {
+    page: "soneium",
+    label: "Soneium",
+    title: "Soneium Data Feeds",
+    img: "/assets/chains/soneium.svg",
+    networkStatusUrl: "https://explorer-testnet.soneium.org",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Soneium Minato Testnet",
+        explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-soneium-1.json",
         queryString: "polygon-zkevm-testnet",
       },
     ],
