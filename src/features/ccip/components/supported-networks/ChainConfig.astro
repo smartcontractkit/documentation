@@ -5,12 +5,13 @@ import { Address, CopyText, Accordion } from "@components"
 import { Tooltip } from "@features/common/Tooltip"
 import {
   getTitle,
-  getChainId,
   getExplorer,
   getExplorerAddressUrl,
   getNativeCurrency,
   directoryToSupportedChain,
   getChainIcon,
+  getTokenIconUrl,
+  fallbackTokenIconUrl,
 } from "@features/utils"
 import LaneConfig from "./LaneConfig.astro"
 
@@ -27,8 +28,6 @@ const { router, chainSelector, feeTokens } = chainConfig
 const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
 const sourceChainTitle = getTitle(sourceChainKey)
 if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
-const sourceChainId = getChainId(sourceChainKey)
-if (!sourceChainId) throw Error(`Chain id not found for chain ${sourceChainKey}`)
 const sourceChainIcon = getChainIcon(sourceChainKey)
 if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
 const explorerUrl = getExplorer(sourceChainKey)
@@ -116,30 +115,6 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
       >
     </tr>
     <tr>
-      <td
-        ><Tooltip
-          tip="Unique numeric blockchain identifier - Chain identifier (chainID) was introduced in EIP-155 to protect against replay attacks."
-          label="Chain id"
-          style={{ marginTop: "0" }}
-          client:load
-        /></td
-      >
-      <td
-        ><CopyText
-          text={sourceChainId.toString()}
-          eventName="docs_product_interaction"
-          additionalInfo={{
-            product: "CCIP",
-            action: "ccip_chainId_copied",
-            extraInfo1: sourceChainId.toString(),
-            extraInfo2: sourceChainRefId,
-          }}
-          code
-          client:only="preact"
-        /></td
-      >
-    </tr>
-    <tr>
       <td>Fee tokens</td>
       <td>
         <table>
@@ -147,7 +122,16 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
             {
               feeTokensWithAddresses.map((feeTokenWithAddress) => (
                 <tr>
-                  <td>{feeTokenWithAddress.token}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(feeTokenWithAddress.token)}`}
+                      alt={`${feeTokenWithAddress.token} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {feeTokenWithAddress.token}
+                  </td>
                   <td>
                     <Address
                       contractUrl={getExplorerAddressUrl(explorerUrl)(feeTokenWithAddress.address)}
@@ -168,7 +152,16 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
             {
               !nativeTokenHasAddress && (
                 <tr>
-                  <td>{nativeCurrency.symbol}</td>
+                  <td>
+                    <img
+                      width="16"
+                      height="16"
+                      src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                      alt={`${nativeCurrency.symbol} icon`}
+                      onerror={`this.onerror=null; this.src='${fallbackTokenIconUrl}'`}
+                    />{" "}
+                    {nativeCurrency.symbol}
+                  </td>
                   <td>Native gas token</td>
                 </tr>
               )
