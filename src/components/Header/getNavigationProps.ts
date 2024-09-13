@@ -92,12 +92,6 @@ const desktopSubProductsNav = [
     col: 2,
   },
   {
-    label: "General",
-    href: "/resources",
-    icon: generalLogo.src,
-    col: 2,
-  },
-  {
     label: "Quickstarts",
     href: "/quickstarts",
     icon: quickstartLogo.src,
