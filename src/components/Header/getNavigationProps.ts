@@ -4,6 +4,7 @@ import functionsLogo from "../../assets/product-logos/functions-logo.svg"
 import automationLogo from "../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
+import chainlinkLocal from "../../assets/product-logos/chainlink-local.png"
 import generalLogo from "../../assets/product-logos/general-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
@@ -79,6 +80,12 @@ const desktopSubProductsNav = [
     col: 1,
   },
   {
+    label: "Chainlink Local",
+    href: "/chainlink-local",
+    icon: chainlinkLocal.src,
+    col: 2,
+  },
+  {
     label: "Nodes",
     href: "/chainlink-nodes",
     icon: nodesLogo.src,
@@ -90,25 +97,13 @@ const desktopSubProductsNav = [
     icon: generalLogo.src,
     col: 2,
   },
-  { label: "Chainlink Local", href: "/chainlink-local", icon: quickstartLogo.src },
   {
     label: "Quickstarts",
     href: "/quickstarts",
     icon: quickstartLogo.src,
     col: 2,
   },
-  {
-    label: "Any-API",
-    href: "/any-api",
-    icon: quickstartLogo.src,
-    col: 2,
-  },
-  {
-    label: "Architecture",
-    href: "/architecture-overview/architecture-overview",
-    icon: quickstartLogo.src,
-    col: 2,
-  },
+
   {
     label: "Documentation",
     href: "/",
