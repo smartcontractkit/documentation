@@ -186,20 +186,20 @@ function MegaMenu({ cancel }: MegaMenuProps) {
         </div>
         <div className={styles.resourcesMenuContentFeatured}>
           <h2 className="label">Featured</h2>
-          <a href="/ccip/getting-started">
+          <a href="/chainlink-local">
             <img src="/images/megamenu-featured.jpg" alt="" className={styles.featuredImage} />
           </a>
           <div className={styles.divider}></div>
 
           <h3 className="heading-100">Hardhat CLI for Data Streams</h3>
           <div className={styles.links}>
-            <a href="https://docs.chain.link/data-streams/getting-started-hardhat" className="text-100">
+            <a href="/data-streams/getting-started-hardhat" className="text-100">
               Docs
             </a>
           </div>
           <h3 className="heading-100">Try out Chainlink Automation</h3>
           <div className={styles.links}>
-            <a href="https://docs.chain.link/chainlink-automation/overview/getting-started" className="text-100">
+            <a href="/chainlink-automation/overview/getting-started" className="text-100">
               Docs
             </a>
           </div>
