@@ -11,7 +11,7 @@ export type Props = {
 const { topic, subTopic } = Astro.props as Props
 
 const entries = changelog.filter(
-  (entry) => entry.topic === topic || (subTopic && subTopic ? entry.subTopic == subTopic : false)
+  (entry) => (entry.topic === topic && !subTopic) || (subTopic && entry.subTopic === subTopic)
 )
 ---
 
