@@ -10,15 +10,15 @@ import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
 
 ## Overview
 
-The Automated Portfolio Manager automatically rebalances an investment portfolio using real-time data from on-chain and off-chain sources. These contracts enable adjustments in asset allocations within a portfolio based on dynamic market conditions, sentiment scores, and volatility indicators such as the Gold Volatility Index (GVZ). This approach provides a modern way to manage digital assets.
+The Automated Portfolio Manager automatically rebalances an investment portfolio using real-time data from onchain and offchain sources. These contracts enable adjustments in asset allocations within a portfolio based on dynamic market conditions, sentiment scores, and volatility indicators such as the Gold Volatility Index (GVZ). This approach provides a modern way to manage digital assets.
 
 A live demo is available at https://automated-portfolio-manager.vercel.app.
 
 ## Objectives
 
-The example contract supports dynamic asset management using tokens that adhere to the ERC20 standard. For this demonstration, Mimic Tokens representing gold (mXAU), Wrapped Bitcoin (mWBTC), and Ethereum (mETH) are used as the underlying assets. These tokens are automatically bought or sold to mirror changes in crypto market sentiment and gold volatility (GVZ) to ensure the portfolio adjusts to evolving market conditions. This functionality demonstrates how blockchain and Chainlink technologies can be used to create a dynamic investment strategy that adapts to global financial movements in real-time.
+The example contract supports dynamic asset management using tokens that adhere to the ERC20 standard. For this demonstration, Mimic Tokens representing gold (mXAU), Wrapped Bitcoin (mWBTC), and Ethereum (mETH) are used as the underlying assets. These tokens are automatically bought or sold to mirror changes in crypto market sentiment and gold volatility (GVZ) to ensure the portfolio adjusts to evolving market conditions. This functionality demonstrates how blockchain and Chainlink technologies can be used to create a dynamic investment strategy that adapts to global financial movements in real time.
 
-**Note**: In a real-world use case, you can integrate the portfolio rebalancing mechanism with any DeFi protocol, such as a swapping mechanism, investments in ERC-4626 vaults, etc.
+**Note**: In a real-world use case, you can integrate the portfolio rebalancing mechanism with any DeFi protocol, such as a swapping mechanism or investments in ERC-4626 vaults. 
 
 <ClickToZoom src="/images/quickstarts/automated-portfolio-manager/Automated_Portfolio_Manager_Concept.webp" />
 
@@ -57,7 +57,7 @@ The rebalancing strategy and logic outlined in this tutorial are solely for educ
 - **Etherscan API Key**: An API key to verify your deployed contracts on the Etherscan block explorer.
 - **CryptoCompare API key**: You need an API key to fetch BTC and ETH [trading signals](https://min-api.cryptocompare.com/documentation?key=TradingSignals&cat=tradingSignalsIntoTheBlockLatest) from CryptoCompare. Create one for free at [CryptoCompare](https://min-api.cryptocompare.com/). Select the _Poll Live and Historical Data_ permission level within the _Read All Price Streaming and Polling Endpoints_ dropdown menu.
 - **MarketData token**: You need a valid token from MarketData to fetch the [GVZ index](https://www.forex.com/ie/news-and-analysis/gvz-index/) value. [Create a free account](https://dashboard.marketdata.app/marketdata/signup) and generate a token. The token will be emailed to you.
-- **Chainlink Functions subscription**: A Chainlink Functions subscription is required for this guide. If you do not already have a subscription, you can create one using the [Chainlink Functions UI](https://functions.chain.link/).
+- **Chainlink Functions subscription**: A Chainlink Functions subscription is required for this guide. If you do not already have a subscription, you can create one using the [Chainlink Functions Subscription Manager](https://functions.chain.link/).
 
 ## Setup
 
@@ -68,7 +68,7 @@ The rebalancing strategy and logic outlined in this tutorial are solely for educ
    cd quickstarts-automated-portfolio-manager
    ```
 
-1. Install the front-end and back-end dependencies:
+1. Install the frontend and backend dependencies:
 
    ```bash
    make install
@@ -118,7 +118,7 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
 
 1. Open the `functions/updateRequestDon.js` script and update the `subscriptionId` variable with your Chainlink Functions subscription ID.
 
-1. Fund your Functions subscription with at least 5 testnet LINK ([Chainlink Functions UI](https://functions.chain.link/)).
+1. Fund your Functions subscription with at least 5 testnet LINK using the [Chainlink Functions Subscription Manager](https://functions.chain.link/).
 
 1. Run the following script to update the `OffchainDataFetcher` Functions request with [DON-hosted Secrets](https://docs.chain.link/chainlink-functions/resources/secrets):
 
@@ -139,7 +139,7 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
 
    **Note**: On testnets, DON-hosted secrets have a maximum Time to Live (TTL) of 72 hours. If you need to extend the TTL beyond this period, consider using [secrets hosted in your own GitHub gists](https://docs.chain.link/chainlink-functions/tutorials/api-use-secrets-gist) for your requests. For this approach, include your `GITHUB_API_TOKEN` in your `.env` file and use the `updateRequestGists.js` script instead of `updateRequestDon.js`.
 
-1. Add your `OffChainDataFetcher` contract as a consumer in your Functions subscription ([Chainlink Functions UI](https://functions.chain.link/)). **Note**: You can find your deployed `OffchainDataFetcher` contract address in `output/deployedOffchainDataFetcher.json`.
+1. Add your `OffChainDataFetcher` contract as a consumer in your Functions subscription ([Chainlink Functions Subscription Manager](https://functions.chain.link/)). **Note**: You can find your deployed `OffchainDataFetcher` contract address in `output/deployedOffchainDataFetcher.json`.
 
 </Accordion>
 
@@ -147,8 +147,8 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
 
 1. Register an upkeep to call the `sendRequestCBOR` function on your `OffchainDataFetcher` contract daily:
 
-   - Go to the [Chainlink Automation UI](https://automation.chain.link/).
-   - Create a Time-based upkeep that targets the `sendRequestCBOR` function.
+   - Go to the [Chainlink Automation App](https://automation.chain.link/).
+   - Create a time-based upkeep that targets the `sendRequestCBOR` function.
    - To run the upkeep daily at 3 AM UTC, use the following CRON expression: `0 3 * * *`.
    - Set the gas limit to `1000000`.
    - Fund your upkeep with 5 testnet LINK.
@@ -161,7 +161,7 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
    - Enter your `OffchainDataFetcher` contract address in the search bar. **Note**: This address is available in `output/deployedOffchainDataFetcher.json`.
    - Select the `Contract` section, then click on the `Write Contract` tab.
    - Connect your admin account, which is the wallet you used to deploy the contract.
-   - Call the `setAutomationCronContract` function with the `Upkeep address` as the input parameter. **Note**: You can find the `Upkeep address` in the Details section of your upkeep in the [Automation UI](https://automation.chain.link/).
+   - Call the `setAutomationCronContract` function with the `Upkeep address` as the input parameter. **Note**: You can find the `Upkeep address` in the Details section of your upkeep in the [Chainlink Automation App](https://automation.chain.link/).
 
 </Accordion>
 
@@ -179,7 +179,7 @@ forge script script/DeployAutomatedPortfolioManager.s.sol --rpc-url $RPC_URL_SEP
 
 <Accordion title="Create a custom upkeep" number={2}>
 
-1. Go to the [Chainlink Automation UI](https://automation.chain.link/).
+1. Go to the [Chainlink Automation App](https://automation.chain.link/).
 
 1. Create a new Custom logic upkeep with a starting balance of 5 testnet LINK. **Note**: You can find your deployed `AutomatedPortfolioManager` contract address in `output/deployedPortfolioManager.json`.
 
@@ -189,7 +189,7 @@ forge script script/DeployAutomatedPortfolioManager.s.sol --rpc-url $RPC_URL_SEP
    - Enter your `AutomatedPortfolioManager` contract address in the search bar. **Note**: This address is available in `output/deployedPortfolioManager.json`.
    - Select the `Contract` section, then click on the `Write Contract` tab.
    - Connect your admin account, which is the wallet you used to deploy the contract.
-   - In the function inputs, enter the `Forwarder address` into the `setAutomationUpkeepForwarderContract` function. **Note**: You can find the `Forwarder address` in the Details section of your upkeep in the [Automation UI](https://automation.chain.link/).
+   - In the function inputs, enter the `Forwarder address` into the `setAutomationUpkeepForwarderContract` function. **Note**: You can find the `Forwarder address` in the Details section of your upkeep in the [Automation App](https://automation.chain.link/).
 
 </Accordion>
 
