@@ -36,6 +36,16 @@ contract MessageDispatcher is OwnerIsCreator {
     /// @notice Array to store registered messages.
     Message[] public registeredMessages;
 
+    /// @notice Event emitted when a message is registered for later dispatch.
+    /// @param chainSelector The chain selector of the destination chain.
+    /// @param receiver The address of the receiver on the destination chain.
+    /// @param text The text message to be sent.
+    event MessageRegistered(
+        uint64 indexed chainSelector,
+        address indexed receiver,
+        string text
+    );
+
     /// @notice Event emitted when a message is sent to another chain.
     /// @param messageId The unique ID of the CCIP message.
     /// @param destinationChainSelector The chain selector of the destination chain.
@@ -109,6 +119,8 @@ contract MessageDispatcher is OwnerIsCreator {
                 text: _text
             })
         );
+
+        emit MessageRegistered(_chainSelector, _receiver, _text);
     }
 
     /// @notice Sends all registered messages to their respective chains.
@@ -120,11 +132,11 @@ contract MessageDispatcher is OwnerIsCreator {
         }
 
         for (uint256 i = 0; i < messageCount; i++) {
-            Message storage message = registeredMessages[i];
+            Message memory message = registeredMessages[i];
 
             string memory messageText = message.text;
 
-            bytes32 messageId = _sendMessage(
+            (bytes32 messageId, uint256 fees) = _sendMessage(
                 message.chainSelector,
                 message.receiver,
                 messageText
@@ -137,7 +149,7 @@ contract MessageDispatcher is OwnerIsCreator {
                 message.receiver,
                 messageText,
                 address(s_linkToken),
-                s_linkToken.balanceOf(address(this))
+                fees
             );
         }
 
@@ -159,7 +171,7 @@ contract MessageDispatcher is OwnerIsCreator {
         for (uint256 i = 0; i < messageCount; i++) {
             Message calldata message = messages[i];
 
-            bytes32 messageId = _sendMessage(
+            (bytes32 messageId, uint256 fees) = _sendMessage(
                 message.chainSelector,
                 message.receiver,
                 message.text
@@ -172,7 +184,7 @@ contract MessageDispatcher is OwnerIsCreator {
                 message.receiver,
                 message.text,
                 address(s_linkToken),
-                s_linkToken.balanceOf(address(this))
+                fees
             );
         }
     }
@@ -186,7 +198,7 @@ contract MessageDispatcher is OwnerIsCreator {
         uint64 _destinationChainSelector,
         address _receiver,
         string memory _text
-    ) private returns (bytes32 messageId) {
+    ) private returns (bytes32 messageId, uint256 fees) {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
             _receiver,
@@ -195,16 +207,19 @@ contract MessageDispatcher is OwnerIsCreator {
         );
 
         // Get the fee required to send the CCIP message
-        uint256 fees = s_router.getFee(
-            _destinationChainSelector,
-            evm2AnyMessage
-        );
+        fees = s_router.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
-        // Approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        s_linkToken.approve(address(s_router), fees);
+        // Increase the allowance of the LINK token to the router contract if necessary
+        uint256 currentAllowance = s_linkToken.allowance(
+            address(this),
+            address(s_router)
+        );
+        if (currentAllowance < fees) {
+            s_linkToken.safeApprove(address(s_router), fees - currentAllowance);
+        }
 
         // Send the CCIP message through the router and store the returned CCIP message ID
         messageId = s_router.ccipSend(
@@ -212,7 +227,7 @@ contract MessageDispatcher is OwnerIsCreator {
             evm2AnyMessage
         );
 
-        return messageId;
+        return (messageId, fees);
     }
 
     /// @notice Constructs a CCIP message.
