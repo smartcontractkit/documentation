@@ -1,5 +1,6 @@
 ---
 import changelogData from "../../public/changelog.json"
+import { chainNames } from "./QuickLinks/data/productChainLinks"
 import { marked } from "marked"
 
 export type Props = {
@@ -12,7 +13,7 @@ export interface ChangelogEntry {
   changes?: string[]
   date: string
   description: string
-  relatedNetworks?: string[]
+  relatedNetworks?: RelatedNetwork[]
   relatedTokens?: string[]
   title: string
   topic: string
@@ -20,7 +21,37 @@ export interface ChangelogEntry {
   urls?: string[]
 }
 
-const changelog: ChangelogEntry[] = changelogData
+type RelatedNetwork = keyof typeof chainNames
+
+function isValidNetwork(entry: any): entry is ChangelogEntry {
+  if (entry.relatedNetworks) {
+    if (!Array.isArray(entry.relatedNetworks)) {
+      throw new Error(
+        `Invalid type for field "relatedNetworks" in entry "${
+          entry.title
+        }": expected array, received ${typeof entry.relatedNetworks}`
+      )
+    }
+    for (const network of entry.relatedNetworks) {
+      if (!(network in chainNames)) {
+        throw new Error(
+          `Invalid relatedNetwork "${network}" in entry "${entry.title}". Must be one of: ${Object.keys(
+            chainNames
+          ).join(", ")}`
+        )
+      }
+    }
+  }
+  return true
+}
+
+let changelog: ChangelogEntry[] = []
+
+if (Array.isArray(changelogData)) {
+  changelog = changelogData.filter(isValidNetwork)
+} else {
+  console.error("Changelog data is not an array.")
+}
 
 const { topic, subTopic } = Astro.props as Props
 
