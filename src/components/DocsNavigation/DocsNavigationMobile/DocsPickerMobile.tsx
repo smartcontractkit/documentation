@@ -125,7 +125,7 @@ export function ProductNavigation({ path }: Props) {
             ref={closeButtonRef}
             className={clsx(styles.closeButton, { [styles.hidden]: productsSlidePosition === "submenu" })}
           >
-            <img src="/assets/icons/close.svg" />
+            <img src="/assets/icons/close-small.svg" />
           </Close>
           <BottomBar />
         </Dialog.Content>

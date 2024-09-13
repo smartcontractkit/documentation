@@ -187,7 +187,7 @@ function MegaMenu({ cancel }: MegaMenuProps) {
         <div className={styles.resourcesMenuContentFeatured}>
           <h2 className="label">Featured</h2>
           <a href="/ccip/getting-started">
-            <img src="/images/megamenu-featured.png" alt="" className={styles.featuredImage} />
+            <img src="/images/megamenu-featured.jpg" alt="" className={styles.featuredImage} />
           </a>
           <div className={styles.divider}></div>
 
