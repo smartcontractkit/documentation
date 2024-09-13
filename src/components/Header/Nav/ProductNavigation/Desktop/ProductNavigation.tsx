@@ -5,6 +5,7 @@ import { clsx } from "../../utils"
 import { extendRadixComponent } from "../extendRadixComponent"
 import styles from "./productNavigation.module.css"
 import { CaretIcon } from "../CaretIcon"
+import MegaMenu from "./MegaMenu"
 
 type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
@@ -76,8 +77,8 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </NavigationMenu.Link>
           </Item>
         </List>
+        {isMegamenuOpen && <MegaMenu cancel={exitMegamenu} />}
       </Root>
-      {/* <MegaMenu /> */}
     </>
   )
 }

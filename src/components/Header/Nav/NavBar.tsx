@@ -18,25 +18,14 @@ export type NavBarProps = {
   onHideChange?: (hidden: boolean) => void
   productsNav: ProductsNav
   subProductsNav: SubProductsNav
-  showMegaMenu: () => void
-  isMegamenuOpen: boolean
-  exitMegamenu: () => void
 }
 
 export const navBarHeight = 64
 
-export const NavBar = ({
-  path,
-  searchTrigger,
-  onHideChange,
-  productsNav,
-  subProductsNav,
-  showMegaMenu,
-  isMegamenuOpen,
-  exitMegamenu,
-}: NavBarProps) => {
+export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProductsNav }: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isMegaMenuOpen, setShowMegaMenu] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
   const isInnerPage = path !== "/"
 
@@ -89,6 +78,13 @@ export const NavBar = ({
     }
   }, [])
 
+  const exitMegamenu = () => {
+    setShowMegaMenu(false)
+  }
+  const showMegaMenu = () => {
+    setShowMegaMenu(true)
+  }
+
   return (
     <>
       <header className={styles.header} ref={navRef}>
@@ -115,7 +111,7 @@ export const NavBar = ({
                 productsNav={productsNav}
                 subProductsNav={subProductsNav}
                 showMegaMenu={showMegaMenu}
-                isMegamenuOpen={isMegamenuOpen}
+                isMegamenuOpen={isMegaMenuOpen}
                 exitMegamenu={exitMegamenu}
               />
             </div>
