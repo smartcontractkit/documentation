@@ -94,7 +94,7 @@ export const evmProducts = [
   },
   {
     title: "Functions",
-    description: "Serverless developer platform that can fetch data from any API and run custom compute.",
+    description: "Serverless platform that fetches data from any API & runs custom compute.",
     docsLandingLink: "/chainlink-functions",
     learnMoreLink: "https://dev.chain.link/products/functions",
     image: functionsLogo,
