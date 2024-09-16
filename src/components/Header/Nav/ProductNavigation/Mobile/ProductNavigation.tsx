@@ -85,7 +85,7 @@ export function ProductNavigation() {
                       Tools
                     </a>
                     <a href="" className={styles.productContentLink}>
-                      ChainLog
+                      Changelog
                     </a>
                   </ul>
                 </div>
