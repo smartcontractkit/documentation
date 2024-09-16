@@ -7,7 +7,6 @@ import { useScrollPosition } from "./useScrollPosition"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
 import { useHideHeader } from "./useHideHeader"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
-import QuickLinksIcon from "../../QuickLinks/assets/quick-links-icon.svg"
 
 declare const Weglot: any
 
@@ -26,7 +25,9 @@ export const navBarHeight = 64
 export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProductsNav }: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isMegaMenuOpen, setShowMegaMenu] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
+  const isInnerPage = path !== "/"
 
   const scrollDirection = useScrollDirection()
   const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
@@ -77,19 +78,28 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
     }
   }, [])
 
+  const exitMegamenu = () => {
+    setShowMegaMenu(false)
+  }
+  const showMegaMenu = () => {
+    setShowMegaMenu(true)
+  }
+
   return (
     <>
       <header className={styles.header} ref={navRef}>
-        <div className={clsx(styles.navBar, shouldHideHeader && styles.headerHidden)}>
-          <div className={styles.container}>
-            <div className={styles.logoSection}>
+        <div
+          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
+        >
+          <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
+            <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
                 <img
                   alt="Documentation Home"
                   title="Documentation Home"
                   style={{ display: "flex" }}
                   src="/chainlink-docs.svg"
-                  height={30}
+                  height={32}
                 />
               </a>
             </div>
@@ -100,32 +110,14 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
                 setNavMenuOpen={setIsMenuOpen}
                 productsNav={productsNav}
                 subProductsNav={subProductsNav}
+                showMegaMenu={showMegaMenu}
+                isMegamenuOpen={isMegaMenuOpen}
+                exitMegamenu={exitMegamenu}
               />
             </div>
-            <div className={styles.rightSection}>
-              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
+            <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
               <div id="weglot" className={styles.weglotContainer} />
-              <div className={styles.quickLinksWrapper}>
-                <button className={styles.quickLinksButton} onClick={toggleModal}>
-                  <img src={QuickLinksIcon.src} className={styles.quickLinksIcon} alt="Quick Links" />
-                </button>
-                <span className={styles.quickLinksTooltip}>
-                  <img
-                    src="https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat"
-                    className={styles.infoIcon}
-                    alt="Info"
-                  />
-                  Quick links for Builders
-                </span>
-              </div>
-              <a
-                rel="noreferrer noopener"
-                target="_blank"
-                className={clsx(styles.button)}
-                href="https://github.com/smartcontractkit/documentation"
-              >
-                <img width="24px" height="24px" src="/assets/github.svg" />
-              </a>
+              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
             </div>
           </div>
         </div>
