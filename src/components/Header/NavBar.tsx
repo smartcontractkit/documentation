@@ -12,13 +12,14 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
 
   const onHideChange = (hidden: boolean) => {
     if (navRef.current) {
-      const height = (navRef.current as HTMLElement).clientHeight
+      const innerDocNavHeight = 56
+      const height = (navRef.current as HTMLElement).clientHeight + innerDocNavHeight
       const elements = document.body.querySelectorAll("[data-sticky]")
       elements.forEach((e: HTMLElement) => {
         if (!e.classList.contains(styles.animateTop)) {
           e.classList.add(styles.animateTop)
         }
-        e.style.top = `${hidden ? 0 : height}px`
+        e.style.top = `${hidden ? innerDocNavHeight : height}px`
       })
       setNavBarInfo({ hidden, height })
     }
