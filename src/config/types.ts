@@ -19,6 +19,7 @@ export type SupportedTechnology =
   | "WEMIX"
   | "KROMA"
   | "MODE"
+  | "ZKSYNC"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"

@@ -166,6 +166,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "METIS_MAINNET"
     case "ethereum-testnet-sepolia-andromeda-1":
       return "METIS_SEPOLIA"
+    case "ethereum-mainnet-zksync-1":
+      return "ZKSYNC_MAINNET"
+    case "ethereum-testnet-sepolia-zksync-1":
+      return "ZKSYNC_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -229,6 +233,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-andromeda-1"
     case "METIS_SEPOLIA":
       return "ethereum-testnet-sepolia-andromeda-1"
+    case "ZKSYNC_MAINNET":
+      return "ethereum-mainnet-zksync-1"
+    case "ZKSYNC_SEPOLIA":
+      return "ethereum-testnet-sepolia-zksync-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
