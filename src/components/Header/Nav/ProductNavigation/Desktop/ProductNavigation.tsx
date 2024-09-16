@@ -62,18 +62,18 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/demos" target="_blank">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/demos">
               Demos
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/tools" target="_blank">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/tools">
               Tools
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/chainlog" target="_blank">
-              ChainLog
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/chainlog">
+              Changelog
             </NavigationMenu.Link>
           </Item>
         </List>
