@@ -34,6 +34,7 @@ export const productChainLinks: ProductChainLinks = {
       wemix: "/ccip/supported-networks/v1_2_0/mainnet#wemix-mainnet",
       mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
       metis: "/ccip/supported-networks/v1_2_0/mainnet#metis-mainnet",
+      zksync: "/ccip/supported-networks/v1_2_0/mainnet#zksync-mainnet",
     },
   },
   "Data Feeds": {
@@ -159,7 +160,7 @@ export const chainNames: Record<string, string> = {
   soneium: "Soneium",
   starknet: "Starknet",
   wemix: "Wemix",
-  zksync: "zkSync",
+  zksync: "ZKsync",
   mode: "Mode",
   blast: "Blast",
 }

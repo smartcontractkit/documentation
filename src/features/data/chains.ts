@@ -381,22 +381,22 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "zksync",
-    label: "zkSync",
-    title: "zkSync Data Feeds",
+    label: "ZKsync",
+    title: "ZKsync Data Feeds",
     img: "/assets/chains/zksync.svg",
     networkStatusUrl: "https://explorer.zksync.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "zkSync Era Mainnet",
+        name: "ZKsync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
       },
       {
-        name: "zkSync Sepolia testnet",
+        name: "ZKsync Sepolia testnet",
         explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-zksync-1.json",
@@ -619,7 +619,7 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "linea-mainnet",
       },
       {
-        name: "zkSync Era Mainnet",
+        name: "ZKsync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
