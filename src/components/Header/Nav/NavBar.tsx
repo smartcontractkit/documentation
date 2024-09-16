@@ -93,7 +93,7 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
         >
           <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
-              <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
+              <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="https://dev.chain.link/">
                 <img
                   alt="Documentation Home"
                   title="Documentation Home"
