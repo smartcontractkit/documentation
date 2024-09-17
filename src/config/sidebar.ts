@@ -1108,6 +1108,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/api-reference/token-admin-registry",
         },
         {
+          title: "TokenPool",
+          url: "ccip/api-reference/token-pool",
+        },
+        {
+          title: "BurnMintTokenPool",
+          url: "ccip/api-reference/burn-mint-token-pool",
+        },
+        {
+          title: "LockReleaseTokenPool",
+          url: "ccip/api-reference/lock-release-token-pool",
+        },
+        {
           title: "Errors",
           url: "ccip/api-reference/errors",
         },
