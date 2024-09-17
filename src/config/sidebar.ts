@@ -1100,6 +1100,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/api-reference/client",
         },
         {
+          title: "RegistryModuleOwnerCustom",
+          url: "ccip/api-reference/registry-module-owner-custom",
+        },
+        {
+          title: "TokenAdminRegistry",
+          url: "ccip/api-reference/token-admin-registry",
+        },
+        {
           title: "Errors",
           url: "ccip/api-reference/errors",
         },
