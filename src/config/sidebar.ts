@@ -1006,6 +1006,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "CCIP-enabled Tokens",
+          url: "ccip/tutorials/ccip-enabled-tokens",
+          children: [
+            {
+              title: "Register from an EOA using Hardhat",
+              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-hardhat",
+            },
+          ],
+        },
+        {
           title: "Test CCIP Locally",
           url: "ccip/tutorials/test-ccip-locally",
         },
