@@ -4,25 +4,32 @@ date: Last Modified
 title: "Enable your tokens in CCIP: Register from an EOA using Hardhat"
 ---
 
-import { Aside, CopyText, CodeSample } from "@components"
-import { Tabs } from "@components/Tabs"
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-This tutorial will guide you through the process of enabling your own tokens in CCIP using Hardhat. You will learn how to deploy tokens, deploy burn and mint token pools, register them in CCIP, and configure them without needing direct intervention from Chainlink Labs.
+<CcipCommon callout="selfServeCallout" />
+
+This tutorial will guide you through the process of enabling your own tokens in CCIP using [Hardhat](https://hardhat.org/). You will learn how to deploy tokens, deploy burn and mint token pools, register them in CCIP, and configure them without needing direct intervention from Chainlink Labs.
 
 We will cover the following key steps:
 
-1. **Deploying Tokens**: You will deploy your tokens on the Avalanche Fuji and Ethereum Sepolia testnets.
-1. **Deploying Token Pools**: Once your tokens are deployed, you will create token pools on Avalanche Fuji and Ethereum Sepolia. These pools are essential for minting and burning tokens during cross-chain transfers. Each token will be associated with a pool, which will manage token transfers and ensure proper handling of assets across chains.
+1. **Deploying Tokens**: You will deploy your [Burn and Mint](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Avalanche Fuji and Ethereum Sepolia testnets.
 
-1. **Claiming Mint and Burn Roles**: You will claim the mint and burn roles for the token pools, giving your token pools control over how tokens are minted and burned during cross-chain token transfers.
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [Burn and Mint](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) token pools on Avalanche Fuji and Ethereum Sepolia. These pools are essential for minting and burning tokens during cross-chain transfers. Each token will be linked to a pool, which will manage token transfers and ensure proper handling of assets across chains.
 
-1. **Claiming and Accepting the Admin Role**: You will claim the administrator role for the deployed tokens and token pools. This role allows you to enable your token in CCIP. Once claimed, you will accept the admin role and complete the registration process.
+1. **Claiming Mint and Burn Roles**: You will [claim the mint and burn roles](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol#L141) for the token pools, allowing your token pools to control how tokens are minted and burned during cross-chain transfers.
 
-1. **Linking Tokens to Pools**: You will associate each token with its respective token pool.
+1. **Claiming and Accepting the Admin Role**: This is a two-step process:
 
-1. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains.
+   1. You will call the [RegistryModuleOwnerCustom](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol) contract's [`registerAdminViaOwner`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol#L37) function to register your EOA as the token admin. This role is required to enable your token in CCIP.
 
-1. **Minting Tokens**: You will mint tokens on Avalanche Fuji for your EOA. These tokens will later be used to test cross-chain transfers to Ethereum Sepolia.
+   1. Once claimed, you will call the [TokenAdminRegistry](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol) contract's [`acceptAdminRole`](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol#L139) function to complete the registration process.
+
+1. **Linking Tokens to Pools**: You will call the [TokenAdminRegistry](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol) contract's [`setPool`](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol#L107) function to associate each token with its respective token pool.
+
+1. **Configuring Token Pools**: You will call the [`applyChainUpdates`](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/ccip/pools/TokenPool.sol#L246) function on your token pools to configure each pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains.
+
+1. **Minting Tokens**: You will call the [`mint`](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol#L128) function to mint tokens on Avalanche Fuji for your EOA. These tokens will later be used to test cross-chain transfers to Ethereum Sepolia.
 
 1. **Transferring Tokens**: Finally, you will transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You will have the option to pay CCIP fees in either LINK tokens or native gas tokens.
 
@@ -96,9 +103,15 @@ By the end of this tutorial, you will have successfully deployed, registered, co
 
 ## Tutorial
 
+<Aside type="note" title="Explore the Code">
+  All Hardhat tasks used in this tutorial are located in the `tasks/` directory of the repository. Each task is
+  thoroughly commented and directly linked to a key step in the tutorial, making the code self-explanatory. Read the
+  code and comments to gain a deeper understanding of the process or explore the implementation details.
+</Aside>
+
 ### Deploy Tokens
 
-In this step, you will deploy tokens on two different testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployToken.ts` task to deploy tokens on two testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
 
 | Parameter          | Description                                                                                                                                                                                               | Default | Required |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
@@ -158,7 +171,7 @@ Deploy tokens, use the following commands, substituting the token name and symbo
 
 ### Deploy Token Pools
 
-In this step, you will deploy token pools for the tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployTokenPool.ts` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
 
 | Parameter        | Description                                                                                                              | Default | Required |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
@@ -212,7 +225,7 @@ Deploy token pools using the following commands, replacing the token address wit
 
 ### Claim Admin
 
-In this step, you will claim the admin role for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the token owner and set them up as the admin.
+In this step, you will use the `claimAdmin.ts` task to register your EOA as the administrator for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the token owner and set it up as the admin.
 
 Below is an explanation of the parameters used during the admin claim process:
 
@@ -258,7 +271,7 @@ Claim the admin role by using the following commands, replacing the token addres
 
 ### Accept Admin Role
 
-In this step, you will accept the admin role for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
+In this step, you will use the `acceptAdminRole.ts` task to accept the admin role for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
 
 Below is an explanation of the parameters used during the admin role acceptance process:
 
@@ -299,7 +312,7 @@ Accept the admin role by using the following commands, replacing the token addre
 
 ### Set Pool
 
-In this step, you will link each token with its respective token pool on both testnets.
+In this step, you will use the `setPool.ts` task to link each token with its respective token pool on both testnets.
 
 Below is an explanation of the parameters used during the pool setting process:
 
@@ -343,7 +356,7 @@ Link each token with its respective token pool by using the following commands, 
 
 ### Configure Pool
 
-In this step, you will configure the token pools on each blockchain to enable cross-chain transfers between Avalanche Fuji and Ethereum Sepolia. This involves linking the token pool on one blockchain to a corresponding pool on another blockchain, allowing cross-chain token transfers. You will interact with the `TokenPool` contract, specifically calling the `applyChainUpdates()` function to configure the cross-chain parameters and rate limits.
+In this step, you will use `the configurePool.ts` task to configure the token pools on each blockchain to enable cross-chain transfers between Avalanche Fuji and Ethereum Sepolia. This involves linking the token pool on one blockchain to a corresponding pool on another blockchain, allowing cross-chain token transfers. You will interact with the `TokenPool` contract, specifically calling the `applyChainUpdates()` function to configure the cross-chain parameters and rate limits.
 
 Below is an explanation of the parameters used during the pool configuration process:
 
@@ -394,7 +407,7 @@ Configure the pools using the following commands, replacing the pool, token, and
 
 ### Mint Tokens
 
-In this step, you will mint tokens on Avalanche Fuji for your Externally Owned Account (EOA). Since you assigned mint and burn privileges to your EOA when deploying the tokens in the first step, you can now mint tokens for testing purposes. This is to ensure that you have enough tokens in your EOA to perform cross-chain transfers in the next step.
+In this step, you will use the `mintTokens.ts` task to mint tokens on Avalanche Fuji for your Externally Owned Account (EOA). Since you assigned mint and burn privileges to your EOA when deploying the tokens in the first step, you can now mint tokens for testing purposes. This is to ensure that you have enough tokens in your EOA to perform cross-chain transfers in the next step.
 
 You will interact with the `BurnMintERC677` token contract, specifically calling the `mint()` function to mint tokens to your EOA.
 
@@ -427,7 +440,7 @@ Mint tokens to your EOA using the following command, replacing the token address
 
 ### Transfer Tokens
 
-In this step, you will transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You have two options for paying CCIP fees: using LINK tokens or native gas tokens.
+In this step, you will use the `transferTokens` task to transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You have two options for paying CCIP fees: using LINK tokens or native gas tokens.
 
 You will interact with the `IRouterClient` contract, specifically calling the `ccipSend()` function to initiate the token transfer.
 
