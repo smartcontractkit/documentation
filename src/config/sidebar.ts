@@ -1013,6 +1013,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Register from an EOA using Hardhat",
               url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-hardhat",
             },
+            {
+              title: "Register from an EOA using Foundry",
+              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry",
+            },
           ],
         },
         {
