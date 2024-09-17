@@ -6,7 +6,7 @@ import dataFeedsLogo from "../assets/products/data-feeds-logo.svg"
 import dataStreamsLogo from "../assets/products/data-streams-logo.svg"
 
 export interface ProductData {
-  learnMorelink: string
+  learnMoreLink: string
   logo: { src: string }
   chains: Record<string, string>
 }
@@ -17,7 +17,7 @@ export interface ProductChainLinks {
 
 export const productChainLinks: ProductChainLinks = {
   CCIP: {
-    learnMorelink: "ccip",
+    learnMoreLink: "ccip",
     logo: ccipLogo,
     chains: {
       arbitrum: "/ccip/supported-networks/v1_2_0/mainnet#arbitrum-mainnet",
@@ -34,10 +34,11 @@ export const productChainLinks: ProductChainLinks = {
       wemix: "/ccip/supported-networks/v1_2_0/mainnet#wemix-mainnet",
       mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
       metis: "/ccip/supported-networks/v1_2_0/mainnet#metis-mainnet",
+      zksync: "/ccip/supported-networks/v1_2_0/mainnet#zksync-mainnet",
     },
   },
   "Data Feeds": {
-    learnMorelink: "data-feeds",
+    learnMoreLink: "data-feeds",
     logo: dataFeedsLogo,
     chains: {
       arbitrum: "/data-feeds/price-feeds/addresses?network=arbitrum",
@@ -63,7 +64,7 @@ export const productChainLinks: ProductChainLinks = {
     },
   },
   "Data Streams": {
-    learnMorelink: "data-streams",
+    learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
       arbitrum: "/data-streams/stream-ids",
@@ -72,7 +73,7 @@ export const productChainLinks: ProductChainLinks = {
     },
   },
   Functions: {
-    learnMorelink: "chainlink-functions",
+    learnMoreLink: "chainlink-functions",
     logo: functionsLogo,
     chains: {
       arbitrum: "/chainlink-functions/supported-networks#arbitrum",
@@ -84,7 +85,7 @@ export const productChainLinks: ProductChainLinks = {
     },
   },
   Automation: {
-    learnMorelink: "chainlink-automation",
+    learnMoreLink: "chainlink-automation",
     logo: automationLogo,
     chains: {
       arbitrum: "/chainlink-automation/overview/supported-networks#arbitrum",
@@ -99,7 +100,7 @@ export const productChainLinks: ProductChainLinks = {
     },
   },
   VRF: {
-    learnMorelink: "vrf",
+    learnMoreLink: "vrf",
     logo: vrfLogo,
     chains: {
       arbitrum: "/vrf/v2-5/supported-networks#arbitrum-mainnet",
@@ -159,7 +160,7 @@ export const chainNames: Record<string, string> = {
   soneium: "Soneium",
   starknet: "Starknet",
   wemix: "Wemix",
-  zksync: "zkSync",
+  zksync: "ZKsync",
   mode: "Mode",
   blast: "Blast",
 }

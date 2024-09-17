@@ -1041,6 +1041,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
+          title: "Understanding CCIP Execution Latency",
+          url: "ccip/concepts/ccip-execution-latency",
+        },
+        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },

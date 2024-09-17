@@ -34,10 +34,13 @@ const removeSlashes = (url: string) => {
   return sanitizedUrl
 }
 
+// This function checks if the current page is a match for the main section or any of its subpages
+// (e.g. /getting-started-hardhat is a subpage of /getting-started).
 const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAsCurrent: string[] = []): boolean => {
   const normalizedSectionUrl = removeSlashes(sectionUrl)
   const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
 
+  // Direct match (e.g., both "/getting-started")
   if (normalizedCurrentPage === normalizedSectionUrl) {
     return true
   }
@@ -172,7 +175,7 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
 
   .nav-groups {
     padding: var(--doc-padding) var(--space-8x) var(--doc-padding) 0;
-    max-height: 100vh;
+    height: 100vh;
     max-height: 100dvh;
     top: 0;
     overflow-y: auto;
@@ -196,10 +199,10 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
   }
 
   .nav-group-title {
-    font-size: 16px;
-    font-weight: 500;
     margin-bottom: var(--space-3x);
-    color: var(--blue-800);
+    color: var(--gray-900, #141921);
+    font-weight: 600;
+    line-height: 24px;
   }
 
   .nav-group-entries {
@@ -243,11 +246,12 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
   .nav-link:hover,
   .nav-link:focus,
   .nav-link[aria-current="page"] {
-    color: var(--blue-600, #375bd2);
+    color: var(--color-text-link);
+    font-weight: 500;
   }
 
   .nav-link[aria-current="page"] {
-    font-weight: 500;
+    font-weight: 600;
   }
 
   :global(:root.theme-dark) .nav-link[aria-current="page"] {
