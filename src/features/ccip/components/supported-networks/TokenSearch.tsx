@@ -109,7 +109,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
 
       <div style="overflow: auto; width: 100%; max-height: 350px;">
         <table style="width: 100%; border-collapse: collapse;">
-          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+          <thead style="position: sticky; top: 0; background: white; z-index: 1;">
             <tr>
               <th>Symbol</th>
               <th>Token Address</th>

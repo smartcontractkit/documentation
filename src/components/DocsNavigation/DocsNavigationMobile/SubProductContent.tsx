@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { BackArrowIcon } from "./BackArrowIcon"
-import { Page } from "../../config"
+import { Page } from "../../Header/Nav/config"
 import styles from "./subProductContent.module.css"
 
 type Props = {
