@@ -142,7 +142,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Ethereum Sepolia.
 
-The script reads the `config.json` file to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
@@ -208,7 +208,7 @@ In this step, you will use the `DeployTokenPool.s.sol` script to deploy token po
 
 In this step, you will use the `ClaimAdmin.s.sol` script to register your EOA as the administrator for the deployed tokens on both Avalanche Fuji and Ethereum Sepolia testnets. This process involves interacting with the `RegistryModuleOwnerCustom` contract to set up your EOA as the admin.
 
-The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your `config.json` file. Otherwise, the script will use the standard `owner()` function to claim the admin role.
+The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
 
 1. Claim the Admin role for the token on Avalanche Fuji:
 
@@ -352,16 +352,7 @@ In this step, you will use the `ConfigurePool.s.sol` script to configure the tok
 
 In this step, you will use the `MintTokens.s.sol` script to mint tokens to your Externally Owned Account (EOA) on Avalanche Fuji. Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
 
-You will interact with the `BurnMintERC677` token contract, specifically calling the `mint()` function to mint tokens to your EOA.
-
-Below is an explanation of the parameters used during the minting process:
-
-| Parameter         | Description                                                                                                              | Required |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------ | -------- |
-| `tokenAddress`    | The address of the token to mint.                                                                                        | Yes      |
-| `amount`          | The amount of tokens to mint (in wei), read from `config.json` under `tokenAmountToMint`.                                | Yes      |
-| `receiverAddress` | The address of the receiver of the minted tokens; defaults to your EOA (`msg.sender`).                                   | No       |
-| `network`         | The blockchain network on which the minting process will be executed; determined by the RPC URL when running the script. | Yes      |
+The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
 
 Mint tokens for your EOA on Avalanche Fuji:
 
@@ -380,20 +371,9 @@ Current balance of receiver is 1000000000000000000000 BnMkh
 
 ### Transfer Tokens Across Networks
 
-In this step, you will use the `TransferTokens.s.sol` script to transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You have two options for paying CCIP fees: using LINK tokens or native gas tokens. The [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry#optional-configure-your-configjson-file) specifies the fee type you will use in the `feeType` field.
+In this step, you will use the `TransferTokens.s.sol` script to transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You can choose to pay CCIP fees using LINK tokens or the native gas token.
 
-You will interact with the `IRouterClient` contract, specifically calling the `ccipSend` function to initiate the token transfer.
-
-Below is an explanation of the parameters used during the token transfer process:
-
-| Parameter          | Description                                                                                                              | Required |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ | -------- |
-| `tokenAddress`     | The address of the token being transferred.                                                                              | Yes      |
-| `amount`           | The amount of tokens to transfer.                                                                                        | Yes      |
-| `destinationChain` | The blockchain to which the tokens will be transferred; determined from `config.json` via the `remoteChains` mapping.    | Yes      |
-| `receiverAddress`  | The address of the receiver on the destination blockchain; defaults to your EOA (`msg.sender`).                          | Yes      |
-| `feeType`          | The type of fee used for the transfer, either `"link"` or `"native"`; read from `config.json` under `feeType`.           | Yes      |
-| `network`          | The blockchain network on which the token transfer will be initiated; determined by the RPC URL when running the script. | Yes      |
+The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
 
 Transfer tokens from Avalanche Fuji to Ethereum Sepolia:
 
@@ -409,3 +389,5 @@ Message ID:
 0x8193f58ae2d7dcb262473249e4c4fbe11305e2f75687bd162fe241a7e2c268b2
 Check status of the message at https://ccip.chain.link/msg/8193f58ae2d7dcb262473249e4c4fbe11305e2f75687bd162fe241a7e2c268b2
 ```
+
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link/) using the message ID provided in the output.
