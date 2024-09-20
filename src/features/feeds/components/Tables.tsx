@@ -481,7 +481,9 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>
                 {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+                {proxy.docs.assetSubClass && proxy.docs.assetSubClass !== "Crypto"
+                  ? " - " + proxy.docs.assetSubClass
+                  : ""}
               </dd>
             </div>
           ) : (
