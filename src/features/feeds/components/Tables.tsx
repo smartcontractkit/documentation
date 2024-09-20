@@ -406,8 +406,8 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Stream</th>
-      <th>Stream info</th>
+      <th class={tableStyles.heading}>Feed</th>
+      <th>Details</th>
     </tr>
   </thead>
 )
@@ -441,7 +441,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {proxy.docs.productType ? (
+          {/* {proxy.docs.productType ? (
             <div>
               <dt>
                 <span class="label">Data type:</span>
@@ -453,6 +453,26 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : (
             ""
+          )} */}
+          {isMainnet && proxy.docs.clicProductName ? (
+            <div>
+              <dt>
+                <span class="label">Full name:</span>
+              </dt>
+              <dd>{proxy.docs.clicProductName}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.assetName ? (
+            <div>
+              <dt>
+                <span class="label">Asset name:</span>
+              </dt>
+              <dd>{proxy.docs.assetName}</dd>
+            </div>
+          ) : (
+            ""
           )}
           {proxy.docs.assetClass ? (
             <div>
@@ -461,13 +481,15 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>
                 {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+                {proxy.docs.assetSubClass && proxy.docs.assetSubClass !== "Crypto"
+                  ? " - " + proxy.docs.assetSubClass
+                  : ""}
               </dd>
             </div>
           ) : (
             ""
           )}
-          {proxy.docs.quoteAsset ? (
+          {/* {proxy.docs.quoteAsset ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
                 <span class="label">Quote asset:</span>
@@ -476,7 +498,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : (
             ""
-          )}
+          )} */}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
@@ -487,16 +509,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
                   {proxy.docs.marketHours}
                 </a>
               </dd>
-            </div>
-          ) : (
-            ""
-          )}
-          {isMainnet && proxy.docs.clicProductName ? (
-            <div>
-              <dt>
-                <span class="label">Full name:</span>
-              </dt>
-              <dd>{proxy.docs.clicProductName}</dd>
             </div>
           ) : (
             ""
