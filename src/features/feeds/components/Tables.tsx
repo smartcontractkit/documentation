@@ -271,6 +271,15 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "FEEDS-POR",
+              action: "feedId_copied",
+              extraInfo1: network.name,
+              extraInfo2: proxy.name,
+              extraInfo3: proxy.proxyAddress,
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
