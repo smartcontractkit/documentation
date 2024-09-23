@@ -154,6 +154,15 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "FEEDS",
+              action: "feedId_copied",
+              extraInfo1: network.name,
+              extraInfo2: proxy.name,
+              extraInfo3: proxy.proxyAddress,
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
@@ -466,6 +475,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               action: "feedId_copied",
               extraInfo1: isMainnet ? "Mainnet" : "Testnet",
               extraInfo2: proxy.pair[0],
+              extraInfo3: proxy.feedId,
             })
           }
         >
