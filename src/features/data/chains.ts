@@ -292,7 +292,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -301,6 +301,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
+        tags: ["proofOfReserve"],
       },
       {
         name: "Base Sepolia testnet",
