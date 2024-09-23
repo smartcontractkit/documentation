@@ -107,6 +107,17 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
   )
 }
 
+const handleClick = (e, additionalInfo) => {
+  e.preventDefault()
+
+  const dataLayerEvent = {
+    event: "docs_product_interaction",
+    ...additionalInfo,
+  }
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push(dataLayerEvent)
+}
+
 const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
@@ -367,7 +378,14 @@ export const StreamsVerifierProxyTable = () => {
                 <button
                   class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                   data-clipboard-text={network.mainnet.verifierProxy}
-                  onClick={() => navigator.clipboard.writeText(network.mainnet.verifierProxy)}
+                  onClick={(e) =>
+                    handleClick(e, {
+                      product: "STREAMS",
+                      action: "verifierProxyAddress_copied",
+                      extraInfo1: "Mainnet",
+                      extraInfo2: network.mainnet.label,
+                    })
+                  }
                 >
                   <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
                 </button>
@@ -385,7 +403,14 @@ export const StreamsVerifierProxyTable = () => {
                 <button
                   class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                   data-clipboard-text={network.testnet.verifierProxy}
-                  onClick={() => navigator.clipboard.writeText(network.testnet.verifierProxy)}
+                  onClick={(e) =>
+                    handleClick(e, {
+                      product: "STREAMS",
+                      action: "verifierProxyAddress_copied",
+                      extraInfo1: "Testnet",
+                      extraInfo2: network.testnet.label,
+                    })
+                  }
                 >
                   <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
                 </button>
@@ -435,6 +460,14 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.feedId}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "STREAMS",
+              action: "feedId_copied",
+              extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+              extraInfo2: proxy.pair[0],
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
