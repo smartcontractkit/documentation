@@ -31,7 +31,7 @@ import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json
 import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
 
 import { SupportedChain } from "@config/types"
-import { directoryToSupportedChain, supportedChainToChainInRdd } from "@features/utils"
+import { directoryToSupportedChain, getChainIcon, getTitle, supportedChainToChainInRdd } from "@features/utils"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -304,4 +304,66 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
       image: CCIPTokenImage,
     },
   }
+}
+
+export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+  let tokensTestData
+  switch (filter) {
+    case "mainnet":
+      tokensTestData = tokensMainnetv120
+      break
+    case "testnet":
+      tokensTestData = tokensTestnetv120
+      break
+    default:
+      throw new Error(`Invalid testnet version: ${filter}`)
+  }
+
+  const tokensResult: string[] = []
+
+  for (const token in tokensTestData) {
+    const tokenData = tokensTestData[token]
+    if (tokenData[chain]) {
+      tokensResult.push(token)
+    }
+  }
+
+  return tokensResult
+}
+
+export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) => {
+  const chains = getAllChains({
+    mainnetVersion: Version.V1_2_0,
+    testnetVersion: Version.V1_2_0,
+  })
+
+  const allChains: {
+    name: string
+    logo: string
+    totalLanes: number
+    totalTokens: number
+    chain: string
+  }[] = []
+
+  for (const chain of chains) {
+    const directory = directoryToSupportedChain(chain)
+    const title = getTitle(directory)
+    if (filter) {
+      if (!title?.includes(filter)) {
+        continue
+      }
+    }
+    const logo = getChainIcon(directory)
+    const token = getTokensOfChain({ chain, filter: "mainnet" })
+
+    allChains.push({
+      name: title?.replace(" mainnet", "") || "",
+      logo: logo || "",
+      totalLanes: 0,
+      totalTokens: token.length,
+      chain,
+    })
+  }
+
+  return allChains
 }

@@ -1,10 +1,29 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
-import Hero from "~/components/CCIP/Hero/Hero"
 import { Environment, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import Table from "~/components/CCIP/Table/Table"
+
+export async function getStaticPaths() {
+  const networks = getAllNetworks({ filter: "mainnet" })
+  const supportedTokens = getAllSupportedTokens({
+    environment: Environment.Mainnet,
+    version: Version.V1_2_0,
+  })
+  const pages = networks.map(({ chain }) => ({ chain }))
+
+  return pages.map(({ chain }) => {
+    return {
+      params: { chain },
+      props: {
+        network: networks.find((network) => network.chain === chain),
+      },
+    }
+  })
+}
 
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
@@ -23,14 +42,16 @@ const allTokens = tokens.map((token) => {
     totalNetworks: 0,
   }
 })
+
+const { network } = Astro.props
 ---
 
 <CcipLayout frontmatter={entry.data} {headings}>
-  <Hero chains={networks} tokens={allTokens} client:load />
+  <ChainHero chains={networks} tokens={allTokens} client:load network={network} />
   <section class="layout">
     <div>
       <h2>Networks <span>({networks.length})</span></h2>
-      <div class="networks__grid">
+      <!-- <div class="networks__grid">
         {
           networks.map((chain) => (
             <a href={`/ccip/chain/${chain.chain}`}>
@@ -43,7 +64,28 @@ const allTokens = tokens.map((token) => {
             </a>
           ))
         }
-      </div>
+      </div> -->
+      <Table
+        columns={[
+          {
+            name: "Destination network",
+            key: "name",
+          },
+          {
+            name: "OnRamp address",
+            key: "onRamp",
+          },
+          {
+            name: "Status",
+            key: "status",
+          },
+        ]}
+        data={networks.map((chain) => ({
+          name: chain.name,
+          onRamp: "0x1234567890",
+          status: "Active",
+        }))}
+      />
     </div>
     <div>
       <h2>Tokens <span>({allTokens.length})</span></h2>
@@ -54,7 +96,7 @@ const allTokens = tokens.map((token) => {
   </section>
 </CcipLayout>
 
-<style>
+<style scoped="false">
   .layout {
     --gutter: var(--space-6x);
     --doc-padding: 2rem;

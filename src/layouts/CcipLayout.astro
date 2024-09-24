@@ -1,0 +1,54 @@
+---
+import * as CONFIG from "~/config"
+import type { BaseFrontmatter } from "~/content/config"
+import type { MarkdownHeading } from "astro"
+import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
+
+interface Props {
+  frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const filteredHeadings = headings?.filter((h) => h.depth < 5)
+const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
+
+const currentPage = new URL(Astro.request.url).pathname
+
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+---
+
+<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage} />
+  <main>
+    <slot />
+  </main>
+
+  <style>
+    main {
+      margin-bottom: 0 !important;
+    }
+  </style>
+
+  <script define:vars={{ includeLinkToWalletScript }}>
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
+  </script>
+
+  <script>
+    import "~/scripts"
+    if (window["includeLinkToWalletScript"]) {
+      import("~/scripts/link-to-wallet")
+    }
+  </script>
+</BaseLayout>
