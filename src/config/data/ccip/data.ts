@@ -342,6 +342,7 @@ export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) =
     logo: string
     totalLanes: number
     totalTokens: number
+    chain: string
   }[] = []
 
   for (const chain of chains) {
@@ -360,6 +361,7 @@ export const getAllNetworks = ({ filter }: { filter?: "mainnet" | "testnet" }) =
       logo: logo || "",
       totalLanes: 0,
       totalTokens: token.length,
+      chain,
     })
   }
 

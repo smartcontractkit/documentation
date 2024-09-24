@@ -8,15 +8,17 @@ interface SearchProps {
     totalLanes: number
     totalTokens: number
     logo: string
+    chain: string
   }[]
   tokens: {
     name: string
     totalNetworks: number
     logo: string
   }[]
+  small?: boolean
 }
 
-function Search({ chains, tokens }: SearchProps) {
+function Search({ chains, tokens, small }: SearchProps) {
   const [search, setSearch] = useState("")
   const [isActive, setIsActive] = useState(false)
   const [networksResults, setNetworksResults] = useState<SearchProps["chains"]>([])
@@ -39,6 +41,7 @@ function Search({ chains, tokens }: SearchProps) {
     <div
       className={clsx("ccip-hero__search", {
         active: isActive,
+        small: small || false,
       })}
     >
       <img src="/assets/icons/search.svg" alt="" />
@@ -61,11 +64,13 @@ function Search({ chains, tokens }: SearchProps) {
               <ul aria-label="Networks">
                 {networksResults.map((network) => (
                   <li key={network.name}>
-                    <img src={network.logo} alt="" />
-                    {network.name}
-                    <span>
-                      {network.totalLanes} lanes | {network.totalTokens} tokens
-                    </span>
+                    <a href={`/ccip/chain/${network.chain}`}>
+                      <img src={network.logo} alt="" />
+                      {network.name}
+                      <span>
+                        {network.totalLanes} lanes | {network.totalTokens} tokens
+                      </span>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -77,9 +82,11 @@ function Search({ chains, tokens }: SearchProps) {
               <ul aria-label="Networks">
                 {tokensResults.map((token) => (
                   <li key={token.name}>
-                    <img src={token.logo} alt="" />
-                    {token.name}
-                    <span>{token.totalNetworks} networks</span>
+                    <a href="#">
+                      <img src={token.logo} alt="" />
+                      {token.name}
+                      <span>{token.totalNetworks} networks</span>
+                    </a>
                   </li>
                 ))}
               </ul>
