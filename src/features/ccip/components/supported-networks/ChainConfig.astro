@@ -24,7 +24,7 @@ type ConfigProps = {
 }
 
 const { chainConfig, chainTitle, environment, sourceChainRefId, version } = Astro.props as ConfigProps
-const { router, chainSelector, feeTokens } = chainConfig
+const { router, chainSelector, feeTokens, rmnProxy, registryModuleOwnerCustom, tokenAdminRegistry } = chainConfig
 const sourceChainKey = directoryToSupportedChain(sourceChainRefId)
 const sourceChainTitle = getTitle(sourceChainKey)
 if (!sourceChainTitle) throw Error(`Title not found for chain ${sourceChainKey}`)
@@ -33,6 +33,17 @@ if (!sourceChainIcon) throw Error(`Icon not found for chain ${sourceChainKey}`)
 const explorerUrl = getExplorer(sourceChainKey)
 if (!explorerUrl) throw Error(`Explorer url not found for ${sourceChainKey}`)
 const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router)
+let rmnProxyExplorerUrl, registryModuleOwnerCustomExplorerUrl, tokenAdminRegistryExplorerUrl
+if (rmnProxy) {
+  rmnProxyExplorerUrl = getExplorerAddressUrl(explorerUrl)(rmnProxy)
+}
+if (registryModuleOwnerCustom) {
+  registryModuleOwnerCustomExplorerUrl = getExplorerAddressUrl(explorerUrl)(registryModuleOwnerCustom)
+}
+if (tokenAdminRegistry) {
+  tokenAdminRegistryExplorerUrl = getExplorerAddressUrl(explorerUrl)(tokenAdminRegistry)
+}
+
 const nativeCurrency = getNativeCurrency(sourceChainKey)
 if (!nativeCurrency) throw Error(`Native currency not found for ${sourceChainKey}`)
 // sort tokens - LINK first
@@ -97,6 +108,63 @@ const sortedLaneEntries = Object.entries(laneReferenceData).sort(
         /></td
       >
     </tr>
+    {
+      rmnProxy && (
+        <tr>
+          <td>RMN address</td>
+          <td>
+            <Address
+              contractUrl={rmnProxyExplorerUrl}
+              eventName="docs_product_interaction"
+              additionalInfo={{
+                product: "CCIP",
+                action: "rmnProxyAddress_copied",
+                extraInfo1: sourceChainRefId,
+              }}
+              client:only="preact"
+            />
+          </td>
+        </tr>
+      )
+    }
+    {
+      registryModuleOwnerCustom && (
+        <tr>
+          <td>Registry Module Owner Custom address</td>
+          <td>
+            <Address
+              contractUrl={registryModuleOwnerCustomExplorerUrl}
+              eventName="docs_product_interaction"
+              additionalInfo={{
+                product: "CCIP",
+                action: "registryModuleOwnerCustomAddress_copied",
+                extraInfo1: sourceChainRefId,
+              }}
+              client:only="preact"
+            />
+          </td>
+        </tr>
+      )
+    }
+    {
+      tokenAdminRegistry && (
+        <tr>
+          <td>Token Admin Registry address</td>
+          <td>
+            <Address
+              contractUrl={tokenAdminRegistryExplorerUrl}
+              eventName="docs_product_interaction"
+              additionalInfo={{
+                product: "CCIP",
+                action: "tokenAdminRegistryAddress_copied",
+                extraInfo1: sourceChainRefId,
+              }}
+              client:only="preact"
+            />
+          </td>
+        </tr>
+      )
+    }
     <tr>
       <td><Tooltip tip="CCIP Blockchain identifier" label="Chain selector" style={{ marginTop: "0" }} client:load /></td
       >

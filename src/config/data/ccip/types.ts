@@ -13,8 +13,8 @@ export type SupportedTokensConfig = {
 
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
-  rateLimiterConfig: RateLimiterConfig
   onRamp: string
+  offRamp: string
 }
 
 export type DestinationsLaneConfig = {
@@ -37,6 +37,9 @@ export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
   router: string
+  rmnProxy?: string
+  registryModuleOwnerCustom?: string
+  tokenAdminRegistry?: string
 }
 
 export type ChainsConfig = {
@@ -107,4 +110,11 @@ export interface CCIPSendErrorEntry {
   }>
   errorSelector?: string
   description: string
+}
+
+export enum LaneStatus {
+  OPERATIONAL = "OPERATIONAL",
+  MAINTENANCE = "MAINTENANCE",
+  DEGRADED = "DEGRADED",
+  CURSED = "CURSED",
 }
