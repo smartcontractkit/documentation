@@ -14,7 +14,14 @@ export type SupportedTokensConfig = {
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
   rateLimiterConfig: RateLimiterConfig
-  onRamp: string
+  onRamp: {
+    address: string
+    version: string
+  }
+  offRamp: {
+    address: string
+    version: string
+  }
 }
 
 export type DestinationsLaneConfig = {
@@ -36,7 +43,10 @@ type PoolInfo = {
 export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
-  router: string
+  router: {
+    address: string
+    version: string
+  }
 }
 
 export type ChainsConfig = {
