@@ -45,7 +45,13 @@ When you implement the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#
 
 **Example**: For an example of how to verify the router, refer to the [Transfer Tokens with Data - Defensive](/ccip/tutorials/programmable-token-transfers-defensive#tutorial) example.
 
-## Setting `gasLimit`
+## Using `extraArgs`
+
+The purpose of [`extraArgs`](/ccip/api-reference/client###evmextraargs) is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it offchain and pass it in a call to a function or store it in a variable that you can update on-demand.
+
+If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set.
+
+### Setting `gasLimit`
 
 The `gasLimit` specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. It is the main factor in determining the fee to send a message. Unspent gas is not refunded.
 
@@ -60,11 +66,21 @@ To estimate the accurate gas limit for your destination contract, consider the f
 
 **Example**: For an example of how to estimate the gas limit, refer to the [Optimizing Gas Limit Settings in CCIP Messages](/ccip/tutorials/ccipreceive-gaslimit) guide.
 
-## Using `extraArgs`
+### Setting `allowOutOfOrderExecution`
 
-The purpose of `extraArgs` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it offchain and pass it in a call to a function or store it in a variable that you can update on-demand.
+The `allowOutOfOrderExecution` parameter enables you to control the execution order of your messages on the destination blockchain. This parameter is part of [`EVMExtraArgsV2`](/ccip/api-reference/client###evmextraargsv2) and is available only on lanes where the **Out of Order Execution** property is set to **Optional** or **Required**. Refer to the [Supported Networks page](/ccip/supported-networks) to determine if your target lane supports this feature.
 
-If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set.
+#### Best Practices
+
+- **When `allowOutOfOrderExecution` is Optional:**
+
+  - You can set `allowOutOfOrderExecution` to either `true` or `false`, depending on your application's requirements.
+    - **`true`:** Messages can be executed in any order relative to other messages from the same sender. If a previous message has not yet been executed on the destination chain, it does not block the execution of subsequent messages.
+    - **`false`:** Messages are executed in order. CCIP ensures that preceding messages are processed before executing the current message.
+
+- **When `allowOutOfOrderExecution` is Required:**
+  - You **must** set `allowOutOfOrderExecution` to `true`. This setting acknowledges that messages may be executed out of order. If set to `false`, the message will revert and will not be processed.
+  - This requirement is enforced on lanes where technical constraints necessitate out-of-order execution, such as mitigating issues related to zero-knowledge proof limitations. For more information, see the [proof overflow problem](https://community.scroll.io/t/the-proof-overflow-problem/841).
 
 ## Decoupling CCIP Message Reception and Business Logic
 
