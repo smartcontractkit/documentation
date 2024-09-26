@@ -1,3 +1,4 @@
+import { Address } from "~/components"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
@@ -21,9 +22,13 @@ interface ChainHeroProps {
     totalTokens: number
     chain: string
   }
+  token: {
+    name: string
+    logo: string
+  }
 }
 
-function ChainHero({ chains, tokens, network }: ChainHeroProps) {
+function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
   return (
     <section className="ccip-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
@@ -54,7 +59,12 @@ function ChainHero({ chains, tokens, network }: ChainHeroProps) {
         <div className="ccip-hero__details">
           <div className="ccip-hero__details__item">
             <div className="ccip-hero__details__label">Router</div>
-            <div className="ccip-hero__details__value">0x9402...E6e5</div>
+            <div className="ccip-hero__details__value">
+              <Address
+                endLength={4}
+                contractUrl="https://etherscan.io/address/0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
+              />
+            </div>
           </div>
           <div className="ccip-hero__details__item">
             <div className="ccip-hero__details__label">Chain selector</div>
