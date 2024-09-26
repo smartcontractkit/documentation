@@ -7,6 +7,7 @@ import {
   getAllNetworks,
   getAllSupportedTokens,
   getChainsOfToken,
+  getTokensOfChain,
   Version,
 } from "~/config/data/ccip"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
@@ -16,10 +17,6 @@ import { getTokenIconUrl } from "~/features/utils"
 
 export async function getStaticPaths() {
   const networks = getAllNetworks({ filter: "mainnet" })
-  const supportedTokens = getAllSupportedTokens({
-    environment: Environment.Mainnet,
-    version: Version.V1_2_0,
-  })
   const pages = networks.map(({ chain }) => ({ chain }))
 
   return pages.map(({ chain }) => {
@@ -42,16 +39,18 @@ const supportedTokens = getAllSupportedTokens({
 
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
-const allTokens = tokens.map((token) => {
+const { network } = Astro.props
+
+const allTokens = getTokensOfChain({
+  chain: network?.chain || "",
+  filter: "mainnet",
+}).map((token) => {
   const logo = getTokenIconUrl(token)
   return {
     name: token,
     logo,
-    totalNetworks: getChainsOfToken({ token, filter: "mainnet" }).length,
   }
 })
-
-const { network } = Astro.props
 
 const lanes = getAllNetworkLanes({
   environment: Environment.Mainnet,
