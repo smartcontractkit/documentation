@@ -377,3 +377,40 @@ export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "t
 
   return allChains
 }
+
+export const getAllNetworkLanes = ({
+  chain,
+  environment,
+  version,
+}: {
+  filter?: "mainnet" | "testnet"
+  chain: string
+  environment: Environment
+  version: Version
+}) => {
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+
+  const allLanes = lanesReferenceData[chain]
+
+  const lanesData: {
+    name: string
+    logo: string
+    onRamp: string
+  }[] = Object.keys(allLanes).map((lane) => {
+    const laneData = allLanes[lane]
+
+    const directory = directoryToSupportedChain(lane || "")
+    const title = getTitle(directory)
+    const networkLogo = getChainIcon(directory)
+    console.log(laneData)
+    return {
+      name: title || "",
+      logo: networkLogo || "",
+      onRamp: laneData.onRamp,
+    }
+  })
+  return lanesData
+}

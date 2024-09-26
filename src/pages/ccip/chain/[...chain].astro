@@ -1,7 +1,7 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
-import { Environment, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
+import { Environment, getAllNetworkLanes, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
@@ -46,36 +46,21 @@ const allTokens = tokens.map((token) => {
 })
 
 const { network } = Astro.props
+
+const lanes = getAllNetworkLanes({
+  environment: Environment.Mainnet,
+  version: Version.V1_2_0,
+  chain: network?.chain || "",
+})
 ---
 
 <CcipLayout frontmatter={entry.data} {headings}>
   <ChainHero chains={networks} tokens={allTokens} client:load network={network} />
   <section class="layout">
     <div>
-      <h2>Networks <span>({networks.length})</span></h2>
+      <h2>Networks <span>({lanes.length})</span></h2>
 
-      <Table
-        networks={networks}
-        columns={[
-          {
-            name: "Destination network",
-            key: "name",
-          },
-          {
-            name: "OnRamp address",
-            key: "onRamp",
-          },
-          {
-            name: "Status",
-            key: "status",
-          },
-        ]}
-        data={networks.map((chain) => ({
-          name: chain.name,
-          onRamp: "0x1234567890",
-          status: "Active",
-        }))}
-      />
+      <Table lanes={lanes} />
     </div>
     <div>
       <h2>Tokens <span>({allTokens.length})</span></h2>

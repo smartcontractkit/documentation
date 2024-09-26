@@ -1,19 +1,15 @@
+import { Address } from "~/components"
 import "./Table.css"
 
 interface TableProps {
-  networks: {
+  lanes: {
     name: string
-    key: string
     logo: string
-    onramp?: string
-    status: string
-    totalLanes: number
-    totalTokens: number
-    chain: string
+    onRamp?: string
   }[]
 }
 
-function ChainTable({ networks }: TableProps) {
+function ChainTable({ lanes }: TableProps) {
   return (
     <table className="ccip-table">
       <thead>
@@ -24,7 +20,7 @@ function ChainTable({ networks }: TableProps) {
         </tr>
       </thead>
       <tbody>
-        {networks?.map((network, index) => (
+        {lanes?.map((network, index) => (
           <tr key={index}>
             <td>
               <div className="ccip-table__network-name">
@@ -32,7 +28,9 @@ function ChainTable({ networks }: TableProps) {
                 {network.name}
               </div>
             </td>
-            <td>{network.onramp}0x1234567890</td>
+            <td>
+              <Address address={network.onRamp} endLength={4} />
+            </td>
             <td>
               <span className="ccip-table__status">
                 <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
