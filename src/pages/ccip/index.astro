@@ -2,7 +2,7 @@
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
 import Hero from "~/components/CCIP/Hero/Hero"
-import { Environment, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
+import { Environment, getAllNetworks, getAllSupportedTokens, getChainsOfToken, Version } from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import { getTokenIconUrl } from "~/features/utils"
@@ -24,7 +24,7 @@ const allTokens = tokens.map((token) => {
   return {
     name: token,
     logo,
-    totalNetworks: 0,
+    totalNetworks: getChainsOfToken({ token, filter: "mainnet" }).length,
   }
 })
 ---

@@ -1,7 +1,14 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
-import { Environment, getAllNetworks, getAllSupportedTokens, getTokenData, Version } from "~/config/data/ccip"
+import {
+  Environment,
+  getAllNetworks,
+  getAllSupportedTokens,
+  getChainsOfToken,
+  getTokenData,
+  Version,
+} from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
@@ -46,7 +53,7 @@ const allTokens = tokens.map((token) => {
   return {
     name: token,
     logo,
-    totalNetworks: 0,
+    totalNetworks: getChainsOfToken({ token, filter: "mainnet" }).length,
   }
 })
 
@@ -57,8 +64,6 @@ const data = getTokenData({
   version: Version.V1_2_0,
   tokenSymbol: token,
 })
-
-console.log(data)
 ---
 
 <CcipLayout frontmatter={entry.data} {headings}>
@@ -70,7 +75,6 @@ console.log(data)
       name: token || "",
       logo: logo || "",
     }}
-    l
   />
   <section class="layout">
     <div>

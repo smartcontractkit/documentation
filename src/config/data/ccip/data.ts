@@ -369,13 +369,35 @@ export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "t
     allChains.push({
       name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
       logo: logo || "",
-      totalLanes: 0,
+      totalLanes: Object.keys(lanesMainnetv120[chain]).length,
       totalTokens: token.length,
       chain,
     })
   }
 
   return allChains
+}
+
+export const getChainsOfToken = ({ token, filter }: { token: string; filter: "mainnet" | "testnet" }) => {
+  let tokensTestData
+  switch (filter) {
+    case "mainnet":
+      tokensTestData = tokensMainnetv120
+      break
+    case "testnet":
+      tokensTestData = tokensTestnetv120
+      break
+    default:
+      throw new Error(`Invalid testnet version: ${filter}`)
+  }
+
+  const chainsResult: string[] = []
+
+  for (const chain in tokensTestData[token]) {
+    chainsResult.push(chain)
+  }
+
+  return chainsResult
 }
 
 export const getAllNetworkLanes = ({
