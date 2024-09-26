@@ -15,14 +15,14 @@ interface ChainHeroProps {
     totalNetworks: number
     logo: string
   }[]
-  network: {
+  network?: {
     name: string
     logo: string
     totalLanes: number
     totalTokens: number
     chain: string
   }
-  token: {
+  token?: {
     name: string
     logo: string
   }
@@ -43,7 +43,7 @@ function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
               },
               {
                 name: "Current",
-                url: `/ccip/${network.chain}`,
+                url: network ? `/ccip/chain/${network.chain}` : `/ccip/token/${token?.name}`,
               },
             ]}
           />
@@ -53,36 +53,38 @@ function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
         </div>
 
         <h1 className="ccip-hero__heading">
-          <img src={network.logo} alt="" />
-          {network.name}
+          <img src={network?.logo || token?.logo} alt="" />
+          {network?.name || token?.name}
         </h1>
-        <div className="ccip-hero__details">
-          <div className="ccip-hero__details__item">
-            <div className="ccip-hero__details__label">Router</div>
-            <div className="ccip-hero__details__value">
-              <Address
-                endLength={4}
-                contractUrl="https://etherscan.io/address/0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
-              />
+        {network && (
+          <div className="ccip-hero__details">
+            <div className="ccip-hero__details__item">
+              <div className="ccip-hero__details__label">Router</div>
+              <div className="ccip-hero__details__value">
+                <Address
+                  endLength={4}
+                  contractUrl="https://etherscan.io/address/0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
+                />
+              </div>
+            </div>
+            <div className="ccip-hero__details__item">
+              <div className="ccip-hero__details__label">Chain selector</div>
+              <div className="ccip-hero__details__value">6433500567565415381</div>
+            </div>
+            <div className="ccip-hero__details__item">
+              <div className="ccip-hero__details__label">RMN</div>
+              <div className="ccip-hero__details__value">n/a</div>
+            </div>
+            <div className="ccip-hero__details__item">
+              <div className="ccip-hero__details__label">Token admin registry</div>
+              <div className="ccip-hero__details__value">n/a</div>
+            </div>
+            <div className="ccip-hero__details__item">
+              <div className="ccip-hero__details__label">Registry module owner</div>
+              <div className="ccip-hero__details__value">n/a</div>
             </div>
           </div>
-          <div className="ccip-hero__details__item">
-            <div className="ccip-hero__details__label">Chain selector</div>
-            <div className="ccip-hero__details__value">6433500567565415381</div>
-          </div>
-          <div className="ccip-hero__details__item">
-            <div className="ccip-hero__details__label">RMN</div>
-            <div className="ccip-hero__details__value">n/a</div>
-          </div>
-          <div className="ccip-hero__details__item">
-            <div className="ccip-hero__details__label">Token admin registry</div>
-            <div className="ccip-hero__details__value">n/a</div>
-          </div>
-          <div className="ccip-hero__details__item">
-            <div className="ccip-hero__details__label">Registry module owner</div>
-            <div className="ccip-hero__details__value">n/a</div>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   )

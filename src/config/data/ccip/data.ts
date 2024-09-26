@@ -150,6 +150,17 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
   return tokens
 }
 
+export const getTokenData = (params: { tokenSymbol: string; environment: Environment; version: Version }) => {
+  const { tokensReferenceData } = loadReferenceData(params)
+  const tokenConfig = tokensReferenceData[params.tokenSymbol]
+
+  if (tokenConfig) {
+    return tokenConfig // Assuming the token configuration has a 'name' property
+  } else {
+    throw new Error(`Token with symbol ${params.tokenSymbol} not found`)
+  }
+}
+
 export const getTokenMechanism = (params: {
   token: string
   sourceChain: SupportedChain

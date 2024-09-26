@@ -82,7 +82,7 @@ function Search({ chains, tokens, small }: SearchProps) {
               <ul aria-label="Networks">
                 {tokensResults.map((token) => (
                   <li key={token.name}>
-                    <a href="#">
+                    <a href={`/ccip/token/${token.name}`}>
                       <img src={token.logo} alt="" />
                       {token.name}
                       <span>{token.totalNetworks} networks</span>

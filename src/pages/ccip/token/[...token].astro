@@ -1,16 +1,15 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
-import { Environment, getAllNetworks, getAllSupportedTokens, Version } from "~/config/data/ccip"
+import { Environment, getAllNetworks, getAllSupportedTokens, getTokenData, Version } from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
-import Table from "~/components/CCIP/Tables/ChainTable"
+import Table from "~/components/CCIP/Tables/TokenChainsTable"
+import { directoryToSupportedChain, getChainIcon, getTitle, getTokenIconUrl } from "~/features/utils"
 
 export async function getStaticPaths() {
   const entry = await getEntry("ccip", "index")
-  const { headings } = await entry.render()
-  const networks = getAllNetworks({ filter: "mainnet" })
   const supportedTokens = getAllSupportedTokens({
     environment: Environment.Mainnet,
     version: Version.V1_2_0,
@@ -24,6 +23,8 @@ export async function getStaticPaths() {
       params: { token },
       props: {
         // network: networks.find((network) => network.chain === chain),
+        token: tokens.find((t) => t === token),
+        logo: getTokenIconUrl(token),
       },
     }
   })
@@ -32,6 +33,7 @@ export async function getStaticPaths() {
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
 const networks = getAllNetworks({ filter: "mainnet" })
+console.log(networks)
 const supportedTokens = getAllSupportedTokens({
   environment: Environment.Mainnet,
   version: Version.V1_2_0,
@@ -40,42 +42,58 @@ const supportedTokens = getAllSupportedTokens({
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
 const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token)
   return {
     name: token,
-    logo: "/assets/chains/avalanche.svg",
+    logo,
     totalNetworks: 0,
   }
 })
 
-// const { network } = Astro.props
+const { token, logo } = Astro.props
+
+const data = getTokenData({
+  environment: Environment.Mainnet,
+  version: Version.V1_2_0,
+  tokenSymbol: token,
+})
+
+console.log(data)
 ---
 
 <CcipLayout frontmatter={entry.data} {headings}>
-  <ChainHero chains={networks} tokens={allTokens} client:load network={networks[0]} />
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    client:load
+    token={{
+      name: token || "",
+      logo: logo || "",
+    }}
+    l
+  />
   <section class="layout">
     <div>
-      <h2>Listed Networks <span>({networks.length})</span></h2>
+      <h2>Listed Networks <span>({Object.keys(data).length})</span></h2>
 
       <Table
-        columns={[
-          {
-            name: "Destination network",
-            key: "name",
-          },
-          {
-            name: "OnRamp address",
-            key: "onRamp",
-          },
-          {
-            name: "Status",
-            key: "status",
-          },
-        ]}
-        data={networks.map((chain) => ({
-          name: chain.name,
-          onRamp: "0x1234567890",
-          status: "Active",
-        }))}
+        networks={Object.keys(data).map((key) => {
+          const directory = directoryToSupportedChain(key || "")
+          const title = getTitle(directory)
+          const networkLogo = getChainIcon(directory)
+          return {
+            name: title,
+            token: data[key].name,
+            key: key,
+            logo: networkLogo,
+            symbol: data[key].symbol,
+            tokenLogo: logo,
+            decimals: data[key].decimals,
+            tokenAddress: data[key].tokenAddress,
+            tokenPoolType: data[key].poolType,
+            tokenPoolAddress: data[key].poolAddress,
+          }
+        })}
       />
     </div>
   </section>
@@ -119,23 +137,6 @@ const allTokens = tokens.map((token) => {
   @media (min-width: 50em) {
     .layout {
       max-width: 1440px;
-    }
-  }
-
-  @media (min-width: 992px) {
-    .layout {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-24x);
-    }
-
-    .networks__grid {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-6x);
-    }
-
-    .tokens__grid {
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: var(--space-6x);
     }
   }
 </style>
