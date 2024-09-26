@@ -5,7 +5,8 @@ import { Environment, getAllNetworks, getAllSupportedTokens, Version } from "~/c
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
-import Table from "~/components/CCIP/Table/Table"
+import Table from "~/components/CCIP/Tables/ChainTable"
+import { getTokenIconUrl } from "~/features/utils"
 
 export async function getStaticPaths() {
   const networks = getAllNetworks({ filter: "mainnet" })
@@ -36,9 +37,10 @@ const supportedTokens = getAllSupportedTokens({
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
 const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token)
   return {
     name: token,
-    logo: "/assets/chains/avalanche.svg",
+    logo,
     totalNetworks: 0,
   }
 })
@@ -51,21 +53,9 @@ const { network } = Astro.props
   <section class="layout">
     <div>
       <h2>Networks <span>({networks.length})</span></h2>
-      <!-- <div class="networks__grid">
-        {
-          networks.map((chain) => (
-            <a href={`/ccip/chain/${chain.chain}`}>
-              <NetworkCard
-                name={chain.name}
-                totalLanes={chain.totalLanes}
-                totalTokens={chain.totalTokens}
-                logo={chain.logo}
-              />
-            </a>
-          ))
-        }
-      </div> -->
+
       <Table
+        networks={networks}
         columns={[
           {
             name: "Destination network",
@@ -90,7 +80,7 @@ const { network } = Astro.props
     <div>
       <h2>Tokens <span>({allTokens.length})</span></h2>
       <div class="tokens__grid">
-        {allTokens.map((token) => <TokenCard token={token.name} />)}
+        {allTokens.map((token) => <TokenCard name={token.name} logo={token.logo} />)}
       </div>
     </div>
   </section>

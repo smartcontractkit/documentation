@@ -1,23 +1,26 @@
-import { fallbackTokenIconUrl, getTokenIconUrl } from "~/features/utils"
+import { fallbackTokenIconUrl } from "~/features/utils"
 import "./TokenCard.css"
 
 interface TokenCardProps {
-  token: string
+  name: string
+  logo?: string
 }
 
-function TokenCard({ token }: TokenCardProps) {
+function TokenCard({ name, logo }: TokenCardProps) {
   return (
-    <div className="token-card__container">
-      <img
-        src={`${getTokenIconUrl(token)}`}
-        alt=""
-        onError={({ currentTarget }) => {
-          currentTarget.onerror = null // prevents looping
-          currentTarget.src = fallbackTokenIconUrl
-        }}
-      />
-      <h3>{token}</h3>
-    </div>
+    <a href={`/ccip/token/${name}`}>
+      <div className="token-card__container">
+        <img
+          src={logo}
+          alt=""
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null // prevents looping
+            currentTarget.src = fallbackTokenIconUrl
+          }}
+        />
+        <h3>{name}</h3>
+      </div>
+    </a>
   )
 }
 
