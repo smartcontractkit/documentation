@@ -1,4 +1,4 @@
-import { Address } from "~/components"
+// import { Address } from "~/components"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
@@ -61,10 +61,11 @@ function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
             <div className="ccip-hero__details__item">
               <div className="ccip-hero__details__label">Router</div>
               <div className="ccip-hero__details__value">
-                <Address
+                {/* <Address
                   endLength={4}
                   contractUrl="https://etherscan.io/address/0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
-                />
+                /> */}
+                0x7a25...488d
               </div>
             </div>
             <div className="ccip-hero__details__item">
