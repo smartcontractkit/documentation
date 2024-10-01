@@ -9,11 +9,10 @@ import {
   getTokenData,
   Version,
 } from "~/config/data/ccip"
-import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
-import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import { directoryToSupportedChain, getChainIcon, getTitle, getTokenIconUrl } from "~/features/utils"
+import Drawer from "~/components/CCIP/Drawer/Drawer"
 
 export async function getStaticPaths() {
   const entry = await getEntry("ccip", "index")
@@ -29,7 +28,6 @@ export async function getStaticPaths() {
     return {
       params: { token },
       props: {
-        // network: networks.find((network) => network.chain === chain),
         token: tokens.find((t) => t === token),
         logo: getTokenIconUrl(token),
       },
@@ -76,26 +74,29 @@ const data = getTokenData({
       logo: logo || "",
     }}
   />
+  <Drawer client:only="react" />
+
   <section class="layout">
     <div>
       <h2>Listed Networks <span>({Object.keys(data).length})</span></h2>
 
       <Table
+        client:only="react"
         networks={Object.keys(data).map((key) => {
           const directory = directoryToSupportedChain(key || "")
-          const title = getTitle(directory)
-          const networkLogo = getChainIcon(directory)
+          const title = getTitle(directory) || ""
+          const networkLogo = getChainIcon(directory) || ""
           return {
             name: title,
-            token: data[key].name,
+            token: data[key].name || "",
             key: key,
             logo: networkLogo,
-            symbol: data[key].symbol,
-            tokenLogo: logo,
-            decimals: data[key].decimals,
-            tokenAddress: data[key].tokenAddress,
-            tokenPoolType: data[key].poolType,
-            tokenPoolAddress: data[key].poolAddress,
+            symbol: data[key].symbol || "",
+            tokenLogo: logo || "",
+            decimals: data[key].decimals || 0,
+            tokenAddress: data[key].tokenAddress || "",
+            tokenPoolType: data[key].poolType || "",
+            tokenPoolAddress: data[key].poolAddress || "",
           }
         })}
       />

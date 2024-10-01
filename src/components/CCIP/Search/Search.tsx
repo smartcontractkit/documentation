@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import "./Search.css"
 import { clsx } from "~/lib"
+import { useClickOutside } from "~/hooks/useClickOutside"
 
 interface SearchProps {
   chains: {
@@ -20,9 +21,11 @@ interface SearchProps {
 
 function Search({ chains, tokens, small }: SearchProps) {
   const [search, setSearch] = useState("")
+  const [openSearchMenu, setOpenSearchMenu] = useState(false)
   const [isActive, setIsActive] = useState(false)
   const [networksResults, setNetworksResults] = useState<SearchProps["chains"]>([])
   const [tokensResults, setTokensResults] = useState<SearchProps["tokens"]>([])
+  const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (search) {
@@ -31,11 +34,15 @@ function Search({ chains, tokens, small }: SearchProps) {
 
       setNetworksResults(networks)
       setTokensResults(tokensList)
+      setOpenSearchMenu(true)
     } else {
       setNetworksResults([])
       setTokensResults([])
+      setOpenSearchMenu(false)
     }
   }, [search, chains, tokens])
+
+  useClickOutside(searchRef, () => setOpenSearchMenu(false))
 
   return (
     <div
@@ -43,6 +50,7 @@ function Search({ chains, tokens, small }: SearchProps) {
         active: isActive,
         small: small || false,
       })}
+      ref={searchRef}
     >
       <img src="/assets/icons/search.svg" alt="" />
       <input
@@ -53,7 +61,7 @@ function Search({ chains, tokens, small }: SearchProps) {
         onFocus={() => setIsActive(true)}
         onBlur={() => setIsActive(false)}
       />
-      {search && (
+      {openSearchMenu && (
         <div className="ccip-hero__search-results">
           {networksResults.length === 0 && tokensResults.length === 0 && (
             <span className="ccip-hero__search-results__title">No results found</span>
