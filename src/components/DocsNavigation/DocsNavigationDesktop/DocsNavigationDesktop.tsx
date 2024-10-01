@@ -18,7 +18,7 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
         <div className={styles.container}>
           <DocsPickerDesktop pathname={pathname} />
           <div className={styles.links}>
-            <button className={styles.link} onClick={() => setIsModalOpen(true)}>
+            <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)}>
               <img height={20} width={20} src="/assets/icons/quick-links.svg" />
               <span>Quick Links</span>
             </button>
