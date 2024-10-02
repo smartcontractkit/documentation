@@ -6,12 +6,14 @@ import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
 import DocsNavigation from "~/components/DocsNavigation"
 import Segments from "~/components/Segment/Segments"
+import { Environment } from "~/config/data/ccip"
 
 interface Props {
   frontmatter: BaseFrontmatter
   headings?: MarkdownHeading[]
+  network: Environment
 }
-const { frontmatter, headings } = Astro.props
+const { frontmatter, headings, network } = Astro.props
 
 const titleHeading: MarkdownHeading = {
   text: frontmatter.title,
@@ -33,16 +35,16 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage}>
     <Segments
-      client:only="react"
       tabs={[
         {
           name: "Mainnet",
           id: "mainnet",
-          default: true,
+          active: network === Environment.Mainnet,
         },
         {
           name: "Testnet",
           id: "testnet",
+          active: network === Environment.Testnet,
         },
       ]}
     />

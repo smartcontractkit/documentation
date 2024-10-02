@@ -13,6 +13,9 @@ import yaml from "@rollup/plugin-yaml"
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
+  redirects: {
+    "/ccip/supported-networks": "/ccip/supported-networks/mainnet",
+  },
   integrations: [
     preact({
       include: ["**/preact/*"],
