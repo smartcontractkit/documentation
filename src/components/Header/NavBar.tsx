@@ -11,7 +11,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
   const { setNavBarInfo } = useNavBar()
 
   const doubleNavbar = () => {
-    const pathWithoutDocNav = ["/quickstarts/"]
+    const pathWithoutDocNav = ["/quickstarts/", "/builders-quick-links"]
     const shouldAddDocNavigation = !pathWithoutDocNav.some((p) => path.includes(p))
     const isHomepage = path === "/"
     return shouldAddDocNavigation && !isHomepage
