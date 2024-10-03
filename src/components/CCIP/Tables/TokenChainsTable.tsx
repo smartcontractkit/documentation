@@ -14,7 +14,6 @@ import {
 } from "~/config/data/ccip"
 import Tabs from "./Tabs"
 import TableSearchInput from "./TableSearchInput"
-import LaneDrawer from "../LaneDrawers/LaneDrawer"
 import { SupportedChain } from "~/config"
 
 interface TableProps {
