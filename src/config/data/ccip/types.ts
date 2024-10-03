@@ -17,6 +17,7 @@ export type LaneConfig = {
   onRamp: {
     address: string
     version: string
+    enforceOutOfOrder?: boolean
   }
   offRamp: {
     address: string
@@ -44,6 +45,18 @@ export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
   router: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
     address: string
     version: string
   }
