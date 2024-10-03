@@ -49,7 +49,7 @@ export const getEnvironmentAndConfig = (
     return {
       environment: Environment.Testnet,
       chainsConfig: testnetChainsReferenceData,
-      sourceRouterAddress: testnetChainsReferenceData[sourceNetworkId].router,
+      sourceRouterAddress: testnetChainsReferenceData[sourceNetworkId].router.address,
       destinationNetworkIds: Object.keys(testnetLanesReferenceData[sourceNetworkId]),
     }
   }
@@ -57,7 +57,7 @@ export const getEnvironmentAndConfig = (
   return {
     environment: Environment.Mainnet,
     chainsConfig: chainsReferenceData,
-    sourceRouterAddress: chainsReferenceData[sourceNetworkId].router,
+    sourceRouterAddress: chainsReferenceData[sourceNetworkId].router.address,
     destinationNetworkIds: Object.keys(lanesReferenceData[sourceNetworkId]),
   }
 }
