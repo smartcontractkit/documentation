@@ -13,8 +13,16 @@ export type SupportedTokensConfig = {
 
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
-  onRamp: string
-  offRamp: string
+  rateLimiterConfig: RateLimiterConfig
+  onRamp: {
+    address: string
+    version: string
+    enforceOutOfOrder?: boolean
+  }
+  offRamp: {
+    address: string
+    version: string
+  }
 }
 
 export type DestinationsLaneConfig = {
@@ -36,10 +44,22 @@ type PoolInfo = {
 export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
-  router: string
-  rmnProxy?: string
-  registryModuleOwnerCustom?: string
-  tokenAdminRegistry?: string
+  router: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
+    address: string
+    version: string
+  }
 }
 
 export type ChainsConfig = {
