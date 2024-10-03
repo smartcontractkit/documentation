@@ -9,6 +9,7 @@ import {
   determineTokenMechanism,
   TokenMechanism,
   NetworkFees,
+  LaneConfig,
 } from "."
 
 // For mainnet
@@ -378,6 +379,18 @@ export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "t
   return allChains
 }
 
+export const getNetwork = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+  const chains = getAllNetworks({ filter })
+
+  for (const network of chains) {
+    if (network.chain === chain) {
+      return network
+    }
+  }
+
+  return undefined
+}
+
 export const getChainsOfToken = ({ token, filter }: { token: string; filter: "mainnet" | "testnet" }) => {
   let tokensTestData
   switch (filter) {
@@ -435,4 +448,58 @@ export const getAllNetworkLanes = ({
     }
   })
   return lanesData
+}
+
+export function getAllTokenLanes({
+  token,
+  environment,
+  version,
+}: {
+  token: string
+  environment: Environment
+  version: Version
+}) {
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+
+  const allDestinationLanes: {
+    [sourceChain: string]: SupportedTokenConfig
+  } = {}
+
+  Object.keys(lanesReferenceData).forEach((sourceChain) => {
+    Object.keys(lanesReferenceData[sourceChain]).forEach((destinationLane) => {
+      if (
+        lanesReferenceData[sourceChain][destinationLane] &&
+        lanesReferenceData[sourceChain][destinationLane].supportedTokens &&
+        lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+      ) {
+        allDestinationLanes[sourceChain] = lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+      }
+    })
+  })
+
+  return allDestinationLanes
+}
+
+export function getLane({
+  sourceChain,
+  destinationChain,
+  environment,
+  version,
+}: {
+  sourceChain: SupportedChain
+  destinationChain: SupportedChain
+  environment: Environment
+  version: Version
+}) {
+  console.log("sourceChain", sourceChain)
+  console.log("destinationChain", destinationChain)
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+  console.log(lanesReferenceData[sourceChain][destinationChain])
+  return lanesReferenceData[sourceChain][destinationChain]
 }
