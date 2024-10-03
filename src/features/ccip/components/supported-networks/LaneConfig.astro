@@ -13,6 +13,7 @@ import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
+import { Tooltip } from "@features/common/Tooltip"
 import { TokenExtraInfo } from "./types"
 import TokenSearch from "./TokenSearch"
 
@@ -104,7 +105,7 @@ const onRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(onRamp.address)
 const enforceOutOfOrder = onRamp.enforceOutOfOrder
 const enforceOutOfOrderText = enforceOutOfOrder === undefined ? "" : enforceOutOfOrder ? "Required" : "Optional"
 
-const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp)
+const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp.address)
 
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
@@ -301,6 +302,41 @@ if (supportedTokens) {
                           rateLimiterConfig.rate,
                           "USD"
                         )
+  <br />
+
+  {
+    enforceOutOfOrder !== undefined && (
+      <table>
+        <>
+          <thead>
+            <tr>
+              <>
+                <th>Property</th>
+                <th>Value</th>
+              </>
+            </tr>
+          </thead>
+          <tbody>
+            <>
+              <tr>
+                <>
+                  <td>
+                    <Tooltip
+                      tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
+                      label="Out of Order Execution"
+                      style={{ marginTop: "0" }}
+                      client:load
+                    />
+                  </td>
+                  <td>{enforceOutOfOrderText}</td>
+                </>
+              </tr>
+            </>
+          </tbody>
+        </>
+      </table>
+    )
+  }
   <br />
 
   {
