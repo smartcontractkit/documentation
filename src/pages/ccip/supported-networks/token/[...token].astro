@@ -5,6 +5,7 @@ import {
   Environment,
   getAllNetworks,
   getAllSupportedTokens,
+  getAllTokenLanes,
   getChainsOfToken,
   getTokenData,
   Version,
@@ -60,7 +61,13 @@ const { token, logo } = Astro.props
 const data = getTokenData({
   environment: Environment.Mainnet,
   version: Version.V1_2_0,
-  tokenSymbol: token,
+  tokenSymbol: token || "",
+})
+
+const lanes = getAllTokenLanes({
+  environment: Environment.Mainnet,
+  version: Version.V1_2_0,
+  token: token || "",
 })
 ---
 
@@ -99,6 +106,11 @@ const data = getTokenData({
             tokenPoolAddress: data[key].poolAddress || "",
           }
         })}
+        lanes={lanes}
+        token={{
+          name: token || "",
+          logo: logo || "",
+        }}
       />
     </div>
   </section>

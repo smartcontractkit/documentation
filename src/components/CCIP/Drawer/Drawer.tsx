@@ -1,12 +1,30 @@
 import { useStore } from "@nanostores/react"
 import "./Drawer.css"
 import { drawerContentStore } from "./drawerStore"
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
 
 function Drawer() {
   const drawerRef = useRef<HTMLDivElement>(null)
   const drawerContentRef = useRef<HTMLDivElement>(null)
   const $drawerContent = useStore(drawerContentStore)
+
+  // exit when press esc
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") drawerContentStore.set(null)
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    if ($drawerContent) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+      document.body.style.overflow = "auto"
+    }
+  }, [$drawerContent])
 
   if (!$drawerContent) return null
 
