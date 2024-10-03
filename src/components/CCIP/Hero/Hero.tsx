@@ -1,3 +1,4 @@
+import { Environment } from "~/config/data/ccip"
 import Search from "../Search/Search"
 import "./Hero.css"
 
@@ -13,15 +14,16 @@ interface HeroProps {
     totalNetworks: number
     logo: string
   }[]
+  environment: Environment
 }
 
-function Hero({ chains, tokens }: HeroProps) {
+function Hero({ chains, tokens, environment }: HeroProps) {
   return (
     <section className="ccip-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
       <div className="ccip-hero__content">
         <h1 className="ccip-hero__heading">Networks & Tokens</h1>
-        <Search chains={chains} tokens={tokens} />
+        <Search chains={chains} tokens={tokens} environment={environment} />
       </div>
     </section>
   )

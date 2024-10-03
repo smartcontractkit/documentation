@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import "./Search.css"
 import { clsx } from "~/lib"
 import { useClickOutside } from "~/hooks/useClickOutside"
+import { Environment } from "~/config/data/ccip"
 
 interface SearchProps {
   chains: {
@@ -17,9 +18,10 @@ interface SearchProps {
     logo: string
   }[]
   small?: boolean
+  environment: Environment
 }
 
-function Search({ chains, tokens, small }: SearchProps) {
+function Search({ chains, tokens, small, environment }: SearchProps) {
   const [search, setSearch] = useState("")
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
   const [isActive, setIsActive] = useState(false)
@@ -72,7 +74,7 @@ function Search({ chains, tokens, small }: SearchProps) {
               <ul aria-label="Networks">
                 {networksResults.map((network) => (
                   <li key={network.name}>
-                    <a href={`/ccip/chain/${network.chain}`}>
+                    <a href={`/ccip/supported-networks/${environment}/chain/${network.chain}`}>
                       <img src={network.logo} alt="" />
                       {network.name}
                       <span>
@@ -90,7 +92,7 @@ function Search({ chains, tokens, small }: SearchProps) {
               <ul aria-label="Networks">
                 {tokensResults.map((token) => (
                   <li key={token.name}>
-                    <a href={`/ccip/token/${token.name}`}>
+                    <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
                       <img src={token.logo} alt="" />
                       {token.name}
                       <span>{token.totalNetworks} networks</span>

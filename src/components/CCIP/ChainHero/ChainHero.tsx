@@ -1,3 +1,4 @@
+import { Environment } from "~/config/data/ccip"
 import Address from "../Address/Address"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
@@ -26,7 +27,7 @@ interface ChainHeroProps {
     name: string
     logo: string
   }
-  environment: string
+  environment: Environment
 }
 
 function ChainHero({ chains, tokens, network, token, environment }: ChainHeroProps) {
@@ -51,7 +52,7 @@ function ChainHero({ chains, tokens, network, token, environment }: ChainHeroPro
             ]}
           />
           <div className="ccip-hero__chainSearch">
-            <Search chains={chains} tokens={tokens} small />
+            <Search chains={chains} tokens={tokens} small environment={environment} />
           </div>
         </div>
 
