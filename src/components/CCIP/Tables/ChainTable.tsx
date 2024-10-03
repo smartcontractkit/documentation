@@ -7,7 +7,10 @@ interface TableProps {
   lanes: {
     name: string
     logo: string
-    onRamp?: string
+    onRamp?: {
+      address: string
+      version: string
+    }
   }[]
 }
 
@@ -48,7 +51,7 @@ function ChainTable({ lanes }: TableProps) {
                 </div>
               </td>
               <td>
-                <Address address={network.onRamp} endLength={4} />
+                <Address address={network.onRamp?.address} endLength={4} />
               </td>
               <td>
                 <span className="ccip-table__status">
