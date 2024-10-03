@@ -106,7 +106,7 @@ export const GET: APIRoute = async ({ request }) => {
           // Attempt to get the provider and check if the chain is cursed
           try {
             const provider = getProviderForChain(destinationChain)
-            const destinationRouterAddress = chainsConfig[id].router
+            const destinationRouterAddress = chainsConfig[id].router.address
 
             const isDestinationCursed = await withTimeout(
               checkIfChainIsCursed(provider, destinationChain, destinationRouterAddress),
