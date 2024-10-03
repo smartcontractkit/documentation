@@ -48,6 +48,18 @@ export type ChainConfig = {
     address: string
     version: string
   }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
+    address: string
+    version: string
+  }
 }
 
 export type ChainsConfig = {
