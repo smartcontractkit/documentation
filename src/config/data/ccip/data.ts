@@ -318,7 +318,7 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
   }
 }
 
-export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Environment }) => {
   let tokensTestData
   switch (filter) {
     case "mainnet":
@@ -343,7 +343,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: "ma
   return tokensResult
 }
 
-export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "testnet" }) => {
+export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
@@ -365,12 +365,13 @@ export const getAllNetworks = ({ filter = "mainnet" }: { filter?: "mainnet" | "t
         continue
       }
     }
+    const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
     const logo = getChainIcon(directory)
     const token = getTokensOfChain({ chain, filter })
     allChains.push({
       name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
       logo: logo || "",
-      totalLanes: Object.keys(lanesMainnetv120[chain]).length,
+      totalLanes: Object.keys(lanes[chain]).length,
       totalTokens: token.length,
       chain,
     })

@@ -11,9 +11,9 @@ import { Environment } from "~/config/data/ccip"
 interface Props {
   frontmatter: BaseFrontmatter
   headings?: MarkdownHeading[]
-  network: Environment
+  environment: Environment
 }
-const { frontmatter, headings, network } = Astro.props
+const { frontmatter, headings, environment } = Astro.props
 
 const titleHeading: MarkdownHeading = {
   text: frontmatter.title,
@@ -39,12 +39,12 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
         {
           name: "Mainnet",
           id: "mainnet",
-          active: network === Environment.Mainnet,
+          active: environment === Environment.Mainnet,
         },
         {
           name: "Testnet",
           id: "testnet",
-          active: network === Environment.Testnet,
+          active: environment === Environment.Testnet,
         },
       ]}
     />

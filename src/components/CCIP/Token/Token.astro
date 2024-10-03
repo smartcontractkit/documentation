@@ -15,33 +15,14 @@ import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import { directoryToSupportedChain, getChainIcon, getTitle, getTokenIconUrl } from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
-export async function getStaticPaths() {
-  const entry = await getEntry("ccip", "index")
-  const supportedTokens = getAllSupportedTokens({
-    environment: Environment.Mainnet,
-    version: Version.V1_2_0,
-  })
-
-  const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
-  const pages = tokens.map((token) => ({ token }))
-
-  return pages.map(({ token }) => {
-    return {
-      params: { token },
-      props: {
-        token: tokens.find((t) => t === token),
-        logo: getTokenIconUrl(token),
-      },
-    }
-  })
-}
+const { token, logo, environment } = Astro.props
 
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
-const networks = getAllNetworks({ filter: "mainnet" })
-console.log(networks)
+const networks = getAllNetworks({ filter: environment })
+
 const supportedTokens = getAllSupportedTokens({
-  environment: Environment.Mainnet,
+  environment: environment,
   version: Version.V1_2_0,
 })
 
@@ -52,11 +33,9 @@ const allTokens = tokens.map((token) => {
   return {
     name: token,
     logo,
-    totalNetworks: getChainsOfToken({ token, filter: "mainnet" }).length,
+    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
   }
 })
-
-const { token, logo } = Astro.props
 
 const data = getTokenData({
   environment: Environment.Mainnet,
@@ -71,7 +50,7 @@ const lanes = getAllTokenLanes({
 })
 ---
 
-<CcipLayout frontmatter={entry.data} {headings}>
+<CcipLayout frontmatter={entry.data} {headings} environment={environment}>
   <ChainHero
     chains={networks}
     tokens={allTokens}
@@ -80,6 +59,7 @@ const lanes = getAllTokenLanes({
       name: token || "",
       logo: logo || "",
     }}
+    environment={environment}
   />
   <Drawer client:only="react" />
 

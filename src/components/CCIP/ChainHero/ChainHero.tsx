@@ -26,9 +26,10 @@ interface ChainHeroProps {
     name: string
     logo: string
   }
+  environment: string
 }
 
-function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
+function ChainHero({ chains, tokens, network, token, environment }: ChainHeroProps) {
   return (
     <section className="ccip-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
@@ -39,11 +40,13 @@ function ChainHero({ chains, tokens, network, token }: ChainHeroProps) {
             items={[
               {
                 name: "Networks & Tokens",
-                url: "/ccip",
+                url: `/ccip/supported-networks/${environment}`,
               },
               {
                 name: "Current",
-                url: network ? `/ccip/chain/${network.chain}` : `/ccip/token/${token?.name}`,
+                url: network
+                  ? `/ccip/supported-networks/${environment}/chain/${network.chain}`
+                  : `/ccip/supported-networks/${environment}/token/${token?.name}`,
               },
             ]}
           />
