@@ -261,7 +261,10 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
                 tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
                     // Additional arguments, setting gas limit
-                    Client.EVMExtraArgsV1({gasLimit: 200_000})
+                    Client.EVMExtraArgsV2({
+                        gasLimit: 200_000, // Gas limit for the callback on the destination chain
+                        allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
+                    })
                 ),
                 // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
                 feeToken: _feeTokenAddress

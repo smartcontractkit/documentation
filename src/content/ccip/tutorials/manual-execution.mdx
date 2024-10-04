@@ -231,7 +231,10 @@ The smart contract used in this tutorial is configured to use CCIP for transferr
 A key distinction in this tutorial is the intentional setup of a low gas limit of `20,000` for building the CCIP message. This specific gas limit setting is expected to fail the message delivery on the receiver contract in the destination chain:
 
 ```solidity
-Client._argsToBytes(
-    Client.EVMExtraArgsV1({gasLimit: 20_000})
-)
+Client.EVMExtraArgsV2({
+  gasLimit: 20_000
+  allowOutOfOrderExecution: true
+})
 ```
+
+<CcipCommon callout="senderContractCallout" />
