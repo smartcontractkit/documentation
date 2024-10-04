@@ -22,7 +22,7 @@ function Hero({ chains, tokens, environment }: HeroProps) {
     <section className="ccip-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
       <div className="ccip-hero__content">
-        <h1 className="ccip-hero__heading">Networks & Tokens</h1>
+        <h1 className="ccip-hero__heading">CCIP Directory</h1>
         <Search chains={chains} tokens={tokens} environment={environment} />
       </div>
     </section>

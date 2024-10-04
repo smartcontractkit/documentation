@@ -40,7 +40,7 @@ function ChainHero({ chains, tokens, network, token, environment }: ChainHeroPro
           <Breadcrumb
             items={[
               {
-                name: "Networks & Tokens",
+                name: "CCIP Directory",
                 url: `/ccip/supported-networks/${environment}`,
               },
               {
