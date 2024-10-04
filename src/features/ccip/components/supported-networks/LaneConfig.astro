@@ -40,7 +40,6 @@ const {
 
 const { rateLimiterConfig, supportedTokens, onRamp, offRamp } = laneConfig
 
-
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
   const normalized = bigNum.dividedBy(divisor)
@@ -302,58 +301,28 @@ if (supportedTokens) {
                           rateLimiterConfig.rate,
                           "USD"
                         )
-  <br />
 
-  {
-    enforceOutOfOrder !== undefined && (
-      <table>
-        <>
-          <thead>
-            <tr>
-              <>
-                <th>Property</th>
-                <th>Value</th>
+                        return <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
+                      })()}
+                    </td>
+                  </>
+                </tr>
               </>
-            </tr>
-          </thead>
-          <tbody>
-            <>
-              <tr>
-                <>
-                  <td>
-                    <Tooltip
-                      tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
-                      label="Out of Order Execution"
-                      style={{ marginTop: "0" }}
-                      client:load
-                    />
-                  </td>
-                  <td>{enforceOutOfOrderText}</td>
-                </>
-              </tr>
-            </>
-          </tbody>
-        </>
-      </table>
-    )
-  }
-  <br />
-
-  {
-    tokensWithExtraInfo.length > 0 ? (
+            </tbody>
+          </>
+        </table>
+      ) : null}
       <>
-        <>
-          <p>
-            <strong>Transferable tokens</strong>
-          </p>
-          <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
-        </>
+        <p>
+          <strong>Transferable tokens</strong>
+        </p>
+        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
       </>
-    ) : (
-      <Aside>
-        No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
-        their token listed.
-      </Aside>
-    )
-  }
-</table>
+    </>
+  ) : (
+    <Aside>
+      No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
+      their token listed.
+    </Aside>
+  )
+}
