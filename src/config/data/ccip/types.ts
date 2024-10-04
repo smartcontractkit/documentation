@@ -17,6 +17,7 @@ export type LaneConfig = {
   onRamp: {
     address: string
     version: string
+    enforceOutOfOrder?: boolean
   }
   offRamp: {
     address: string
