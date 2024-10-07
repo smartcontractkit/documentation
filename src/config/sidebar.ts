@@ -589,7 +589,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/getting-started",
         },
         {
-          title: "Supported Networks",
+          title: "CCIP Directory",
           url: "chainlink-functions/supported-networks",
         },
         {
@@ -939,7 +939,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/getting-started",
         },
         {
-          title: "Supported Networks",
+          title: "CCIP Directory",
           url: "ccip/supported-networks",
           children: [
             {
