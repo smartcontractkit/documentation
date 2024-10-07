@@ -106,6 +106,8 @@ const enforceOutOfOrderText = enforceOutOfOrder === undefined ? "N/A" : enforceO
 
 const rmnStatusText = rmnPermeable ? "Coming Soon" : "Enabled"
 
+const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp.address)
+
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
 const determineMechanism = (
@@ -185,21 +187,37 @@ if (supportedTokens) {
       >
     </tr>
     <tr>
-      <td>Destination chain selector</td>
+      <td>OffRamp address</td>
       <td
-        ><CopyText
-          text={destinationChainSelector}
-          code
+        ><Address
+          contractUrl={offRampExplorerUrl}
           eventName="docs_product_interaction"
           additionalInfo={{
             product: "CCIP",
-            action: "ccip_destinationChainSelector_copied",
+            action: "ccip_offRampAddress_copied",
             extraInfo1: sourceChain,
             extraInfo2: destinationChainRefId,
           }}
           client:only="preact"
         /></td
       >
+      <tr>
+        <td>Destination chain selector</td>
+        <td
+          ><CopyText
+            text={destinationChainSelector}
+            code
+            eventName="docs_product_interaction"
+            additionalInfo={{
+              product: "CCIP",
+              action: "ccip_destinationChainSelector_copied",
+              extraInfo1: sourceChain,
+              extraInfo2: destinationChainRefId,
+            }}
+            client:only="preact"
+          /></td
+        >
+      </tr>
     </tr>
   </tbody>
 </table>
