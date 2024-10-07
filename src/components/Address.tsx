@@ -1,4 +1,3 @@
-/** @jsxImportSource preact */
 import { clsx } from "../lib" // Ensure that the `clsx` function is correctly imported or implemented.
 
 export type Props = {

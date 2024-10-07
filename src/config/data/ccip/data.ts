@@ -31,7 +31,7 @@ import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json
 import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
 
 import { SupportedChain } from "@config/types"
-import { directoryToSupportedChain, supportedChainToChainInRdd } from "@features/utils"
+import { directoryToSupportedChain, getChainIcon, getTitle, supportedChainToChainInRdd } from "@features/utils"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -148,6 +148,17 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
     return []
   }
   return tokens
+}
+
+export const getTokenData = (params: { tokenSymbol: string; environment: Environment; version: Version }) => {
+  const { tokensReferenceData } = loadReferenceData(params)
+  const tokenConfig = tokensReferenceData[params.tokenSymbol]
+
+  if (tokenConfig) {
+    return tokenConfig // Assuming the token configuration has a 'name' property
+  } else {
+    throw new Error(`Token with symbol ${params.tokenSymbol} not found`)
+  }
 }
 
 export const getTokenMechanism = (params: {
@@ -304,4 +315,213 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
       image: CCIPTokenImage,
     },
   }
+}
+
+export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Environment }) => {
+  let tokensTestData
+  switch (filter) {
+    case "mainnet":
+      tokensTestData = tokensMainnetv120
+      break
+    case "testnet":
+      tokensTestData = tokensTestnetv120
+      break
+    default:
+      throw new Error(`Invalid testnet version: ${filter}`)
+  }
+
+  const tokensResult: string[] = []
+
+  for (const token in tokensTestData) {
+    const tokenData = tokensTestData[token]
+    if (tokenData[chain]) {
+      tokensResult.push(token)
+    }
+  }
+
+  return tokensResult
+}
+
+export const getAllNetworks = ({ filter }: { filter: Environment }) => {
+  const chains = getAllChains({
+    mainnetVersion: Version.V1_2_0,
+    testnetVersion: Version.V1_2_0,
+  })
+
+  const allChains: {
+    name: string
+    logo: string
+    totalLanes: number
+    totalTokens: number
+    chain: string
+  }[] = []
+
+  for (const chain of chains) {
+    const directory = directoryToSupportedChain(chain)
+    const title = getTitle(directory)
+    if (filter) {
+      if (!title?.includes(filter)) {
+        continue
+      }
+    }
+    const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
+    const logo = getChainIcon(directory)
+    const token = getTokensOfChain({ chain, filter })
+    allChains.push({
+      name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
+      logo: logo || "",
+      totalLanes: Object.keys(lanes[chain]).length,
+      totalTokens: token.length,
+      chain,
+    })
+  }
+
+  return allChains
+}
+
+export const getNetwork = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+  const chains = getAllNetworks({ filter })
+
+  for (const network of chains) {
+    if (network.chain === chain) {
+      let chainsReferenceData: ChainsConfig
+      switch (filter) {
+        case "mainnet":
+          chainsReferenceData = chainsMainnetv120 as unknown as ChainsConfig
+          break
+        case "testnet":
+          chainsReferenceData = chainsTestnetv120 as unknown as ChainsConfig
+          break
+        default:
+          throw new Error(`Invalid testnet version: ${filter}`)
+      }
+
+      const chainDetails = chainsReferenceData[chain]
+      return {
+        name: network.name,
+        logo: network.logo,
+        ...chainDetails,
+      }
+    }
+  }
+
+  return undefined
+}
+
+export const getChainsOfToken = ({ token, filter }: { token: string; filter: "mainnet" | "testnet" }) => {
+  let tokensTestData
+  switch (filter) {
+    case "mainnet":
+      tokensTestData = tokensMainnetv120
+      break
+    case "testnet":
+      tokensTestData = tokensTestnetv120
+      break
+    default:
+      throw new Error(`Invalid testnet version: ${filter}`)
+  }
+
+  const chainsResult: string[] = []
+
+  for (const chain in tokensTestData[token]) {
+    chainsResult.push(chain)
+  }
+
+  return chainsResult
+}
+
+export const getAllNetworkLanes = ({
+  chain,
+  environment,
+  version,
+}: {
+  filter?: "mainnet" | "testnet"
+  chain: string
+  environment: Environment
+  version: Version
+}) => {
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+
+  const allLanes = lanesReferenceData[chain]
+
+  const lanesData: {
+    name: string
+    logo: string
+    onRamp: {
+      address: string
+      version: string
+    }
+    offRamp: {
+      address: string
+      version: string
+    }
+  }[] = Object.keys(allLanes).map((lane) => {
+    const laneData = allLanes[lane]
+
+    const directory = directoryToSupportedChain(lane || "")
+    const title = getTitle(directory)
+    const networkLogo = getChainIcon(directory)
+    return {
+      name: title || "",
+      logo: networkLogo || "",
+      onRamp: laneData.onRamp,
+      offRamp: laneData.offRamp,
+    }
+  })
+  return lanesData
+}
+
+export function getAllTokenLanes({
+  token,
+  environment,
+  version,
+}: {
+  token: string
+  environment: Environment
+  version: Version
+}) {
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+
+  const allDestinationLanes: {
+    [sourceChain: string]: SupportedTokenConfig
+  } = {}
+
+  Object.keys(lanesReferenceData).forEach((sourceChain) => {
+    Object.keys(lanesReferenceData[sourceChain]).forEach((destinationLane) => {
+      if (
+        lanesReferenceData[sourceChain][destinationLane] &&
+        lanesReferenceData[sourceChain][destinationLane].supportedTokens &&
+        lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+      ) {
+        allDestinationLanes[sourceChain] = lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+      }
+    })
+  })
+
+  return allDestinationLanes
+}
+
+export function getLane({
+  sourceChain,
+  destinationChain,
+  environment,
+  version,
+}: {
+  sourceChain: SupportedChain
+  destinationChain: SupportedChain
+  environment: Environment
+  version: Version
+}) {
+  const { lanesReferenceData } = loadReferenceData({
+    environment,
+    version,
+  })
+
+  return lanesReferenceData[sourceChain][destinationChain]
 }

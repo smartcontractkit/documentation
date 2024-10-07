@@ -103,3 +103,14 @@ export const calculateMessaingNetworkFees = (sourceChain: SupportedChain, destin
 
   return calculateMessagingNetworkFeesDirect(laneSpecificFeeKey)
 }
+
+export const representMoney = (amount: string): string => {
+  const removeLast12Zeros = amount.slice(0, -16)
+  const amountString = removeLast12Zeros.toString()
+  const amountLength = amountString.length
+  const decimalIndex = amountLength - 2
+  const integerPart = amountString.slice(0, decimalIndex)
+  const decimalPart = amountString.slice(decimalIndex)
+  const integerPartWithCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  return `${integerPartWithCommas}.${decimalPart}`
+}

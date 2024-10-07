@@ -3,7 +3,7 @@ import { useNavBar } from "../../Header/useNavBar/useNavBar"
 import DocsPickerMobile from "./DocsPickerMobile"
 import styles from "./docsNavigationMobile.module.css"
 
-function DocsNavigationDesktop({ pathname }: { pathname: string }) {
+function DocsNavigationDesktop({ pathname }: { pathname: string; children?: React.ReactNode }) {
   const { $navBarInfo } = useNavBar()
   return (
     <>

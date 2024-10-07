@@ -1,0 +1,139 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry } from "astro:content"
+import {
+  Environment,
+  getAllNetworks,
+  getAllSupportedTokens,
+  getAllTokenLanes,
+  getChainsOfToken,
+  getTokenData,
+  Version,
+} from "~/config/data/ccip"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import Table from "~/components/CCIP/Tables/TokenChainsTable"
+import { directoryToSupportedChain, getChainIcon, getTitle, getTokenIconUrl } from "~/features/utils"
+import Drawer from "~/components/CCIP/Drawer/Drawer"
+
+const { token, logo, environment } = Astro.props
+
+const entry = await getEntry("ccip", "index")
+const { headings } = await entry.render()
+const networks = getAllNetworks({ filter: environment })
+
+const supportedTokens = getAllSupportedTokens({
+  environment: environment,
+  version: Version.V1_2_0,
+})
+
+const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+
+const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token)
+  return {
+    name: token,
+    logo,
+    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+  }
+})
+
+const data = getTokenData({
+  environment: environment,
+  version: Version.V1_2_0,
+  tokenSymbol: token || "",
+})
+
+const lanes = getAllTokenLanes({
+  environment: environment,
+  version: Version.V1_2_0,
+  token: token || "",
+})
+---
+
+<CcipLayout frontmatter={entry.data} {headings} environment={environment}>
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    client:load
+    token={{
+      name: token || "",
+      logo: logo || "",
+    }}
+    environment={environment}
+  />
+  <Drawer client:only="react" />
+
+  <section class="layout">
+    <div>
+      <h2>Listed Networks <span>({Object.keys(data).length})</span></h2>
+
+      <Table
+        client:only="react"
+        networks={Object.keys(data).map((key) => {
+          const directory = directoryToSupportedChain(key || "")
+          const title = getTitle(directory) || ""
+          const networkLogo = getChainIcon(directory) || ""
+          return {
+            name: title,
+            token: data[key].name || "",
+            key: key,
+            logo: networkLogo,
+            symbol: token,
+            tokenLogo: logo || "",
+            decimals: data[key].decimals || 0,
+            tokenAddress: data[key].tokenAddress || "",
+            tokenPoolType: data[key].poolType || "",
+            tokenPoolAddress: data[key].poolAddress || "",
+          }
+        })}
+        lanes={lanes}
+        token={{
+          name: token || "",
+          logo: logo || "",
+        }}
+      />
+    </div>
+  </section>
+</CcipLayout>
+
+<style scoped="false">
+  .layout {
+    --gutter: var(--space-6x);
+    --doc-padding: 2rem;
+    /* margin-bottom: 0; */
+    margin: var(--space-8x) auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gutter);
+    padding: var(--doc-padding);
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .networks__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8x);
+  }
+
+  .tokens__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8x);
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: 1440px;
+    }
+  }
+</style>
