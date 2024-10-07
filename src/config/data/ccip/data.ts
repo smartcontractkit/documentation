@@ -9,7 +9,6 @@ import {
   determineTokenMechanism,
   TokenMechanism,
   NetworkFees,
-  LaneConfig,
 } from "."
 
 // For mainnet
@@ -434,18 +433,25 @@ export const getAllNetworkLanes = ({
   const lanesData: {
     name: string
     logo: string
-    onRamp: string
+    onRamp: {
+      address: string
+      version: string
+    }
+    offRamp: {
+      address: string
+      version: string
+    }
   }[] = Object.keys(allLanes).map((lane) => {
     const laneData = allLanes[lane]
 
     const directory = directoryToSupportedChain(lane || "")
     const title = getTitle(directory)
     const networkLogo = getChainIcon(directory)
-    console.log(laneData)
     return {
       name: title || "",
       logo: networkLogo || "",
       onRamp: laneData.onRamp,
+      offRamp: laneData.offRamp,
     }
   })
   return lanesData
@@ -495,8 +501,6 @@ export function getLane({
   environment: Environment
   version: Version
 }) {
-  console.log("sourceChain", sourceChain)
-  console.log("destinationChain", destinationChain)
   const { lanesReferenceData } = loadReferenceData({
     environment,
     version,

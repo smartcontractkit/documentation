@@ -1,7 +1,7 @@
 import { clsx } from "~/lib"
 
 export type Props = {
-  contractUrl: string
+  contractUrl?: string
   address?: string
   endLength?: number
   urlClass?: string

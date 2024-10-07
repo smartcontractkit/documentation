@@ -12,6 +12,11 @@ interface TabsProps {
 
 function Tabs({ tabs, onChange }: TabsProps) {
   const [activeTab, setActiveTab] = useState(tabs[0].key)
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key)
+    onChange(key)
+  }
   return (
     <div className="tabs">
       {tabs.map((tab, index) => (
@@ -20,7 +25,7 @@ function Tabs({ tabs, onChange }: TabsProps) {
           className={clsx("tabs__tab", {
             "tabs__tab--active": activeTab === tab.key,
           })}
-          onClick={() => setActiveTab(tab.key)}
+          onClick={() => handleTabChange(tab.key)}
         >
           {tab.name}
         </button>
