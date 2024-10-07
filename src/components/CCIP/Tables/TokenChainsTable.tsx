@@ -2,9 +2,21 @@ import Address from "../Address/Address"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero"
-import { getNetwork, representMoney, SupportedTokenConfig } from "~/config/data/ccip"
+import {
+  Environment,
+  getLane,
+  getNetwork,
+  getTokenData,
+  LaneConfig,
+  representMoney,
+  SupportedTokenConfig,
+  Version,
+} from "~/config/data/ccip"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
+import { SupportedChain } from "~/config"
+import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
+import { getTokenIconUrl } from "~/features/utils"
 
 interface TableProps {
   networks: {
@@ -97,6 +109,7 @@ function TokenDrawer({
     tokenPoolType: string
     tokenPoolAddress: string
     decimals: number
+    key: string
   }
   destinationLanes: {
     [sourceChain: string]: SupportedTokenConfig
@@ -143,11 +156,35 @@ function TokenDrawer({
                   filter: "mainnet",
                   chain: lane,
                 })
+                const laneData = getLane({
+                  sourceChain: network?.key as SupportedChain,
+                  destinationChain: lane as SupportedChain,
+                  environment: Environment.Mainnet,
+                  version: Version.V1_2_0,
+                })
+
+                if (!laneData) return null
 
                 return (
                   <tr key={index}>
                     <td>
-                      <div className="ccip-table__network-name" role="button">
+                      <div
+                        className="ccip-table__network-name"
+                        role="button"
+                        onClick={() => {
+                          drawerContentStore.set(() => (
+                            <LaneDrawer
+                              lane={laneData}
+                              sourceNetwork={network}
+                              destinationNetwork={{
+                                name: networkDetails?.name || "",
+                                logo: networkDetails?.logo || "",
+                                key: lane,
+                              }}
+                            />
+                          ))
+                        }}
+                      >
                         <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
                         {networkDetails?.name}
                       </div>
@@ -182,6 +219,102 @@ function TokenDrawer({
         </div>
       </div>
     </div>
+  )
+}
+
+function LaneDrawer({
+  lane,
+  sourceNetwork,
+  destinationNetwork,
+}: {
+  lane: LaneConfig
+  sourceNetwork: { name: string; logo: string; key: string }
+  destinationNetwork: { name: string; logo: string; key: string }
+}) {
+  const [search, setSearch] = useState("")
+  const destinationNetworkDetails = getNetwork({
+    filter: "mainnet",
+    chain: destinationNetwork.key,
+  })
+
+  return (
+    <>
+      <LaneDetailsHero
+        sourceNetwork={{
+          logo: sourceNetwork.logo,
+          name: sourceNetwork.name,
+        }}
+        destinationNetwork={{
+          logo: destinationNetwork.logo,
+          name: destinationNetwork.name,
+        }}
+        onRamp={lane.onRamp.address}
+        destinationAddress={destinationNetworkDetails?.chainSelector || ""}
+      />
+
+      <div className="ccip-table__drawer-container">
+        <div className="ccip-table__filters">
+          <div></div>
+          <TableSearchInput search={search} setSearch={setSearch} />
+        </div>
+        <table className="ccip-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Token address (Source)</th>
+              <th>Decimals</th>
+              <th>Mechanism</th>
+              <th>Rate limit capacity</th>
+              <th>Rate limit refil rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lane.supportedTokens &&
+              Object.keys(lane.supportedTokens)
+                ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
+                .map((token, index) => {
+                  const data = getTokenData({
+                    environment: Environment.Mainnet,
+                    version: Version.V1_2_0,
+                    tokenSymbol: token || "",
+                  })
+
+                  const logo = getTokenIconUrl(token)
+
+                  return (
+                    <tr key={index}>
+                      <td>
+                        <div className="ccip-table__network-name" onClick={() => console.log(data)}>
+                          <img src={logo} alt={`${token} logo`} className="ccip-table__logo" />
+                          {token}
+                        </div>
+                      </td>
+                      <td>
+                        <Address address={data[sourceNetwork.key].tokenAddress} endLength={6} />
+                      </td>
+                      <td>{data[sourceNetwork.key].decimals}</td>
+
+                      <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                      <td>
+                        {representMoney(lane.supportedTokens[token].rateLimiterConfig.capacity || 0)} {token}
+                        /second
+                      </td>
+                      <td>
+                        {representMoney(lane.supportedTokens[token].rateLimiterConfig.rate || 0)} {token}
+                        /second
+                      </td>
+                    </tr>
+                  )
+                })}
+          </tbody>
+        </table>
+        <div className="ccip-table__notFound">
+          {lane.supportedTokens &&
+            Object.keys(lane.supportedTokens)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
+              .length === 0 && <>No tokens found</>}
+        </div>
+      </div>
+    </>
   )
 }
 

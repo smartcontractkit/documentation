@@ -384,7 +384,24 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: "mainnet"
 
   for (const network of chains) {
     if (network.chain === chain) {
-      return network
+      let chainsReferenceData: ChainsConfig
+      switch (filter) {
+        case "mainnet":
+          chainsReferenceData = chainsMainnetv120 as unknown as ChainsConfig
+          break
+        case "testnet":
+          chainsReferenceData = chainsTestnetv120 as unknown as ChainsConfig
+          break
+        default:
+          throw new Error(`Invalid testnet version: ${filter}`)
+      }
+
+      const chainDetails = chainsReferenceData[chain]
+      return {
+        name: network.name,
+        logo: network.logo,
+        ...chainDetails,
+      }
     }
   }
 
