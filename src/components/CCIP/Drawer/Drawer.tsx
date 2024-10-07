@@ -46,6 +46,12 @@ function Drawer() {
       </div>
       <div className="drawer__container" ref={drawerContentRef}>
         <div className="drawer__content">
+          <button onClick={() => drawerContentStore.set(null)} className="drawer__closeMobile">
+            <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15.1667 1.33331L1.83337 14.6666M1.83337 1.33331L15.1667 14.6666" stroke="#000000" />
+            </svg>
+          </button>
+
           {typeof $drawerContent === "function" ? $drawerContent() : $drawerContent}
         </div>
       </div>
