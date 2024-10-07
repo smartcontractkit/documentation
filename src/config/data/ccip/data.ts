@@ -522,6 +522,6 @@ export function getLane({
     environment,
     version,
   })
-  console.log(lanesReferenceData[sourceChain][destinationChain])
+
   return lanesReferenceData[sourceChain][destinationChain]
 }

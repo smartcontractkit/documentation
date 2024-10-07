@@ -284,7 +284,7 @@ function LaneDrawer({
                   return (
                     <tr key={index}>
                       <td>
-                        <div className="ccip-table__network-name" onClick={() => console.log(data)}>
+                        <div className="ccip-table__network-name">
                           <img src={logo} alt={`${token} logo`} className="ccip-table__logo" />
                           {token}
                         </div>
