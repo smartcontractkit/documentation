@@ -38,9 +38,10 @@ interface TableProps {
   lanes: {
     [sourceChain: string]: SupportedTokenConfig
   }
+  environment: Environment
 }
 
-function TokenChainsTable({ networks, token, lanes: destinationLanes }: TableProps) {
+function TokenChainsTable({ networks, token, lanes: destinationLanes, environment }: TableProps) {
   return (
     <div className="ccip-table__container">
       <table className="ccip-table">
@@ -64,7 +65,12 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes }: TablePro
                   role="button"
                   onClick={() => {
                     drawerContentStore.set(() => (
-                      <TokenDrawer token={token} network={network} destinationLanes={destinationLanes} />
+                      <TokenDrawer
+                        token={token}
+                        network={network}
+                        destinationLanes={destinationLanes}
+                        environment={environment}
+                      />
                     ))
                   }}
                 >
@@ -97,6 +103,7 @@ function TokenDrawer({
   token,
   network,
   destinationLanes,
+  environment,
 }: {
   token: {
     name: string
@@ -114,6 +121,7 @@ function TokenDrawer({
   destinationLanes: {
     [sourceChain: string]: SupportedTokenConfig
   }
+  environment: Environment
 }) {
   const [search, setSearch] = useState("")
   return (
@@ -153,13 +161,13 @@ function TokenDrawer({
               ?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
               .map((lane, index) => {
                 const networkDetails = getNetwork({
-                  filter: "mainnet",
+                  filter: environment,
                   chain: lane,
                 })
                 const laneData = getLane({
                   sourceChain: network?.key as SupportedChain,
                   destinationChain: lane as SupportedChain,
-                  environment: Environment.Mainnet,
+                  environment: environment,
                   version: Version.V1_2_0,
                 })
 
