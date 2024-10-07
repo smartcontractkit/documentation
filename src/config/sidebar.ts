@@ -1010,12 +1010,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/ccip-enabled-tokens",
           children: [
             {
-              title: "Register from an EOA using Hardhat",
-              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-hardhat",
+              title: "Register from an EOA (Burn & Mint)",
+              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry"],
             },
             {
-              title: "Register from an EOA using Foundry",
-              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-foundry",
+              title: "Register from an EOA (Lock & Mint)",
+              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-foundry"],
             },
           ],
         },
