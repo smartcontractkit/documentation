@@ -35,6 +35,7 @@ export const productChainLinks: ProductChainLinks = {
       mode: "/ccip/supported-networks/v1_2_0/mainnet#mode-mainnet",
       metis: "/ccip/supported-networks/v1_2_0/mainnet#metis-mainnet",
       zksync: "/ccip/supported-networks/v1_2_0/mainnet#zksync-mainnet",
+      linea: "/ccip/supported-networks/v1_2_0/mainnet#linea-mainnet",
     },
   },
   "Data Feeds": {

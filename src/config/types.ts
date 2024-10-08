@@ -51,6 +51,7 @@ export type SupportedChain =
   | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
+  | "LINEA_SEPOLIA"
   | "ZKSYNC_MAINNET"
   | "ZKSYNC_SEPOLIA"
   | "POLYGON_ZKEVM_MAINNET"
