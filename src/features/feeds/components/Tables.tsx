@@ -79,7 +79,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
   }
 
   return (
-    <div class={tableStyles.pagination}>
+    <div className={tableStyles.pagination}>
       {totalAddr !== 0 && (
         <>
           <button
@@ -121,7 +121,7 @@ const handleClick = (e, additionalInfo) => {
 const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Pair</th>
+      <th className={tableStyles.heading}>Pair</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -132,7 +132,7 @@ const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
 
 const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
-    <td class={tableStyles.pairCol}>
+    <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
         {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
@@ -152,7 +152,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
     <td>
       <div className={tableStyles.assetAddress}>
         <button
-          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
           onClick={(e) =>
             handleClick(e, {
@@ -167,7 +167,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
         <a
-          class={tableStyles.addressLink}
+          className={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
           target="_blank"
         >
@@ -176,11 +176,11 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       </div>
       {!isTestnet && (
         <div>
-          <dl class={tableStyles.porDl}>
+          <dl className={tableStyles.porDl}>
             {proxy.docs.assetName && (
               <div>
                 <dt>
-                  <span class="label">Asset name:</span>
+                  <span className="label">Asset name:</span>
                 </dt>
                 <dd>{proxy.docs.assetName}</dd>
               </div>
@@ -188,7 +188,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
             {proxy.docs.feedType && (
               <div>
                 <dt>
-                  <span class="label">Asset type:</span>
+                  <span className="label">Asset type:</span>
                 </dt>
                 <dd>
                   {proxy.docs.feedType}
@@ -199,7 +199,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
             {proxy.docs.marketHours && (
               <div>
                 <dt>
-                  <span class="label">Market hours:</span>
+                  <span className="label">Market hours:</span>
                 </dt>
                 <dd>
                   <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
@@ -218,7 +218,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
 const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Proof of Reserve Feed</th>
+      <th className={tableStyles.heading}>Proof of Reserve Feed</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -229,7 +229,7 @@ const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }
 
 const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
-    <td class={tableStyles.pairCol}>
+    <td className={tableStyles.pairCol}>
       {feedItems.map((feedItem: FeedDataItem) => {
         const [feedAddress] = Object.keys(feedItem)
         if (feedAddress === proxy.proxyAddress) {
@@ -264,11 +264,15 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
-        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)} target="_blank">
+        <a
+          className={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+          target="_blank"
+        >
           {proxy.proxyAddress}
         </a>
         <button
-          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress}
           onClick={(e) =>
@@ -285,28 +289,28 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
         </button>
       </div>
       <div>
-        <dl class={tableStyles.porDl}>
+        <dl className={tableStyles.porDl}>
           <div>
             <dt>
-              <span class="label">Asset name:</span>
+              <span className="label">Asset name:</span>
             </dt>
             <dd>{proxy.docs.assetName}</dd>
           </div>
           <div>
             <dt>
-              <span class="label">Reserve type:</span>
+              <span className="label">Reserve type:</span>
             </dt>
             <dd>{proxy.docs.porType}</dd>
           </div>
           <div>
             <dt>
-              <span class="label">Data source:</span>
+              <span className="label">Data source:</span>
             </dt>
             <dd>{proxy.docs.porAuditor}</dd>
           </div>
           <div>
             <dt>
-              <span class="label">
+              <span className="label">
                 {proxy.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
               </span>
             </dt>
@@ -368,7 +372,7 @@ const StreamsNetworksData = [
 
 export const StreamsVerifierProxyTable = () => {
   return (
-    <table class={clsx(feedList.verifierProxyTable, tableStyles.table)}>
+    <table className={clsx(feedList.verifierProxyTable, tableStyles.table)}>
       <thead>
         <tr>
           <th>Network</th>
@@ -378,7 +382,7 @@ export const StreamsVerifierProxyTable = () => {
       <tbody>
         {StreamsNetworksData.map((network) => (
           <tr key={network.network}>
-            <td class={tableStyles.pairCol} style={{ textAlign: "center" }}>
+            <td className={tableStyles.pairCol} style={{ textAlign: "center" }}>
               <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
               <div className={tableStyles.assetPair}>{network.network}</div>
             </td>
@@ -387,14 +391,14 @@ export const StreamsVerifierProxyTable = () => {
                 <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
                 <a
                   style={{ fontSize: "0.9em" }}
-                  class={tableStyles.addressLink}
+                  className={tableStyles.addressLink}
                   href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
                   target="_blank"
                 >
                   {network.mainnet.verifierProxy}
                 </a>
                 <button
-                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                   data-clipboard-text={network.mainnet.verifierProxy}
                   onClick={(e) =>
                     handleClick(e, {
@@ -412,14 +416,14 @@ export const StreamsVerifierProxyTable = () => {
                 <span style="font-size: 0.9em;">{network.testnet.label}: </span>
                 <a
                   style={{ fontSize: "0.9em" }}
-                  class={tableStyles.addressLink}
+                  className={tableStyles.addressLink}
                   href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
                   target="_blank"
                 >
                   {network.testnet.verifierProxy}
                 </a>
                 <button
-                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                   data-clipboard-text={network.testnet.verifierProxy}
                   onClick={(e) =>
                     handleClick(e, {
@@ -449,15 +453,26 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Feed</th>
+      <th className={tableStyles.heading}>Feed</th>
       <th>Details</th>
     </tr>
   </thead>
 )
 
+const streamsCategoryMap = {
+  custom: {
+    text: "Custom",
+    link: "/data-streams/developer-responsibilities/#custom-data-streams",
+  },
+  new_token: {
+    text: "New token",
+    link: "/data-streams/developer-responsibilities#new-token-data-streams",
+  },
+}
+
 const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
   <tr>
-    <td class={tableStyles.pairCol}>
+    <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
         {proxy.pair[0]}/{proxy.pair[1]}
       </div>
@@ -472,10 +487,10 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
     </td>
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
-        <span class="label">ID:</span>
+        <span className="label">ID:</span>
         {proxy.feedId}
         <button
-          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.feedId}
           onClick={(e) =>
@@ -492,44 +507,27 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
         </button>
       </div>
       <div>
-        <dl class={tableStyles.porDl}>
-          {/* {proxy.docs.productType ? (
-            <div>
-              <dt>
-                <span class="label">Data type:</span>
-              </dt>
-              <dd>
-                {proxy.docs.productType}
-                {proxy.docs.productSubType ? " - " + proxy.docs.productSubType : ""}
-              </dd>
-            </div>
-          ) : (
-            ""
-          )} */}
+        <dl className={tableStyles.porDl}>
           {isMainnet && proxy.docs.clicProductName ? (
             <div>
               <dt>
-                <span class="label">Full name:</span>
+                <span className="label">Full name:</span>
               </dt>
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           {proxy.docs.assetName ? (
             <div>
               <dt>
-                <span class="label">Asset name:</span>
+                <span className="label">Asset name:</span>
               </dt>
               <dd>{proxy.docs.assetName}</dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           {proxy.docs.assetClass ? (
             <div>
               <dt>
-                <span class="label">Asset class:</span>
+                <span className="label">Asset class:</span>
               </dt>
               <dd>
                 {proxy.docs.assetClass}
@@ -538,23 +536,11 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
                   : ""}
               </dd>
             </div>
-          ) : (
-            ""
-          )}
-          {/* {proxy.docs.quoteAsset ? (
-            <div aria-hidden={!showExtraDetails}>
-              <dt>
-                <span class="label">Quote asset:</span>
-              </dt>
-              <dd>{proxy.docs.quoteAsset}</dd>
-            </div>
-          ) : (
-            ""
-          )} */}
+          ) : null}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
-                <span class="label">Market hours:</span>
+                <span className="label">Market hours:</span>
               </dt>
               <dd>
                 <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
@@ -562,19 +548,27 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
                 </a>
               </dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
+          {streamsCategoryMap[proxy.docs.feedCategory] ? (
+            <div>
+              <dt>
+                <span className="label">Category:</span>
+              </dt>
+              <dd>
+                <a href={streamsCategoryMap[proxy.docs.feedCategory].link}>
+                  {streamsCategoryMap[proxy.docs.feedCategory].text}
+                </a>
+              </dd>
+            </div>
+          ) : null}
           {proxy.decimals ? (
             <div>
               <dt>
-                <span class="label">Decimals:</span>
+                <span className="label">Decimals:</span>
               </dt>
               <dd>{proxy.decimals}</dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
         </dl>
       </div>
     </td>
@@ -636,8 +630,8 @@ export const MainnetTable = ({
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
     <>
-      <div class={tableStyles.tableWrapper}>
-        <table class={tableStyles.table}>
+      <div className={tableStyles.tableWrapper}>
+        <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
             <tr>
               <td style={{ textAlign: "center" }}>
@@ -709,8 +703,8 @@ export const TestnetTable = ({
     })
 
   return (
-    <div class={tableStyles.tableWrapper}>
-      <table class={tableStyles.table}>
+    <div className={tableStyles.tableWrapper}>
+      <table className={tableStyles.table}>
         {isStreams && <StreamsTHead />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
