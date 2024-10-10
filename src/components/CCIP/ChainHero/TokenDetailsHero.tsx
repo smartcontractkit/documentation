@@ -19,7 +19,7 @@ interface TokenDetailsHeroProps {
 function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
   return (
     <section className="ccip-hero">
-      <div className="ccip-hero__content layout">
+      <div className="ccip-hero__content">
         <h1 className="ccip-hero__heading">
           <img src={network?.logo} alt="" />
           {token?.name}

@@ -42,7 +42,11 @@ function LaneDrawer({
 
       <div className="ccip-table__drawer-container">
         <div className="ccip-table__filters">
-          <div></div>
+          <div>
+            <div className="ccip-table__filters-title">
+              Tokens <span>({lane?.supportedTokens ? Object.keys(lane.supportedTokens).length : 0})</span>
+            </div>
+          </div>
           <TableSearchInput search={search} setSearch={setSearch} />
         </div>
         <table className="ccip-table">

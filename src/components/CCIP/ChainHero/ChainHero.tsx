@@ -58,7 +58,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
     <section className="ccip-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
 
-      <div className="ccip-hero__content layout">
+      <div className="ccip-hero__content">
         <div className="ccip-hero__top">
           <Breadcrumb
             items={[
