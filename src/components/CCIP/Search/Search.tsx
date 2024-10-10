@@ -72,101 +72,104 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   useClickOutside(searchRef, () => setOpenSearchMenu(false))
 
   return (
-    <div
-      className={clsx("ccip-hero__search", {
-        active: isActive,
-        small: small || false,
-      })}
-      ref={searchRef}
-    >
-      <img src="/assets/icons/search.svg" alt="" />
-      <input
-        type="search"
-        placeholder="Network/Token/Lane"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        onFocus={() => setIsActive(true)}
-        onBlur={() => setIsActive(false)}
-      />
-      {openSearchMenu && (
-        <div className="ccip-hero__search-results">
-          {networksResults.length === 0 && tokensResults.length === 0 && (
-            <span className="ccip-hero__search-results__title">No results found</span>
-          )}
-          {networksResults.length > 0 && (
-            <>
-              <span className="ccip-hero__search-results__title">Networks</span>
-              <ul aria-label="Networks">
-                {networksResults.map((network) => (
-                  <li key={network.name}>
-                    <a href={`/ccip/supported-networks/${environment}/chain/${network.chain}`}>
-                      <img src={network.logo} alt="" />
-                      {network.name}
-                      <span>
-                        {network.totalLanes} lanes | {network.totalTokens} tokens
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {tokensResults.length > 0 && (
-            <>
-              <span className="ccip-hero__search-results__title">Tokens</span>
-              <ul aria-label="Networks">
-                {tokensResults.map((token) => (
-                  <li key={token.name}>
-                    <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
-                      <img src={token.logo} alt="" />
-                      {token.name}
-                      <span>{token.totalNetworks} networks</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+    <>
+      {openSearchMenu && <div className="ccip-hero__search-overlay"></div>}
+      <div
+        className={clsx("ccip-hero__search", {
+          active: isActive,
+          small: small || false,
+        })}
+        ref={searchRef}
+      >
+        <img src="/assets/icons/search.svg" alt="" />
+        <input
+          type="search"
+          placeholder="Network/Token/Lane"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setIsActive(true)}
+          onBlur={() => setIsActive(false)}
+        />
+        {openSearchMenu && (
+          <div className="ccip-hero__search-results">
+            {networksResults.length === 0 && tokensResults.length === 0 && (
+              <span className="ccip-hero__search-results__title">No results found</span>
+            )}
+            {networksResults.length > 0 && (
+              <>
+                <span className="ccip-hero__search-results__title">Networks</span>
+                <ul aria-label="Networks">
+                  {networksResults.map((network) => (
+                    <li key={network.name}>
+                      <a href={`/ccip/supported-networks/${environment}/chain/${network.chain}`}>
+                        <img src={network.logo} alt="" />
+                        {network.name}
+                        <span>
+                          {network.totalLanes} lanes | {network.totalTokens} tokens
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {tokensResults.length > 0 && (
+              <>
+                <span className="ccip-hero__search-results__title">Tokens</span>
+                <ul aria-label="Networks">
+                  {tokensResults.map((token) => (
+                    <li key={token.name}>
+                      <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
+                        <img src={token.logo} alt="" />
+                        {token.name}
+                        <span>{token.totalNetworks} networks</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
 
-          {lanesResults.length > 0 && (
-            <>
-              <span className="ccip-hero__search-results__title">Lanes</span>
-              <ul aria-label="Networks">
-                {lanesResults.map((lane) => (
-                  <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
-                    <a
-                      role="button"
-                      onClick={() =>
-                        drawerContentStore.set(() => (
-                          <LaneDrawer
-                            environment={environment}
-                            lane={lane.lane}
-                            sourceNetwork={lane.sourceNetwork}
-                            destinationNetwork={{
-                              ...lane.destinationNetwork,
-                              explorerUrl: lane.destinationNetwork.explorerUrl,
-                            }}
-                          />
-                        ))
-                      }
-                    >
-                      <div className="ccip-hero__search-results__lane-images">
-                        <img src={lane.sourceNetwork.logo} alt="" />
-                        <img src={lane.destinationNetwork.logo} alt="" />
-                      </div>
-                      {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
-                      <span>
-                        {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0} tokens
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+            {lanesResults.length > 0 && (
+              <>
+                <span className="ccip-hero__search-results__title">Lanes</span>
+                <ul aria-label="Networks">
+                  {lanesResults.map((lane) => (
+                    <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
+                      <a
+                        role="button"
+                        onClick={() =>
+                          drawerContentStore.set(() => (
+                            <LaneDrawer
+                              environment={environment}
+                              lane={lane.lane}
+                              sourceNetwork={lane.sourceNetwork}
+                              destinationNetwork={{
+                                ...lane.destinationNetwork,
+                                explorerUrl: lane.destinationNetwork.explorerUrl,
+                              }}
+                            />
+                          ))
+                        }
+                      >
+                        <div className="ccip-hero__search-results__lane-images">
+                          <img src={lane.sourceNetwork.logo} alt="" />
+                          <img src={lane.destinationNetwork.logo} alt="" />
+                        </div>
+                        {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
+                        <span>
+                          {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0} tokens
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
