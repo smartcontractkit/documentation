@@ -91,7 +91,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
           onBlur={() => setIsActive(false)}
         />
         {openSearchMenu && (
-          <div className="ccip-hero__search-results">
+          <div
+            className={clsx("ccip-hero__search-results", {
+              "ccip-hero__search-results--small": small || false,
+            })}
+          >
             {networksResults.length === 0 && tokensResults.length === 0 && (
               <span className="ccip-hero__search-results__title">No results found</span>
             )}
@@ -104,9 +108,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/supported-networks/${environment}/chain/${network.chain}`}>
                         <img src={network.logo} alt="" />
                         {network.name}
-                        <span>
-                          {network.totalLanes} lanes | {network.totalTokens} tokens
-                        </span>
+                        {!small && (
+                          <span>
+                            {network.totalLanes} lanes | {network.totalTokens} tokens
+                          </span>
+                        )}
                       </a>
                     </li>
                   ))}
@@ -122,7 +128,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
                         <img src={token.logo} alt="" />
                         {token.name}
-                        <span>{token.totalNetworks} networks</span>
+                        {!small && <span>{token.totalNetworks} networks</span>}
                       </a>
                     </li>
                   ))}
@@ -157,9 +163,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                           <img src={lane.destinationNetwork.logo} alt="" />
                         </div>
                         {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
-                        <span>
-                          {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0} tokens
-                        </span>
+                        {!small && (
+                          <span>
+                            {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0} tokens
+                          </span>
+                        )}
                       </a>
                     </li>
                   ))}
