@@ -69,6 +69,7 @@ const nativeTokenHasAddress = feeTokensWithAddresses.some(
 )
 
 const laneReferenceData = loadReferenceData({ environment, version }).lanesReferenceData[sourceChainRefId]
+if (!laneReferenceData) throw Error(`Lane reference data not found for chain ${sourceChainKey}`)
 
 const sortedLaneEntries = Object.entries(laneReferenceData).sort(
   ([destinationChainRefIdA, laneConfigA], [destinationChainRefIdB, laneConfigB]) => {
