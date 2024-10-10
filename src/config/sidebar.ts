@@ -227,7 +227,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
-          title: "Data Streams Feed IDs",
+          title: "Data Streams Feeds",
           url: "data-streams/stream-ids",
         },
         {
