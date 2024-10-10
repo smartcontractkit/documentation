@@ -17,6 +17,7 @@ export type SupportedTokensConfig = {
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
   rateLimiterConfig?: RateLimiterConfig
+  rmnPermeable: boolean
   onRamp: {
     address: string
     version: string
