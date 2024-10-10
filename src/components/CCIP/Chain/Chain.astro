@@ -6,6 +6,7 @@ import {
   getAllNetworkLanes,
   getAllNetworks,
   getAllSupportedTokens,
+  getSearchLanes,
   getTokensOfChain,
   Version,
 } from "~/config/data/ccip"
@@ -13,6 +14,7 @@ import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/ChainTable"
 import { getTokenIconUrl } from "~/features/utils"
+import Drawer from "../Drawer/Drawer"
 
 // TODO: Add type for network
 const { environment, network } = Astro.props as { environment: Environment; network: any }
@@ -25,16 +27,15 @@ const supportedTokens = getAllSupportedTokens({
   version: Version.V1_2_0,
 })
 
-const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
-
 const allTokens = getTokensOfChain({
   chain: network?.chain || "",
   filter: environment,
 }).map((token) => {
-  const logo = getTokenIconUrl(token)
+  const logo = getTokenIconUrl(token) || ""
   return {
     name: token,
     logo,
+    totalNetworks: networks.length, // Add totalNetworks property
   }
 })
 
@@ -43,15 +44,35 @@ const lanes = getAllNetworkLanes({
   version: Version.V1_2_0,
   chain: network?.chain || "",
 })
+
+const searchLanes = getSearchLanes({ environment })
 ---
 
 <CcipLayout frontmatter={entry.data} {headings} environment={environment}>
-  <ChainHero chains={networks} tokens={allTokens} client:load network={network} environment={environment} />
+  <Drawer client:only="react" />
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    client:load
+    network={network}
+    environment={environment}
+    lanes={searchLanes}
+  />
   <section class="layout">
     <div>
       <h2>Networks <span>({lanes.length})</span></h2>
 
-      <Table lanes={lanes} client:only="react" />
+      <Table
+        environment={environment}
+        lanes={lanes}
+        client:only="react"
+        explorerUrl={network.explorerUrl}
+        sourceNetwork={{
+          name: network.name,
+          logo: network.logo,
+          key: network.chain,
+        }}
+      />
     </div>
     <div>
       <h2>Tokens <span>({allTokens.length})</span></h2>

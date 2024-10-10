@@ -2,21 +2,12 @@ import Address from "../Address/Address"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero"
-import {
-  Environment,
-  getLane,
-  getNetwork,
-  getTokenData,
-  LaneConfig,
-  representMoney,
-  SupportedTokenConfig,
-  Version,
-} from "~/config/data/ccip"
+import { Environment, getLane, getNetwork, representMoney, SupportedTokenConfig, Version } from "~/config/data/ccip"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
 import { SupportedChain } from "~/config"
-import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
-import { getTokenIconUrl } from "~/features/utils"
+import { getExplorerAddressUrl } from "~/features/utils"
+import LaneDrawer from "../Drawer/LaneDrawer"
 
 interface TableProps {
   networks: {
@@ -30,6 +21,7 @@ interface TableProps {
     tokenAddress: string
     tokenPoolType: string
     tokenPoolAddress: string
+    explorerUrl: string
   }[]
   token: {
     name: string
@@ -85,11 +77,20 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
               <td>{network.symbol}</td>
               <td>{network.decimals}</td>
               <td>
-                <Address contractUrl={network.tokenAddress} address={network.tokenAddress} endLength={6} />
+                <Address
+                  contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
+                  address={network.tokenAddress}
+                  endLength={6}
+                />
               </td>
               <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
               <td>
-                <Address contractUrl={network.tokenPoolAddress} address={network.tokenPoolAddress} endLength={6} />
+                {/* <Address contractUrl={network.tokenPoolAddress} address={network.tokenPoolAddress} endLength={6} /> */}
+                <Address
+                  contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
+                  address={network.tokenPoolAddress}
+                  endLength={6}
+                />
               </td>
             </tr>
           ))}
@@ -167,7 +168,7 @@ function TokenDrawer({
                 const laneData = getLane({
                   sourceChain: network?.key as SupportedChain,
                   destinationChain: lane as SupportedChain,
-                  environment: environment,
+                  environment,
                   version: Version.V1_2_0,
                 })
 
@@ -182,11 +183,13 @@ function TokenDrawer({
                         onClick={() => {
                           drawerContentStore.set(() => (
                             <LaneDrawer
+                              environment={environment}
                               lane={laneData}
                               sourceNetwork={network}
                               destinationNetwork={{
                                 name: networkDetails?.name || "",
                                 logo: networkDetails?.logo || "",
+                                explorerUrl: networkDetails?.explorerUrl || "",
                                 key: lane,
                               }}
                             />
@@ -227,102 +230,6 @@ function TokenDrawer({
         </div>
       </div>
     </div>
-  )
-}
-
-function LaneDrawer({
-  lane,
-  sourceNetwork,
-  destinationNetwork,
-}: {
-  lane: LaneConfig
-  sourceNetwork: { name: string; logo: string; key: string }
-  destinationNetwork: { name: string; logo: string; key: string }
-}) {
-  const [search, setSearch] = useState("")
-  const destinationNetworkDetails = getNetwork({
-    filter: "mainnet",
-    chain: destinationNetwork.key,
-  })
-
-  return (
-    <>
-      <LaneDetailsHero
-        sourceNetwork={{
-          logo: sourceNetwork.logo,
-          name: sourceNetwork.name,
-        }}
-        destinationNetwork={{
-          logo: destinationNetwork.logo,
-          name: destinationNetwork.name,
-        }}
-        onRamp={lane.onRamp.address}
-        destinationAddress={destinationNetworkDetails?.chainSelector || ""}
-      />
-
-      <div className="ccip-table__drawer-container">
-        <div className="ccip-table__filters">
-          <div></div>
-          <TableSearchInput search={search} setSearch={setSearch} />
-        </div>
-        <table className="ccip-table">
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Token address (Source)</th>
-              <th>Decimals</th>
-              <th>Mechanism</th>
-              <th>Rate limit capacity</th>
-              <th>Rate limit refil rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lane.supportedTokens &&
-              Object.keys(lane.supportedTokens)
-                ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
-                .map((token, index) => {
-                  const data = getTokenData({
-                    environment: Environment.Mainnet,
-                    version: Version.V1_2_0,
-                    tokenSymbol: token || "",
-                  })
-
-                  const logo = getTokenIconUrl(token)
-
-                  return (
-                    <tr key={index}>
-                      <td>
-                        <div className="ccip-table__network-name">
-                          <img src={logo} alt={`${token} logo`} className="ccip-table__logo" />
-                          {token}
-                        </div>
-                      </td>
-                      <td>
-                        <Address address={data[sourceNetwork.key].tokenAddress} endLength={6} />
-                      </td>
-                      <td>{data[sourceNetwork.key].decimals}</td>
-
-                      <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-                      <td>
-                        {representMoney(lane.supportedTokens[token].rateLimiterConfig.capacity || 0)} {token}
-                        /second
-                      </td>
-                      <td>
-                        {representMoney(lane.supportedTokens[token].rateLimiterConfig.rate || 0)} {token}
-                        /second
-                      </td>
-                    </tr>
-                  )
-                })}
-          </tbody>
-        </table>
-        <div className="ccip-table__notFound">
-          {lane.supportedTokens &&
-            Object.keys(lane.supportedTokens)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
-              .length === 0 && <>No tokens found</>}
-        </div>
-      </div>
-    </>
   )
 }
 

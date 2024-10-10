@@ -3,8 +3,16 @@ import "./Table.css"
 import Tabs from "./Tabs"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
+import { getExplorer, getExplorerAddressUrl } from "~/features/utils"
+import { drawerContentStore } from "../Drawer/drawerStore"
+import LaneDrawer from "../Drawer/LaneDrawer"
+import { Environment, Version } from "~/config/data/ccip/types"
+import { getLane } from "~/config/data/ccip"
+import { SupportedChain } from "~/config"
 
 interface TableProps {
+  environment: Environment
+  sourceNetwork: { name: string; logo: string; key: string }
   lanes: {
     name: string
     logo: string
@@ -16,7 +24,10 @@ interface TableProps {
       address: string
       version: string
     }
+    key: string
+    directory: SupportedChain
   }[]
+  explorerUrl: string
 }
 
 enum LaneFilter {
@@ -24,7 +35,7 @@ enum LaneFilter {
   Outbound = "outbound",
 }
 
-function ChainTable({ lanes }: TableProps) {
+function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TableProps) {
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [search, setSearch] = useState("")
 
@@ -51,7 +62,7 @@ function ChainTable({ lanes }: TableProps) {
           <tr>
             <th>Destination network</th>
             <th>{inOutbound === LaneFilter.Outbound ? "OnRamp" : "OffRamp"} address</th>
-            <th>Status</th>
+            {/* <th>Status</th> */}
           </tr>
         </thead>
         <tbody>
@@ -60,7 +71,33 @@ function ChainTable({ lanes }: TableProps) {
             .map((network, index) => (
               <tr key={index}>
                 <td>
-                  <div className="ccip-table__network-name">
+                  <div
+                    className="ccip-table__network-name"
+                    role="button"
+                    onClick={() => {
+                      const laneData = getLane({
+                        sourceChain: sourceNetwork.key as SupportedChain,
+                        destinationChain: network.key as SupportedChain,
+                        environment,
+                        version: Version.V1_2_0,
+                      })
+
+                      const explorerUrl = getExplorer(network.directory)
+                      drawerContentStore.set(() => (
+                        <LaneDrawer
+                          environment={environment}
+                          lane={laneData}
+                          sourceNetwork={sourceNetwork}
+                          destinationNetwork={{
+                            name: network?.name || "",
+                            logo: network?.logo || "",
+                            explorerUrl: explorerUrl || "",
+                            key: network.key,
+                          }}
+                        />
+                      ))
+                    }}
+                  >
                     <img src={network.logo} alt={network.name} className="ccip-table__logo" />
                     {network.name}
                   </div>
@@ -69,9 +106,12 @@ function ChainTable({ lanes }: TableProps) {
                   <Address
                     address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                     endLength={4}
+                    contractUrl={getExplorerAddressUrl(explorerUrl)(
+                      (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
+                    )}
                   />
                 </td>
-                <td>
+                {/* <td>
                   <span className="ccip-table__status">
                     <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -81,7 +121,7 @@ function ChainTable({ lanes }: TableProps) {
                     </svg>
                     Operational
                   </span>
-                </td>
+                </td> */}
               </tr>
             ))}
         </tbody>

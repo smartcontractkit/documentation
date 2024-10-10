@@ -7,12 +7,13 @@ import {
   getAllSupportedTokens,
   getAllTokenLanes,
   getChainsOfToken,
+  getSearchLanes,
   getTokenData,
   Version,
 } from "~/config/data/ccip"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
-import { directoryToSupportedChain, getChainIcon, getTitle, getTokenIconUrl } from "~/features/utils"
+import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
 const { token, logo, environment } = Astro.props
@@ -29,7 +30,7 @@ const supportedTokens = getAllSupportedTokens({
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
 const allTokens = tokens.map((token) => {
-  const logo = getTokenIconUrl(token)
+  const logo = getTokenIconUrl(token) || ""
   return {
     name: token,
     logo,
@@ -48,6 +49,8 @@ const lanes = getAllTokenLanes({
   version: Version.V1_2_0,
   token: token || "",
 })
+
+const searchLanes = getSearchLanes({ environment })
 ---
 
 <CcipLayout frontmatter={entry.data} {headings} environment={environment}>
@@ -55,6 +58,7 @@ const lanes = getAllTokenLanes({
     chains={networks}
     tokens={allTokens}
     client:load
+    lanes={searchLanes}
     token={{
       name: token || "",
       logo: logo || "",
@@ -69,10 +73,12 @@ const lanes = getAllTokenLanes({
 
       <Table
         client:only="react"
+        environment={environment}
         networks={Object.keys(data).map((key) => {
           const directory = directoryToSupportedChain(key || "")
           const title = getTitle(directory) || ""
           const networkLogo = getChainIcon(directory) || ""
+          const explorerUrl = getExplorer(directory)
           return {
             name: title,
             token: data[key].name || "",
@@ -84,6 +90,7 @@ const lanes = getAllTokenLanes({
             tokenAddress: data[key].tokenAddress || "",
             tokenPoolType: data[key].poolType || "",
             tokenPoolAddress: data[key].poolAddress || "",
+            explorerUrl: explorerUrl || "",
           }
         })}
         lanes={lanes}

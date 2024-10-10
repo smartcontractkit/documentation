@@ -9,6 +9,7 @@ import {
   determineTokenMechanism,
   TokenMechanism,
   NetworkFees,
+  LaneConfig,
 } from "."
 
 // For mainnet
@@ -31,7 +32,14 @@ import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json
 import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
 
 import { SupportedChain } from "@config/types"
-import { directoryToSupportedChain, getChainIcon, getTitle, supportedChainToChainInRdd } from "@features/utils"
+import {
+  directoryToSupportedChain,
+  getChainIcon,
+  getExplorer,
+  getExplorerAddressUrl,
+  getTitle,
+  supportedChainToChainInRdd,
+} from "@features/utils"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -157,7 +165,8 @@ export const getTokenData = (params: { tokenSymbol: string; environment: Environ
   if (tokenConfig) {
     return tokenConfig // Assuming the token configuration has a 'name' property
   } else {
-    throw new Error(`Token with symbol ${params.tokenSymbol} not found`)
+    console.warn(`No token data found for ${params.tokenSymbol}`)
+    return {}
   }
 }
 
@@ -354,6 +363,15 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
     totalLanes: number
     totalTokens: number
     chain: string
+    chainSelector: string
+    tokenAdminRegistry?: string
+    explorerUrl: string
+    registryModule?: string
+    router?: {
+      address: string
+      version: string
+    }
+    routerExplorerUrl: string
   }[] = []
 
   for (const chain of chains) {
@@ -365,21 +383,32 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       }
     }
     const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
+    const chains = Environment.Mainnet === filter ? chainsMainnetv120 : chainsTestnetv120
     const logo = getChainIcon(directory)
     const token = getTokensOfChain({ chain, filter })
+    const explorerUrl = getExplorer(directory)
+    const router = chains[chain].router
+    if (!explorerUrl) throw Error(`Explorer url not found for ${directory}`)
+    const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router.address)
     allChains.push({
       name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
       logo: logo || "",
       totalLanes: Object.keys(lanes[chain]).length,
       totalTokens: token.length,
       chain,
+      explorerUrl,
+      tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
+      registryModule: chains[chain]?.registryModule?.address,
+      router,
+      routerExplorerUrl,
+      chainSelector: chains[chain].chainSelector,
     })
   }
 
   return allChains
 }
 
-export const getNetwork = ({ chain, filter }: { chain: string; filter: "mainnet" | "testnet" }) => {
+export const getNetwork = ({ chain, filter }: { chain: string; filter: Environment }) => {
   const chains = getAllNetworks({ filter })
 
   for (const network of chains) {
@@ -400,6 +429,7 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: "mainnet"
       return {
         name: network.name,
         logo: network.logo,
+        explorerUrl: network.explorerUrl,
         ...chainDetails,
       }
     }
@@ -435,7 +465,6 @@ export const getAllNetworkLanes = ({
   environment,
   version,
 }: {
-  filter?: "mainnet" | "testnet"
   chain: string
   environment: Environment
   version: Version
@@ -450,6 +479,8 @@ export const getAllNetworkLanes = ({
   const lanesData: {
     name: string
     logo: string
+    key: string
+    directory: SupportedChain
     onRamp: {
       address: string
       version: string
@@ -469,6 +500,8 @@ export const getAllNetworkLanes = ({
       logo: networkLogo || "",
       onRamp: laneData.onRamp,
       offRamp: laneData.offRamp,
+      key: lane,
+      directory,
     }
   })
   return lanesData
@@ -524,4 +557,53 @@ export function getLane({
   })
 
   return lanesReferenceData[sourceChain][destinationChain]
+}
+
+export function getSearchLanes({ environment }: { environment: Environment }) {
+  const lanes = environment === Environment.Mainnet ? lanesMainnetv120 : lanesTestnetv120
+  const allLanes: {
+    sourceNetwork: {
+      name: string
+      logo: string
+      key: string
+    }
+    destinationNetwork: {
+      name: string
+      logo: string
+      key: string
+      explorerUrl: string
+    }
+    lane: LaneConfig
+  }[] = []
+
+  for (const sourceChain in lanes) {
+    const sourceChainDirectory = directoryToSupportedChain(sourceChain)
+    const sourceChainTitle = getTitle(sourceChainDirectory)
+    const sourceChainLogo = getChainIcon(sourceChainDirectory)
+
+    for (const destinationChain in lanes[sourceChain]) {
+      const destinationChainDirectory = directoryToSupportedChain(destinationChain)
+      const destinationChainTitle = getTitle(destinationChainDirectory)
+      const destinationChainLogo = getChainIcon(destinationChainDirectory)
+
+      const lane = lanes[sourceChain][destinationChain]
+      const explorerUrl = getExplorer(destinationChainDirectory) || ""
+      allLanes.push({
+        sourceNetwork: {
+          name: sourceChainTitle || "",
+          logo: sourceChainLogo || "",
+          key: sourceChain,
+        },
+        destinationNetwork: {
+          name: destinationChainTitle || "",
+          logo: destinationChainLogo || "",
+          key: destinationChain,
+          explorerUrl,
+        },
+        lane,
+      })
+    }
+  }
+
+  return allLanes
 }

@@ -1,6 +1,7 @@
 import { Tooltip } from "~/features/common/Tooltip"
 import AddressComponent from "../Address/Address"
 import "./LaneDetailsHero.css"
+import { getExplorerAddressUrl } from "~/features/utils"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -13,9 +14,16 @@ interface LaneDetailsHeroProps {
   }
   onRamp: string
   destinationAddress: string
+  explorerUrl: string
 }
 
-function LaneDetailsHero({ sourceNetwork, destinationNetwork, onRamp, destinationAddress }: LaneDetailsHeroProps) {
+function LaneDetailsHero({
+  sourceNetwork,
+  destinationNetwork,
+  onRamp,
+  destinationAddress,
+  explorerUrl,
+}: LaneDetailsHeroProps) {
   return (
     <div className="laneDetailsHero">
       <h2>Lane details</h2>
@@ -29,14 +37,14 @@ function LaneDetailsHero({ sourceNetwork, destinationNetwork, onRamp, destinatio
           <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="#141921" />
         </svg>
         <div className="laneDetailsHero__network">
-          <img src={destinationNetwork.logo} alt={destinationNetwork.name} />
+          <img src={destinationNetwork.logo} alt={destinationNetwork.name} className="laneDetailsHero__token-logo" />
           {destinationNetwork.name}
         </div>
       </div>
       <div className="laneDetailsHero__details">
         <div className="laneDetailsHero__details__label">OnRamp address</div>
         <div>
-          <AddressComponent address={onRamp} endLength={6} />
+          <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorerUrl)(onRamp)} />
         </div>
         <div className="laneDetailsHero__details__label">Destination network selector</div>
         <div>{destinationAddress}</div>

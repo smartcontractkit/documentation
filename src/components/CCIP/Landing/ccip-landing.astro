@@ -2,10 +2,18 @@
 import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry } from "astro:content"
 import Hero from "~/components/CCIP/Hero/Hero"
-import { Environment, getAllNetworks, getAllSupportedTokens, getChainsOfToken, Version } from "~/config/data/ccip"
+import {
+  Environment,
+  getAllNetworks,
+  getAllSupportedTokens,
+  getChainsOfToken,
+  getSearchLanes,
+  Version,
+} from "~/config/data/ccip"
 import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
 import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import { getTokenIconUrl } from "~/features/utils"
+import Drawer from "../Drawer/Drawer"
 export type Props = {
   environment: Environment
 }
@@ -22,17 +30,20 @@ const supportedTokens = getAllSupportedTokens({
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
 const allTokens = tokens.map((token) => {
-  const logo = getTokenIconUrl(token)
+  const logo = getTokenIconUrl(token) || ""
   return {
     name: token,
     logo,
     totalNetworks: getChainsOfToken({ token, filter: environment }).length,
   }
 })
+
+const searchLanes = getSearchLanes({ environment })
 ---
 
 <CcipLayout frontmatter={entry.data} {headings} environment={environment}>
-  <Hero chains={networks} tokens={allTokens} environment={environment} client:load />
+  <Drawer client:only="react" />
+  <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
   <section class="layout">
     <div>
       <h2>Networks {environment} <span>({networks.length})</span></h2>
