@@ -67,7 +67,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 url: `/ccip/supported-networks/${environment}`,
               },
               {
-                name: "Current",
+                name: network?.name || token?.name || "Current",
                 url: network
                   ? `/ccip/supported-networks/${environment}/chain/${network.chain}`
                   : `/ccip/supported-networks/${environment}/token/${token?.name}`,
