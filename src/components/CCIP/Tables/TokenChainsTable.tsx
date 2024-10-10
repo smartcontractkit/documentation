@@ -170,7 +170,7 @@ function TokenDrawer({
               <th>Rate limit capacity</th>
               <th>Rate limit refil rate</th>
               <th>Mechanism</th>
-              <th>Status</th>
+              {/* <th>Status</th> */}
             </tr>
           </thead>
           <tbody>
@@ -224,7 +224,7 @@ function TokenDrawer({
                       /second
                     </td>
                     <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-                    <td>
+                    {/* <td>
                       <span className="ccip-table__status">
                         <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path
@@ -234,7 +234,7 @@ function TokenDrawer({
                         </svg>
                         Operational
                       </span>
-                    </td>
+                    </td> */}
                   </tr>
                 )
               })}
