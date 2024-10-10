@@ -34,69 +34,85 @@ interface TableProps {
 }
 
 function TokenChainsTable({ networks, token, lanes: destinationLanes, environment }: TableProps) {
+  const [search, setSearch] = useState("")
   return (
-    <div className="ccip-table__container">
-      <table className="ccip-table">
-        <thead>
-          <tr>
-            <th>Network</th>
-            <th>Name</th>
-            <th>Symbol</th>
-            <th>Decimals</th>
-            <th>Token address</th>
-            <th>Token pool type</th>
-            <th>Token pool address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {networks?.map((network, index) => (
-            <tr key={index}>
-              <td>
-                <div
-                  className="ccip-table__network-name"
-                  role="button"
-                  onClick={() => {
-                    drawerContentStore.set(() => (
-                      <TokenDrawer
-                        token={token}
-                        network={network}
-                        destinationLanes={destinationLanes}
-                        environment={environment}
-                      />
-                    ))
-                  }}
-                >
-                  <span className="ccip-table__logoContainer">
-                    <img src={network.logo} alt={network.name} className="ccip-table__logo" />
-                    <img src={network.tokenLogo} alt={network.token} className="ccip-table__smallLogo" />
-                  </span>
-                  {network.name}
-                </div>
-              </td>
-              <td>{network.token}</td>
-              <td>{network.symbol}</td>
-              <td>{network.decimals}</td>
-              <td>
-                <Address
-                  contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
-                  address={network.tokenAddress}
-                  endLength={6}
-                />
-              </td>
-              <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-              <td>
-                {/* <Address contractUrl={network.tokenPoolAddress} address={network.tokenPoolAddress} endLength={6} /> */}
-                <Address
-                  contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
-                  address={network.tokenPoolAddress}
-                  endLength={6}
-                />
-              </td>
+    <>
+      <div className="ccip-table__filters">
+        <div className="ccip-table__filters-title">
+          Listed Networks <span>({networks.length})</span>
+        </div>
+        <TableSearchInput search={search} setSearch={setSearch} />
+      </div>
+      <div className="ccip-table__container">
+        <table className="ccip-table">
+          <thead>
+            <tr>
+              <th>Network</th>
+              <th>Name</th>
+              <th>Symbol</th>
+              <th>Decimals</th>
+              <th>Token address</th>
+              <th>Token pool type</th>
+              <th>Token pool address</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {networks
+              ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
+              .map((network, index) => (
+                <tr key={index}>
+                  <td>
+                    <div
+                      className="ccip-table__network-name"
+                      role="button"
+                      onClick={() => {
+                        drawerContentStore.set(() => (
+                          <TokenDrawer
+                            token={token}
+                            network={network}
+                            destinationLanes={destinationLanes}
+                            environment={environment}
+                          />
+                        ))
+                      }}
+                    >
+                      <span className="ccip-table__logoContainer">
+                        <img src={network.logo} alt={network.name} className="ccip-table__logo" />
+                        <img src={network.tokenLogo} alt={network.token} className="ccip-table__smallLogo" />
+                      </span>
+                      {network.name}
+                    </div>
+                  </td>
+                  <td>{network.token}</td>
+                  <td>{network.symbol}</td>
+                  <td>{network.decimals}</td>
+                  <td>
+                    <Address
+                      contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
+                      address={network.tokenAddress}
+                      endLength={6}
+                    />
+                  </td>
+                  <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                  <td>
+                    {/* <Address contractUrl={network.tokenPoolAddress} address={network.tokenPoolAddress} endLength={6} /> */}
+                    <Address
+                      contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
+                      address={network.tokenPoolAddress}
+                      endLength={6}
+                    />
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <div className="ccip-table__notFound">
+          {networks?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+            <>No networks found</>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 
