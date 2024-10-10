@@ -28,7 +28,6 @@ const CopyValue = ({ value, valueClass, valueId }: Props) => {
 
       <style>{`
         .valueCopy {
-          padding: 1px 5px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
         }
