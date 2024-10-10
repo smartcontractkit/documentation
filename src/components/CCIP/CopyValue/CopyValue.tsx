@@ -1,41 +1,33 @@
 import { clsx } from "~/lib"
 
 export type Props = {
-  contractUrl?: string
-  address?: string
-  endLength?: number
-  urlClass?: string
-  urlId?: string
-  eventName?: string
-  additionalInfo?: Record<string, string>
+  value?: string
+  valueClass?: string
+  valueId?: string
 }
 
-const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: Props) => {
-  address = address || contractUrl?.split("/").pop()
-
-  if (!address) return null
+const CopyValue = ({ value, valueClass, valueId }: Props) => {
+  if (!value) return null
 
   const handleClick = (e) => {
     e.preventDefault()
-    if (address) navigator.clipboard.writeText(address)
+    if (value) navigator.clipboard.writeText(value)
   }
 
   return (
-    <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
-      <a title={address} className="addressLink" href={contractUrl}>
-        {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
-      </a>
+    <span className={`addressContainer ${valueClass || ""}`} id={valueId}>
+      <span className="valueCopy">{value}</span>
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
-        data-clipboard-text={address}
+        data-clipboard-text={value}
         onClick={handleClick}
       >
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
       </button>
 
       <style>{`
-        .addressLink {
+        .valueCopy {
           padding: 1px 5px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
@@ -62,4 +54,4 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
   )
 }
 
-export default AddressComponent
+export default CopyValue

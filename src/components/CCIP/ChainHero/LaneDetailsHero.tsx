@@ -2,6 +2,7 @@ import { Tooltip } from "~/features/common/Tooltip"
 import AddressComponent from "../Address/Address"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils"
+import CopyValue from "../CopyValue/CopyValue"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -47,7 +48,7 @@ function LaneDetailsHero({
           <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorerUrl)(onRamp)} />
         </div>
         <div className="laneDetailsHero__details__label">Destination network selector</div>
-        <div>{destinationAddress}</div>
+        <div>{destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"} </div>
         <div className="laneDetailsHero__details__label">RMN</div>
         <div>
           <span>

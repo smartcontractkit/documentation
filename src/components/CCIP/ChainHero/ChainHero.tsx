@@ -3,6 +3,7 @@ import Address from "../Address/Address"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
+import CopyValue from "../CopyValue/CopyValue"
 
 interface ChainHeroProps {
   chains: {
@@ -93,7 +94,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
             <div className="ccip-hero__details__item">
               <div className="ccip-hero__details__label">Chain selector</div>
-              <div className="ccip-hero__details__value">{network.chainSelector || "n/a"}</div>
+              <div className="ccip-hero__details__value">
+                {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
+              </div>
             </div>
             <div className="ccip-hero__details__item">
               <div className="ccip-hero__details__label">RMN</div>
