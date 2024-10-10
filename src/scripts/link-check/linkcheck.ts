@@ -56,7 +56,7 @@ const parseBaseUrl = (data: string): string => {
 }
 
 const processSiteMap = (baseUrl: string): string => {
-  const siteMap = `${cwd()}/dist/sitemap-0.xml`
+  const siteMap = `${cwd()}/.vercel/output/static/sitemap-0.xml`
   const linksFile = `${tempDir}/sitemap-urls.txt`
 
   const data = readFileSync(siteMap, { encoding: "utf8" })

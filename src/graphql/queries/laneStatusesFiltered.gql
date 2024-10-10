@@ -1,0 +1,20 @@
+query LaneStatusesFiltered(
+  $sourceRouterAddress: String!
+  $sourceNetworkId: String!
+  $destinationNetworkIds: [String!]!
+) {
+  allCcipAllLaneStatuses(
+    filter: {
+      sourceNetworkName: { equalTo: $sourceNetworkId }
+      routerAddress: { equalTo: $sourceRouterAddress }
+      destNetworkName: { in: $destinationNetworkIds }
+    }
+  ) {
+    nodes {
+      routerAddress
+      destNetworkName
+      sourceNetworkName
+      successRate
+    }
+  }
+}
