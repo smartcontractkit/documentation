@@ -60,7 +60,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
       <table className="ccip-table">
         <thead>
           <tr>
-            <th>Destination network</th>
+            <th>{inOutbound === LaneFilter.Outbound ? "Destination" : "Source"} network</th>
             <th>{inOutbound === LaneFilter.Outbound ? "OnRamp" : "OffRamp"} address</th>
             {/* <th>Status</th> */}
           </tr>

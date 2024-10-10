@@ -78,6 +78,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
         className={clsx("ccip-hero__search", {
           active: isActive,
           small: small || false,
+          open: openSearchMenu,
         })}
         ref={searchRef}
       >
@@ -97,7 +98,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             })}
           >
             {networksResults.length === 0 && tokensResults.length === 0 && (
-              <span className="ccip-hero__search-results__title">No results found</span>
+              <span className="ccip-hero__search-results__no-result">No results found</span>
             )}
             {networksResults.length > 0 && (
               <>
