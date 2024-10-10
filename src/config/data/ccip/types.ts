@@ -5,7 +5,10 @@ export type RateLimiterConfig = {
 }
 
 export type SupportedTokenConfig = {
-  rateLimiterConfig: RateLimiterConfig
+  rateLimiterConfig?: {
+    in?: RateLimiterConfig
+    out?: RateLimiterConfig
+  }
 }
 export type SupportedTokensConfig = {
   [token: string]: SupportedTokenConfig
@@ -13,7 +16,7 @@ export type SupportedTokensConfig = {
 
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
-  rateLimiterConfig: RateLimiterConfig
+  rateLimiterConfig?: RateLimiterConfig
   onRamp: {
     address: string
     version: string
@@ -29,7 +32,7 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
-export type PoolType = "lockRelease" | "burnMint" | "usdc"
+export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
 
 type PoolInfo = {
   tokenAddress: string
