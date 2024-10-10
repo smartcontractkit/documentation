@@ -42,7 +42,7 @@ interface IFeeManager {
      * @param quoteAddress The payment token address used for quoting fees and rewards.
      * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
      * @return reward The reward allocated to the caller for successfully verifying the report.
-     * @return totalDiscount The total discount amount deducted from the fee for subscribers.
+     * @return totalDiscount The total discount amount deducted from the fee for subscribers
      */
     function getFeeAndReward(
         address subscriber,
