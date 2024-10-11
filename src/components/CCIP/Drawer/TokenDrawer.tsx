@@ -77,7 +77,7 @@ function TokenDrawer({
         <table className="ccip-table">
           <thead>
             <tr>
-              <th>Destination network</th>
+              <th>{inOutbound === LaneFilter.Inbound ? "Source" : "Destination"} network</th>
               <th>Rate limit capacity</th>
               <th>Rate limit refil rate</th>
               <th>Mechanism</th>
@@ -130,14 +130,13 @@ function TokenDrawer({
                     <td>
                       {representMoney(
                         destinationLanes[lane].rateLimiterConfig[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                          .capacity || "0"
+                          .capacity
                       )}{" "}
                       {token.name}
                     </td>
                     <td>
                       {representMoney(
-                        destinationLanes[lane].rateLimiterConfig[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                          .rate || "0"
+                        destinationLanes[lane].rateLimiterConfig[inOutbound === LaneFilter.Inbound ? "in" : "out"].rate
                       )}{" "}
                       {token.name}
                       /second
