@@ -325,16 +325,16 @@ const NetworkFeeCalculator = () => {
             </th>
           </tr>
           <tr>
-            <th style={cellStyle}>(Wrapped) Gas Token</th>
             <th style={cellStyle}>LINK</th>
+            <th style={cellStyle}>Others</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td style={cellStyle}>{fees ? fees.token : ""}</td>
             <td style={cellStyle}>{fees ? fees.mechanism : ""}</td>
-            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
             <td style={cellStyle}>{fees ? fees.fee.linkFee : ""}</td>
+            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
           </tr>
         </tbody>
       </table>
