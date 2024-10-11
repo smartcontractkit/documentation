@@ -8,6 +8,7 @@ interface TokenDetailsHeroProps {
   }
   token?: {
     name: string
+    symbol: string
     logo: string
     decimals: number
     address: string
@@ -21,8 +22,14 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
     <section className="ccip-hero">
       <div className="ccip-hero__content">
         <h1 className="ccip-hero__heading">
-          <img src={network?.logo} alt="" />
-          {token?.name}
+          <div className="ccip-hero__heading__images">
+            <img src={network?.logo} alt="" />
+            <img src={token?.logo} alt="" className="ccip-hero__heading__images__small" />
+          </div>
+
+          <h1>
+            {token?.name} <span className="ccip-hero__token-logo__symbol">{token?.symbol}</span>
+          </h1>
         </h1>
 
         <div className="ccip-hero__details">

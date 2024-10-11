@@ -50,6 +50,7 @@ interface ChainHeroProps {
   token?: {
     name: string
     logo: string
+    symbol: string
   }
   environment: Environment
 }
@@ -82,7 +83,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
 
         <h1 className="ccip-hero__heading">
           <img src={network?.logo || token?.logo} alt="" className={token?.logo ? "ccip-hero__token-logo" : ""} />
-          {network?.name || token?.name}
+          <h1>
+            {network?.name || token?.name} <span className="ccip-hero__token-logo__symbol">{token?.symbol}</span>
+          </h1>
         </h1>
         {network && (
           <div className="ccip-hero__details">

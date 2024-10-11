@@ -30,7 +30,7 @@ interface TableProps {
   explorerUrl: string
 }
 
-enum LaneFilter {
+export enum LaneFilter {
   Inbound = "inbound",
   Outbound = "outbound",
 }

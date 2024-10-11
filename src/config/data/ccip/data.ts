@@ -363,6 +363,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
     totalLanes: number
     totalTokens: number
     chain: string
+    key: string
     chainSelector: string
     tokenAdminRegistry?: string
     explorerUrl: string
@@ -396,6 +397,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       totalLanes: Object.keys(lanes[chain]).length,
       totalTokens: token.length,
       chain,
+      key: chain,
       explorerUrl,
       tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
       registryModule: chains[chain]?.registryModule?.address,

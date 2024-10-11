@@ -4,13 +4,32 @@ import "./TokenCard.css"
 interface TokenCardProps {
   name: string
   logo?: string
-  basePath: string
+  link?: string
+  onClick?: () => void
 }
 
-function TokenCard({ name, logo, basePath }: TokenCardProps) {
-  return (
-    <a href={`${basePath}/token/${name}`}>
-      <div className="token-card__container">
+function TokenCard({ name, logo, link, onClick }: TokenCardProps) {
+  if (link) {
+    return (
+      <a href={link}>
+        <div className="token-card__container">
+          <img
+            src={logo}
+            alt=""
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null // prevents looping
+              currentTarget.src = fallbackTokenIconUrl
+            }}
+          />
+          <h3>{name}</h3>
+        </div>
+      </a>
+    )
+  }
+
+  if (onClick) {
+    return (
+      <div className="token-card__container" onClick={onClick} role="button">
         <img
           src={logo}
           alt=""
@@ -21,7 +40,21 @@ function TokenCard({ name, logo, basePath }: TokenCardProps) {
         />
         <h3>{name}</h3>
       </div>
-    </a>
+    )
+  }
+
+  return (
+    <div className="token-card__container">
+      <img
+        src={logo}
+        alt=""
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null // prevents looping
+          currentTarget.src = fallbackTokenIconUrl
+        }}
+      />
+      <h3>{name}</h3>
+    </div>
   )
 }
 

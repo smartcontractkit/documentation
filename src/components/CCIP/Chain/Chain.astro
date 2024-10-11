@@ -15,6 +15,7 @@ import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/ChainTable"
 import { getTokenIconUrl } from "~/features/utils"
 import Drawer from "../Drawer/Drawer"
+import ChainTokenGrid from "./ChainTokenGrid"
 
 // TODO: Add type for network
 const { environment, network } = Astro.props as { environment: Environment; network: any }
@@ -22,10 +23,6 @@ const { environment, network } = Astro.props as { environment: Environment; netw
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
 const networks = getAllNetworks({ filter: environment })
-const supportedTokens = getAllSupportedTokens({
-  environment: environment,
-  version: Version.V1_2_0,
-})
 
 const allTokens = getTokensOfChain({
   chain: network?.chain || "",
@@ -78,11 +75,7 @@ const searchLanes = getSearchLanes({ environment })
         <a class="button secondary" href="/ccip/concepts/ccip-enabled-tokens">List my token</a>
       </div>
       <div class="tokens__grid">
-        {
-          allTokens.map((token) => (
-            <TokenCard name={token.name} logo={token.logo} basePath={`/ccip/supported-networks/${environment}`} />
-          ))
-        }
+        <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
       </div>
     </div>
   </section>
