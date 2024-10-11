@@ -6,6 +6,8 @@ isIndex: true
 whatsnext: { "CCIP Architecture": "/ccip/architecture", "Learn CCIP best practices": "/ccip/best-practices" }
 ---
 
+import CCIPCommon from "@features/ccip/CcipCommon.astro"
+
 Before you explore how Chainlink CCIP works in the [architecture guide](/ccip/architecture), it is best to understand the core concepts.
 
 ## Prerequisites
@@ -38,7 +40,7 @@ To learn more, read about [blockchain interoperability](https://chain.link/educa
 
 Finality varies across different networks. Some networks offer instant finality and others require multiple confirmations. These time differences are set to ensure the security of CCIP and its users. Finality is crucial for token transfers because funds are locked and not reorganized once they are released onto the destination chain. In this scenario, finality ensures that funds on the destination chain are available only after they have been successfully committed on the source chain.
 
-To learn more about finality, read the [Understanding CCIP Execution Latency](/ccip/concepts/ccip-execution-latency) conceptual guide.
+To learn more about finality, read the [CCIP Execution Latency](/ccip/concepts/ccip-execution-latency) conceptual guide.
 
 ## Lane
 
@@ -50,12 +52,16 @@ Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](/arch
 
 ## Risk Management Network
 
+<CCIPCommon callout="rmnCaution" />
+
 The Risk Management Network is built using offchain and onchain components:
 
 - **[Offchain](#offchain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
 - **[onchain](#onchain-risk-management-contract):** One Risk Management contract per supported CCIP chain
 
 ### Offchain Risk Management node
+
+<CCIPCommon callout="rmnCaution" />
 
 The Risk Management Network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
 The Risk Management Network has two main modes of operation:
@@ -69,6 +75,8 @@ The Risk Management Network has two main modes of operation:
   - **Execution safety violation:** A message is executed on the destination chain without any matching transaction being on the source chain. Double executions fall into this category since the executing DON can only execute a message once.
 
 ### Onchain Risk Management contract
+
+<CCIPCommon callout="rmnCaution" />
 
 There is one Risk Management contract for each supported destination chain. The Risk Management contract maintains a group of nodes authorized to participate in the Risk Management blessing/cursing.
 

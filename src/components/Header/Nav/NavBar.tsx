@@ -18,16 +18,23 @@ export type NavBarProps = {
   onHideChange?: (hidden: boolean) => void
   productsNav: ProductsNav
   subProductsNav: SubProductsNav
+  doubleNavbar: boolean
 }
 
 export const navBarHeight = 64
 
-export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProductsNav }: NavBarProps) => {
+export const NavBar = ({
+  path,
+  searchTrigger,
+  onHideChange,
+  productsNav,
+  subProductsNav,
+  doubleNavbar,
+}: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isMegaMenuOpen, setShowMegaMenu] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
-  const isInnerPage = path !== "/"
 
   const scrollDirection = useScrollDirection()
   const { isAtTopOfPage, isAtBottomOfPage } = useScrollPosition(navBarHeight)
@@ -89,9 +96,9 @@ export const NavBar = ({ path, searchTrigger, onHideChange, productsNav, subProd
     <>
       <header className={styles.header} ref={navRef}>
         <div
-          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: isInnerPage })}
+          className={clsx(styles.navBar, { [styles.headerHidden]: shouldHideHeader, [styles.noShadow]: doubleNavbar })}
         >
-          <div className={clsx(styles.container, { [styles.isHomepage]: !isInnerPage })}>
+          <div className={clsx(styles.container, { [styles.isHomepage]: !doubleNavbar })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
               <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="https://dev.chain.link/">
                 <img

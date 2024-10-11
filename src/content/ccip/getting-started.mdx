@@ -62,12 +62,10 @@ Deploy the `Sender.sol` contract on _Avalanche Fuji_. To see a detailed explanat
         style="max-width: 70%;"
       />
 
-   1. Open MetaMask and send <CopyText text="0.1" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+   1. Open MetaMask and send <CopyText text="70" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
 
-      <ClickToZoom
-        src="/images/ccip/tutorials/fund-deployed-sender-avalanche-fuji.webp"
-        alt="Chainlink CCIP fund deployed sender Avalanche Fuji"
-      />
+      **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+      from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 ## Deploy the receiver contract
 
@@ -101,7 +99,7 @@ Deploy the receiver contract on _Ethereum Sepolia_. You will use this contract t
         style="max-width: 70%;"
       />
 
-You now have one _sender_ contract on _Avalanche Fuji_ and one _receiver_ contract on _Ethereum Sepolia_. You sent `0.1` LINK to the _sender_ contract to pay the CCIP fees. Next, send data from the sender contract to the receiver contract.
+You now have one _sender_ contract on _Avalanche Fuji_ and one _receiver_ contract on _Ethereum Sepolia_. You sent `70` LINK to the _sender_ contract to pay the CCIP fees. Next, send data from the sender contract to the receiver contract.
 
 ## Send data
 
@@ -125,10 +123,7 @@ Send a `Hello World!` string from your contract on _Avalanche Fuji_ to the contr
 
 1.  Click the **transact** button to run the function. MetaMask prompts you to confirm the transaction.
 
-    <Aside type="note">
-      During gas price spikes, your transaction might fail, requiring more than _0.1 LINK_ to proceed. If your
-      transaction fails, fund your contract with more _LINK_ tokens and try again.
-    </Aside>
+    <CcipCommon callout="gasSpike" />
 
 1.  After the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x113933ec9f1b2e795a1e2f564c9d452db92d3e9a150545712687eb546916e633) of a successful transaction on _Avalanche Fuji_.
 
@@ -198,16 +193,7 @@ The `sendMessage` function completes several operations:
 1. Grant the router contract permission to deduct the fees from the contract's LINK balance.
 1. Dispatch the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend).
 
-<Aside type="caution" title="Sender contract best practices">
-This example is simplified for learning purposes. For production code, use the following best practices:
-
-    - Do not hardcode `extraArgs`: To simplify the example, `extraArgs` are hardcoded in the contract. The recommendation
-    is to make sure `extraArgs` is mutable. For example, you can build `extraArgs` offchain and pass it in your functions call
-    or store it in a storage variable that you can update on demand. Thus, you can make sure `extraArgs` remains backward
-    compatible for future CCIP upgrades.
-    - Validate the destination chain.
-
-</Aside>
+<CcipCommon callout="senderContractCallout" />
 
 ### Receiver code
 
