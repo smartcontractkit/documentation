@@ -13,6 +13,8 @@ const { environment, version } = Astro.props as MainProps
 
 const chainsReferenceData = loadReferenceData({ environment, version }).chainsReferenceData
 
+if (!chainsReferenceData) throw Error(`Error while loading CCIP reference data`)
+
 const sortedEntries = Object.entries(chainsReferenceData).sort(
   ([chainRefIdA, chainConfigA], [chainRefIdB, chainConfigB]) => {
     const chainTitleA = getTitle(directoryToSupportedChain(chainRefIdA)) || ""
@@ -32,6 +34,7 @@ const sortedEntries = Object.entries(chainsReferenceData).sort(
     const chainIcon = getChainIcon(chainKey)
     if (!chainIcon) throw Error(`Icon not found for chain ${chainKey}`)
     const id = chainKey.replace(/_/g, "-").toLowerCase()
+
     return (
       <>
         <Accordion title={chainTitle} contentReference={id}>
