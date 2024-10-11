@@ -372,6 +372,15 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       address: string
       version: string
     }
+    feeTokens?: {
+      name: string
+      logo: string
+    }[]
+    nativeToken?: {
+      name: string
+      symbol: string
+      logo: string
+    }
     routerExplorerUrl: string
   }[] = []
 
@@ -404,6 +413,8 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       router,
       routerExplorerUrl,
       chainSelector: chains[chain].chainSelector,
+      nativeToken: chains,
+      feeTokens: chains[chain].feeTokens,
     })
   }
 

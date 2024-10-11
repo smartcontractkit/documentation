@@ -1,9 +1,10 @@
-import { Environment, LaneConfig } from "~/config/data/ccip"
+import { Environment, getTokenData, LaneConfig, Version } from "~/config/data/ccip"
 import Address from "../Address/Address"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
 import CopyValue from "../CopyValue/CopyValue"
+import { getExplorerAddressUrl, getTokenIconUrl } from "~/features/utils"
 
 interface ChainHeroProps {
   chains: {
@@ -46,6 +47,12 @@ interface ChainHeroProps {
     }
     routerExplorerUrl: string
     chainSelector: string
+    feeTokens?: string[]
+    nativeToken?: {
+      name: string
+      symbol: string
+      logo: string
+    }
   }
   token?: {
     name: string
@@ -120,6 +127,32 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               <div className="ccip-hero__details__value">
                 {network.registryModule ? <Address endLength={4} contractUrl={network.registryModule} /> : "n/a"}
               </div>
+            </div>
+          </div>
+        )}
+
+        {network && network.feeTokens && (
+          <div className="ccip-hero__feeTokens">
+            <div className="ccip-hero__details__label">Fee tokens</div>
+            <div className="ccip-hero__feeTokens__list">
+              {network?.feeTokens.map((feeToken, index) => {
+                const logo = getTokenIconUrl(feeToken)
+                const token = getTokenData({
+                  environment,
+                  version: Version.V1_2_0,
+                  tokenSymbol: feeToken,
+                })
+                console.log("feeToken", token)
+                const explorerUrl = network.routerExplorerUrl
+                const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
+                return (
+                  <div key={index} className="ccip-hero__feeTokens__item">
+                    <img src={logo} alt={feeToken} className="ccip-hero__feeTokens__item__logo" />
+                    <div>{feeToken}</div>
+                    <Address endLength={4} contractUrl={address} />
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
