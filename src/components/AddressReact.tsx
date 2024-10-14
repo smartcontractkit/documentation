@@ -1,3 +1,4 @@
+// This is a copy of the Preact Address component. This was required in the CCIP pages.
 import { clsx } from "~/lib"
 
 export type Props = {
@@ -36,7 +37,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
 
       <style>{`
         .addressLink {
-          padding: 1px 5px;
+          padding: 1px 0px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
         }

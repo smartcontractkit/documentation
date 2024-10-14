@@ -1,4 +1,4 @@
-import Address from "../Address/Address"
+import Address from "../Address/AddressReact"
 import "./ChainHero.css"
 
 interface TokenDetailsHeroProps {
@@ -21,7 +21,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
   return (
     <section className="ccip-hero">
       <div className="ccip-hero__content">
-        <h1 className="ccip-hero__heading">
+        <div className="ccip-hero__heading">
           <div className="ccip-hero__heading__images">
             <img src={network?.logo} alt="" />
             <img src={token?.logo} alt="" className="ccip-hero__heading__images__small" />
@@ -30,7 +30,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <h1>
             {token?.name} <span className="ccip-hero__token-logo__symbol">{token?.symbol}</span>
           </h1>
-        </h1>
+        </div>
 
         <div className="ccip-hero__details">
           <div className="ccip-hero__details__item">

@@ -1,8 +1,7 @@
-/** @jsxImportSource preact */
-import { clsx } from "../lib" // Ensure that the `clsx` function is correctly imported or implemented.
+import { clsx } from "~/lib"
 
 export type Props = {
-  contractUrl: string
+  contractUrl?: string
   address?: string
   endLength?: number
   urlClass?: string
@@ -11,32 +10,19 @@ export type Props = {
   additionalInfo?: Record<string, string>
 }
 
-const AddressComponent = ({
-  contractUrl,
-  address,
-  endLength,
-  urlClass,
-  urlId,
-  eventName,
-  additionalInfo = {}, // Default to an empty object if not provided
-}: Props) => {
-  address = address || contractUrl.split("/").pop()
+const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: Props) => {
+  address = address || contractUrl?.split("/").pop()
+
+  if (!address) return null
 
   const handleClick = (e) => {
     e.preventDefault()
-
-    if (eventName !== undefined) {
-      const dataLayerEvent = {
-        event: eventName,
-        ...additionalInfo,
-      }
-      window.dataLayer.push(dataLayerEvent)
-    }
+    if (address) navigator.clipboard.writeText(address)
   }
 
   return (
     <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
-      <a title={address} className="addressLink" href={contractUrl} target="_blank" rel="noopener noreferrer">
+      <a title={address} className="addressLink" href={contractUrl}>
         {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
       </a>
       <button
@@ -48,10 +34,9 @@ const AddressComponent = ({
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
       </button>
 
-      <style jsx>{`
+      <style>{`
         .addressLink {
-          background: var(--color-background-secondary);
-          padding: 1px 5px;
+          padding: 1px 0px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
         }

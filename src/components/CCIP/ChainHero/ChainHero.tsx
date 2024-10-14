@@ -1,5 +1,5 @@
 import { Environment, getTokenData, LaneConfig, Version } from "~/config/data/ccip"
-import Address from "../Address/Address"
+import Address from "../Address/AddressReact"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
@@ -88,12 +88,12 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           </div>
         </div>
 
-        <h1 className="ccip-hero__heading">
+        <div className="ccip-hero__heading">
           <img src={network?.logo || token?.logo} alt="" className={token?.logo ? "ccip-hero__token-logo" : ""} />
           <h1>
             {network?.name || token?.name} <span className="ccip-hero__token-logo__symbol">{token?.symbol}</span>
           </h1>
-        </h1>
+        </div>
         {network && (
           <div className="ccip-hero__details">
             <div className="ccip-hero__details__item">

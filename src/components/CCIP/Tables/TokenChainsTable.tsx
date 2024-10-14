@@ -1,4 +1,4 @@
-import Address from "../Address/Address"
+import Address from "../Address/AddressReact"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import { Environment, SupportedTokenConfig } from "~/config/data/ccip"

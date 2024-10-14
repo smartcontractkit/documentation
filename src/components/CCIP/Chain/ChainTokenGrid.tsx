@@ -3,6 +3,7 @@ import TokenCard from "../Cards/TokenCard"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDrawer from "../Drawer/TokenDrawer"
 import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle } from "~/features/utils"
+import React from "react"
 
 interface ChainTokenGridProps {
   tokens: {
@@ -25,7 +26,7 @@ interface ChainTokenGridProps {
 function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
   return tokens.map((token) => {
     const data = getTokenData({
-      environment: environment,
+      environment,
       version: Version.V1_2_0,
       tokenSymbol: token.name || "",
     })
@@ -33,6 +34,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
       <TokenCard
         name={token.name}
         logo={token.logo}
+        key={token.name}
         onClick={() => {
           const selectedNetwork = Object.keys(data)
             .map((key) => {
@@ -43,7 +45,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
               return {
                 name: title,
                 token: data[key].name || "",
-                key: key,
+                key,
                 logo: networkLogo,
                 symbol: token,
                 tokenLogo: network.logo || "",
@@ -66,7 +68,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                 }}
                 network={selectedNetwork}
                 destinationLanes={getAllTokenLanes({
-                  environment: environment,
+                  environment,
                   version: Version.V1_2_0,
                   token: token.name || "",
                 })}

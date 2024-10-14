@@ -112,5 +112,6 @@ export const representMoney = (amount: string): string => {
   const integerPart = amountString.slice(0, decimalIndex)
   const decimalPart = amountString.slice(decimalIndex)
   const integerPartWithCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  if (integerPartWithCommas === "" && decimalPart === "") return "0"
   return `${integerPartWithCommas}.${decimalPart}`
 }

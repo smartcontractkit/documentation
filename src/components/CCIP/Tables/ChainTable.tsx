@@ -1,4 +1,4 @@
-import Address from "~/components/CCIP/Address/Address"
+import Address from "~/components/CCIP/Address/AddressReact"
 import "./Table.css"
 import Tabs from "./Tabs"
 import TableSearchInput from "./TableSearchInput"

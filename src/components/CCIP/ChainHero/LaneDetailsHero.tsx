@@ -1,5 +1,5 @@
 import { Tooltip } from "~/features/common/Tooltip"
-import AddressComponent from "../Address/Address"
+import AddressComponent from "../Address/AddressReact"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils"
 import CopyValue from "../CopyValue/CopyValue"
@@ -27,8 +27,6 @@ function LaneDetailsHero({
 }: LaneDetailsHeroProps) {
   return (
     <div className="lane-details-hero">
-      <h2>Lane details</h2>
-
       <div className="lane-details-hero__networks">
         <div className="lane-details-hero__network">
           <img src={sourceNetwork.logo} alt={sourceNetwork.name} />
@@ -53,6 +51,9 @@ function LaneDetailsHero({
         <Tooltip
           label="Coming soon"
           tip="Risk Management Network (RMN) is NOT active for this lane at this time."
+          labelStyle={{
+            marginRight: "10px",
+          }}
           style={{
             display: "inline-flex",
           }}

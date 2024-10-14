@@ -1,4 +1,4 @@
-import Address from "../Address/Address"
+import Address from "../Address/AddressReact"
 import "../Tables/Table.css"
 import { Environment, getNetwork, getTokenData, LaneConfig, representMoney, Version } from "~/config/data/ccip"
 
@@ -26,6 +26,7 @@ function LaneDrawer({
 
   return (
     <>
+      <h2 className="ccip-table__drawer-heading">Lane details</h2>
       <LaneDetailsHero
         sourceNetwork={{
           logo: sourceNetwork.logo,
