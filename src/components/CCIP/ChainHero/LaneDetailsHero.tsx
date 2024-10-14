@@ -16,6 +16,7 @@ interface LaneDetailsHeroProps {
   onRamp: string
   destinationAddress: string
   explorerUrl: string
+  rmnPermeable: boolean
 }
 
 function LaneDetailsHero({
@@ -24,6 +25,7 @@ function LaneDetailsHero({
   onRamp,
   destinationAddress,
   explorerUrl,
+  rmnPermeable,
 }: LaneDetailsHeroProps) {
   return (
     <div className="lane-details-hero">
@@ -48,16 +50,22 @@ function LaneDetailsHero({
         <div className="lane-details-hero__details__label">Destination network selector</div>
         <div>{destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"} </div>
         <div className="lane-details-hero__details__label">RMN</div>
-        <Tooltip
-          label="Coming soon"
-          tip="Risk Management Network (RMN) is NOT active for this lane at this time."
-          labelStyle={{
-            marginRight: "10px",
-          }}
-          style={{
-            display: "inline-flex",
-          }}
-        />
+        <div>
+          {rmnPermeable ? (
+            <Tooltip
+              label="Coming soon"
+              tip="Risk Management Network (RMN) is NOT active for this lane at this time."
+              labelStyle={{
+                marginRight: "10px",
+              }}
+              style={{
+                display: "inline-flex",
+              }}
+            />
+          ) : (
+            "Enabled"
+          )}
+        </div>
       </div>
     </div>
   )
