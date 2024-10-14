@@ -35,17 +35,9 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
       const { tokens, token, sourceBlockchain, destinationBlockchain } = params
       const tokenData = tokens[token]
       if (!sourceBlockchain) {
-        if (!tokenData) {
-          return { blockchains: [] }
-        }
         return { blockchains: Object.keys(tokenData) as SupportedChain[] }
       } else if (sourceBlockchain && !destinationBlockchain) {
-        const sourceData = tokenData[sourceBlockchain]
-        if (sourceData) {
-          return { blockchains: Object.keys(sourceData) as SupportedChain[] }
-        } else {
-          return { blockchains: [] }
-        }
+        return { blockchains: Object.keys(tokenData[sourceBlockchain]) as SupportedChain[] }
       }
     },
     fees: (params: FetchParams) => {

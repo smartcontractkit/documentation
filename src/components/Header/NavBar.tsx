@@ -10,13 +10,6 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
 
   const { setNavBarInfo } = useNavBar()
 
-  const doubleNavbar = () => {
-    const pathWithoutDocNav = ["/quickstarts/", "/builders-quick-links"]
-    const shouldAddDocNavigation = !pathWithoutDocNav.some((p) => path.includes(p))
-    const isHomepage = path === "/"
-    return shouldAddDocNavigation && !isHomepage
-  }
-
   const onHideChange = (hidden: boolean) => {
     if (navRef.current) {
       /* This method calculate the height required for the sticky headers within the page content.
@@ -24,10 +17,12 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
       / - if the page has been scrolled down and the header is hidden
       / - if the page is a inner doc page or part of the "pathWithoutDocNav" or not
       */
+      const pathWithoutDocNav = ["/quickstarts/"]
+      const shouldAddDocNavigation = !pathWithoutDocNav.some((p) => path.includes(p))
       const innerDocNavHeight = 56
       let height = (navRef.current as HTMLElement).clientHeight
       let baseHeightNoNav = 0
-      if (doubleNavbar()) {
+      if (shouldAddDocNavigation) {
         height += innerDocNavHeight
         baseHeightNoNav += innerDocNavHeight
       }
@@ -49,7 +44,6 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
         path={path}
         searchTrigger={showSearch ? <Search /> : undefined}
         onHideChange={onHideChange}
-        doubleNavbar={doubleNavbar()}
       />
     </span>
   )
