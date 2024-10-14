@@ -316,6 +316,14 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
+          {proxy.docs.issuer ? (
+            <div>
+              <dt>
+                <span class="label">Issuer:</span>
+              </dt>
+              <dd>{proxy.docs.issuer}</dd>
+            </div>
+          ) : null}
         </dl>
       </div>
     </td>
