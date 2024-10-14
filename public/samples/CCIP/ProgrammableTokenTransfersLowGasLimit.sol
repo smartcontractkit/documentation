@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
@@ -157,7 +157,10 @@ contract ProgrammableTokenTransfersLowGasLimit is CCIPReceiver, OwnerIsCreator {
             tokenAmounts: tokenAmounts, // The amount and type of token being transferred
             extraArgs: Client._argsToBytes(
                 // gasLimit set to 20_000 on purpose to force the execution to fail on the destination chain
-                Client.EVMExtraArgsV1({gasLimit: 20_000})
+                Client.EVMExtraArgsV2({
+                    gasLimit: 20_000, // Gas limit for the callback on the destination chain
+                    allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
+                })
             ),
             // Set the feeToken to a LINK token address
             feeToken: address(s_linkToken)

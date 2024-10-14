@@ -4,11 +4,12 @@ date: Last Modified
 title: "Client Library API Reference"
 ---
 
+import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <CcipCommon callout="importCCIPPackage" />
 
-CCIP senders and receivers use the _CCIP Client Library_ to build CCIP messages.
+CCIP senders and receivers use the CCIP [`Client`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/libraries/Client.sol) library to build CCIP messages.
 
 ```solidity
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
@@ -68,21 +69,48 @@ struct EVM2AnyMessage {
 }
 ```
 
-| Name         | Type                    | Description                                                                                                                          |
-| ------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| receiver     | bytes                   | Receiver address. Use `abi.encode(sender)` to encode the address to _bytes_.                                                         |
-| data         | bytes                   | Payload sent within the CCIP message.                                                                                                |
-| tokenAmounts | Client.EVMTokenAmount[] | Tokens and their amounts in the source chain representation.                                                                         |
-| feeToken     | address                 | Address of feeToken. Set `address(0)` to pay in native gas tokens such as ETH on Ethereum or POL on Polygon.                         |
-| extraArgs    | bytes                   | Users fill in the [EVMExtraArgsV1 struct](#evmextraargsv1) then encode it to bytes using the [\_argsToBytes function](#_argstobytes) |
+| Name         | Type                    | Description                                                                                                                      |
+| ------------ | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| receiver     | bytes                   | Receiver address. Use `abi.encode(sender)` to encode the address to _bytes_.                                                     |
+| data         | bytes                   | Payload sent within the CCIP message.                                                                                            |
+| tokenAmounts | Client.EVMTokenAmount[] | Tokens and their amounts in the source chain representation.                                                                     |
+| feeToken     | address                 | Address of feeToken. Set `address(0)` to pay in native gas tokens such as ETH on Ethereum or POL on Polygon.                     |
+| extraArgs    | bytes                   | Users fill in the [EVMExtraArgs struct](#evmextraargs) then encode it to bytes using the [\_argsToBytes function](#_argstobytes) |
 
-### EVM_EXTRA_ARGS_V1_TAG
+### EVM_EXTRA_ARGS_TAG
+
+#### EVM_EXTRA_ARGS_V1_TAG
+
+<Aside type="note">
+  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
+  of Order Execution" property set to **Optional** or **Required** (see the [supported networks
+  page](/ccip/supported-networks)).
+</Aside>
 
 ```solidity
 bytes4 EVM_EXTRA_ARGS_V1_TAG
 ```
 
-### EVMExtraArgsV1
+#### EVM_EXTRA_ARGS_V2_TAG
+
+<Aside type="note">
+  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
+  **Required** (see the [supported networks page](/ccip/supported-networks)).
+</Aside>
+
+```solidity
+bytes4 EVM_EXTRA_ARGS_V2_TAG
+```
+
+### EVMExtraArgs
+
+#### EVMExtraArgsV1
+
+<Aside type="note">
+  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
+  of Order Execution" property set to **Optional** or **Required** (see the [supported networks
+  page](/ccip/supported-networks)).
+</Aside>
 
 ```solidity
 struct EVMExtraArgsV1 {
@@ -94,9 +122,36 @@ struct EVMExtraArgsV1 {
 | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | gasLimit | uint256 | specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. Read [Setting gasLimit](/ccip/best-practices#setting-gaslimit) for more details. |
 
+#### EVMExtraArgsV2
+
+<Aside type="note">
+  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
+  **Required** (see the [supported networks page](/ccip/supported-networks)).
+</Aside>
+
+```solidity
+struct EVMExtraArgsV2 {
+  uint256 gasLimit;
+  bool allowOutOfOrderExecution;
+}
+```
+
+| Name                     | Type    | Description                                                                                                                                                                                                                                                                           |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| gasLimit                 | uint256 | specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. Read [Setting gasLimit](/ccip/best-practices#setting-gaslimit) for more details.                                                               |
+| allowOutOfOrderExecution | bool    | if true, it indicates that the message can be executed in any order relative to other messages from the same sender. This value's default varies by chain. On some chains, a particular value is enforced, meaning if the expected value is not set, the message request will revert. |
+
 ## Functions
 
 ### \_argsToBytes
+
+#### \_argsToBytes (v1)
+
+<Aside type="note">
+  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
+  of Order Execution" property set to **Optional** or **Required** (see the [supported networks
+  page](/ccip/supported-networks)).
+</Aside>
 
 ```solidity
 function _argsToBytes(struct Client.EVMExtraArgsV1 extraArgs) internal pure returns (bytes bts)
@@ -104,13 +159,38 @@ function _argsToBytes(struct Client.EVMExtraArgsV1 extraArgs) internal pure retu
 
 It is used to convert the arguments to bytes.
 
-#### Parameters
+##### Parameters
 
-| Name      | Type                  | Description      |
-| --------- | --------------------- | ---------------- |
-| extraArgs | Client.EVMExtraArgsV1 | Extra arguments. |
+| Name      | Type                                     | Description      |
+| --------- | ---------------------------------------- | ---------------- |
+| extraArgs | [Client.EVMExtraArgsV1](#evmextraargsv1) | Extra arguments. |
 
-#### Return Values
+##### Return Values
+
+| Name | Type  | Description                         |
+| ---- | ----- | ----------------------------------- |
+| bts  | bytes | Encoded extra arguments in _bytes_. |
+
+#### \_argsToBytes (v2)
+
+<Aside type="note">
+  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
+  **Required** (see the [supported networks page](/ccip/supported-networks)).
+</Aside>
+
+```solidity
+function _argsToBytes(struct Client.EVMExtraArgsV2 extraArgs) internal pure returns (bytes bts)
+```
+
+It is used to convert the arguments to bytes.
+
+##### Parameters
+
+| Name      | Type                                     | Description      |
+| --------- | ---------------------------------------- | ---------------- |
+| extraArgs | [Client.EVMExtraArgsV2](#evmextraargsv2) | Extra arguments. |
+
+##### Return Values
 
 | Name | Type  | Description                         |
 | ---- | ----- | ----------------------------------- |
