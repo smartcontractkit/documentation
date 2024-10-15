@@ -1,0 +1,116 @@
+---
+section: ccip
+date: Last Modified
+title: "Enable your tokens in CCIP (Burn & Mint): Register from Safe multisig using Hardhat"
+---
+
+This tutorial will guide you through enabling your tokens in CCIP using [Hardhat](https://hardhat.org/) and Safe Multisig smart accounts. You will learn how to deploy tokens and set up _Burn & Mint_ token pools using a 2-of-3 multi-signature Safe. After that, you will register the tokens in CCIP and configure them using multisig transactions without needing direct intervention from Chainlink Labs. Finally, you will test the **Burn & Mint** token handling mechanism, where tokens are burned on the source blockchain, and an equivalent amount is minted on the destination blockchain.
+
+### Introduction to Smart Accounts and Safe Multisig
+
+A **smart account** (also known as a smart contract account) leverages the programmability of smart contracts to extend their functionality and improve their security compared to externally owned accounts (EOAs). Smart accounts are controlled by one or multiple EOAs or other smart accounts, and all transactions must be initiated by one of these controllers.
+
+Some common features of smart accounts include:
+
+- **Multi-signature schemes**: Require multiple approvals for a transaction to be executed, enhancing security.
+- **Transaction batching**: Combine multiple actions into a single transaction, reducing costs and improving efficiency.
+- **Account recovery**: Allow for recovery mechanisms in case of lost access.
+- **Gasless transactions**: Enable transaction fees to be paid by a third party or relayer.
+
+**Safe** is one of the most trusted implementations of a smart account, offering a robust multi-signature mechanism. In this tutorial, we will use a Safe Multisig account, specifically a 2-of-3 multi-signature setup, where **two** out of **three** owners must approve a transaction to execute it. This setup ensures enhanced security and decentralized control over the assets.
+
+The **Protocol Kit** from Safe allows developers to interact with Safe, smart accounts through a TypeScript interface. This kit can be used to create new Safe accounts, update configurations, propose transactions, and execute them, making it an ideal choice for blockchain projects.
+
+We will cover the following key steps:
+
+1. **Creating a Safe Account**: You will create a 2-of-3 multi-signature Safe that will serve as the owner of the token and token pool contracts. This Safe will also manage administrative tasks, such as configuring token pools and registering as the token admin in the token admin registry.
+
+2. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and Base Sepolia testnets and transfer ownership to the Safe account.
+
+3. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/burn-mint-token-pool) token pools on Ethereum Sepolia and Base Sepolia. The Safe account will own each token pool.
+
+4. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
+
+   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
+
+   2. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/token-admin-registry#acceptadminrole) function to complete the registration process.
+
+   Meta-transactions are used here to batch these two actions, allowing both steps to be executed efficiently. The meta-transactions are created off-chain and signed by each of the two required Safe owners. This off-chain signing process reduces gas costs and enhances security, as the transactions are only broadcasted to the blockchain once all required signatures are collected.
+
+5. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`setPool`](/ccip/api-reference/token-admin-registry#setpool) function to associate each token with its respective token pool.
+
+6. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
+
+7. **Minting Tokens**: You will mint tokens on Ethereum Sepolia. These tokens will later be used to test cross-chain transfers to Base Sepolia.
+
+8. **Transferring Tokens**: Finally, you will transfer tokens from Ethereum Sepolia to Base Sepolia using CCIP. You can pay CCIP fees using either LINK tokens or native gas tokens.
+
+By the end of this tutorial, you will have successfully deployed, registered, configured, and enabled your tokens and token pools for use in CCIP. All are managed securely through a multi-signature Safe account.
+
+## Before You Begin
+
+1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
+    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+
+    ```bash
+    nvm use 18
+    ```
+
+    Verify that the correct version of Node.js is installed:
+
+    ```bash
+    node -v
+    ```
+
+    Example output:
+
+    ```bash
+    $ node -v
+    v18.7.0
+    ```
+
+1.  **Clone the repository and navigate to the project directory:**
+
+    ```bash
+    git clone https://github.com/smartcontractkit/ccip-self-serve-tokens-poc.git
+    cd ccip-self-serve-tokens-poc
+    ```
+
+1.  **Install dependencies for the project:**
+
+    ```bash
+    npm install
+    ```
+
+1.  **Compile the project:**
+
+    ```bash
+    npm run compile
+    ```
+
+1.  **Encrypt your environment variables for higher security:**  
+    The project uses [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc) to encrypt your environment variables at rest. Follow the steps below to configure your environment securely:
+
+    1. Set an encryption password for your environment variables:
+
+       ```bash
+       npx env-enc set-pw
+       ```
+
+    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Arbitrum Sepolia testnets. Use the following command to add the variables:
+
+       ```bash
+       npx env-enc set
+       ```
+
+       Variables to configure:
+
+       - `ETHEREUM_SEPOLIA_RPC_URL`: A URL for the _Ethereum Sepolia_ testnet. You can get a personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - `Base_SEPOLIA_RPC_URL`: A URL for the _Arbitrum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - `PRIVATE_KEY`: The private key for the first signer of the Safe multisig account. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is used to create and sign the transaction of the first signer.
+       - `PRIVATE_KEY_2`: The private key for the second signer of the Safe multisig account. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is used to create and sign the transaction of the second signer.
+       - `ETHERSCAN_API_KEY`: An API key from Etherscan to verify your contracts. You can obtain one from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
+       - `BASESCAN_API_KEY`: An API key from Basescan to verify your contracts on Arbitrum. See [this guide](https://docs.basescan.org/getting-started/viewing-api-usage-statistics) to get one from Basescan.
+
+1.  **Fund the EOA linked to the first private key with LINK and native gas tokens**:  
+    Make sure your EOA has enough LINK and native gas tokens on Ethereum Sepolia and Base Sepolia to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
