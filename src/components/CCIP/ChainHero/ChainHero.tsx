@@ -65,11 +65,11 @@ interface ChainHeroProps {
 
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
   return (
-    <section className="ccip-hero">
-      <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
+    <section className="ccip-chain-hero">
+      <img src="/assets/ccip.png" alt="" className="ccip-chain-hero__grid" />
 
-      <div className="ccip-hero__content">
-        <div className="ccip-hero__top">
+      <div className="ccip-chain-hero__content">
+        <div className="ccip-chain-hero__top">
           <Breadcrumb
             items={[
               {
@@ -84,38 +84,38 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               },
             ]}
           />
-          <div className="ccip-hero__chainSearch">
+          <div className="ccip-chain-hero__chainSearch">
             <Search chains={chains} tokens={tokens} small environment={environment} lanes={lanes} />
           </div>
         </div>
 
-        <div className="ccip-hero__heading">
-          <img src={network?.logo || token?.logo} alt="" className={token?.logo ? "ccip-hero__token-logo" : ""} />
+        <div className="ccip-chain-hero__heading">
+          <img src={network?.logo || token?.logo} alt="" className={token?.logo ? "ccip-chain-hero__token-logo" : ""} />
           <h1>
-            {network?.name || token?.name} <span className="ccip-hero__token-logo__symbol">{token?.symbol}</span>
+            {network?.name || token?.name} <span className="ccip-chain-hero__token-logo__symbol">{token?.symbol}</span>
           </h1>
         </div>
         {network && (
-          <div className="ccip-hero__details">
-            <div className="ccip-hero__details__item">
-              <div className="ccip-hero__details__label">Router</div>
-              <div className="ccip-hero__details__value">
+          <div className="ccip-chain-hero__details">
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">Router</div>
+              <div className="ccip-chain-hero__details__value">
                 <Address endLength={4} contractUrl={network.routerExplorerUrl} />
               </div>
             </div>
-            <div className="ccip-hero__details__item">
-              <div className="ccip-hero__details__label">Chain selector</div>
-              <div className="ccip-hero__details__value">
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">Network selector</div>
+              <div className="ccip-chain-hero__details__value">
                 {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
               </div>
             </div>
-            <div className="ccip-hero__details__item">
-              <div className="ccip-hero__details__label">RMN</div>
-              <div className="ccip-hero__details__value">n/a</div>
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">RMN</div>
+              <div className="ccip-chain-hero__details__value">n/a</div>
             </div>
-            <div className="ccip-hero__details__item">
-              <div className="ccip-hero__details__label">Token admin registry</div>
-              <div className="ccip-hero__details__value">
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">Token admin registry</div>
+              <div className="ccip-chain-hero__details__value">
                 {network.tokenAdminRegistry ? (
                   <Address
                     endLength={4}
@@ -126,9 +126,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )}
               </div>
             </div>
-            <div className="ccip-hero__details__item">
-              <div className="ccip-hero__details__label">Registry module owner</div>
-              <div className="ccip-hero__details__value">
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">Registry module owner</div>
+              <div className="ccip-chain-hero__details__value">
                 {network.registryModule ? (
                   <Address
                     endLength={4}
@@ -143,9 +143,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
         )}
 
         {network && network.feeTokens && (
-          <div className="ccip-hero__feeTokens">
-            <div className="ccip-hero__details__label">Fee tokens</div>
-            <div className="ccip-hero__feeTokens__list">
+          <div className="ccip-chain-hero__feeTokens">
+            <div className="ccip-chain-hero__details__label">Fee tokens</div>
+            <div className="ccip-chain-hero__feeTokens__list">
               {network?.feeTokens.map((feeToken, index) => {
                 const logo = getTokenIconUrl(feeToken)
                 const token = getTokenData({
@@ -157,8 +157,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 const explorerUrl = network.routerExplorerUrl
                 const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
                 return (
-                  <div key={index} className="ccip-hero__feeTokens__item">
-                    <img src={logo} alt={feeToken} className="ccip-hero__feeTokens__item__logo" />
+                  <div key={index} className="ccip-chain-hero__feeTokens__item">
+                    <img src={logo} alt={feeToken} className="ccip-chain-hero__feeTokens__item__logo" />
                     <div>{feeToken}</div>
                     <Address endLength={4} contractUrl={address} />
                   </div>
