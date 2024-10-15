@@ -4,11 +4,11 @@ date: Last Modified
 title: "Enable your tokens in CCIP (Burn & Mint): Register from Safe multisig using Hardhat"
 ---
 
-This tutorial will guide you through enabling your tokens in CCIP using [Hardhat](https://hardhat.org/) and Safe Multisig smart accounts. You will learn how to deploy tokens and set up _Burn & Mint_ token pools using a 2-of-3 multi-signature Safe. After that, you will register the tokens in CCIP and configure them using multisig transactions without needing direct intervention from Chainlink Labs. Finally, you will test the **Burn & Mint** token handling mechanism, where tokens are burned on the source blockchain, and an equivalent amount is minted on the destination blockchain.
+This tutorial will guide you through enabling your tokens in CCIP using [Hardhat](https://hardhat.org/) and Safe Multisig [smart accounts](https://docs.safe.global/home/glossary#smart-account). You will learn how to deploy tokens and set up _Burn & Mint_ token pools using a 2-of-3 multi-signature Safe. After that, you will register the tokens in CCIP and configure them using multisig transactions without needing direct intervention from Chainlink Labs. Finally, you will test the **Burn & Mint** token handling mechanism, where tokens are burned on the source blockchain, and an equivalent amount is minted on the destination blockchain.
 
 ### Introduction to Smart Accounts and Safe Multisig
 
-A **smart account** (also known as a smart contract account) leverages the programmability of smart contracts to extend their functionality and improve their security compared to externally owned accounts (EOAs). Smart accounts are controlled by one or multiple EOAs or other smart accounts, and all transactions must be initiated by one of these controllers.
+A [**smart account**](https://docs.safe.global/home/glossary#smart-account) (also known as a smart contract account) leverages the programmability of smart contracts to extend their functionality and improve their security compared to externally owned accounts (EOAs). Smart accounts are controlled by one or multiple EOAs or other smart accounts, and all transactions must be initiated by one of these controllers.
 
 Some common features of smart accounts include:
 
@@ -19,7 +19,18 @@ Some common features of smart accounts include:
 
 **Safe** is one of the most trusted implementations of a smart account, offering a robust multi-signature mechanism. In this tutorial, we will use a Safe Multisig account, specifically a 2-of-3 multi-signature setup, where **two** out of **three** owners must approve a transaction to execute it. This setup ensures enhanced security and decentralized control over the assets.
 
-The **Protocol Kit** from Safe allows developers to interact with Safe, smart accounts through a TypeScript interface. This kit can be used to create new Safe accounts, update configurations, propose transactions, and execute them, making it an ideal choice for blockchain projects.
+The [**Protocol Kit**](https://docs.safe.global/sdk/protocol-kit) from Safe allows developers to interact with Safe, smart accounts through a TypeScript interface. This kit can be used to create new Safe accounts, update configurations, propose transactions, and execute them, making it an ideal choice for blockchain projects.
+
+<Aside type="note" title="Safe Transaction Service API">
+  In this tutorial, we will use **Base Sepolia** and **Ethereum Sepolia** testnets. This is because Safe relies on the
+  [**Safe Transaction Service API**](https://docs.safe.global/core-api/transaction-service-overview). The Safe
+  Transaction Service offers a REST API to track transactions sent via the Safe Smart Account. It also provides
+  endpoints to send transactions, collect signatures off-chain, and inform the owners about pending transactions to be
+  broadcasted on-chain. The **Safe SDK** provides the **API Kit**, a TypeScript client for the Safe Transaction Service
+  API, which is currently only supported on specific testnets such as Base Sepolia and Ethereum Sepolia. For more
+  information, see the [Safe Transaction Service supported
+  networks](https://docs.safe.global/core-api/transaction-service-supported-networks).
+</Aside>
 
 We will cover the following key steps:
 
