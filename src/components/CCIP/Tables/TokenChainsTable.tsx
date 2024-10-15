@@ -94,7 +94,6 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                   </td>
                   <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
                   <td>
-                    {/* <Address contractUrl={network.tokenPoolAddress} address={network.tokenPoolAddress} endLength={6} /> */}
                     <Address
                       contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
                       address={network.tokenPoolAddress}

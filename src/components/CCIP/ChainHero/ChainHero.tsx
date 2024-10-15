@@ -45,6 +45,7 @@ interface ChainHeroProps {
       name: string
       address: string
     }
+    explorerUrl: string
     routerExplorerUrl: string
     chainSelector: string
     feeTokens?: string[]
@@ -116,7 +117,10 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               <div className="ccip-hero__details__label">Token admin registry</div>
               <div className="ccip-hero__details__value">
                 {network.tokenAdminRegistry ? (
-                  <Address endLength={4} contractUrl={network.tokenAdminRegistry} />
+                  <Address
+                    endLength={4}
+                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAdminRegistry)}
+                  />
                 ) : (
                   "n/a"
                 )}
@@ -125,7 +129,14 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             <div className="ccip-hero__details__item">
               <div className="ccip-hero__details__label">Registry module owner</div>
               <div className="ccip-hero__details__value">
-                {network.registryModule ? <Address endLength={4} contractUrl={network.registryModule} /> : "n/a"}
+                {network.registryModule ? (
+                  <Address
+                    endLength={4}
+                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.registryModule)}
+                  />
+                ) : (
+                  "n/a"
+                )}
               </div>
             </div>
           </div>
