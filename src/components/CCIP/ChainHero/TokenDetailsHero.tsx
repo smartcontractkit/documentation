@@ -1,4 +1,4 @@
-import Address from "../Address/AddressReact"
+import Address from "~/components/AddressReact"
 import "./ChainHero.css"
 
 interface TokenDetailsHeroProps {

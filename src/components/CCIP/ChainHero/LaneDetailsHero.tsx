@@ -1,5 +1,5 @@
 import { Tooltip } from "~/features/common/Tooltip"
-import AddressComponent from "../Address/AddressReact"
+import AddressComponent from "~/components/AddressReact"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils"
 import CopyValue from "../CopyValue/CopyValue"

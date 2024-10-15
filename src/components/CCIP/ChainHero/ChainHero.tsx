@@ -1,5 +1,5 @@
 import { Environment, getTokenData, LaneConfig, Version } from "~/config/data/ccip"
-import Address from "../Address/AddressReact"
+import Address from "~/components/AddressReact"
 import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"

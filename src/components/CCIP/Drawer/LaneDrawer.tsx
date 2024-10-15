@@ -1,4 +1,4 @@
-import Address from "../Address/AddressReact"
+import Address from "~/components/AddressReact"
 import "../Tables/Table.css"
 import { Environment, getNetwork, getTokenData, LaneConfig, representMoney, Version } from "~/config/data/ccip"
 
@@ -68,7 +68,7 @@ function LaneDrawer({
                 ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
                 .map((token, index) => {
                   const data = getTokenData({
-                    environment: Environment.Mainnet,
+                    environment,
                     version: Version.V1_2_0,
                     tokenSymbol: token || "",
                   })
