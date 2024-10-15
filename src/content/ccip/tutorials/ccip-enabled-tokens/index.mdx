@@ -1,9 +1,88 @@
 ---
 section: ccip
 date: Last Modified
-title: "CCIP-enabled Tokens tutorials"
+title: "CCIP-Enabled Tokens Tutorials"
 isIndex: true
 ---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note" title="Prerequisites">
+  Familiarize yourself with CCIP [Concepts](/ccip/concepts) and [Architecture](/ccip/architecture) before enabling
+  tokens for CCIP.
+</Aside>
+
+Before we delve into the [tutorials](#tutorials), let's familiarize ourselves with the steps required to enable your tokens in CCIP. This process involves deploying tokens and token pools, registering administrative roles, and configuring token pools to ensure your tokens can be transferred using CCIP.
+
+<ClickToZoom
+  src="/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  alt="Process for enabling a token in CCIP"
+  style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+/>
+
+## Enabling a Token for CCIP
+
+### Step 1: Determine if the Token is Already Deployed
+
+The process begins by checking whether the token has already been deployed on the blockchains you intend to support with CCIP.
+
+- **If the token still needs to be deployed**, deploy an [ERC20-compatible](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) token that meets the following requirements:
+
+  - The administrator's address, which will manage the token in CCIP, must be derivable from the token contract. This can be achieved if the contract includes one of the following functions:
+
+    - `owner()`: Returns the token contract owner's address.
+    - `getCCIPAdmin()`: Returns the token administrator's address if it differs from the contract owner.
+
+  - For **Burn & Mint** [token handling mechanism](/ccip/architecture#token-pools):
+    - The token contract must include the following functions:
+      - `mint(address account, uint256 amount)`: Mints new tokens to the specified account.
+      - `burn(uint256 amount)` or `burn(address account, uint256 amount)`: Burns tokens from the specified account.
+      - `decimals()`: Returns the number of decimal places used by the token.
+  - For **Lock & Mint** [token handling mechanism](/ccip/architecture#token-pools):
+    - The token must include the following function on the source blockchain:
+      - `decimals()`: Returns the number of decimal places used by the token.
+
+- **If the token has already been deployed**, you can move on to the next step.
+
+### Step 2: Administrator Address Derivation
+
+Now, we need to verify if the administrator address can be derived directly from the token contract:
+
+- **If the administrator address can be derived**, the administrator can self-register.
+
+- **If the administrator address cannot be derived**, **contact Chainlink Labs**. The CCIP contract owner will manually register the administrator to proceed.
+
+### Step 3: Administrator Registration
+
+In this step, the administrator must formally register themselves as the token administrator. This step is crucial for managing token pools and other administrative operations within CCIP. There are two possible methods for registering the admin, depending on how the token contract is configured:
+
+1. **Using the `owner` method**:  
+   If the token contract uses the `owner()` function to expose the administrator’s address, the admin can register by calling the [`registerAdminViaOwner`](/ccip/api-reference/registry-module-owner-custom#registeradminviaowner) function on the [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract.
+
+2. **Using the `getCCIPAdmin` method**:  
+   If the token contract exposes a different function for the administrator address, such as `getCCIPAdmin()`, the administrator can register using the [`registerAdminViaGetCCIPAdmin`](/ccip/api-reference/registry-module-owner-custom#registeradminviagetccipadmin) function on the same [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract.
+
+### Step 4: Accept Admin Request
+
+After registering, the administrator must **accept the admin role** to finalize the process. This step confirms their administrative control over the token.
+
+- To complete this, the administrator calls the [`acceptAdminRole`](/ccip/api-reference/token-admin-registry#acceptadminrole) function on the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract.
+
+### Step 5: Deploy the Token Pool
+
+Once administrative access is confirmed, the administrator can deploy a **token pool**. Token pools are responsible for handling cross-chain operations, such as minting and burning in the case of a [Burn and Mint Token Pool](/ccip/api-reference/burn-mint-token-pool), or managing liquidity in the case of a [Lock and Release Token Pool](/ccip/api-reference/lock-release-token-pool) during cross-chain transfers in CCIP.
+
+### Step 6: Register the Token Pool
+
+After deploying the token pool, the administrator needs to register the pool for the specific token. This step links the token to its corresponding pool, allowing the pool to manage cross-chain transfers.
+
+- The administrator must call the [`setPool`](/ccip/api-reference/token-admin-registry#setpool) function on the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract. This registration ensures that the token pool is recognized within CCIP and can properly handle token liquidity during cross-chain transfers.
+
+### Step 7: Configure the Token Pool
+
+Once the token pool is registered, the administrator needs to configure it to handle cross-chain transfers efficiently. This involves setting parameters like token pool rate limits and enabling specific destination chains for the token.
+
+- The administrator must call the [`applyChainUpdates`](/ccip/api-reference/token-pool#applychainupdates) function on the token pool contract. This function allows you to configure the pool by specifying cross-chain transfer settings, such as the allowed chains and token pool rate limits.
 
 ## Tutorials
 
@@ -13,6 +92,5 @@ isIndex: true
   - [Foundry version](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry)
 
 - [Register from an EOA (Lock & Mint)](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat): Learn how to register a CCIP-enabled token with the **Lock & Mint** mechanism using an EOA.
-
   - [Hardhat version](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat)
   - [Foundry version](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-foundry)

@@ -1077,10 +1077,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
-          title: "Enabling a Token in CCIP",
-          url: "ccip/concepts/ccip-enabled-tokens",
-        },
-        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },
