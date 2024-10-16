@@ -416,7 +416,11 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       router,
       routerExplorerUrl,
       chainSelector: chains[chain].chainSelector,
-      nativeToken: chains,
+      nativeToken: {
+        name: chains[chain]?.nativeToken?.name || "",
+        symbol: chains[chain]?.nativeToken?.symbol || "",
+        logo: chains[chain]?.nativeToken?.logo || "",
+      },
       feeTokens: chains[chain].feeTokens,
       armProxy: chains[chain].armProxy,
     })
