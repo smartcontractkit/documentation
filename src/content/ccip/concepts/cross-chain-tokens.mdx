@@ -37,6 +37,26 @@ Cross Chain Token (CCT) solve these challenges by allowing token issuers to crea
 
 - **Smart Account**: A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs.
 
-- **ERC20-Compatible Token**: A token that adheres to the ERC20 standard, which defines the rules for token behavior on Ethereum and compatible blockchains. Cross Chain Tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed later in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
+**ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross Chain Tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed later in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
 
-- **Token Pool**: Each token is associated with its own token pool, which acts as an abstraction layer over ERC-20 tokens to facilitate operations like OnRamping and OffRamping. Token pools provide rate limiting, allowing token issuers to set a maximum rate for token transfers per lane. They are configured to `lock`, `burn`, `unlock`, or `mint` tokens between source and destination blockchains, supporting multiple transfer mechanisms. For more details, refer to [Token Pools in the CCIP architecture](/ccip/architecture#token-pools).
+- **Token Pool**: Each token is associated with its own token pool, which acts as an abstraction layer over ERC-20 tokens to facilitate operations like OnRamping and OffRamping. Token pools provide rate limiting, allowing token issuers to set a maximum rate for token transfers per lane. They are configured to `lock`, `burn`, `unlock`, or `mint` tokens between source and destination blockchains, supporting multiple transfer mechanisms. To lear more about token handling mechanism, refer to [Token Pools in the CCIP architecture](/ccip/architecture#token-pools).
+
+### Prerequisites for Enabling an ERC20-Compatible Token in CCIP
+
+Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
+
+- **Token Administrator Address Requirement**: The token administrator address, which will manage the token in CCIP, must be derivable from the token contract. This can be achieved if the token contract includes one of the following functions:
+
+  - `owner()`: This function returns the token contract owner's address.
+  - `getCCIPAdmin()`: This function returns the token administrator's address if it differs from the contract owner's.
+
+- ** Requirements for CCIP Token Transfers**: The token's smart contract must meet minimum requirements to integrate with CCIP.
+
+  - **Burn & Mint Requirements**:
+    - The token smart contract must have the following functions:
+      - `mint(address account, uint256 amount)`: This function is used to mint the `amount` of tokens to a given `account` on the destination blockchain.
+      - `burn(uint256 amount)`: This function is used to burn the `amount` of tokens on the source blockchain. - `decimals()`: Returns the token's number of decimals.
+    - On the source and destination blockchains, the token contract must support granting mint and burn permissions. The token issuers or another role (such as the token administrator) will grant these permissions to the token pool.
+  - **Lock & Mint Requirements**:
+    - The token smart contract must have the following function: - `decimals()`: Returns the token's number of decimals.
+    - On the destination blockchain, The token contract must support granting mint and burn permissions. The token issuers or another role (such as the token administrator) will grant these permissions to the token pool.
