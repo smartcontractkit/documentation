@@ -3,6 +3,7 @@ import "./Search.css"
 import { clsx } from "~/lib"
 import { useClickOutside } from "~/hooks/useClickOutside"
 import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip"
+import { directoryToSupportedChain, getExplorer } from "~/features/utils"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
 
@@ -56,7 +57,6 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             lane.destinationNetwork.name.toLowerCase().includes(search.toLowerCase())) &&
           (lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0) > 0
       )
-
       setNetworksResults(networks)
       setTokensResults(tokensList)
       setLanesResults(lanesList)
@@ -71,6 +71,10 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
 
   useClickOutside(searchRef, () => setOpenSearchMenu(false))
 
+  const generateExplorerUrl = (lane) => {
+    const directory = directoryToSupportedChain(lane.sourceNetwork.key)
+    return getExplorer(directory) || ""
+  }
   return (
     <>
       {openSearchMenu && <div className="ccip-hero__search-overlay"></div>}
@@ -155,7 +159,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                                 ...lane.destinationNetwork,
                               }}
                               inOutbound={LaneFilter.Outbound}
-                              explorerUrl={lane.sourceNetwork.explorerUrl}
+                              explorerUrl={generateExplorerUrl(lane)}
                             />
                           ))
                         }

@@ -71,7 +71,6 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                             network={network}
                             destinationLanes={destinationLanes}
                             environment={environment}
-                            explorerUrl={network.explorerUrl}
                           />
                         ))
                       }}

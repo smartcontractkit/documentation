@@ -21,7 +21,6 @@ function TokenDrawer({
   network,
   destinationLanes,
   environment,
-  explorerUrl,
 }: {
   token: {
     name: string
@@ -36,12 +35,12 @@ function TokenDrawer({
     tokenPoolAddress: string
     decimals: number
     key: string
+    explorerUrl: string
   }
   destinationLanes: {
     [sourceChain: string]: SupportedTokenConfig
   }
   environment: Environment
-  explorerUrl: string
 }) {
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
@@ -61,7 +60,7 @@ function TokenDrawer({
         network={{
           name: network.name,
           logo: network.logo,
-          explorerUrl,
+          explorerUrl: network.explorerUrl,
         }}
       />
       <div className="ccip-table__drawer-container">

@@ -19,6 +19,7 @@ interface ChainTokenGridProps {
     tokenPoolAddress: string
     decimals: number
     key: string
+    explorerUrl: string
   }
   environment: Environment
 }
@@ -52,6 +53,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                 tokenAddress: data[key].tokenAddress || "",
                 tokenPoolType: data[key].poolType || "",
                 tokenPoolAddress: data[key].poolAddress || "",
+                explorerUrl: network.explorerUrl,
               }
             })
             .find((n) => n.key === network.key)
