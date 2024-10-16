@@ -995,7 +995,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          url: "ccip/tutorials/transfer-tokens-from-contract",
         },
         {
           title: "Transfer Tokens with Data",
@@ -1006,23 +1006,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "CCIP-enabled Tokens",
-          url: "ccip/tutorials/ccip-enabled-tokens",
+          title: "Cross Chain Tokens (CCT)",
+          url: "ccip/tutorials/cross-chain-tokens",
           children: [
             {
               title: "Register from an EOA (Burn & Mint)",
-              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-hardhat",
-              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry"],
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
             },
             {
               title: "Register from an EOA (Lock & Mint)",
-              url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat",
-              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-foundry"],
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
             },
             {
               title: "Reconfigure Rate Limiter Settings",
-              url: "ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-hardhat",
-              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-foundry"],
+              url: "ccip/tutorials/cross-chain-tokens/reconfigure-rate-limiter-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/reconfigure-rate-limiter-foundry"],
             },
           ],
         },

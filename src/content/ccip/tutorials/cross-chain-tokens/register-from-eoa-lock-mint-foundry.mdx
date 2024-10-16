@@ -1,7 +1,7 @@
 ---
 section: ccip
 date: Last Modified
-title: "Enable your tokens in CCIP (Burn & Mint): Register from an EOA using Foundry"
+title: "Enable your tokens in CCIP (Lock & Mint): Register from an EOA using Foundry"
 ---
 
 import { Aside, PageTabs } from "@components"
@@ -12,23 +12,23 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 <PageTabs
   pages={[
     {
-      name: "Hardhat (Burn & Mint)",
-      url: "/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-hardhat",
+      name: "Hardhat (Lock & Mint)",
+      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
       width: "270px",
     },
     {
-      name: "Foundry (Burn & Mint)",
-      url: "/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry",
+      name: "Foundry (Lock & Mint)",
+      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
       width: "270px",
     },
   ]}
 />
 
-This tutorial will guide you through the process of enabling your own tokens in CCIP using [Foundry](https://book.getfoundry.sh/). You will learn how to deploy tokens and set up _Burn & Mint_ token pools. After that, you will register them in CCIP and configure them without needing direct intervention from Chainlink Labs. Finally, you will test the **Burn & Mint** token handling mechanism, where tokens are burned on the source blockchain and an equivalent amount is minted on the destination blockchain.
+This tutorial will guide you through the process of enabling your own tokens in CCIP using [Foundry](https://book.getfoundry.sh/). You will learn how to deploy tokens, set up a _Lock & Release_ token pool on the source blockchain, and a _Burn & Mint_ token pool on the destination blockchain. After that, you will register them in CCIP and configure them without needing direct intervention from Chainlink Labs. Finally, you will test the **Lock & Mint** token handling mechanism, where tokens are locked on the source blockchain and an equivalent amount is minted on the destination blockchain.
 
-<CcipCommon callout="registerFromEOAIntro" />
+<CcipCommon callout="registerLockMintFromEOAIntro" />
 
 ## Before You Begin
 
@@ -161,7 +161,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
 
-The script reads the [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
@@ -172,7 +172,7 @@ The script reads the [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/re
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0x551c05e1C44F5E8e3DDBE824BEEf30695F2915d5
+   Deployed BurnMintERC677 at: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
    Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Writing deployed token address to file: ./script/output/deployedToken_avalancheFuji.json
    ```
@@ -186,40 +186,40 @@ The script reads the [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/re
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0xC0352e6EB714F29B453d024E1Da1CC713924797F
+   Deployed BurnMintERC677 at: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
    Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Writing deployed token address to file: ./script/output/deployedToken_arbitrumSepolia.json
    ```
 
 ### Deploy Token Pools
 
-In this step, you will use the `DeployTokenPool.s.sol` script to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia and grant mint and burn roles to the token pools.
+In this step, you will use the `DeployLockReleaseTokenPool.s.sol` to deploy a lock and release token pool on Avalanche Fuji and the `DeployBurnMintTokenPool.s.sol` script to deploy a burn and mint token pool on Arbitrum Sepolia. The scripts also grant mint and burn roles to the token pools.
 
-1. Deploy a token pool for the deployed token on Avalanche Fuji:
+1. Deploy a lock and release token pool for the deployed token on Avalanche Fuji:
 
    ```bash
-   forge script script/DeployTokenPool.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast --verify
+   forge script script/DeployLockReleaseTokenPool.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast --verify
    ```
 
    Example output:
 
    ```bash
-   Burn & Mint token pool deployed to: 0x2dAF1364cD12299933ee8616736A7EC2d4448D77
-   Granted mint and burn roles to token pool: 0x2dAF1364cD12299933ee8616736A7EC2d4448D77
+   Lock & Release token pool deployed to: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
+   Granted mint and burn roles to token pool: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_avalancheFuji.json
    ```
 
-1. Deploy a token pool for the deployed token on Arbitrum Sepolia:
+1. Deploy a burn and mint token pool for the deployed token on Arbitrum Sepolia:
 
    ```bash
-   forge script script/DeployTokenPool.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify
+   forge script script/DeployBurnMintTokenPool.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify
    ```
 
    Example output:
 
    ```bash
-   Burn & Mint token pool deployed to: 0xC8dDDcd8595703bb717B266294e1d91Ffb0B5683
-   Granted mint and burn roles to token pool: 0xC8dDDcd8595703bb717B266294e1d91Ffb0B5683
+   Burn & Mint token pool deployed to: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
+   Granted mint and burn roles to token pool: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_arbitrumSepolia.json
    ```
 
@@ -227,7 +227,7 @@ In this step, you will use the `DeployTokenPool.s.sol` script to deploy token po
 
 In this step, you will use the `ClaimAdmin.s.sol` script to register your EOA as the administrator for the deployed tokens on both Avalanche Fuji and Arbitrum Sepolia testnets. This process involves interacting with the `RegistryModuleOwnerCustom` contract to set up your EOA as the admin.
 
-The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
+The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
 
 1. Claim the Admin role for the token on Avalanche Fuji:
 
@@ -240,7 +240,7 @@ The script will claim the admin role using using `getCCIPAdmin()` function if th
    ```bash
    Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0x551c05e1C44F5E8e3DDBE824BEEf30695F2915d5
+   Admin claimed successfully for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
    ```
 
 1. Claim the Admin role for the token on Arbitrum Sepolia:
@@ -254,7 +254,7 @@ The script will claim the admin role using using `getCCIPAdmin()` function if th
    ```bash
    Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0xC0352e6EB714F29B453d024E1Da1CC713924797F
+   Admin claimed successfully for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
    ```
 
 ### Accept Admin Role
@@ -270,7 +270,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0x551c05e1C44F5E8e3DDBE824BEEf30695F2915d5
+   Accepted admin role for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
    ```
 
 1. Accept the admin role for the token on Arbitrum Sepolia:
@@ -282,7 +282,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0xC0352e6EB714F29B453d024E1Da1CC713924797F
+   Accepted admin role for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
    ```
 
 ### Set Token Pool
@@ -298,10 +298,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0x551c05e1C44F5E8e3DDBE824BEEf30695F2915d5
-   New pool address: 0x2dAF1364cD12299933ee8616736A7EC2d4448D77
+   Setting pool for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
+   New pool address: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
    Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0x551c05e1C44F5E8e3DDBE824BEEf30695F2915d5 to 0x2dAF1364cD12299933ee8616736A7EC2d4448D77
+   Pool set for token 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA to 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
    ```
 
 1. Link the token to its respective token pool on Arbitrum Sepolia:
@@ -313,10 +313,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0xC0352e6EB714F29B453d024E1Da1CC713924797F
-   New pool address: 0xC8dDDcd8595703bb717B266294e1d91Ffb0B5683
+   Setting pool for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
+   New pool address: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
    Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0xC0352e6EB714F29B453d024E1Da1CC713924797F to 0xC8dDDcd8595703bb717B266294e1d91Ffb0B5683
+   Pool set for token 0x410399aa04B05Acbda2bFc3462C3192BE21163aB to 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
    ```
 
 ### Configure Token Pools
@@ -352,7 +352,7 @@ In this step, you will use the `ConfigurePool.s.sol` script to configure the tok
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0x2dAF1364cD12299933ee8616736A7EC2d4448D77
+   Chain update applied to pool at address: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
    ```
 
 1. Configure the token pool on Arbitrum Sepolia:
@@ -364,14 +364,14 @@ In this step, you will use the `ConfigurePool.s.sol` script to configure the tok
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0xC8dDDcd8595703bb717B266294e1d91Ffb0B5683
+   Chain update applied to pool at address: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
    ```
 
 ### Mint Tokens
 
 In this step, you will use the `MintTokens.s.sol` script to mint tokens to your Externally Owned Account (EOA) on Avalanche Fuji. Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
 
-The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
+The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
 
 Mint tokens for your EOA on Avalanche Fuji:
 
@@ -392,7 +392,7 @@ Current balance of receiver is 1000000000000000000000 BnMkh
 
 In this step, you will use the `TransferTokens.s.sol` script to transfer tokens from Avalanche Fuji to Arbitrum Sepolia using CCIP. You can choose to pay CCIP fees using LINK tokens or the native gas token.
 
-The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
+The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
 
 Transfer tokens from Avalanche Fuji to Arbitrum Sepolia:
 
@@ -403,10 +403,14 @@ forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $
 Example output:
 
 ```bash
-Estimated fees: 35888032945101983
+Estimated fees: 33657800113984549
 Message ID:
-0x18c201689bc0cdc4f19c50af3d693f7ba8fe54b734dc9b322f4f710fc9a038a7
-Check status of the message at https://ccip.chain.link/msg/18c201689bc0cdc4f19c50af3d693f7ba8fe54b734dc9b322f4f710fc9a038a7
+0x4dcd89820bf3b470fc9cab880292a83e8e5b7dec423dd2cf7bf904f7323a37db
+Check status of the message at https://ccip.chain.link/msg/4dcd89820bf3b470fc9cab880292a83e8e5b7dec423dd2cf7bf904f7323a37db
 ```
 
 You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link/) using the message ID provided in the output.
+
+Your tokens have been locked on the token pool on Avalanche Fuji, the corresponding tokens have been minted on Arbitrum Sepolia and sent to your receiver address.
+
+Note: Since your Lock & Release token pool on Avalanche Fuji has locked some tokens, you can transfer tokens from Arbitrum Sepolia to Avalanche Fuji using CCIP as an exercise. Your tokens will be burned on Arbitrum Sepolia, and the corresponding tokens will be released on Avalanche Fuji. Make sure not to transfer more tokens than the amount of tokens locked in the token pool on Avalanche Fuji.
