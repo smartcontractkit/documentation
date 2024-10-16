@@ -1019,6 +1019,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat",
               highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-foundry"],
             },
+            {
+              title: "Reconfigure Rate Limiter Settings",
+              url: "ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-foundry"],
+            },
           ],
         },
         {

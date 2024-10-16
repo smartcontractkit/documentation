@@ -1,0 +1,250 @@
+---
+section: ccip
+date: Last Modified
+title: "Reconfigure rate limiter settings for outbound and inbound transfers using Hardhat"
+---
+
+import { Aside, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="selfServeCallout" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Hardhat",
+      url: "/ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+      width: "270px",
+    },
+    {
+      name: "Foundry",
+      url: "/ccip/tutorials/ccip-enabled-tokens/reconfigure-rate-limiter-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+      width: "270px",
+    },
+  ]}
+/>
+
+This tutorial will guide you through the process of reconfiguring the rate limiter settings for outbound and inbound transfers in your deployed token pools using [Hardhat](https://hardhat.org/). You will first review existing rate limiter settings and then reconfigure them.
+
+## Prerequisites
+
+- **Tokens and pools deployed**: Ensure that you have tokens and token pools already deployed on both networks you plan to use. If not, refer to one of the following tutorials:
+
+  - [Register from an EOA (Burn & Mint)](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-burn-mint-hardhat)
+  - [Register from an EOA (Lock & Mint)](/ccip/tutorials/ccip-enabled-tokens/register-from-eoa-lock-mint-hardhat)
+
+- **Admin access**: You must have admin privileges for the token pool you intend to reconfigure.
+
+## Before You Begin
+
+1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
+    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+
+    ```bash
+    nvm use 18
+    ```
+
+    Verify that the correct version of Node.js is installed:
+
+    ```bash
+    node -v
+    ```
+
+    Example output:
+
+    ```bash
+    $ node -v
+    v18.7.0
+    ```
+
+1.  **Clone the repository and navigate to the project directory:**
+
+    ```bash
+    git clone https://github.com/smartcontractkit/ccip-self-serve-tokens-poc.git
+    cd ccip-self-serve-tokens-poc
+    ```
+
+1.  **Install dependencies for the project:**
+
+    ```bash
+    npm install
+    ```
+
+1.  **Compile the project:**
+
+    ```bash
+    npm run compile
+    ```
+
+1.  **Encrypt your environment variables for higher security:**  
+    The project uses [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc) to encrypt your environment variables at rest. Follow the steps below to configure your environment securely:
+
+    1. Set an encryption password for your environment variables:
+
+       ```bash
+       npx env-enc set-pw
+       ```
+
+    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Arbitrum Sepolia testnets. Use the following command to add the variables:
+
+       ```bash
+       npx env-enc set
+       ```
+
+       Variables to configure:
+
+       - `AVALANCHE_FUJI_RPC_URL`: A URL for the _Avalanche Fuji_ testnet. You can get a personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is required for signing transactions like token transfers.
+
+1.  **Fund your EOA with native gas tokens**:  
+    Make sure your EOA has enough native gas tokens on Avalanche Fuji to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+
+## Tutorial
+
+<Aside type="note" title="Explore the Code">
+  All Hardhat tasks used in this tutorial are located in the `tasks/` directory of the repository. Each task is
+  thoroughly commented and directly linked to a key step in the tutorial, making the code self-explanatory. Read the
+  code and comments to gain a deeper understanding of the process or explore the implementation details.
+</Aside>
+
+### Review current rate limiter settings
+
+Use the `getPoolConfig` task to fetch the current settings:
+
+```bash
+npx hardhat getPoolConfig --pooladdress <POOL_ADDRESS> --network <NETWORK_NAME>
+```
+
+Replace `<POOL_ADDRESS>` with your token pool address and `<NETWORK_NAME>` with the network (e.g., `avalancheFuji`).
+
+Example:
+
+```bash
+npx hardhat getPoolConfig --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --network avalancheFuji
+```
+
+Expected output:
+
+```bash
+info: Fetching configuration for pool at address: 0x02552EAE370aeb997015dA41398F0a53F693d77E
+info: Configuration for Remote Chain: arbitrumSepolia
+info:   Allowed: true
+info:   Remote Pool Address: 0x41833AE7B0BCa169E090C752021070aC947d1821
+info:   Remote Token Address: 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
+info:   Outbound Rate Limiter:
+info:     Enabled: false
+info:     Capacity: 0
+info:     Rate: 0
+info:   Inbound Rate Limiter:
+info:     Enabled: false
+info:     Capacity: 0
+info:     Rate: 0
+```
+
+In this example, the rate limiter settings are currently disabled for both outbound and inbound transfers.
+
+### Reconfigure rate limiter settings
+
+Use the `updateRateLimiters` task to modify the rate limiter configurations for an existing chain connection in your token pool. This task specifically interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
+
+The `updateRateLimiters` task enables you to:
+
+- Enable or disable rate limiting for both outbound and inbound transfers.
+- Set the capacity and rate for the rate limiters, controlling the flow of tokens.
+- Target a specific remote chain, updating rate limits for that chain only.
+
+Below is an explanation of the parameters used during the rate limiter update process:
+
+| Parameter                   | Description                                                                                                                                            | Default | Required |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
+| `pooladdress`               | The address of the token pool being configured.                                                                                                        | N/A     | Yes      |
+| `remotechain`               | The remote blockchain to which this pool is linked. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.                 | N/A     | Yes      |
+| `outboundratelimitenabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers (`true` or `false`).                                                | `false` | No       |
+| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note**: Applicable if outbound rate limits are enabled.          | `0`     | No       |
+| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note**: Applicable if outbound rate limits are enabled. | `0`     | No       |
+| `inboundratelimitenabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers (`true` or `false`).                                                 | `false` | No       |
+| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note**: Applicable if inbound rate limits are enabled.            | `0`     | No       |
+| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note**: Applicable if inbound rate limits are enabled.   | `0`     | No       |
+| `network`                   | The blockchain network where the local token pool is deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.      | N/A     | Yes      |
+
+**Command syntax**:
+
+```bash
+npx hardhat updateRateLimiters \
+  --pooladdress <POOL_ADDRESS> \
+  --remotechain <REMOTE_CHAIN> \
+  --outboundratelimitenabled <true/false> \
+  --outboundratelimitcapacity <OUTBOUND_CAPACITY> \
+  --outboundratelimitrate <OUTBOUND_RATE> \
+  --inboundratelimitenabled <true/false> \
+  --inboundratelimitcapacity <INBOUND_CAPACITY> \
+  --inboundratelimitrate <INBOUND_RATE> \
+  --network <NETWORK_NAME>
+```
+
+**Example command**:
+
+Suppose you want to configure your token pool on Avalanche Fuji to interact with Arbitrum Sepolia, enabling rate limits as follows:
+
+- Outbound Rate Limiter:
+  - Enabled: `true`
+  - Capacity: `1000000000000000000000` (1,000 tokens in wei)
+  - Rate: `10000000000000000000` (10 tokens per second in wei)
+- Inbound Rate Limiter:
+  - Enabled: true
+  - Capacity: `2000000000000000000000` (2,000 tokens in wei)
+  - Rate: `20000000000000000000` (20 tokens per second in wei)
+
+Use the following command:
+
+```bash
+npx hardhat updateRateLimiters \
+  --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E \
+  --remotechain arbitrumSepolia \
+  --outboundratelimitenabled true \
+  --outboundratelimitcapacity 1000000000000000000000 \
+  --outboundratelimitrate 10000000000000000000 \
+  --inboundratelimitenabled true \
+  --inboundratelimitcapacity 2000000000000000000000 \
+  --inboundratelimitrate 20000000000000000000 \
+  --network avalancheFuji
+```
+
+Expected output:
+
+```bash
+info: Updating rate limiters for token pool: 0x02552EAE370aeb997015dA41398F0a53F693d77E and chain selector: 3478487238524512106 (arbitrumSepolia)
+info: Rate limiters updated successfully
+```
+
+### Verify the new rate limiter settings
+
+After applying the new rate limiter settings, verify that they have been updated correctly.
+
+Use the `getPoolConfig` task again:
+
+```bash
+npx hardhat getPoolConfig --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --network avalancheFuji
+```
+
+Expected output:
+
+```bash
+info: Fetching configuration for pool at address: 0x02552EAE370aeb997015dA41398F0a53F693d77E
+info: Configuration for Remote Chain: arbitrumSepolia
+info:   Allowed: true
+info:   Remote Pool Address: 0x41833AE7B0BCa169E090C752021070aC947d1821
+info:   Remote Token Address: 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
+info:   Outbound Rate Limiter:
+info:     Enabled: true
+info:     Capacity: 1000000000000000000000
+info:     Rate: 10000000000000000000
+info:   Inbound Rate Limiter:
+info:     Enabled: true
+info:     Capacity: 2000000000000000000000
+info:     Rate: 20000000000000000000
+```
+
+You have successfully reconfigured the rate limiter settings for outbound and inbound transfers in your token pools.
