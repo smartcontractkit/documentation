@@ -98,7 +98,7 @@ function LaneDrawer({
                           </div>
                         </a>
                       </td>
-                      <td>
+                      <td data-clipboard-type="token">
                         <Address
                           address={data[sourceNetwork.key].tokenAddress}
                           endLength={6}

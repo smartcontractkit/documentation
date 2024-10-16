@@ -97,7 +97,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                     {network.name}
                   </div>
                 </td>
-                <td>
+                <td data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}>
                   <Address
                     address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                     endLength={4}

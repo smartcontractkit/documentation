@@ -86,7 +86,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                   <td>{network.token}</td>
                   <td>{network.symbol}</td>
                   <td>{network.decimals}</td>
-                  <td>
+                  <td data-clipboard-type="token">
                     <Address
                       contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
                       address={network.tokenAddress}
@@ -94,7 +94,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                     />
                   </td>
                   <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-                  <td>
+                  <td data-clipboard-type="token-pool">
                     <Address
                       contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
                       address={network.tokenPoolAddress}

@@ -51,7 +51,7 @@ function LaneDetailsHero({
         {inOutbound === LaneFilter.Inbound ? (
           <>
             <div className="lane-details-hero__details__label">OffRamp address</div>
-            <div>
+            <div data-clipboard-type="offramp">
               <AddressComponent
                 address={offRamp}
                 endLength={6}
@@ -62,7 +62,7 @@ function LaneDetailsHero({
         ) : (
           <>
             <div className="lane-details-hero__details__label">OnRamp address</div>
-            <div>
+            <div data-clipboard-type="onramp">
               <AddressComponent
                 address={onRamp}
                 endLength={6}

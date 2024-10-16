@@ -140,7 +140,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           <div className="ccip-chain-hero__details">
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Router</div>
-              <div className="ccip-chain-hero__details__value">
+              <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
                 <Address endLength={4} contractUrl={network.routerExplorerUrl} />
               </div>
             </div>
@@ -152,7 +152,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">RMN</div>
-              <div className="ccip-chain-hero__details__value">
+              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
                 {network.armProxy ? (
                   <Address
                     endLength={4}
@@ -165,7 +165,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Token admin registry</div>
-              <div className="ccip-chain-hero__details__value">
+              <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
                 {network.tokenAdminRegistry ? (
                   <Address
                     endLength={4}
@@ -178,7 +178,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Registry module owner</div>
-              <div className="ccip-chain-hero__details__value">
+              <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
                 {network.registryModule ? (
                   <Address
                     endLength={4}
@@ -198,7 +198,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             <div className="ccip-chain-hero__feeTokens__list">
               {feeTokensWithAddress.map(({ token, address, logo }, index) => {
                 return (
-                  <div key={index} className="ccip-chain-hero__feeTokens__item">
+                  <div key={index} className="ccip-chain-hero__feeTokens__item" data-clipboard-type="fee-token">
                     <img
                       src={logo}
                       alt={token}

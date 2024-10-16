@@ -45,7 +45,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token address</div>
-            <div className="ccip-chain-hero__details__value">
+            <div className="ccip-chain-hero__details__value" data-clipboard-type="token">
               <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.address)} />
             </div>
           </div>
@@ -57,7 +57,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>
-            <div className="ccip-chain-hero__details__value">
+            <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool">
               <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.poolAddress)} />
             </div>
           </div>
