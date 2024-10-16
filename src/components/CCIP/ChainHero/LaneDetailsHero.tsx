@@ -3,6 +3,7 @@ import AddressComponent from "~/components/AddressReact"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils"
 import CopyValue from "../CopyValue/CopyValue"
+import { LaneFilter } from "~/config/data/ccip"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -14,18 +15,22 @@ interface LaneDetailsHeroProps {
     name: string
   }
   onRamp: string
+  offRamp: string
   destinationAddress: string
   explorerUrl: string
   rmnPermeable: boolean
+  inOutbound: LaneFilter
 }
 
 function LaneDetailsHero({
   sourceNetwork,
   destinationNetwork,
   onRamp,
+  offRamp,
   destinationAddress,
   explorerUrl,
   rmnPermeable,
+  inOutbound,
 }: LaneDetailsHeroProps) {
   return (
     <div className="lane-details-hero">
@@ -43,10 +48,29 @@ function LaneDetailsHero({
         </div>
       </div>
       <div className="lane-details-hero__details">
-        <div className="lane-details-hero__details__label">OnRamp address</div>
-        <div>
-          <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorerUrl)(onRamp)} />
-        </div>
+        {inOutbound === LaneFilter.Inbound ? (
+          <>
+            <div className="lane-details-hero__details__label">OffRamp address</div>
+            <div>
+              <AddressComponent
+                address={offRamp}
+                endLength={6}
+                contractUrl={getExplorerAddressUrl(explorerUrl)(offRamp)}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="lane-details-hero__details__label">OnRamp address</div>
+            <div>
+              <AddressComponent
+                address={onRamp}
+                endLength={6}
+                contractUrl={getExplorerAddressUrl(explorerUrl)(onRamp)}
+              />
+            </div>
+          </>
+        )}
         <div className="lane-details-hero__details__label">Destination network selector</div>
         <div>{destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"} </div>
         <div className="lane-details-hero__details__label">RMN</div>

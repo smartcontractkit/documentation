@@ -122,6 +122,11 @@ export enum Environment {
   Testnet = "testnet",
 }
 
+export enum LaneFilter {
+  Inbound = "inbound",
+  Outbound = "outbound",
+}
+
 export enum Version {
   V1_2_0 = "1.2.0",
 }

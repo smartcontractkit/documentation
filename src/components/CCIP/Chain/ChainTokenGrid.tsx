@@ -41,7 +41,6 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
               const directory = directoryToSupportedChain(key || "")
               const title = getTitle(directory) || ""
               const networkLogo = getChainIcon(directory) || ""
-              const explorerUrl = getExplorer(directory)
               return {
                 name: title,
                 token: data[key].name || "",
@@ -53,7 +52,6 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                 tokenAddress: data[key].tokenAddress || "",
                 tokenPoolType: data[key].poolType || "",
                 tokenPoolAddress: data[key].poolAddress || "",
-                explorerUrl: explorerUrl || "",
               }
             })
             .find((n) => n.key === network.key)

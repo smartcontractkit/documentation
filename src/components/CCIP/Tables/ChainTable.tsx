@@ -7,7 +7,7 @@ import { getExplorer, getExplorerAddressUrl } from "~/features/utils"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
 import { Environment, Version } from "~/config/data/ccip/types"
-import { getLane } from "~/config/data/ccip"
+import { getLane, LaneFilter } from "~/config/data/ccip"
 import { SupportedChain } from "~/config"
 
 interface TableProps {
@@ -28,11 +28,6 @@ interface TableProps {
     directory: SupportedChain
   }[]
   explorerUrl: string
-}
-
-export enum LaneFilter {
-  Inbound = "inbound",
-  Outbound = "outbound",
 }
 
 function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TableProps) {
@@ -82,7 +77,6 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                         version: Version.V1_2_0,
                       })
 
-                      const explorerUrl = getExplorer(network.directory)
                       drawerContentStore.set(() => (
                         <LaneDrawer
                           environment={environment}
@@ -91,9 +85,10 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                           destinationNetwork={{
                             name: network?.name || "",
                             logo: network?.logo || "",
-                            explorerUrl: explorerUrl || "",
                             key: network.key,
                           }}
+                          inOutbound={inOutbound}
+                          explorerUrl={explorerUrl}
                         />
                       ))
                     }}

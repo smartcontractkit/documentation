@@ -1,19 +1,27 @@
 import "../Tables/Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero"
-import { Environment, getLane, getNetwork, representMoney, SupportedTokenConfig, Version } from "~/config/data/ccip"
+import {
+  Environment,
+  getLane,
+  getNetwork,
+  representMoney,
+  SupportedTokenConfig,
+  Version,
+  LaneFilter,
+} from "~/config/data/ccip"
 import { useState } from "react"
 import { SupportedChain } from "~/config"
 import LaneDrawer from "../Drawer/LaneDrawer"
 import TableSearchInput from "../Tables/TableSearchInput"
 import Tabs from "../Tables/Tabs"
-import { LaneFilter } from "../Tables/ChainTable"
 
 function TokenDrawer({
   token,
   network,
   destinationLanes,
   environment,
+  explorerUrl,
 }: {
   token: {
     name: string
@@ -33,8 +41,8 @@ function TokenDrawer({
     [sourceChain: string]: SupportedTokenConfig
   }
   environment: Environment
+  explorerUrl: string
 }) {
-  console.log({ "Network drawer": network })
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   return (
@@ -53,6 +61,7 @@ function TokenDrawer({
         network={{
           name: network.name,
           logo: network.logo,
+          explorerUrl,
         }}
       />
       <div className="ccip-table__drawer-container">
@@ -116,9 +125,10 @@ function TokenDrawer({
                               destinationNetwork={{
                                 name: networkDetails?.name || "",
                                 logo: networkDetails?.logo || "",
-                                explorerUrl: networkDetails?.explorerUrl || "",
                                 key: lane,
                               }}
+                              inOutbound={inOutbound}
+                              explorerUrl={network.explorerUrl}
                             />
                           ))
                         }}
@@ -129,14 +139,19 @@ function TokenDrawer({
                     </td>
                     <td>
                       {representMoney(
-                        destinationLanes[lane].rateLimiterConfig[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                          .capacity
+                        String(
+                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
+                            ?.capacity || 0
+                        )
                       )}{" "}
                       {token.name}
                     </td>
                     <td>
                       {representMoney(
-                        destinationLanes[lane].rateLimiterConfig[inOutbound === LaneFilter.Inbound ? "in" : "out"].rate
+                        String(
+                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
+                            ?.rate || 0
+                        )
                       )}{" "}
                       {token.name}
                       /second

@@ -1,12 +1,14 @@
 import Address from "~/components/AddressReact"
+import { getExplorerAddressUrl } from "~/features/utils"
 import "./ChainHero.css"
 
 interface TokenDetailsHeroProps {
-  network?: {
+  network: {
     name: string
     logo: string
+    explorerUrl: string
   }
-  token?: {
+  token: {
     name: string
     symbol: string
     logo: string
@@ -44,7 +46,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token address</div>
             <div className="ccip-chain-hero__details__value">
-              <Address endLength={4} contractUrl={`https://etherscan.io/address/${token?.address}`} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.address)} />
             </div>
           </div>
           <div className="ccip-chain-hero__details__item">
@@ -56,7 +58,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>
             <div className="ccip-chain-hero__details__value">
-              <Address endLength={4} contractUrl={`https://etherscan.io/address/${token?.poolAddress}`} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.poolAddress)} />
             </div>
           </div>
         </div>

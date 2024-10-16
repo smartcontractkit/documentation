@@ -54,6 +54,10 @@ interface ChainHeroProps {
       symbol: string
       logo: string
     }
+    armProxy: {
+      address: string
+      version: string
+    }
   }
   token?: {
     name: string
@@ -111,7 +115,16 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">RMN</div>
-              <div className="ccip-chain-hero__details__value">n/a</div>
+              <div className="ccip-chain-hero__details__value">
+                {network.armProxy ? (
+                  <Address
+                    endLength={4}
+                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.armProxy.address)}
+                  />
+                ) : (
+                  "n/a"
+                )}
+              </div>
             </div>
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Token admin registry</div>
@@ -153,7 +166,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   version: Version.V1_2_0,
                   tokenSymbol: feeToken,
                 })
-                console.log("feeToken", token)
                 const explorerUrl = network.routerExplorerUrl
                 const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
                 return (

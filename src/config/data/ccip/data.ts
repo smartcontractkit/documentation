@@ -268,7 +268,6 @@ export const getBnMParams = ({ supportedChain, version }: { supportedChain: Supp
     symbol,
     decimals,
   } = token as { tokenAddress: string; symbol: string; decimals: number }
-  console.log({ address, symbol, decimals })
   if (!address || !symbol || !decimals) {
     console.error(`Token data not correct for BnM token on ${supportedChain}`)
     return undefined
@@ -381,6 +380,10 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       symbol: string
       logo: string
     }
+    armProxy: {
+      address: string
+      version: string
+    }
     routerExplorerUrl: string
   }[] = []
 
@@ -415,6 +418,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       chainSelector: chains[chain].chainSelector,
       nativeToken: chains,
       feeTokens: chains[chain].feeTokens,
+      armProxy: chains[chain].armProxy,
     })
   }
 

@@ -1,6 +1,14 @@
 import Address from "~/components/AddressReact"
 import "../Tables/Table.css"
-import { Environment, getNetwork, getTokenData, LaneConfig, representMoney, Version } from "~/config/data/ccip"
+import {
+  Environment,
+  getNetwork,
+  getTokenData,
+  LaneConfig,
+  LaneFilter,
+  representMoney,
+  Version,
+} from "~/config/data/ccip"
 
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
@@ -12,11 +20,15 @@ function LaneDrawer({
   sourceNetwork,
   destinationNetwork,
   environment,
+  inOutbound,
+  explorerUrl,
 }: {
   lane: LaneConfig
   sourceNetwork: { name: string; logo: string; key: string }
-  destinationNetwork: { name: string; logo: string; key: string; explorerUrl: string }
+  destinationNetwork: { name: string; logo: string; key: string }
+  explorerUrl: string
   environment: Environment
+  inOutbound: LaneFilter
 }) {
   const [search, setSearch] = useState("")
   const destinationNetworkDetails = getNetwork({
@@ -37,9 +49,11 @@ function LaneDrawer({
           name: destinationNetwork.name,
         }}
         onRamp={lane.onRamp.address}
-        explorerUrl={destinationNetworkDetails?.explorerUrl || ""}
+        offRamp={lane.offRamp.address}
+        explorerUrl={explorerUrl || ""}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         rmnPermeable={lane.rmnPermeable}
+        inOutbound={inOutbound}
       />
 
       <div className="ccip-table__drawer-container">
@@ -74,7 +88,6 @@ function LaneDrawer({
                   })
                   if (!Object.keys(data).length) return null
                   const logo = getTokenIconUrl(token)
-
                   return (
                     <tr key={index}>
                       <td>
@@ -89,9 +102,7 @@ function LaneDrawer({
                         <Address
                           address={data[sourceNetwork.key].tokenAddress}
                           endLength={6}
-                          contractUrl={getExplorerAddressUrl(destinationNetwork.explorerUrl)(
-                            data[sourceNetwork.key].tokenAddress
-                          )}
+                          contractUrl={getExplorerAddressUrl(explorerUrl)(data[sourceNetwork.key].tokenAddress)}
                         />
                       </td>
                       <td>{data[sourceNetwork.key].decimals}</td>
@@ -99,13 +110,25 @@ function LaneDrawer({
                       <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
                       <td>
                         {lane.supportedTokens &&
-                          representMoney(String(lane.supportedTokens[token]?.rateLimiterConfig?.capacity || 0))}{" "}
+                          representMoney(
+                            String(
+                              lane.supportedTokens[token]?.rateLimiterConfig?.[
+                                inOutbound === LaneFilter.Inbound ? "in" : "out"
+                              ]?.capacity || 0
+                            )
+                          )}{" "}
                         {token}
                         /second
                       </td>
                       <td>
                         {lane.supportedTokens &&
-                          representMoney(String(lane.supportedTokens[token]?.rateLimiterConfig?.rate || 0))}{" "}
+                          representMoney(
+                            String(
+                              lane.supportedTokens[token]?.rateLimiterConfig?.[
+                                inOutbound === LaneFilter.Inbound ? "in" : "out"
+                              ]?.rate || 0
+                            )
+                          )}{" "}
                         {token}
                         /second
                       </td>

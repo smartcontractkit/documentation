@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import "./Search.css"
 import { clsx } from "~/lib"
 import { useClickOutside } from "~/hooks/useClickOutside"
-import { Environment, LaneConfig } from "~/config/data/ccip"
+import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
 
@@ -153,8 +153,9 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                               sourceNetwork={lane.sourceNetwork}
                               destinationNetwork={{
                                 ...lane.destinationNetwork,
-                                explorerUrl: lane.destinationNetwork.explorerUrl,
                               }}
+                              inOutbound={LaneFilter.Outbound}
+                              explorerUrl={lane.sourceNetwork.explorerUrl}
                             />
                           ))
                         }
