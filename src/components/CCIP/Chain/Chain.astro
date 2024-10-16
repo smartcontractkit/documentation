@@ -5,7 +5,6 @@ import {
   Environment,
   getAllNetworkLanes,
   getAllNetworks,
-  getAllSupportedTokens,
   getSearchLanes,
   getTokensOfChain,
   Version,
@@ -35,10 +34,11 @@ const allTokens = getTokensOfChain({
   }
 })
 
-const lanes = getAllNetworkLanes({
+const lanes = await getAllNetworkLanes({
   environment: environment,
   version: Version.V1_2_0,
   chain: network?.chain || "",
+  site: Astro.site?.origin || "",
 })
 
 const searchLanes = getSearchLanes({ environment })

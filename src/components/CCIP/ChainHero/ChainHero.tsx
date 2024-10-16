@@ -225,7 +225,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                     className="ccip-chain-hero__feeTokens__item__logo"
                   />
                   <div>{nativeCurrency.name}</div>
-                  <td>Native gas token</td>
+                  <span>Native gas token</span>
                 </div>
               )}
             </div>

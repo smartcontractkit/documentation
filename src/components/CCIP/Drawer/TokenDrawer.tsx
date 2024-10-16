@@ -128,7 +128,7 @@ function TokenDrawer({
                                 key: lane,
                               }}
                               inOutbound={inOutbound}
-                              explorerUrl={network.explorerUrl}
+                              explorerUrl={explorerUrl}
                             />
                           ))
                         }}
