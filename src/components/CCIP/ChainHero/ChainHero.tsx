@@ -4,7 +4,13 @@ import Breadcrumb from "../Breadcrumb/Breadcrumb"
 import Search from "../Search/Search"
 import "./ChainHero.css"
 import CopyValue from "../CopyValue/CopyValue"
-import { getExplorerAddressUrl, getTokenIconUrl } from "~/features/utils"
+import {
+  getExplorerAddressUrl,
+  getTokenIconUrl,
+  getNativeCurrency,
+  directoryToSupportedChain,
+  fallbackTokenIconUrl,
+} from "~/features/utils"
 
 interface ChainHeroProps {
   chains: {
@@ -68,6 +74,37 @@ interface ChainHeroProps {
 }
 
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
+  const feeTokensWithAddress = network?.feeTokens?.map((feeToken) => {
+    const logo = getTokenIconUrl(feeToken)
+    const token = getTokenData({
+      environment,
+      version: Version.V1_2_0,
+      tokenSymbol: feeToken,
+    })
+    const explorerUrl = network.routerExplorerUrl
+    const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
+
+    return {
+      logo,
+      token: feeToken,
+      address,
+    }
+  })
+
+  const nativeCurrency = ((network) => {
+    if (!network) return
+    const supportedNetwork = directoryToSupportedChain(network.chain)
+    return getNativeCurrency(supportedNetwork)
+  })(network)
+
+  const nativeTokenHasAddress = () => {
+    if (!network) return
+    // We making sure the Navive Currency is not already part of the FeeToken
+    return feeTokensWithAddress?.some((feeToken) => {
+      return feeToken.token.toLowerCase() === nativeCurrency?.symbol.toLowerCase()
+    })
+  }
+
   return (
     <section className="ccip-chain-hero">
       <img src="/assets/ccip.png" alt="" className="ccip-chain-hero__grid" />
@@ -155,27 +192,42 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           </div>
         )}
 
-        {network && network.feeTokens && (
+        {feeTokensWithAddress && (
           <div className="ccip-chain-hero__feeTokens">
             <div className="ccip-chain-hero__details__label">Fee tokens</div>
             <div className="ccip-chain-hero__feeTokens__list">
-              {network?.feeTokens.map((feeToken, index) => {
-                const logo = getTokenIconUrl(feeToken)
-                const token = getTokenData({
-                  environment,
-                  version: Version.V1_2_0,
-                  tokenSymbol: feeToken,
-                })
-                const explorerUrl = network.routerExplorerUrl
-                const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
+              {feeTokensWithAddress.map(({ token, address, logo }, index) => {
                 return (
                   <div key={index} className="ccip-chain-hero__feeTokens__item">
-                    <img src={logo} alt={feeToken} className="ccip-chain-hero__feeTokens__item__logo" />
-                    <div>{feeToken}</div>
+                    <img
+                      src={logo}
+                      alt={token}
+                      className="ccip-chain-hero__feeTokens__item__logo"
+                      onError={() => {
+                        this.onerror = null
+                        this.src = fallbackTokenIconUrl
+                      }}
+                    />
+                    <div>{token}</div>
                     <Address endLength={4} contractUrl={address} />
                   </div>
                 )
               })}
+              {!nativeTokenHasAddress() && nativeCurrency && (
+                <div key={"native-token"} className="ccip-chain-hero__feeTokens__item">
+                  <img
+                    src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                    alt={`${nativeCurrency.symbol} icon`}
+                    onError={() => {
+                      this.onerror = null
+                      this.src = fallbackTokenIconUrl
+                    }}
+                    className="ccip-chain-hero__feeTokens__item__logo"
+                  />
+                  <div>{nativeCurrency.name}</div>
+                  <td>Native gas token</td>
+                </div>
+              )}
             </div>
           </div>
         )}
