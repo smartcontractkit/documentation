@@ -4,6 +4,8 @@ date: Last Modified
 title: "Cross Chain Tokens (CCT)"
 ---
 
+import { Aside } from "@components"
+
 Cross Chain Tokens (CCT) offer a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross Chain Interoperability Protocol (CCIP). Traditionally, token issuers had to work directly with Chainlink Labs to enable their tokens for cross-chain operations. This process required manual engagement, deployment of token pools, and management support from Chainlink Labs, making it time-consuming and dependent on Chainlink Labs intervention.
 With the introduction of CCT, projects now have the power to deploy, configure, and manage their token pools in CCIP without requiring direct involvement from Chainlink Labs. This self-service model not only accelerates the deployment process but also empowers token issuers with greater autonomy and control over their cross-chain token operations.
 This guide will explore the motivations behind Cross Chain Tokens (CCT) and provide an overview of the architectural components in enabling an [ERC20-compatible](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) token in CCIP.
@@ -11,7 +13,30 @@ This guide will explore the motivations behind Cross Chain Tokens (CCT) and prov
 ## Motivations
 
 The motivation for Cross Chain Tokens (CCT) originates from two primary challenges: liquidity fragmentation in a multi-chain ecosystem and the need for greater autonomy for token issuers.
-More than [hundreds](https://chainlist.org/) of blockchains exist, each with its own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems.
-Token issuers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
-Another critical motivation behind Cross Chain Tokens is to empower projects to enable their tokens for cross-chain operations without requiring direct intervention from Chainlink Labs. Previously, projects needed to rely on Chainlink Labs to deploy token pools and manage token pools' configurations, such as determining which CCIP lanes to enable for the tokens or specifying the token pool rate limits to apply. This dependency added complexity, delays, and additional overhead to the deployment process. By providing a self-service model, Cross Chain Tokens allow projects to take control of their cross-chain deployments, enabling them to expand to other blockchains supported by CCIP quickly.
-Cross Chain Tokens solve these challenges by allowing token issuers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token issuers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes.
+
+- **Liquidity Fragmentation**: More than [hundreds](https://chainlist.org/) of blockchains exist, each with its own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems. Token issuers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
+
+- **Need for Greater Autonomy**: Another critical motivation behind Cross Chain Tokens is to empower projects to enable their tokens for cross-chain operations without requiring direct intervention from Chainlink Labs. Previously, projects needed to rely on Chainlink Labs to deploy token pools and manage token pools' configurations, such as determining which CCIP lanes to enable for the tokens or specifying the token pool rate limits to apply. This dependency added complexity, delays, and additional overhead to the deployment process. By providing a self-service model, Cross Chain Tokens allow projects to take control of their cross-chain deployments, enabling them to expand to other blockchains supported by CCIP quickly.
+
+Cross Chain Token (CCT) solve these challenges by allowing token issuers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token issuers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes.
+
+## CCT Architecture Overview
+
+<Aside type="note" title="Prerequisites">
+  Familiarize yourself with CCIP [Concepts](/ccip/concepts) and [Architecture](/ccip/architecture) before enabling
+  tokens for CCIP.
+</Aside>
+
+### Key Terms and Concepts
+
+- **Token Issuer**: The entity responsible for issuing and managing the token. Token issuers decide which blockchains to deploy the token on, manage its lifecycle, and control its availability across different networks.
+
+- **Token Administrator**: A role assigned to manage cross-chain operations of a token. The token administrator is responsible for setting up token pools, configuring cross-chain parameters, such as supported lanes or token pool rate limits.
+
+- **EOA (Externally Owned Account)**: A standard blockchain account controlled by a private key, typically used by individuals. EOAs do not have associated code, unlike smart accounts, and are used for directly signing transactions.
+
+- **Smart Account**: A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs.
+
+- **ERC20-Compatible Token**: A token that adheres to the ERC20 standard, which defines the rules for token behavior on Ethereum and compatible blockchains. Cross Chain Tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed later in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
+
+- **Token Pool**: Each token is associated with its own token pool, which acts as an abstraction layer over ERC-20 tokens to facilitate operations like OnRamping and OffRamping. Token pools provide rate limiting, allowing token issuers to set a maximum rate for token transfers per lane. They are configured to `lock`, `burn`, `unlock`, or `mint` tokens between source and destination blockchains, supporting multiple transfer mechanisms. For more details, refer to [Token Pools in the CCIP architecture](/ccip/architecture#token-pools).
