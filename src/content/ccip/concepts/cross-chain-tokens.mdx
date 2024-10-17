@@ -231,11 +231,33 @@ Once the administrator has been proposed and is in a pending state, they must ac
 1. **Administrator Accepts Role**: The pending administrator must explicitly call the `acceptAdminRole()` function on the **TokenAdminRegistry** to complete the registration.
 1. **Finalize Registration**: Once the administrator accepts the role, they are assigned as the token administrator, and the registration process is complete. At this point, the token administrator can set a token pool for the token in the **TokenAdminRegistry**.
 
-#### Sequence Diagram: Accepting the Administrator Role
-
 Once the administrator has been proposed and is in a pending state, the final step in the registration process is for the pending administrator to accept the role. This sequence diagram illustrates how the pending administrator interacts with the **TokenAdminRegistry** to complete the registration. It also covers the scenario where an incorrect entity attempts to accept the role, leading to an error.
 
           <ClickToZoom
             src="/images/ccip/cct/acceptAdminRole.svg"
             alt="Accept administrator role sequence diagram"
         />
+
+### Transfer Administrator Role
+
+The `transferAdminRole` function allows the current token administrator to initiate the transfer of their role to a new administrator. The transfer process is a secure two-step procedure, requiring the new administrator to explicitly accept the role before the transfer is finalized.
+
+1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator’s address.
+1. **Set Pending Administrator**: The **TokenAdminRegistry** contract verifies that the caller is the current administrator of the token and sets the new administrator as **pending**. The role will remain in this pending state until it is accepted.
+1. **Accept the Role**: The new administrator must call the `acceptAdminRole()` function to finalize the transfer and assume the administrator role.
+
+The following sequence diagram illustrates the process of transferring the administrator role and how the new administrator must accept the role to complete the transfer.
+
+<ClickToZoom src="/images/ccip/cct/transferAdminRole.svg" alt="Transfer administrator role sequence diagram" />
+
+### Setting the Token Pool
+
+The `setPool` function allows the token administrator to assign or update the token pool for a specific token in the **TokenAdminRegistry**.
+
+1. **Set Token Pool**: The current administrator calls the `setPool()` function on the **TokenAdminRegistry**, providing the token address and the new pool address.
+1. **Validate Pool**: If the new pool address is not `address(0)`, the contract validates that the provided pool supports the token by calling `isSupportedToken()` on the pool contract.
+1. **Update or Remove Pool**: If validation succeeds, the token’s pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
+
+The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
+
+<ClickToZoom src="/images/ccip/cct/setPool.svg" alt="Set token pool sequence diagram" />
