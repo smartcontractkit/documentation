@@ -71,14 +71,14 @@ function LaneDetailsHero({
             </div>
           </>
         )}
-        <div className="lane-details-hero__details__label">Destination network selector</div>
+        <div className="lane-details-hero__details__label">Destination chain selector</div>
         <div>{destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"} </div>
         <div className="lane-details-hero__details__label">RMN</div>
         <div>
           {rmnPermeable ? (
             <Tooltip
               label="Coming soon"
-              tip="Risk Management Network (RMN) is NOT active for this lane at this time."
+              tip="This field shows the status of the Risk Management Network (RMN) for this lane. RMN is not yet deployed."
               labelStyle={{
                 marginRight: "10px",
               }}
@@ -87,7 +87,16 @@ function LaneDetailsHero({
               }}
             />
           ) : (
-            "Enabled"
+            <Tooltip
+              label="Enabled"
+              tip="This field shows the status of the Risk Management Network (RMN) for this lane. RMN is active."
+              labelStyle={{
+                marginRight: "10px",
+              }}
+              style={{
+                display: "inline-flex",
+              }}
+            />
           )}
         </div>
       </div>

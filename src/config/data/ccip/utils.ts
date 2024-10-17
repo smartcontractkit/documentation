@@ -1,6 +1,8 @@
 import { SupportedChain, chainToTechnology } from "@config"
 import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey } from "./types"
 import { networkFees } from "./data"
+import BigNumber from "bignumber.js"
+import { utils } from "ethers"
 
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
@@ -104,14 +106,59 @@ export const calculateMessaingNetworkFees = (sourceChain: SupportedChain, destin
   return calculateMessagingNetworkFeesDirect(laneSpecificFeeKey)
 }
 
-export const representMoney = (amount: string): string => {
-  const removeLast12Zeros = amount.slice(0, -16)
-  const amountString = removeLast12Zeros.toString()
-  const amountLength = amountString.length
-  const decimalIndex = amountLength - 2
-  const integerPart = amountString.slice(0, decimalIndex)
-  const decimalPart = amountString.slice(decimalIndex)
-  const integerPartWithCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-  if (integerPartWithCommas === "" && decimalPart === "") return "0"
-  return `${integerPartWithCommas}.${decimalPart}`
+const normalizeNumber = (bigNum: BigNumber, decimals = 18) => {
+  const divisor = new BigNumber(10).pow(decimals)
+  const normalized = bigNum.dividedBy(divisor)
+
+  return normalized.toNumber()
+}
+
+const formatTime = (seconds: number) => {
+  const minute = 60
+  const hour = 3600 // 60*60
+
+  if (seconds < minute) {
+    return `${seconds} second${seconds > 1 ? "s" : ""}`
+  } else if (seconds < hour && hour - seconds > 300) {
+    // if the difference less than 5 minutes(300 seconds), round to hours
+    const minutes = Math.round(seconds / minute)
+    return `${minutes} minute${minutes > 1 ? "s" : ""}`
+  } else {
+    let hours = Math.floor(seconds / hour)
+    const remainingSeconds = seconds % hour
+
+    // Determine the nearest 5-minute interval
+    let minutes = Math.round(remainingSeconds / minute / 5) * 5
+
+    // Round up to the next hour if minutes are 60
+    if (minutes === 60) {
+      hours += 1
+      minutes = 0
+    }
+
+    return `${hours}${
+      minutes > 0
+        ? ` hour${hours > 1 ? "s" : ""} and ${minutes} minute${minutes > 1 ? "s" : ""}`
+        : ` hour${hours > 1 ? "s" : ""}`
+    }`
+  }
+}
+
+export const displayCapacity = (bigNum: string, decimals = 18) => {
+  console.log(bigNum)
+  const numberWithoutDecimals = normalizeNumber(new BigNumber(bigNum), decimals).toString()
+  return utils.commify(numberWithoutDecimals)
+}
+
+export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
+  const capacityNormalized = normalizeNumber(new BigNumber(capacity), decimals) // normalize capacity
+  const rateNormalized = normalizeNumber(new BigNumber(rate), decimals) // normalize capacity
+
+  const totalRefillTime = capacityNormalized / rateNormalized // in seconds
+  const displayTime = `${formatTime(totalRefillTime)}`
+
+  return {
+    rateSecond: `${utils.commify(rateNormalized)} ${symbol}/second`,
+    maxThroughput: `Refills from 0 to ${utils.commify(capacityNormalized)} ${symbol} in ${displayTime}`,
+  }
 }

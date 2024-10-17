@@ -5,16 +5,20 @@ import {
   Environment,
   getLane,
   getNetwork,
-  representMoney,
   SupportedTokenConfig,
   Version,
   LaneFilter,
+  displayCapacity,
+  displayRate,
 } from "~/config/data/ccip"
 import { useState } from "react"
 import { SupportedChain } from "~/config"
 import LaneDrawer from "../Drawer/LaneDrawer"
 import TableSearchInput from "../Tables/TableSearchInput"
 import Tabs from "../Tables/Tabs"
+import { Tooltip } from "~/features/common/Tooltip"
+import RateTooltip from "../Tooltip/RateTooltip"
+import { symbol } from "astro:schema"
 
 function TokenDrawer({
   token,
@@ -86,9 +90,51 @@ function TokenDrawer({
           <thead>
             <tr>
               <th>{inOutbound === LaneFilter.Inbound ? "Source" : "Destination"} network</th>
-              <th>Rate limit capacity</th>
-              <th>Rate limit refil rate</th>
-              <th>Mechanism</th>
+              <th>
+                Rate limit capacity
+                <Tooltip
+                  label=""
+                  tip="Maximum amount per transaction"
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </th>
+              <th>
+                Rate limit refil rate
+                <Tooltip
+                  label=""
+                  tip="Rate at which available capacity is replenished"
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </th>
+              <th>
+                Mechanism
+                <Tooltip
+                  label=""
+                  tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </th>
               {/* <th>Status</th> */}
             </tr>
           </thead>
@@ -137,23 +183,22 @@ function TokenDrawer({
                       </div>
                     </td>
                     <td>
-                      {representMoney(
+                      {displayCapacity(
                         String(
                           destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
                             ?.capacity || 0
-                        )
+                        ),
+                        network.decimals
                       )}{" "}
                       {token.name}
                     </td>
                     <td>
-                      {representMoney(
-                        String(
-                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                            ?.rate || 0
-                        )
-                      )}{" "}
-                      {token.name}
-                      /second
+                      <RateTooltip
+                        destinationLane={destinationLanes[lane]}
+                        inOutbound={inOutbound}
+                        symbol={token.symbol}
+                        decimals={network.decimals}
+                      />
                     </td>
                     <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
                     {/* <td>

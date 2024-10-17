@@ -4,7 +4,7 @@ import { drawerContentStore } from "../Drawer/drawerStore"
 import { Environment, SupportedTokenConfig } from "~/config/data/ccip"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
-import { getExplorerAddressUrl } from "~/features/utils"
+import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
 import TokenDrawer from "../Drawer/TokenDrawer"
 
 interface TableProps {
@@ -76,8 +76,24 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                       }}
                     >
                       <span className="ccip-table__logoContainer">
-                        <img src={network.logo} alt={network.name} className="ccip-table__logo" />
-                        <img src={network.tokenLogo} alt={network.token} className="ccip-table__smallLogo" />
+                        <img
+                          src={network.logo}
+                          alt={network.name}
+                          className="ccip-table__logo"
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null // prevents looping
+                            currentTarget.src = fallbackTokenIconUrl
+                          }}
+                        />
+                        <img
+                          src={network.tokenLogo}
+                          alt={network.token}
+                          className="ccip-table__smallLogo"
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null // prevents looping
+                            currentTarget.src = fallbackTokenIconUrl
+                          }}
+                        />
                       </span>
                       {network.name}
                     </div>

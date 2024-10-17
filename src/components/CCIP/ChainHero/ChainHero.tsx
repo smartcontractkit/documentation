@@ -11,6 +11,7 @@ import {
   directoryToSupportedChain,
   fallbackTokenIconUrl,
 } from "~/features/utils"
+import { Tooltip } from "~/features/common/Tooltip"
 
 interface ChainHeroProps {
   chains: {
@@ -131,7 +132,15 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
         </div>
 
         <div className="ccip-chain-hero__heading">
-          <img src={network?.logo || token?.logo} alt="" className={token?.logo ? "ccip-chain-hero__token-logo" : ""} />
+          <img
+            src={network?.logo || token?.logo}
+            alt=""
+            className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null // prevents looping
+              currentTarget.src = fallbackTokenIconUrl
+            }}
+          />
           <h1>
             {network?.name || token?.name} <span className="ccip-chain-hero__token-logo__symbol">{token?.symbol}</span>
           </h1>
@@ -145,13 +154,41 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">Network selector</div>
+              <div className="ccip-chain-hero__details__label">
+                Chain selector
+                <Tooltip
+                  label=""
+                  tip="RCCIP Blockchain identifier"
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </div>
               <div className="ccip-chain-hero__details__value">
                 {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">RMN</div>
+              <div className="ccip-chain-hero__details__label">
+                RMN
+                <Tooltip
+                  label=""
+                  tip="The Risk Management contract maintains the list of Risk Management node addresses that are allowed to bless or curse. The contract also holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain."
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
                 {network.armProxy ? (
                   <Address
@@ -164,7 +201,21 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">Token admin registry</div>
+              <div className="ccip-chain-hero__details__label">
+                Token admin registry
+                <Tooltip
+                  label=""
+                  tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
                 {network.tokenAdminRegistry ? (
                   <Address
@@ -177,7 +228,21 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">Registry module owner</div>
+              <div className="ccip-chain-hero__details__label">
+                Registry module owner
+                <Tooltip
+                  label=""
+                  tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
                 {network.registryModule ? (
                   <Address
@@ -203,9 +268,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                       src={logo}
                       alt={token}
                       className="ccip-chain-hero__feeTokens__item__logo"
-                      onError={() => {
-                        this.onerror = null
-                        this.src = fallbackTokenIconUrl
+                      onError={(event) => {
+                        ;(event.target as HTMLImageElement).setAttribute("src", fallbackTokenIconUrl)
                       }}
                     />
                     <div>{token}</div>
@@ -218,14 +282,12 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   <img
                     src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
                     alt={`${nativeCurrency.symbol} icon`}
-                    onError={() => {
-                      this.onerror = null
-                      this.src = fallbackTokenIconUrl
+                    onError={(event) => {
+                      ;(event.target as HTMLImageElement).setAttribute("src", fallbackTokenIconUrl)
                     }}
                     className="ccip-chain-hero__feeTokens__item__logo"
                   />
                   <div>{nativeCurrency.name}</div>
-                  <td>Native gas token</td>
                 </div>
               )}
             </div>

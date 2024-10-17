@@ -6,14 +6,15 @@ import {
   getTokenData,
   LaneConfig,
   LaneFilter,
-  representMoney,
   Version,
+  displayCapacity,
 } from "~/config/data/ccip"
 
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
-import { getExplorerAddressUrl, getTokenIconUrl } from "~/features/utils"
+import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils"
 import TableSearchInput from "../Tables/TableSearchInput"
+import RateTooltip from "../Tooltip/RateTooltip"
 
 function LaneDrawer({
   lane,
@@ -93,7 +94,15 @@ function LaneDrawer({
                       <td>
                         <a href={`/ccip/supported-networks/${environment}/token/${token}`}>
                           <div className="ccip-table__network-name">
-                            <img src={logo} alt={`${token} logo`} className="ccip-table__logo" />
+                            <img
+                              src={logo}
+                              alt={`${token} logo`}
+                              className="ccip-table__logo"
+                              onError={({ currentTarget }) => {
+                                currentTarget.onerror = null // prevents looping
+                                currentTarget.src = fallbackTokenIconUrl
+                              }}
+                            />
                             {token}
                           </div>
                         </a>
@@ -110,27 +119,25 @@ function LaneDrawer({
                       <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
                       <td>
                         {lane.supportedTokens &&
-                          representMoney(
+                          displayCapacity(
                             String(
                               lane.supportedTokens[token]?.rateLimiterConfig?.[
                                 inOutbound === LaneFilter.Inbound ? "in" : "out"
                               ]?.capacity || 0
-                            )
+                            ),
+                            data[sourceNetwork.key].decimals
                           )}{" "}
                         {token}
-                        /second
                       </td>
                       <td>
-                        {lane.supportedTokens &&
-                          representMoney(
-                            String(
-                              lane.supportedTokens[token]?.rateLimiterConfig?.[
-                                inOutbound === LaneFilter.Inbound ? "in" : "out"
-                              ]?.rate || 0
-                            )
-                          )}{" "}
-                        {token}
-                        /second
+                        {lane.supportedTokens && (
+                          <RateTooltip
+                            destinationLane={lane.supportedTokens[token]}
+                            inOutbound={inOutbound}
+                            symbol={token}
+                            decimals={data[sourceNetwork.key].decimals}
+                          />
+                        )}
                       </td>
                     </tr>
                   )

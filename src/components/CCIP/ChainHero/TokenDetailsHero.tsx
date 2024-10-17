@@ -1,5 +1,5 @@
 import Address from "~/components/AddressReact"
-import { getExplorerAddressUrl } from "~/features/utils"
+import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
 import "./ChainHero.css"
 
 interface TokenDetailsHeroProps {
@@ -26,7 +26,14 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
         <div className="ccip-chain-hero__heading">
           <div className="ccip-chain-hero__heading__images">
             <img src={network?.logo} alt="" />
-            <img src={token?.logo} alt="" className="ccip-chain-hero__heading__images__small" />
+            <img
+              src={token?.logo}
+              alt=""
+              className="ccip-chain-hero__heading__images__small"
+              onError={(event) => {
+                ;(event.target as HTMLImageElement).setAttribute("src", fallbackTokenIconUrl)
+              }}
+            />
           </div>
 
           <h1>
