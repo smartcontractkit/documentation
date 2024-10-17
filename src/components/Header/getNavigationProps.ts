@@ -97,12 +97,24 @@ const desktopSubProductsNav = [
     icon: quickstartLogo.src,
     col: 2,
   },
-
   {
     label: "Documentation",
     href: "/",
     hideFromDropdown: true,
     col: 2,
+  },
+  {
+    label: "General",
+    href: "/getting-started",
+    icon: generalLogo.src,
+    col: 2,
+  },
+  {
+    label: "General",
+    href: "/resources",
+    icon: generalLogo.src,
+    col: 2,
+    hideFromDropdown: true,
   },
 ]
 
@@ -148,27 +160,27 @@ const docsSections = [
         subProducts: getSubProducts(sidebar.automation),
       },
       {
+        label: "Chainlink Local",
+        href: "/chainlink-local",
+        icon: chainlinkLocal.src,
+        subProducts: getSubProducts(sidebar.chainlinkLocal),
+      },
+      {
         label: "Nodes",
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
         subProducts: getSubProducts(sidebar.nodeOperator),
       },
       {
-        label: "Chainlink Local",
-        href: "/chainlink-local",
+        label: "Quickstarts",
+        href: "/quickstarts",
         icon: quickstartLogo.src,
-        subProducts: getSubProducts(sidebar.chainlinkLocal),
       },
       {
         label: "General",
         href: "/resources",
         icon: generalLogo.src,
         subProducts: getSubProducts(sidebar.global),
-      },
-      {
-        label: "Quickstarts",
-        href: "/quickstarts",
-        icon: quickstartLogo.src,
       },
     ],
   },

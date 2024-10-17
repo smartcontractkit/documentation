@@ -3,6 +3,7 @@ import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
 import { getNavigationProps } from "../../Header/getNavigationProps"
 import styles from "./docsPickerDesktop.module.css"
 import { clsx } from "../../Header/Nav/utils"
+import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
 function DocsPickerDesktop({ pathname }: { pathname: string }) {
   const [productMenuOpen, setProductMenuOpen] = useState(false)
@@ -10,7 +11,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
 
   const label = subProductTrigger?.label || "Resources"
-  const icon = subProductTrigger?.label ? subProductTrigger.icon : undefined
+  const icon = subProductTrigger?.label ? subProductTrigger.icon : defaultLogo.src
 
   return (
     <div

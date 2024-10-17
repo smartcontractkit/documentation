@@ -10,6 +10,7 @@ import { ProductContent } from "./ProductContent"
 import { SubProductContent } from "./SubProductContent"
 import styles from "./productNavigation.module.css"
 import { getNavigationProps } from "../../Header/getNavigationProps"
+import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
 type Props = {
   path: string
@@ -32,7 +33,7 @@ export function ProductNavigation({ path }: Props) {
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
   const label = subProductTrigger?.label || "Resources"
-  const icon = subProductTrigger?.label ? subProductTrigger.icon : undefined
+  const icon = subProductTrigger?.label ? subProductTrigger.icon : defaultLogo.src
 
   useEffect(() => {
     const foundSubProduct = productsNav.categories.find((category) =>
