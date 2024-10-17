@@ -1114,6 +1114,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/api-reference/token-pool",
         },
         {
+          title: "Pool Library",
+          url: "ccip/api-reference/pool",
+        },
+        {
           title: "BurnMintTokenPool",
           url: "ccip/api-reference/burn-mint-token-pool",
         },
