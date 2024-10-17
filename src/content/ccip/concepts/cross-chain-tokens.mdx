@@ -16,17 +16,17 @@ The motivation for Cross Chain Tokens (CCT) originates from two primary challeng
 
 - **Liquidity Fragmentation**: More than [hundreds](https://chainlist.org/) of blockchains exist, each with its own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems. Token issuers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
 
-- **Need for Greater Autonomy**: Another critical motivation behind Cross Chain Tokens is to empower projects to enable their tokens for cross-chain operations without requiring direct intervention from Chainlink Labs. Previously, projects were dependent on Chainlink Labs for deploying token pools and managing token pools, including configuring supported lanes and specifying rate limits. This dependency added complexity, delays, and additional overhead to the deployment process. By providing a self-service model, Cross Chain Tokens allow projects to take control of their cross-chain deployments, enabling them to expand to other blockchains supported by CCIP quickly.
+- **Need for Greater Autonomy**: Another critical motivation behind Cross Chain Tokens is to empower projects to enable their tokens for cross-chain operations without requiring direct intervention from Chainlink Labs. Previously, projects were dependent on Chainlink Labs for deploying token pools and managing token pools, including configuring supported lanes and specifying [rate limits](/ccip/architecture#token-pool-rate-limit). This dependency introduced complexity, caused delays, and added overhead to deployment. By providing a self-service model, Cross Chain Tokens allow projects to take control of their cross-chain applications. This enables rapid expansion to other blockchains supported by CCIP.
 
 Cross Chain Tokens (CCT) solve these challenges by allowing token issuers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token issuers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes. The CCT Standard offers the following benefits:
 
 - **Self-service and Permissionless Deployment**: With CCT, token issuers can launch a cross-chain token or upgrade an existing token in a self-service manner within minutes. The fully audited token pool contracts handle the complexities of burning/minting or locking/minting tokens across blockchains, all without requiring liquidity pools. This enables a streamlined and permissionless deployment process that significantly reduces the barriers to cross-chain expansion.
 
-- **Issuer Control and Flexibility**: Token issuers retain complete ownership of their token contracts, token pools, and implementation logic. This includes configuring rate limits across all blockchains, ensuring that token issuers have full autonomy to manage their deployments. The CCT standard avoids vendor lock-in, hard-coded functions, and external dependencies, giving projects the flexibility they need to succeed.
+- **Issuer Control and Flexibility**: Token issuers retain complete ownership of their token contracts, token pools, and implementation logic. This includes configuring [rate limits](/ccip/architecture#token-pool-rate-limit) across all blockchains, ensuring that token issuers have full autonomy to manage their deployments. The CCT standard avoids vendor lock-in, hard-coded functions, and external dependencies, giving projects the flexibility they need to succeed.
 
-- **Defense-in-Depth Security**: The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as the [Risk Management Network](/ccip/concepts#risk-management-network) and configurable transfer rate limits, providing comprehensive security for cross-chain operations.
+- **Defense-in-Depth Security**: The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as the [Risk Management Network](/ccip/concepts#risk-management-network) and configurable transfer [rate limits](/ccip/architecture#token-pool-rate-limit), providing comprehensive security for cross-chain operations.
 
-- **Programmable Token Transfers**: Cross Chain Tokens support the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, such as executing on-chain actions alongside token transfers, improving the overall efficiency of cross-chain transactions.
+- **Programmable Token Transfers**: Cross Chain Tokens support the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, such as executing on-chain actions alongside token transfers, improving the overall efficiency of cross-chain transactions. For instance, a programmable token transfer could execute a function to stake tokens on the destination blockchain.
 
 - **No Liquidity Pools Required**: The fully audited token pool contracts provided by CCT eliminate the need for liquidity pools, simplifying cross-chain token management. By locking or burning tokens on the source chain and minting or unlocking them on the destination chain, token issuers can maintain consistent liquidity without managing fragmented liquidity pools across multiple blockchains.
 
@@ -38,15 +38,17 @@ Cross Chain Tokens (CCT) solve these challenges by allowing token issuers to cre
 
 - **Token Issuer**: The entity responsible for issuing and managing the token. Token issuers decide which blockchains to deploy the token on, manage its lifecycle, and control its availability across different networks.
 
-- **Token Administrator**: A role assigned to manage cross-chain operations of a token. The token administrator is responsible for setting up token pools, configuring cross-chain parameters, such as supported lanes or token pool rate limits.
+- **Token Owner**: The entity that owns the token contract. The token owner has the authority to manage the token contract, including upgrading the contract, changing the token administrator, or transferring ownership to another address.
+
+- **Token Administrator**: A role assigned to manage cross-chain operations of a token. The token administrator is responsible for setting up token pools, configuring cross-chain parameters, such as supported lanes or token pool [rate limits](/ccip/architecture#token-pool-rate-limit). The token administrator can be the token owner or another designated entity assigned by the token owner.
 
 - **EOA (Externally Owned Account)**: A standard blockchain account controlled by a private key, typically used by individuals. EOAs do not have associated code, unlike smart accounts, and are used for directly signing transactions.
 
 - **Smart Account**: A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs. For example, smart accounts can use multi-signature mechanisms to add an extra layer of security.
 
-- **ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross Chain Tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed later in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
+- **ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross Chain Tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed [later](#requirements-for-erc20-compatible-tokens) in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
 
-- **Token Pool**: Each token is associated with its own token pool, which acts as abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide rate limiting, a security feature enabling token issuers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
+- **Token Pool**: Each token is associated with its own token pool, which acts as abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide [rate limits](/ccip/architecture#token-pool-rate-limit), a security feature enabling token issuers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
 
   - **Burn and Mint**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain. This keeps the total supply of the token constant across blockchains.
 
@@ -55,7 +57,7 @@ Cross Chain Tokens (CCT) solve these challenges by allowing token issuers to cre
             alt="Burn and Mint"
         />
 
-  - **Lock and Mint**: This mechanism is suitable for projects with existing tokens on a single blockchain that have already been minted and lack functionality to control the supply via burn and mint functions on the source blockchain. In this approach, tokens are locked on the issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens, which must support burn and mint functionality, can subsequently be transferred across other non-issuing blockchains using the Burn and Mint mechanism.
+  - **Lock and Mint**: This mechanism is suitable for projects with existing tokens on a single blockchain that have already been minted and lack functionality to control the supply via `burn` and `mint` functions on the source blockchain. In this approach, tokens are locked on the issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens, which must support `burn` and `mint` functionality, can subsequently be transferred across other non-issuing blockchains using the Burn and Mint mechanism.
 
           <ClickToZoom
             src="/images/ccip/cct/handling/lock-mint.jpeg"
@@ -80,12 +82,12 @@ Cross Chain Tokens (CCT) solve these challenges by allowing token issuers to cre
 
 Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
 
-- **Token Administrator Address Requirement**: The token administrator, which will manage the token in CCIP, must be derivable from the token contract. This can be achieved if the token contract includes one of the following functions:
+- **Token Administrator address requirement**: The token contract must provide an easy way to obtain the token administrator address. This can be achieved if the token contract includes one of the following functions:
 
   - `owner()`: This function returns the token contract owner's address.
   - `getCCIPAdmin()`: This function returns the token administrator's address if it differs from the contract owner's.
 
-- ** Requirements for CCIP Token Transfers**: The token's smart contract must meet minimum requirements to integrate with CCIP.
+- **Requirements for CCIP token transfers**: The token's smart contract must meet minimum requirements to integrate with CCIP.
 
   - **Burn & Mint Requirements**:
     - The token smart contract must have the following functions:
@@ -140,7 +142,7 @@ If the standard token pools do not meet your requirements, you have the option t
 
 - A critical aspect to consider for custom token pools is the **reception logic** on the destination blockchain. Specifically, the `releaseOrMint` function should not consume more than **90,000 gas**. If this limit is exceeded, the CCIP execution on the destination blockchain will fail, requiring manual intervention by the user to execute the transaction. For more information, see [Manual execution](/ccip/concepts/manual-execution).
 
-- If your token pool requires more than 90,000 gas on the destination blockchain, contact Chainlink Labs to update an internal CCIP parameter to avoid execution failure. It is highly recommended to design your custom TokenPool to stay within the 90,000 gas limit whenever possible.
+- If your token pool requires more than **90,000** gas on the destination blockchain, you should contact Chainlink Labs to update an internal CCIP parameter to avoid execution failure. It is highly recommended to design your custom TokenPool to stay within the 90,000 gas limit whenever possible.
 
 Here are some examples of use cases that may require custom token pools:
 
