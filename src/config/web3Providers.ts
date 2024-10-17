@@ -45,3 +45,23 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BLAST_MAINNET: () => new providers.JsonRpcProvider("https://rpc.blast.io"),
   BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
 }
+
+export const getRpcUrlForChain = (chain: SupportedChain): string => {
+  const envVarName = `${chain}_RPC_URL`
+  const rpcUrl = process.env[envVarName]
+
+  if (!rpcUrl) {
+    console.warn(`Environment variable ${envVarName} is not set for chain ${chain}`)
+    return ""
+  }
+
+  return rpcUrl
+}
+
+export const getProviderForChain = (chain: SupportedChain): providers.JsonRpcProvider => {
+  const rpcUrl = getRpcUrlForChain(chain)
+  if (!rpcUrl) {
+    throw new Error(`No RPC URL found for chain ${chain}`)
+  }
+  return new providers.JsonRpcProvider(rpcUrl)
+}

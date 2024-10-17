@@ -1,0 +1,149 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry } from "astro:content"
+import {
+  Environment,
+  getAllNetworkLanes,
+  getAllNetworks,
+  getAllSupportedTokens,
+  getSearchLanes,
+  getTokensOfChain,
+  Version,
+} from "~/config/data/ccip"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import Table from "~/components/CCIP/Tables/ChainTable"
+import { getTokenIconUrl } from "~/features/utils"
+import Drawer from "../Drawer/Drawer"
+import ChainTokenGrid from "./ChainTokenGrid"
+
+// TODO: Add type for network
+const { environment, network } = Astro.props as { environment: Environment; network: any }
+
+const entry = await getEntry("ccip", "index")
+const { headings } = await entry.render()
+const networks = getAllNetworks({ filter: environment })
+
+const allTokens = getTokensOfChain({
+  chain: network?.chain || "",
+  filter: environment,
+}).map((token) => {
+  const logo = getTokenIconUrl(token) || ""
+  return {
+    name: token,
+    logo,
+    totalNetworks: networks.length, // Add totalNetworks property
+  }
+})
+
+const lanes = getAllNetworkLanes({
+  environment: environment,
+  version: Version.V1_2_0,
+  chain: network?.chain || "",
+})
+
+const searchLanes = getSearchLanes({ environment })
+---
+
+<CcipLayout frontmatter={entry.data} {headings} environment={environment}>
+  <Drawer client:only="react" />
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    client:only="react"
+    network={network}
+    environment={environment}
+    lanes={searchLanes}
+  />
+  <section class="layout">
+    <div>
+      <Table
+        environment={environment}
+        lanes={lanes}
+        client:only="react"
+        explorerUrl={network.explorerUrl}
+        sourceNetwork={{
+          name: network.name,
+          logo: network.logo,
+          key: network.chain,
+        }}
+      />
+    </div>
+    <div>
+      <div class="ccip-heading">
+        <h2>Tokens <span>({allTokens.length})</span></h2>
+        <a class="button secondary" href="/ccip/concepts/ccip-enabled-tokens">List my token</a>
+      </div>
+      <div class="tokens__grid">
+        <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
+      </div>
+    </div>
+  </section>
+</CcipLayout>
+
+<style scoped="false">
+  .layout {
+    --gutter: var(--space-6x);
+    --doc-padding: 2rem;
+    margin: var(--space-8x) auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gutter);
+    padding: var(--doc-padding);
+  }
+
+  .ccip-heading {
+    display: flex;
+    padding-bottom: var(--space-4x);
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--space-6x);
+    justify-content: space-between;
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+    line-height: var(--space-10x);
+    margin-bottom: 0px;
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .networks__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8x);
+  }
+
+  .tokens__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8x);
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: 1440px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-24x);
+    }
+
+    .networks__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6x);
+    }
+
+    .tokens__grid {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: var(--space-4x);
+    }
+  }
+</style>
