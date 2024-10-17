@@ -105,9 +105,16 @@ const desktopSubProductsNav = [
   },
   {
     label: "General",
-    href: "/resources/link-token-contracts",
+    href: "/getting-started",
     icon: generalLogo.src,
     col: 2,
+  },
+  {
+    label: "General",
+    href: "/resources",
+    icon: generalLogo.src,
+    col: 2,
+    hideFromDropdown: true,
   },
 ]
 
