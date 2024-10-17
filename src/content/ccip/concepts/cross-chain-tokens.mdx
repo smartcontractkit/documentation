@@ -2,6 +2,7 @@
 section: ccip
 date: Last Modified
 title: "Cross Chain Tokens (CCT) Standard"
+whatsnext: { "CCT Guides": "/ccip/tutorials/cross-chain-tokens" }
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -163,30 +164,47 @@ Here are some examples of use cases that may require custom token pools:
 
 ## CCT Architecture Overview
 
-The CCT architecture is designed to provide a self-service, streamlined approach to enabling cross-chain operations. If you have already understood the core concepts, ERC20-compatible token requirements, and token pool requirements, you are ready to proceed with enabling Cross Chain Tokens (CCT) for your project.
+<Aside type="note" title="Prerequisites">
+  Before proceeding, ensure you are familiar with the key [CCIP Concepts](/ccip/concepts) and the general [CCIP
+  Architecture](/ccip/architecture). This knowledge is essential for understanding how CCIP works.
+</Aside>
 
-### Contracts
+The Cross Chain Tokens (CCT) architecture offers a streamlined, self-service approach to enabling cross-chain operations. This system integrates tightly with Chainlink's Cross Chain Interoperability Protocol (CCIP), allowing token issuers to configure, manage, and transfer tokens across multiple blockchains without requiring direct involvement from Chainlink Labs.
 
-To successfully register your token for **Cross Chain Tokens (CCT)**, two main components are involved: the **TokenAdminRegistry** and the **RegistryModuleOwnerCustom**. These components work together to ensure that your token and its administrator are properly registered within the CCT system.
+### Architectural
 
-#### TokenAdminRegistry
+The detailed architecture diagram below provides a comprehensive view of how CCT fits within the CCIP ecosystem, illustrating the interaction between key components such as token contracts, token pools, and registry modules. While you can explore the full details of these components in the [CCIP Architecture](/ccip/architecture) document, the key takeaway for Cross Chain Tokens (CCT) is understanding how the **TokenAdminRegistry** contract is used.
 
-The [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract is responsible for storing the tokens, their administrators and token pools for all Cross Chain Tokens (CCT). This contract operates on a self-service basis, allowing tokens to be registered directly without requiring intervention from the CCIP contract owner. This ensures an efficient registration process that can accommodate a large number of tokens.
+<ClickToZoom src="/images/ccip/CCIP_detailed_architecture_1.5.png" alt="Chainlink CCIP Detailed Architecture 1.5" />
 
-Key features of the **TokenAdminRegistry** include:
+The **TokenAdminRegistry** contract is essential when transferring tokens across blockchains. CCIP's [`onRamp`](/ccip/architecture#onramp) and [`offRamp`](/ccip/architecture#offramp) contracts interact with it to fetch the token pool associated with a given token. For cross-chain transfers to work, token administrators need a way to set or configure the token pool linked to a token.
 
-- Facilitates self-service token registration.
-- Tokens for which the Token Administrator cannot be determined automatically can be registered manually by the CCIP contract owner.
-- Manages the transfer of administrator roles for tokens.
-- Non-upgradable: Designed as a customer-facing contract, making it immutable and stable.
-- Handles admin role changes through a two-step process (transfer request and acceptance).
+In the following sections, we will explore how token administrators can register their tokens in the TokenAdminRegistry, link them to the relevant token pools, and configure them for use in CCIP.
 
-#### RegistryModuleOwnerCustom
+### Key Contracts
 
-The [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract acts as the interface through which the admin of a token is registered. It works alongside the **TokenAdminRegistry** to ensure that only the correct admin can perform the registration. The contract uses different methods to determine and register the token's administrator:
+In the Cross Chain Tokens (CCT) standard, several key contracts work together to facilitate the secure transfer and management of tokens across multiple blockchains. These contracts can be categorized into three main groups:
 
-- **getCCIPAdmin**: Registers the administrator based on the `getCCIPAdmin()` method in the token contract.
-- **owner**: Registers the administrator based on the token’s `owner()` method.
+#### Registry Components
+
+The **Registry Components** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
+
+- [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry): This contract stores the token administrators and pools for all registered Cross Chain Tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
+- [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the **TokenAdminRegistry** to ensure that only authorized administrators are assigned to manage cross-chain operations.
+
+#### Token Contract
+
+The **Token Contract** represents the actual token being managed and transferred across blockchains. This contract must be **ERC20-compatible** and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, refer to the [Requirements for ERC20-Compatible Tokens](#requirements-for-erc20-compatible-tokens) section.
+
+#### Token Pool Contract
+
+The **Token Pool Contract** is responsible for executing the cross-chain token transfers. It manages how tokens are locked, burned, minted, or unlocked across blockchains.
+
+- **Token Pools**: Each blockchain has its own token pool that interacts with the token contract. Depending on the cross-chain handling mechanism (e.g., Burn & Mint or Lock & Mint), different token pool contracts will be deployed. For example:
+  - **BurnMintTokenPool**: Handles the burning, or minting of tokens depending whether it is the source or destination blockchain.
+  - **LockReleaseTokenPool**: Handles the locking or releasing of tokens depending on whether it is the source or destination blockchain.
+
+For more information on the token pool contracts and their functionalities, refer to the [Requirement for Token Pools](#requirement-for-token-pools) section.
 
 ### Registration
 
@@ -261,3 +279,40 @@ The `setPool` function allows the token administrator to assign or update the to
 The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
 
 <ClickToZoom src="/images/ccip/cct/setPool.svg" alt="Set token pool sequence diagram" />
+
+### Configuring the Token Pool
+
+The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following functions from the [`TokenPool`](/ccip/api-reference/token-pool) contract are used for configuring token pools:
+
+1. [`applyChainUpdates`](/ccip/api-reference/token-pool#applychainupdates):
+   - **Purpose**: This function is the primary method for configuring which blockchains the token pool supports and defining rate limits for cross-chain transfers.
+   - **Details**:
+     - It allows the token pool owner to add new chains or remove existing ones.
+     - Configures the pool and token addresses for remote blockchains.
+     - Sets rate limits for both outbound and inbound transfers.
+   - **Usage**:
+     - To add a new blockchain, the pool owner provides the remote chain selector, pool address, token address, and rate limiter configurations.
+     - To remove a blockchain, the `allowed` flag is set to `false`, and the chain is removed from the list of supported chains.
+1. [`setRemotePool`](/ccip/api-reference/token-pool#setremotepool)\*\*:
+
+   - **Purpose**: Set the remote pool's address to link the current token pool to a corresponding pool on a remote blockchain.
+   - **Details**:
+     - This function is used to establish the connection between token pools on different blockchains.
+     - It validates the provided chain selector and updates the remote pool address for the selected chain.
+   - **Usage**: This function sets or updates the remote pool address for a specific blockchain.
+
+1. [`setChainRateLimiterConfig`](/ccip/api-reference/token-pool#setchainratelimiterconfig)\*\*
+
+   - **Purpose**: Configures the rate limits for outbound and inbound token transfers between blockchains.
+   - **Details**:
+     - The outbound rate limiter config controls how many tokens can be transferred out of the token pool per unit of time.
+     - The inbound rate limiter config limits how many tokens can be transferred into the token pool per unit of time.
+     - Only the pool owner or rate limit admin can call this function.
+   - **Usage**: This function adjusts rate limits to prevent excessive token transfers or overload of the token pool. **Note**: This function also supports disabling rate limits.
+
+1. [`applyAllowListUpdates`](/ccip/api-reference/token-pool#applyallowlistupdates):
+   - **Purpose**: Manages an allowlist of addresses permitted to interact with the token pool.
+   - **Details**:
+     - This function is only relevant if the token pool is access-controlled (i.e., an allowlist is enabled).
+     - The allowlist ensures that only specific addresses, such as trusted addresses, can transfer tokens.
+   - **Usage**: The pool owner uses this function to add or remove addresses from the allowlist, controlling who can transfer the tokens through CCIP.
