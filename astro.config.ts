@@ -11,6 +11,10 @@ import { RehypePlugins } from "@astrojs/markdown-remark"
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
+  redirects: {
+    "/getting-started": "/getting-started/conceptual-overview",
+    "/resources": "/resources/link-token-contracts",
+  },
   integrations: [
     preact({
       include: ["**/preact/*"],
