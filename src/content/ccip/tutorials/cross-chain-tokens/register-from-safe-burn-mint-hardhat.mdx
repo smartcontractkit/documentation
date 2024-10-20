@@ -67,25 +67,27 @@ We will cover the following key steps:
 
 1. **Creating a Safe Account**: You will create a 2-of-3 multi-signature Safe that will serve as the owner of the token and token pool contracts. This Safe will also manage administrative tasks, such as configuring token pools and registering as the token admin in the token admin registry.
 
-2. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and Base Sepolia testnets and transfer ownership to the Safe account.
+1. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and Base Sepolia testnets and transfer ownership to the Safe account.
 
-3. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/burn-mint-token-pool) token pools on Ethereum Sepolia and Base Sepolia. The Safe account will own each token pool.
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/burn-mint-token-pool) token pools on Ethereum Sepolia and Base Sepolia. The Safe account will own each token pool.
 
-4. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
+1. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
 
    1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
 
-   2. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/token-admin-registry#acceptadminrole) function to complete the registration process.
+   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/token-admin-registry#acceptadminrole) function to complete the registration process.
 
    Meta-transactions are used here to batch these two actions, allowing both steps to be executed efficiently. The meta-transactions are created off-chain and signed by each of the two required Safe owners. This off-chain signing process reduces gas costs and enhances security, as the transactions are only broadcasted to the blockchain once all required signatures are collected.
 
-5. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`setPool`](/ccip/api-reference/token-admin-registry#setpool) function to associate each token with its respective token pool.
+1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`setPool`](/ccip/api-reference/token-admin-registry#setpool) function to associate each token with its respective token pool.
 
-6. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
+1. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
 
-7. **Minting Tokens**: You will mint tokens on Ethereum Sepolia. These tokens will later be used to test cross-chain transfers to Base Sepolia.
+1. **Granting Mint and Burn Roles**: You will grant the mint and burn roles to the token pools on each linked token using the Safe account. These roles are required for the token pools to mint and burn tokens during cross-chain transfers.
 
-8. **Transferring Tokens**: Finally, you will transfer tokens from Ethereum Sepolia to Base Sepolia using CCIP. You can pay CCIP fees using either LINK tokens or native gas tokens.
+1. **Minting Tokens**: You will mint tokens on Ethereum Sepolia. These tokens will later be used to test cross-chain transfers to Base Sepolia.
+
+1. **Transferring Tokens**: Finally, you will transfer tokens from Ethereum Sepolia to Base Sepolia using CCIP. You can pay CCIP fees using either LINK tokens or native gas tokens.
 
 By the end of this tutorial, you will have successfully deployed, registered, configured, and enabled your tokens and token pools for use in CCIP. All are managed securely through a multi-signature Safe account.
 
@@ -491,7 +493,7 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:10:08.375Z info: Claiming admin of token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b via Safe and accepted admin role successfully.
    ```
 
-### Set Pool
+### Set Pool using Safe
 
 In this step, you will use the `setPoolFromSafe` task to link a token to a token pool on both Ethereum Sepolia and Base Sepolia. The Safe smart account will be used to execute the transaction, ensuring that the pool is set securely with multisig approval. Multiple owners will sign the transaction off-chain before it is executed on-chain.
 
@@ -548,7 +550,7 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:15:59.274Z info: Pool set for token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B successfully.
    ```
 
-### Configure Token Pools
+### Configure Token Pools using Safe
 
 In this step, you will use the `applyChainUpdatesFromSafe` task to configure a token pool for cross-chain interactions. By leveraging the Safe smart account, you can securely update the configuration of the token pool to support remote chains, including setting rate limits and linking it to remote pools and tokens.
 
@@ -614,7 +616,7 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:30:33.975Z info: Pool configured successfully for remote chain sepolia
    ```
 
-### Grant Mint and Burn Roles Using Safe
+### Grant Mint and Burn Roles using Safe
 
 In this step, you will use the `grantMintBurnRoleFromSafe` task to grant mint and burn roles to both the token pool and the Safe smart account on Ethereum Sepolia and Base Sepolia. The Safe smart account will handle the transaction to securely assign these roles, ensuring that multiple owners sign off on the operation. Granting mint and burn roles is essential to allow the token pool and the Safe account to manage token issuance and burning, and to prepare for future cross-chain transfers.
 
@@ -677,7 +679,7 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:57:08.753Z info: Mint and burn roles granted to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    ```
 
-### Mint Tokens to an EOA Using Safe
+### Mint Tokens to an EOA using Safe
 
 In this step, you will use the `mintTokensFromSafe` task to mint tokens to an EOA on Ethereum Sepolia. This process uses a Safe smart account to securely manage the minting process, ensuring that the transaction is signed by multiple owners off-chain before being executed on-chain. These tokens will be used for transfers through CCIP from Ethereum Sepolia to Base Sepolia.
 
