@@ -1019,6 +1019,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
               highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
             },
+            {
+              title: "Register from a Safe Smart Account (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+            },
           ],
         },
         {
