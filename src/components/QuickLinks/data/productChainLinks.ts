@@ -111,6 +111,8 @@ export const productChainLinks: ProductChainLinks = {
       ethereum: "/vrf/v2-5/supported-networks#ethereum-mainnet",
       fantom: "/vrf/v2/subscription/supported-networks#fantom-mainnet",
       polygon: "/vrf/v2-5/supported-networks#polygon-mainnet",
+      base: "/vrf/v2-5/supported-networks#base-mainnet",
+      soneium: "/vrf/v2-5/supported-networks#soneium-minato-testnet",
     },
   },
   linkTokenContracts: {
