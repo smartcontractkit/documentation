@@ -15,6 +15,8 @@ export default defineConfig({
   site: "https://docs.chain.link",
   redirects: {
     "/ccip/supported-networks": "/ccip/supported-networks/mainnet",
+    "/getting-started": "/getting-started/conceptual-overview",
+    "/resources": "/resources/link-token-contracts",
   },
   integrations: [
     preact({
