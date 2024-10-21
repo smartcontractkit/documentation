@@ -1,7 +1,7 @@
 import config from "./selectors.yml"
 
 interface Selector {
-  selector: number
+  selector: string
   name: string
 }
 
