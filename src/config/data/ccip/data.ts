@@ -481,14 +481,16 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: "ma
   return chainsResult
 }
 
-export const getAllNetworkLanes = ({
+export const getAllNetworkLanes = async ({
   chain,
   environment,
   version,
+  site,
 }: {
   chain: string
   environment: Environment
   version: Version
+  site: string
 }) => {
   const { lanesReferenceData } = loadReferenceData({
     environment,
@@ -496,6 +498,7 @@ export const getAllNetworkLanes = ({
   })
 
   const allLanes = lanesReferenceData[chain]
+  const operationalData = await getOperationalState(chain, site)
 
   const lanesData: {
     name: string
@@ -510,12 +513,14 @@ export const getAllNetworkLanes = ({
       address: string
       version: string
     }
+    operational: string | undefined
   }[] = Object.keys(allLanes).map((lane) => {
     const laneData = allLanes[lane]
 
     const directory = directoryToSupportedChain(lane || "")
     const title = getTitle(directory)
     const networkLogo = getChainIcon(directory)
+
     return {
       name: title || "",
       logo: networkLogo || "",
@@ -523,6 +528,7 @@ export const getAllNetworkLanes = ({
       offRamp: laneData.offRamp,
       key: lane,
       directory,
+      status: operationalData[lane] || undefined,
     }
   })
   return lanesData
@@ -627,4 +633,15 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
   }
 
   return allLanes
+}
+
+export async function getOperationalState(chain: string, site: string) {
+  // TO BE REMOVED
+  const url = `https://documentation-git-ccip-config-redesign-chainlinklabs.vercel.app/api/ccip/lane-statuses?sourceNetworkId=${chain}`
+  // const url = `${site}/api/ccip/lane-statuses?sourceNetworkId=${chain}`
+  const response = await fetch(url)
+  if (response.status !== 200) {
+    return {}
+  }
+  return response.json()
 }
