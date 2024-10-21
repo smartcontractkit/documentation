@@ -9,7 +9,6 @@ import {
   Version,
   LaneFilter,
   displayCapacity,
-  displayRate,
 } from "~/config/data/ccip"
 import { useState } from "react"
 import { SupportedChain } from "~/config"
@@ -18,7 +17,6 @@ import TableSearchInput from "../Tables/TableSearchInput"
 import Tabs from "../Tables/Tabs"
 import { Tooltip } from "~/features/common/Tooltip"
 import RateTooltip from "../Tooltip/RateTooltip"
-import { symbol } from "astro:schema"
 
 function TokenDrawer({
   token,

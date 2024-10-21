@@ -15,6 +15,7 @@ import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
 import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils"
 import TableSearchInput from "../Tables/TableSearchInput"
 import RateTooltip from "../Tooltip/RateTooltip"
+import { Tooltip } from "~/features/common/Tooltip"
 
 function LaneDrawer({
   lane,
@@ -73,8 +74,36 @@ function LaneDrawer({
               <th>Token address (Source)</th>
               <th>Decimals</th>
               <th>Mechanism</th>
-              <th>Rate limit capacity</th>
-              <th>Rate limit refil rate</th>
+              <th>
+                Rate limit capacity
+                <Tooltip
+                  label=""
+                  tip="Maximum amount per transaction"
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </th>
+              <th>
+                Rate limit refil rate
+                <Tooltip
+                  label=""
+                  tip="Rate at which available capacity is replenished"
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
