@@ -40,7 +40,7 @@ function LaneDetailsHero({
           {sourceNetwork.name}
         </div>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="#141921" />
+          <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
         </svg>
         <div className="lane-details-hero__network">
           <img src={destinationNetwork.logo} alt={destinationNetwork.name} className="lane-details-hero__token-logo" />
