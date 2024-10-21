@@ -38,7 +38,7 @@ const {
   destinationChainSelector,
 } = Astro.props as ConfigProps
 
-const { rateLimiterConfig, supportedTokens, onRamp, rmnPermeable, offRamp } = laneConfig
+const { rateLimiterConfig, supportedTokens, onRamp, offRamp, rmnPermeable } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
@@ -105,6 +105,8 @@ const enforceOutOfOrder = onRamp.enforceOutOfOrder
 const enforceOutOfOrderText = enforceOutOfOrder === undefined ? "N/A" : enforceOutOfOrder ? "Required" : "Optional"
 
 const rmnStatusText = rmnPermeable ? "Coming Soon" : "Enabled"
+
+const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp.address)
 
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
@@ -185,21 +187,37 @@ if (supportedTokens) {
       >
     </tr>
     <tr>
-      <td>Destination chain selector</td>
+      <td>OffRamp address</td>
       <td
-        ><CopyText
-          text={destinationChainSelector}
-          code
+        ><Address
+          contractUrl={offRampExplorerUrl}
           eventName="docs_product_interaction"
           additionalInfo={{
             product: "CCIP",
-            action: "ccip_destinationChainSelector_copied",
+            action: "ccip_offRampAddress_copied",
             extraInfo1: sourceChain,
             extraInfo2: destinationChainRefId,
           }}
           client:only="preact"
         /></td
       >
+      <tr>
+        <td>Destination chain selector</td>
+        <td
+          ><CopyText
+            text={destinationChainSelector}
+            code
+            eventName="docs_product_interaction"
+            additionalInfo={{
+              product: "CCIP",
+              action: "ccip_destinationChainSelector_copied",
+              extraInfo1: sourceChain,
+              extraInfo2: destinationChainRefId,
+            }}
+            client:only="preact"
+          /></td
+        >
+      </tr>
     </tr>
   </tbody>
   <br />
