@@ -158,7 +158,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 Chain selector
                 <Tooltip
                   label=""
-                  tip="RCCIP Blockchain identifier"
+                  tip="CCIP Blockchain identifier"
                   labelStyle={{
                     marginRight: "5px",
                   }}
