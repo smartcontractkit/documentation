@@ -108,8 +108,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
 
   return (
     <section className="ccip-chain-hero">
-      <img src="/assets/ccip.png" alt="" className="ccip-chain-hero__grid" />
-
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__top">
           <Breadcrumb

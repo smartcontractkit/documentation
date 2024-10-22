@@ -35,7 +35,6 @@ interface HeroProps {
 function Hero({ chains, tokens, environment, lanes }: HeroProps) {
   return (
     <section className="ccip-hero">
-      <img src="/assets/ccip.png" alt="" className="ccip-hero__grid" />
       <div className="ccip-hero__content">
         <h1 className="ccip-hero__heading">CCIP Directory</h1>
         <Search chains={chains} tokens={tokens} environment={environment} lanes={lanes} />
