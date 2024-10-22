@@ -85,6 +85,7 @@ export const productChainLinks: ProductChainLinks = {
       ethereum: "/chainlink-functions/supported-networks#ethereum",
       optimism: "/chainlink-functions/supported-networks#optimism",
       polygon: "/chainlink-functions/supported-networks#polygon",
+      soneium: "/chainlink-functions/supported-networks#soneium",
     },
   },
   Automation: {
