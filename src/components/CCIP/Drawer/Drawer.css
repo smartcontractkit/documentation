@@ -6,7 +6,16 @@
   height: 100vh;
   z-index: 9999;
   background-color: #1a2332e5;
-  backdrop-filter: blur(var(--space-8x));
+  backdrop-filter: blur(var(--space-8x)) opacity(0);
+  transition: backdrop-filter 0.5s ease-in-out;
+}
+
+.drawer__open.drawer {
+  backdrop-filter: blur(var(--space-8x)) opacity(1);
+}
+
+.drawer__close {
+  display: none;
 }
 
 .drawer__container {
@@ -15,8 +24,17 @@
   right: 0;
   width: 100%;
   height: 100vh;
-  overflow-y: auto;
   background-color: white;
+  transform: translateX(100%);
+  transition: transform 0.5s ease-in-out;
+}
+
+.drawer__content {
+  overflow-y: auto;
+}
+
+.drawer__open .drawer__container {
+  transform: translateX(0);
 }
 
 .drawer__closeMobile {
@@ -38,7 +56,7 @@
   .drawer__close {
     position: fixed;
     top: var(--space-4x);
-    right: calc(75% + var(--space-4x));
+    right: calc(100% + var(--space-4x));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -53,6 +71,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+  }
+
+  .drawer__close:hover button {
+    background-color: var(--blue-700);
   }
 
   .drawer__close label {
