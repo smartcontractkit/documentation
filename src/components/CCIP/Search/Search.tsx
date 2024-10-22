@@ -115,7 +115,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         {network.name}
                         {!small && (
                           <span>
-                            {network.totalLanes} lanes | {network.totalTokens} tokens
+                            {network.totalLanes} {network.totalLanes > 1 ? "lanes" : "lane"} | {network.totalTokens}{" "}
+                            {network.totalTokens > 1 ? "tokens" : "token"}
                           </span>
                         )}
                       </a>
@@ -133,7 +134,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
                         <img src={token.logo} alt="" />
                         {token.name}
-                        {!small && <span>{token.totalNetworks} networks</span>}
+                        {!small && (
+                          <span>
+                            {token.totalNetworks} {token.totalNetworks > 1 ? "networks" : "network"}
+                          </span>
+                        )}
                       </a>
                     </li>
                   ))}
@@ -171,7 +176,10 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
                         {!small && (
                           <span>
-                            {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0} tokens
+                            {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0}{" "}
+                            {lane?.lane?.supportedTokens && Object.keys(lane.lane.supportedTokens).length > 1
+                              ? "tokens"
+                              : "token"}
                           </span>
                         )}
                       </a>

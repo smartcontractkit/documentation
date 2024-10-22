@@ -14,7 +14,7 @@ function NetworkCard({ name, totalLanes, totalTokens, logo }: NetworkCardProps) 
       <div>
         <h3>{name}</h3>
         <p>
-          {totalLanes} lanes | {totalTokens} tokens
+          {totalLanes} {totalLanes > 1 ? "lanes" : "lane"} | {totalTokens} {totalTokens > 1 ? "tokens" : "token"}
         </p>
       </div>
     </div>
