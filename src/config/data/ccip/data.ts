@@ -342,7 +342,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
 
   for (const token in tokensTestData) {
     const tokenData = tokensTestData[token]
-    if (tokenData[chain]) {
+    if (tokenData[chain] && tokenData[chain].poolType !== "feeTokenOnly") {
       tokensResult.push(token)
     }
   }
