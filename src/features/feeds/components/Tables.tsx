@@ -376,7 +376,7 @@ const StreamsNetworksData = [
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
     testnet: {
-      label: "Soneium Minato Tesnet",
+      label: "Soneium Minato Testnet",
       verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
       explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
     },
