@@ -169,6 +169,14 @@ By the end of this tutorial, you will have successfully deployed, registered, co
   the code and comments to gain a deeper understanding of the process or explore the implementation details.
 </Aside>
 
+<Aside type="note" title="Funding and Signature Clarifications">
+  In this tutorial, the first EOA is responsible for sending transactions involving the Safe smart account. Therefore,
+  **only the first EOA must have sufficient native gas tokens to cover transaction fees** for all operations. It is also
+  important to note that during multi-signature operations, **signatures will be collected from the second EOA
+  off-chain** to fulfill the required number of signatures, but the first EOA will handle the on-chain transaction
+  submissions.
+</Aside>
+
 ### Deploy Safe Smart Accounts
 
 In this step, you will deploy a Safe smart account on both Ethereum Sepolia and Base Sepolia using the `deploySafe` task. The Safe smart account will serve as the multi-signature account, requiring approvals from multiple owners to authorize transactions. You can customize the number of owners and the required threshold for signatures.
@@ -216,6 +224,11 @@ Below is an explanation of the parameters used during deployment:
    2024-10-20T14:58:42.123Z info: Salt nonce: 77196524336537926223375508408885200380673362997640380014548358436098374575834
    2024-10-20T14:58:48.581Z info: Safe deployed successfully at address: 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    ```
+
+<Aside type="note" title="Record Safe contract addresses">
+  Make sure to record the addresses of the deployed Safe smart accounts. You will need these addresses to interact with
+  the Safe smart accounts in the following steps.
+</Aside>
 
 ### Deploy Tokens
 
@@ -278,6 +291,11 @@ Below is an explanation of the parameters used during deployment:
    2024-10-20T15:11:33.485Z info: Transferring ownership of token to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    2024-10-20T15:11:39.419Z info: Ownership of token transferred to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    ```
+
+<Aside type="note" title="Record Token contract addresses">
+  Make sure to record the addresses of the deployed token contracts. You will need these addresses to interact with the
+  tokens in the following steps.
+</Aside>
 
 ### Accept Ownership of Tokens
 
@@ -383,6 +401,11 @@ Below is an explanation of the parameters used during deployment:
    2024-10-20T15:25:35.977Z info: Transferring ownership of Token Pool to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    2024-10-20T15:25:41.866Z info: Ownership of Token Pool transferred to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    ```
+
+<Aside type="note" title="Record Token Pool contract addresses">
+  Make sure to record the addresses of the deployed token pool contracts. You will need these addresses to interact with
+  the token pools in the following steps.
+</Aside>
 
 ### Accept Ownership of Token Pools
 
@@ -493,6 +516,69 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:10:03.819Z info: Waiting for 2 blocks for transaction 0xc50eeb9f04592e8f2ce0df4717a60d7276d5ff0545530287a32707b1b6252015 to be confirmed...
     2024-10-20T16:10:08.375Z info: Transaction confirmed after 2 blocks.
     2024-10-20T16:10:08.375Z info: Claiming admin of token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b via Safe and accepted admin role successfully.
+   ```
+
+### Grant Mint and Burn Roles using Safe
+
+In this step, you will use the `grantMintBurnRoleFromSafe` task to grant mint and burn roles to both the token pool and the Safe smart account on Ethereum Sepolia and Base Sepolia. The Safe smart account will handle the transaction to securely assign these roles, ensuring that multiple owners sign off on the operation. Granting mint and burn roles is essential to allow the token pool and the Safe account to manage token issuance and burning, and to prepare for future cross-chain transfers.
+
+This process will grant:
+
+- Mint and burn roles to the token pool for handling cross-chain operations.
+- Mint and burn roles to the Safe smart account for minting tokens to EOAs for testing purposes.
+
+Below is an explanation of the parameters used during this task:
+
+| Parameter       | Description                                                                                                                                          | Required |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `tokenaddress`  | The address of the deployed token contract for which mint and burn roles will be granted.                                                            | Yes      |
+| `burnerminters` | A comma-separated list of addresses (token pools and Safe smart account) to which mint and burn roles will be granted.                               | Yes      |
+| `safeaddress`   | The address of the Safe smart account that will execute the transaction to grant mint and burn roles.                                                | Yes      |
+| `network`       | The blockchain on which the mint and burn roles will be granted. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for Base Sepolia. | Yes      |
+
+1. **Grant mint and burn roles on Ethereum Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
+
+   ```bash
+   npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xTokenAddress --burnerminters 0xPoolAddress,0xSafeAddress --safeaddress 0xSafeAddress --network sepolia
+   ```
+
+   Example output:
+
+   ```bash
+    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --burnerminters 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B,0x5899B1556Bc0769F678961B9F9B044DBe1868748 --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
+    2024-10-20T16:55:24.316Z info: Connecting to token contract at 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
+    2024-10-20T16:55:25.919Z info: Setting up Safe transactions to grant mint and burn roles to: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B, 0x5899B1556Bc0769F678961B9F9B044DBe1868748
+    2024-10-20T16:55:26.187Z info: Safe transaction created
+    2024-10-20T16:55:26.798Z info: Safe transaction signed by owner 1
+    2024-10-20T16:55:27.359Z info: Safe transaction signed by owner 2
+    2024-10-20T16:55:27.359Z info: Executing Safe transaction to grant mint and burn roles...
+    2024-10-20T16:55:28.788Z info: Executed Safe transaction
+    2024-10-20T16:55:28.788Z info: Waiting for 2 blocks for transaction 0x6dc4441c3bdef5513a0bd46f7842323b3101c506f1219136ab6e8ce87e5a0111 to be confirmed...
+    2024-10-20T16:55:49.527Z info: Transaction confirmed after 2 blocks.
+    2024-10-20T16:55:49.528Z info: Mint and burn roles granted to 0x1e602Ba0
+
+   ```
+
+1. **Grant mint and burn roles on Base Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
+
+   ```bash
+   npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xTokenAddress --burnerminters 0xPoolAddress,0xSafeAddress --safeaddress 0xSafeAddress --network baseSepolia
+   ```
+
+   Example output:
+
+   ```bash
+    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --burnerminters 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B,0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
+    2024-10-20T16:56:53.698Z info: Connecting to token contract at 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b...
+    2024-10-20T16:56:55.988Z info: Setting up Safe transactions to grant mint and burn roles to: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
+    2024-10-20T16:56:56.335Z info: Safe transaction created
+    2024-10-20T16:56:57.239Z info: Safe transaction signed by owner 1
+    2024-10-20T16:56:58.080Z info: Safe transaction signed by owner 2
+    2024-10-20T16:56:58.080Z info: Executing Safe transaction to grant mint and burn roles...
+    2024-10-20T16:56:59.974Z info: Executed Safe transaction
+    2024-10-20T16:56:59.975Z info: Waiting for 2 blocks for transaction 0x8633b45f1598b35460f953e92f7995daaba9529d501add8771a9fadf6439e075 to be confirmed...
+    2024-10-20T16:57:08.752Z info: Transaction confirmed after 2 blocks.
+    2024-10-20T16:57:08.753Z info: Mint and burn roles granted to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
    ```
 
 ### Set Pool using Safe
@@ -618,69 +704,6 @@ Below is an explanation of the parameters used during this task:
     2024-10-20T16:30:33.975Z info: Pool configured successfully for remote chain sepolia
    ```
 
-### Grant Mint and Burn Roles using Safe
-
-In this step, you will use the `grantMintBurnRoleFromSafe` task to grant mint and burn roles to both the token pool and the Safe smart account on Ethereum Sepolia and Base Sepolia. The Safe smart account will handle the transaction to securely assign these roles, ensuring that multiple owners sign off on the operation. Granting mint and burn roles is essential to allow the token pool and the Safe account to manage token issuance and burning, and to prepare for future cross-chain transfers.
-
-This process will grant:
-
-- Mint and burn roles to the token pool for handling cross-chain operations.
-- Mint and burn roles to the Safe smart account for minting tokens to EOAs for testing purposes.
-
-Below is an explanation of the parameters used during this task:
-
-| Parameter       | Description                                                                                                                                          | Required |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| `tokenaddress`  | The address of the deployed token contract for which mint and burn roles will be granted.                                                            | Yes      |
-| `burnerminters` | A comma-separated list of addresses (token pools and Safe smart account) to which mint and burn roles will be granted.                               | Yes      |
-| `safeaddress`   | The address of the Safe smart account that will execute the transaction to grant mint and burn roles.                                                | Yes      |
-| `network`       | The blockchain on which the mint and burn roles will be granted. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for Base Sepolia. | Yes      |
-
-1. **Grant mint and burn roles on Ethereum Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
-
-   ```bash
-   npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xTokenAddress --burnerminters 0xPoolAddress,0xSafeAddress --safeaddress 0xSafeAddress --network sepolia
-   ```
-
-   Example output:
-
-   ```bash
-    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --burnerminters 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B,0x5899B1556Bc0769F678961B9F9B044DBe1868748 --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-    2024-10-20T16:55:24.316Z info: Connecting to token contract at 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
-    2024-10-20T16:55:25.919Z info: Setting up Safe transactions to grant mint and burn roles to: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B, 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-    2024-10-20T16:55:26.187Z info: Safe transaction created
-    2024-10-20T16:55:26.798Z info: Safe transaction signed by owner 1
-    2024-10-20T16:55:27.359Z info: Safe transaction signed by owner 2
-    2024-10-20T16:55:27.359Z info: Executing Safe transaction to grant mint and burn roles...
-    2024-10-20T16:55:28.788Z info: Executed Safe transaction
-    2024-10-20T16:55:28.788Z info: Waiting for 2 blocks for transaction 0x6dc4441c3bdef5513a0bd46f7842323b3101c506f1219136ab6e8ce87e5a0111 to be confirmed...
-    2024-10-20T16:55:49.527Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:55:49.528Z info: Mint and burn roles granted to 0x1e602Ba0
-
-   ```
-
-1. **Grant mint and burn roles on Base Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
-
-   ```bash
-   npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xTokenAddress --burnerminters 0xPoolAddress,0xSafeAddress --safeaddress 0xSafeAddress --network baseSepolia
-   ```
-
-   Example output:
-
-   ```bash
-    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --burnerminters 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B,0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-    2024-10-20T16:56:53.698Z info: Connecting to token contract at 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b...
-    2024-10-20T16:56:55.988Z info: Setting up Safe transactions to grant mint and burn roles to: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-    2024-10-20T16:56:56.335Z info: Safe transaction created
-    2024-10-20T16:56:57.239Z info: Safe transaction signed by owner 1
-    2024-10-20T16:56:58.080Z info: Safe transaction signed by owner 2
-    2024-10-20T16:56:58.080Z info: Executing Safe transaction to grant mint and burn roles...
-    2024-10-20T16:56:59.974Z info: Executed Safe transaction
-    2024-10-20T16:56:59.975Z info: Waiting for 2 blocks for transaction 0x8633b45f1598b35460f953e92f7995daaba9529d501add8771a9fadf6439e075 to be confirmed...
-    2024-10-20T16:57:08.752Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:57:08.753Z info: Mint and burn roles granted to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-   ```
-
 ### Mint Tokens to an EOA using Safe
 
 In this step, you will use the `mintTokensFromSafe` task to mint tokens to an EOA on Ethereum Sepolia. This process uses a Safe smart account to securely manage the minting process, ensuring that the transaction is signed by multiple owners off-chain before being executed on-chain. These tokens will be used for transfers through CCIP from Ethereum Sepolia to Base Sepolia.
@@ -756,6 +779,8 @@ $ npx hardhat transferTokens --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDF
 2024-10-20T17:03:02.322Z info: Check status of message on https://ccip.chain.link/msg/0x5e6d50efc9a9d325cee140058893698c8e591e0e1b0f36da5d24c04c1d1c3136
 ```
 
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0x5e6d50efc9a9d325cee140058893698c8e591e0e1b0f36da5d24c04c1d1c3136`.
+
 #### Pay fees in native gas tokens
 
 Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
@@ -775,3 +800,5 @@ $ npx hardhat transferTokens --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDF
 2024-10-20T17:05:26.152Z info: ✅ Transferred 2000000000000000000 of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x9d087fc03ae39b088326b67fa3c788236645b717 on chain baseSepolia. Transaction hash: 0x506559fd215347866f0c08ec4d38b1ca4a8882812a37900cf1ec244b9877e78b - CCIP message id: 0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b
 2024-10-20T17:05:26.152Z info: Check status of message on https://ccip.chain.link/msg/0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b
 ```
+
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b`.
