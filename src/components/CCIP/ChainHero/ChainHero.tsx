@@ -82,7 +82,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       version: Version.V1_2_0,
       tokenSymbol: feeToken,
     })
-    const explorerUrl = network.routerExplorerUrl
+    const explorerUrl = network.explorerUrl
     const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
 
     return {
