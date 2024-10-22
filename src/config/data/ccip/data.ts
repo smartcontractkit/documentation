@@ -426,7 +426,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
     })
   }
 
-  return allChains
+  return allChains.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export const getNetwork = ({ chain, filter }: { chain: string; filter: Environment }) => {
@@ -531,7 +531,8 @@ export const getAllNetworkLanes = async ({
       status: operationalData[lane] || undefined,
     }
   })
-  return lanesData
+
+  return lanesData.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export function getAllTokenLanes({
@@ -632,7 +633,14 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
     }
   }
 
-  return allLanes
+  // sorting lanes by source chain name and destination chain name
+  return allLanes.sort((a, b) => {
+    if (a.sourceNetwork.name > b.sourceNetwork.name) return 1
+    if (a.sourceNetwork.name < b.sourceNetwork.name) return -1
+    if (a.destinationNetwork.name > b.destinationNetwork.name) return 1
+    if (a.destinationNetwork.name < b.destinationNetwork.name) return -1
+    return 0
+  })
 }
 
 export async function getOperationalState(chain: string, site: string) {

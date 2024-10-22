@@ -25,14 +25,16 @@ const networks = getAllNetworks({ filter: environment })
 const allTokens = getTokensOfChain({
   chain: network?.chain || "",
   filter: environment,
-}).map((token) => {
-  const logo = getTokenIconUrl(token) || ""
-  return {
-    name: token,
-    logo,
-    totalNetworks: networks.length, // Add totalNetworks property
-  }
 })
+  .map((token) => {
+    const logo = getTokenIconUrl(token) || ""
+    return {
+      name: token,
+      logo,
+      totalNetworks: networks.length, // Add totalNetworks property
+    }
+  })
+  .sort((a, b) => a.name.localeCompare(b.name))
 
 const lanes = await getAllNetworkLanes({
   environment: environment,
