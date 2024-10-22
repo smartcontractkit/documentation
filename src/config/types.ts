@@ -20,6 +20,7 @@ export type SupportedTechnology =
   | "KROMA"
   | "MODE"
   | "ZKSYNC"
+  | "SONEIUM"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -62,6 +63,7 @@ export type SupportedChain =
   | "KROMA_SEPOLIA"
   | "MODE_MAINNET"
   | "MODE_SEPOLIA"
+  | "SONEIUM_MINATO"
 
 export type Chains = Record<
   SupportedTechnology,
