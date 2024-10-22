@@ -37,6 +37,7 @@ export const productChainLinks: ProductChainLinks = {
       zksync: "/ccip/supported-networks/v1_2_0/mainnet#zksync-mainnet",
       linea: "/ccip/supported-networks/v1_2_0/mainnet#linea-mainnet",
       scroll: "/ccip/supported-networks/v1_2_0/mainnet#scroll-mainnet",
+      soneium: "/ccip/supported-networks/v1_2_0/testnet#soneium-minato-ethereum-sepolia",
     },
   },
   "Data Feeds": {
