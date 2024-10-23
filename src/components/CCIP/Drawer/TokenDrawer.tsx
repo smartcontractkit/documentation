@@ -46,6 +46,20 @@ function TokenDrawer({
 }) {
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
+
+  const laneRows = Object.keys(destinationLanes).map((lane) => {
+    const networkDetails = getNetwork({
+      filter: environment,
+      chain: lane,
+    })
+    const laneData = getLane({
+      sourceChain: network?.key as SupportedChain,
+      destinationChain: lane as SupportedChain,
+      environment,
+      version: Version.V1_2_0,
+    })
+    return { networkDetails, laneData, lane }
+  })
   return (
     <div>
       <h2 className="ccip-table__drawer-heading">Token details</h2>
@@ -139,24 +153,16 @@ function TokenDrawer({
               </tr>
             </thead>
             <tbody>
-              {Object.keys(destinationLanes)
-                ?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
-                .map((lane, index) => {
-                  const networkDetails = getNetwork({
-                    filter: environment,
-                    chain: lane,
-                  })
-                  const laneData = getLane({
-                    sourceChain: network?.key as SupportedChain,
-                    destinationChain: lane as SupportedChain,
-                    environment,
-                    version: Version.V1_2_0,
-                  })
-
-                  if (!laneData) return null
+              {laneRows
+                ?.filter(
+                  ({ networkDetails }) =>
+                    networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
+                )
+                .map(({ networkDetails, laneData, lane }) => {
+                  if (!laneData || !networkDetails) return null
 
                   return (
-                    <tr key={index}>
+                    <tr key={networkDetails.name}>
                       <td>
                         <div
                           className="ccip-table__network-name"
@@ -220,8 +226,9 @@ function TokenDrawer({
         </div>
 
         <div className="ccip-table__notFound">
-          {Object.keys(destinationLanes)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase())).length ===
-            0 && <>No lanes found</>}
+          {laneRows?.filter(
+            ({ networkDetails }) => networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
+          ).length === 0 && <>No lanes found</>}
         </div>
       </div>
     </div>
