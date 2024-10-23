@@ -44,6 +44,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MODE_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.mode.network"),
   BLAST_MAINNET: () => new providers.JsonRpcProvider("https://rpc.blast.io"),
   BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
+  SONEIUM_MINATO: () => new providers.JsonRpcProvider("	https://rpc.minato.soneium.org/"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
