@@ -372,6 +372,15 @@ const StreamsNetworksData = [
       explorerUrl: "https://sepolia.basescan.org/address/%s",
     },
   },
+  {
+    network: "Soneium",
+    logoUrl: "/assets/chains/soneium.svg",
+    testnet: {
+      label: "Soneium Minato Testnet",
+      verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
+      explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+    },
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {
@@ -391,31 +400,34 @@ export const StreamsVerifierProxyTable = () => {
               <div className={tableStyles.assetPair}>{network.network}</div>
             </td>
             <td style="width:80%;">
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
-                <a
-                  style={{ fontSize: "0.9em" }}
-                  class={tableStyles.addressLink}
-                  href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                  target="_blank"
-                >
-                  {network.mainnet.verifierProxy}
-                </a>
-                <button
-                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={network.mainnet.verifierProxy}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "STREAMS",
-                      action: "verifierProxyAddress_copied",
-                      extraInfo1: "Mainnet",
-                      extraInfo2: network.mainnet.label,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                </button>
-              </div>
+              {network.mainnet && (
+                <div className={tableStyles.assetAddress}>
+                  <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
+                  <a
+                    style={{ fontSize: "0.9em" }}
+                    class={tableStyles.addressLink}
+                    href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
+                    target="_blank"
+                  >
+                    {network.mainnet.verifierProxy}
+                  </a>
+                  <button
+                    class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                    data-clipboard-text={network.mainnet.verifierProxy}
+                    onClick={(e) =>
+                      handleClick(e, {
+                        product: "STREAMS",
+                        action: "verifierProxyAddress_copied",
+                        extraInfo1: "Mainnet",
+                        extraInfo2: network.mainnet.label,
+                      })
+                    }
+                  >
+                    <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                  </button>
+                </div>
+              )}
+
               <div className={tableStyles.assetAddress}>
                 <span style="font-size: 0.9em;">{network.testnet.label}: </span>
                 <a
@@ -441,11 +453,13 @@ export const StreamsVerifierProxyTable = () => {
                   <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
                 </button>
               </div>
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em; padding-top: 1em;">
-                  Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
-                </span>
-              </div>
+              {network.networkStatus && (
+                <div className={tableStyles.assetAddress}>
+                  <span style="font-size: 0.9em; padding-top: 1em;">
+                    Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
+                  </span>
+                </div>
+              )}
             </td>
           </tr>
         ))}
