@@ -141,7 +141,7 @@ By the end of this tutorial, you will have successfully deployed, registered, co
        npx env-enc set-pw
        ```
 
-    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Arbitrum Sepolia testnets. Use the following command to add the variables:
+    1. Set up a `.env.enc` file with the necessary variables for Ethereum Sepolia and BASE Sepolia testnets. Use the following command to add the variables:
 
        ```bash
        npx env-enc set
@@ -150,11 +150,11 @@ By the end of this tutorial, you will have successfully deployed, registered, co
        Variables to configure:
 
        - `ETHEREUM_SEPOLIA_RPC_URL`: A URL for the _Ethereum Sepolia_ testnet. You can get a personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
-       - `Base_SEPOLIA_RPC_URL`: A URL for the _Arbitrum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - `Base_SEPOLIA_RPC_URL`: A URL for the _BASE Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
        - `PRIVATE_KEY`: The private key for the first signer of the Safe multisig account. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is used to create and sign the transaction of the first signer.
        - `PRIVATE_KEY_2`: The private key for the second signer of the Safe multisig account. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is used to create and sign the transaction of the second signer.
        - `ETHERSCAN_API_KEY`: An API key from Etherscan to verify your contracts. You can obtain one from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
-       - `BASESCAN_API_KEY`: An API key from Basescan to verify your contracts on Arbitrum. See [this guide](https://docs.basescan.org/getting-started/viewing-api-usage-statistics) to get one from Basescan.
+       - `BASESCAN_API_KEY`: An API key from Basescan to verify your contracts on BASE. See [this guide](https://docs.basescan.org/getting-started/viewing-api-usage-statistics) to get one from Basescan.
 
 1.  **Fund the EOA linked to the first private key with LINK and native gas tokens**:  
     Make sure your EOA has enough LINK and native gas tokens on Ethereum Sepolia and Base Sepolia to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens. **Important clarifications**:
@@ -388,6 +388,12 @@ Below is an explanation of the parameters used during deployment:
    ```
 
 1. **Deploy a Burn and Mint token pool on Base Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
+
+   ```bash
+   npx hardhat deployTokenPoolWithSafe --tokenaddress 0xTokenAddress --safeaddress 0xSafeAddress --verifycontract true --network baseSepolia
+   ```
+
+   Example output:
 
    ```bash
    $ npx hardhat deployTokenPoolWithSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --verifycontract true --network baseSepolia
@@ -749,18 +755,18 @@ You will interact with the `IRouterClient` contract, specifically calling the `c
 
 Below is an explanation of the parameters used during the token transfer process:
 
-| Parameter          | Description                                                                                                                                      | Default | Required |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
-| `tokenaddress`     | The address of the token being transferred.                                                                                                      | N/A     | Yes      |
-| `amount`           | The amount of tokens to transfer.                                                                                                                | N/A     | Yes      |
-| `destinationchain` | The blockchain to which the tokens will be transferred. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.       | N/A     | Yes      |
-| `receiveraddress`  | The address of the receiver on the destination blockchain.                                                                                       | N/A     | Yes      |
-| `fee`              | The type of fee used for the transfer, either `LINK` or `native`.                                                                                | `LINK`  | No       |
-| `network`          | The blockchain on which the token transfer will be initiated. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter          | Description                                                                                                  | Default | Required |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | ------- | -------- |
+| `tokenaddress`     | The address of the token being transferred.                                                                  | N/A     | Yes      |
+| `amount`           | The amount of tokens to transfer.                                                                            | N/A     | Yes      |
+| `destinationchain` | The blockchain to which the tokens will be transferred. Examples include `baseSepolia`, and `sepolia`.       | N/A     | Yes      |
+| `receiveraddress`  | The address of the receiver on the destination blockchain.                                                   | N/A     | Yes      |
+| `fee`              | The type of fee used for the transfer, either `LINK` or `native`.                                            | `LINK`  | No       |
+| `network`          | The blockchain on which the token transfer will be initiated. Examples include `baseSepolia`, and `sepolia`. | N/A     | Yes      |
 
 #### Pay fees in LINK
 
-Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in LINK tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
+Call the CCIP Router to transfer tokens from Ethereum Sepolia to BASE Sepolia, paying the CCIP fees in LINK tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
 npx hardhat transferTokens --tokenaddress 0xTokenAddress --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0xReceiverAddress --fee LINK --network sepolia
@@ -783,7 +789,7 @@ You can check the status of the message on the [Chainlink CCIP Explorer](https:/
 
 #### Pay fees in native gas tokens
 
-Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
+Call the CCIP Router to transfer tokens from Ethereum Sepolia to BASE Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
 npx hardhat transferTokens --tokenaddress 0xTokenAddress --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0xReceiverAddress --fee native --network sepolia
