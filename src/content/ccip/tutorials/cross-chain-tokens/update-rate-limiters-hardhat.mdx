@@ -35,7 +35,7 @@ This tutorial will guide you through the process of updating the rate limiter se
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
-- **Admin access**: You must have admin privileges for the token pool you intend to update.
+- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/token-pool#setchainratelimiterconfig) function for your token pools.
 
 ## Before You Begin
 
@@ -97,6 +97,8 @@ This tutorial will guide you through the process of updating the rate limiter se
 
        - <CopyText text="AVALANCHE_FUJI_RPC_URL" code />: A URL for the _Avalanche Fuji_ testnet. You can get a personal
          endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - <CopyText text="ARBITRUM_SEPOLIA_RPC_URL" code />: A URL for the _Arbitrum Sepolia_ testnet. You can get a
+         personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
        - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet. If you use MetaMask, you can
          follow this
          [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/)
@@ -121,33 +123,65 @@ Use the `getPoolConfig` task to fetch the current settings:
 npx hardhat getPoolConfig --pooladdress <POOL_ADDRESS> --network <NETWORK_NAME>
 ```
 
-Replace `<POOL_ADDRESS>` with your token pool address and `<NETWORK_NAME>` with the network (e.g., `avalancheFuji`).
+1. **Check the current configuration for Avalanche Fuji**: Replace `<POOL_ADDRESS>` with your token pool address and `<NETWORK_NAME>` with `avalancheFuji`.
 
-Example:
+   Example:
 
-```bash
-npx hardhat getPoolConfig --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --network avalancheFuji
-```
+   ```bash
+   npx hardhat getPoolConfig --pooladdress 0xa6aca9013b111228433da2aea186cb267d74fc0f --network avalancheFuji
+   ```
 
-Expected output:
+   Expected output:
 
-```bash
-info: Fetching configuration for pool at address: 0x02552EAE370aeb997015dA41398F0a53F693d77E
-info: Configuration for Remote Chain: arbitrumSepolia
-info:   Allowed: true
-info:   Remote Pool Address: 0x41833AE7B0BCa169E090C752021070aC947d1821
-info:   Remote Token Address: 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
-info:   Outbound Rate Limiter:
-info:     Enabled: false
-info:     Capacity: 0
-info:     Rate: 0
-info:   Inbound Rate Limiter:
-info:     Enabled: false
-info:     Capacity: 0
-info:     Rate: 0
-```
+   ```bash
+   $ npx hardhat getPoolConfig --pooladdress 0xa6aca9013b111228433da2aea186cb267d74fc0f --network avalancheFuji
+   2024-10-23T08:56:57.681Z info: Fetching configuration for pool at address: 0xa6aca9013b111228433da2aea186cb267d74fc0f
+   2024-10-23T08:56:58.716Z info:
+   Configuration for Remote Chain: arbitrumSepolia
+   2024-10-23T08:56:58.716Z info:   Allowed: true
+   2024-10-23T08:56:58.716Z info:   Remote Pool Address: 0xCA0D481BFb1877b16b9e810C81390C7Ba757a510
+   2024-10-23T08:56:58.716Z info:   Remote Token Address: 0xABc3B3cEC3978d831e5585fc6cBCc11B5fEDA2fc
+   2024-10-23T08:56:58.716Z info:   Outbound Rate Limiter:
+   2024-10-23T08:56:58.716Z info:     Enabled: false
+   2024-10-23T08:56:58.717Z info:     Capacity: 0
+   2024-10-23T08:56:58.717Z info:     Rate: 0
+   2024-10-23T08:56:58.717Z info:   Inbound Rate Limiter:
+   2024-10-23T08:56:58.717Z info:     Enabled: false
+   2024-10-23T08:56:58.717Z info:     Capacity: 0
+   2024-10-23T08:56:58.717Z info:     Rate: 0
+   ```
 
-In this example, the rate limiter settings are currently disabled for both outbound and inbound transfers.
+   In this example, the rate limiter settings are currently disabled for both outbound and inbound transfers.
+
+1. **Check the current configuration for Arbitrum Sepolia**: Replace `<POOL_ADDRESS>` with your token pool address and `<NETWORK_NAME>` with `arbitrumSepolia`.
+
+   Example:
+
+   ```bash
+   npx hardhat getPoolConfig --pooladdress 0xCA0D481BFb1877b16b9e810C81390C7Ba757a510 --network arbitrumSepolia
+   ```
+
+   Expected output:
+
+   ```bash
+   $ npx hardhat getPoolConfig --pooladdress 0xCA0D481BFb1877b16b9e810C81390C7Ba757a510 --network arbitrumSepolia
+   2024-10-23T09:02:19.487Z info: Fetching configuration for pool at address: 0xCA0D481BFb1877b16b9e810C81390C7Ba757a510
+   2024-10-23T09:02:20.175Z info:
+   Configuration for Remote Chain: avalancheFuji
+   2024-10-23T09:02:20.176Z info:   Allowed: true
+   2024-10-23T09:02:20.176Z info:   Remote Pool Address: 0xA6Aca9013b111228433DA2AeA186cb267D74fc0f
+   2024-10-23T09:02:20.176Z info:   Remote Token Address: 0xcB19276D94d82bD0AceB9FD960dF6c69E42EE1c6
+   2024-10-23T09:02:20.176Z info:   Outbound Rate Limiter:
+   2024-10-23T09:02:20.176Z info:     Enabled: false
+   2024-10-23T09:02:20.176Z info:     Capacity: 0
+   2024-10-23T09:02:20.176Z info:     Rate: 0
+   2024-10-23T09:02:20.176Z info:   Inbound Rate Limiter:
+   2024-10-23T09:02:20.176Z info:     Enabled: false
+   2024-10-23T09:02:20.177Z info:     Capacity: 0
+   2024-10-23T09:02:20.177Z info:     Rate: 0
+   ```
+
+   In this example, the rate limiter settings are currently disabled for both outbound and inbound transfers.
 
 ### Update rate limiter settings
 
@@ -192,16 +226,24 @@ npx hardhat updateRateLimiters \
 
 **Example command**:
 
-Suppose you want to configure your token pool on Avalanche Fuji to interact with Arbitrum Sepolia, enabling rate limits as follows:
+Suppose you want to configure your token pool on Avalanche Fuji to interact with Arbitrum Sepolia, enabling rate limits as follows. We will use an existing token pool that interacts with an ERC20 token with 18 decimals:
 
-- Outbound Rate Limiter:
-  - Enabled: `true`
-  - Capacity: `1000000000000000000000` (1,000 tokens in wei)
-  - Rate: `10000000000000000000` (10 tokens per second in wei)
-- Inbound Rate Limiter:
-  - Enabled: `true`
-  - Capacity: `2000000000000000000000` (2,000 tokens in wei)
-  - Rate: `20000000000000000000` (20 tokens per second in wei)
+- **Outbound Rate Limiter**:
+
+  - **Enabled**: `true`
+  - **Capacity**: `1000000000000000000000` wei (equivalent to 1,000 tokens, based on 18 decimals)
+  - **Rate**: `10000000000000000000` wei (equivalent to 10 tokens per second, based on 18 decimals)
+  - **Note**:
+    - `Capacity / Rate = 1,000 / 10 = 100 seconds`
+    - It takes **100 seconds** to replenish the bucket from 0 to full capacity.
+
+- **Inbound Rate Limiter**:
+  - **Enabled**: `true`
+  - **Capacity**: `2000000000000000000000` wei (equivalent to 2,000 tokens, based on 18 decimals)
+  - **Rate**: `10000000000000000000` wei (equivalent to 10 tokens per second, based on 18 decimals)
+  - **Note**:
+    - `Capacity / Rate = 2,000 / 10 = 200 seconds`
+    - It takes **200 seconds** to replenish the bucket from 0 to full capacity.
 
 Use the following command:
 
