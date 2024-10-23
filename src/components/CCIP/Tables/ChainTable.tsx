@@ -59,7 +59,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
           <tr>
             <th>{inOutbound === LaneFilter.Outbound ? "Destination" : "Source"} network</th>
             <th>{inOutbound === LaneFilter.Outbound ? "OnRamp" : "OffRamp"} address</th>
-            {/* <th>Status</th> */}
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
