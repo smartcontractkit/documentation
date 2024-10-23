@@ -262,14 +262,15 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               {feeTokensWithAddress.map(({ token, address, logo }, index) => {
                 return (
                   <div key={index} className="ccip-chain-hero__feeTokens__item" data-clipboard-type="fee-token">
-                    <img
-                      src={logo}
-                      alt={token}
+                    <object
+                      data={logo}
+                      type="image/png"
+                      width="20px"
+                      height="20px"
                       className="ccip-chain-hero__feeTokens__item__logo"
-                      onError={(event) => {
-                        ;(event.target as HTMLImageElement).setAttribute("src", fallbackTokenIconUrl)
-                      }}
-                    />
+                    >
+                      <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
+                    </object>
                     <div>{token}</div>
                     <Address endLength={4} contractUrl={address} />
                   </div>
@@ -277,14 +278,15 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               })}
               {!nativeTokenHasAddress() && nativeCurrency && (
                 <div key={"native-token"} className="ccip-chain-hero__feeTokens__item">
-                  <img
-                    src={`${getTokenIconUrl(nativeCurrency.symbol)}`}
-                    alt={`${nativeCurrency.symbol} icon`}
-                    onError={(event) => {
-                      ;(event.target as HTMLImageElement).setAttribute("src", fallbackTokenIconUrl)
-                    }}
+                  <object
+                    data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                    type="image/png"
+                    width="20px"
+                    height="20px"
                     className="ccip-chain-hero__feeTokens__item__logo"
-                  />
+                  >
+                    <img src={fallbackTokenIconUrl} alt={`${nativeCurrency.symbol} icon`} width="20px" height="20px" />
+                  </object>
                   <div>{nativeCurrency.symbol} </div>
                   <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
                 </div>

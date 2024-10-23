@@ -513,7 +513,7 @@ export const getAllNetworkLanes = async ({
       address: string
       version: string
     }
-    operational: string | undefined
+    status: string | undefined
   }[] = Object.keys(allLanes).map((lane) => {
     const laneData = allLanes[lane]
 

@@ -2,7 +2,7 @@ import { Environment, getAllTokenLanes, getTokenData, Version } from "~/config/d
 import TokenCard from "../Cards/TokenCard"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDrawer from "../Drawer/TokenDrawer"
-import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle } from "~/features/utils"
+import { directoryToSupportedChain, getChainIcon, getTitle } from "~/features/utils"
 import React from "react"
 
 interface ChainTokenGridProps {
