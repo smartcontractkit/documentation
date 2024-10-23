@@ -422,6 +422,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/concepts/best-practice",
         },
         {
+          title: "Service Limits",
+          url: "chainlink-automation/overview/service-limits",
+        },
+        {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
