@@ -1,10 +1,10 @@
 ---
 section: ccip
 date: Last Modified
-title: "Reconfigure rate limiter settings for outbound and inbound transfers using Hardhat"
+title: "Update rate limiter settings for outbound and inbound transfers using Hardhat"
 ---
 
-import { Aside, PageTabs } from "@components"
+import { Aside, PageTabs, CopyText } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <CcipCommon callout="selfServeCallout" />
@@ -13,20 +13,20 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
   pages={[
     {
       name: "Hardhat",
-      url: "/ccip/tutorials/cross-chain-tokens/reconfigure-rate-limiter-hardhat",
+      url: "/ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
       width: "270px",
     },
     {
       name: "Foundry",
-      url: "/ccip/tutorials/cross-chain-tokens/reconfigure-rate-limiter-foundry",
+      url: "/ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
       width: "270px",
     },
   ]}
 />
 
-This tutorial will guide you through the process of reconfiguring the rate limiter settings for outbound and inbound transfers in your deployed token pools using [Hardhat](https://hardhat.org/). You will first review existing rate limiter settings and then reconfigure them.
+This tutorial will guide you through the process of updating the rate limiter settings for outbound and inbound transfers in your deployed token pools using [Hardhat](https://hardhat.org/). You will first review existing rate limiter settings and then update them.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ This tutorial will guide you through the process of reconfiguring the rate limit
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
-- **Admin access**: You must have admin privileges for the token pool you intend to reconfigure.
+- **Admin access**: You must have admin privileges for the token pool you intend to update.
 
 ## Before You Begin
 
@@ -95,8 +95,12 @@ This tutorial will guide you through the process of reconfiguring the rate limit
 
        Variables to configure:
 
-       - `AVALANCHE_FUJI_RPC_URL`: A URL for the _Avalanche Fuji_ testnet. You can get a personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
-       - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is required for signing transactions like token transfers.
+       - <CopyText text="AVALANCHE_FUJI_RPC_URL" code />: A URL for the _Avalanche Fuji_ testnet. You can get a personal
+         endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet. If you use MetaMask, you can
+         follow this
+         [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/)
+         to export your private key. **Note:** This key is required for signing transactions like token transfers.
 
 1.  **Fund your EOA with native gas tokens**:  
     Make sure your EOA has enough native gas tokens on Avalanche Fuji to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
@@ -145,13 +149,13 @@ info:     Rate: 0
 
 In this example, the rate limiter settings are currently disabled for both outbound and inbound transfers.
 
-### Reconfigure rate limiter settings
+### Update rate limiter settings
 
-Use the `updateRateLimiters` task to modify the rate limiter configurations for an existing chain connection in your token pool. This task specifically interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
+Use the `updateRateLimiters` task to update the rate limiter configurations for an existing chain connection in your token pool. This task specifically interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
 
-The `updateRateLimiters` task enables you to:
+The `updateRateLimiters` task allows you to:
 
-- Enable or disable rate limiting for both outbound and inbound transfers.
+- Enable or disable rate limiting for outbound or inbound transfers or both.
 - Set the capacity and rate for the rate limiters, controlling the flow of tokens.
 - Target a specific remote chain, updating rate limits for that chain only.
 
@@ -161,12 +165,13 @@ Below is an explanation of the parameters used during the rate limiter update pr
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
 | `pooladdress`               | The address of the token pool being configured.                                                                                                        | N/A     | Yes      |
 | `remotechain`               | The remote blockchain to which this pool is linked. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.                 | N/A     | Yes      |
+| `ratelimiter`               | Specifies which rate limiters to update: `inbound`, `outbound`, or `both`.                                                                             | `both`  | No       |
 | `outboundratelimitenabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers (`true` or `false`).                                                | `false` | No       |
-| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note**: Applicable if outbound rate limits are enabled.          | `0`     | No       |
-| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note**: Applicable if outbound rate limits are enabled. | `0`     | No       |
+| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled.          | `0`     | No       |
+| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled. | `0`     | No       |
 | `inboundratelimitenabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers (`true` or `false`).                                                 | `false` | No       |
-| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note**: Applicable if inbound rate limits are enabled.            | `0`     | No       |
-| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note**: Applicable if inbound rate limits are enabled.   | `0`     | No       |
+| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.            | `0`     | No       |
+| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.   | `0`     | No       |
 | `network`                   | The blockchain network where the local token pool is deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.      | N/A     | Yes      |
 
 **Command syntax**:
@@ -175,6 +180,7 @@ Below is an explanation of the parameters used during the rate limiter update pr
 npx hardhat updateRateLimiters \
   --pooladdress <POOL_ADDRESS> \
   --remotechain <REMOTE_CHAIN> \
+  --ratelimiter <inbound/outbound/both> \
   --outboundratelimitenabled <true/false> \
   --outboundratelimitcapacity <OUTBOUND_CAPACITY> \
   --outboundratelimitrate <OUTBOUND_RATE> \
@@ -193,7 +199,7 @@ Suppose you want to configure your token pool on Avalanche Fuji to interact with
   - Capacity: `1000000000000000000000` (1,000 tokens in wei)
   - Rate: `10000000000000000000` (10 tokens per second in wei)
 - Inbound Rate Limiter:
-  - Enabled: true
+  - Enabled: `true`
   - Capacity: `2000000000000000000000` (2,000 tokens in wei)
   - Rate: `20000000000000000000` (20 tokens per second in wei)
 
@@ -203,6 +209,7 @@ Use the following command:
 npx hardhat updateRateLimiters \
   --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E \
   --remotechain arbitrumSepolia \
+  --ratelimiter both \
   --outboundratelimitenabled true \
   --outboundratelimitcapacity 1000000000000000000000 \
   --outboundratelimitrate 10000000000000000000 \
@@ -215,7 +222,27 @@ npx hardhat updateRateLimiters \
 Expected output:
 
 ```bash
-info: Updating rate limiters for token pool: 0x02552EAE370aeb997015dA41398F0a53F693d77E and chain selector: 3478487238524512106 (arbitrumSepolia)
+info: Current Rate Limiters for token pool: 0x02552EAE370aeb997015dA41398F0a53F693d77E
+info:   Outbound Rate Limiter:
+info:     Enabled: true
+info:     Capacity: 1000000000000000000000
+info:     Rate: 10000000000000000000
+info:   Inbound Rate Limiter:
+info:     Enabled: true
+info:     Capacity: 2000000000000000000000
+info:     Rate: 20000000000000000000
+info:
+info: ========== Updating Rate Limiters ==========
+info: New Outbound Rate Limiter:
+info:   Enabled: true
+info:   Capacity: 1000000000000000000000
+info:   Rate: 10000000000000000000
+info: New Inbound Rate Limiter:
+info:   Enabled: true
+info:   Capacity: 2000000000000000000000
+info:   Rate: 20000000000000000000
+info: Updating both rate limiters...
+info: Transaction hash: 0x795abc5f12e66975881668b33a3be67b5dbded59ad71e4611aa5fa5ddcdd2135
 info: Rate limiters updated successfully
 ```
 
