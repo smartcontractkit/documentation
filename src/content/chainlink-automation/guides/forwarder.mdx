@@ -10,7 +10,7 @@ whatsnext:
   }
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Aside, ClickToZoom, CodeSample } from "@components"
 
 This tutorial explains how to use the `Forwarder` to add additional security to your Automation upkeeps. To learn how other Chainlink Automation contracts work, click [here](/chainlink-automation/reference/automation-contracts).
 
@@ -27,8 +27,17 @@ If your upkeep's perform function needs to be permissioned, please consider addi
 To make this work you will need to:
 
 - Create `forwarder` as a mutable address variable on your contract that only _you_ can update. `forwarder` is a unique value that cannot change for your upkeep.
-- Create `setForwarder` function so you can update the `forwarder` address.
-- After registration run `setForwarder` with the forwarder address in your UI, or programmatically fetch it using `registry.getForwarder(upkeepID)` using the Registry interface.
+- Create a `setForwarder` function in your contract so you can update the `forwarder` address.
+- Register your upkeep and retreive its forwarder address. After registration, your upkeep's forwarder address is available in the Chainlink Automation App. Alternatively, you can fetch it programmatically using `registry.getForwarder(upkeepID)` from the Registry interface.
+- Run `setForwarder` with the forwarder address.
+
+<Aside type="caution" title="Permissioning for time-based upkeeps">
+For time-based upkeeps, do **not** use the forwarder address. Instead, use the **Upkeep address** shown in the Chainlink Automation App:
+<ClickToZoom src="/images/automation/cron-upkeep-address.png" alt="Upkeep address in Chainlink Automation App" />
+
+For time-based upkeeps, the **Upkeep address** is the address of the contract that is calling your contract. You can follow the same steps listed above, and substitute the **Upkeep address** for the forwarder address.
+
+</Aside>
 
 ## Code example
 
