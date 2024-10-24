@@ -26,6 +26,7 @@ export const evmProducts = [
     description: "Global standard for building secure cross-chain applications.",
     docsLandingLink: "/ccip",
     learnMoreLink: "https://dev.chain.link/products/ccip",
+    sdkLink: "https://github.com/smartcontractkit/ccip-javascript-sdk",
     image: ccipLogo,
     shape: ccipShape,
     chains: [

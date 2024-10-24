@@ -23,6 +23,10 @@ export const megaMenuSections = [
             label: "Learn",
             href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMoreLink,
           },
+          {
+            label: "SDK",
+            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.sdkLink,
+          },
         ],
       },
     ],

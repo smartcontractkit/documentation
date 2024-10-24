@@ -11,6 +11,7 @@ export type ProductCardProps = {
   shape: ImageMetadata
   docsLandingLink: string
   learnMoreLink: string
+  sdkLink?: string
   chains: { id: string; title: string }[]
 }
 
