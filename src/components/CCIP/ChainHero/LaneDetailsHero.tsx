@@ -72,7 +72,9 @@ function LaneDetailsHero({
           </>
         )}
         <div className="lane-details-hero__details__label">Destination chain selector</div>
-        <div>{destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"} </div>
+        <div data-clipboard-type="destination-chain-selector">
+          {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
+        </div>
         <div className="lane-details-hero__details__label">RMN</div>
         <div>
           {rmnPermeable ? (

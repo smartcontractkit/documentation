@@ -152,7 +152,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
+              <div className="ccip-chain-hero__details__label" data-clipboard-type="chain-selector">
                 Chain selector
                 <Tooltip
                   label=""
