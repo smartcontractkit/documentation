@@ -2,7 +2,7 @@ import Address from "~/components/AddressReact"
 import "./Table.css"
 import Tabs from "./Tabs"
 import TableSearchInput from "./TableSearchInput"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { getExplorerAddressUrl } from "~/features/utils"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
@@ -10,6 +10,7 @@ import { Environment, Version } from "~/config/data/ccip/types"
 import { getLane, LaneFilter } from "~/config/data/ccip"
 import { SupportedChain } from "~/config"
 import { clsx } from "~/lib"
+import SeeMore from "../SeeMore/SeeMore"
 
 interface TableProps {
   environment: Environment
@@ -32,9 +33,18 @@ interface TableProps {
   explorerUrl: string
 }
 
+const BEFORE_SEE_MORE = 12 // Number of networks to show before the "See more" button, 7 rows
+
 function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TableProps) {
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [search, setSearch] = useState("")
+  const [seeMore, setSeeMore] = useState(lanes.length <= BEFORE_SEE_MORE)
+
+  useEffect(() => {
+    if (search.length > 0) {
+      setSeeMore(true)
+    }
+  }, [search])
 
   return (
     <>
@@ -66,6 +76,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
           <tbody>
             {lanes
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
+              .slice(0, seeMore ? lanes.length : BEFORE_SEE_MORE)
               .map((network, index) => (
                 <tr key={index}>
                   <td>
@@ -130,7 +141,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
           </tbody>
         </table>
       </div>
-
+      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
       <div className="ccip-table__notFound">
         {lanes.filter((network) => network.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
           <>No lanes found</>

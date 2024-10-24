@@ -10,10 +10,9 @@ import {
   getSearchLanes,
   Version,
 } from "~/config/data/ccip"
-import NetworkCard from "~/components/CCIP/Cards/NetworkCard"
-import TokenCard from "~/components/CCIP/Cards/TokenCard"
 import { getTokenIconUrl } from "~/features/utils"
-import Drawer from "../Drawer/Drawer"
+import NetworkGrid from "./NetworkGrid"
+import TokenGrid from "../TokenGrid/TokenGrid"
 export type Props = {
   environment: Environment
 }
@@ -48,45 +47,22 @@ const searchLanes = getSearchLanes({ environment })
       <div class="ccip-heading">
         <h2>Networks {environment} <span>({networks.length})</span></h2>
       </div>
-      <div class="networks__grid">
-        {
-          networks.map((chain) => (
-            <a href={`/ccip/supported-networks/${environment}/chain/${chain.chain}`}>
-              <NetworkCard
-                name={chain.name}
-                totalLanes={chain.totalLanes}
-                totalTokens={chain.totalTokens}
-                logo={chain.logo}
-              />
-            </a>
-          ))
-        }
-      </div>
+      <NetworkGrid networks={networks} environment={environment} client:load />
     </div>
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
-        <a class="button secondary" href="/ccip/concepts/cross-chain-tokens">List my token</a>
+        <a class="button secondary" href="/ccip/concepts/cross-chain-tokens">Add my token</a>
       </div>
 
-      <div class="tokens__grid">
-        {
-          allTokens.map((token) => (
-            <TokenCard
-              name={token.name}
-              logo={token.logo}
-              link={`/ccip/supported-networks/${environment}/token/${token.name}`}
-            />
-          ))
-        }
-      </div>
+      <TokenGrid tokens={allTokens} environment={environment} client:load />
     </div>
   </section>
 </CcipLayout>
 
 <style>
   .layout {
-    --gutter: var(--space-6x);
+    --gutter: var(--space-10x);
     --doc-padding: var(--space-6x);
     margin: var(--space-8x) auto;
     display: flex;
@@ -116,18 +92,6 @@ const searchLanes = getSearchLanes({ environment })
     letter-spacing: 0.5px;
   }
 
-  .networks__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-2x);
-  }
-
-  .tokens__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: var(--space-2x);
-  }
-
   @media (min-width: 50em) {
     .layout {
       max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
@@ -137,20 +101,12 @@ const searchLanes = getSearchLanes({ environment })
 
   @media (min-width: 992px) {
     .layout {
-      --doc-padding: var(--space-6x);
+      --doc-padding: var(--space-10x);
       display: grid;
+      padding-top: var(--doc-padding);
+      padding-bottom: var(--doc-padding);
       grid-template-columns: 1fr 1fr;
       gap: var(--space-24x);
-    }
-
-    .networks__grid {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-6x);
-    }
-
-    .tokens__grid {
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-      gap: var(--space-4x);
     }
   }
 </style>
