@@ -1020,6 +1020,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
             },
             {
+              title: "Set Token Pool rate limits using Hardhat",
+              url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+            },
+            {
               title: "Register from a Safe Smart Account (Burn & Mint)",
               url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
             },
