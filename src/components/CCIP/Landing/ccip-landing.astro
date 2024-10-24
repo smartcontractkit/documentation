@@ -42,7 +42,6 @@ const searchLanes = getSearchLanes({ environment })
 ---
 
 <CcipLayout frontmatter={entry.data} {headings} environment={environment}>
-  <Drawer client:only="react" />
   <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
   <section class="layout">
     <div>
@@ -88,11 +87,10 @@ const searchLanes = getSearchLanes({ environment })
 <style>
   .layout {
     --gutter: var(--space-6x);
-    --doc-padding: 2rem;
-    /* margin-bottom: 0; */
+    --doc-padding: var(--space-6x);
     margin: var(--space-8x) auto;
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--gutter);
     padding: var(--doc-padding);
   }
@@ -121,13 +119,13 @@ const searchLanes = getSearchLanes({ environment })
   .networks__grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-8x);
+    gap: var(--space-2x);
   }
 
   .tokens__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-8x);
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-2x);
   }
 
   @media (min-width: 50em) {
@@ -138,6 +136,8 @@ const searchLanes = getSearchLanes({ environment })
 
   @media (min-width: 992px) {
     .layout {
+      --doc-padding: var(--space-6x);
+      display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--space-24x);
     }

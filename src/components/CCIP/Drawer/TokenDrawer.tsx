@@ -84,122 +84,124 @@ function TokenDrawer({
           </div>
           <TableSearchInput search={search} setSearch={setSearch} />
         </div>
-        <table className="ccip-table">
-          <thead>
-            <tr>
-              <th>{inOutbound === LaneFilter.Inbound ? "Source" : "Destination"} network</th>
-              <th>
-                Rate limit capacity
-                <Tooltip
-                  label=""
-                  tip="Maximum amount per transaction"
-                  labelStyle={{
-                    marginRight: "5px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </th>
-              <th>
-                Rate limit refil rate
-                <Tooltip
-                  label=""
-                  tip="Rate at which available capacity is replenished"
-                  labelStyle={{
-                    marginRight: "5px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </th>
-              <th>
-                Mechanism
-                <Tooltip
-                  label=""
-                  tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
-                  labelStyle={{
-                    marginRight: "5px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </th>
-              {/* <th>Status</th> */}
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(destinationLanes)
-              ?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
-              .map((lane, index) => {
-                const networkDetails = getNetwork({
-                  filter: environment,
-                  chain: lane,
-                })
-                const laneData = getLane({
-                  sourceChain: network?.key as SupportedChain,
-                  destinationChain: lane as SupportedChain,
-                  environment,
-                  version: Version.V1_2_0,
-                })
+        <div className="ccip-table__wrapper">
+          {" "}
+          <table className="ccip-table">
+            <thead>
+              <tr>
+                <th>{inOutbound === LaneFilter.Inbound ? "Source" : "Destination"} network</th>
+                <th>
+                  Rate limit capacity
+                  <Tooltip
+                    label=""
+                    tip="Maximum amount per transaction"
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
+                <th>
+                  Rate limit refil rate
+                  <Tooltip
+                    label=""
+                    tip="Rate at which available capacity is replenished"
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
+                <th>
+                  Mechanism
+                  <Tooltip
+                    label=""
+                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
+                {/* <th>Status</th> */}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(destinationLanes)
+                ?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
+                .map((lane, index) => {
+                  const networkDetails = getNetwork({
+                    filter: environment,
+                    chain: lane,
+                  })
+                  const laneData = getLane({
+                    sourceChain: network?.key as SupportedChain,
+                    destinationChain: lane as SupportedChain,
+                    environment,
+                    version: Version.V1_2_0,
+                  })
 
-                if (!laneData) return null
+                  if (!laneData) return null
 
-                return (
-                  <tr key={index}>
-                    <td>
-                      <div
-                        className="ccip-table__network-name"
-                        role="button"
-                        onClick={() => {
-                          drawerContentStore.set(() => (
-                            <LaneDrawer
-                              environment={environment}
-                              lane={laneData}
-                              sourceNetwork={network}
-                              destinationNetwork={{
-                                name: networkDetails?.name || "",
-                                logo: networkDetails?.logo || "",
-                                key: lane,
-                              }}
-                              inOutbound={inOutbound}
-                              explorerUrl={network.explorerUrl}
-                            />
-                          ))
-                        }}
-                      >
-                        <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
-                        {networkDetails?.name}
-                      </div>
-                    </td>
-                    <td>
-                      {displayCapacity(
-                        String(
-                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                            ?.capacity || 0
-                        ),
-                        network.decimals
-                      )}{" "}
-                      {token.name}
-                    </td>
-                    <td>
-                      <RateTooltip
-                        destinationLane={destinationLanes[lane]}
-                        inOutbound={inOutbound}
-                        symbol={token.symbol}
-                        decimals={network.decimals}
-                      />
-                    </td>
-                    <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-                    {/* <td>
+                  return (
+                    <tr key={index}>
+                      <td>
+                        <div
+                          className="ccip-table__network-name"
+                          role="button"
+                          onClick={() => {
+                            drawerContentStore.set(() => (
+                              <LaneDrawer
+                                environment={environment}
+                                lane={laneData}
+                                sourceNetwork={network}
+                                destinationNetwork={{
+                                  name: networkDetails?.name || "",
+                                  logo: networkDetails?.logo || "",
+                                  key: lane,
+                                }}
+                                inOutbound={inOutbound}
+                                explorerUrl={network.explorerUrl}
+                              />
+                            ))
+                          }}
+                        >
+                          <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
+                          {networkDetails?.name}
+                        </div>
+                      </td>
+                      <td>
+                        {displayCapacity(
+                          String(
+                            destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
+                              ?.capacity || 0
+                          ),
+                          network.decimals
+                        )}{" "}
+                        {token.name}
+                      </td>
+                      <td>
+                        <RateTooltip
+                          destinationLane={destinationLanes[lane]}
+                          inOutbound={inOutbound}
+                          symbol={token.symbol}
+                          decimals={network.decimals}
+                        />
+                      </td>
+                      <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                      {/* <td>
                       <span className="ccip-table__status">
                         <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path
@@ -210,11 +212,13 @@ function TokenDrawer({
                         Operational
                       </span>
                     </td> */}
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
+                    </tr>
+                  )
+                })}
+            </tbody>
+          </table>
+        </div>
+
         <div className="ccip-table__notFound">
           {Object.keys(destinationLanes)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase())).length ===
             0 && <>No lanes found</>}

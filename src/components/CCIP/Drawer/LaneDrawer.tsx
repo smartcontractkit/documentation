@@ -67,112 +67,114 @@ function LaneDrawer({
           </div>
           <TableSearchInput search={search} setSearch={setSearch} />
         </div>
-        <table className="ccip-table">
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Token address (Source)</th>
-              <th>Decimals</th>
-              <th>Mechanism</th>
-              <th>
-                Rate limit capacity
-                <Tooltip
-                  label=""
-                  tip="Maximum amount per transaction"
-                  labelStyle={{
-                    marginRight: "5px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </th>
-              <th>
-                Rate limit refil rate
-                <Tooltip
-                  label=""
-                  tip="Rate at which available capacity is replenished"
-                  labelStyle={{
-                    marginRight: "5px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {lane.supportedTokens &&
-              Object.keys(lane.supportedTokens)
-                ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
-                .map((token, index) => {
-                  const data = getTokenData({
-                    environment,
-                    version: Version.V1_2_0,
-                    tokenSymbol: token || "",
-                  })
-                  if (!Object.keys(data).length) return null
-                  const logo = getTokenIconUrl(token)
-                  return (
-                    <tr key={index}>
-                      <td>
-                        <a href={`/ccip/supported-networks/${environment}/token/${token}`}>
-                          <div className="ccip-table__network-name">
-                            <img
-                              src={logo}
-                              alt={`${token} logo`}
-                              className="ccip-table__logo"
-                              onError={({ currentTarget }) => {
-                                currentTarget.onerror = null // prevents looping
-                                currentTarget.src = fallbackTokenIconUrl
-                              }}
-                            />
-                            {token}
-                          </div>
-                        </a>
-                      </td>
-                      <td data-clipboard-type="token">
-                        <Address
-                          address={data[sourceNetwork.key].tokenAddress}
-                          endLength={6}
-                          contractUrl={getExplorerAddressUrl(explorerUrl)(data[sourceNetwork.key].tokenAddress)}
-                        />
-                      </td>
-                      <td>{data[sourceNetwork.key].decimals}</td>
-
-                      <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
-                      <td>
-                        {lane.supportedTokens &&
-                          displayCapacity(
-                            String(
-                              lane.supportedTokens[token]?.rateLimiterConfig?.[
-                                inOutbound === LaneFilter.Inbound ? "in" : "out"
-                              ]?.capacity || 0
-                            ),
-                            data[sourceNetwork.key].decimals
-                          )}{" "}
-                        {token}
-                      </td>
-                      <td>
-                        {lane.supportedTokens && (
-                          <RateTooltip
-                            destinationLane={lane.supportedTokens[token]}
-                            inOutbound={inOutbound}
-                            symbol={token}
-                            decimals={data[sourceNetwork.key].decimals}
+        <div className="ccip-table__wrapper">
+          <table className="ccip-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Token address (Source)</th>
+                <th>Decimals</th>
+                <th>Mechanism</th>
+                <th>
+                  Rate limit capacity
+                  <Tooltip
+                    label=""
+                    tip="Maximum amount per transaction"
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
+                <th>
+                  Rate limit refil rate
+                  <Tooltip
+                    label=""
+                    tip="Rate at which available capacity is replenished"
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {lane.supportedTokens &&
+                Object.keys(lane.supportedTokens)
+                  ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
+                  .map((token, index) => {
+                    const data = getTokenData({
+                      environment,
+                      version: Version.V1_2_0,
+                      tokenSymbol: token || "",
+                    })
+                    if (!Object.keys(data).length) return null
+                    const logo = getTokenIconUrl(token)
+                    return (
+                      <tr key={index}>
+                        <td>
+                          <a href={`/ccip/supported-networks/${environment}/token/${token}`}>
+                            <div className="ccip-table__network-name">
+                              <img
+                                src={logo}
+                                alt={`${token} logo`}
+                                className="ccip-table__logo"
+                                onError={({ currentTarget }) => {
+                                  currentTarget.onerror = null // prevents looping
+                                  currentTarget.src = fallbackTokenIconUrl
+                                }}
+                              />
+                              {token}
+                            </div>
+                          </a>
+                        </td>
+                        <td data-clipboard-type="token">
+                          <Address
+                            address={data[sourceNetwork.key].tokenAddress}
+                            endLength={6}
+                            contractUrl={getExplorerAddressUrl(explorerUrl)(data[sourceNetwork.key].tokenAddress)}
                           />
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-          </tbody>
-        </table>
+                        </td>
+                        <td>{data[sourceNetwork.key].decimals}</td>
+
+                        <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                        <td>
+                          {lane.supportedTokens &&
+                            displayCapacity(
+                              String(
+                                lane.supportedTokens[token]?.rateLimiterConfig?.[
+                                  inOutbound === LaneFilter.Inbound ? "in" : "out"
+                                ]?.capacity || 0
+                              ),
+                              data[sourceNetwork.key].decimals
+                            )}{" "}
+                          {token}
+                        </td>
+                        <td>
+                          {lane.supportedTokens && (
+                            <RateTooltip
+                              destinationLane={lane.supportedTokens[token]}
+                              inOutbound={inOutbound}
+                              symbol={token}
+                              decimals={data[sourceNetwork.key].decimals}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+            </tbody>
+          </table>
+        </div>
         <div className="ccip-table__notFound">
           {lane.supportedTokens &&
             Object.keys(lane.supportedTokens)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))

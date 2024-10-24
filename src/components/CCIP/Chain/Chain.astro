@@ -48,13 +48,20 @@ const searchLanes = getSearchLanes({ environment })
 
 <CcipLayout frontmatter={entry.data} {headings} environment={environment}>
   <Drawer client:only="react" />
-  <ChainHero chains={networks} tokens={allTokens} network={network} environment={environment} lanes={searchLanes} />
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    network={network}
+    environment={environment}
+    lanes={searchLanes}
+    client:load
+  />
   <section class="layout">
     <div>
       <Table
         environment={environment}
         lanes={lanes}
-        client:only="react"
+        client:load
         explorerUrl={network.explorerUrl}
         sourceNetwork={{
           name: network.name,
@@ -78,10 +85,10 @@ const searchLanes = getSearchLanes({ environment })
 <style scoped="false">
   .layout {
     --gutter: var(--space-6x);
-    --doc-padding: 2rem;
+    --doc-padding: var(--space-6x);
     margin: var(--space-8x) auto;
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--gutter);
     padding: var(--doc-padding);
   }
@@ -89,7 +96,6 @@ const searchLanes = getSearchLanes({ environment })
   .ccip-heading {
     display: flex;
     padding-bottom: var(--space-4x);
-    border-bottom: 1px solid var(--gray-200);
     margin-bottom: var(--space-6x);
     justify-content: space-between;
   }
@@ -110,13 +116,13 @@ const searchLanes = getSearchLanes({ environment })
   .networks__grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-8x);
+    gap: var(--space-2x);
   }
 
   .tokens__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-8x);
+    grid-template-columns: 32% 32% 32%;
+    gap: var(--space-2x);
   }
 
   @media (min-width: 50em) {
@@ -127,6 +133,7 @@ const searchLanes = getSearchLanes({ environment })
 
   @media (min-width: 992px) {
     .layout {
+      display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--space-24x);
     }
@@ -141,6 +148,10 @@ const searchLanes = getSearchLanes({ environment })
       min-height: 420px;
       grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: var(--space-4x);
+    }
+
+    .ccip-heading {
+      border-bottom: 1px solid var(--gray-200);
     }
   }
 </style>

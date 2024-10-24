@@ -73,7 +73,7 @@ function Drawer() {
             </svg>
           </button>
 
-          {typeof $drawerContent === "function" ? $drawerContent() : $drawerContent}
+          <div>{typeof $drawerContent === "function" ? $drawerContent() : $drawerContent}</div>
         </div>
       </div>
     </div>

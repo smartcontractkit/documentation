@@ -42,7 +42,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
         </div>
         <TableSearchInput search={search} setSearch={setSearch} />
       </div>
-      <div className="ccip-table__container">
+      <div className="ccip-table__wrapper">
         <table className="ccip-table">
           <thead>
             <tr>
