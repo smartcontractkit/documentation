@@ -133,7 +133,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                           stroke="inherit"
                         />
                       </svg>
-                      {network.status || "N/A"}
+                      {network.status?.toLocaleLowerCase() || "N/A"}
                     </span>
                   </td>
                 </tr>

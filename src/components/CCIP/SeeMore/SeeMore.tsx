@@ -5,9 +5,11 @@ interface SeeMoreProps {
 
 function SeeMore({ onClick }: SeeMoreProps) {
   return (
-    <button className="seeMore" onClick={onClick}>
-      See more
-    </button>
+    <div className="seeMore__container">
+      <button className="seeMore" onClick={onClick}>
+        See more
+      </button>
+    </div>
   )
 }
 
