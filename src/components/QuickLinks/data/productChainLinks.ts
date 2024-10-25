@@ -74,6 +74,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-streams/stream-ids",
       base: "/data-streams/stream-ids",
       soneium: "/data-streams/stream-ids",
+      opbnb: "/data-streams/stream-ids",
     },
   },
   Functions: {
@@ -159,6 +160,7 @@ export const chainNames: Record<string, string> = {
   metis: "Metis",
   moonbeam: "Moonbeam",
   moonriver: "Moonriver",
+  opbnb: "opBNB",
   optimism: "Optimism",
   polygonzkevm: "Polygon zkEVM",
   polygon: "Polygon",

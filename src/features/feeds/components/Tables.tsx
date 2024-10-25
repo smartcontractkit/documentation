@@ -373,6 +373,21 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "opBNB",
+    logoUrl: "/assets/chains/opbnb.svg",
+    networkStatus: "https://opbnb-status.bnbchain.org/",
+    mainnet: {
+      label: "opBNB Mainnet",
+      verifierProxy: "0x7D543D1a715ED544f7e3Ae9e3b1777BCdA56bF8e",
+      explorerUrl: "https://opbnb.bscscan.com/address/%s",
+    },
+    testnet: {
+      label: "opBNB Testnet",
+      verifierProxy: "0x001225Aca0efe49Dbb48233aB83a9b4d177b581A",
+      explorerUrl: "https://opbnb-testnet.bscscan.com/address/%s",
+    },
+  },
+  {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
     testnet: {
