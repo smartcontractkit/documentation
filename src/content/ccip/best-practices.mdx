@@ -131,3 +131,37 @@ The **token admin** role configures token pools across blockchains and enables c
 - **Set Rate Limits Appropriately**: Ensure that you set appropriate rate limits for outbound and inbound token transfers when configuring token pools.
 
 - ** Delegate Rate Limit Admin Role **: The rate limit admin is an optional role that the token pool owner can assign to another trusted entity using the `setRateLimitAdmin ()` function. The rate limit admin can only manage rate limits, so this role provides a way to delegate responsibility without giving full access to the token pool configuration.
+
+## Best Practices for Liquidity Management
+
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver.
+
+### Ensure Sufficient Liquidity
+
+When a **LockReleaseTokenPool** operates in **reception mode** (on the destination blockchain), it releases the tokens locked in the token pool. The pool must have sufficient liquidity to ensure that tokens can be released to the receiver. If the pool lacks liquidity, the release operation will fail.
+
+- **Best Practice**: Regularly monitor the liquidity available in your token pool and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
+
+### Use the `provideLiquidity` and `withdrawLiquidity` Functions Properly
+
+In pools like the **LockReleaseTokenPool**, liquidity providers can add and remove liquidity using the [`provideLiquidity`](/ccip/api-reference/lock-release-token-pool#provideliquidity) and [`withdrawLiquidity`](/ccip/api-reference/lock-release-token-pool#withdrawliquidity) functions.
+
+- **Best Practice**: Only trusted entities, such as a designated rebalancer, should be allowed to manage liquidity. Make sure to configure liquidity controls securely to prevent unauthorized liquidity manipulation.
+
+### Set and Manage the Rebalancer Role
+
+The **rebalancer** is responsible for managing the liquidity of the pool and ensuring that there is always sufficient liquidity when needed. They can rebalance liquidity between different pools or pool versions if necessary.
+
+- **Best Practice**: Assign the rebalancer role to a trusted entity and ensure they understand the responsibilities, such as maintaining liquidity in the pool to support token releases.
+
+### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+
+Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it harder to maintain sufficient liquidity in each pool.
+
+- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+
+### Monitor Liquidity Health and Automate Alerts
+
+Monitoring the health of your token pool’s liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+
+- **Best Practice**: Set up automated alerts to monitor the token pool’s balance and ensure it remains above a threshold that supports the expected volume of cross-chain transfers.
