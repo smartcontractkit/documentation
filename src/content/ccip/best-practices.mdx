@@ -103,3 +103,31 @@ Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/su
 When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
 
 Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Best Practices for Cross-Chain Tokens (CCT) Administration
+
+When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
+
+### Securely Manage Admin Roles
+
+The **token admin** role configures token pools across blockchains and enables cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain and manage cross-chain transfers. To ensure security, follow these guidelines:
+
+- **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
+
+- **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
+
+### Protect Against Unauthorized Admin Actions
+
+- **Monitor Admin Activity**: Implement monitoring systems to track any actions taken by **token admins**, **token pool owners**, and **rate limit admins**. This helps detect unauthorized attempts to modify configurations or execute cross-chain transfers.
+
+- **Limit Admin Privileges When Possible**: For example, instead of giving the full owner access to manage rate limits, consider assigning the **rate limit admin** role, which is specifically responsible for updating rate limits.
+
+- **Leverage Smart Contract Audits**: Ensure your tokens and token pools are audited and follow secure development practices.
+
+### Best Practices for Token Pool Owners and Rate Limit Admins
+
+- **Token Pool Owner Responsibilities**: The **token pool owner** can enable remote chains, set remote pool addresses for a given chain selector, and configure rate limits. Ensure that this role is assigned to a trusted EOA or smart account, and monitor activity regularly.
+
+- **Set Rate Limits Appropriately**: Ensure that you set appropriate rate limits for outbound and inbound token transfers when configuring token pools.
+
+- ** Delegate Rate Limit Admin Role **: The rate limit admin is an optional role that the token pool owner can assign to another trusted entity using the `setRateLimitAdmin ()` function. The rate limit admin can only manage rate limits, so this role provides a way to delegate responsibility without giving full access to the token pool configuration.
