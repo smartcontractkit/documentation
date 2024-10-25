@@ -78,20 +78,22 @@ function LaneDetailsHero({
         <div className="lane-details-hero__details__label">RMN</div>
         <div>
           {rmnPermeable ? (
-            <Tooltip
-              label="Coming soon"
-              tip="This field shows the status of the Risk Management Network (RMN) for this lane. RMN is not yet deployed."
-              labelStyle={{
-                marginRight: "10px",
-              }}
-              style={{
-                display: "inline-flex",
-              }}
-            />
+            <a href="https://docs.chain.link/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
+              <Tooltip
+                label="Coming soon"
+                tip="Risk Management Network (RMN) is NOT enabled for this lane at this time."
+                labelStyle={{
+                  marginRight: "10px",
+                }}
+                style={{
+                  display: "inline-flex",
+                }}
+              />
+            </a>
           ) : (
             <Tooltip
               label="Enabled"
-              tip="This field shows the status of the Risk Management Network (RMN) for this lane. RMN is active."
+              tip="This field shows the status of the Risk Management Network (RMN) for this lane."
               labelStyle={{
                 marginRight: "10px",
               }}
