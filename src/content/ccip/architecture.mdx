@@ -11,11 +11,14 @@ whatsnext:
 ---
 
 import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <Aside type="note" title="Prerequisites">
   Read the CCIP [Introduction](/ccip) and [Concepts](/ccip/concepts) to understand all the concepts discussed on this
   page.
 </Aside>
+
+<CcipCommon callout="rmnCaution" />
 
 ## High-level architecture
 
@@ -187,7 +190,7 @@ Consider an example where a lane has a maximum capacity of 100,000 USD, a refill
 
 ## CCIP execution latency
 
-Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source blockchain to reach [finality](/ccip/concepts#finality). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a blockchain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
+Chainlink CCIP has been purposely designed to take a security-first approach to minimize the risk of block reorgs on the source blockchain. The end-to-end transaction time of a CCIP cross-chain transaction largely depends on the time it takes for the transaction on the source blockchain to reach [finality](/ccip/concepts/ccip-execution-latency). The time to reach finality varies by blockchain. For example, on Ethereum, it takes about [15 minutes for a block to be finalized](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality). When cross-chain transactions are initiated from a blockchain with faster finality, such as Avalanche, which has a [time-to-finality of around one second](https://support.avax.network/en/articles/5325234-what-is-transactional-finality), the end-to-end transaction time is faster.
 
 If the fee paid on the source blockchain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
@@ -210,4 +213,4 @@ Any proposal must either (1) be proposed by a dedicated ManyChainMultiSig (MCMS)
 
 Any onchain update that passes the timelock review period without a veto becomes executable by anyone, which can be done by running a [timelock-worker](https://github.com/smartcontractkit/timelock-worker) to process executable upgrades.
 
-[Documentation](https://github.com/smartcontractkit/ccip-owner-contracts/blob/main/README.md) and [source code](https://github.com/smartcontractkit/ccip-owner-contracts/blob/440fb434c617fa95dc2fe21adb32adb3a47aba8d/src/ManyChainMultiSig.sol) relating to the CCIP owner contracts can be read on GitHub. The proposer multisig on Ethereum can be found on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract), where configuration details can also be read.
+[Documentation](https://github.com/smartcontractkit/ccip-owner-contracts/blob/main/README.md) and [source code](https://github.com/smartcontractkit/ccip-owner-contracts/blob/main/src/ManyChainMultiSig.sol) relating to the CCIP owner contracts can be read on GitHub. The proposer multisig on Ethereum can be found on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract), where configuration details can also be read.

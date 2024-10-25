@@ -23,6 +23,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MOONRIVER_MAINNET: () => new providers.JsonRpcProvider("https://rpc.api.moonriver.moonbeam.network"),
   MOONBEAM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/moonbeam"),
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),
+  METIS_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.metisdevops.link"),
   BASE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.base.org"),
   BASE_SEPOLIA: () => new providers.JsonRpcProvider("https://base-sepolia-rpc.publicnode.com"),
   SCROLL_MAINNET: () => new providers.JsonRpcProvider("https://rpc.scroll.io"),
@@ -30,6 +31,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
   CELO_ALFAJORES: () => new providers.JsonRpcProvider("https://forno.celo.org"),
   LINEA_MAINNET: () => new providers.JsonRpcProvider("https://rpc.linea.build"),
+  LINEA_SEPOLIA: () => new providers.JsonRpcProvider("https://linea-sepolia-rpc.publicnode.com"),
   POLYGON_ZKEVM_MAINNET: () => new providers.JsonRpcProvider("https://zkevm-rpc.com"),
   POLYGON_ZKEVM_TESTNET: () => new providers.JsonRpcProvider("https://rpc.public.zkevm-test.net"),
   ZKSYNC_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.era.zksync.io"),
@@ -40,4 +42,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   WEMIX_TESTNET: () => new providers.JsonRpcProvider("https://api.test.wemix.com"),
   MODE_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.mode.network"),
   MODE_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.mode.network"),
+  BLAST_MAINNET: () => new providers.JsonRpcProvider("https://rpc.blast.io"),
+  BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
+  SONEIUM_MINATO: () => new providers.JsonRpcProvider("	https://rpc.minato.soneium.org/"),
 }

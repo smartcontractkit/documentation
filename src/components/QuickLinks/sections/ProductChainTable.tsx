@@ -5,7 +5,7 @@ import styles from "./ProductChainTable.module.css"
 import { chainNames, productChainLinks } from "../data/productChainLinks"
 
 interface ProductData {
-  learnMorelink: string
+  learnMoreLink: string
   logo: { src: string }
   chains: Record<string, string>
 }
@@ -24,6 +24,16 @@ const getProductChainLink = (productTitle: string, chainId: string) => {
 
 const getLINKTokenLink = (chainId: string) => {
   return productChainLinks.linkTokenContracts?.[chainId] || ""
+}
+
+const handleLinkClick = (productTitle: string, network: string, url: string) => {
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push({
+    event: "quick_link_clicked",
+    product: productTitle,
+    network: network,
+    url: url,
+  })
 }
 
 const ProductCard = ({ chainId }: { chainId: string }) => (
@@ -82,10 +92,11 @@ const ProductChainTable = () => (
                     className={`${styles.productHeaderCell} ${styles.stickyHeader}`}
                   >
                     <a
-                      href={`/${product.learnMorelink}`}
+                      href={`/${product.learnMoreLink}`}
                       className={styles.productLink}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => handleLinkClick(productTitle, "Header Row Click", e.currentTarget.href)}
                     >
                       <div className={styles.productHeader}>
                         <img src={product.logo.src} alt={`${productTitle} logo`} className={styles.icon} />
@@ -101,6 +112,7 @@ const ProductChainTable = () => (
                 className={styles.productLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => handleLinkClick("LINK Token Contracts", "Header Row Click", e.currentTarget.href)}
               >
                 <div className={styles.productHeader}>
                   <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.icon} />
@@ -126,6 +138,9 @@ const ProductChainTable = () => (
                           className={styles.cellLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) =>
+                            handleLinkClick(productTitle, chainNames[chainId] || chainId, e.currentTarget.href)
+                          }
                         >
                           <div className={styles.supportedContainer}>
                             <img src={TickIcon.src} alt="Supported" className={styles.icon} />
@@ -143,6 +158,9 @@ const ProductChainTable = () => (
                     className={styles.cellLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) =>
+                      handleLinkClick("LINK Token Contracts", chainNames[chainId] || chainId, e.currentTarget.href)
+                    }
                   >
                     <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.linkTokenIcon} />
                     <img src={LinkIcon.src} alt="More info" className={styles.linkIcon} />

@@ -8,6 +8,7 @@ import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -44,6 +45,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage} />
   <main>
     <div id="left-bg"></div>
     <div class="layout">

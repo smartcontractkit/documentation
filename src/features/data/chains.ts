@@ -85,8 +85,8 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "polygon",
-    title: "Polygon (Matic) Data Feeds",
-    label: "Polygon (Matic)",
+    title: "Polygon Data Feeds",
+    label: "Polygon",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
     tags: ["default", "proofOfReserve"],
@@ -292,7 +292,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default"],
+    tags: ["default", "proofOfReserve"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -301,6 +301,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
+        tags: ["proofOfReserve"],
       },
       {
         name: "Base Sepolia testnet",
@@ -381,22 +382,22 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "zksync",
-    label: "zkSync",
-    title: "zkSync Data Feeds",
+    label: "ZKsync",
+    title: "ZKsync Data Feeds",
     img: "/assets/chains/zksync.svg",
     networkStatusUrl: "https://explorer.zksync.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "zkSync Era Mainnet",
+        name: "ZKsync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
       },
       {
-        name: "zkSync Sepolia testnet",
+        name: "ZKsync Sepolia testnet",
         explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-zksync-1.json",
@@ -407,7 +408,7 @@ export const CHAINS: Chain[] = [
   {
     page: "polygonzkevm",
     label: "Polygon zkEVM",
-    title: "Polygon zkEVM",
+    title: "Polygon zkEVM Data Feeds",
     img: "/assets/chains/polygonzkevm.svg",
     networkStatusUrl: "https://polygonscan.freshstatus.io/",
     tags: ["default"],
@@ -429,24 +430,49 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
-  // {
-  //   page: "starknet",
-  //   label: "Starknet",
-  //   title: "StarkNet Data Feeds",
-  //   img: "/assets/chains/starknet.svg",
-  //   networkStatusUrl: "https://status.starknet.io/",
-  //   tags: ["default"],
-  //   supportedFeatures: ["feeds"],
-  //   networks: [
-  //     {
-  //       name: "Starknet Sepolia testnet",
-  //       explorerUrl: "https://sepolia.starkscan.co/contract/%s",
-  //       networkType: "testnet",
-  //       rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
-  //       queryString: "starknet-sepolia-testnet",
-  //     },
-  //   ],
-  // },
+  {
+    page: "soneium",
+    label: "Soneium",
+    title: "Soneium Data Feeds",
+    img: "/assets/chains/soneium.svg",
+    networkStatusUrl: "https://explorer-testnet.soneium.org",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Soneium Minato Testnet",
+        explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-soneium-1.json",
+        queryString: "polygon-zkevm-testnet",
+      },
+    ],
+  },
+  {
+    page: "starknet",
+    label: "Starknet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://status.starknet.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Starknet Mainnet",
+        explorerUrl: "https://starkscan.co/contract/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-starknet-1.json",
+        queryString: "starknet-mainnet",
+      },
+      {
+        name: "Starknet Sepolia testnet",
+        explorerUrl: "https://sepolia.starkscan.co/contract/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-starknet-1.json",
+        queryString: "starknet-sepolia-testnet",
+      },
+    ],
+  },
   {
     page: "solana",
     label: "Solana",
@@ -594,7 +620,7 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "linea-mainnet",
       },
       {
-        name: "zkSync Era Mainnet",
+        name: "ZKsync Era Mainnet",
         explorerUrl: "https://explorer.zksync.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",

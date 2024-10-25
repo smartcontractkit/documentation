@@ -1,73 +1,55 @@
-import React from "react"
+import React, { useState } from "react"
 import { NavBar as Nav } from "./Nav"
 import { Search } from "./aiSearch/Search"
 import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
 
-declare const Weglot: any
-
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
   const navRef = React.useRef(null)
 
   const { setNavBarInfo } = useNavBar()
 
+  const doubleNavbar = () => {
+    const pathWithoutDocNav = ["/quickstarts/", "/builders-quick-links"]
+    const shouldAddDocNavigation = !pathWithoutDocNav.some((p) => path.includes(p))
+    const isHomepage = path === "/"
+    return shouldAddDocNavigation && !isHomepage
+  }
+
   const onHideChange = (hidden: boolean) => {
     if (navRef.current) {
-      const height = (navRef.current as HTMLElement).clientHeight
+      /* This method calculate the height required for the sticky headers within the page content.
+      / - The height is determined by two different factors:
+      / - if the page has been scrolled down and the header is hidden
+      / - if the page is a inner doc page or part of the "pathWithoutDocNav" or not
+      */
+      const innerDocNavHeight = 56
+      let height = (navRef.current as HTMLElement).clientHeight
+      let baseHeightNoNav = 0
+      if (doubleNavbar()) {
+        height += innerDocNavHeight
+        baseHeightNoNav += innerDocNavHeight
+      }
       const elements = document.body.querySelectorAll("[data-sticky]")
       elements.forEach((e: HTMLElement) => {
         if (!e.classList.contains(styles.animateTop)) {
           e.classList.add(styles.animateTop)
         }
-        e.style.top = `${hidden ? 0 : height}px`
+        e.style.top = `${hidden ? baseHeightNoNav : height}px`
       })
       setNavBarInfo({ hidden, height })
     }
   }
 
-  React.useEffect(() => {
-    if (
-      !window.location.hostname.includes("localhost") &&
-      !window.location.hostname.includes("documentation-private-git-")
-    ) {
-      const script = document.createElement("script")
-      script.src = "https://cdn.weglot.com/weglot.min.js"
-      script.async = true
-      script.onload = () => {
-        Weglot.initialize({
-          api_key: "wg_bc56a95905bfa8990f449554339e82be8",
-          switchers: [
-            {
-              button_style: {
-                full_name: false,
-                with_name: true,
-                is_dropdown: true,
-                with_flags: false,
-              },
-              location: {
-                target: "#weglot",
-                sibling: null,
-              },
-            },
-          ],
-        })
-      }
-      document.body.appendChild(script)
-
-      return () => {
-        document.body.removeChild(script)
-      }
-    }
-  }, [])
-
   return (
     <span ref={navRef}>
       <Nav
-        {...getNavigationProps(path)}
+        {...getNavigationProps()}
         path={path}
         searchTrigger={showSearch ? <Search /> : undefined}
         onHideChange={onHideChange}
+        doubleNavbar={doubleNavbar()}
       />
     </span>
   )

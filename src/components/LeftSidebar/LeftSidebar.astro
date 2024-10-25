@@ -1,8 +1,9 @@
 ---
 import { Sections } from "~/content/config"
-import { SIDEBAR, MENU, SectionContent } from "../../config"
+import { SIDEBAR, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 import ActiveIcon from "./ActiveIcon.astro"
+
 export type Props = {
   currentPage: string
   section?: Sections
@@ -35,7 +36,7 @@ const removeSlashes = (url: string) => {
 
 // This function checks if the current page is a match for the main section or any of its subpages
 // (e.g. /getting-started-hardhat is a subpage of /getting-started).
-const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean => {
+const isCurrentPageMatch = (sectionUrl: string, currentPage: string, highlightAsCurrent: string[] = []): boolean => {
   const normalizedSectionUrl = removeSlashes(sectionUrl)
   const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
 
@@ -44,12 +45,24 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
     return true
   }
 
-  // Check for subpage match (e.g., currentPage is "/getting-started-hardhat" and sectionUrl is "/getting-started")
-  if (normalizedCurrentPage.startsWith(`${normalizedSectionUrl}-`)) {
+  if (highlightAsCurrent.some((url) => removeSlashes(url) === normalizedCurrentPage)) {
     return true
   }
 
   return false
+}
+
+// This function checks if any of the nested pages match the current page
+const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolean => {
+  return contents.some((content) => {
+    if (isCurrentPageMatch(content.url, currentPage)) {
+      return true
+    }
+    if (content.children && isAnyPageMatch(content.children, currentPage)) {
+      return true
+    }
+    return false
+  })
 }
 ---
 
@@ -59,7 +72,11 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
       sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
         <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
           <details
-            open={!!flattenChildren(s.contents).filter((object) => isCurrentPageMatch(object.url, currentPage)).length}
+            open={
+              !!flattenChildren(s.contents).filter((object) =>
+                isCurrentPageMatch(object.url, currentPage, object.highlightAsCurrent)
+              ).length
+            }
           >
             <summary class="nav-group-title">{s.section}</summary>
             <ul class="nav-group-entries">
@@ -68,27 +85,78 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
                   <>
                     <li>
                       <a
-                        class="nav-link"
+                        class={`nav-link ${isCurrentPageMatch(child.url, currentPage) ? "active" : ""}`}
                         href={`${Astro.site?.pathname}${child.url}`}
-                        aria-current={isCurrentPageMatch(child.url, currentPage) ? "page" : "false"}
+                        aria-current={
+                          isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
+                        }
                       >
                         <ActiveIcon />
                         {child.title}
                       </a>
                     </li>
-                    {child.children &&
-                      child.children.map((childItem) => (
-                        <li>
-                          <a
-                            class="nav-link nested"
-                            href={`${Astro.site?.pathname}${childItem.url}`}
-                            aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
-                          >
-                            <ActiveIcon />
-                            {childItem.title}
-                          </a>
-                        </li>
-                      ))}
+                    {child.children && (
+                      <ul class="nav-group-entries nested">
+                        {child.children.map((childItem) => (
+                          <>
+                            <li>
+                              <a
+                                class={`nav-link ${
+                                  isCurrentPageMatch(childItem.url, currentPage) ? "active" : ""
+                                } nested`}
+                                href={`${Astro.site?.pathname}${childItem.url}`}
+                                aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
+                              >
+                                <ActiveIcon />
+                                {childItem.title}
+                              </a>
+                            </li>
+                            {childItem.children && (
+                              <ul class="nav-group-entries nested">
+                                {childItem.children.map((subChildItem) => (
+                                  <>
+                                    <li>
+                                      <a
+                                        class={`nav-link ${
+                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "active" : ""
+                                        } nested`}
+                                        href={`${Astro.site?.pathname}${subChildItem.url}`}
+                                        aria-current={
+                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "page" : "false"
+                                        }
+                                      >
+                                        <ActiveIcon />
+                                        {subChildItem.title}
+                                      </a>
+                                    </li>
+                                    {subChildItem.children && (
+                                      <ul class="nav-group-entries nested">
+                                        {subChildItem.children.map((deepChildItem) => (
+                                          <li>
+                                            <a
+                                              class={`nav-link ${
+                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "active" : ""
+                                              } nested`}
+                                              href={`${Astro.site?.pathname}${deepChildItem.url}`}
+                                              aria-current={
+                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "page" : "false"
+                                              }
+                                            >
+                                              <ActiveIcon />
+                                              {deepChildItem.title}
+                                            </a>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </>
+                                ))}
+                              </ul>
+                            )}
+                          </>
+                        ))}
+                      </ul>
+                    )}
                   </>
                 ))}
             </ul>
@@ -107,7 +175,7 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
 
   .nav-groups {
     padding: var(--doc-padding) var(--space-8x) var(--doc-padding) 0;
-    max-height: 100vh;
+    height: 100vh;
     max-height: 100dvh;
     top: 0;
     overflow-y: auto;
@@ -131,14 +199,18 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
   }
 
   .nav-group-title {
-    font-size: 16px;
-    font-weight: 500;
     margin-bottom: var(--space-3x);
-    color: var(--blue-800);
+    color: var(--gray-900, #141921);
+    font-weight: 600;
+    line-height: 24px;
   }
 
   .nav-group-entries {
     margin-bottom: var(--space-2x);
+  }
+
+  .nav-group-entries.nested {
+    margin-left: var(--space-4x);
   }
 
   details summary {
@@ -174,18 +246,20 @@ const isCurrentPageMatch = (sectionUrl: string, currentPage: string): boolean =>
   .nav-link:hover,
   .nav-link:focus,
   .nav-link[aria-current="page"] {
-    color: var(--blue-600, #375bd2);
+    color: var(--color-text-link);
+    font-weight: 500;
   }
 
   .nav-link[aria-current="page"] {
-    font-weight: 500;
+    font-weight: 600;
   }
+
   :global(:root.theme-dark) .nav-link[aria-current="page"] {
     color: hsla(var(--color-base-white), 100%, 1);
   }
 
   .nav-link.nested {
-    padding-left: var(--space-5x);
+    padding-left: var(--space-4x);
   }
 </style>
 

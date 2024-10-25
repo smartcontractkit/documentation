@@ -8,11 +8,17 @@
 .navBar {
   position: fixed;
   width: 100%;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.8);
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #ecedef;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: transform 0.3s ease-in-out;
+}
+
+.noShadow {
+  box-shadow: none;
+  border-bottom: none;
 }
 
 .container {
@@ -20,16 +26,19 @@
   position: relative;
   display: flex;
   justify-content: space-between;
-  padding-block: var(--space-4x);
+  padding-block: var(--space-0x);
+  width: auto;
   height: var(--space-16x);
-  /* max-width: var(--fullwidth-max-width);
-  margin: 0 auto; */
   gap: var(--space-3x);
 }
 
 .headerPlaceholder {
   height: var(--space-16x);
   visibility: hidden;
+}
+
+.isHomepage {
+  max-width: calc(100% - 2 * var(--space-8x));
 }
 
 .headerHidden {
@@ -41,11 +50,12 @@
 .rightSection {
   display: flex;
   align-items: center;
+  font-family: Inter, sans-serif;
 }
 
 .rightSection {
-  flex-direction: row-reverse;
   gap: var(--space-2x);
+  flex-direction: row;
 }
 
 :is(.button, .iconButton) {
@@ -123,62 +133,6 @@
   margin-right: var(--space-2x);
   display: flex;
   align-items: center;
-}
-
-.quickLinksWrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.quickLinksButton {
-  display: inline;
-  background: none;
-  border: var(--border-width-primary) solid transparent;
-  cursor: pointer;
-  border-radius: var(--border-radius-primary);
-  padding: var(--space-1x);
-  transition: background-color 300ms ease-out, border 300ms ease-out, border-radius 300ms ease-out;
-}
-
-.quickLinksButton:hover {
-  border: var(--border-width-primary) solid var(--blue-200);
-  background: var(--background-color-background-primary);
-}
-
-.quickLinksIcon {
-  width: 24px;
-  height: 24px;
-  margin-top: 3px;
-  transition: filter 0.3s ease;
-}
-
-.quickLinksButton:hover .quickLinksIcon {
-  filter: none;
-}
-
-.quickLinksTooltip {
-  visibility: hidden;
-  background-color: var(--blue-600);
-  color: white;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 10px;
-  position: absolute;
-  z-index: 1;
-  top: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  min-width: 130px;
-  display: none;
-  align-items: center;
-  gap: 5px;
-}
-
-.quickLinksWrapper:hover .quickLinksTooltip {
-  visibility: visible;
-  opacity: 1;
 }
 
 .infoIcon {
@@ -287,7 +241,7 @@
   }
 
   .rightSection {
-    flex-direction: row;
+    justify-content: flex-end;
   }
 
   .quickLinksTooltip {
@@ -295,17 +249,32 @@
   }
 }
 
-@media screen and (min-width: 1080px) {
-  .quickLinksButton {
+@media screen and (min-width: 992px) {
+  .container:not(.isHomepage) .quickLinksButton {
     display: inline;
   }
 
-  .modalContentWrapper {
+  .container:not(.isHomepage) .modalContentWrapper {
     width: 80%;
+  }
+
+  .container:not(.isHomepage) .button {
+    display: none;
+  }
+
+  .container:not(.isHomepage) .quickLinksWrapper {
+    display: none;
   }
 }
 
-@media screen and (max-width: 768px) {
+/* For fixing the layout shifts caused by the search widget */
+@media screen and (min-width: 995px) {
+  .rightSection {
+    width: 200px;
+  }
+}
+
+@media screen and (max-width: 992px) {
   .container {
     position: relative;
     display: flex;
@@ -331,11 +300,13 @@
     justify-content: flex-end;
   }
 
-  .searchTrigger {
-    display: none;
-  }
-
   .weglotContainer {
     margin-right: 0;
+  }
+}
+
+@media screen and (min-width: 72rem) {
+  .isHomepage {
+    max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
   }
 }

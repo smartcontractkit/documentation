@@ -1,0 +1,240 @@
+---
+title: "Automation Station"
+description: "Use FlashLiquidity's Automation Station to manage your upkeeps."
+githubSourceCodeUrl: "https://github.com/flashliquidity/flashliquidity-automation"
+image: "QuickStarts-FlashLiquidity-Automation-Station.png"
+products: ["automation"]
+time: "180 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
+
+## Overview
+
+This tutorial shows how to create, manage, fund, and batch migrate [Chainlink Automation](https://automation.chain.link) upkeeps using [FlashLiquidity](https://www.flashliquidity.finance/)'s [Automation Station](https://github.com/flashliquidity/flashliquidity-automation/tree/main).
+
+
+{/* prettier-ignore */}
+<div class="remix-callout">
+  <a href="https://github.com/flashliquidity/flashliquidity-automation/tree/main">See the code on GitHub</a>
+</div>
+
+## Objective
+
+In this tutorial, you will deploy the [AutomationStation contract](https://github.com/flashliquidity/flashliquidity-automation/blob/main/contracts/AutomationStation.sol) and register it as an upkeep. This main station upkeep monitors the balances for all your other upkeeps and funds them when the balances are too low. The repository includes Hardhat tasks to help you run each AutomationStation function from the command line.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK and native tokens. Use the [Chainlink faucet](https://faucets.chain.link/) to retrieve them.
+- Install [Node.js](https://nodejs.org/en/).
+- Install [yarn](https://yarnpkg.com/getting-started/install).
+
+## Steps to implement
+
+<Accordion title="Install the dependencies" number={1}>
+
+Clone the source and install the required packages:
+
+1. Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
+
+1. Clone the `flashliquidity-automation` repository:
+
+    ```sh
+    git clone https://github.com/flashliquidity/flashliquidity-automation.git && \
+    cd flashliquidity-automation
+    ```
+
+1. Install the dependencies:
+
+    ```sh
+    yarn setup
+    ```
+
+1. Copy the `.env.example` file to `.env` at the root of the directory:
+
+    ```sh
+    cp .env.example .env
+    ```
+
+1. In the .env file, set your private key and the RPC URL for the network you're using.
+
+</Accordion>
+
+<Accordion title="Deploy the AutomationStation contract" number={2}>
+
+Deploy the `AutomationStation` contract to an [Automation-supported network](https://docs.chain.link/chainlink-automation/overview/supported-networks) by setting parameters
+within a deployment script and then running the deployment script.
+
+1. Navigate to the `deploy/deployStation.ts` file to find the deployment script.
+1. Edit the deployment script, filling in the required parameters for the `AutomationStation` constructor. Make sure to format each value as a string.
+
+    At a minimum, you need to fill in these two parameters:
+    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Sepolia (`0x779877A7B0D9E8603169DdbD7836e478b4624789`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). Note: If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station.
+    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). For Sepolia, the registrar address is `0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976`.
+
+    The following parameters have default values in the script. Check that the settings related to refueling upkeeps and minimum balances make sense for your usage, and update them if necessary:
+    - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`, which stays the same across different networks. Leave this at its default value: `0x3f678e11`.
+    - `refuelAmount`: The amount of LINK tokens that the AutomationStation adds to an underfunded upkeep's balance. (Default value: `1000000000000000000` or 1 LINK)
+    - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `1000000000000000000` or 1 LINK)
+    - `minDelayNextRefuel`: The minimum delay time in seconds between consecutive refuels of the same upkeep (main station upkeep excluded). (Default value: `600` or 10 minutes)
+    - `approveAmountLINK`: The initial allowance of LINK tokens to the Chainlink Automation Registrar. (Default value: `100000000000000000000` or 100 LINK)
+1. Save your changes to the `deploy/deployStation.ts` file.
+1. Run the deployment script:
+
+    ```sh
+    npx hardhat deploy --network sepolia
+    ```
+
+You can view the supported networks for the deployment scripts inside the Hardhat configuration file (`hardhat.config.ts`) and add any required network if it is missing.
+
+After you've run the deployment script successfully, the output shows the address of your `AutomationStation` contract:
+
+```sh
+Compiled 15 Solidity files successfully (evm target: paris).
+deploying "AutomationStation" (tx: 0x16fa37c6bdba69ccd8ab585e89d8b5e99045a2b5e97daa2beddc3a7c6859ba31)...: deployed at 0x084E1fc7411B95a0A5b5833495c4b73E8D7ed3F4 with 2691939 gas
+```
+</Accordion>
+
+<Accordion title="Fund and initialize the AutomationStation" number={3}>
+
+After deploying the `AutomationStation` contract, you need to fund the station contract before initializing it as an upkeep. During the initialization process, the main station upkeep is registered. This upkeep monitors all your other registered upkeeps to ensure they are not underfunded; if they are, it adds funds to their balance.
+
+1. Send LINK to the contract address for your deployed `AutomationStation`. To test this example, you can fund your `AutomationStation` contract initially with 10 LINK. [Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).
+1. When you run the `initialize` task, it registers your deployed `AutomationStation` contract as an upkeep on Chainlink Automation. You can pass in the following optional parameters:
+    - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). If you set this parameter now, the station's Automation forwarder will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps. The registry address for Sepolia is `0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad`.
+    - `amount`: The amount of LINK tokens to fund the main station upkeep. (Default value: `10000000000000000000` or 10 LINK tokens)
+    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions. (Default value: `750000`)
+    
+    If you need to change any other default values for your station upkeep, edit `registrationParams` in `tasks/initializeStation.ts` and refer to the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep). By default, the station's contract address is used intentionally for both the `adminAddress` and `upkeepContract` fields. 
+1. Run the `initialize` task, passing in the Automation registry address for Sepolia, funding the main upkeep with 5 LINK, and setting a gas limit of `500000`:
+
+    ```sh
+    npx hardhat initialize --registry 0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad --amount 5000000000000000000 --gas-limit 500000 --network sepolia
+    ```
+
+After you've run the initialization script successfully, the output shows your AutomationStation upkeep ID:
+```
+Transaction Hash: 0x3e58940174da3f1474461618ffe1246c2433e0cacd9a80d00eb75297ae7c7226
+AutomationStation initialized with upkeep ID:  84877182316128104585193271963895268683397687270564021275663287366641771569317
+```
+
+To view your upkeep in the Chainlink Automation App, copy the ID and append it to the URL. For example:
+`https://automation.chain.link/sepolia/84877182316128104585193271963895268683397687270564021275663287366641771569317`
+
+Note: If your wallet is connected to the Chainlink Automation App, your `AutomationStation` upkeep will not appear in the dashboard for the connected wallet, because the owner of the station's upkeep is the address for the deployed `AutomationStation` contract.
+</Accordion>
+
+<Accordion title="Register new upkeeps" number={4}>
+
+After the station is initialized, you can use its `registerUpkeep` function to register a new Chainlink Automation upkeep. The station monitors the newly registered upkeep to ensure that the upkeep meets the minimum LINK token balance required for execution. If the balance falls below this threshold, the station uses its own LINK token balance to increase the upkeep balance until it meets the required minimum.
+
+To register a new upkeep, run the `registerUpkeep` Hardhat task.
+
+1. You can pass the following arguments to set the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for your new upkeep:
+
+    **Basic configurations**
+    - `name`: The name of the upkeep displayed in the Chainlink Automation App
+    - `contract`: The address of your Automation-compatible contract. If you don't have a deployed Automation-compatible contract on Sepolia, you can use this verified contract: `0x00b68EBB9a12C5bc21ef8E937a3D6E4E963d028D`. (View the source code [here](https://sepolia.etherscan.io/address/0x00b68ebb9a12c5bc21ef8e937a3d6e4e963d028d#code).)
+    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions
+    - `amount`: The LINK token amount to fund the upkeep. (Default value: `5000000000000000000` or 5 LINK)
+        - The station's LINK token balance must be greater than or equal to the amount you set in the `amount` parameter.
+        - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to the `amount`.
+
+    **Advanced configurations**
+    - `checkData`: Used to specify static data to pass to your `checkUpkeep` or `checkLog` functions in order to [execute different code paths](/chainlink-automation/reference/automation-interfaces#checkdata). (Default value: `0x`)
+    - `triggerType`: Used to indicate whether an upkeep is a [log trigger upkeep](/chainlink-automation/guides/log-trigger). `0` is Conditional upkeep, `1` is Log trigger upkeep. (Default value: `0`)
+    - `triggerConfig`: The [configuration for your log trigger upkeep](/chainlink-automation/guides/register-upkeep-in-contract#log-trigger-upkeeps). Leave this at `0x` for conditional upkeeps. (Default value: `0x`)
+    - `offchainConfig`: Used to set an optional [gas price threshold](/chainlink-automation/guides/gas-price-threshold) for your upkeep. Leave this at `0x` otherwise. (Default value: `0x`)
+    
+    The default `adminAddress` is the station's contract address so that the station has permission to manage your new upkeep.
+1. Fill in the contract address for your upkeep and run the upkeep registration task:
+
+    ```sh
+    npx hardhat registerUpkeep --name test --contract 0x00b68ebb9a12c5bc21ef8e937a3d6e4e963d028d --gas-limit 1000000 --network sepolia
+    ```
+
+After you've run the upkeep registration script successfully, the output shows your newly registered upkeep ID:
+```
+Transaction Hash: 0x56281ea33f37875216e5bd2b473271759945e2b3ec87b7ef2fc7a4899a5e5e10
+New upkeep ID:  64045242553038992080465745424964370653102938021228808437683191013349716918956
+```
+</Accordion>
+
+<Accordion title="Add existing upkeeps for balance monitoring" number={5}>
+
+Use the `addUpkeeps` task to add a list of existing upkeeps for your AutomationStation to monitor. This function does not directly modify any of your upkeeps in Chainlink Automation; instead, it adds upkeep IDs to the AutomationStation's `s_upkeepIds` watchlist, which is then used for balance monitoring. 
+
+1. Prepare the list of upkeep IDs for all the upkeeps that you want to add to the station's watchlist.
+1. Run the task:
+
+    ```sh
+    npx hardhat addUpkeeps --network sepolia <upkeepID1> <upkeepID2> <upkeepID3> ... <upkeepID_N>
+    ```
+
+This script outputs a transaction hash:
+```
+Transaction Hash: 0x8e8841d6a8dbb0909965e9bd5599308c5120632345211110ef2cc196428a1a14
+```
+You can verify that your upkeep IDs were added by checking the value of `s_upkeepIds`, or by viewing your deployed station contract in the block explorer to confirm that the `addUpkeeps` function ran successfully.
+
+</Accordion>
+
+<Accordion title="Manage batches of upkeeps" number={6}>
+
+Unlike the `addUpkeeps` function, which simply updates the AutomationStation's internal list of upkeeps for balance monitoring, these functions modify batches of upkeeps on Chainlink Automation:
+
+- `pauseUpkeeps` - Pauses a specified list of upkeeps
+- `unpauseUpkeeps` - Unpauses a specified list of upkeeps
+- `withdrawUpkeeps` - Withdraws LINK from a specified list of canceled upkeeps
+- `migrateUpkeeps` - Migrates a specified list of upkeeps to a newer registry
+
+To use these functions:
+
+1. Prepare the list of upkeep IDs for all the upkeeps that you want to manage.
+1. Run the corresponding Hardhat task for the batch function you want to execute on your list of upkeeps. For example, to run `pauseUpkeeps.ts`:
+
+    ```sh
+    npx hardhat pauseUpkeeps --network sepolia <upkeepID1> <upkeepID2> <upkeepID3> ... <upkeepID_N>
+    ```
+
+The script outputs a transaction hash:
+```
+Transaction Hash: 0x1504119fd7ac19a87aad8a2100145b3bc95cc57a0f56855e28ccdb2984c9e6ab
+```
+You can verify that your upkeeps were updated by checking them in the Chainlink Automation App, or by viewing your deployed station contract in the block explorer to confirm that the function ran successfully.
+
+</Accordion>
+
+<Accordion title="Dismantle the Automation Station" number={7}>
+
+1. Remove upkeeps that the Automation Station upkeep is monitoring by using the `removeUpkeep` function. This function removes one upkeep at a time from the station's watchlist. Use the index of the upkeep within the station's watchlist:
+    ```sh
+    npx hardhat removeUpkeep --index 1 --network sepolia
+    ```
+
+    Alternatively, you can run the `unregisterUpkeep` task to remove individual upkeeps from the station's watchlist _and_ cancel them in Chainlink Automation:
+    ```sh
+    npx hardhat unregisterUpkeep --index 1 --network sepolia 
+    ```
+
+1. After all upkeeps are removed from the station's watchlist, you can dismantle the station by calling the `dismantle` function:
+    ```sh
+    npx hardhat dismantle --network sepolia
+    ```
+
+</Accordion>

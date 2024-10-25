@@ -4,21 +4,10 @@ import { h, FunctionComponent } from "preact"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { SupportedChain } from "@config"
-import { getExplorer, getExplorerAddressUrl } from "@features/utils"
+import { getExplorer, getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "@features/utils"
 import Address from "@components/Address"
 import { SimplePreactTooltip } from "@features/common/Tooltip"
-
-interface TokenExtraInfo {
-  token: string
-  address: string
-  rateLimiterConfig: {
-    capacity: string
-    isEnabled: boolean
-    rate: string
-  }
-  decimals: number
-  poolMechanism?: string
-}
+import { TokenExtraInfo } from "./types"
 
 interface TokenSearchProps {
   tokens: TokenExtraInfo[]
@@ -92,7 +81,9 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
   const handleInput = (event: h.JSX.TargetedEvent<HTMLInputElement>) => {
     const newSearchTerm = event.currentTarget.value.toLowerCase()
     setSearchTerm(newSearchTerm)
-    const newFilteredTokens = tokens.filter((token) => token.token.toLowerCase().includes(newSearchTerm))
+    const newFilteredTokens = tokens.filter(
+      (token) => token.token.toLowerCase().includes(newSearchTerm) || token.symbol.toLowerCase().includes(newSearchTerm)
+    )
     setFilteredTokens(newFilteredTokens)
   }
 
@@ -118,7 +109,7 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
 
       <div style="overflow: auto; width: 100%; max-height: 350px;">
         <table style="width: 100%; border-collapse: collapse;">
-          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+          <thead style="position: sticky; top: 0; background: white; z-index: 1;">
             <tr>
               <th>Symbol</th>
               <th>Token Address</th>
@@ -157,47 +148,67 @@ const TokenSearch: FunctionComponent<TokenSearchProps> = ({ tokens, sourceChain 
           </thead>
           <tbody>
             {filteredTokens.length > 0 ? (
-              filteredTokens.map((token) => (
-                <tr>
-                  <td style={{ whiteSpace: "nowrap" }}>{token.token}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    <Address
-                      address={token.address}
-                      contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)}
-                      endLength={4}
-                    />
-                  </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    {token.rateLimiterConfig?.isEnabled
-                      ? display(token.rateLimiterConfig.capacity, token.decimals) + " " + token.token
-                      : "N/A"}
-                  </td>
-                  <td>
-                    {token.rateLimiterConfig?.isEnabled
-                      ? (() => {
-                          const { rateSecond, maxThroughput } = displayRate(
-                            token.rateLimiterConfig.capacity,
-                            token.rateLimiterConfig.rate,
-                            token.token,
-                            token.decimals
-                          )
-                          return (
-                            <div style={{ position: "relative" }}>
-                              <SimplePreactTooltip
-                                label={rateSecond}
-                                tip={maxThroughput}
-                                labelStyle={{ fontWeight: "normal", whiteSpace: "nowrap" }}
-                                tooltipStyle={{ marginTop: "8px", minWidth: "200px", bottom: "110%" }}
-                              />
-                            </div>
-                          )
-                        })()
-                      : "N/A"}
-                  </td>
-                </tr>
-              ))
+              filteredTokens.map((token) => {
+                const [imgSrc, setImgSrc] = useState(getTokenIconUrl(token.symbol))
+                return (
+                  <tr key={token.symbol}>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <img
+                        width="16"
+                        height="16"
+                        src={imgSrc}
+                        alt={`${token.symbol} icon`}
+                        style={{ marginRight: "8px" }}
+                        onError={() => setImgSrc(fallbackTokenIconUrl)}
+                      />
+                      {token.symbol}
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <Address
+                        address={token.address}
+                        contractUrl={getExplorerAddressUrl(explorerUrl)(token.address)}
+                        endLength={4}
+                        eventName="docs_product_interaction"
+                        additionalInfo={{
+                          product: "CCIP",
+                          action: "ccip_supportedTokenAddress_copied",
+                          extraInfo1: sourceChain,
+                          extraInfo2: token.symbol,
+                        }}
+                      />
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{token.decimals}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{token.poolMechanism}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      {token.rateLimiterConfig?.out?.isEnabled
+                        ? display(token.rateLimiterConfig.out?.capacity, token.decimals) + " " + token.symbol
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {token.rateLimiterConfig?.out?.isEnabled
+                        ? (() => {
+                            const { rateSecond, maxThroughput } = displayRate(
+                              token.rateLimiterConfig.out?.capacity,
+                              token.rateLimiterConfig.out?.rate,
+                              token.symbol,
+                              token.decimals
+                            )
+                            return (
+                              <div style={{ position: "relative" }}>
+                                <SimplePreactTooltip
+                                  label={rateSecond}
+                                  tip={maxThroughput}
+                                  labelStyle={{ fontWeight: "normal", whiteSpace: "nowrap" }}
+                                  tooltipStyle={{ marginTop: "8px", minWidth: "200px", bottom: "110%" }}
+                                />
+                              </div>
+                            )
+                          })()
+                        : "N/A"}
+                    </td>
+                  </tr>
+                )
+              })
             ) : (
               <tr>
                 <td colSpan={6} style={{ textAlign: "center" }}>
