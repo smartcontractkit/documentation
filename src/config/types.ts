@@ -19,6 +19,8 @@ export type SupportedTechnology =
   | "WEMIX"
   | "KROMA"
   | "MODE"
+  | "ZKSYNC"
+  | "SONEIUM"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -40,6 +42,7 @@ export type SupportedChain =
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
+  | "METIS_SEPOLIA"
   | "BASE_MAINNET"
   | "BASE_SEPOLIA"
   | "BLAST_MAINNET"
@@ -49,6 +52,7 @@ export type SupportedChain =
   | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
+  | "LINEA_SEPOLIA"
   | "ZKSYNC_MAINNET"
   | "ZKSYNC_SEPOLIA"
   | "POLYGON_ZKEVM_MAINNET"
@@ -59,6 +63,7 @@ export type SupportedChain =
   | "KROMA_SEPOLIA"
   | "MODE_MAINNET"
   | "MODE_SEPOLIA"
+  | "SONEIUM_MINATO"
 
 export type Chains = Record<
   SupportedTechnology,

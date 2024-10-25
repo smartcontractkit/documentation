@@ -22,7 +22,7 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet early access.
 
 ## Guide
 
@@ -286,7 +286,7 @@ production environment, you should verify the data onchain to ensure its integri
 
 ### Establishing a WebSocket connection and listening for reports
 
-Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
 
 Once the WebSocket connection is established, your application subscribes to one or more Data Streams feeds by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified feeds.
 
@@ -294,9 +294,9 @@ Once the WebSocket connection is established, your application subscribes to one
 
 As data reports arrive via the established WebSocket connection, they are processed in real-time:
 
-- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
+- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
 
-- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/report/report.go#L26) function parses and transforms the raw data into a structured format (`v3.Data`). This decoded data includes data such as the benchmark price and [bid and ask](/data-streams/concepts/liquidity-weighted-prices) prices.
+- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L26) function parses and transforms the raw data into a structured format (`v3.Data`). This decoded data includes data such as the benchmark price and [bid and ask](/data-streams/concepts/liquidity-weighted-prices) prices.
 
 ### Handling the decoded data
 

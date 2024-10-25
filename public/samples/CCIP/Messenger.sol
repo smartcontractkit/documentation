@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
@@ -258,10 +258,13 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             Client.EVM2AnyMessage({
                 receiver: abi.encode(_receiver), // ABI-encoded receiver address
                 data: abi.encode(_text), // ABI-encoded string
-                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
                     // Additional arguments, setting gas limit
-                    Client.EVMExtraArgsV1({gasLimit: 200_000})
+                    Client.EVMExtraArgsV2({
+                        gasLimit: 200_000, // Gas limit for the callback on the destination chain
+                        allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
+                    })
                 ),
                 // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
                 feeToken: _feeTokenAddress

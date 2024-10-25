@@ -37,7 +37,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
 
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
-    // see https://docs.chain.link/docs/vrf/v2-5/supported-networks
+    // see https://docs.chain.link/vrf/v2-5/supported-networks
     bytes32 public keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
 

@@ -132,6 +132,8 @@ Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updat
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 
+When the node detects that the heartbeat is reached, it initiates the latest round. Depending on congestion and network conditions, there may be a slight delay for the latest round to get onchain.
+
 During periods of low volatility, the heartbeat triggers updates to the latest answer. Some heartbeats are configured to last several hours, so your application should check the timestamp and verify that the latest answer is recent enough for your application.
 
 Users should build applications with the understanding that data feeds for wrapped or liquid staking assets might have different heartbeat and deviation thresholds than that of the underlying asset. Heartbeat and deviation thresholds can also differ for the same asset across different blockchains. Combining data from multiple feeds, even those with a common denominator, might result in a margin of error that users must account for in their risk mitigation practices.

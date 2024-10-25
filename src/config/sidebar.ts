@@ -1,14 +1,17 @@
 import { Sections } from "../content/config"
+import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
-  children?: { title: string; url: string }[]
+  children?: SectionContent[]
 }
 type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
+
+const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   dataFeeds: [
@@ -224,8 +227,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
-          title: "Data Streams Feed IDs",
+          title: "Data Streams Feeds",
           url: "data-streams/stream-ids",
+        },
+        {
+          title: "Developer Responsibilities",
+          url: "data-streams/developer-responsibilities",
         },
         {
           title: "Billing",
@@ -413,6 +420,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "chainlink-automation/concepts/best-practice",
+        },
+        {
+          title: "Service Limits",
+          url: "chainlink-automation/overview/service-limits",
         },
         {
           title: "Release Notes",
@@ -954,6 +965,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/service-responsibility",
         },
         {
+          title: "Execution Latency",
+          url: "ccip/concepts/ccip-execution-latency",
+        },
+        {
           title: "Billing",
           url: "ccip/billing",
         },
@@ -979,6 +994,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "Test CCIP Locally",
+          url: "ccip/tutorials/test-ccip-locally",
+        },
+        {
           title: "Offchain",
           url: "ccip/tutorials/offchain",
           children: [
@@ -1001,7 +1020,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
-          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
           url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
         },
         {
@@ -1134,6 +1153,69 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
+  ],
+  chainlinkLocal: [
+    {
+      section: "Chainlink Local",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-local/learn/architecture",
+        },
+        {
+          title: "Contributing",
+          url: "chainlink-local/learn/contributing",
+        },
+      ],
+    },
+    {
+      section: "Build - CCIP",
+      contents: [
+        {
+          title: "Foundry",
+          url: "chainlink-local/build/ccip/foundry",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/foundry/local-simulator",
+            },
+            {
+              title: "Using the CCIP Local Simulator in forked environments",
+              url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
+            },
+          ],
+        },
+        {
+          title: "Hardhat",
+          url: "chainlink-local/build/ccip/hardhat",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator",
+            },
+            {
+              title: "Using the CCIP Local Simulator in forked environments",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
+            },
+          ],
+        },
+        {
+          title: "Remix IDE",
+          url: "chainlink-local/build/ccip/remix",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/remix/local-simulator",
+            },
+          ],
+        },
+      ],
+    },
+    { ...chainlinkLocalAPIReferenceTyped },
   ],
   nodeOperator: [
     {

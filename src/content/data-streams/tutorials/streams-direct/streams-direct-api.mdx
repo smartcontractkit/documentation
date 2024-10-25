@@ -23,7 +23,7 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to talk to an expert about integrating Chainlink Data Streams with your applications.
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet early access.
 
 ## Guide
 
@@ -386,15 +386,15 @@ production environment, you should verify the data onchain to ensure its integri
 
 Your application uses the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) to fetch reports from the Data Streams Aggregation Network. Different functions from the SDK are invoked based on whether a single feed or multiple feeds are queried:
 
-- Single Feed: The application calls the [`GetLatestReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/client.go#L121) function from the SDK's `streams` package to fetch a single feed report. This function sends an API request to retrieve the latest available report for a specified feed ID. The response includes the report's data in a structured format suitable for further processing and analysis.
+- Single Feed: The application calls the [`GetLatestReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L121) function from the SDK's `streams` package to fetch a single feed report. This function sends an API request to retrieve the latest available report for a specified feed ID. The response includes the report's data in a structured format suitable for further processing and analysis.
 
-- Multiple Feeds: The [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/client.go#L199) function is used for multiple feeds. This function allows you to fetch reports for multiple feed IDs simultaneously, specifying a timestamp to retrieve reports valid at a particular point in time.
+- Multiple Feeds: The [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L199) function is used for multiple feeds. This function allows you to fetch reports for multiple feed IDs simultaneously, specifying a timestamp to retrieve reports valid at a particular point in time.
 
 The responses include a `fullReport` blob containing the encoded report's context and observations.
 
 ### Decoding reports
 
-After retrieving the report data, the application decodes it using the [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/07b90307840f9e0f5f86644cc538d2e81ae870dc/go/report/report.go#L26) function available in the `report` package of the SDK. This function is designed to handle different data formats by specifying the version of the data structure as a type parameter (e.g., `v3.Data`).
+After retrieving the report data, the application decodes it using the [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L26) function available in the `report` package of the SDK. This function is designed to handle different data formats by specifying the version of the data structure as a type parameter (e.g., `v3.Data`).
 
 The `Decode` function unpacks the encoded report blob into a usable data structure (`Report[v3.Data]`). It extracts information such as observation timestamps, benchmark prices, [bid and ask prices](/data-streams/concepts/liquidity-weighted-prices) from the report data.
 

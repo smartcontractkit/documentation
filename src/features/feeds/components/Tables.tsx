@@ -107,6 +107,17 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
   )
 }
 
+const handleClick = (e, additionalInfo) => {
+  e.preventDefault()
+
+  const dataLayerEvent = {
+    event: "docs_product_interaction",
+    ...additionalInfo,
+  }
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push(dataLayerEvent)
+}
+
 const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
@@ -143,6 +154,15 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "FEEDS",
+              action: "feedId_copied",
+              extraInfo1: network.name,
+              extraInfo2: proxy.name,
+              extraInfo3: proxy.proxyAddress,
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
@@ -251,6 +271,15 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "FEEDS-POR",
+              action: "feedId_copied",
+              extraInfo1: network.name,
+              extraInfo2: proxy.name,
+              extraInfo3: proxy.proxyAddress,
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
@@ -283,6 +312,14 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.porSource}</dd>
           </div>
+          {proxy.docs.issuer ? (
+            <div>
+              <dt>
+                <span class="label">Issuer:</span>
+              </dt>
+              <dd>{proxy.docs.issuer}</dd>
+            </div>
+          ) : null}
         </dl>
       </div>
     </td>
@@ -320,6 +357,30 @@ const StreamsNetworksData = [
       explorerUrl: "https://testnet.snowtrace.io/address/%s",
     },
   },
+  {
+    network: "Base",
+    logoUrl: "/assets/chains/base.svg",
+    networkStatus: "https://basescan.statuspage.io/",
+    mainnet: {
+      label: "Base Mainnet",
+      verifierProxy: "0xDE1A28D87Afd0f546505B28AB50410A5c3a7387a",
+      explorerUrl: "https://basescan.org/address/%s",
+    },
+    testnet: {
+      label: "Base Sepolia",
+      verifierProxy: "0x8Ac491b7c118a0cdcF048e0f707247fD8C9575f9",
+      explorerUrl: "https://sepolia.basescan.org/address/%s",
+    },
+  },
+  {
+    network: "Soneium",
+    logoUrl: "/assets/chains/soneium.svg",
+    testnet: {
+      label: "Soneium Minato Testnet",
+      verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
+      explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+    },
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {
@@ -339,24 +400,34 @@ export const StreamsVerifierProxyTable = () => {
               <div className={tableStyles.assetPair}>{network.network}</div>
             </td>
             <td style="width:80%;">
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
-                <a
-                  style={{ fontSize: "0.9em" }}
-                  class={tableStyles.addressLink}
-                  href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                  target="_blank"
-                >
-                  {network.mainnet.verifierProxy}
-                </a>
-                <button
-                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={network.mainnet.verifierProxy}
-                  onClick={() => navigator.clipboard.writeText(network.mainnet.verifierProxy)}
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                </button>
-              </div>
+              {network.mainnet && (
+                <div className={tableStyles.assetAddress}>
+                  <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
+                  <a
+                    style={{ fontSize: "0.9em" }}
+                    class={tableStyles.addressLink}
+                    href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
+                    target="_blank"
+                  >
+                    {network.mainnet.verifierProxy}
+                  </a>
+                  <button
+                    class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                    data-clipboard-text={network.mainnet.verifierProxy}
+                    onClick={(e) =>
+                      handleClick(e, {
+                        product: "STREAMS",
+                        action: "verifierProxyAddress_copied",
+                        extraInfo1: "Mainnet",
+                        extraInfo2: network.mainnet.label,
+                      })
+                    }
+                  >
+                    <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                  </button>
+                </div>
+              )}
+
               <div className={tableStyles.assetAddress}>
                 <span style="font-size: 0.9em;">{network.testnet.label}: </span>
                 <a
@@ -370,16 +441,25 @@ export const StreamsVerifierProxyTable = () => {
                 <button
                   class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                   data-clipboard-text={network.testnet.verifierProxy}
-                  onClick={() => navigator.clipboard.writeText(network.testnet.verifierProxy)}
+                  onClick={(e) =>
+                    handleClick(e, {
+                      product: "STREAMS",
+                      action: "verifierProxyAddress_copied",
+                      extraInfo1: "Testnet",
+                      extraInfo2: network.testnet.label,
+                    })
+                  }
                 >
                   <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
                 </button>
               </div>
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em; padding-top: 1em;">
-                  Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
-                </span>
-              </div>
+              {network.networkStatus && (
+                <div className={tableStyles.assetAddress}>
+                  <span style="font-size: 0.9em; padding-top: 1em;">
+                    Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
+                  </span>
+                </div>
+              )}
             </td>
           </tr>
         ))}
@@ -391,8 +471,8 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Stream</th>
-      <th>Stream info</th>
+      <th class={tableStyles.heading}>Feed</th>
+      <th>Details</th>
     </tr>
   </thead>
 )
@@ -420,13 +500,22 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.feedId}
+          onClick={(e) =>
+            handleClick(e, {
+              product: "STREAMS",
+              action: "feedId_copied",
+              extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+              extraInfo2: proxy.pair[0],
+              extraInfo3: proxy.feedId,
+            })
+          }
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {proxy.docs.productType ? (
+          {/* {proxy.docs.productType ? (
             <div>
               <dt>
                 <span class="label">Data type:</span>
@@ -438,6 +527,26 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : (
             ""
+          )} */}
+          {isMainnet && proxy.docs.clicProductName ? (
+            <div>
+              <dt>
+                <span class="label">Full name:</span>
+              </dt>
+              <dd>{proxy.docs.clicProductName}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.assetName ? (
+            <div>
+              <dt>
+                <span class="label">Asset name:</span>
+              </dt>
+              <dd>{proxy.docs.assetName}</dd>
+            </div>
+          ) : (
+            ""
           )}
           {proxy.docs.assetClass ? (
             <div>
@@ -446,13 +555,15 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>
                 {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+                {proxy.docs.assetSubClass && proxy.docs.assetSubClass !== "Crypto"
+                  ? " - " + proxy.docs.assetSubClass
+                  : ""}
               </dd>
             </div>
           ) : (
             ""
           )}
-          {proxy.docs.quoteAsset ? (
+          {/* {proxy.docs.quoteAsset ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
                 <span class="label">Quote asset:</span>
@@ -461,7 +572,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : (
             ""
-          )}
+          )} */}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
@@ -472,16 +583,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
                   {proxy.docs.marketHours}
                 </a>
               </dd>
-            </div>
-          ) : (
-            ""
-          )}
-          {isMainnet && proxy.docs.clicProductName ? (
-            <div>
-              <dt>
-                <span class="label">Full name:</span>
-              </dt>
-              <dd>{proxy.docs.clicProductName}</dd>
             </div>
           ) : (
             ""
