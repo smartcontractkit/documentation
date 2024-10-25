@@ -122,7 +122,7 @@ function LaneDrawer({
                     return (
                       <tr key={index}>
                         <td>
-                          <a href={`/ccip/supported-networks/${environment}/token/${token}`}>
+                          <a href={`/ccip/directory/${environment}/token/${token}`}>
                             <div className="ccip-table__network-name">
                               <img
                                 src={logo}

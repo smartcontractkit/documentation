@@ -12,7 +12,7 @@ function Segments({ tabs }: SegmentsProps) {
   return (
     <div className="segments__container">
       {tabs.map((tab) => (
-        <a key={tab.id} href={`/ccip/supported-networks/${tab.id}`} className={tab.active ? "active" : ""}>
+        <a key={tab.id} href={`/ccip/directory/${tab.id}`} className={tab.active ? "active" : ""}>
           {tab.name}
         </a>
       ))}

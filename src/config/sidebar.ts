@@ -940,15 +940,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "CCIP Directory",
-          url: "ccip/supported-networks",
+          url: "ccip/directory",
           children: [
             {
               title: "Mainnet",
-              url: "ccip/supported-networks/mainnet",
+              url: "ccip/directory/mainnet",
             },
             {
               title: "Testnet",
-              url: "ccip/supported-networks/testnet",
+              url: "ccip/directory/testnet",
             },
           ],
         },

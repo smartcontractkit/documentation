@@ -14,7 +14,8 @@ import yaml from "@rollup/plugin-yaml"
 export default defineConfig({
   site: "https://docs.chain.link",
   redirects: {
-    "/ccip/supported-networks": "/ccip/supported-networks/mainnet",
+    "/ccip/directory": "/ccip/directory/mainnet",
+    "/ccip/supported-networks": "/ccip/directory/mainnet",
     "/getting-started": "/getting-started/conceptual-overview",
     "/resources": "/resources/link-token-contracts",
   },

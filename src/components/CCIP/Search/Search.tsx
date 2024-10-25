@@ -110,7 +110,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                 <ul aria-label="Networks">
                   {networksResults.map((network) => (
                     <li key={network.name}>
-                      <a href={`/ccip/supported-networks/${environment}/chain/${network.chain}`}>
+                      <a href={`/ccip/directory/${environment}/chain/${network.chain}`}>
                         <img src={network.logo} alt="" />
                         {network.name}
                         {!small && (
@@ -131,7 +131,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                 <ul aria-label="Networks">
                   {tokensResults.map((token) => (
                     <li key={token.name}>
-                      <a href={`/ccip/supported-networks/${environment}/token/${token.name}`}>
+                      <a href={`/ccip/directory/${environment}/token/${token.name}`}>
                         <img src={token.logo} alt="" />
                         {token.name}
                         {!small && (

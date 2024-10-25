@@ -19,11 +19,7 @@ function NetworkGrid({ tokens, environment }: TokenGridProps) {
     <>
       <div className="tokens__grid">
         {tokens.slice(0, seeMore ? tokens.length : BEFORE_SEE_MORE).map((token) => (
-          <TokenCard
-            name={token.name}
-            logo={token.logo}
-            link={`/ccip/supported-networks/${environment}/token/${token.name}`}
-          />
+          <TokenCard name={token.name} logo={token.logo} link={`/ccip/directory/${environment}/token/${token.name}`} />
         ))}
       </div>
       {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
