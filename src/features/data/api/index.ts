@@ -10,6 +10,7 @@ interface Docs {
   porType?: string
   productSubType?: string
   productType?: string
+  ripcordApi?: string
   shutdownDate?: string
 }
 export interface ChainMetadata {
