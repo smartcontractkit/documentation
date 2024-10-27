@@ -13,6 +13,13 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 [`BurnMintTokenPoolAbstract`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnMintTokenPoolAbstract.sol) is an abstract contract that extends the [`TokenPool`](/ccip/api-reference/token-pool) contract. It defines the common logic for burning tokens in the pool. This contract contains validation mechanisms and logic for burning tokens in the context of a cross-chain token transfer. The main goal of this abstract contract is to allow different pools to inherit from it and customize the specific burn logic.
 
+## BurnMintTokenPool and BurnFromMintTokenPool
+
+The [`BurnMintTokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) and [`BurnFromMintTokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol) contracts are concrete implementations that inherit from [`BurnMintTokenPoolAbstract`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnMintTokenPoolAbstract.sol). Both are designed to mint and burn a 3rd-party token, but they differ in how the token burning is implemented:
+
+- `BurnMintTokenPool` uses the `burn(amount)` function for burning tokens.
+- `BurnFromMintTokenPool` uses the `burnFrom(address, amount)` function, where the contract burns tokens from its own balance.
+
 ### \_burn
 
 ```solidity
