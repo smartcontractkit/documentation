@@ -75,7 +75,6 @@ export const productChainLinks: ProductChainLinks = {
       base: "/data-streams/stream-ids",
       soneium: "/data-streams/stream-ids",
       opbnb: "/data-streams/stream-ids",
-      solana: "/data-streams/stream-ids",
     },
   },
   Functions: {
