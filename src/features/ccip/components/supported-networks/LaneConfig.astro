@@ -13,9 +13,9 @@ import { Address, Aside, CopyText } from "@components"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
 import { getExplorer, getExplorerAddressUrl } from "@features/utils"
-import { Tooltip } from "@features/common/Tooltip"
 import { TokenExtraInfo } from "./types"
 import TokenSearch from "./TokenSearch"
+import { Tooltip } from "@features/common/Tooltip"
 
 type ConfigProps = {
   laneConfig: LaneConfig
@@ -38,7 +38,7 @@ const {
   destinationChainSelector,
 } = Astro.props as ConfigProps
 
-const { rateLimiterConfig, supportedTokens, onRamp, rmnPermeable } = laneConfig
+const { rateLimiterConfig, supportedTokens, onRamp, offRamp, rmnPermeable } = laneConfig
 
 const normalizeNumber = (bigNum: BigNumber, decimals: number = 18) => {
   const divisor = new BigNumber(10).pow(decimals)
@@ -105,6 +105,8 @@ const enforceOutOfOrder = onRamp.enforceOutOfOrder
 const enforceOutOfOrderText = enforceOutOfOrder === undefined ? "N/A" : enforceOutOfOrder ? "Required" : "Optional"
 
 const rmnStatusText = rmnPermeable ? "Coming Soon" : "Enabled"
+
+const offRampExplorerUrl = getExplorerAddressUrl(explorerUrl)(offRamp.address)
 
 let tokensWithExtraInfo: TokenExtraInfo[] = []
 
@@ -185,136 +187,100 @@ if (supportedTokens) {
       >
     </tr>
     <tr>
-      <td>Destination chain selector</td>
+      <td>OffRamp address</td>
       <td
-        ><CopyText
-          text={destinationChainSelector}
-          code
+        ><Address
+          contractUrl={offRampExplorerUrl}
           eventName="docs_product_interaction"
           additionalInfo={{
             product: "CCIP",
-            action: "ccip_destinationChainSelector_copied",
+            action: "ccip_offRampAddress_copied",
             extraInfo1: sourceChain,
             extraInfo2: destinationChainRefId,
           }}
           client:only="preact"
         /></td
       >
+      <tr>
+        <td>Destination chain selector</td>
+        <td
+          ><CopyText
+            text={destinationChainSelector}
+            code
+            eventName="docs_product_interaction"
+            additionalInfo={{
+              product: "CCIP",
+              action: "ccip_destinationChainSelector_copied",
+              extraInfo1: sourceChain,
+              extraInfo2: destinationChainRefId,
+            }}
+            client:only="preact"
+          /></td
+        >
+      </tr>
     </tr>
   </tbody>
-</table>
-<br />
+  <br />
 
-<table>
-  <>
-    <thead>
-      <tr>
+  {
+    enforceOutOfOrder !== undefined && (
+      <table>
         <>
-          <th>Property</th>
-          <th>Value</th>
-        </>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <>
-          <td>
-            <Tooltip
-              tip="This field shows the status of the Risk Management Network (RMN) for this lane. Enabled: RMN is active. Coming Soon: RMN is not yet deployed."
-              label="RMN"
-              style={{ marginTop: "0" }}
-              client:load
-            />
-          </td>
-          <td>{rmnStatusText}</td>
-        </>
-      </tr>
-      <tr>
-        <>
-          <td>
-            <Tooltip
-              tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
-              label="Out of Order Execution"
-              style={{ marginTop: "0" }}
-              client:load
-            />
-          </td>
-          <td>{enforceOutOfOrderText}</td>
-        </>
-      </tr>
-    </tbody>
-  </>
-</table>
-
-<br />
-{
-  tokensWithExtraInfo.length > 0 ? (
-    <>
-      {rateLimiterConfig && rateLimiterConfig.isEnabled ? (
-        <table>
-          <>
-            <thead>
-              <tr>
-                <>
-                  <th>Aggregate Rate Limit</th>
-                  <th>Value</th>
-                </>
-              </tr>
-            </thead>
-            <tbody>
+          <thead>
+            <tr>
               <>
-                <tr>
-                  <>
-                    <td>
-                      <Tooltip
-                        tip="Maximum amount per transaction"
-                        label="Capacity"
-                        style={{ marginTop: "0" }}
-                        client:load
-                      />
-                    </td>
-                    <td>{display(rateLimiterConfig.capacity)} USD</td>
-                  </>
-                </tr>
-                <tr>
-                  <>
-                    <td>
-                      <Tooltip
-                        tip="Rate at which available capacity is replenished"
-                        label="Refill rate"
-                        style={{ marginTop: "0" }}
-                        client:load
-                      />
-                    </td>
-                    <td>
-                      {(() => {
-                        const { rateSecond, maxThroughput } = displayRate(
-                          rateLimiterConfig.capacity,
-                          rateLimiterConfig.rate,
-                          "USD"
-                        )
-
-                        return <Tooltip tip={maxThroughput} label={rateSecond} style={{ marginTop: "0" }} client:load />
-                      })()}
-                    </td>
-                  </>
-                </tr>
+                <th>Property</th>
+                <th>Value</th>
               </>
-            </tbody>
-          </>
-        </table>
-      ) : null}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <>
+                <td>
+                  <Tooltip
+                    tip="This field shows the status of the Risk Management Network (RMN) for this lane. Enabled: RMN is active. Coming Soon: RMN is not yet deployed."
+                    label="RMN"
+                    style={{ marginTop: "0" }}
+                    client:load
+                  />
+                </td>
+                <td>{rmnStatusText}</td>
+              </>
+            </tr>
+            <tr>
+              <>
+                <td>
+                  <Tooltip
+                    tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
+                    label="Out of Order Execution"
+                    style={{ marginTop: "0" }}
+                    client:load
+                  />
+                </td>
+                <td>{enforceOutOfOrderText}</td>
+              </>
+            </tr>
+          </tbody>
+        </>
+      </table>
+    )
+  }<br />
+  {
+    tokensWithExtraInfo.length > 0 ? (
       <>
-        <p>
-          <strong>Transferable tokens</strong>
-        </p>
-        <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
+        <>
+          <p>
+            <strong>Transferable tokens</strong>
+          </p>
+          <TokenSearch tokens={tokensWithExtraInfo} sourceChain={sourceChain} client:only="preact" />
+        </>
       </>
-    </>
-  ) : (
-    <Aside>
-      No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
-      their token listed.
-    </Aside>
-  )
-}
+    ) : (
+      <Aside>
+        No tokens have currently been listed on this lane. Token issuers may <a href={contactUrl}>contact us</a> to have
+        their token listed.
+      </Aside>
+    )
+  }
+</table>
