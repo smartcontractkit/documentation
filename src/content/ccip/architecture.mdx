@@ -84,7 +84,7 @@ One OnRamp contract exists per [lane](/ccip/concepts#lane). This contract perfor
 - Verifies message size limits and gas limits.
 - Keeps track of sequence numbers to preserve the order of messages for the receiver
 - Manages [billing](/ccip/billing).
-- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer.
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry-and-registrymoduleownercustom) to retrieve the token pool linked to a token if the message includes a token transfer.
 
 - Interacts with the [TokenPool](#token-pools) to lock or burn a specified amount of tokens if the message includes a token transfer.
 - Emits an event monitored by the [committing DON](#committing-don).
@@ -95,7 +95,7 @@ One OffRamp contract exists per [lane](/ccip/concepts#lane). This contract perfo
 
 - Ensures the message is authentic by verifying the proof provided by the Executing DON against a committed and blessed Merkle root.
 - Ensures transactions are executed only once.
-- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer.
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry-and-registrymoduleownercustom) to retrieve the token pool linked to a token if the message includes a token transfer.
 - If the CCIP transaction includes token transfers, the OffRamp contract calls the [TokenPool](#token-pools) to unlock or mint the correct assets for the receiver.
 - After validation, the OffRamp contract transmits any received message to the [Router](#router) contract.
 
