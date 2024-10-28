@@ -57,20 +57,11 @@ The figure below outlines the different components involved in a cross-chain tra
 - Cross-Chain dApps are user-specific. A smart contract, a [smart account](https://erc7579.com/resources/terms), or an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) interacts with the CCIP Router to send arbitrary data and/or transfer tokens cross-chain.
 - The contracts in dark blue are the CCIP interface ([Router](#router)). To use CCIP, users need only to understand how to interact with the router; they don't need to understand the whole CCIP architecture. **Note**: The CCIP interface is static and remains consistent over time to provide reliability and stability to the users.
 - The contracts in light blue are internal to the CCIP protocol and subject to change.
-- The contracts in orange are token pools managed by the token administrators.
+- The contracts highlighted in orange have been integrated into the CCIP protocol to enable the [Cross-Chain Tokens (CCT) Standard](/ccip/concepts/cross-chain-tokens).
 
-<br />
-{/* prettier-ignore */}
-<Tabs client:visible>
-  <Fragment slot="tab.1">With CCT enabled</Fragment>
-  <Fragment slot="tab.2">Without CCT</Fragment>
-  <Fragment slot="panel.1">
+      <br />
+
       <ClickToZoom src="/images/ccip/CCIP_detailed_architecture_1.5.png" alt="Chainlink CCIP Detailed Architecture 1.5" />
-  </Fragment>
-  <Fragment slot="panel.2">
-      <ClickToZoom src="/images/ccip/detailed-architecture.png" alt="Chainlink CCIP Detailed Architecture" />
-  </Fragment>
-</Tabs>
 
 ### Onchain components
 
@@ -89,37 +80,30 @@ The [Committing DON](#committing-don) interacts with the `CommitStore` contract 
 
 One OnRamp contract exists per [lane](/ccip/concepts#lane). This contract performs the following tasks:
 
-- Checks destination blockchain-specific validity, such as validating account address syntax
-- Verifies message size limits and gas limits
+- Checks destination blockchain-specific validity, such as validating account address syntax.
+- Verifies message size limits and gas limits.
 - Keeps track of sequence numbers to preserve the order of messages for the receiver
-- Manages [billing](/ccip/billing)
-- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer. **Note**: This contract is part of the new CCIP architecture, which is currently only available on testnet. The new CCIP architecture has not yet been deployed on mainnet
+- Manages [billing](/ccip/billing).
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer.
 
-- Interacts with the [TokenPool](#token-pools) to lock or burn a specified amount of tokens if the message includes a token transfer
-- Emits an event monitored by the [committing DON](#committing-don)
+- Interacts with the [TokenPool](#token-pools) to lock or burn a specified amount of tokens if the message includes a token transfer.
+- Emits an event monitored by the [committing DON](#committing-don).
 
 #### OffRamp
 
 One OffRamp contract exists per [lane](/ccip/concepts#lane). This contract performs the following tasks:
 
-- Ensures the message is authentic by verifying the proof provided by the Executing DON against a committed and blessed Merkle root
-- Ensures transactions are executed only once
-- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer. **Note**: This contract is part of the new CCIP architecture, which is currently only available on testnet. The new CCIP architecture has not yet been deployed on mainnet
-- If the CCIP transaction includes token transfers, the OffRamp contract calls the [TokenPool](#token-pools) to unlock or mint the correct assets for the receiver
-- After validation, the OffRamp contract transmits any received message to the [Router](#router) contract
+- Ensures the message is authentic by verifying the proof provided by the Executing DON against a committed and blessed Merkle root.
+- Ensures transactions are executed only once.
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry) to retrieve the token pool linked to a token if the message includes a token transfer.
+- If the CCIP transaction includes token transfers, the OffRamp contract calls the [TokenPool](#token-pools) to unlock or mint the correct assets for the receiver.
+- After validation, the OffRamp contract transmits any received message to the [Router](#router) contract.
 
-#### TokenAdminRegistry
+#### TokenAdminRegistry and RegistryModuleOwnerCustom
 
 <CcipCommon callout="selfServeCallout" />
 
-The `TokenAdminRegistry` contract is responsible for managing the configuration of token pools for all cross chain tokens. It allows projects to autonomously register and administer their tokens without direct intervention from Chainlink Labs. The contract enables projects to configure their token pools for cross-chain transactions.
-
-**Key Features:**
-
-- **Autonomous Tokens Registration:** Projects can register tokens and configure token pools independently without Chainlink Labs intervention.
-- **Token Pool Management:** Projects can set or update the token pool for any registered token. This enables the token to be used in CCIP cross-chain transactions. A token pool can be configured, replaced, or delisted.
-- **Permissioned Administration:** Each token is managed by a designated administrator who can perform administrative tasks, such as updating the token pool or transferring administrative rights.
-- **Admin Role Transfer:** Administrators can transfer their role to another address via a two-step process. First, the current administrator initiates the transfer by specifying the new address. Then, the new administrator must accept the admin role to finalize the transfer.
+The registry contracts manage the registration of tokens within the Cross-Chains Tokens (CCT) Standard. For more information, read the [CCT Standard Concepts](/ccip/concepts/cross-chain-tokens).
 
 #### Token pools
 
@@ -130,10 +114,13 @@ Each token is associated with its own token pool, an abstraction layer over ERC-
 - **Burn and Unlock**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. This mechanism is the inverse of the _Lock and Mint_ mechanism. It applies when you send tokens to their issuing source blockchain.
 - **Lock and Unlock**: Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain.
 
-The diagram shows token pools in orange and light blue:
+Currently, token pools are administered in two ways:
 
-- Token pools in orange represent **self-administered tokens**, allowing projects to self-manage their tokens. These projects can now configure their token pools autonomously.
-- Several existing pools, depicted in light blue, are still managed by CCIP and will continue to exist in parallel with the self-administered ones. Eventually, all token pools will be fully administered by their respective projects.
+- **Self-Administered Token Pools**: These are managed directly by projects, allowing them to self-manage their tokens. Projects configure their token pools autonomously. This is currently only possible on blockchains where the [Cross-Chain Tokens Standard](/ccip/concepts/cross-chain-tokens) is available.
+
+  <CcipCommon callout="selfServeCallout" />
+
+- **CCIP-Managed Token Pools**: Some token pools that existed before the [Cross-Chain Tokens Standard](/ccip/concepts/cross-chain-tokens) are managed by CCIP and will continue to exist alongside the self-administered ones. Eventually, all token pools will be fully administered by their respective projects.
 
 The mechanism for handling tokens varies depending on the characteristics of each token. Below are several examples to illustrate this:
 
@@ -192,7 +179,7 @@ Read the [Risk Management Network Concepts](/ccip/concepts#risk-management-netwo
 
 Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity.
 
-<ClickToZoom src="/images/ccip/ccip-refill-rate-v03.webp" alt="Chainlink CCIP Detailed Architecture" />
+<ClickToZoom src="/images/ccip/ccip-refill-rate-v03.webp" alt="Chainlink CCIP Detailed Architecture refill rate" />
 
 You can find the complete list of lanes and their rate limits on the [CCIP Supported Networks](/ccip/supported-networks) page.
 
