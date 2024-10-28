@@ -1,8 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "Developer Passes are now available for Chainlink SmartCon.",
+  description: "Chainlink Certifications are live.",
   type: "info",
-  linkText: "Get yours today.",
-  linkUrl: "https://smartcon.chain.link/home?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=smartcon-2024",
+  linkText: "Get certified today.",
+  linkUrl: "https://dev.chain.link/certification?utm_medium=referral&utm_source=docs&utm_content=banner",
 }
