@@ -1040,7 +1040,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+              url: "ccip/tutorials/transfer-tokens-from-eoa",
             },
             {
               title: "Checking CCIP Message Status",
