@@ -22,7 +22,7 @@ function NetworkGrid({ networks, environment }: NetworkGridProps) {
     <>
       <div className="networks__grid">
         {networks.slice(0, seeMore ? networks.length : BEFORE_SEE_MORE).map((chain) => (
-          <a href={`/ccip/directory/${environment}/chain/${chain.chain}`}>
+          <a href={`/ccip/directory/${environment}/chain/${chain.chain}`} key={chain.chain}>
             <NetworkCard
               name={chain.name}
               totalLanes={chain.totalLanes}
