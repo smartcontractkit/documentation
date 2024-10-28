@@ -40,4 +40,15 @@ export default defineConfig({
     syntaxHighlight: "prism",
     smartypants: false,
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          entryFileNames: "_astro/[name].[hash].mjs",
+          chunkFileNames: "_astro/[name].[hash].mjs",
+          assetFileNames: "_astro/[name].[hash][extname]",
+        },
+      },
+    },
+  },
 })
