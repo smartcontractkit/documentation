@@ -644,9 +644,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
 }
 
 export async function getOperationalState(chain: string, site: string) {
-  // TO BE REMOVED
-  const url = `https://documentation-git-ccip-config-redesign-chainlinklabs.vercel.app/api/ccip/lane-statuses?sourceNetworkId=${chain}`
-  // const url = `${site}/api/ccip/lane-statuses?sourceNetworkId=${chain}`
+  const url = `${site}/api/ccip/lane-statuses?sourceNetworkId=${chain}`
   const response = await fetch(url)
   if (response.status !== 200) {
     return {}
