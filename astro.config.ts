@@ -44,9 +44,9 @@ export default defineConfig({
     build: {
       rollupOptions: {
         output: {
-          entryFileNames: "_astro/[name].[hash].mjs",
-          chunkFileNames: "_astro/[name].[hash].mjs",
-          assetFileNames: "_astro/[name].[hash][extname]",
+          entryFileNames: "_astro/_entries/[name].[hash:22].mjs",
+          chunkFileNames: "_astro/_chunks/[name].[hash:22].mjs",
+          assetFileNames: "_astro/_assets/[name].[hash:22][extname]",
         },
       },
     },
