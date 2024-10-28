@@ -396,6 +396,12 @@ const StreamsNetworksData = [
       explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
     },
   },
+  {
+    network: "Solana",
+    logoUrl: "/assets/chains/solana.svg",
+    contactUs: true,
+    message: "to talk to an expert about integrating Chainlink Data Streams on Solana.",
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {
@@ -410,70 +416,95 @@ export const StreamsVerifierProxyTable = () => {
       <tbody>
         {StreamsNetworksData.map((network) => (
           <tr key={network.network}>
-            <td class={tableStyles.pairCol} style={{ textAlign: "center" }}>
+            <td className={tableStyles.pairCol} style={{ textAlign: "center" }}>
               <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
               <div className={tableStyles.assetPair}>{network.network}</div>
             </td>
-            <td style="width:80%;">
-              {network.mainnet && (
-                <div className={tableStyles.assetAddress}>
-                  <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
-                  <a
-                    style={{ fontSize: "0.9em" }}
-                    class={tableStyles.addressLink}
-                    href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                    target="_blank"
-                  >
-                    {network.mainnet.verifierProxy}
-                  </a>
-                  <button
-                    class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                    data-clipboard-text={network.mainnet.verifierProxy}
-                    onClick={(e) =>
-                      handleClick(e, {
-                        product: "STREAMS",
-                        action: "verifierProxyAddress_copied",
-                        extraInfo1: "Mainnet",
-                        extraInfo2: network.mainnet.label,
-                      })
-                    }
-                  >
-                    <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                  </button>
+            <td style={{ width: "80%" }}>
+              {network.contactUs ? (
+                <div className={tableStyles.contactUsMessage}>
+                  <a href="https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs">
+                    Contact us
+                  </a>{" "}
+                  {network.message}
                 </div>
-              )}
+              ) : (
+                <>
+                  {network.mainnet && (
+                    <div className={tableStyles.assetAddress}>
+                      <span style={{ fontSize: "0.9em" }}>{network.mainnet.label}: </span>
+                      <a
+                        style={{ fontSize: "0.9em" }}
+                        className={tableStyles.addressLink}
+                        href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {network.mainnet.verifierProxy}
+                      </a>
+                      <button
+                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                        data-clipboard-text={network.mainnet.verifierProxy}
+                        onClick={(e) =>
+                          handleClick(e, {
+                            product: "STREAMS",
+                            action: "verifierProxyAddress_copied",
+                            extraInfo1: "Mainnet",
+                            extraInfo2: network.mainnet.label,
+                          })
+                        }
+                      >
+                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                      </button>
+                    </div>
+                  )}
 
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em;">{network.testnet.label}: </span>
-                <a
-                  style={{ fontSize: "0.9em" }}
-                  class={tableStyles.addressLink}
-                  href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
-                  target="_blank"
-                >
-                  {network.testnet.verifierProxy}
-                </a>
-                <button
-                  class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={network.testnet.verifierProxy}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "STREAMS",
-                      action: "verifierProxyAddress_copied",
-                      extraInfo1: "Testnet",
-                      extraInfo2: network.testnet.label,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                </button>
-              </div>
-              {network.networkStatus && (
-                <div className={tableStyles.assetAddress}>
-                  <span style="font-size: 0.9em; padding-top: 1em;">
-                    Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
-                  </span>
-                </div>
+                  {network.testnet && (
+                    <div className={tableStyles.assetAddress}>
+                      <span style={{ fontSize: "0.9em" }}>{network.testnet.label}: </span>
+                      <a
+                        style={{ fontSize: "0.9em" }}
+                        className={tableStyles.addressLink}
+                        href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {network.testnet.verifierProxy}
+                      </a>
+                      <button
+                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                        data-clipboard-text={network.testnet.verifierProxy}
+                        onClick={(e) =>
+                          handleClick(e, {
+                            product: "STREAMS",
+                            action: "verifierProxyAddress_copied",
+                            extraInfo1: "Testnet",
+                            extraInfo2: network.testnet.label,
+                          })
+                        }
+                      >
+                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                      </button>
+                    </div>
+                  )}
+
+                  {network.networkStatus && (
+                    <div className={tableStyles.assetAddress}>
+                      <span
+                        style={{
+                          fontSize: "0.9em",
+                          paddingTop: "1em",
+                          display: "block",
+                        }}
+                      >
+                        Track the status of this network at{" "}
+                        <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
+                          {network.networkStatus}
+                        </a>
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </td>
           </tr>
@@ -530,19 +561,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {/* {proxy.docs.productType ? (
-            <div>
-              <dt>
-                <span class="label">Data type:</span>
-              </dt>
-              <dd>
-                {proxy.docs.productType}
-                {proxy.docs.productSubType ? " - " + proxy.docs.productSubType : ""}
-              </dd>
-            </div>
-          ) : (
-            ""
-          )} */}
           {isMainnet && proxy.docs.clicProductName ? (
             <div>
               <dt>
@@ -578,16 +596,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
           ) : (
             ""
           )}
-          {/* {proxy.docs.quoteAsset ? (
-            <div aria-hidden={!showExtraDetails}>
-              <dt>
-                <span class="label">Quote asset:</span>
-              </dt>
-              <dd>{proxy.docs.quoteAsset}</dd>
-            </div>
-          ) : (
-            ""
-          )} */}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>

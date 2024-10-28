@@ -10,6 +10,7 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
+//
 export type DataFeedType = "default" | "por" | "rates" | "streams"
 export const FeedList = ({
   initialNetwork,
