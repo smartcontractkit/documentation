@@ -1020,7 +1020,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
             },
             {
-              title: "Set Token Pool rate limits using Hardhat",
+              title: "Set Token Pool rate limits",
               url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
               highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
             },
