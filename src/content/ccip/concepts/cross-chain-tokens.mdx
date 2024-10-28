@@ -211,20 +211,20 @@ In the following sections, we will explore how token administrators can register
 
 In the Cross-Chain Tokens (CCT) standard, several key contracts work together to facilitate the secure transfer and management of tokens across multiple blockchains. These contracts can be categorized into three main groups:
 
-#### Registry Components
+#### Registry Contracts
 
-The **Registry Components** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
+The **Registry contracts** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
 
 - [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry): This contract stores the token administrators and pools for all registered Cross-Chain Tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
 - [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
 
 #### Token Contract
 
-The **Token Contract** represents the actual token being managed and transferred across blockchains. This contract must be **ERC20-compatible** and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, refer to the [Requirements for ERC20-Compatible Tokens](#requirements-for-erc20-compatible-tokens) section.
+The **Token contract** represents the actual token being managed and transferred across blockchains. This contract must be **ERC20-compatible** and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, refer to the [Requirements for ERC20-Compatible Tokens](#requirements-for-erc20-compatible-tokens) section.
 
 #### Token Pool Contract
 
-The **Token Pool Contract** is responsible for executing the cross-chain token transfers. It manages how tokens are locked, burned, minted, or unlocked across blockchains.
+The **Token Pool contract** is responsible for executing the cross-chain token transfers. It manages how tokens are locked, burned, minted, or unlocked across blockchains.
 
 - **Token Pools**: Each blockchain has its own token pool that interacts with the token contract. Depending on the cross-chain handling mechanism (e.g., Burn & Mint or Lock & Mint), different token pool contracts will be deployed. For example:
   - **BurnMintTokenPool**: Handles the burning, or minting of tokens depending whether it is the source or destination blockchain.
@@ -258,6 +258,7 @@ The following sequence diagram illustrates the process of proposing the administ
           <ClickToZoom
             src="/images/ccip/cct/registration-sequence-diagram.svg"
             alt="Propose administrator sequence diagram"
+            style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
         />
 
 ### Accepting the Administrator Role
@@ -272,6 +273,7 @@ Once the administrator has been proposed and is in a pending state, the final st
           <ClickToZoom
             src="/images/ccip/cct/acceptAdminRole.svg"
             alt="Accept administrator role sequence diagram"
+            style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
         />
 
 ### Transfer Administrator Role
@@ -284,7 +286,11 @@ The `transferAdminRole` function allows the current token administrator to initi
 
 The following sequence diagram illustrates the process of transferring the administrator role and how the new administrator must accept the role to complete the transfer.
 
-<ClickToZoom src="/images/ccip/cct/transferAdminRole.svg" alt="Transfer administrator role sequence diagram" />
+      <ClickToZoom
+        src="/images/ccip/cct/transferAdminRole.svg"
+        alt="Transfer administrator role sequence diagram"
+        style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+      />
 
 ### Setting the Token Pool
 
@@ -296,7 +302,11 @@ The `setPool` function allows the token administrator to assign or update the to
 
 The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
 
-<ClickToZoom src="/images/ccip/cct/setPool.svg" alt="Set token pool sequence diagram" />
+      <ClickToZoom
+        src="/images/ccip/cct/setPool.svg"
+        alt="Set token pool sequence diagram"
+        style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+      />
 
 ### Configuring the Token Pool
 
