@@ -561,19 +561,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {/* {proxy.docs.productType ? (
-            <div>
-              <dt>
-                <span class="label">Data type:</span>
-              </dt>
-              <dd>
-                {proxy.docs.productType}
-                {proxy.docs.productSubType ? " - " + proxy.docs.productSubType : ""}
-              </dd>
-            </div>
-          ) : (
-            ""
-          )} */}
           {isMainnet && proxy.docs.clicProductName ? (
             <div>
               <dt>
@@ -609,16 +596,6 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
           ) : (
             ""
           )}
-          {/* {proxy.docs.quoteAsset ? (
-            <div aria-hidden={!showExtraDetails}>
-              <dt>
-                <span class="label">Quote asset:</span>
-              </dt>
-              <dd>{proxy.docs.quoteAsset}</dd>
-            </div>
-          ) : (
-            ""
-          )} */}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
