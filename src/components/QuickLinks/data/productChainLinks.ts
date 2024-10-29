@@ -130,6 +130,7 @@ export const productChainLinks: ProductChainLinks = {
     ethereum: "/resources/link-token-contracts#ethereum",
     fantom: "/resources/link-token-contracts#fantom",
     "gnosis-chain": "/resources/link-token-contracts#gnosis-chain-xdai",
+    hedera: "/resources/link-token-contracts#hedera",
     kroma: "/resources/link-token-contracts#kroma",
     linea: "/resources/link-token-contracts#linea",
     metis: "/resources/link-token-contracts#metis",
