@@ -1,0 +1,23 @@
+---
+import Chain from "~/components/CCIP/Chain/Chain.astro"
+import { Environment, getAllNetworks } from "~/config/data/ccip"
+
+export async function getStaticPaths() {
+  const networks = getAllNetworks({ filter: Environment.Testnet })
+  const pages = networks.map(({ chain }) => ({ chain }))
+
+  return pages.map(({ chain }) => {
+    return {
+      params: { chain },
+      props: {
+        network: networks.find((network) => network.chain === chain),
+        environment: Environment.Testnet,
+      },
+    }
+  })
+}
+
+const { network, environment } = Astro.props
+---
+
+<Chain network={network} environment={environment} />
