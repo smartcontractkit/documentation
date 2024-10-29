@@ -498,6 +498,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "hedera",
+    label: "Hedera",
+    title: "Hedera Data Feeds",
+    img: "/assets/chains/hedera.svg",
+    networkStatusUrl: "https://status.hedera.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Hedera Testnet",
+        explorerUrl: "https://hashscan.io/testnet/contract/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-testnet.json",
+        queryString: "hedera-testnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
