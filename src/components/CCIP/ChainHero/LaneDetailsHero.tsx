@@ -17,6 +17,7 @@ interface LaneDetailsHeroProps {
   onRamp: string
   offRamp: string
   destinationAddress: string
+  enforceOutOfOrder?: boolean
   explorerUrl: string
   rmnPermeable: boolean
   inOutbound: LaneFilter
@@ -28,10 +29,17 @@ function LaneDetailsHero({
   onRamp,
   offRamp,
   destinationAddress,
+  enforceOutOfOrder,
   explorerUrl,
   rmnPermeable,
   inOutbound,
 }: LaneDetailsHeroProps) {
+  let enforceOutOfOrderString = "N/A"
+  if (enforceOutOfOrder === true) {
+    enforceOutOfOrderString = "Required"
+  } else if (enforceOutOfOrder === false) {
+    enforceOutOfOrderString = "Optional"
+  }
   return (
     <div className="lane-details-hero">
       <div className="lane-details-hero__networks">
@@ -103,6 +111,23 @@ function LaneDetailsHero({
             />
           )}
         </div>
+        {inOutbound === LaneFilter.Outbound && (
+          <>
+            <div className="lane-details-hero__details__label">Out of Order Execution</div>
+            <div data-clipboard-type="destination-chain-selector">
+              <Tooltip
+                label={enforceOutOfOrderString}
+                tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where ‘Out of Order Execution’ is required, you must set this to true; otherwise, the transaction will revert."
+                labelStyle={{
+                  marginRight: "10px",
+                }}
+                style={{
+                  display: "inline-flex",
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
