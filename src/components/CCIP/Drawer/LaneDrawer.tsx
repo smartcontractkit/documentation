@@ -52,6 +52,7 @@ function LaneDrawer({
         }}
         onRamp={lane.onRamp.address}
         offRamp={lane.offRamp.address}
+        enforceOutOfOrder={lane.onRamp.enforceOutOfOrder}
         explorerUrl={explorerUrl || ""}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         rmnPermeable={lane.rmnPermeable}
