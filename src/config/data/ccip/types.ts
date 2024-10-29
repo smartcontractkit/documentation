@@ -35,7 +35,7 @@ export type DestinationsLaneConfig = {
 
 export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
 
-type PoolInfo = {
+export type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
   poolAddress?: string
