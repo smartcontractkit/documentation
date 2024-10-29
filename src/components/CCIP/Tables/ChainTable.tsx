@@ -56,7 +56,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
         setLoadingStatuses(false)
       }
     }
-    fetchOperationalState(sourceNetwork.name)
+    fetchOperationalState(sourceNetwork.key)
   }, [sourceNetwork])
 
   return (
