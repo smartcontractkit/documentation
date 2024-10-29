@@ -517,7 +517,7 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Feed</th>
+      <th class={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
   </thead>
@@ -561,25 +561,21 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
       </div>
       <div>
         <dl class={tableStyles.porDl}>
-          {isMainnet && proxy.docs.clicProductName ? (
+          {isMainnet && proxy.docs.clicProductName && (
             <div>
               <dt>
                 <span class="label">Full name:</span>
               </dt>
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
-          ) : (
-            ""
           )}
-          {proxy.docs.assetName ? (
+          {proxy.docs.assetName && (
             <div>
               <dt>
                 <span class="label">Asset name:</span>
               </dt>
               <dd>{proxy.docs.assetName}</dd>
             </div>
-          ) : (
-            ""
           )}
           {proxy.docs.assetClass ? (
             <div>
@@ -588,7 +584,9 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>
                 {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass && proxy.docs.assetSubClass !== "Crypto"
+                {proxy.docs.assetSubClass &&
+                proxy.docs.assetSubClass !== "Crypto" &&
+                proxy.docs.assetSubClass !== "Forex"
                   ? " - " + proxy.docs.assetSubClass
                   : ""}
               </dd>
@@ -619,6 +617,30 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : (
             ""
+          )}
+          {proxy.docs.feedType === "Crypto" && (
+            <div>
+              <dt>
+                <span class="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
+                  Crypto Schema (v3)
+                </a>
+              </dd>
+            </div>
+          )}{" "}
+          {proxy.docs.feedType === "Forex" && (
+            <div>
+              <dt>
+                <span class="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
+                  RWA Schema (v4)
+                </a>
+              </dd>
+            </div>
           )}
         </dl>
       </div>
@@ -653,15 +675,24 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
   const isDeprecating = ecosystem === "deprecating"
-  const isStreams = dataFeedType === "streams"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isPor = dataFeedType === "por"
   const isDefault = !isPor && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isDeprecating) return !!chain.docs.shutdownDate
-      if (isStreams) return chain.contractType === "verifier"
+
+      if (dataFeedType === "streamsCrypto") {
+        return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+      }
+
+      if (dataFeedType === "streamsRwa") {
+        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+      }
+
       if (isPor) return !!chain.docs.porType
+
       return !chain.docs.porType && chain.contractType !== "verifier"
     })
     .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
@@ -735,14 +766,21 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const isStreams = dataFeedType === "streams"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isPor = dataFeedType === "por"
   const isRates = dataFeedType === "rates"
   const isDefault = !isPor && !isRates && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
-      if (isStreams) return !!chain.contractType
+      if (isStreams) {
+        if (dataFeedType === "streamsCrypto") {
+          return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+        }
+        if (dataFeedType === "streamsRwa") {
+          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        }
+      }
       if (isPor) return !!chain.docs.porType
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
