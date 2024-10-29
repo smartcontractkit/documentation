@@ -71,11 +71,12 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
-      arbitrum: "/data-streams/stream-ids",
-      avalanche: "/data-streams/stream-ids",
-      base: "/data-streams/stream-ids",
-      soneium: "/data-streams/stream-ids",
-      opbnb: "/data-streams/stream-ids",
+      arbitrum: "/data-streams/crypto-streams",
+      avalanche: "/data-streams/crypto-streams",
+      base: "/data-streams/crypto-streams",
+      soneium: "/data-streams/crypto-streams",
+      opbnb: "/data-streams/crypto-streams",
+      solana: "/data-streams/crypto-streams",
     },
   },
   Functions: {
