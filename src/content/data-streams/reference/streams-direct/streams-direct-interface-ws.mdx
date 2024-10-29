@@ -28,15 +28,15 @@ All routes require the following three headers for user authentication:
 
 ## WebSocket Connection
 
-Establish a streaming WebSocket connection that sends reports for the given feedID(s) after they are verified.
+Establish a streaming WebSocket connection that sends reports for the given stream ID(s) after they are verified.
 
 ##### Endpoint
 
 **`/api/v1/ws`**
 
-| Type      | Parameter(s)                                                |
-| --------- | ----------------------------------------------------------- |
-| WebSocket | `feedIDs`: A comma-separated list of Data Streams feed IDs. |
+| Type      | Parameter(s)                                                  |
+| --------- | ------------------------------------------------------------- |
+| WebSocket | `feedIDs`: A comma-separated list of Data Streams stream IDs. |
 
 ##### Sample request
 
@@ -57,8 +57,8 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
 
 ## Error response codes
 
-| Status Code           | Description                                                                                                                                                                                                                                                                         |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                              |
-| 401 Unauthorized User | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a feed without the appropriate permission or that does not exist.</li></ul> |
-| 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                   |
+| Status Code           | Description                                                                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                |
+| 401 Unauthorized User | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul> |
+| 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                     |

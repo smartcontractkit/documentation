@@ -1,0 +1,79 @@
+---
+import * as CONFIG from "~/config"
+import type { BaseFrontmatter } from "~/content/config"
+import type { MarkdownHeading } from "astro"
+import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
+import Segments from "~/components/Segment/Segments"
+import { Environment } from "~/config/data/ccip"
+import Drawer from "~/components/CCIP/Drawer/Drawer"
+
+interface Props {
+  frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
+  environment: Environment
+}
+const { frontmatter, headings, environment } = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const filteredHeadings = headings?.filter((h) => h.depth < 5)
+const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
+
+const currentPage = new URL(Astro.request.url).pathname
+
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+
+frontmatter.metadata = frontmatter.metadata || {}
+frontmatter.metadata.image = "/files/ccip-directory.jpg"
+frontmatter.metadata.description =
+  "Access real-time information and operational statuses for Chainlink Cross-Chain Interoperability Protocol (CCIP) networks, lanes, and tokens."
+---
+
+<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+  <Drawer client:only="react" />
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage}>
+    <Segments
+      tabs={[
+        {
+          name: "Mainnet",
+          id: "mainnet",
+          active: environment === Environment.Mainnet,
+        },
+        {
+          name: "Testnet",
+          id: "testnet",
+          active: environment === Environment.Testnet,
+        },
+      ]}
+    />
+  </DocsNavigation>
+  <main>
+    <slot />
+  </main>
+
+  <style>
+    main {
+      margin-bottom: 0 !important;
+    }
+  </style>
+
+  <script define:vars={{ includeLinkToWalletScript }}>
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
+  </script>
+
+  <script>
+    import "~/scripts"
+    if (window["includeLinkToWalletScript"]) {
+      import("~/scripts/link-to-wallet")
+    }
+  </script>
+</BaseLayout>
