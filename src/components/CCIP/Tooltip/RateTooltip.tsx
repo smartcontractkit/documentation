@@ -12,6 +12,9 @@ function RateTooltip({
   symbol: string
   decimals: number
 }) {
+  if (!destinationLane.rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]?.isEnabled) {
+    return <span>N/A</span>
+  }
   const { rateSecond, maxThroughput } = displayRate(
     String(destinationLane.rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]?.capacity || 0),
     String(destinationLane.rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]?.rate || 0),

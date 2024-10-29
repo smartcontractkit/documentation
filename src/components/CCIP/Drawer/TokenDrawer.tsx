@@ -190,13 +190,10 @@ function TokenDrawer({
                       </td>
                       <td>
                         {displayCapacity(
-                          String(
-                            destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
-                              ?.capacity || 0
-                          ),
-                          network.decimals
-                        )}{" "}
-                        {token.name}
+                          network.decimals,
+                          token.name,
+                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
+                        )}
                       </td>
                       <td>
                         <RateTooltip
