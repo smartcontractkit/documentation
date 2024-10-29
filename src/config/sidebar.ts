@@ -995,7 +995,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          url: "ccip/tutorials/transfer-tokens-from-contract",
         },
         {
           title: "Transfer Tokens with Data",
@@ -1004,6 +1004,31 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Transfer Tokens with Data - Defensive Example",
           url: "ccip/tutorials/programmable-token-transfers-defensive",
+        },
+        {
+          title: "Cross-Chain Tokens (CCT) standard",
+          url: "ccip/tutorials/cross-chain-tokens",
+          children: [
+            {
+              title: "Register from an EOA (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+            },
+            {
+              title: "Register from an EOA (Lock & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+            },
+            {
+              title: "Set Token Pool rate limits",
+              url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+            },
+            {
+              title: "Register from a Safe Smart Account (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+            },
+          ],
         },
         {
           title: "Test CCIP Locally",
@@ -1015,7 +1040,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+              url: "ccip/tutorials/transfer-tokens-from-eoa",
             },
             {
               title: "Checking CCIP Message Status",
@@ -1061,6 +1086,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
+          title: "Cross-Chain Tokens (CCT) standard",
+          url: "ccip/concepts/cross-chain-tokens",
+        },
+        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },
@@ -1084,6 +1113,30 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Client Library",
           url: "ccip/api-reference/client",
+        },
+        {
+          title: "RegistryModuleOwnerCustom",
+          url: "ccip/api-reference/registry-module-owner-custom",
+        },
+        {
+          title: "TokenAdminRegistry",
+          url: "ccip/api-reference/token-admin-registry",
+        },
+        {
+          title: "TokenPool",
+          url: "ccip/api-reference/token-pool",
+        },
+        {
+          title: "Pool Library",
+          url: "ccip/api-reference/pool",
+        },
+        {
+          title: "BurnMintTokenPool",
+          url: "ccip/api-reference/burn-mint-token-pool",
+        },
+        {
+          title: "LockReleaseTokenPool",
+          url: "ccip/api-reference/lock-release-token-pool",
         },
         {
           title: "Errors",
