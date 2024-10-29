@@ -150,14 +150,12 @@ function LaneDrawer({
                         <td>
                           {lane.supportedTokens &&
                             displayCapacity(
-                              String(
-                                lane.supportedTokens[token]?.rateLimiterConfig?.[
-                                  inOutbound === LaneFilter.Inbound ? "in" : "out"
-                                ]?.capacity || 0
-                              ),
-                              data[sourceNetwork.key].decimals
-                            )}{" "}
-                          {token}
+                              data[sourceNetwork.key].decimals,
+                              token,
+                              lane.supportedTokens[token]?.rateLimiterConfig?.[
+                                inOutbound === LaneFilter.Inbound ? "in" : "out"
+                              ]
+                            )}
                         </td>
                         <td>
                           {lane.supportedTokens && (

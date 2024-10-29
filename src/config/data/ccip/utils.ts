@@ -1,5 +1,5 @@
 import { SupportedChain, chainToTechnology } from "@config"
-import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey } from "./types"
+import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types"
 import { networkFees } from "./data"
 import BigNumber from "bignumber.js"
 import { utils } from "ethers"
@@ -144,10 +144,14 @@ const formatTime = (seconds: number) => {
   }
 }
 
-export const displayCapacity = (bigNum: string, decimals = 18) => {
-  console.log(bigNum)
-  const numberWithoutDecimals = normalizeNumber(new BigNumber(bigNum), decimals).toString()
-  return utils.commify(numberWithoutDecimals)
+export const displayCapacity = (decimals = 18, token: string, rateLimiterConfig?: RateLimiterConfig) => {
+  if (!rateLimiterConfig?.isEnabled) {
+    return "N/A"
+  }
+
+  const capacity = String(rateLimiterConfig?.capacity || 0)
+  const numberWithoutDecimals = normalizeNumber(new BigNumber(capacity), decimals).toString()
+  return `${utils.commify(numberWithoutDecimals)} ${token}`
 }
 
 export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
