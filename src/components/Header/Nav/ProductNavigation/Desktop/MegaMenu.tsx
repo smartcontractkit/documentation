@@ -10,7 +10,7 @@ interface MegaMenuProps {
 
 export const megaMenuSections = [
   {
-    title: "Cross Chain",
+    title: "Cross-Chain",
     items: [
       {
         ...(evmProducts.find((product) => product.title === "CCIP") || {}),
