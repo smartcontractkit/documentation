@@ -11,6 +11,7 @@ import { getLane, LaneFilter } from "~/config/data/ccip"
 import { SupportedChain } from "~/config"
 import { clsx } from "~/lib"
 import SeeMore from "../SeeMore/SeeMore"
+import { getOperationalState } from "~/config/data/ccip/data"
 
 interface TableProps {
   environment: Environment
@@ -28,7 +29,6 @@ interface TableProps {
     }
     key: string
     directory: SupportedChain
-    status: string | undefined
   }[]
   explorerUrl: string
 }
@@ -39,12 +39,25 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [search, setSearch] = useState("")
   const [seeMore, setSeeMore] = useState(lanes.length <= BEFORE_SEE_MORE)
+  const [statuses, setStatuses] = useState<Record<string, string>>({})
+  const [loadingStatuses, setLoadingStatuses] = useState<boolean>(true)
 
   useEffect(() => {
     if (search.length > 0) {
       setSeeMore(true)
     }
   }, [search])
+
+  useEffect(() => {
+    const fetchOperationalState = async (network) => {
+      if (network) {
+        const result = await getOperationalState(network)
+        setStatuses(result)
+        setLoadingStatuses(false)
+      }
+    }
+    fetchOperationalState(sourceNetwork.name)
+  }, [sourceNetwork])
 
   return (
     <>
@@ -121,17 +134,24 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                     />
                   </td>
                   <td>
-                    <span
-                      className={clsx(
-                        "ccip-table__status",
-                        `ccip-table__status-${network.status?.toLocaleLowerCase() || "none"}`
-                      )}
-                    >
-                      {network.status?.toLocaleLowerCase() && (
-                        <img src={`/assets/icons/ccip-${network.status?.toLocaleLowerCase()}.svg`} alt="Cursed" />
-                      )}
-                      {network.status?.toLocaleLowerCase() || "N/A"}
-                    </span>
+                    {loadingStatuses ? (
+                      "Loading..."
+                    ) : (
+                      <span
+                        className={clsx(
+                          "ccip-table__status",
+                          `ccip-table__status-${statuses[network.key]?.toLocaleLowerCase() || "none"}`
+                        )}
+                      >
+                        {statuses[network.key]?.toLocaleLowerCase() && (
+                          <img
+                            src={`/assets/icons/ccip-${statuses[network.key]?.toLocaleLowerCase()}.svg`}
+                            alt="Cursed"
+                          />
+                        )}
+                        {statuses[network.key]?.toLocaleLowerCase() || "N/A"}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
