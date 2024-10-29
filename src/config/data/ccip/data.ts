@@ -390,8 +390,9 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   for (const chain of chains) {
     const directory = directoryToSupportedChain(chain)
     const title = getTitle(directory)
+
     if (filter) {
-      if (!title?.includes(filter)) {
+      if (!title?.toLowerCase()?.includes(filter)) {
         continue
       }
     }
