@@ -498,7 +498,6 @@ export const getAllNetworkLanes = async ({
   })
 
   const allLanes = lanesReferenceData[chain]
-  const operationalData = await getOperationalState(chain, site)
 
   const lanesData: {
     name: string
@@ -513,7 +512,6 @@ export const getAllNetworkLanes = async ({
       address: string
       version: string
     }
-    status: string | undefined
   }[] = Object.keys(allLanes).map((lane) => {
     const laneData = allLanes[lane]
 
@@ -528,7 +526,6 @@ export const getAllNetworkLanes = async ({
       offRamp: laneData.offRamp,
       key: lane,
       directory,
-      status: operationalData[lane] || undefined,
     }
   })
 
@@ -643,8 +640,8 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
   })
 }
 
-export async function getOperationalState(chain: string, site: string) {
-  const url = `${site}/api/ccip/lane-statuses?sourceNetworkId=${chain}`
+export async function getOperationalState(chain: string) {
+  const url = `/api/ccip/lane-statuses?sourceNetworkId=${chain}`
   const response = await fetch(url)
   if (response.status !== 200) {
     return {}

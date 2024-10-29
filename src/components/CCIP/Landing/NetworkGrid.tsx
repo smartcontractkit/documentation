@@ -28,6 +28,7 @@ function NetworkGrid({ networks, environment }: NetworkGridProps) {
               totalLanes={chain.totalLanes}
               totalTokens={chain.totalTokens}
               logo={chain.logo}
+              key={chain.chain}
             />
           </a>
         ))}
