@@ -120,7 +120,7 @@ function TokenDrawer({
                   />
                 </th>
                 <th>
-                  Rate limit refil rate
+                  Rate limit refill rate
                   <Tooltip
                     label=""
                     tip="Rate at which available capacity is replenished"
