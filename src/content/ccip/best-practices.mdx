@@ -110,10 +110,10 @@ When managing your tokens and token pools, it's critical to follow best practice
 
 ### Securely Manage Admin Roles
 
-The **token admin** role configures token pools across blockchains and enables cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain and manage cross-chain transfers. To ensure security, follow these guidelines:
+The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
 
+- **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/service-responsibility#token-developer-responsibilities).
 - **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
-
 - **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
 
 ### Protect Against Unauthorized Admin Actions
@@ -134,13 +134,26 @@ The **token admin** role configures token pools across blockchains and enables c
 
 ## Best Practices for Liquidity Management
 
-Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver.
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being ‘stuck’ in transit.
 
 ### Ensure Sufficient Liquidity
 
-When a **LockReleaseTokenPool** operates in **reception mode** (on the destination blockchain), it releases the tokens locked in the token pool. The pool must have sufficient liquidity to ensure that tokens can be released to the receiver. If the pool lacks liquidity, the release operation will fail.
+When a **LockReleaseTokenPool** operates in **reception mode** (on the destination blockchain), it releases the tokens locked in the token pool. The pool **_must_** have sufficient liquidity to ensure that tokens can be released to the receiver. If the pool lacks liquidity, the release operation will fail and user funds will not be available on the destination blockchain until sufficient liquidity is replenished and manual execution is performed.
 
+- **Best Practice**: Estimate expected volume when preparing to add and manage liquidity to ensure sustainable operations.
 - **Best Practice**: Regularly monitor the liquidity available in your token pool and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
+
+### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+
+Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
+
+- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+
+### Monitor Liquidity Health and Automate Alerts
+
+Monitoring the health of your token pool’s liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+
+- **Best Practice**: Calculate the amount of time required to deplete your token pool to various threshold levels (ie: Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the pool before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with token pool’s refill rate.
 
 ### Use the `provideLiquidity` and `withdrawLiquidity` Functions Properly
 
@@ -154,14 +167,38 @@ The **rebalancer** is responsible for managing the liquidity of the pool and ens
 
 - **Best Practice**: Assign the rebalancer role to a trusted entity and ensure they understand the responsibilities, such as maintaining liquidity in the pool to support token releases.
 
-### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+## Multi-Signature Contracts
 
-Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it harder to maintain sufficient liquidity in each pool.
+Multi-signature contracts, such as [Safe Smart Accounts](https://github.com/safe-global/safe-smart-account), enhance security for managing token pools by requiring multiple signatures to authorize transactions.
 
-- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+### Threshold configuration
 
-### Monitor Liquidity Health and Automate Alerts
+Set an optimal threshold for signers based on the trust level of participants and the required security.
 
-Monitoring the health of your token pool’s liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+### Role-based access control
 
-- **Best Practice**: Set up automated alerts to monitor the token pool’s balance and ensure it remains above a threshold that supports the expected volume of cross-chain transfers.
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware-backed keys for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and contract settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks and verifying data on a hardware wallet before signing to protect against front-end compromises.
+
+### Security tooling
+
+Tools such as [Tenderly](https://tenderly.co/) or [Hypernative](https://www.hypernative.io/) can provide additional layers of security related to transaction simulation, risk monitoring, and alerting.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.
