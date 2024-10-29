@@ -3,7 +3,7 @@ import "./Search.css"
 import { clsx } from "~/lib"
 import { useClickOutside } from "~/hooks/useClickOutside"
 import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip"
-import { directoryToSupportedChain, getExplorer } from "~/features/utils"
+import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
 
@@ -111,7 +111,14 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                   {networksResults.map((network) => (
                     <li key={network.name}>
                       <a href={`/ccip/directory/${environment}/chain/${network.chain}`}>
-                        <img src={network.logo} alt="" />
+                        <img
+                          src={network.logo}
+                          alt=""
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null // prevents looping
+                            currentTarget.src = fallbackTokenIconUrl
+                          }}
+                        />
                         {network.name}
                         {!small && (
                           <span>
@@ -132,7 +139,14 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                   {tokensResults.map((token) => (
                     <li key={token.name}>
                       <a href={`/ccip/directory/${environment}/token/${token.name}`}>
-                        <img src={token.logo} alt="" />
+                        <img
+                          src={token.logo}
+                          alt=""
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null // prevents looping
+                            currentTarget.src = fallbackTokenIconUrl
+                          }}
+                        />
                         {token.name}
                         {!small && (
                           <span>
@@ -170,8 +184,22 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         }
                       >
                         <div className="ccip-hero__search-results__lane-images">
-                          <img src={lane.sourceNetwork.logo} alt="" />
-                          <img src={lane.destinationNetwork.logo} alt="" />
+                          <img
+                            src={lane.sourceNetwork.logo}
+                            alt=""
+                            onError={({ currentTarget }) => {
+                              currentTarget.onerror = null // prevents looping
+                              currentTarget.src = fallbackTokenIconUrl
+                            }}
+                          />
+                          <img
+                            src={lane.destinationNetwork.logo}
+                            alt=""
+                            onError={({ currentTarget }) => {
+                              currentTarget.onerror = null // prevents looping
+                              currentTarget.src = fallbackTokenIconUrl
+                            }}
+                          />
                         </div>
                         {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
                         {!small && (
