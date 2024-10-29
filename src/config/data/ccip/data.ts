@@ -32,7 +32,6 @@ import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json
 import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
 
 import { SupportedChain } from "@config/types"
-import { PoolInfo } from "~/config/data/ccip/types"
 import {
   directoryToSupportedChain,
   getChainIcon,
@@ -161,18 +160,10 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
 
 export const getTokenData = (params: { tokenSymbol: string; environment: Environment; version: Version }) => {
   const { tokensReferenceData } = loadReferenceData(params)
-
   const tokenConfig = tokensReferenceData[params.tokenSymbol]
-  // filter out feeTokenOnly
-  const filteredTokenConfig = Object.keys(tokenConfig).reduce((acc, key) => {
-    if (tokenConfig[key].poolType !== "feeTokenOnly") {
-      acc[key] = tokenConfig[key]
-    }
-    return acc
-  }, {} as Record<string, PoolInfo>)
 
   if (tokenConfig) {
-    return filteredTokenConfig // Assuming the token configuration has a 'name' property
+    return tokenConfig // Assuming the token configuration has a 'name' property
   } else {
     console.warn(`No token data found for ${params.tokenSymbol}`)
     return {}
