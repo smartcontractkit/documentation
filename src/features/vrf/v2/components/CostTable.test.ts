@@ -12,7 +12,7 @@ describe("getGasCalculatorUrl", () => {
       networkType: "testnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-sepolia.json",
       queryString: "ethereum-sepolia",
-      tags: ["proofOfReserve"],
+      tags: ["smartData"],
     }
     const method = "vrfSubscription"
 
@@ -30,7 +30,7 @@ describe("getGasCalculatorUrl", () => {
       networkType: "mainnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
       queryString: "polygon-mainnet",
-      tags: ["proofOfReserve"],
+      tags: ["smartData"],
     }
     const method = "vrfDirectFunding"
 

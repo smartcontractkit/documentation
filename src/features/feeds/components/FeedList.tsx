@@ -10,7 +10,7 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
-export type DataFeedType = "default" | "por" | "rates" | "streamsCrypto" | "streamsRwa"
+export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -44,6 +44,11 @@ export const FeedList = ({
     { key: "custom", name: "Custom" },
     { key: "new", name: "New Token" },
     { key: "deprecating", name: "Deprecating" },
+  ]
+  const smartDataTypes = [
+    { key: "Proof of Reserve", name: "Proof of Reserve" },
+    { key: "NAVLink", name: "NAVLink" },
+    { key: "SmartAUM", name: "SmartAUM" },
   ]
   const chain = chains.filter((chain) => chain.page === selectedChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
@@ -99,7 +104,7 @@ export const FeedList = ({
 
   useOutsideAlerter(wrapperRef)
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
-  const isPor = dataFeedType === "por"
+  const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
@@ -190,7 +195,7 @@ export const FeedList = ({
               .filter((chain) => {
                 if (isStreams) return chain.tags?.includes("streams")
 
-                if (isPor) return chain.tags?.includes("proofOfReserve")
+                if (isSmartData) return chain.tags?.includes("smartData")
 
                 if (isRates) return chain.tags?.includes("rates")
 
@@ -240,7 +245,7 @@ export const FeedList = ({
 
           if (isStreams) return network.tags?.includes("streams")
 
-          if (isPor) return network.tags?.includes("proofOfReserve")
+          if (isSmartData) return network.tags?.includes("smartData")
 
           if (isRates) return network.tags?.includes("rates")
 
@@ -260,7 +265,7 @@ export const FeedList = ({
                       </p>
                     )}
                   <div className={feedList.tableFilters}>
-                    {!isStreams && (
+                    {!isStreams && !isSmartData && (
                       <details class={feedList.filterDropdown_details}>
                         <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
                           Data Feed Categories
@@ -268,6 +273,30 @@ export const FeedList = ({
                         <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
                           <ul>
                             {dataFeedCategory.map((category) => (
+                              <li>
+                                <button onClick={() => handleCategorySelection(category.key)}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedFeedCategories?.includes(category.key)}
+                                    readonly
+                                    style="cursor:pointer;"
+                                  />
+                                  <span> {category.name}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </nav>
+                      </details>
+                    )}
+                    {isSmartData && (
+                      <details class={feedList.filterDropdown_details}>
+                        <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                          SmartData Type
+                        </summary>
+                        <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                          <ul>
+                            {smartDataTypes.map((category) => (
                               <li>
                                 <button onClick={() => handleCategorySelection(category.key)}>
                                   <input

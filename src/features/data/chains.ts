@@ -1,6 +1,6 @@
 import { ChainMetadata } from "./api"
 
-type ChainTags = ("default" | "proofOfReserve" | "rates" | "streams")[]
+type ChainTags = ("default" | "smartData" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -36,7 +36,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "rates"],
+    tags: ["default", "smartData", "rates"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -45,7 +45,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Sepolia Testnet",
@@ -89,7 +89,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -98,7 +98,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
         queryString: "polygon-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Amoy Testnet",
@@ -106,7 +106,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
         queryString: "polygon-amoy",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
     ],
   },
@@ -133,7 +133,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve", "rates", "streams"],
+    tags: ["default", "smartData", "rates", "streams"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -142,7 +142,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
-        tags: ["proofOfReserve", "streams"],
+        tags: ["smartData", "streams"],
       },
       {
         name: "Avalanche Testnet",
@@ -150,7 +150,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["proofOfReserve", "rates", "streams"],
+        tags: ["smartData", "rates", "streams"],
       },
     ],
     label: "Avalanche",
@@ -186,7 +186,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "streams", "proofOfReserve"],
+    tags: ["default", "rates", "streams", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -195,7 +195,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["streams", "proofOfReserve"],
+        tags: ["streams", "smartData"],
       },
       {
         name: "Arbitrum Sepolia",
@@ -292,7 +292,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -301,7 +301,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Base Sepolia testnet",
@@ -525,7 +525,7 @@ export const ALL_CHAINS: Chain[] = [
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -534,13 +534,13 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "BNB Chain Mainnet",
         explorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
         queryString: "bnb-mainnet",
       },
@@ -548,7 +548,7 @@ export const ALL_CHAINS: Chain[] = [
         name: "Polygon Mainnet",
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
         queryString: "polygon-mainnet",
       },
@@ -563,7 +563,7 @@ export const ALL_CHAINS: Chain[] = [
         name: "Avalanche Mainnet",
         explorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
       },
