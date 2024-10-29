@@ -297,12 +297,14 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.assetName}</dd>
           </div>
-          <div>
-            <dt>
-              <span class="label">Reserve type:</span>
-            </dt>
-            <dd>{proxy.docs.porType}</dd>
-          </div>
+          {proxy.docs.porType && (
+            <div>
+              <dt>
+                <span class="label">Reserve type:</span>
+              </dt>
+              <dd>{proxy.docs.porType}</dd>
+            </div>
+          )}
           {proxy.docs.porAuditor && (
             <div>
               <dt>
