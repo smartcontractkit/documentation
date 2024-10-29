@@ -149,7 +149,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                             alt="Cursed"
                           />
                         )}
-                        {statuses[network.key]?.toLocaleLowerCase() || "N/A"}
+                        {statuses[network.key]?.toLocaleLowerCase() || "Status unavailable"}
                       </span>
                     )}
                   </td>
