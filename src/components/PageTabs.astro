@@ -3,11 +3,13 @@ export interface Props {
   pages: Array<{
     name: string
     url: string
-    icon?: string // icon is optional
+    icon?: string // optional
+    width?: string // optional
   }>
+  tabWidth?: string // optional
 }
 
-const { pages } = Astro.props as Props
+const { pages, tabWidth } = Astro.props as Props
 
 const currentPath = Astro.url.pathname
 
@@ -21,13 +23,19 @@ const isActive = (pageUrl: string) => {
   return normalizedCurrentPath === normalizedPageUrl
 }
 
-const pageDetails = pages.filter((page): page is { name: string; url: string; icon?: string } => page.url !== undefined)
+const pageDetails = pages.filter(
+  (page): page is { name: string; url: string; icon?: string; width?: string } => page.url !== undefined
+)
 ---
 
 <div class="pages-table">
   {
     pageDetails.map((page) => (
-      <a href={page.url} class={`page-column ${isActive(page.url) ? "active" : ""}`}>
+      <a
+        href={page.url}
+        class={`page-column ${isActive(page.url) ? "active" : ""}`}
+        style={`width: ${page.width || tabWidth || "auto"}`}
+      >
         {page.icon && <img src={page.icon} alt={`${page.name} icon`} class="page-icon" />}
         <div>{page.name}</div>
       </a>
@@ -37,14 +45,15 @@ const pageDetails = pages.filter((page): page is { name: string; url: string; ic
 
 <style>
   .pages-table {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 1rem;
     padding: 1rem;
   }
 
   .page-column {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,18 +86,17 @@ const pageDetails = pages.filter((page): page is { name: string; url: string; ic
     border-bottom-color: var(--blue-600, rgb(55, 91, 210));
   }
 
+  /* Mobile Styles */
   @media (max-width: 768px) {
     .pages-table {
+      flex-direction: column;
       padding: 0.5rem;
     }
 
     .page-column {
+      width: 100% !important; /* Override any inline widths */
       padding: 9px 10px;
       flex-direction: column;
-    }
-
-    .pages-table {
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 
     .page-icon {

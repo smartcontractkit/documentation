@@ -31,7 +31,7 @@ import streams "github.com/smartcontractkit/data-streams-sdk/go"
 
 ###### Interface Methods
 
-- `GetFeeds`: Lists all feeds available to you.
+- `GetFeeds`: Lists all streams available to you.
 
   ```go
   GetFeeds(ctx context.Context) (r []*Feed, err error)
@@ -43,7 +43,7 @@ import streams "github.com/smartcontractkit/data-streams-sdk/go"
   GetLatestReport(ctx context.Context, id FeedID) (r *Report, err error)
   ```
 
-- `GetReports`: Fetches reports for the specified feed IDs and a given timestamp.
+- `GetReports`: Fetches reports for the specified stream IDs and a given timestamp.
 
   ```go
   GetReports(ctx context.Context, ids []FeedID, timestamp uint64) ([]*Report, error)
@@ -55,7 +55,7 @@ import streams "github.com/smartcontractkit/data-streams-sdk/go"
   GetReportPage(ctx context.Context, id FeedID, startTS uint64) (*ReportPage, error)
   ```
 
-- `Stream`: Creates a real-time report stream for specified feed IDs.
+- `Stream`: Creates a real-time report stream for specified stream IDs.
 
   ```go
   Stream(ctx context.Context, feedIDs []FeedID) (Stream, error)
@@ -119,7 +119,7 @@ type ReportPage struct {
 
 #### `ReportResponse` struct
 
-Implements the report envelope that contains the full report payload, its FeedID and timestamps. Use the [`Decode`](/data-streams/reference/streams-direct/streams-direct-go-sdk#decode) function to decode the report payload.
+Implements the report envelope that contains the full report payload, its stream ID and timestamps. Use the [`Decode`](/data-streams/reference/streams-direct/streams-direct-go-sdk#decode) function to decode the report payload.
 
 ```go
 type ReportResponse struct {
@@ -241,11 +241,11 @@ type Feed struct {
 }
 ```
 
-Where `ID` is the unique identifier for the feed.
+Where `ID` is the unique identifier for the stream.
 
 #### `FeedVersion` uint16
 
-Represents the feed [report schema](/data-streams/reference/report-schema) version.
+Represents the stream [report schema](/data-streams/reference/report-schema) version.
 
 ```go
 type FeedVersion uint16
@@ -253,7 +253,7 @@ type FeedVersion uint16
 
 #### `ID` [32]byte
 
-Represents a unique identifier for a feed.
+Represents a unique identifier for a stream.
 
 ```go
 type ID [32]byte
@@ -285,7 +285,7 @@ type ID [32]byte
   func (f *ID) UnmarshalJSON(b []byte) (err error)
   ```
 
-- `Version`: Returns the version of the feed.
+- `Version`: Returns the version of the stream.
 
   ```go
   func (f *ID) Version() FeedVersion
@@ -307,7 +307,7 @@ import report "github.com/smartcontractkit/data-streams-sdk/go/report"
 
 ```go
 type Data interface {
-    v1.Data | v2.Data | v3.Data
+    v1.Data | v2.Data | v3.Data | v4.Data
     Schema() abi.Arguments
 }
 ```

@@ -10,8 +10,7 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
 
-//
-export type DataFeedType = "default" | "por" | "rates" | "streams"
+export type DataFeedType = "default" | "por" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -97,14 +96,18 @@ export const FeedList = ({
       }
     }, [ref])
   }
+
   useOutsideAlerter(wrapperRef)
-  const isStreams = dataFeedType === "streams"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isPor = dataFeedType === "por"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
-  if (dataFeedType === "streams") {
+  const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : "Mainnet RWA Streams"
+  const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : "Testnet RWA Streams"
+
+  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa") {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
@@ -124,7 +127,7 @@ export const FeedList = ({
           <StreamsVerifierProxyTable />
         </SectionWrapper>
 
-        <SectionWrapper title="Mainnet Data Streams Feeds" depth={2}>
+        <SectionWrapper title={streamsMainnetSectionTitle} depth={2}>
           <div className={feedList.tableFilters}>
             <form class={feedList.filterDropdown_search}>
               <input
@@ -165,7 +168,7 @@ export const FeedList = ({
           )}
         </SectionWrapper>
 
-        <SectionWrapper title="Testnet Data Streams Feeds" depth={2}>
+        <SectionWrapper title={streamsTestnetSectionTitle} depth={2}>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (
               <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />

@@ -2,7 +2,7 @@
 section: dataStreams
 date: Last Modified
 title: "Verify report data onchain"
-whatsnext: { "Find the list of available Data Streams Feed IDs": "/data-streams/stream-ids" }
+whatsnext: { "Find the list of available Stream IDs": "/data-streams/crypto-streams" }
 ---
 
 import { CodeSample, CopyText, ClickToZoom } from "@components"
@@ -65,7 +65,7 @@ Deploy a `ClientReportsVerifier` contract on _Arbitrum Sepolia_. This contract i
      style="max-width: 70%;"
    />
 
-1. In the **Contract** section, select the `ClientReportsVerifier` contract and fill in the **verifier proxy address** corresponding to the Data Streams feed you want to read from. You can find this address on the [Data Streams Feed IDs](/data-streams/stream-ids) page. The verifier proxy address for the ETH/USD feed on Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>.
+1. In the **Contract** section, select the `ClientReportsVerifier` contract and fill in the Arbitrum Sepolia **verifier proxy address**: <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find the verifier proxy addresses on the [Streams Addresses](/data-streams/crypto-streams) page.
 
    <ClickToZoom
      src="/images/data-streams/onchain-verification/deploy-clientReportsVerifier.webp"
@@ -75,7 +75,7 @@ Deploy a `ClientReportsVerifier` contract on _Arbitrum Sepolia_. This contract i
 
 1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to ensure you deploy the contract to _Arbitrum Sepolia_.
 
-1. After you confirm the transaction, the contract address appears under the **Deployed Contracts** list in Remix. Save this contract address for later.
+1. After you confirm the transaction, the contract address appears under the **Deployed Contracts** list in Remix. Save this contract address for the next step.
 
    <ClickToZoom
      src="/images/data-streams/onchain-verification/deployed-clientReportsVerifier-1.webp"
@@ -93,10 +93,10 @@ Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier cont
 
 1.  In Remix, on the **Deploy & Run Transactions** tab, expand your verifier contract under the **Deployed Contracts** section.
 
-1.  Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide:
+1.  Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide as an example:
 
         ```
-        0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff15780000000000000000000000000000000000000000000000000000000020a8f908000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782000000000000000000000000000000000000000000000000000000006628c4ad000000000000000000000000000000000000000000000000000000006628c4ad00000000000000000000000000000000000000000000000000001beb59c3322c0000000000000000000000000000000000000000000000000016fad1097644cc00000000000000000000000000000000000000000000000000000000662a162d0000000000000000000000000000000000000000000000b097fff9701a850a800000000000000000000000000000000000000000000000b097892cdef361d7000000000000000000000000000000000000000000000000b098be558e09ed02c0000000000000000000000000000000000000000000000000000000000000000262810ea0ddf1d0883c6bab3cc10215ad7babd96fee6abd62b66f1cf8d8ef88c12dbae561312990e0a03945df9baf01d599354232d422772bb4fecc563baa96a500000000000000000000000000000000000000000000000000000000000000023a8e6710120b441f06d7475c2e207867f53cb4d0fb7387880109b3a2192b1b4027cce218afeeb5b2b2110a9bfac8e4a976f5e2c5e11e08afceafda9a8e13aa99
+        0x000660403d36be006d0c15d9b306f93c8660c5cfeab7db8e28c78ba316d395970000000000000000000000000000000000000000000000000000000032c3780a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200003c8e550d2fc5304993010112de9b69798297e4cc11990ee6250e464daf760000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000025bd3eb74c080000000000000000000000000000000000000000000000000021c6a95c654c7400000000000000000000000000000000000000000000000000000000670837150000000000000000000000000000000000000000000000079a2ab4077fc8fc6000000000000000000000000000000000000000000000000799fcb42536dfd8300000000000000000000000000000000000000000000000079a59496c3f29a0000000000000000000000000000000000000000000000000000000000000000002bd4acd37ce3cd5799de05d156ab328a5effd94468ebbaf2ff18d13d9631259cbe66cca01af6a8bb36e79d2d731a44e16791ee31e46ce27ed6530f1590cd7734c0000000000000000000000000000000000000000000000000000000000000002391562f1f2e4986bdb978fbf5ee27f7012992a79301af42d3473761ef2ede6271a61fbf4b32ac5be68a598bcfa523e035b624dab3b3d9a46276834f824ee592a
         ```
 
         {" "}
@@ -109,7 +109,7 @@ Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier cont
 
 1.  Click the `verifyReport` button to call the function. MetaMask prompts you to accept the transaction.
 
-1.  Click the `last_decoded_price` getter function to view the decoded price from the verified report. The answer on the ETH/USD feed uses 18 decimal places, so an answer of `3257579704051546000000` indicates an ETH/USD price of 3,257.579704051546. Each Data Streams feed uses a different number of decimal places for answers. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for more information.
+1.  Click the `last_decoded_price` getter function to view the decoded price from the verified report. The answer on the ETH/USD stream uses 18 decimal places, so an answer of `3257579704051546000000` indicates an ETH/USD price of 3,257.579704051546. Each stream uses a different number of decimal places for answers. See the [Streams Addresses](/data-streams/crypto-streams) page for more information.
 
     <ClickToZoom
       src="/images/data-streams/onchain-verification/price-from-verified-report.webp"
@@ -125,19 +125,37 @@ The example code you deployed has all the interfaces and functions required to v
 
 ### Initializing the contract
 
-When deploying the contract, you define the verifier proxy address for the Data Streams feed you want to read from. You can find this address on the [Data Streams Feed IDs](/data-streams/stream-ids) page. The verifier proxy address provides functions that are required for this example:
+When deploying the contract, you define the verifier proxy address for the stream you want to read from. You can find this address on the [Streams Addresses](/data-streams/crypto-streams) page. The verifier proxy address provides functions that are required for this example:
 
 - The `s_feeManager` function to estimate the verification fees.
 - The `verify` function to verify the report onchain.
 
 ### Verifying a report
 
-The `verifyReport` function is the main function of the contract that verifies the report onchain. It follows the steps below:
+The `verifyReport` function is the core function that handles onchain report verification. Here's how it works:
 
-- Fee calculation: It interacts with the `FeeManager` contract, accessible via the verifier proxy contract, to determine the fees associated with verifying the report.
+- **Report data extraction**:
 
-- Token approval: It grants approval to the `rewardManager` contract to spend the required amount of LINK tokens from its balance.
+  - The function decodes the `unverifiedReport` to extract the report data.
+  - It then extracts the report version by reading the first two bytes of the report data, which correspond to the schema version encoded in the stream ID:
+    - Schema version `0x0003` corresponds to the [report schema v3](/data-streams/reference/report-schema) (Crypto assets).
+    - Schema version `0x0004` corresponds to the [report schema v4](/data-streams/reference/report-schema-v4) (Real World Assets).
+  - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
 
-- Report verification: The core verification step involves calling the `verify` function from the verifier proxy contract. This function takes the (unverified) report payload and the encoded fee token address as inputs and returns the verified report data.
+- **Fee calculation**:
 
-- Data decoding and storage: In this example, the verified report data is decoded into a `Report` struct, extracting the report data. The extracted price data is then emitted through the `DecodedPrice` event and stored in the `last_decoded_price` state variable.
+  - The function interacts with the `FeeManager` contract (accessed via the verifier proxy) to calculate the fees required for verification.
+  - It uses the `getFeeAndReward` function to obtain the fee amount in LINK tokens.
+
+- **Token approval**: It approves the `RewardManager` contract to spend the calculated amount of LINK tokens from the contract's balance.
+
+- **Report verification**:
+
+  - The `verify` function of the verifier proxy is called to perform the actual verification.
+  - It passes the `unverifiedReport` and the encoded fee token address as parameters.
+
+- **Data decoding**:
+
+  - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3` or `ReportV4`).
+  - It emits a `DecodedPrice` event with the price extracted from the verified report.
+  - The `lastDecodedPrice` state variable is updated with the new price.

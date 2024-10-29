@@ -227,10 +227,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
-          title: "Data Streams Feeds",
-          url: "data-streams/stream-ids",
-        },
-        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -241,6 +237,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Release Notes",
           url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Stream Addresses",
+      contents: [
+        {
+          title: "Crypto streams",
+          url: "data-streams/crypto-streams",
+        },
+        {
+          title: "RWA streams",
+          url: "data-streams/rwa-streams",
         },
       ],
     },
@@ -264,10 +273,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Fetch and decode reports",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
+              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-api-rwa"],
             },
             {
               title: "Stream and decode reports (WebSocket)",
               url: "data-streams/tutorials/streams-direct/streams-direct-ws",
+              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
             },
             {
               title: "Verify report data onchain",
@@ -294,8 +305,9 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Reference",
       contents: [
         {
-          title: "Report Schema",
+          title: "Report Schemas",
           url: "data-streams/reference/report-schema",
+          highlightAsCurrent: ["data-streams/reference/report-schema-v4"],
         },
         {
           title: "Streams Trade Interface",
