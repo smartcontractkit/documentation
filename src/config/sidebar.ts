@@ -1006,7 +1006,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Cross-Chain Tokens (CCT) standard",
+          title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
             {
@@ -1086,7 +1086,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
-          title: "Cross-Chain Tokens (CCT) standard",
+          title: "Cross-Chain Token (CCT) standard",
           url: "ccip/concepts/cross-chain-tokens",
         },
         {
