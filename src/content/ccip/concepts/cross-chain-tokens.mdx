@@ -18,9 +18,9 @@ The motivation for Cross-Chain Token (CCT) originates from two primary challenge
 
 - **Liquidity Fragmentation**: [Hundreds](https://chainlist.org/) of blockchains exist, each with their own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems. Token developers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
 
-- **Need for Greater Autonomy**: Another critical motivation behind Cross-Chain Token is to empower projects to enable their tokens for cross-chain operations without the support of third-parties. By providing a self-service model, Cross-Chain Token allow projects to take control of their cross-chain applications. This enables rapid expansion to other blockchains supported by CCIP.
+- **Need for Greater Autonomy**: Another critical motivation behind Cross-Chain Token is to empower projects to enable their tokens for cross-chain operations without the support of third-parties. By providing a self-service model, Cross-Chain Token allows projects to take control of their cross-chain applications. This enables rapid expansion to other blockchains supported by CCIP.
 
-Cross-Chain Token (CCT) solve these challenges by allowing token developers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token developers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes. The CCT standard offers the following benefits:
+Cross-Chain Token (CCT) solves these challenges by allowing token developers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token developers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes. The CCT standard offers the following benefits:
 
 - **Self-service and Permissionless Deployment**: With CCT, token developers can launch a cross-chain token or enable an existing token in a self-service manner within minutes. The fully audited token pool contracts handle the complexities of burning/minting or locking/minting tokens across blockchains, all without requiring liquidity pools. This enables a streamlined and permissionless deployment process that significantly reduces the barriers to cross-chain expansion.
 
@@ -28,7 +28,7 @@ Cross-Chain Token (CCT) solve these challenges by allowing token developers to c
 
 - **Defense-in-Depth Security**: The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as the [Risk Management Network](/ccip/concepts#risk-management-network) and configurable transfer [rate limits](/ccip/architecture#token-pool-rate-limit), providing comprehensive security for cross-chain operations.
 
-- **Programmable Token Transfers**: Cross-Chain Token support the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, such as executing on-chain actions alongside token transfers, improving the overall efficiency of cross-chain transactions. For instance, a programmable token transfer could execute a function to stake tokens on the destination blockchain.
+- **Programmable Token Transfers**: Cross-Chain Token (CCT) supports the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, such as executing on-chain actions alongside token transfers, improving the overall efficiency of cross-chain transactions. For instance, a programmable token transfer could execute a function to stake tokens on the destination blockchain.
 
 - **No Liquidity Pools Required**: The fully audited token pool contracts provided by CCT eliminate the need for liquidity pools, simplifying cross-chain token management. By locking or burning tokens on the source chain and minting or unlocking them on the destination chain, token developers can maintain consistent liquidity without managing fragmented liquidity pools across multiple blockchains.
 
@@ -50,7 +50,7 @@ Cross-Chain Token (CCT) solve these challenges by allowing token developers to c
 
 - **Smart Account**: A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs. For example, smart accounts can use multi-signature mechanisms to add an extra layer of security.
 
-- **ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross-Chain Token need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed [later](#requirements-for-cross-chain-tokens) in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
+- **ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross-Chain tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed [later](#requirements-for-cross-chain-tokens) in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
 
 - **Token Pool**: Each token is associated with its own token pool, which acts as an abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide [rate limits](/ccip/architecture#token-pool-rate-limit), a security feature enabling token developers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
 
@@ -82,7 +82,7 @@ Cross-Chain Token (CCT) solve these challenges by allowing token developers to c
             alt="Lock and Unlock"
         />
 
-## Requirements for Cross-Chain Token
+## Requirements for Cross-Chain Tokens
 
 Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
 
@@ -220,7 +220,7 @@ In the Cross-Chain Token (CCT) standard, several key contracts work together to 
 
 The **Registry contracts** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
 
-- [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry): This contract stores the token administrators and pools for all registered Cross-Chain Token. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
+- [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry): This contract stores the token administrators and pools for all registered cross-chain tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
 - [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
 
 #### Token Contract
