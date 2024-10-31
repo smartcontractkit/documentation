@@ -1252,6 +1252,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
+            {
+              title: "CCT - getCCIPAdmin token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
           ],
         },
         {
