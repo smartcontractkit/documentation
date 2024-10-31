@@ -124,7 +124,7 @@ contract StreamsUpkeepWithErrorHandler is
     ];
 
     constructor(address _verifier) {
-        verifier = IVerifierProxy(_verifier); //Arbitrum Sepolia: 0x2ff010debc1297f19579b4246cad07bd24f2488a
+        verifier = IVerifierProxy(_verifier); //Arbitrum Sepolia: 0x2ff010DEbC1297f19579B4246cad07bd24F2488A
     }
 
     // This function uses revert to convey call information.
