@@ -9,6 +9,13 @@ isIndex: true
 
 ### OffRamp
 
+Structure representing an offRamp configuration
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
 ```solidity
 struct OffRamp {
   uint64 sourceChainSelector;
@@ -35,7 +42,7 @@ Gets the list of offRamps
 ### executeSingleMessage
 
 ```solidity
-function executeSingleMessage(struct Internal.EVM2EVMMessage message, bytes[] offchainTokenData) external
+function executeSingleMessage(struct Internal.EVM2EVMMessage message, bytes[] offchainTokenData, uint32[] tokenGasOverrides) external
 ```
 
 Executes a single CCIP message on the offRamp
@@ -46,6 +53,7 @@ Executes a single CCIP message on the offRamp
 | ----------------- | ------------------------------ | ------------------------------- |
 | message           | struct Internal.EVM2EVMMessage | The CCIP message to be executed |
 | offchainTokenData | bytes[]                        | Additional offchain token data  |
+| tokenGasOverrides | uint32[]                       |                                 |
 
 ## CCIPLocalSimulatorFork
 
@@ -120,7 +128,7 @@ the destination network.
 function getNetworkDetails(uint256 chainId) external view returns (struct Register.NetworkDetails)
 ```
 
-Returns the default values for the current network. If network is
+Returns the default values for currently CCIP supported networks. If network is
 not present or some of the values are changed, user can manually add new network
 details using the `setNetworkDetails` function.
 
