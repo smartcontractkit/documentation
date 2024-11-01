@@ -1253,8 +1253,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
             {
-              title: "CCT - getCCIPAdmin token with Burn and Mint Pool in forked environments",
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
               url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
             },
           ],
         },
