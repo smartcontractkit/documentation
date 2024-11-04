@@ -215,10 +215,10 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   </tr>
 )
 
-const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
+const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Proof of Reserve Feed</th>
+      <th class={tableStyles.heading}>SmartData Feed</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -227,7 +227,7 @@ const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }
   </thead>
 )
 
-const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
+const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       {feedItems.map((feedItem: FeedDataItem) => {
@@ -255,6 +255,11 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           Deprecating:
           <br />
           {proxy.docs.shutdownDate}
+        </div>
+      )}
+      {proxy.docs.productType && (
+        <div>
+          <dd style={{ marginTop: "5px" }}>{proxy.docs.productType}</dd>
         </div>
       )}
     </td>
@@ -292,18 +297,22 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.assetName}</dd>
           </div>
-          <div>
-            <dt>
-              <span class="label">Reserve type:</span>
-            </dt>
-            <dd>{proxy.docs.porType}</dd>
-          </div>
-          <div>
-            <dt>
-              <span class="label">Data source:</span>
-            </dt>
-            <dd>{proxy.docs.porAuditor}</dd>
-          </div>
+          {proxy.docs.porType && (
+            <div>
+              <dt>
+                <span class="label">Reserve type:</span>
+              </dt>
+              <dd>{proxy.docs.porType}</dd>
+            </div>
+          )}
+          {proxy.docs.porAuditor && (
+            <div>
+              <dt>
+                <span class="label">Data source:</span>
+              </dt>
+              <dd>{proxy.docs.porAuditor}</dd>
+            </div>
+          )}
           <div>
             <dt>
               <span class="label">
@@ -674,10 +683,11 @@ export const MainnetTable = ({
   searchValue: string
 }) => {
   if (!network.metadata) return null
+
   const isDeprecating = ecosystem === "deprecating"
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
-  const isPor = dataFeedType === "por"
-  const isDefault = !isPor && !isStreams
+  const isSmartData = dataFeedType === "smartdata"
+  const isDefault = !isSmartData && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
@@ -691,11 +701,24 @@ export const MainnetTable = ({
         return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
       }
 
-      if (isPor) return !!chain.docs.porType
+      if (isSmartData) {
+        return (
+          chain.docs.productType === "Proof of Reserve" ||
+          chain.docs.productType === "NAVLink" ||
+          chain.docs.productType === "SmartAUM"
+        )
+      }
 
       return !chain.docs.porType && chain.contractType !== "verifier"
     })
-    .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
+    .filter((chain) => {
+      if (isSmartData)
+        return (
+          selectedFeedCategories.length === 0 ||
+          (chain.docs.productType && selectedFeedCategories.includes(chain.docs.productType))
+        )
+      return selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory)
+    })
     .filter(
       (pair) =>
         pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
@@ -715,26 +738,28 @@ export const MainnetTable = ({
       <div class={tableStyles.tableWrapper}>
         <table class={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
-            <tr>
-              <td style={{ textAlign: "center" }}>
-                <img
-                  src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
-                  style={{ height: "160px" }}
-                />
-                <h4>No results found</h4>
-                <p>There are no data feeds in this category at the moment.</p>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td style={{ textAlign: "center" }}>
+                  <img
+                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    style={{ height: "160px" }}
+                  />
+                  <h4>No results found</h4>
+                  <p>There are no data feeds in this category at the moment.</p>
+                </td>
+              </tr>
+            </tbody>
           ) : (
             <>
               {isStreams && <StreamsTHead />}
-              {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
                     {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet />}
-                    {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                   </>
                 ))}
@@ -765,11 +790,10 @@ export const TestnetTable = ({
   dataFeedType: string
 }) => {
   if (!network.metadata) return null
-
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
-  const isPor = dataFeedType === "por"
+  const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isPor && !isRates && !isStreams
+  const isDefault = !isSmartData && !isRates && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
@@ -781,7 +805,7 @@ export const TestnetTable = ({
           return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
         }
       }
-      if (isPor) return !!chain.docs.porType
+      if (isSmartData) return !!chain.docs.porType
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
         !chain.feedId &&
@@ -795,14 +819,14 @@ export const TestnetTable = ({
     <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
         {isStreams && <StreamsTHead />}
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+        {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
               {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet={false} />}
-              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
             </>

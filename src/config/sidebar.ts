@@ -35,8 +35,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "Proof of Reserve Feeds",
-          url: "data-feeds/proof-of-reserve",
+          title: "SmartData Feeds",
+          url: "data-feeds/smartdata",
         },
         {
           title: "Rate and Volatility Feeds",
@@ -56,8 +56,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "Proof of Reserve Addresses",
-          url: "data-feeds/proof-of-reserve/addresses",
+          title: "SmartData Feed Addresses",
+          url: "data-feeds/smartdata/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -1006,7 +1006,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
-          title: "Cross-Chain Tokens (CCT) standard",
+          title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
             {
@@ -1086,7 +1086,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
-          title: "Cross-Chain Tokens (CCT) standard",
+          title: "Cross-Chain Token (CCT) standard",
           url: "ccip/concepts/cross-chain-tokens",
         },
         {
