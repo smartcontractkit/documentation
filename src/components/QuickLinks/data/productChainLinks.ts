@@ -179,4 +179,5 @@ export const chainNames: Record<string, string> = {
   zksync: "ZKsync",
   mode: "Mode",
   blast: "Blast",
+  zircuit: "Zircuit",
 }
