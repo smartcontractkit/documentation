@@ -39,6 +39,7 @@ export const productChainLinks: ProductChainLinks = {
       linea: "/ccip/directory/mainnet/chain/ethereum-mainnet-linea-1",
       scroll: "/ccip/directory/mainnet/chain/ethereum-mainnet-scroll-1",
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
+      zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
     },
   },
   "Data Feeds": {
