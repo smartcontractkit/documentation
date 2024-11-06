@@ -9,6 +9,15 @@ isIndex: true
 
 ### OffRamp
 
+Structure representing an offRamp configuration
+
+#### Parameters
+
+| Name                | Type    | Description                             |
+| ------------------- | ------- | --------------------------------------- |
+| sourceChainSelector | uint64  | The chain selector for the source chain |
+| offRamp             | address | The address of the offRamp contract     |
+
 ```solidity
 struct OffRamp {
   uint64 sourceChainSelector;
@@ -26,26 +35,27 @@ Gets the list of offRamps
 
 #### Return Values
 
-| Name | Type                         | Description                         |
-| ---- | ---------------------------- | ----------------------------------- |
-| [0]  | struct IRouterFork.OffRamp[] | offRamps - Array of OffRamp structs |
+| Name | Type                         | Description                                                                      |
+| ---- | ---------------------------- | -------------------------------------------------------------------------------- |
+| [0]  | struct IRouterFork.OffRamp[] | Array of OffRamp structs containing source chain selectors and offRamp addresses |
 
 ## IEVM2EVMOffRampFork
 
 ### executeSingleMessage
 
 ```solidity
-function executeSingleMessage(struct Internal.EVM2EVMMessage message, bytes[] offchainTokenData) external
+function executeSingleMessage(struct Internal.EVM2EVMMessage message, bytes[] offchainTokenData, uint32[] tokenGasOverrides) external
 ```
 
 Executes a single CCIP message on the offRamp
 
 #### Parameters
 
-| Name              | Type                           | Description                     |
-| ----------------- | ------------------------------ | ------------------------------- |
-| message           | struct Internal.EVM2EVMMessage | The CCIP message to be executed |
-| offchainTokenData | bytes[]                        | Additional offchain token data  |
+| Name              | Type                           | Description                                                |
+| ----------------- | ------------------------------ | ---------------------------------------------------------- |
+| message           | struct Internal.EVM2EVMMessage | The CCIP message to be executed                            |
+| offchainTokenData | bytes[]                        | Additional offchain token data for the message execution   |
+| tokenGasOverrides | uint32[]                       | Gas limit overrides for each token transfer in the message |
 
 ## CCIPLocalSimulatorFork
 
@@ -120,21 +130,19 @@ the destination network.
 function getNetworkDetails(uint256 chainId) external view returns (struct Register.NetworkDetails)
 ```
 
-Returns the default values for the current network. If network is
-not present or some of the values are changed, user can manually add new network
-details using the `setNetworkDetails` function.
+Returns the default values for currently CCIP supported networks. If network is not present or some of the values are changed, user can manually add new network details using the `setNetworkDetails` function.
 
 #### Parameters
 
-| Name    | Type    | Description                                                                                          |
-| ------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| chainId | uint256 | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector. |
+| Name    | Type    | Description                                                                                                         |
+| ------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| chainId | uint256 | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia). Not to be confused with CCIP chain selector. |
 
 #### Return Values
 
-| Name | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                                         |
-| ---- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [0]  | struct Register.NetworkDetails | networkDetails - The tuple containing: chainSelector - The unique CCIP Chain Selector. routerAddress - The address of the CCIP Router contract. linkAddress - The address of the LINK token. wrappedNativeAddress - The address of the wrapped native token that can be used for CCIP fees. ccipBnMAddress - The address of the CCIP BnM token. ccipLnMAddress - The address of the CCIP LnM token. |
+| Name           | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| networkDetails | struct Register.NetworkDetails | A struct containing the following network details: <br/>• chainSelector - The unique CCIP Chain Selector<br/>• routerAddress - The address of the CCIP Router contract<br/>• linkAddress - The address of the LINK token<br/>• wrappedNativeAddress - The address of the wrapped native token for CCIP fees<br/>• ccipBnMAddress - The address of the CCIP BnM token<br/>• ccipLnMAddress - The address of the CCIP LnM token |
 
 ### setNetworkDetails
 
@@ -142,15 +150,14 @@ details using the `setNetworkDetails` function.
 function setNetworkDetails(uint256 chainId, struct Register.NetworkDetails networkDetails) external
 ```
 
-If network details are not present or some of the values are changed, user can
-manually add new network details using the `setNetworkDetails` function.
+Allows manual configuration of network details if they are not present or need to be updated.
 
 #### Parameters
 
-| Name           | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                        |
-| -------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| chainId        | uint256                        | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector.                                                                                                                                                                                                                                                                               |
-| networkDetails | struct Register.NetworkDetails | The tuple containing: chainSelector - The unique CCIP Chain Selector. routerAddress - The address of the CCIP Router contract. linkAddress - The address of the LINK token. wrappedNativeAddress - The address of the wrapped native token that can be used for CCIP fees. ccipBnMAddress - The address of the CCIP BnM token. ccipLnMAddress - The address of the CCIP LnM token. |
+| Name           | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| chainId        | uint256                        | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia). Not to be confused with CCIP chain selector.                                                                                                                                                                                                                                                                                                          |
+| networkDetails | struct Register.NetworkDetails | A struct containing the following required fields:<br/>• chainSelector - The unique CCIP Chain Selector<br/>• routerAddress - The address of the CCIP Router contract<br/>• linkAddress - The address of the LINK token<br/>• wrappedNativeAddress - The address of the wrapped native token for CCIP fees<br/>• ccipBnMAddress - The address of the CCIP BnM token<br/>• ccipLnMAddress - The address of the CCIP LnM token |
 
 ### requestLinkFromFaucet
 
