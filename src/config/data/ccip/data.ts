@@ -164,14 +164,14 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
   return tokens
 }
 
-export const getTokenData = (params: { tokenSymbol: string; environment: Environment; version: Version }) => {
+export const getTokenData = (params: { tokenId: string; environment: Environment; version: Version }) => {
   const { tokensReferenceData } = loadReferenceData(params)
-  const tokenConfig = tokensReferenceData[params.tokenSymbol]
+  const tokenConfig = tokensReferenceData[params.tokenId]
 
   if (tokenConfig) {
     return tokenConfig // Assuming the token configuration has a 'name' property
   } else {
-    console.warn(`No token data found for ${params.tokenSymbol}`)
+    console.warn(`No token data found for ${params.tokenId}`)
     return {}
   }
 }
@@ -556,13 +556,13 @@ export function getAllTokenLanes({
   } = {}
 
   Object.keys(lanesReferenceData).forEach((sourceChain) => {
-    Object.keys(lanesReferenceData[sourceChain]).forEach((destinationLane) => {
+    Object.keys(lanesReferenceData[sourceChain]).forEach((destinationChain) => {
       if (
-        lanesReferenceData[sourceChain][destinationLane] &&
-        lanesReferenceData[sourceChain][destinationLane].supportedTokens &&
-        lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+        lanesReferenceData[sourceChain][destinationChain] &&
+        lanesReferenceData[sourceChain][destinationChain].supportedTokens &&
+        lanesReferenceData[sourceChain][destinationChain].supportedTokens[token]
       ) {
-        allDestinationLanes[sourceChain] = lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+        allDestinationLanes[sourceChain] = lanesReferenceData[sourceChain][destinationChain].supportedTokens[token]
       }
     })
   })

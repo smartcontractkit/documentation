@@ -1,7 +1,7 @@
 import Address from "~/components/AddressReact"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
-import { Environment, SupportedTokenConfig } from "~/config/data/ccip"
+import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
@@ -12,16 +12,18 @@ interface TableProps {
     name: string
     key: string
     logo: string
-    token: string
+    tokenId: string
     tokenLogo: string
-    symbol: string
-    decimals: number
+    tokenName: string
+    tokenSymbol: string
+    tokenDecimals: number
     tokenAddress: string
-    tokenPoolType: string
+    tokenPoolType: PoolType
     tokenPoolAddress: string
     explorerUrl: string
   }[]
   token: {
+    id: string
     name: string
     logo: string
     symbol: string
@@ -87,7 +89,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                         />
                         <img
                           src={network.tokenLogo}
-                          alt={network.token}
+                          alt={network.tokenId}
                           className="ccip-table__smallLogo"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
@@ -98,9 +100,9 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                       {network.name}
                     </div>
                   </td>
-                  <td>{network.token}</td>
-                  <td>{network.symbol}</td>
-                  <td>{network.decimals}</td>
+                  <td>{network.tokenName}</td>
+                  <td>{network.tokenSymbol}</td>
+                  <td>{network.tokenDecimals}</td>
                   <td data-clipboard-type="token">
                     <Address
                       contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
@@ -108,7 +110,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                       endLength={6}
                     />
                   </td>
-                  <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                  <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                   <td data-clipboard-type="token-pool">
                     <Address
                       contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}

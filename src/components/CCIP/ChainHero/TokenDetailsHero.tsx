@@ -1,5 +1,6 @@
 import Address from "~/components/AddressReact"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
+import { PoolType, tokenPoolDisplay } from "~/config/data/ccip"
 import "./ChainHero.css"
 
 interface TokenDetailsHeroProps {
@@ -9,12 +10,13 @@ interface TokenDetailsHeroProps {
     explorerUrl: string
   }
   token: {
+    id: string
     name: string
     symbol: string
     logo: string
     decimals: number
     address: string
-    poolType: string
+    poolType: PoolType
     poolAddress: string
   }
 }
@@ -37,7 +39,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
 
           <h1>
-            {token?.name} <span className="ccip-chain-hero__token-logo__symbol">{token?.symbol}</span>
+            {token.id} <span className="ccip-chain-hero__token-logo__symbol">{token.name}</span>
           </h1>
         </div>
 
@@ -48,24 +50,22 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Decimals</div>
-            <div className="ccip-chain-hero__details__value">{token?.decimals}</div>
+            <div className="ccip-chain-hero__details__value">{token.decimals}</div>
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.address)} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token.address)} />
             </div>
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool type</div>
-            <div className="ccip-chain-hero__details__value">
-              {token?.poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}
-            </div>
+            <div className="ccip-chain-hero__details__value">{tokenPoolDisplay(token.poolType)}</div>
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token?.poolAddress)} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token.poolAddress)} />
             </div>
           </div>
         </div>

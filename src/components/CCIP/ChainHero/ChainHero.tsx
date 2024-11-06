@@ -22,7 +22,7 @@ interface ChainHeroProps {
     chain: string
   }[]
   tokens: {
-    name: string
+    id: string
     totalNetworks: number
     logo: string
   }[]
@@ -67,6 +67,7 @@ interface ChainHeroProps {
     }
   }
   token?: {
+    id: string
     name: string
     logo: string
     symbol: string
@@ -80,7 +81,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
     const token = getTokenData({
       environment,
       version: Version.V1_2_0,
-      tokenSymbol: feeToken,
+      tokenId: feeToken,
     })
     const explorerUrl = network.explorerUrl
     const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
@@ -120,7 +121,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 name: network?.name || token?.name || "Current",
                 url: network
                   ? `/ccip/directory/${environment}/chain/${network.chain}`
-                  : `/ccip/directory/${environment}/token/${token?.symbol}`,
+                  : `/ccip/directory/${environment}/token/${token?.id}`,
               },
             ]}
           />
@@ -140,7 +141,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             }}
           />
           <h1>
-            {network?.name || token?.name} <span className="ccip-chain-hero__token-logo__symbol">{token?.symbol}</span>
+            {network?.name || token?.id} <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
           </h1>
         </div>
         {network && (
