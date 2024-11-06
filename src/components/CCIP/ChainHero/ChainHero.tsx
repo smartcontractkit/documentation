@@ -118,7 +118,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 url: `/ccip/directory/${environment}`,
               },
               {
-                name: network?.name || token?.name || "Current",
+                name: network?.name || token?.id || "Current",
                 url: network
                   ? `/ccip/directory/${environment}/chain/${network.chain}`
                   : `/ccip/directory/${environment}/token/${token?.id}`,
