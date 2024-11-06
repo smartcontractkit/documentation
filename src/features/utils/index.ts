@@ -179,6 +179,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SCROLL_SEPOLIA"
     case "ethereum-testnet-sepolia-soneium-1":
       return "SONEIUM_MINATO"
+    case "ethereum-testnet-holesky":
+      return "ETHEREUM_HOLESKY"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -256,6 +258,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-scroll-1"
     case "SONEIUM_MINATO":
       return "ethereum-testnet-sepolia-soneium-1"
+    case "ETHEREUM_HOLESKY":
+      return "ethereum-testnet-holesky"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
