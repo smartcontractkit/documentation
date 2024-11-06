@@ -106,27 +106,33 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
 export const getAllChains = ({
   mainnetVersion,
   testnetVersion,
+  environment,
 }: {
   mainnetVersion: Version
   testnetVersion: Version
+  environment?: Environment
 }) => {
   let chainsMainnetKeys: string[] = []
   let chainsTestnetKeys: string[] = []
 
-  switch (mainnetVersion) {
-    case Version.V1_2_0:
-      chainsMainnetKeys = Object.keys(chainsMainnetv120)
-      break
-    default:
-      throw new Error(`Invalid mainnet version: ${mainnetVersion}`)
+  if (!environment || environment === Environment.Mainnet) {
+    switch (mainnetVersion) {
+      case Version.V1_2_0:
+        chainsMainnetKeys = Object.keys(chainsMainnetv120)
+        break
+      default:
+        throw new Error(`Invalid mainnet version: ${mainnetVersion}`)
+    }
   }
 
-  switch (testnetVersion) {
-    case Version.V1_2_0:
-      chainsTestnetKeys = Object.keys(chainsTestnetv120)
-      break
-    default:
-      throw new Error(`Invalid testnet version: ${testnetVersion}`)
+  if (!environment || environment === Environment.Testnet) {
+    switch (testnetVersion) {
+      case Version.V1_2_0:
+        chainsTestnetKeys = Object.keys(chainsTestnetv120)
+        break
+      default:
+        throw new Error(`Invalid testnet version: ${testnetVersion}`)
+    }
   }
 
   return [...chainsMainnetKeys, ...chainsTestnetKeys]
@@ -354,6 +360,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
+    environment: filter,
   })
 
   const allChains: {
@@ -390,23 +397,20 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   for (const chain of chains) {
     const directory = directoryToSupportedChain(chain)
     const title = getTitle(directory)
+    if (!title) throw Error(`Title not found for ${directory}`)
 
-    if (filter) {
-      if (!title?.toLowerCase()?.includes(filter)) {
-        continue
-      }
-    }
     const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
     const chains = Environment.Mainnet === filter ? chainsMainnetv120 : chainsTestnetv120
     const logo = getChainIcon(directory)
+    if (!logo) throw Error(`Logo not found for ${directory}`)
     const token = getTokensOfChain({ chain, filter })
     const explorerUrl = getExplorer(directory)
     const router = chains[chain].router
     if (!explorerUrl) throw Error(`Explorer url not found for ${directory}`)
     const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router.address)
     allChains.push({
-      name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
-      logo: logo || "",
+      name: title,
+      logo,
       totalLanes: Object.keys(lanes[chain]).length,
       totalTokens: token.length,
       chain,
