@@ -29,18 +29,20 @@ interface TableProps {
     symbol: string
   }
   lanes: {
-    [sourceChain: string]: SupportedTokenConfig
+    [sourceChain: string]: {
+      [destinationChain: string]: SupportedTokenConfig
+    }
   }
   environment: Environment
 }
 
-function TokenChainsTable({ networks, token, lanes: destinationLanes, environment }: TableProps) {
+function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [search, setSearch] = useState("")
   return (
     <>
       <div className="ccip-table__filters">
         <div className="ccip-table__filters-title">
-          Listed Networks <span>({networks.length})</span>
+          Listed Networks <span>({Object.keys(lanes).length})</span>
         </div>
         <TableSearchInput search={search} setSearch={setSearch} />
       </div>
@@ -71,7 +73,7 @@ function TokenChainsTable({ networks, token, lanes: destinationLanes, environmen
                           <TokenDrawer
                             token={token}
                             network={network}
-                            destinationLanes={destinationLanes}
+                            destinationLanes={lanes[network.key]}
                             environment={environment}
                           />
                         ))

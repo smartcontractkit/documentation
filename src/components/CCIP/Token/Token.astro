@@ -41,13 +41,13 @@ const allTokens = tokens.map((token) => {
 const data = getTokenData({
   environment: environment,
   version: Version.V1_2_0,
-  tokenId: token || "",
+  tokenId: token,
 })
 
-const lanes = getAllTokenLanes({
+const tokenLanes = getAllTokenLanes({
   environment: environment,
   version: Version.V1_2_0,
-  token: token || "",
+  token: token,
 })
 
 const searchLanes = getSearchLanes({ environment })
@@ -70,7 +70,7 @@ const searchLanes = getSearchLanes({ environment })
       id: token,
       name: data[Object.keys(data)[0]]?.name || "",
       logo: logo || "",
-      symbol: data[Object.keys(data)[0]]?.symbol,
+      symbol: data[Object.keys(data)[0]].symbol,
     }}
     environment={environment}
   />
@@ -80,8 +80,7 @@ const searchLanes = getSearchLanes({ environment })
       <Table
         client:load
         environment={environment}
-        networks={Object.keys(data)
-          .filter((key) => data[key].poolType !== "feeTokenOnly")
+        networks={Object.keys(tokenLanes)
           .map((key) => {
             const directory = directoryToSupportedChain(key || "")
             const title = getTitle(directory) || ""
@@ -103,7 +102,7 @@ const searchLanes = getSearchLanes({ environment })
             }
           })
           .sort((a, b) => a.name.localeCompare(b.name))}
-        lanes={lanes}
+        lanes={tokenLanes}
         token={{
           id: token,
           name: data[Object.keys(data)[0]]?.name || "",

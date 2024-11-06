@@ -72,12 +72,6 @@ function TokenDrawer({
         filter: environment,
         chain: destinationChain,
       })
-      const laneData = getLane({
-        sourceChain: network?.key as SupportedChain,
-        destinationChain: destinationChain as SupportedChain,
-        environment,
-        version: Version.V1_2_0,
-      })
 
       const destinationTokenData = getTokenData({
         environment,
@@ -85,14 +79,34 @@ function TokenDrawer({
         tokenId: token.id,
       })[destinationChain]
       if (!destinationTokenData) {
-        console.error(`No token data found for ${token.id} on ${destinationChain}`)
+        console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
       const destinationPoolType = destinationTokenData.poolType
       if (!destinationPoolType) {
-        console.error(`No pool type found for ${token.id} on ${destinationChain}`)
+        console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
+      const laneData = getLane({
+        sourceChain: network.key as SupportedChain,
+        destinationChain: destinationChain as SupportedChain,
+        environment,
+        version: Version.V1_2_0,
+      })
+
+      if (!laneData) {
+        console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!laneData.supportedTokens) {
+        console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!(token.id in laneData.supportedTokens)) {
+        console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
+        return null
+      }
+
       return { networkDetails, laneData, destinationChain, destinationPoolType }
     })
     .filter(Boolean) as LaneRow[]

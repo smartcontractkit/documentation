@@ -72,20 +72,21 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                   .find((n) => n.key === network.key)
 
                 if (selectedNetwork) {
+                  const destinationLanes = getAllTokenLanes({
+                    environment,
+                    version: Version.V1_2_0,
+                    token: token.id,
+                  })[selectedNetwork.key]
                   drawerContentStore.set(() => (
                     <TokenDrawer
                       token={{
-                        id: token.id,
-                        name: data[Object.keys(data)[0]].name || "",
-                        logo: token.logo,
-                        symbol: data[Object.keys(data)[0]].symbol,
+                        id: selectedNetwork.tokenId,
+                        name: selectedNetwork.tokenName,
+                        logo: selectedNetwork.tokenLogo,
+                        symbol: selectedNetwork.tokenSymbol,
                       }}
                       network={selectedNetwork}
-                      destinationLanes={getAllTokenLanes({
-                        environment,
-                        version: Version.V1_2_0,
-                        token: token.id,
-                      })}
+                      destinationLanes={destinationLanes}
                       environment={environment}
                     />
                   ))
