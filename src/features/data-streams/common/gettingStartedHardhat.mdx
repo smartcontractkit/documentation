@@ -165,9 +165,9 @@ The code example uses `revert` with `StreamsLookup` to convey call information a
 
 ### Initializing the contract
 
-When deploying the contract, you define:
+When you deploy the contract, you define:
 
-1. The verifier proxy address that you can find on the [Data Streams Addresses](/data-streams/crypto-streams) page. The verifier proxy address provides functions that are required for this example:
+1. The verifier proxy address that you can find on the [Data Stream Addresses](/data-streams/crypto-streams) page. The `IVerifierProxy` interface provides the following functions:
 
    - The `s_feeManager` function to estimate the verification fees.
    - The `verify` function to verify the report onchain.
@@ -204,6 +204,15 @@ You can use the [`emitLog` task](https://github.com/smartcontractkit/smart-contr
 ### Viewing the retrieved price
 
 The [`getLastRetrievedPrice`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/data-streams/getting-started/hardhat/tasks/getLastRetrievedPrice.js) Hardhat task retrieves the last price updated by the `performUpkeep` function in the `lastDecodedPrice` state variable of the `StreamsUpkeepRegistrar` contract.
+
+### Feed ID types and conversion
+
+Chainlink Data Streams uses different data types for feed IDs at different stages of the process:
+
+- The [`StreamsLookup` error](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol#L6) requires feed IDs to be provided as an array of `string`,
+- The decoded reports within the contract use `bytes32` types for feed IDs (see the [Report Schemas](/data-streams/reference/report-schema) reference).
+
+If your application needs to compare the feed ID(s) sent in the `StreamsLookup` with those received in the report(s), you must convert between `string` and `bytes32` types.
 
 ### Optional: Handle Data Streams fetching errors offchain with `checkErrorHandler`
 
