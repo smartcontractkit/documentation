@@ -14,7 +14,7 @@ import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receving string data across chains.
+/// @title - A simple messenger contract for sending/receiving string data across chains.
 contract Messenger is CCIPReceiver, OwnerIsCreator {
     using SafeERC20 for IERC20;
 

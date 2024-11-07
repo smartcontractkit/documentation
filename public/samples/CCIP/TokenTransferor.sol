@@ -143,7 +143,7 @@ contract TokenTransferor is OwnerIsCreator {
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
-    /// @notice Pay in native gas such as ETH on Ethereum or POL on Polgon.
+    /// @notice Pay in native gas such as ETH on Ethereum or POL on Polygon.
     /// @notice the token must be in the list of supported tokens.
     /// @notice This function can only be called by the owner.
     /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or POL on Polygon.
