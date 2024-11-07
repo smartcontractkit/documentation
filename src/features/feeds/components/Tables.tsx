@@ -537,10 +537,10 @@ const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  // custom: {
-  //   text: "Custom",
-  //   link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  // },
+  custom: {
+    text: "Custom",
+    link: "/data-streams/developer-responsibilities/#custom-data-streams",
+  },
   new_token: {
     text: "New token",
     link: "/data-streams/developer-responsibilities#new-token-data-streams",
