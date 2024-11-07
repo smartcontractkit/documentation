@@ -102,10 +102,16 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
                             <li>
                               <a
                                 class={`nav-link ${
-                                  isCurrentPageMatch(childItem.url, currentPage) ? "active" : ""
+                                  isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                    ? "active"
+                                    : ""
                                 } nested`}
                                 href={`${Astro.site?.pathname}${childItem.url}`}
-                                aria-current={isCurrentPageMatch(childItem.url, currentPage) ? "page" : "false"}
+                                aria-current={
+                                  isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                    ? "page"
+                                    : "false"
+                                }
                               >
                                 <ActiveIcon />
                                 {childItem.title}
@@ -118,11 +124,23 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
                                     <li>
                                       <a
                                         class={`nav-link ${
-                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "active" : ""
+                                          isCurrentPageMatch(
+                                            subChildItem.url,
+                                            currentPage,
+                                            subChildItem.highlightAsCurrent
+                                          )
+                                            ? "active"
+                                            : ""
                                         } nested`}
                                         href={`${Astro.site?.pathname}${subChildItem.url}`}
                                         aria-current={
-                                          isCurrentPageMatch(subChildItem.url, currentPage) ? "page" : "false"
+                                          isCurrentPageMatch(
+                                            subChildItem.url,
+                                            currentPage,
+                                            subChildItem.highlightAsCurrent
+                                          )
+                                            ? "page"
+                                            : "false"
                                         }
                                       >
                                         <ActiveIcon />
@@ -135,11 +153,23 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
                                           <li>
                                             <a
                                               class={`nav-link ${
-                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "active" : ""
+                                                isCurrentPageMatch(
+                                                  deepChildItem.url,
+                                                  currentPage,
+                                                  deepChildItem.highlightAsCurrent
+                                                )
+                                                  ? "active"
+                                                  : ""
                                               } nested`}
                                               href={`${Astro.site?.pathname}${deepChildItem.url}`}
                                               aria-current={
-                                                isCurrentPageMatch(deepChildItem.url, currentPage) ? "page" : "false"
+                                                isCurrentPageMatch(
+                                                  deepChildItem.url,
+                                                  currentPage,
+                                                  deepChildItem.highlightAsCurrent
+                                                )
+                                                  ? "page"
+                                                  : "false"
                                               }
                                             >
                                               <ActiveIcon />

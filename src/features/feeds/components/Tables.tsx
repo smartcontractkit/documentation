@@ -215,10 +215,10 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   </tr>
 )
 
-const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
+const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
-      <th className={tableStyles.heading}>Proof of Reserve Feed</th>
+      <th class={tableStyles.heading}>SmartData Feed</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -227,7 +227,7 @@ const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }
   </thead>
 )
 
-const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
+const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td className={tableStyles.pairCol}>
       {feedItems.map((feedItem: FeedDataItem) => {
@@ -255,6 +255,11 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
           Deprecating:
           <br />
           {proxy.docs.shutdownDate}
+        </div>
+      )}
+      {proxy.docs.productType && (
+        <div>
+          <dd style={{ marginTop: "5px" }}>{proxy.docs.productType}</dd>
         </div>
       )}
     </td>
@@ -296,18 +301,22 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
             </dt>
             <dd>{proxy.docs.assetName}</dd>
           </div>
-          <div>
-            <dt>
-              <span className="label">Reserve type:</span>
-            </dt>
-            <dd>{proxy.docs.porType}</dd>
-          </div>
-          <div>
-            <dt>
-              <span className="label">Data source:</span>
-            </dt>
-            <dd>{proxy.docs.porAuditor}</dd>
-          </div>
+          {proxy.docs.porType && (
+            <div>
+              <dt>
+                <span class="label">Reserve type:</span>
+              </dt>
+              <dd>{proxy.docs.porType}</dd>
+            </div>
+          )}
+          {proxy.docs.porAuditor && (
+            <div>
+              <dt>
+                <span class="label">Data source:</span>
+              </dt>
+              <dd>{proxy.docs.porAuditor}</dd>
+            </div>
+          )}
           <div>
             <dt>
               <span className="label">
@@ -376,6 +385,36 @@ const StreamsNetworksData = [
       explorerUrl: "https://sepolia.basescan.org/address/%s",
     },
   },
+  {
+    network: "opBNB",
+    logoUrl: "/assets/chains/opbnb.svg",
+    networkStatus: "https://opbnb-status.bnbchain.org/",
+    mainnet: {
+      label: "opBNB Mainnet",
+      verifierProxy: "0x7D543D1a715ED544f7e3Ae9e3b1777BCdA56bF8e",
+      explorerUrl: "https://opbnb.bscscan.com/address/%s",
+    },
+    testnet: {
+      label: "opBNB Testnet",
+      verifierProxy: "0x001225Aca0efe49Dbb48233aB83a9b4d177b581A",
+      explorerUrl: "https://opbnb-testnet.bscscan.com/address/%s",
+    },
+  },
+  {
+    network: "Soneium",
+    logoUrl: "/assets/chains/soneium.svg",
+    testnet: {
+      label: "Soneium Minato Testnet",
+      verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
+      explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+    },
+  },
+  {
+    network: "Solana",
+    logoUrl: "/assets/chains/solana.svg",
+    contactUs: true,
+    message: "to talk to an expert about integrating Chainlink Data Streams on Solana.",
+  },
 ]
 
 export const StreamsVerifierProxyTable = () => {
@@ -394,62 +433,92 @@ export const StreamsVerifierProxyTable = () => {
               <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
               <div className={tableStyles.assetPair}>{network.network}</div>
             </td>
-            <td style="width:80%;">
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em;">{network.mainnet.label}: </span>
-                <a
-                  style={{ fontSize: "0.9em" }}
-                  className={tableStyles.addressLink}
-                  href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                  target="_blank"
-                >
-                  {network.mainnet.verifierProxy}
-                </a>
-                <button
-                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={network.mainnet.verifierProxy}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "STREAMS",
-                      action: "verifierProxyAddress_copied",
-                      extraInfo1: "Mainnet",
-                      extraInfo2: network.mainnet.label,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                </button>
-              </div>
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em;">{network.testnet.label}: </span>
-                <a
-                  style={{ fontSize: "0.9em" }}
-                  className={tableStyles.addressLink}
-                  href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
-                  target="_blank"
-                >
-                  {network.testnet.verifierProxy}
-                </a>
-                <button
-                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={network.testnet.verifierProxy}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "STREAMS",
-                      action: "verifierProxyAddress_copied",
-                      extraInfo1: "Testnet",
-                      extraInfo2: network.testnet.label,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                </button>
-              </div>
-              <div className={tableStyles.assetAddress}>
-                <span style="font-size: 0.9em; padding-top: 1em;">
-                  Track the status of this network at <a href={network.networkStatus}>{network.networkStatus}</a>
-                </span>
-              </div>
+            <td style={{ width: "80%" }}>
+              {network.contactUs ? (
+                <div className={tableStyles.contactUsMessage}>
+                  <a href="https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs">
+                    Contact us
+                  </a>{" "}
+                  {network.message}
+                </div>
+              ) : (
+                <>
+                  {network.mainnet && (
+                    <div className={tableStyles.assetAddress}>
+                      <span style={{ fontSize: "0.9em" }}>{network.mainnet.label}: </span>
+                      <a
+                        style={{ fontSize: "0.9em" }}
+                        className={tableStyles.addressLink}
+                        href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {network.mainnet.verifierProxy}
+                      </a>
+                      <button
+                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                        data-clipboard-text={network.mainnet.verifierProxy}
+                        onClick={(e) =>
+                          handleClick(e, {
+                            product: "STREAMS",
+                            action: "verifierProxyAddress_copied",
+                            extraInfo1: "Mainnet",
+                            extraInfo2: network.mainnet.label,
+                          })
+                        }
+                      >
+                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                      </button>
+                    </div>
+                  )}
+
+                  {network.testnet && (
+                    <div className={tableStyles.assetAddress}>
+                      <span style={{ fontSize: "0.9em" }}>{network.testnet.label}: </span>
+                      <a
+                        style={{ fontSize: "0.9em" }}
+                        className={tableStyles.addressLink}
+                        href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {network.testnet.verifierProxy}
+                      </a>
+                      <button
+                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                        data-clipboard-text={network.testnet.verifierProxy}
+                        onClick={(e) =>
+                          handleClick(e, {
+                            product: "STREAMS",
+                            action: "verifierProxyAddress_copied",
+                            extraInfo1: "Testnet",
+                            extraInfo2: network.testnet.label,
+                          })
+                        }
+                      >
+                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+                      </button>
+                    </div>
+                  )}
+
+                  {network.networkStatus && (
+                    <div className={tableStyles.assetAddress}>
+                      <span
+                        style={{
+                          fontSize: "0.9em",
+                          paddingTop: "1em",
+                          display: "block",
+                        }}
+                      >
+                        Track the status of this network at{" "}
+                        <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
+                          {network.networkStatus}
+                        </a>
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
             </td>
           </tr>
         ))}
@@ -461,7 +530,7 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th className={tableStyles.heading}>Feed</th>
+      <th class={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
   </thead>
@@ -515,23 +584,23 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
         </button>
       </div>
       <div>
-        <dl className={tableStyles.porDl}>
-          {isMainnet && proxy.docs.clicProductName ? (
+        <dl class={tableStyles.porDl}>
+          {isMainnet && proxy.docs.clicProductName && (
             <div>
               <dt>
                 <span className="label">Full name:</span>
               </dt>
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
-          ) : null}
-          {proxy.docs.assetName ? (
+          )}
+          {proxy.docs.assetName && (
             <div>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
               <dd>{proxy.docs.assetName}</dd>
             </div>
-          ) : null}
+          )}
           {proxy.docs.assetClass ? (
             <div>
               <dt>
@@ -539,12 +608,16 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>
                 {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass && proxy.docs.assetSubClass !== "Crypto"
+                {proxy.docs.assetSubClass &&
+                proxy.docs.assetSubClass !== "Crypto" &&
+                proxy.docs.assetSubClass !== "Forex"
                   ? " - " + proxy.docs.assetSubClass
                   : ""}
               </dd>
             </div>
-          ) : null}
+          ) : (
+            ""
+          )}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
@@ -576,7 +649,33 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>{proxy.decimals}</dd>
             </div>
-          ) : null}
+          ) : (
+            ""
+          )}
+          {proxy.docs.feedType === "Crypto" && (
+            <div>
+              <dt>
+                <span class="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
+                  Crypto Schema (v3)
+                </a>
+              </dd>
+            </div>
+          )}{" "}
+          {proxy.docs.feedType === "Forex" && (
+            <div>
+              <dt>
+                <span class="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
+                  RWA Schema (v4)
+                </a>
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
@@ -609,19 +708,42 @@ export const MainnetTable = ({
   searchValue: string
 }) => {
   if (!network.metadata) return null
+
   const isDeprecating = ecosystem === "deprecating"
-  const isStreams = dataFeedType === "streams"
-  const isPor = dataFeedType === "por"
-  const isDefault = !isPor && !isStreams
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isSmartData = dataFeedType === "smartdata"
+  const isDefault = !isSmartData && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isDeprecating) return !!chain.docs.shutdownDate
-      if (isStreams) return chain.contractType === "verifier"
-      if (isPor) return !!chain.docs.porType
+
+      if (dataFeedType === "streamsCrypto") {
+        return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+      }
+
+      if (dataFeedType === "streamsRwa") {
+        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+      }
+
+      if (isSmartData) {
+        return (
+          chain.docs.productType === "Proof of Reserve" ||
+          chain.docs.productType === "NAVLink" ||
+          chain.docs.productType === "SmartAUM"
+        )
+      }
+
       return !chain.docs.porType && chain.contractType !== "verifier"
     })
-    .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
+    .filter((chain) => {
+      if (isSmartData)
+        return (
+          selectedFeedCategories.length === 0 ||
+          (chain.docs.productType && selectedFeedCategories.includes(chain.docs.productType))
+        )
+      return selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory)
+    })
     .filter(
       (pair) =>
         pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
@@ -641,26 +763,28 @@ export const MainnetTable = ({
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
-            <tr>
-              <td style={{ textAlign: "center" }}>
-                <img
-                  src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
-                  style={{ height: "160px" }}
-                />
-                <h4>No results found</h4>
-                <p>There are no data feeds in this category at the moment.</p>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td style={{ textAlign: "center" }}>
+                  <img
+                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    style={{ height: "160px" }}
+                  />
+                  <h4>No results found</h4>
+                  <p>There are no data feeds in this category at the moment.</p>
+                </td>
+              </tr>
+            </tbody>
           ) : (
             <>
               {isStreams && <StreamsTHead />}
-              {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
                     {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet />}
-                    {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                   </>
                 ))}
@@ -691,16 +815,22 @@ export const TestnetTable = ({
   dataFeedType: string
 }) => {
   if (!network.metadata) return null
-
-  const isStreams = dataFeedType === "streams"
-  const isPor = dataFeedType === "por"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isPor && !isRates && !isStreams
+  const isDefault = !isSmartData && !isRates && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
-      if (isStreams) return !!chain.contractType
-      if (isPor) return !!chain.docs.porType
+      if (isStreams) {
+        if (dataFeedType === "streamsCrypto") {
+          return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+        }
+        if (dataFeedType === "streamsRwa") {
+          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        }
+      }
+      if (isSmartData) return !!chain.docs.porType
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
         !chain.feedId &&
@@ -714,14 +844,14 @@ export const TestnetTable = ({
     <div className={tableStyles.tableWrapper}>
       <table className={tableStyles.table}>
         {isStreams && <StreamsTHead />}
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+        {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
               {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet={false} />}
-              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
             </>
