@@ -341,7 +341,10 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
                 data: abi.encode(_text), // ABI-encoded string
                 tokenAmounts: tokenAmounts, // The amount and type of token being transferred
                 extraArgs: Client._argsToBytes(
-                    // Additional arguments, setting gas limit
+                    // Additional arguments, setting gas limit and allowing out-of-order execution.
+                    // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
+                    // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
+                    // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/best-practices#using-extraargs
                     Client.EVMExtraArgsV2({
                         gasLimit: 200_000, // Gas limit for the callback on the destination chain
                         allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
