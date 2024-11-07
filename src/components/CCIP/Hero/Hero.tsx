@@ -11,7 +11,7 @@ interface HeroProps {
     chain: string
   }[]
   tokens: {
-    name: string
+    id: string
     totalNetworks: number
     logo: string
   }[]

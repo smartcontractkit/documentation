@@ -9,6 +9,10 @@ import {
   Version,
   LaneFilter,
   displayCapacity,
+  determineTokenMechanism,
+  PoolType,
+  getTokenData,
+  LaneConfig,
 } from "~/config/data/ccip"
 import { useState } from "react"
 import { SupportedChain } from "~/config"
@@ -25,18 +29,23 @@ function TokenDrawer({
   environment,
 }: {
   token: {
+    id: string
     name: string
     logo: string
     symbol: string
   }
   network: {
     name: string
-    logo: string
-    tokenAddress: string
-    tokenPoolType: string
-    tokenPoolAddress: string
-    decimals: number
     key: string
+    logo: string
+    tokenId: string
+    tokenLogo: string
+    tokenName: string
+    tokenSymbol: string
+    tokenDecimals: number
+    tokenAddress: string
+    tokenPoolType: PoolType
+    tokenPoolAddress: string
     explorerUrl: string
   }
   destinationLanes: {
@@ -47,28 +56,71 @@ function TokenDrawer({
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
 
-  const laneRows = Object.keys(destinationLanes).map((lane) => {
-    const networkDetails = getNetwork({
-      filter: environment,
-      chain: lane,
+  type LaneRow = {
+    networkDetails: {
+      name: string
+      logo: string
+    }
+    laneData: LaneConfig
+    destinationChain: string
+    destinationPoolType: PoolType
+  }
+
+  const laneRows: LaneRow[] = Object.keys(destinationLanes)
+    .map((destinationChain) => {
+      const networkDetails = getNetwork({
+        filter: environment,
+        chain: destinationChain,
+      })
+
+      const destinationTokenData = getTokenData({
+        environment,
+        version: Version.V1_2_0,
+        tokenId: token.id,
+      })[destinationChain]
+      if (!destinationTokenData) {
+        console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      const destinationPoolType = destinationTokenData.poolType
+      if (!destinationPoolType) {
+        console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      const laneData = getLane({
+        sourceChain: network.key as SupportedChain,
+        destinationChain: destinationChain as SupportedChain,
+        environment,
+        version: Version.V1_2_0,
+      })
+
+      if (!laneData) {
+        console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!laneData.supportedTokens) {
+        console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!(token.id in laneData.supportedTokens)) {
+        console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
+        return null
+      }
+
+      return { networkDetails, laneData, destinationChain, destinationPoolType }
     })
-    const laneData = getLane({
-      sourceChain: network?.key as SupportedChain,
-      destinationChain: lane as SupportedChain,
-      environment,
-      version: Version.V1_2_0,
-    })
-    return { networkDetails, laneData, lane }
-  })
+    .filter(Boolean) as LaneRow[]
+
   return (
     <div>
       <h2 className="ccip-table__drawer-heading">Token details</h2>
       <TokenDetailsHero
         token={{
-          name: token.name,
-          symbol: token.symbol,
-          logo: token.logo,
-          decimals: network.decimals,
+          id: token.id,
+          name: network.tokenName,
+          symbol: network.tokenSymbol,
+          logo: network.tokenLogo,
+          decimals: network.tokenDecimals,
           address: network.tokenAddress,
           poolType: network.tokenPoolType,
           poolAddress: network.tokenPoolAddress,
@@ -158,7 +210,7 @@ function TokenDrawer({
                   ({ networkDetails }) =>
                     networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
                 )
-                .map(({ networkDetails, laneData, lane }) => {
+                .map(({ networkDetails, laneData, destinationChain, destinationPoolType }) => {
                   if (!laneData || !networkDetails) return null
 
                   return (
@@ -176,7 +228,7 @@ function TokenDrawer({
                                 destinationNetwork={{
                                   name: networkDetails?.name || "",
                                   logo: networkDetails?.logo || "",
-                                  key: lane,
+                                  key: destinationChain,
                                 }}
                                 inOutbound={inOutbound}
                                 explorerUrl={network.explorerUrl}
@@ -190,20 +242,26 @@ function TokenDrawer({
                       </td>
                       <td>
                         {displayCapacity(
-                          network.decimals,
-                          token.name,
-                          destinationLanes[lane].rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]
+                          network.tokenDecimals,
+                          token.symbol,
+                          destinationLanes[destinationChain].rateLimiterConfig?.[
+                            inOutbound === LaneFilter.Inbound ? "in" : "out"
+                          ]
                         )}
                       </td>
                       <td>
                         <RateTooltip
-                          destinationLane={destinationLanes[lane]}
+                          destinationLane={destinationLanes[destinationChain]}
                           inOutbound={inOutbound}
                           symbol={token.symbol}
-                          decimals={network.decimals}
+                          decimals={network.tokenDecimals}
                         />
                       </td>
-                      <td>{network.tokenPoolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                      <td>
+                        {inOutbound === LaneFilter.Outbound
+                          ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
+                          : determineTokenMechanism(destinationPoolType, network.tokenPoolType)}
+                      </td>
                       {/* <td>
                       <span className="ccip-table__status">
                         <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
