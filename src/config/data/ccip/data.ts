@@ -106,27 +106,33 @@ export const loadReferenceData = ({ environment, version }: { environment: Envir
 export const getAllChains = ({
   mainnetVersion,
   testnetVersion,
+  environment,
 }: {
   mainnetVersion: Version
   testnetVersion: Version
+  environment?: Environment
 }) => {
   let chainsMainnetKeys: string[] = []
   let chainsTestnetKeys: string[] = []
 
-  switch (mainnetVersion) {
-    case Version.V1_2_0:
-      chainsMainnetKeys = Object.keys(chainsMainnetv120)
-      break
-    default:
-      throw new Error(`Invalid mainnet version: ${mainnetVersion}`)
+  if (!environment || environment === Environment.Mainnet) {
+    switch (mainnetVersion) {
+      case Version.V1_2_0:
+        chainsMainnetKeys = Object.keys(chainsMainnetv120)
+        break
+      default:
+        throw new Error(`Invalid mainnet version: ${mainnetVersion}`)
+    }
   }
 
-  switch (testnetVersion) {
-    case Version.V1_2_0:
-      chainsTestnetKeys = Object.keys(chainsTestnetv120)
-      break
-    default:
-      throw new Error(`Invalid testnet version: ${testnetVersion}`)
+  if (!environment || environment === Environment.Testnet) {
+    switch (testnetVersion) {
+      case Version.V1_2_0:
+        chainsTestnetKeys = Object.keys(chainsTestnetv120)
+        break
+      default:
+        throw new Error(`Invalid testnet version: ${testnetVersion}`)
+    }
   }
 
   return [...chainsMainnetKeys, ...chainsTestnetKeys]
@@ -158,14 +164,14 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
   return tokens
 }
 
-export const getTokenData = (params: { tokenSymbol: string; environment: Environment; version: Version }) => {
+export const getTokenData = (params: { tokenId: string; environment: Environment; version: Version }) => {
   const { tokensReferenceData } = loadReferenceData(params)
-  const tokenConfig = tokensReferenceData[params.tokenSymbol]
+  const tokenConfig = tokensReferenceData[params.tokenId]
 
   if (tokenConfig) {
     return tokenConfig // Assuming the token configuration has a 'name' property
   } else {
-    console.warn(`No token data found for ${params.tokenSymbol}`)
+    console.warn(`No token data found for ${params.tokenId}`)
     return {}
   }
 }
@@ -325,35 +331,37 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
   }
 }
 
-export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Environment }) => {
-  let tokensTestData
-  switch (filter) {
-    case "mainnet":
-      tokensTestData = tokensMainnetv120
-      break
-    case "testnet":
-      tokensTestData = tokensTestnetv120
-      break
-    default:
-      throw new Error(`Invalid testnet version: ${filter}`)
+export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Environment }): string[] => {
+  // Create a mapping object to avoid the switch statement
+  const tokensDataMap: { [key in Environment]?: TokensConfig } = {
+    [Environment.Mainnet]: tokensMainnetv120 as TokensConfig,
+    [Environment.Testnet]: tokensTestnetv120 as TokensConfig,
   }
 
-  const tokensResult: string[] = []
+  // Get tokensData from the map, or throw an error if not found
+  const tokensData = tokensDataMap[filter]
+  if (!tokensData) {
+    throw new Error(`Invalid environment: ${filter}`)
+  }
 
-  for (const token in tokensTestData) {
-    const tokenData = tokensTestData[token]
+  // Filter tokens that satisfy the conditions
+  return Object.keys(tokensData).filter((token) => {
+    const tokenData = tokensData[token]
+    // Check if tokenData for the given chain exists and isn't 'feeTokenOnly'
     if (tokenData[chain] && tokenData[chain].poolType !== "feeTokenOnly") {
-      tokensResult.push(token)
+      const lanes = getAllTokenLanes({ token, environment: filter })
+      // Ensure there is at least one lane and that the lane exists for the given chain
+      return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
     }
-  }
-
-  return tokensResult
+    return false
+  })
 }
 
 export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
+    environment: filter,
   })
 
   const allChains: {
@@ -390,23 +398,20 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
   for (const chain of chains) {
     const directory = directoryToSupportedChain(chain)
     const title = getTitle(directory)
+    if (!title) throw Error(`Title not found for ${directory}`)
 
-    if (filter) {
-      if (!title?.toLowerCase()?.includes(filter)) {
-        continue
-      }
-    }
     const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
     const chains = Environment.Mainnet === filter ? chainsMainnetv120 : chainsTestnetv120
     const logo = getChainIcon(directory)
+    if (!logo) throw Error(`Logo not found for ${directory}`)
     const token = getTokensOfChain({ chain, filter })
     const explorerUrl = getExplorer(directory)
     const router = chains[chain].router
     if (!explorerUrl) throw Error(`Explorer url not found for ${directory}`)
     const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router.address)
     allChains.push({
-      name: title?.replace(" mainnet", "").replace(" testnet", "") || "",
-      logo: logo || "",
+      name: title,
+      logo,
       totalLanes: Object.keys(lanes[chain]).length,
       totalTokens: token.length,
       chain,
@@ -460,26 +465,27 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
   return undefined
 }
 
-export const getChainsOfToken = ({ token, filter }: { token: string; filter: "mainnet" | "testnet" }) => {
-  let tokensTestData
-  switch (filter) {
-    case "mainnet":
-      tokensTestData = tokensMainnetv120
-      break
-    case "testnet":
-      tokensTestData = tokensTestnetv120
-      break
-    default:
-      throw new Error(`Invalid testnet version: ${filter}`)
-  }
+export const getChainsOfToken = ({ token, filter }: { token: string; filter: Environment }): string[] => {
+  // Get the tokens data based on the filter
+  const tokensData = (() => {
+    switch (filter) {
+      case Environment.Mainnet:
+        return tokensMainnetv120 as TokensConfig
+      case Environment.Testnet:
+        return tokensTestnetv120 as TokensConfig
+      default:
+        throw new Error(`Invalid environment: ${filter}`)
+    }
+  })()
 
-  const chainsResult: string[] = []
-
-  for (const chain in tokensTestData[token]) {
-    chainsResult.push(chain)
-  }
-
-  return chainsResult
+  // Get all valid chains for the given token
+  return Object.entries(tokensData[token])
+    .filter(([, tokenData]) => tokenData.poolType !== "feeTokenOnly")
+    .filter(([chain]) => {
+      const lanes = getAllTokenLanes({ token, environment: filter })
+      return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
+    })
+    .map(([chain]) => chain)
 }
 
 export const getAllNetworkLanes = async ({
@@ -536,32 +542,39 @@ export const getAllNetworkLanes = async ({
 export function getAllTokenLanes({
   token,
   environment,
-  version,
+  version = Version.V1_2_0,
 }: {
   token: string
   environment: Environment
-  version: Version
+  version?: Version
 }) {
   const { lanesReferenceData } = loadReferenceData({
     environment,
     version,
   })
 
+  // Define the resulting object
   const allDestinationLanes: {
-    [sourceChain: string]: SupportedTokenConfig
+    [sourceChain: string]: {
+      [destinationChain: string]: SupportedTokenConfig
+    }
   } = {}
 
-  Object.keys(lanesReferenceData).forEach((sourceChain) => {
-    Object.keys(lanesReferenceData[sourceChain]).forEach((destinationLane) => {
-      if (
-        lanesReferenceData[sourceChain][destinationLane] &&
-        lanesReferenceData[sourceChain][destinationLane].supportedTokens &&
-        lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
-      ) {
-        allDestinationLanes[sourceChain] = lanesReferenceData[sourceChain][destinationLane].supportedTokens[token]
+  // Iterate over the source chains
+  for (const sourceChain in lanesReferenceData) {
+    const sourceData = lanesReferenceData[sourceChain]
+    for (const destinationChain in sourceData) {
+      const destinationData = sourceData[destinationChain]
+
+      // Check if the token is supported
+      if (destinationData?.supportedTokens?.[token]) {
+        allDestinationLanes[sourceChain] = {
+          ...allDestinationLanes[sourceChain],
+          [destinationChain]: destinationData.supportedTokens[token],
+        }
       }
-    })
-  })
+    }
+  }
 
   return allDestinationLanes
 }

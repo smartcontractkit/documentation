@@ -1,4 +1,4 @@
-import { Environment, getAllTokenLanes, getTokenData, Version } from "~/config/data/ccip"
+import { Environment, getAllTokenLanes, getTokenData, Version, PoolType } from "~/config/data/ccip"
 import TokenCard from "../Cards/TokenCard"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import TokenDrawer from "../Drawer/TokenDrawer"
@@ -9,18 +9,22 @@ import SeeMore from "../SeeMore/SeeMore"
 
 interface ChainTokenGridProps {
   tokens: {
-    name: string
+    id: string
     logo: string
     totalNetworks: number
   }[]
   network: {
     name: string
-    logo: string
-    tokenAddress: string
-    tokenPoolType: string
-    tokenPoolAddress: string
-    decimals: number
     key: string
+    logo: string
+    tokenId: string
+    tokenLogo: string
+    tokenName: string
+    tokenSymbol: string
+    tokenDecimals: number
+    tokenAddress: string
+    tokenPoolType: PoolType
+    tokenPoolAddress: string
     explorerUrl: string
   }
   environment: Environment
@@ -37,13 +41,13 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
           const data = getTokenData({
             environment,
             version: Version.V1_2_0,
-            tokenSymbol: token.name || "",
+            tokenId: token.id,
           })
           return (
             <TokenCard
-              name={token.name}
+              id={token.id}
               logo={token.logo}
-              key={token.name}
+              key={token.id}
               onClick={() => {
                 const selectedNetwork = Object.keys(data)
                   .map((key) => {
@@ -52,14 +56,15 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                     const networkLogo = getChainIcon(directory) || ""
                     return {
                       name: title,
-                      token: data[key].name || "",
                       key,
                       logo: networkLogo,
-                      symbol: token,
+                      tokenId: token.id,
                       tokenLogo: network.logo || "",
-                      decimals: data[key].decimals || 0,
-                      tokenAddress: data[key].tokenAddress || "",
-                      tokenPoolType: data[key].poolType || "",
+                      tokenName: data[key].name || "",
+                      tokenSymbol: data[key].symbol,
+                      tokenDecimals: data[key].decimals,
+                      tokenAddress: data[key].tokenAddress,
+                      tokenPoolType: data[key].poolType,
                       tokenPoolAddress: data[key].poolAddress || "",
                       explorerUrl: network.explorerUrl,
                     }
@@ -67,19 +72,21 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                   .find((n) => n.key === network.key)
 
                 if (selectedNetwork) {
+                  const destinationLanes = getAllTokenLanes({
+                    environment,
+                    version: Version.V1_2_0,
+                    token: token.id,
+                  })[selectedNetwork.key]
                   drawerContentStore.set(() => (
                     <TokenDrawer
                       token={{
-                        name: data[Object.keys(data)[0]]?.name || "",
-                        logo: token.logo,
-                        symbol: token.name,
+                        id: selectedNetwork.tokenId,
+                        name: selectedNetwork.tokenName,
+                        logo: selectedNetwork.tokenLogo,
+                        symbol: selectedNetwork.tokenSymbol,
                       }}
                       network={selectedNetwork}
-                      destinationLanes={getAllTokenLanes({
-                        environment,
-                        version: Version.V1_2_0,
-                        token: token.name || "",
-                      })}
+                      destinationLanes={destinationLanes}
                       environment={environment}
                     />
                   ))

@@ -39,7 +39,7 @@ type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
   poolAddress?: string
-  poolType?: PoolType
+  poolType: PoolType
   name?: string
   symbol: string
   decimals: number

@@ -16,7 +16,7 @@ interface SearchProps {
     chain: string
   }[]
   tokens: {
-    name: string
+    id: string
     totalNetworks: number
     logo: string
   }[]
@@ -50,7 +50,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   useEffect(() => {
     if (search) {
       const networks = chains.filter((chain) => chain.name.toLowerCase().includes(search.toLowerCase()))
-      const tokensList = tokens.filter((token) => token.name.toLowerCase().includes(search.toLowerCase()))
+      const tokensList = tokens.filter((token) => token.id.toLowerCase().includes(search.toLowerCase()))
       const lanesList = lanes.filter(
         (lane) =>
           (lane.sourceNetwork.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -137,8 +137,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                 <span className="ccip-hero__search-results__title">Tokens</span>
                 <ul aria-label="Networks">
                   {tokensResults.map((token) => (
-                    <li key={token.name}>
-                      <a href={`/ccip/directory/${environment}/token/${token.name}`}>
+                    <li key={token.id}>
+                      <a href={`/ccip/directory/${environment}/token/${token.id}`}>
                         <img
                           src={token.logo}
                           alt=""
@@ -147,7 +147,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                             currentTarget.src = fallbackTokenIconUrl
                           }}
                         />
-                        {token.name}
+                        {token.id}
                         {!small && (
                           <span>
                             {token.totalNetworks} {token.totalNetworks > 1 ? "networks" : "network"}
