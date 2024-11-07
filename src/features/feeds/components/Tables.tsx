@@ -218,7 +218,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
 const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>SmartData Feed</th>
+      <th className={tableStyles.heading}>SmartData Feed</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -304,7 +304,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
           {proxy.docs.porType && (
             <div>
               <dt>
-                <span class="label">Reserve type:</span>
+                <span className="label">Reserve type:</span>
               </dt>
               <dd>{proxy.docs.porType}</dd>
             </div>
@@ -312,7 +312,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
           {proxy.docs.porAuditor && (
             <div>
               <dt>
-                <span class="label">Data source:</span>
+                <span className="label">Data source:</span>
               </dt>
               <dd>{proxy.docs.porAuditor}</dd>
             </div>
@@ -328,7 +328,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
           {proxy.docs.issuer ? (
             <div>
               <dt>
-                <span class="label">Issuer:</span>
+                <span className="label">Issuer:</span>
               </dt>
               <dd>{proxy.docs.issuer}</dd>
             </div>
@@ -530,17 +530,17 @@ export const StreamsVerifierProxyTable = () => {
 const StreamsTHead = () => (
   <thead>
     <tr>
-      <th class={tableStyles.heading}>Stream</th>
+      <th className={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
   </thead>
 )
 
 const streamsCategoryMap = {
-  custom: {
-    text: "Custom",
-    link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  },
+  // custom: {
+  //   text: "Custom",
+  //   link: "/data-streams/developer-responsibilities/#custom-data-streams",
+  // },
   new_token: {
     text: "New token",
     link: "/data-streams/developer-responsibilities#new-token-data-streams",
@@ -584,7 +584,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
         </button>
       </div>
       <div>
-        <dl class={tableStyles.porDl}>
+        <dl className={tableStyles.porDl}>
           {isMainnet && proxy.docs.clicProductName && (
             <div>
               <dt>
@@ -615,9 +615,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
                   : ""}
               </dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           {proxy.docs.marketHours ? (
             <div aria-hidden={!showExtraDetails}>
               <dt>
@@ -649,13 +647,11 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
               </dt>
               <dd>{proxy.decimals}</dd>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           {proxy.docs.feedType === "Crypto" && (
             <div>
               <dt>
-                <span class="label">Report Schema:</span>
+                <span className="label">Report Schema:</span>
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
@@ -667,7 +663,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
           {proxy.docs.feedType === "Forex" && (
             <div>
               <dt>
-                <span class="label">Report Schema:</span>
+                <span className="label">Report Schema:</span>
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
