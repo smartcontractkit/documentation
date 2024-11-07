@@ -76,7 +76,10 @@ Developers implementing Chainlink Data Streams are solely responsible for instit
 - **Code quality and reliability:** Developers must execute code using Chainlink Data Streams only if their code meets the quality and reliability requirements for their use case and application.
 - **Code and application audits:** Developers are responsible for auditing their code and applications before deploying to production. Developers must determine the quality of any audits and ensure that they meet the requirements for their application.
 - **Code dependencies and imports:** Developers are responsible for ensuring the quality, reliability, and security of any dependencies or imported packages that they use with Chainlink Data Streams, and review and audit these dependencies and packages.
-- **Contingency Logic:** In extreme circumstances, including situations outside the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. Developers are responsible for implementing contingency plans for such circumstances specific to their application, such as the use of the active-active SDK for Data Streams, a secondary fallback oracle, and/or circuit breakers to stall trading.
+- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
+  - Implementing the [Streams Direct Architecture](/data-streams/architecture#streams-direct-architecture),
+  - Adopting an [active-active](/data-streams/architecture#active-active-multi-site-deployment) deployment strategy and [configuring the SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) to support multiple concurrent WebSocket connections,
+  - Retrieving any potentially missing reports via the [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api).
 
 ### Additional Considerations on Data Usage and Verification
 
