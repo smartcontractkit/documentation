@@ -143,7 +143,7 @@ contract TokenTransferor is OwnerIsCreator {
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
-    /// @notice Pay in native gas such as ETH on Ethereum or POL on Polgon.
+    /// @notice Pay in native gas such as ETH on Ethereum or POL on Polygon.
     /// @notice the token must be in the list of supported tokens.
     /// @notice This function can only be called by the owner.
     /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or POL on Polygon.
@@ -234,7 +234,10 @@ contract TokenTransferor is OwnerIsCreator {
                 data: "", // No data
                 tokenAmounts: tokenAmounts, // The amount and type of token being transferred
                 extraArgs: Client._argsToBytes(
-                    // Additional arguments, setting gas limit to 0 as we are not sending any data
+                    // Additional arguments, setting gas limit and allowing out-of-order execution.
+                    // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
+                    // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
+                    // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/best-practices#using-extraargs
                     Client.EVMExtraArgsV2({
                         gasLimit: 0, // Gas limit for the callback on the destination chain
                         allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
