@@ -256,14 +256,13 @@ export const FeedList = ({
             <SectionWrapper title={network.name} depth={3} key={network.name}>
               {network.networkType === "mainnet" ? (
                 <>
-                  {!isStreams &&
-                    (selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
-                      <p>
-                        {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
-                        status of the sequencer when running applications on L2 networks. See the{" "}
-                        <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-                      </p>
-                    )}
+                  {!isStreams && chain.l2SequencerFeed && (
+                    <p>
+                      {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                      status of the sequencer when running applications on L2 networks. See the{" "}
+                      <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                    </p>
+                  )}
                   <div className={feedList.tableFilters}>
                     {!isStreams && !isSmartData && (
                       <details class={feedList.filterDropdown_details}>
