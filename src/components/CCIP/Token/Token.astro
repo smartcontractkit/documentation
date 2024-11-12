@@ -29,12 +29,15 @@ const supportedTokens = getAllSupportedTokens({
 
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
+const chainsOfToken = getChainsOfToken({ token, filter: environment })
+const firstSupportedChain = chainsOfToken[0]
+
 const allTokens = tokens.map((token) => {
   const logo = getTokenIconUrl(token) || ""
   return {
     id: token,
     logo,
-    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+    totalNetworks: chainsOfToken.length,
   }
 })
 
@@ -68,9 +71,9 @@ const searchLanes = getSearchLanes({ environment })
     lanes={searchLanes}
     token={{
       id: token,
-      name: data[Object.keys(data)[0]]?.name || "",
+      name: data[firstSupportedChain]?.name || "",
       logo: logo || "",
-      symbol: data[Object.keys(data)[0]].symbol,
+      symbol: data[firstSupportedChain].symbol,
     }}
     environment={environment}
   />
@@ -105,9 +108,9 @@ const searchLanes = getSearchLanes({ environment })
         lanes={tokenLanes}
         token={{
           id: token,
-          name: data[Object.keys(data)[0]]?.name || "",
+          name: data[firstSupportedChain]?.name || "",
           logo: logo || "",
-          symbol: data[Object.keys(data)[0]]?.symbol,
+          symbol: data[firstSupportedChain]?.symbol,
         }}
       />
     </div>
