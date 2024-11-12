@@ -59,7 +59,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       key,
                       logo: networkLogo,
                       tokenId: token.id,
-                      tokenLogo: network.logo || "",
+                      tokenLogo: token.logo || "",
                       tokenName: data[key].name || "",
                       tokenSymbol: data[key].symbol,
                       tokenDecimals: data[key].decimals,
