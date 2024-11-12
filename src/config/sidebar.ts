@@ -35,7 +35,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "SmartData Feeds",
+          title: "SmartData",
           url: "data-feeds/smartdata",
         },
         {
@@ -605,7 +605,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/getting-started",
         },
         {
-          title: "CCIP Directory",
+          title: "Supported Networks",
           url: "chainlink-functions/supported-networks",
         },
         {
@@ -1251,6 +1251,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
+            },
+            {
+              title: "Using the CCIP Local Simulator to fork mainnets",
+              url: "chainlink-local/build/ccip/foundry/forking-mainnets",
+            },
+            {
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
             },
           ],
         },

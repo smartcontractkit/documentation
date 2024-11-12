@@ -9,13 +9,14 @@ import {
   getSearchLanes,
   getTokenData,
   Version,
+  Environment,
 } from "~/config/data/ccip"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
-const { token, logo, environment } = Astro.props
+const { token, logo, environment } = Astro.props as { token: string; logo: string; environment: Environment }
 
 const entry = await getEntry("ccip", "index")
 const { headings } = await entry.render()
@@ -28,25 +29,28 @@ const supportedTokens = getAllSupportedTokens({
 
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
 
+const chainsOfToken = getChainsOfToken({ token, filter: environment })
+const firstSupportedChain = chainsOfToken[0]
+
 const allTokens = tokens.map((token) => {
   const logo = getTokenIconUrl(token) || ""
   return {
-    name: token,
+    id: token,
     logo,
-    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+    totalNetworks: chainsOfToken.length,
   }
 })
 
 const data = getTokenData({
   environment: environment,
   version: Version.V1_2_0,
-  tokenSymbol: token || "",
+  tokenId: token,
 })
 
-const lanes = getAllTokenLanes({
+const tokenLanes = getAllTokenLanes({
   environment: environment,
   version: Version.V1_2_0,
-  token: token || "",
+  token: token,
 })
 
 const searchLanes = getSearchLanes({ environment })
@@ -66,9 +70,10 @@ const searchLanes = getSearchLanes({ environment })
     client:load
     lanes={searchLanes}
     token={{
-      name: data[Object.keys(data)[0]]?.name || "",
+      id: token,
+      name: data[firstSupportedChain]?.name || "",
       logo: logo || "",
-      symbol: token || "",
+      symbol: data[firstSupportedChain].symbol,
     }}
     environment={environment}
   />
@@ -78,8 +83,7 @@ const searchLanes = getSearchLanes({ environment })
       <Table
         client:load
         environment={environment}
-        networks={Object.keys(data)
-          .filter((key) => data[key].poolType !== "feeTokenOnly")
+        networks={Object.keys(tokenLanes)
           .map((key) => {
             const directory = directoryToSupportedChain(key || "")
             const title = getTitle(directory) || ""
@@ -87,24 +91,26 @@ const searchLanes = getSearchLanes({ environment })
             const explorerUrl = getExplorer(directory)
             return {
               name: title,
-              token: data[key].name || "",
               key: key,
               logo: networkLogo,
-              symbol: token,
+              tokenId: token,
               tokenLogo: logo || "",
-              decimals: data[key].decimals || 0,
+              tokenName: data[key].name || "",
+              tokenSymbol: data[key].symbol,
+              tokenDecimals: data[key].decimals || 0,
               tokenAddress: data[key].tokenAddress || "",
-              tokenPoolType: data[key].poolType || "",
+              tokenPoolType: data[key].poolType,
               tokenPoolAddress: data[key].poolAddress || "",
               explorerUrl: explorerUrl || "",
             }
           })
           .sort((a, b) => a.name.localeCompare(b.name))}
-        lanes={lanes}
+        lanes={tokenLanes}
         token={{
-          name: data[Object.keys(data)[0]]?.name || "",
+          id: token,
+          name: data[firstSupportedChain]?.name || "",
           logo: logo || "",
-          symbol: token,
+          symbol: data[firstSupportedChain]?.symbol,
         }}
       />
     </div>

@@ -2,13 +2,13 @@ import { fallbackTokenIconUrl } from "~/features/utils"
 import "./TokenCard.css"
 
 interface TokenCardProps {
-  name: string
+  id: string
   logo?: string
   link?: string
   onClick?: () => void
 }
 
-function TokenCard({ name, logo, link, onClick }: TokenCardProps) {
+function TokenCard({ id, logo, link, onClick }: TokenCardProps) {
   if (link) {
     return (
       <a href={link}>
@@ -18,7 +18,7 @@ function TokenCard({ name, logo, link, onClick }: TokenCardProps) {
           <object data={logo} type="image/png">
             <img src={fallbackTokenIconUrl} alt="" />
           </object>
-          <h3>{name}</h3>
+          <h3>{id}</h3>
         </div>
       </a>
     )
@@ -30,7 +30,7 @@ function TokenCard({ name, logo, link, onClick }: TokenCardProps) {
         <object data={logo} type="image/png">
           <img src={fallbackTokenIconUrl} alt="" />
         </object>
-        <h3>{name}</h3>
+        <h3>{id}</h3>
       </div>
     )
   }
@@ -40,7 +40,7 @@ function TokenCard({ name, logo, link, onClick }: TokenCardProps) {
       <object data={logo} type="image/png">
         <img src={fallbackTokenIconUrl} alt="" />
       </object>
-      <h3>{name}</h3>
+      <h3>{id}</h3>
     </div>
   )
 }

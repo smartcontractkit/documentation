@@ -32,6 +32,17 @@ export const determineTokenMechanism = (
   return TokenMechanism.Unsupported
 }
 
+export const tokenPoolDisplay = (poolType?: PoolType) => {
+  const poolTypeMapping: Record<PoolType, string> = {
+    lockRelease: "Lock/Release",
+    burnMint: "Burn/Mint",
+    usdc: "Burn/Mint",
+    feeTokenOnly: "Fee Token Only",
+  }
+
+  return poolType ? poolTypeMapping[poolType] ?? "Unsupported" : "Unsupported"
+}
+
 export const calculateNetworkFeesForTokenMechanismDirect = (
   mechanism: TokenMechanism,
   laneSpecificFeeKey: LaneSpecificFeeKey

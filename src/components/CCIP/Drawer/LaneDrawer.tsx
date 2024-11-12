@@ -8,6 +8,7 @@ import {
   LaneFilter,
   Version,
   displayCapacity,
+  tokenPoolDisplay,
 } from "~/config/data/ccip"
 
 import { useState } from "react"
@@ -116,7 +117,7 @@ function LaneDrawer({
                     const data = getTokenData({
                       environment,
                       version: Version.V1_2_0,
-                      tokenSymbol: token || "",
+                      tokenId: token || "",
                     })
                     if (!Object.keys(data).length) return null
                     const logo = getTokenIconUrl(token)
@@ -147,7 +148,7 @@ function LaneDrawer({
                         </td>
                         <td>{data[sourceNetwork.key].decimals}</td>
 
-                        <td>{data[sourceNetwork.key].poolType === "lockRelease" ? "Lock/Release" : "Burn/Mint"}</td>
+                        <td>{tokenPoolDisplay(data[sourceNetwork.key].poolType)}</td>
                         <td>
                           {lane.supportedTokens &&
                             displayCapacity(
