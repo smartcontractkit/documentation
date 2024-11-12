@@ -35,7 +35,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "SmartData Feeds",
+          title: "SmartData",
           url: "data-feeds/smartdata",
         },
         {
