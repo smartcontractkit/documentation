@@ -621,7 +621,7 @@ const StreamsTr = ({ proxy, isMainnet }) => (
                 <span className="label">Market hours:</span>
               </dt>
               <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                <a href="/data-streams/market-hours" target="_blank">
                   {proxy.docs.marketHours}
                 </a>
               </dd>
