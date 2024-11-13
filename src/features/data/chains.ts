@@ -441,13 +441,13 @@ export const CHAINS: Chain[] = [
     label: "Soneium",
     title: "Soneium Data Feeds",
     img: "/assets/chains/soneium.svg",
-    networkStatusUrl: "https://explorer-testnet.soneium.org",
+    networkStatusUrl: "https://soneium-minato.blockscout.com",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Soneium Minato Testnet",
-        explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+        explorerUrl: "https://soneium-minato.blockscout.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-soneium-1.json",
         queryString: "polygon-zkevm-testnet",
