@@ -50,3 +50,5 @@ Ethereum is integrated with the following Chainlink services:
 
 Additionally, you may need to refer to the [LINK Token Contracts for Ethereum](https://docs.chain.link/resources/link-token-contracts#ethereum).
 ```
+
+The most relevant documentation links for each supported chain and for each product are available in [this table](https://docs.chain.link/builders-quick-links).
