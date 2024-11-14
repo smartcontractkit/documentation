@@ -243,7 +243,7 @@ function TokenDrawer({
                       <td>
                         {displayCapacity(
                           network.tokenDecimals,
-                          token.symbol,
+                          network.tokenSymbol,
                           destinationLanes[destinationChain].rateLimiterConfig?.[
                             inOutbound === LaneFilter.Inbound ? "in" : "out"
                           ]
@@ -253,7 +253,7 @@ function TokenDrawer({
                         <RateTooltip
                           destinationLane={destinationLanes[destinationChain]}
                           inOutbound={inOutbound}
-                          symbol={token.symbol}
+                          symbol={network.tokenSymbol}
                           decimals={network.tokenDecimals}
                         />
                       </td>
