@@ -18,6 +18,7 @@ export interface Chain {
   networks: ChainNetwork[]
   label: string
   tags?: ChainTags
+  l2SequencerFeed?: boolean
   supportedFeatures: ("vrfSubscription" | "vrfDirectFunding" | "feeds")[]
 }
 
@@ -188,6 +189,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
     tags: ["default", "rates", "streams", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -215,6 +217,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://status.optimism.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Optimism Mainnet",
@@ -276,6 +279,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://andromeda-explorer.metis.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Metis Mainnet",
@@ -294,6 +298,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://basescan.statuspage.io/",
     tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Base Mainnet",
@@ -345,6 +350,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://status.scroll.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Scroll Mainnet",
@@ -435,13 +441,13 @@ export const CHAINS: Chain[] = [
     label: "Soneium",
     title: "Soneium Data Feeds",
     img: "/assets/chains/soneium.svg",
-    networkStatusUrl: "https://explorer-testnet.soneium.org",
+    networkStatusUrl: "https://soneium-minato.blockscout.com",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Soneium Minato Testnet",
-        explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+        explorerUrl: "https://soneium-minato.blockscout.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-soneium-1.json",
         queryString: "polygon-zkevm-testnet",

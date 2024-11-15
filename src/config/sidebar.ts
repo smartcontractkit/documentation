@@ -251,6 +251,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "RWA streams",
           url: "data-streams/rwa-streams",
         },
+        {
+          title: "Market hours",
+          url: "data-streams/market-hours",
+        },
       ],
     },
     {
