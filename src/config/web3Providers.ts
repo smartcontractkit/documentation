@@ -46,6 +46,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
   SONEIUM_MINATO: () => new providers.JsonRpcProvider("	https://rpc.minato.soneium.org/"),
   ETHEREUM_HOLESKY: () => new providers.JsonRpcProvider("https://ethereum-holesky-rpc.publicnode.com"),
+  ASTAR_MAINNET: () => new providers.JsonRpcProvider("https://rpc.astar.network"),
+  ASTAR_SHIBUYA: () => new providers.JsonRpcProvider("https://evm.shibuya.astar.network/"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

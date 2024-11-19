@@ -181,6 +181,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "polkadot-mainnet-astar":
+      return "ASTAR_MAINNET"
+    case "polkadot-testnet-astar-shibuya":
+      return "ASTAR_SHIBUYA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
