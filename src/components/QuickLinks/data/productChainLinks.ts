@@ -21,6 +21,7 @@ export const productChainLinks: ProductChainLinks = {
     logo: ccipLogo,
     chains: {
       arbitrum: "/ccip/directory/mainnet/chain/ethereum-mainnet-arbitrum-1",
+      astar: "/ccip/directory/mainnet/chain/polkadot-mainnet-astar",
       avalanche: "/ccip/directory/mainnet/chain/avalanche-mainnet",
       "bnb-chain": "/ccip/directory/mainnet/chain/bsc-mainnet",
       celo: "/ccip/directory/mainnet/chain/celo-mainnet",
@@ -151,6 +152,7 @@ export const productChainLinks: ProductChainLinks = {
 
 export const chainNames: Record<string, string> = {
   arbitrum: "Arbitrum",
+  astar: "Astar",
   avalanche: "Avalanche",
   base: "Base",
   "bnb-chain": "BNB Chain",
