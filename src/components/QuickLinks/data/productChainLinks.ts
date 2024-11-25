@@ -125,6 +125,7 @@ export const productChainLinks: ProductChainLinks = {
   },
   linkTokenContracts: {
     arbitrum: "/resources/link-token-contracts#arbitrum",
+    astar: "/resources/link-token-contracts#astar",
     avalanche: "/resources/link-token-contracts#avalanche",
     base: "/resources/link-token-contracts#base",
     "bnb-chain": "/resources/link-token-contracts#bnb-chain",
@@ -147,6 +148,7 @@ export const productChainLinks: ProductChainLinks = {
     solana: "/resources/link-token-contracts#solana",
     soneium: "/resources/link-token-contracts#soneium",
     wemix: "/resources/link-token-contracts#wemix",
+    zircuit: "/resources/link-token-contracts?parent=chainlinkFunctions#zircuit",
     zksync: "/resources/link-token-contracts#zksync",
   },
 }
