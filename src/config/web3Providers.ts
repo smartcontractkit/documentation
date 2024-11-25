@@ -48,6 +48,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   ETHEREUM_HOLESKY: () => new providers.JsonRpcProvider("https://ethereum-holesky-rpc.publicnode.com"),
   ASTAR_MAINNET: () => new providers.JsonRpcProvider("https://rpc.astar.network"),
   ASTAR_SHIBUYA: () => new providers.JsonRpcProvider("https://evm.shibuya.astar.network/"),
+  ZIRCUIT_MAINNET: () => new providers.JsonRpcProvider("https://zircuit1-mainnet.liquify.com"),
+  ZIRCUIT_TESTNET: () => new providers.JsonRpcProvider("https://zircuit1-testnet.p2pify.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

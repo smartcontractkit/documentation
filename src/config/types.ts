@@ -22,6 +22,7 @@ export type SupportedTechnology =
   | "ZKSYNC"
   | "SONEIUM"
   | "ASTAR"
+  | "ZIRCUIT"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -68,6 +69,8 @@ export type SupportedChain =
   | "SONEIUM_MINATO"
   | "ASTAR_MAINNET"
   | "ASTAR_SHIBUYA"
+  | "ZIRCUIT_MAINNET"
+  | "ZIRCUIT_TESTNET"
 
 export type Chains = Record<
   SupportedTechnology,
