@@ -3,6 +3,10 @@ import { existsSync, readFileSync, writeFileSync, createWriteStream, statSync, m
 import { Readable } from "node:stream"
 import { exit, cwd, stdout } from "process"
 
+process.env.BUILD_MODE = "static"
+process.env.GRAPHQL_SERVER_URL = "dummy"
+process.env.GRAPHQL_API_TOKEN = "dummy"
+
 const tempDir = `${cwd()}/temp`
 if (!existsSync(tempDir)) {
   mkdirSync(tempDir)
