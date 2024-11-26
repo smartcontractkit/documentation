@@ -21,6 +21,7 @@ export const productChainLinks: ProductChainLinks = {
     logo: ccipLogo,
     chains: {
       arbitrum: "/ccip/directory/mainnet/chain/ethereum-mainnet-arbitrum-1",
+      astar: "/ccip/directory/mainnet/chain/polkadot-mainnet-astar",
       avalanche: "/ccip/directory/mainnet/chain/avalanche-mainnet",
       "bnb-chain": "/ccip/directory/mainnet/chain/bsc-mainnet",
       celo: "/ccip/directory/mainnet/chain/celo-mainnet",
@@ -38,6 +39,7 @@ export const productChainLinks: ProductChainLinks = {
       linea: "/ccip/directory/mainnet/chain/ethereum-mainnet-linea-1",
       scroll: "/ccip/directory/mainnet/chain/ethereum-mainnet-scroll-1",
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
+      zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
     },
   },
   "Data Feeds": {
@@ -123,6 +125,7 @@ export const productChainLinks: ProductChainLinks = {
   },
   linkTokenContracts: {
     arbitrum: "/resources/link-token-contracts#arbitrum",
+    astar: "/resources/link-token-contracts#astar",
     avalanche: "/resources/link-token-contracts#avalanche",
     base: "/resources/link-token-contracts#base",
     "bnb-chain": "/resources/link-token-contracts#bnb-chain",
@@ -146,11 +149,13 @@ export const productChainLinks: ProductChainLinks = {
     soneium: "/resources/link-token-contracts#soneium",
     wemix: "/resources/link-token-contracts#wemix",
     zksync: "/resources/link-token-contracts#zksync",
+    zircuit: "/resources/link-token-contracts#zircuit",
   },
 }
 
 export const chainNames: Record<string, string> = {
   arbitrum: "Arbitrum",
+  astar: "Astar",
   avalanche: "Avalanche",
   base: "Base",
   "bnb-chain": "BNB Chain",
@@ -176,4 +181,5 @@ export const chainNames: Record<string, string> = {
   zksync: "ZKsync",
   mode: "Mode",
   blast: "Blast",
+  zircuit: "Zircuit",
 }
