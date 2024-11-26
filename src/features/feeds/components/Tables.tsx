@@ -401,6 +401,21 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Optimism",
+    logoUrl: "/assets/chains/optimism.svg",
+    networkStatus: "https://status.optimism.io/",
+    mainnet: {
+      label: "Optimism Mainnet",
+      verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
+      explorerUrl: "https://optimistic.etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Optimism Testnet",
+      verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
+      explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
     testnet: {
