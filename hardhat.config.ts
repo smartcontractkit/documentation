@@ -3,6 +3,13 @@
 import { HardhatUserConfig } from "hardhat/config"
 import "@nomicfoundation/hardhat-toolbox"
 
+const compilerSettings = {
+  optimizer: {
+    enabled: true,
+    runs: 1000,
+  },
+}
+
 const config: HardhatUserConfig = {
   paths: {
     root: "./",
