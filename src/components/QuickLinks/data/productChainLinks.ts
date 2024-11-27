@@ -79,6 +79,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
+      optimism: "/data-streams/crypto-streams",
     },
   },
   Functions: {
@@ -121,6 +122,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/vrf/v2-5/supported-networks#polygon-mainnet",
       base: "/vrf/v2-5/supported-networks#base-mainnet",
       soneium: "/vrf/v2-5/supported-networks#soneium-minato-testnet",
+      optimism: "/vrf/v2-5/supported-networks#optimism-mainnet",
     },
   },
   linkTokenContracts: {
