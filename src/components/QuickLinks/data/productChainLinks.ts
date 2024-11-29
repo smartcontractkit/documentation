@@ -79,6 +79,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
+      optimism: "/data-streams/crypto-streams",
     },
   },
   Functions: {
@@ -121,10 +122,12 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/vrf/v2-5/supported-networks#polygon-mainnet",
       base: "/vrf/v2-5/supported-networks#base-mainnet",
       soneium: "/vrf/v2-5/supported-networks#soneium-minato-testnet",
+      optimism: "/vrf/v2-5/supported-networks#optimism-mainnet",
     },
   },
   linkTokenContracts: {
     arbitrum: "/resources/link-token-contracts#arbitrum",
+    astar: "/resources/link-token-contracts#astar",
     avalanche: "/resources/link-token-contracts#avalanche",
     base: "/resources/link-token-contracts#base",
     "bnb-chain": "/resources/link-token-contracts#bnb-chain",
@@ -148,6 +151,7 @@ export const productChainLinks: ProductChainLinks = {
     soneium: "/resources/link-token-contracts#soneium",
     wemix: "/resources/link-token-contracts#wemix",
     zksync: "/resources/link-token-contracts#zksync",
+    zircuit: "/resources/link-token-contracts#zircuit",
   },
 }
 
