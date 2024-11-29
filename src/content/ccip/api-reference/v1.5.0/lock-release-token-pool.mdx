@@ -1,17 +1,19 @@
 ---
 section: ccip
 date: Last Modified
-title: "LockReleaseTokenPool API Reference"
+title: "CCIP v1.5.0 LockReleaseTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the LockReleaseTokenPool contract in Chainlink CCIP v1.5.0, implementing lock/release functionality for tokens on their native chain."
 ---
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="importCCIPPackage" />
+<CcipCommon callout="importCCIPPackage150" />
 
 ## LockReleaseTokenPool
 
-The [`LockReleaseTokenPool`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) contract is used for handling tokens on their native chain using a lock and release mechanism. It allows tokens to be locked in the pool, facilitating their transfer across blockchains, and then released to the recipient on the destination chain. This pool contract also manages liquidity, enabling users and liquidity providers to add and remove liquidity from the pool.
+The [`LockReleaseTokenPool`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) contract is used for handling tokens on their native chain using a lock and release mechanism. It allows tokens to be locked in the pool, facilitating their transfer across blockchains, and then released to the recipient on the destination chain. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens.
 
 This contract inherits from the [`TokenPool`](/ccip/api-reference/token-pool) contract and implements additional functions for liquidity management.
 
@@ -31,13 +33,13 @@ Initializes the pool with a token, allowlist, RMN proxy, and router. The constru
 
 #### Parameters
 
-| Name            | Type      | Description                                       |
-| --------------- | --------- | ------------------------------------------------- |
-| token           | IERC20    | The token managed by the pool.                    |
-| allowlist       | address[] | Addresses allowed to interact with the pool.      |
-| rmnProxy        | address   | The RMN proxy address.                            |
-| acceptLiquidity | bool      | Whether the pool accepts liquidity.               |
-| router          | address   | The router address for cross-chain communication. |
+| Name            | Type      | Description                                                           |
+| --------------- | --------- | --------------------------------------------------------------------- |
+| token           | IERC20    | The token managed by the pool.                                        |
+| allowlist       | address[] | List of addresses allowed to be original senders for token transfers. |
+| rmnProxy        | address   | The RMN proxy address.                                                |
+| acceptLiquidity | bool      | Whether the pool accepts liquidity.                                   |
+| router          | address   | The router address for cross-chain communication.                     |
 
 ### lockOrBurn
 

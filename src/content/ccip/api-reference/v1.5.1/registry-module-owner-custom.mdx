@@ -1,0 +1,152 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 RegistryModuleOwnerCustom Contract API Reference"
+metadata:
+  description: "API documentation for the RegistryModuleOwnerCustom contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+The [`RegistryModuleOwnerCustom`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol) contract provides different methods for token developers to register themselves as administrators for their tokens in CCIP.
+
+## Errors
+
+### CanOnlySelfRegister
+
+```solidity
+error CanOnlySelfRegister(address admin, address token)
+```
+
+Thrown when someone tries to register an admin that isn't themselves.
+
+| Parameter | Type    | Description            |
+| --------- | ------- | ---------------------- |
+| admin     | address | Expected admin address |
+| token     | address | Token being registered |
+
+### RequiredRoleNotFound
+
+```solidity
+error RequiredRoleNotFound(address msgSender, bytes32 role, address token)
+```
+
+Thrown when caller doesn't have the required role for registration.
+
+| Parameter | Type    | Description                         |
+| --------- | ------- | ----------------------------------- |
+| msgSender | address | Address that attempted registration |
+| role      | bytes32 | Required role that was missing      |
+| token     | address | Token being registered              |
+
+### AddressZero
+
+```solidity
+error AddressZero()
+```
+
+Thrown when trying to set the TokenAdminRegistry address to zero.
+
+## Events
+
+### AdministratorRegistered
+
+```solidity
+event AdministratorRegistered(address indexed token, address indexed administrator)
+```
+
+Emitted when an administrator is successfully registered for a token.
+
+| Parameter     | Type    | Description                             |
+| ------------- | ------- | --------------------------------------- |
+| token         | address | Token address that got an administrator |
+| administrator | address | Address registered as administrator     |
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(
+    address tokenAdminRegistry
+)
+```
+
+Initializes the contract with the TokenAdminRegistry address.
+
+#### Parameters
+
+| Name               | Type    | Description                                |
+| ------------------ | ------- | ------------------------------------------ |
+| tokenAdminRegistry | address | Address of the TokenAdminRegistry contract |
+
+### registerAdminViaGetCCIPAdmin
+
+```solidity
+function registerAdminViaGetCCIPAdmin(
+    address token
+) external
+```
+
+Registers an administrator using the token's `getCCIPAdmin()` method.
+
+<Aside type="note">The caller must be the same address returned by the token's getCCIPAdmin() function.</Aside>
+
+#### Parameters
+
+| Name  | Type    | Description                                 |
+| ----- | ------- | ------------------------------------------- |
+| token | address | Token address to register administrator for |
+
+### registerAdminViaOwner
+
+```solidity
+function registerAdminViaOwner(
+    address token
+) external
+```
+
+Registers an administrator using the token's `owner()` method.
+
+<Aside type="note">The caller must be the same address returned by the token's owner() function.</Aside>
+
+#### Parameters
+
+| Name  | Type    | Description                                 |
+| ----- | ------- | ------------------------------------------- |
+| token | address | Token address to register administrator for |
+
+### registerAccessControlDefaultAdmin
+
+```solidity
+function registerAccessControlDefaultAdmin(
+    address token
+) external
+```
+
+Registers an administrator using OpenZeppelin's AccessControl DEFAULT_ADMIN_ROLE.
+
+<Aside type="note">The caller must have the DEFAULT_ADMIN_ROLE in the token contract.</Aside>
+
+#### Parameters
+
+| Name  | Type    | Description                                 |
+| ----- | ------- | ------------------------------------------- |
+| token | address | Token address to register administrator for |
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.0"
+```
+
+Returns the type and version of the contract.
+
+#### Return Value
+
+| Type   | Description                                  |
+| ------ | -------------------------------------------- |
+| string | The string "RegistryModuleOwnerCustom 1.6.0" |
