@@ -10,9 +10,7 @@ import sitemap from "@astrojs/sitemap"
 import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 
-// Determine if we're building for link checking (static) or deployment (Vercel)
-const isStaticBuild = process.env.BUILD_MODE === "static"
-
+// https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
   redirects: {
@@ -46,9 +44,8 @@ export default defineConfig({
     syntaxHighlight: "prism",
     smartypants: false,
   },
-  // Conditionally set output mode and adapter
-  output: isStaticBuild ? "static" : "hybrid",
-  adapter: isStaticBuild ? undefined : vercel(),
+  output: "hybrid",
+  adapter: vercel(),
   vite: {
     plugins: [yaml()],
   },
