@@ -92,7 +92,18 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
                             ).length
                           }
                         >
-                          <summary class="nav-link">{child.title}</summary>
+                          <summary class="nav-link">
+                            <a
+                              href={`${Astro.site?.pathname}${child.url}`}
+                              class={isCurrentPageMatch(child.url, currentPage) ? "active" : ""}
+                              aria-current={
+                                isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
+                              }
+                            >
+                              <ActiveIcon />
+                              {child.title}
+                            </a>
+                          </summary>
                           {child.children && (
                             <ul class="nav-group-entries nested">
                               {child.children.map((childItem) => (
@@ -411,6 +422,21 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
 
   .nav-group-entries details[open] summary.nav-link::after {
     transform: rotate(180deg);
+  }
+
+  /* Style for links inside collapsible summaries */
+  details summary.nav-link a {
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
+  }
+
+  /* Maintain caret position */
+  .nav-group-entries details summary.nav-link::after {
+    margin-left: var(--space-2x);
   }
 </style>
 
