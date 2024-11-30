@@ -8,6 +8,7 @@ export type SectionContent = {
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
 type SectionEntry = {
   section: string
@@ -1116,11 +1117,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "v1.5.1 (Latest)",
           url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
           children: ccipV151Contents,
         },
         {
           title: "v1.5.0",
           url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
           children: ccipV150Contents,
         },
       ],
