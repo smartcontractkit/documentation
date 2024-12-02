@@ -84,10 +84,11 @@ Cross-Chain Token (CCT) solves these challenges by allowing token developers to 
 
 Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
 
-- **Recommended Permissionless Token Administrator address registration methods**: A token can utilize either of these supported function signatures to register permissionlessly:
+- **Recommended Permissionless Token Administrator address registration methods**: A token can use any of the following supported function signatures for permissionless registration:
 
   - `owner()`: This function returns the token contract owner's address.
   - `getCCIPAdmin()`: This function returns the token administrator's address and is recommended for new tokens, as it allows for abstraction of the CCIP Token Administrator role from other common roles, like `owner()`.
+  - `hasRole(bytes32 role, address account)`: For tokens using the [OpenZeppelin's AccessControl](https://docs.openzeppelin.com/contracts/5.x/access-control) pattern, the token administrator must have the `DEFAULT_ADMIN_ROLE`.
 
     <Aside type="note">
       If these functions are not available, use [this contact
@@ -458,10 +459,19 @@ The process of registering your token for **Cross-Chain Token (CCT)** involves a
 
 #### Self-Service Registration Flow
 
-If the token contract includes the necessary functions (`getCCIPAdmin()` or `owner()`), the registration can be done autonomously by the token administrator:
+If the token contract includes any of the necessary functions (`getCCIPAdmin()`, `owner()`, or [OpenZeppelin's AccessControl](https://docs.openzeppelin.com/contracts/5.x/access-control)), the registration can be done autonomously by the token administrator:
 
-1. **Admin Initiates Registration**: The token administrator begins the process by calling either the `registerAdminViaGetCCIPAdmin()` or `registerAdminViaOwner()` function on the **RegistryModuleOwnerCustom** contract.
-1. **Determine Administrator**: The **RegistryModuleOwnerCustom** contract retrieves the administrator from the token contract using the appropriate method (`getCCIPAdmin()` or `owner()`).
+1. **Admin Initiates Registration**: The token administrator begins the process by calling one of these functions on the **RegistryModuleOwnerCustom** contract:
+
+   - [`registerAdminViaGetCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - [`registerAdminViaOwner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+   - [`registerAccessControlDefaultAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeraccesscontroldefaultadmin) for tokens using [OpenZeppelin's AccessControl](https://docs.openzeppelin.com/contracts/5.x/access-control) pattern
+
+1. **Determine Administrator**: The **RegistryModuleOwnerCustom** contract retrieves the administrator from the token contract using the appropriate method:
+
+   - Via [`getCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - Via [`owner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+   - Via [`hasRole(DEFAULT_ADMIN_ROLE, msg.sender)`](https://docs.openzeppelin.com/contracts/5.x/access-control#using-access-control) for AccessControl tokens
 
 1. **Propose Administrator**: The retrieved administrator is then proposed to the **TokenAdminRegistry** using the `proposeAdministrator()` function, placing the administrator in a pending state.
 
