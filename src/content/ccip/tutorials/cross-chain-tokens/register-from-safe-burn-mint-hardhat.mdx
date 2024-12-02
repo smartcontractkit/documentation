@@ -362,23 +362,37 @@ In this step, you will deploy a token pool on both Ethereum Sepolia and BASE Sep
 
 Below is an explanation of the parameters used during deployment:
 
-| Parameter        | Description                                                                                                                                  | Default | Required |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress`   | The address of the token that the pool will manage.                                                                                          | N/A     | Yes      |
-| `safeaddress`    | The address of the Safe smart account that will own the token pool.                                                                          | N/A     | Yes      |
-| `verifycontract` | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                | `false` | No       |
-| `network`        | The blockchain on which the token pool will be deployed. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for BASE Sepolia. | N/A     | Yes      |
+| Parameter            | Description                                                                                                                                  | Default      | Required |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| `tokenaddress`       | The address of the token that the pool will manage.                                                                                          | N/A          | Yes      |
+| `safeaddress`        | The address of the Safe smart account that will own the token pool.                                                                          | N/A          | Yes      |
+| `pooltype`           | The type of pool to deploy. For this tutorial, we use `"burnMint"` for a pool that supports burning and minting of tokens.                   | `"burnMint"` | No       |
+| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                          | `18`         | No       |
+| `verifycontract`     | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                | `false`      | No       |
+| `network`            | The blockchain on which the token pool will be deployed. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for BASE Sepolia. | N/A          | Yes      |
 
 1. **Deploy a Burn and Mint token pool on Ethereum Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat deployTokenPoolWithSafe --tokenaddress 0xTokenAddress --safeaddress 0xSafeAddress --verifycontract true --network sepolia
+   npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xTokenAddress \
+     --safeaddress 0xSafeAddress \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network sepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenPoolWithSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --verifycontract true --network sepolia
+   $ npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af \
+     --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network sepolia
    2024-10-20T15:23:27.745Z info: Waiting 2 blocks for transaction 0xec12b302cf81a79e1458386bd1f13c7b38175e749ef4841706bd768ee23da1ec to be confirmed...
    2024-10-20T15:24:01.936Z info: Token pool deployed to: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B
    2024-10-20T15:24:01.937Z info: Verifying contract on Etherscan...
@@ -393,13 +407,25 @@ Below is an explanation of the parameters used during deployment:
 1. **Deploy a Burn and Mint token pool on BASE Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat deployTokenPoolWithSafe --tokenaddress 0xTokenAddress --safeaddress 0xSafeAddress --verifycontract true --network baseSepolia
+   npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xTokenAddress \
+     --safeaddress 0xSafeAddress \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenPoolWithSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --verifycontract true --network baseSepolia
+   $ npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b \
+     --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network baseSepolia
    2024-10-20T15:25:35.193Z info: Waiting 2 blocks for transaction 0x4637fed18d6d8c15e3c4b817e9d40719f926992f807fa1c2a503aecafc29bb3d to be confirmed...
    2024-10-20T15:25:35.370Z info: Token pool deployed to: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B
    2024-10-20T15:25:35.371Z info: Verifying contract on Etherscan...
@@ -659,8 +685,7 @@ Below is an explanation of the parameters used during this task:
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
 | `pooladdress`               | The address of the token pool to be configured.                                                                                           | N/A     | Yes      |
 | `remotechain`               | The identifier of the remote blockchain (e.g., `sepolia` for Ethereum Sepolia or `baseSepolia` for BASE Sepolia).                         | N/A     | Yes      |
-| `allowed`                   | A flag indicating whether token transfers to the remote chain are allowed.                                                                | `true`  | No       |
-| `remotepooladdress`         | The address of the remote token pool on the remote chain.                                                                                 | N/A     | Yes      |
+| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                                                            | N/A     | Yes      |
 | `remotetokenaddress`        | The address of the token on the remote chain.                                                                                             | N/A     | Yes      |
 | `outboundratelimitenabled`  | Whether the outbound rate limit for the token pool is enabled.                                                                            | `false` | No       |
 | `outboundratelimitcapacity` | The maximum number of tokens that can be transferred outbound in a single burst (bucket capacity for the outbound rate limiter).          | `0`     | No       |
@@ -674,13 +699,13 @@ Below is an explanation of the parameters used during this task:
 1. **Configure the token pool on Ethereum Sepolia** (Replace `0xPoolAddress`, `0xRemotePoolAddress`, `0xRemoteTokenAddress`, and `0xSafeAddress` with the token pool address, remote token pool address, remote token address, and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain baseSepolia  --remotepooladdress 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network sepolia
+   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain baseSepolia  --remotepooladdresses 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network sepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotechain baseSepolia --remotepooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotetokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
+    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotechain baseSepolia --remotepooladdresses 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotetokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
     2024-10-20T16:28:59.975Z info: Configuring pool at address: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B for remote chain baseSepolia
     2024-10-20T16:29:01.657Z info: Safe transaction created for configuring the pool
     2024-10-20T16:29:02.242Z info: Safe transaction signed by owner 1
@@ -695,13 +720,13 @@ Below is an explanation of the parameters used during this task:
 1. **Configure the token pool on BASE Sepolia** (Replace `0xPoolAddress`, `0xRemotePoolAddress`, `0xRemoteTokenAddress`, and `0xSafeAddress` with the token pool address, remote token pool address, remote token address, and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain sepolia  --remotepooladdress 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network baseSepolia
+   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain sepolia  --remotepooladdresses 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotechain sepolia --remotepooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotetokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
+    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotechain sepolia --remotepooladdresses 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotetokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
     2024-10-20T16:30:23.128Z info: Configuring pool at address: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B for remote chain sepolia
     2024-10-20T16:30:25.787Z info: Safe transaction created for configuring the pool
     2024-10-20T16:30:26.730Z info: Safe transaction signed by owner 1

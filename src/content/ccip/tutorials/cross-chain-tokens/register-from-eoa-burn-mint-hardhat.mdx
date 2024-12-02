@@ -168,60 +168,43 @@ Deploy tokens, use the following commands, substituting the token name and symbo
 
 <CcipCommon callout="gasLimitPool" />
 
-In this step, you will use the `deployTokenPool.ts` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployTokenPool` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
 
-| Parameter        | Description                                                                                                                                 | Default | Required |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress`   | The address of the token for which the pool is being created.                                                                               | N/A     | Yes      |
-| `verifycontract` | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                               | `false` | No       |
-| `network`        | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter            | Description                                                                                                                                 | Default      | Required |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| `tokenaddress`       | The address of the token for which the pool is being created.                                                                               | N/A          | Yes      |
+| `pooltype`           | The type of pool to deploy. For this tutorial, we use `"burnMint"` for a pool that supports burning and minting of tokens.                  | `"burnMint"` | No       |
+| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                         | `18`         | No       |
+| `network`            | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A          | Yes      |
+| `verifycontract`     | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                               | `false`      | No       |
 
-Deploy token pools using the following commands, replacing the token address with the one deployed in the previous step:
+<Aside type="note" title="Token Decimal Handling">
+  If you need to handle tokens with different decimals across blockchains, refer to the [Token Decimal
+  Handling](/ccip/concepts/cross-chain-tokens#token-decimal-handling) section.
+</Aside>
+
+Deploy token pools using the following commands, replacing the token address with the one you deployed in the previous step:
 
 1. **Deploy the burn and mint token pool on Avalanche Fuji:**
 
    ```bash
-   npx hardhat deployTokenPool --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --verifycontract true --network avalancheFuji
+   npx hardhat deployTokenPool \
+     --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network avalancheFuji
    ```
 
-   Example output:
+2. **Deploy the burn and mint token pool on Arbitrum Sepolia:**
 
    ```bash
-   2024-10-08T00:19:32.054Z info: Waiting 2 blocks for transaction 0x62a37f36d09e39e17556021710e596af8804b8b830a7898373dd65cc59b62c98 to be confirmed...
-   2024-10-08T00:19:35.225Z info: Token pool deployed to: 0x02552EAE370aeb997015dA41398F0a53F693d77E
-   2024-10-08T00:19:35.226Z info: Granting mint and burn roles to 0x02552EAE370aeb997015dA41398F0a53F693d77E on token 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF
-   2024-10-08T00:19:52.240Z info: Verifying contract...
-   Successfully submitted source code for contract
-   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x02552EAE370aeb997015dA41398F0a53F693d77E
-   for verification on the block explorer. Waiting for verification result...
-
-   Successfully verified contract BurnMintTokenPool on the block explorer.
-   https://testnet.snowtrace.io/address/0x02552EAE370aeb997015dA41398F0a53F693d77E#code
-
-   2024-10-08T00:20:19.900Z info: Token pool contract deployed and verified
-   ```
-
-1. **Deploy the burn and mint token pool on Arbitrum Sepolia:**
-
-   ```bash
-   npx hardhat deployTokenPool --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --verifycontract true --network arbitrumSepolia
-   ```
-
-   Example output:
-
-   ```bash
-   2024-10-08T00:20:26.228Z info: Waiting 2 blocks for transaction 0x35b0be621896b9d508035873b754dd0c5fb2dca0c728acf3cdcacfeba368da04 to be confirmed...
-   2024-10-08T00:20:26.625Z info: Token pool deployed to: 0x41833AE7B0BCa169E090C752021070aC947d1821
-   2024-10-08T00:20:26.626Z info: Granting mint and burn roles to 0x41833AE7B0BCa169E090C752021070aC947d1821 on token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
-   2024-10-08T00:20:29.071Z info: Verifying contract...
-   Successfully submitted source code for contract
-   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x41833AE7B0BCa169E090C752021070aC947d1821
-   for verification on the block explorer. Waiting for verification result...
-
-   Successfully verified contract BurnMintTokenPool on the block explorer.
-   https://sepolia.arbiscan.io/address/0x41833AE7B0BCa169E090C752021070aC947d1821#code
-
-   2024-10-08T00:20:38.456Z info: Token pool contract deployed and verified
+   npx hardhat deployTokenPool \
+     --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network arbitrumSepolia
    ```
 
 ### Claim Admin
@@ -343,31 +326,34 @@ Link each token with its respective token pool by using the following commands, 
    2024-10-08T00:27:04.782Z info: Pool set for token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 to 0x41833AE7B0BCa169E090C752021070aC947d1821
    ```
 
-### Configure Pool
+### Configure Token Pools
 
-In this step, you will use the `applyChainUpdates.ts` task to configure the token pools on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. This involves linking the token pool on one blockchain to a corresponding pool on another blockchain, allowing cross-chain token transfers. You will interact with the `TokenPool` contract, specifically calling the `applyChainUpdates()` function to configure the cross-chain parameters and rate limits.
+In this step, you will use the `applyChainUpdates` task to initialize the token pool configuration on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used:
 
-Below is an explanation of the parameters used during the pool configuration process:
-
-| Parameter                   | Description                                                                                                                                                    | Default | Required |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `pooladdress`               | The address of the token pool being configured.                                                                                                                | N/A     | Yes      |
-| `remotechain`               | The remote blockchain to which this pool will be linked. Examples include `avalancheFuji`, `arbitrumSepolia`,`baseSepolia`, and `sepolia`.                     | N/A     | Yes      |
-| `remotepooladdress`         | The address of the token pool on the remote blockchain.                                                                                                        | N/A     | Yes      |
-| `remotetokenaddress`        | The address of the token on the remote blockchain.                                                                                                             | N/A     | Yes      |
-| `outboundratelimitenabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers.                                                                            | `false` | No       |
-| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers. **Note**: This parameter is applicable if you enable outbound rate limits.          | `0`     | No       |
-| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers. **Note**: This parameter is applicable if you enable outbound rate limits. | `0`     | No       |
-| `inboundratelimitenabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers.                                                                             | `false` | No       |
-| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers. **Note**: This parameter is applicable if you enable inbound rate limits.            | `0`     | No       |
-| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers. **Note**: This parameter is applicable if you enable inbound rate limits.   | `0`     | No       |
+| Parameter                   | Description                                                                                              | Default | Required |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `pooladdress`               | The address of the pool to be configured.                                                                | N/A     | Yes      |
+| `remotechain`               | The remote blockchain network (e.g., `arbitrumSepolia` for Fuji pool, `avalancheFuji` for Sepolia pool). | N/A     | Yes      |
+| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                           | N/A     | Yes      |
+| `remotetokenaddress`        | The address of the token on the remote chain.                                                            | N/A     | Yes      |
+| `outboundratelimitenabled`  | Enables or disables the outbound rate limiter.                                                           | `false` | No       |
+| `outboundratelimitcapacity` | Maximum capacity for the outbound rate limiter (in wei).                                                 | `0`     | No       |
+| `outboundratelimitrate`     | Refill rate for the outbound rate limiter bucket (tokens per second, in wei).                            | `0`     | No       |
+| `inboundratelimitenabled`   | Enables or disables the inbound rate limiter.                                                            | `false` | No       |
+| `inboundratelimitcapacity`  | Maximum capacity for the inbound rate limiter (in wei).                                                  | `0`     | No       |
+| `inboundratelimitrate`      | Refill rate for the inbound rate limiter bucket (tokens per second, in wei).                             | `0`     | No       |
 
 Configure the pools using the following commands, replacing the pool, token, and remote pool addresses with those you deployed in the previous steps:
 
 1. **Configure the pool on Avalanche Fuji:**
 
    ```bash
-   npx hardhat applyChainUpdates --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --remotechain arbitrumSepolia --remotetokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --remotepooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --network avalancheFuji
+   npx hardhat applyChainUpdates \
+     --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E \
+     --remotechain arbitrumSepolia \
+     --remotepooladdresses 0x41833AE7B0BCa169E090C752021070aC947d1821 \
+     --remotetokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 \
+     --network avalancheFuji
    ```
 
    Example output:
@@ -380,7 +366,7 @@ Configure the pools using the following commands, replacing the pool, token, and
 1. **Configure the pool on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat applyChainUpdates --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --remotechain avalancheFuji --remotetokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --remotepooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --network arbitrumSepolia
+   npx hardhat applyChainUpdates --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --remotechain avalancheFuji --remotetokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --remotepooladdresses 0x02552EAE370aeb997015dA41398F0a53F693d77E --network arbitrumSepolia
    ```
 
    Example output:
