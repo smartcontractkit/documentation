@@ -91,7 +91,7 @@ try {
   exit(1)
 }
 
-server = spawn("npm", ["run", "preview"], {
+server = spawn("npm", ["run", "dev"], {
   stdio: ["ignore", "pipe", "pipe"],
 })
 
