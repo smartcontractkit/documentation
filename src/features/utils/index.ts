@@ -189,6 +189,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ZIRCUIT_TESTNET"
     case "ethereum-mainnet-zircuit-1":
       return "ZIRCUIT_MAINNET"
+    case "ethereum-mainnet-mantle-1":
+      return "MANTLE_MAINNET"
+    case "ethereum-testnet-sepolia-mantle-1":
+      return "MANTLE_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -276,6 +280,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-zircuit-1"
     case "ZIRCUIT_MAINNET":
       return "ethereum-mainnet-zircuit-1"
+    case "MANTLE_MAINNET":
+      return "ethereum-mainnet-mantle-1"
+    case "MANTLE_SEPOLIA":
+      return "ethereum-testnet-sepolia-mantle-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
