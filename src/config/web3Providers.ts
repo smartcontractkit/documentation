@@ -50,6 +50,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   ASTAR_SHIBUYA: () => new providers.JsonRpcProvider("https://evm.shibuya.astar.network/"),
   ZIRCUIT_MAINNET: () => new providers.JsonRpcProvider("https://zircuit1-mainnet.liquify.com"),
   ZIRCUIT_TESTNET: () => new providers.JsonRpcProvider("https://zircuit1-testnet.p2pify.com"),
+  MANTLE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.mantle.xyz"),
+  MANTLE_SEPOLIA: () => new providers.JsonRpcProvider("https://rpc.sepolia.mantle.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
