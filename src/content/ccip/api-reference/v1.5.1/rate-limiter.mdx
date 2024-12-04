@@ -16,8 +16,8 @@ The [`RateLimiter`](https://github.com/smartcontractkit/ccip/blob/release/contra
 <Aside type="note">
   uint128 is safe for rate limiter state: - For USD value rate limiting, it can adequately store USD value in 18
   decimals - For ERC20 token amount rate limiting, all listed tokens will have at most a supply of uint128.max tokens -
-  In exceptional scenarios where tokens consumed may be larger than uint128 (e.g., compromised issuer), an enabled
-  RateLimiter will check and revert
+  If a token transfer amount exceeds uint128 (which could indicate a security concern), the RateLimiter's built-in
+  safety checks will detect this and revert the transaction
 </Aside>
 
 ## Errors
