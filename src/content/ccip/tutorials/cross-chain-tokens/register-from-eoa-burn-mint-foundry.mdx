@@ -120,7 +120,7 @@ Example `config.json` file:
     "name": "BnM KH",
     "symbol": "BnMkh",
     "decimals": 18,
-    "initialSupply": 0,
+    "maxSupply": 0,
     "withGetCCIPAdmin": false,
     "ccipAdminAddress": "0x0000000000000000000000000000000000000000"
   },
@@ -141,7 +141,7 @@ The `config.json` file contains the following parameters:
 | `name`                  | The name of the token you are going to deploy. Replace `"BnM KH"` with your desired token name.                                                                                                                                                                                                                                                          |
 | `symbol`                | The symbol of the token. Replace `"BnMkh"` with your desired token symbol.                                                                                                                                                                                                                                                                               |
 | `decimals`              | The number of decimals for the token (usually `18` for standard ERC tokens).                                                                                                                                                                                                                                                                             |
-| `initialSupply`         | The initial token supply. Set this to `0` if you prefer to mint tokens later.                                                                                                                                                                                                                                                                            |
+| `maxSupply`             | The maximum supply of tokens (in the smallest unit, based on `decimals`). When `maxSupply` is 0, the supply is unlimited.                                                                                                                                                                                                                                |
 | `withGetCCIPAdmin`      | A boolean to determine whether the token contract has a `getCCIPAdmin()` function. If set to `true`, a CCIP admin is required. When `false`, token admin registration will use the token `owner()` function.                                                                                                                                             |
 | `ccipAdminAddress`      | The address of the CCIP admin, only applicable if `withgetccipadmin` is set to `true`.                                                                                                                                                                                                                                                                   |
 | ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
@@ -165,7 +165,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
 
-The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
