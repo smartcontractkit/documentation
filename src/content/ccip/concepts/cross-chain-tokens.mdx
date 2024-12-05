@@ -307,7 +307,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
    - Deploy **v1.5.1** pool on Ethereum -> `0xNewPoolEth`
    - Deploy **v1.5.1** pool on Polygon -> `0xNewPoolPoly`
 
-2. Configure New Pools
+1. Configure New Pools
 
    Configure both new pools to accept messages from both the old and new pools. This dual configuration ensures that after the upgrade, the new pools can still process any in-flight messages sent from the old pools before the upgrade.
 
@@ -339,7 +339,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
    tokenPool.applyChainUpdates([], [updateForEth]);
    ```
 
-3. Throttle Existing Pools
+1. Throttle Existing Pools
 
    Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools.
 
@@ -363,7 +363,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
    oldPoolPoly.setChainRateLimiterConfig(ETH_SELECTOR, minConfig, minConfig);
    ```
 
-4. Update Token Admin Registry
+1. Update Token Admin Registry
 
    Use [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) to update the registry on both blockchains. This step switches token transfers to use the new pools.
 
@@ -379,11 +379,11 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
    tokenAdminRegistry.setPool(tokenAddress, 0xNewPoolPoly);
    ```
 
-5. Handle Manual Executions
+1. Handle Manual Executions
 
-   Monitor the [CCIP explorer](https://ccip.chain.link) for any in-flight transactions. For any failed transactions, follow the [manual execution process](/ccip/concepts/manual-execution).
+   For any failed transactions, follow the [manual execution process](/ccip/concepts/manual-execution).
 
-6. Clean Up
+1. Clean Up
 
    After verifying all transactions are processed successfully:
 
