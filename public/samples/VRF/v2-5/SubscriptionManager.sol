@@ -19,6 +19,10 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
  */
 
 contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
+    
+    error InsufficientValue(uint256 required);
+    error NotEnoughBalance(uint256 available);
+
     LinkTokenInterface LINKTOKEN;
 
     // Sepolia coordinator. For other networks,
@@ -101,6 +105,18 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
         );
     }
 
+    // 1000000000000000000 = 1 ether / native token
+    function topUpSubscriptionWithNativeToken(uint256 amount) external payable onlyOwner
+    {
+        if (msg.value < amount) {
+            revert InsufficientValue(amount);
+        }
+
+        s_vrfCoordinator.fundSubscriptionWithNative{value: amount}(
+            s_subscriptionId
+        );
+    }
+
     function addConsumer(address consumerAddress) external onlyOwner {
         // Add a consumer contract to the subscription.
         s_vrfCoordinator.addConsumer(s_subscriptionId, consumerAddress);
@@ -121,5 +137,14 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
     // 1000000000000000000 = 1 LINK
     function withdraw(uint256 amount, address to) external onlyOwner {
         LINKTOKEN.transfer(to, amount);
+    }
+
+    // Transfer this contract's native token balance to an address.
+    // 1000000000000000000 = 1 ether / native token
+    function withdrawNativeToken(uint256 amount, address payable to) external onlyOwner {
+        if (address(this).balance < amount) {
+            revert NotEnoughBalance(address(this).balance);
+        }
+        to.transfer(amount);
     }
 }
