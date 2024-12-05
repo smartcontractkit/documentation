@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react"
 import { getAllNetworks, Environment } from "@config/data/ccip"
+import { laneStore } from "@stores/lanes"
 import "./TutorialBlockchainSelector.css"
 
 interface TutorialBlockchainSelectorProps {
-  onSourceChange: (chain: string) => void
-  onDestinationChange: (chain: string) => void
+  onSourceChange?: (chain: string) => void
+  onDestinationChange?: (chain: string) => void
 }
 
 // Mark as client-side component
@@ -22,6 +23,25 @@ export const TutorialBlockchainSelector = ({
     setNetworks(getAllNetworks({ filter: environment }))
   }, [environment])
 
+  // Update store when values change
+  useEffect(() => {
+    const current = laneStore.get()
+    laneStore.set({
+      ...current,
+      sourceChain,
+      destinationChain,
+      environment,
+    })
+  }, [sourceChain, destinationChain, environment])
+
+  const handleSourceChange = (chain: string) => {
+    onSourceChange?.(chain)
+  }
+
+  const handleDestinationChange = (chain: string) => {
+    onDestinationChange?.(chain)
+  }
+
   return (
     <div className="tutorial-blockchain-selector">
       <div className="selectors-row">
@@ -33,8 +53,8 @@ export const TutorialBlockchainSelector = ({
               setEnvironment(newEnvironment)
               setSourceChain("")
               setDestinationChain("")
-              onSourceChange("")
-              onDestinationChange("")
+              handleSourceChange("")
+              handleDestinationChange("")
             }}
           >
             <option value={Environment.Testnet}>Testnet Environment</option>
@@ -47,10 +67,10 @@ export const TutorialBlockchainSelector = ({
             value={sourceChain}
             onChange={(e) => {
               setSourceChain(e.target.value)
-              onSourceChange(e.target.value)
+              handleSourceChange(e.target.value)
               if (e.target.value === destinationChain) {
                 setDestinationChain("")
-                onDestinationChange("")
+                handleDestinationChange("")
               }
             }}
           >
@@ -68,7 +88,7 @@ export const TutorialBlockchainSelector = ({
             value={destinationChain}
             onChange={(e) => {
               setDestinationChain(e.target.value)
-              onDestinationChange(e.target.value)
+              handleDestinationChange(e.target.value)
             }}
           >
             <option value="">Destination Blockchain</option>
