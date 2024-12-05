@@ -1,18 +1,61 @@
 ---
 section: ccip
 date: Last Modified
-title: "Enable your tokens in CCIP: Using Remix IDE"
+title: "Deploy and Register your Cross-Chain Tokens Using Remix"
+metadata:
+  description: "Learn how to deploy and register cross-chain tokens in CCIP using Remix IDE and an EOA account. Step-by-step guide for configuring token pools and rate limits."
 ---
 
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
-import { TutorialBlockchainSelector } from "@components/CCIP/TutorialBlockchainSelector/TutorialBlockchainSelector"
-import { ChainValue } from "@components/CCIP/TutorialBlockchainSelector/ChainValue"
-import { ContractAddress } from "@components/CCIP/TutorialBlockchainSelector/ContractAddress"
-import { NetworkAddress } from "@components/CCIP/TutorialBlockchainSelector/NetworkAddress"
-import { StoredContractAddress } from "@components/CCIP/TutorialBlockchainSelector/StoredContractAddress"
+import {
+  TutorialBlockchainSelector,
+  ChainValue,
+  ContractAddress,
+  NetworkAddress,
+  StoredContractAddress,
+  ChainUpdateBuilder,
+} from "@components/CCIP/TutorialBlockchainSelector"
+import { ChainUpdateBuilderWrapper } from "@components/CCIP/TutorialBlockchainSelector/ChainUpdateBuilderWrapper"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
+
+<Aside type="note" title="Before You Start">
+  To better understand Cross-Chain Token (CCT) standard:
+
+        - Read the [CCT Standard documentation](/ccip/concepts/cross-chain-tokens) for a comprehensive overview of the architecture, components, and
+    security features
+        - Check the [CCT Guides overview](/ccip/tutorials/cross-chain-tokens) to understand the general workflow for deploying and enabling your tokens in CCIP
+
+</Aside>
+
+## Contents
+
+1. [Before You Begin](#before-you-begin)
+
+   - [Prerequisites](#prerequisites)
+
+1. [Select Your Blockchains](#select-your-blockchains)
+
+1. [Import Required Contracts](#import-required-contracts)
+
+1. [Source Blockchain Setup](#source-blockchain-setup)
+
+   - [Deploy Token](#deploy-token)
+   - [Claim and Accept Admin Role](#claim-and-accept-admin-role)
+   - [Deploy Token Pool](#deploy-token-pool)
+   - [Set Token Pool in Registry](#set-token-pool-in-registry)
+
+1. [Destination Blockchain Setup](#destination-blockchain-setup)
+
+   - [Deploy Token](#deploy-token-1)
+   - [Claim and Accept Admin Role](#claim-and-accept-admin-role-1)
+   - [Deploy Token Pool](#deploy-token-pool-1)
+   - [Set Token Pool in Registry](#set-token-pool-in-registry-1)
+
+1. [Configure Cross-Chain Communication](#configure-cross-chain-communication)
+   - [Source Blockchain Configuration](#source-blockchain-configuration)
+   - [Destination Blockchain Configuration](#destination-blockchain-configuration)
 
 ## Before You Begin
 
@@ -71,9 +114,20 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
 
 ### Source Blockchain Setup
 
+<Aside type="note" title="Already Have a Token?">
+  If you have an existing token that meets the [CCT requirements](/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens):
+
+- Skip the "Deploy Token" section
+- Enter your existing token address in the address field below
+- Continue with "Claim and Accept Admin Role"
+
+The tutorial will use your provided token address for subsequent steps.
+
+</Aside>
+
 #### Deploy Token
 
-1. Ensure MetaMask is connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
+1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
 
 1. In the "Deploy & Run Transactions" tab:
    - Set Environment to "Injected Provider - MetaMask"
@@ -169,6 +223,17 @@ After configuring:
      - your token pool address <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
 
 ### Destination Blockchain Setup
+
+<Aside type="note" title="Already Have a Token?">
+  If you have an existing token that meets the [CCT requirements](/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens):
+
+- Skip the "Deploy Token" section
+- Enter your existing token address in the address field below
+- Continue with "Claim and Accept Admin Role"
+
+The tutorial will use your provided token address for subsequent steps.
+
+</Aside>
 
 #### Deploy Token
 
@@ -282,9 +347,13 @@ Grant privileges to your token pool:
 Enable the destination pool:
 
 - In the list of deployed contracts, select your token pool at <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
-- Call `addRemotePool` with:
-  - The destination blockchain selector: `remoteChainSelector` <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
-  - The destination pool address: `remotePoolAddress` <StoredContractAddress type="tokenPool" chain="destination" required={false} encode client:only="react" />
+- Use the configuration builder below to generate chain update parameters:
+
+<ChainUpdateBuilderWrapper chain="source" client:only="react" />
+
+- Call `applyChainUpdates` with:
+  - `remoteChainSelectorsToRemove`: `[]` (empty array)
+  - `chainsToAdd`: Copy the generated chain update from above
 - Confirm the transaction in MetaMask
 
 #### Destination Blockchain Configuration
@@ -306,7 +375,11 @@ Grant privileges to your token pool:
 Enable the source pool:
 
 - In the list of deployed contracts, select your token pool at <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
-- Call `addRemotePool` with:
-  - The source blockchain selector: `remoteChainSelector` <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
-  - The source pool address: `remotePoolAddress` <StoredContractAddress type="tokenPool" chain="source" required={false} encode client:only="react" />
+- Use the configuration builder below to generate chain update parameters:
+
+<ChainUpdateBuilderWrapper chain="destination" client:only="react" />
+
+- Call `applyChainUpdates` with:
+  - `remoteChainSelectorsToRemove`: `[]` (empty array)
+  - `chainsToAdd`: Copy the generated chain update from above
 - Confirm the transaction in MetaMask

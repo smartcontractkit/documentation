@@ -8,11 +8,10 @@ type ContractType = "registryModule" | "tokenAdminRegistry" | "router" | "armPro
 interface NetworkAddressProps {
   chain: "source" | "destination"
   type: ContractType
-  label?: boolean
   required?: boolean
 }
 
-export const NetworkAddress = ({ chain, type, label = false, required = true }: NetworkAddressProps) => {
+export const NetworkAddress = ({ chain, type, required = true }: NetworkAddressProps) => {
   const state = useStore(laneStore)
   const chainId = chain === "source" ? state.sourceChain : state.destinationChain
 
