@@ -1,0 +1,129 @@
+---
+section: ccip
+date: Last Modified
+title: "Enable your tokens in CCIP: Using Remix IDE"
+---
+
+import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+import { TutorialBlockchainSelector } from "@components/CCIP/TutorialBlockchainSelector/TutorialBlockchainSelector"
+
+This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
+
+## Before You Begin
+
+### Select Your Blockchains
+
+<TutorialBlockchainSelector
+  client:load
+  onSourceChange={(chain) => {
+    // This will be used to dynamically update tutorial values
+    console.log("Source chain:", chain)
+  }}
+  onDestinationChange={(chain) => {
+    // This will be used to dynamically update tutorial values
+    console.log("Destination chain:", chain)
+  }}
+/>
+
+### Prerequisites
+
+1. **Web Browser Setup**:
+
+   - Install [MetaMask](https://metamask.io/) browser extension
+   - Configure MetaMask with your chosen source and destination blockchains. You can do this in two ways:
+
+     **Option 1: Using Chainlist**
+
+     1. Visit [Chainlist](https://chainlist.org/)
+     2. Search for your desired blockchain (check "Include Testnets" for testnets)
+     3. Click "Add to MetaMask" for each blockchain
+     4. Confirm the addition in MetaMask popup
+
+     **Option 2: Manual Configuration**
+
+     - Follow MetaMask's [official guide](https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/) to add blockchains manually
+
+   - Get native tokens for gas fees:
+     - For testnets, you can get these from blockchain-specific faucets
+     - For mainnets, you'll need to acquire the native tokens through an exchange
+
+<Aside type="note" title="Blockchain Requirements">
+  Make sure your chosen blockchains are CCIP-supported. You can find the list of supported blockchains in the [CCIP
+  Directory](/ccip/directory).
+</Aside>
+
+## Tutorial
+
+### Import Required Contracts
+
+1. Open the pre-configured token contract in Remix:
+
+   <CodeSample src="samples/CCIP/cct/TokenDependencies.sol" showButtonButton={true} />
+
+2. The contract includes all necessary dependencies and is ready to be compiled. You don't need to manually import anything else.
+
+### Deploy Token
+
+1. **Compile the token contract**:
+
+   - Switch to the "Solidity Compiler" tab
+   - Select compiler version 0.8.19
+   - Click "Compile BurnMintERC677.sol"
+
+2. **Deploy on Source Blockchain**:
+   - Switch to "Deploy & Run Transactions" tab
+   - Set Environment to "Injected Provider - MetaMask"
+   - Select "MyToken" contract
+   - Configure deployment parameters:
+     - name: [Input field for token name]
+     - symbol: [Input field for token symbol]
+     - decimals: 18
+     - maxSupply: 0 (for unlimited supply)
+   - Ensure MetaMask is connected to [Selected Source Blockchain]
+   - Click "Deploy" and confirm in MetaMask
+   - Save your token address here: [Input field for token address]
+
+### Deploy Token Pool
+
+[Configuration values will be based on selected blockchains]
+
+1. **Deploy on Source Blockchain**:
+   - Switch to "Deploy & Run Transactions" tab
+   - Select appropriate pool type
+   - Configure deployment parameters:
+     - tokenAddress: [Value from saved token address]
+     - localTokenDecimals: 18
+     - routerAddress: [Auto-populated based on selected blockchain]
+     - rmnProxyAddress: [Auto-populated based on selected blockchain]
+
+### Claim Admin Role
+
+In this step, you'll register your EOA as the administrator for the deployed tokens. You'll interact with the `RegistryModuleOwnerCustom` contract through Remix.
+
+1. **Create interface file**:
+   Create `IRegistryModuleOwnerCustom.sol`:
+
+   ````solidity
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.0;
+
+   interface IRegistryModuleOwnerCustom {
+       function registerAdminViaOwner(address token) external;
+   }   ```
+
+   ````
+
+2. **Claim admin on Source Blockchain**:
+
+   - Switch to Source Blockchain in MetaMask
+   - Use "At Address" in Remix with the RegistryModuleOwnerCustom contract address: `0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82`
+   - Call `registerAdminViaOwner` with your Source Blockchain token address
+
+3. **Claim admin on Destination Blockchain**:
+   - Switch to Destination Blockchain
+   - Use address: `0x736D0bBb318c1B27Ff686cd19804094E66250e17`
+   - Repeat the process with your Destination Blockchain token address
+
+### Accept Admin Role
+
+Create `ITokenAdminRegistry.sol`:
