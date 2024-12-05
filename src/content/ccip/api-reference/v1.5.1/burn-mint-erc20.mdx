@@ -1,0 +1,202 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 BurnMintERC20 Contract API Reference"
+metadata:
+  description: "API documentation for the BurnMintERC20 contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+The [`BurnMintERC20`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC20/BurnMintERC20.sol) contract implements a basic ERC20 token with burn and mint capabilities controlled through roles.
+
+<Aside type="caution">
+
+This contract has not been audited and is not yet approved for production use.
+
+</Aside>
+
+## Errors
+
+### MaxSupplyExceeded
+
+```solidity
+error MaxSupplyExceeded(uint256 supplyAfterMint)
+```
+
+Thrown when a mint would exceed the maximum token supply.
+
+| Parameter       | Type    | Description                                  |
+| --------------- | ------- | -------------------------------------------- |
+| supplyAfterMint | uint256 | Total supply that would result from the mint |
+
+### InvalidRecipient
+
+```solidity
+error InvalidRecipient(address recipient)
+```
+
+Thrown when trying to transfer or approve tokens for the contract itself.
+
+| Parameter | Type    | Description               |
+| --------- | ------- | ------------------------- |
+| recipient | address | Invalid recipient address |
+
+## Events
+
+### CCIPAdminTransferred
+
+```solidity
+event CCIPAdminTransferred(address indexed previousAdmin, address indexed newAdmin)
+```
+
+Emitted when the CCIP admin role is transferred.
+
+| Parameter     | Type    | Description                 |
+| ------------- | ------- | --------------------------- |
+| previousAdmin | address | Previous CCIP admin address |
+| newAdmin      | address | New CCIP admin address      |
+
+## Constants
+
+### MINTER_ROLE
+
+```solidity
+bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE")
+```
+
+Role identifier for addresses allowed to mint tokens.
+
+### BURNER_ROLE
+
+```solidity
+bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE")
+```
+
+Role identifier for addresses allowed to burn tokens.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(
+    string memory name,
+    string memory symbol,
+    uint8 decimals_,
+    uint256 maxSupply_,
+    uint256 preMint
+) ERC20(name, symbol)
+```
+
+Initializes the token with its basic properties.
+
+#### Parameters
+
+| Name        | Type    | Description                              |
+| ----------- | ------- | ---------------------------------------- |
+| name        | string  | Token name                               |
+| symbol      | string  | Token symbol                             |
+| decimals\_  | uint8   | Number of decimal places                 |
+| maxSupply\_ | uint256 | Maximum token supply (0 for unlimited)   |
+| preMint     | uint256 | Amount to mint to the deployer initially |
+
+### burn
+
+```solidity
+function burn(uint256 amount) public override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE)
+```
+
+Burns tokens from the caller's balance.
+
+#### Parameters
+
+| Name   | Type    | Description              |
+| ------ | ------- | ------------------------ |
+| amount | uint256 | Amount of tokens to burn |
+
+### burnFrom
+
+```solidity
+function burnFrom(
+    address account,
+    uint256 amount
+) public override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE)
+```
+
+Burns tokens from a specific account (requires approval).
+
+#### Parameters
+
+| Name    | Type    | Description                 |
+| ------- | ------- | --------------------------- |
+| account | address | Account to burn tokens from |
+| amount  | uint256 | Amount of tokens to burn    |
+
+### mint
+
+```solidity
+function mint(address account, uint256 amount) external override onlyRole(MINTER_ROLE)
+```
+
+Mints new tokens to a specified account.
+
+#### Parameters
+
+| Name    | Type    | Description                    |
+| ------- | ------- | ------------------------------ |
+| account | address | Recipient of the minted tokens |
+| amount  | uint256 | Amount of tokens to mint       |
+
+### CCIP Admin Management
+
+### getCCIPAdmin
+
+```solidity
+function getCCIPAdmin() external view returns (address)
+```
+
+Returns the current CCIP admin address.
+
+#### Return Value
+
+| Type    | Description                |
+| ------- | -------------------------- |
+| address | Current CCIP admin address |
+
+### setCCIPAdmin
+
+```solidity
+function setCCIPAdmin(address newAdmin) public onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+Transfers the CCIP admin role to a new address.
+
+<Aside type="note">
+  Only the contract owner can call this function, not the current CCIP admin. Setting to address(0) revokes the role.
+</Aside>
+
+#### Parameters
+
+| Name     | Type    | Description            |
+| -------- | ------- | ---------------------- |
+| newAdmin | address | New CCIP admin address |
+
+### Role Management
+
+### grantMintAndBurnRoles
+
+```solidity
+function grantMintAndBurnRoles(address burnAndMinter) external
+```
+
+Grants both minting and burning roles to an address.
+
+#### Parameters
+
+| Name          | Type    | Description                   |
+| ------------- | ------- | ----------------------------- |
+| burnAndMinter | address | Address to receive both roles |

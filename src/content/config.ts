@@ -43,6 +43,7 @@ const metadata = z
     description: z.string().optional(),
     image: z.string().optional(),
     linkToWallet: z.boolean().optional(),
+    canonical: z.string().optional(),
   })
   .optional()
 
