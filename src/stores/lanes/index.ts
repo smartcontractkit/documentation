@@ -1,9 +1,11 @@
 import { atom } from "nanostores"
 import { Environment } from "@config/data/ccip"
+import { debounce } from "@utils/performance"
 
 export type DeployedContracts = {
   token?: string
   tokenPool?: string
+  registered?: boolean
   configured?: boolean
 }
 
@@ -74,6 +76,8 @@ export type LaneState = {
 
 export const updateStepProgress = (stepId: string, subStepId: string, completed: boolean) => {
   const current = laneStore.get()
+  if (current.progress[stepId]?.[subStepId] === completed) return
+
   laneStore.set({
     ...current,
     progress: {
@@ -87,6 +91,9 @@ export const updateStepProgress = (stepId: string, subStepId: string, completed:
 }
 
 const checkProgress = (state: LaneState) => {
+  let hasChanges = false
+  const updates = new Set<{ stepId: StepId; subStepId: string; completed: boolean }>()
+
   const conditions = [
     {
       stepId: "setup" as StepId,
@@ -106,7 +113,7 @@ const checkProgress = (state: LaneState) => {
     {
       stepId: "sourceChain" as StepId,
       subStepId: "pool-registered",
-      check: (state: LaneState) => !!state.sourceContracts.token && !!state.sourceContracts.tokenPool,
+      check: (state: LaneState) => !!state.sourceContracts.registered,
     },
     {
       stepId: "destinationChain" as StepId,
@@ -121,16 +128,45 @@ const checkProgress = (state: LaneState) => {
     {
       stepId: "destinationChain" as StepId,
       subStepId: "dest-pool-registered",
-      check: (state: LaneState) => !!state.destinationContracts.token && !!state.destinationContracts.tokenPool,
+      check: (state: LaneState) => !!state.destinationContracts.registered,
+    },
+    {
+      stepId: "sourceConfig" as StepId,
+      subStepId: "source-pool-config",
+      check: (state: LaneState) => false,
+    },
+    {
+      stepId: "destConfig" as StepId,
+      subStepId: "dest-pool-config",
+      check: (state: LaneState) => false,
     },
   ]
 
   conditions.forEach(({ stepId, subStepId, check }) => {
     const isComplete = check(state)
     if (isComplete !== state.progress[stepId]?.[subStepId]) {
-      updateStepProgress(stepId, subStepId, isComplete)
+      updates.add({ stepId, subStepId, completed: isComplete })
+      hasChanges = true
     }
   })
+
+  if (hasChanges) {
+    const current = laneStore.get()
+    if (current !== state) return
+    const newProgress = { ...current.progress }
+
+    updates.forEach(({ stepId, subStepId, completed }) => {
+      newProgress[stepId] = {
+        ...newProgress[stepId],
+        [subStepId]: completed,
+      }
+    })
+
+    laneStore.set({
+      ...current,
+      progress: newProgress,
+    })
+  }
 }
 
 export const laneStore = atom<LaneState>({
@@ -148,13 +184,19 @@ export const laneStore = atom<LaneState>({
   },
 })
 
-laneStore.subscribe((state) => {
+const debouncedCheckProgress = debounce((state: LaneState) => {
   checkProgress(state)
+}, 100)
+
+laneStore.subscribe((state) => {
+  debouncedCheckProgress(state)
 })
 
 // Helper functions to update contract addresses
 export const setSourceContract = (type: keyof DeployedContracts, address: string) => {
   const current = laneStore.get()
+  if (current.sourceContracts[type] === address) return
+
   laneStore.set({
     ...current,
     sourceContracts: {
@@ -166,6 +208,8 @@ export const setSourceContract = (type: keyof DeployedContracts, address: string
 
 export const setDestinationContract = (type: keyof DeployedContracts, address: string) => {
   const current = laneStore.get()
+  if (current.destinationContracts[type] === address) return
+
   laneStore.set({
     ...current,
     destinationContracts: {
@@ -173,6 +217,21 @@ export const setDestinationContract = (type: keyof DeployedContracts, address: s
       [type]: address,
     },
   })
+}
+
+export const setPoolRegistered = (chain: "source" | "destination", registered: boolean) => {
+  const current = laneStore.get()
+  if (chain === "source") {
+    laneStore.set({
+      ...current,
+      sourceContracts: { ...current.sourceContracts, registered },
+    })
+  } else {
+    laneStore.set({
+      ...current,
+      destinationContracts: { ...current.destinationContracts, registered },
+    })
+  }
 }
 
 interface SubStep {

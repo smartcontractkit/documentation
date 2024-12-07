@@ -3,7 +3,7 @@ import { laneStore, setSourceContract, setDestinationContract } from "@stores/la
 import type { DeployedContracts } from "@stores/lanes"
 import { utils } from "ethers"
 import "./ContractAddress.css"
-import { useState } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 
 interface ContractAddressProps {
   type: keyof DeployedContracts
@@ -13,25 +13,47 @@ interface ContractAddressProps {
 
 export const ContractAddress = ({ type, chain, placeholder }: ContractAddressProps) => {
   const state = useStore(laneStore)
-  const contracts = chain === "source" ? state.sourceContracts : state.destinationContracts
-  const setValue = chain === "source" ? setSourceContract : setDestinationContract
+  const contracts = useMemo(
+    () => (chain === "source" ? state.sourceContracts : state.destinationContracts),
+    [chain, state]
+  )
+  const setValue = useMemo(() => (chain === "source" ? setSourceContract : setDestinationContract), [chain])
+
   const [inputValue, setInputValue] = useState<string>(contracts[type]?.toString() || "")
   const [isDirty, setIsDirty] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const address = e.target.value
-    console.log("Contract address changed:", { type, chain, address })
-    setInputValue(address)
-    setIsDirty(true)
-
-    if (address === "" || utils.isAddress(address)) {
-      setValue(type, address)
+  useEffect(() => {
+    const newValue = contracts[type]?.toString() || ""
+    if (newValue !== inputValue) {
+      setInputValue(newValue)
     }
-  }
+  }, [contracts, type, inputValue])
 
-  const isValidAddress = (address: string) => {
+  const handleChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const address = e.target.value
+      if (isUpdating || inputValue === address) return
+
+      setInputValue(address)
+      setIsDirty(true)
+
+      if (address === "" || utils.isAddress(address)) {
+        setIsUpdating(true)
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 0))
+          setValue(type, address)
+        } finally {
+          setIsUpdating(false)
+        }
+      }
+    },
+    [inputValue, setValue, type, isUpdating]
+  )
+
+  const isValidAddress = useCallback((address: string) => {
     return address === "" || utils.isAddress(address)
-  }
+  }, [])
 
   const showError = isDirty && inputValue !== "" && !isValidAddress(inputValue)
 
