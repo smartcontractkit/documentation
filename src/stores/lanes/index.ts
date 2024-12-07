@@ -46,6 +46,7 @@ export const TUTORIAL_STEPS = {
     subSteps: {
       "source-privileges": "Grant Burnt Mint Privileges",
       "source-pool-config": "Configure Pool",
+      "source-verification": "Verify Configuration",
     },
   },
   destConfig: {
@@ -54,6 +55,7 @@ export const TUTORIAL_STEPS = {
     subSteps: {
       "dest-privileges": "Grant Burnt Mint Privileges",
       "dest-pool-config": "Configure Pool",
+      "dest-verification": "Verify Configuration",
     },
   },
 } as const

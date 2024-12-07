@@ -16,7 +16,7 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
   const state = useStore(laneStore)
   const contracts = chain === "source" ? state.sourceContracts : state.destinationContracts
   const setValue = chain === "source" ? setSourceContract : setDestinationContract
-  const [inputValue, setInputValue] = useState<string>(contracts[type] || "")
+  const [inputValue, setInputValue] = useState<string>(contracts[type]?.toString() || "")
   const [isDirty, setIsDirty] = useState(false)
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

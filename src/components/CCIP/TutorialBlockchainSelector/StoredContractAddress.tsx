@@ -20,7 +20,9 @@ export const StoredContractAddress = ({ type, chain, required = true, encode = f
     return required ? <code>[No address saved yet]</code> : null
   }
 
-  const displayAddress = encode ? ethers.utils.defaultAbiCoder.encode(["address"], [address]) : address
+  const displayAddress = encode
+    ? ethers.utils.defaultAbiCoder.encode(["address"], [address]).toString()
+    : address.toString()
 
   return <ReactCopyText text={displayAddress} code={true} />
 }

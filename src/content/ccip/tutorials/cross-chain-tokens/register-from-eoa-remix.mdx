@@ -379,11 +379,25 @@ Enable the destination pool:
 
 ##### Verify Source Configuration
 
-Ensure all source chain configurations are complete:
+Use the following functions to verify your configuration:
 
-1. Token has granted privileges to the pool
-2. Pool is configured with remote chain details
-3. Rate limits are set (if desired)
+1. Verify remote token address:
+
+   - Call `getRemoteToken` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
+   - Expected result: <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
+
+2. Verify remote pool address:
+
+   - Call `getRemotePools` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
+   - Expected result: [<StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />]
+
+3. Verify rate limits:
+   - Call `getCurrentInboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
+   - Call `getCurrentOutboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
+
+Call these functions on your token pool contract at <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
+
+<StepCheckbox stepId="sourceConfig" subStepId="source-verification" client:only="react" />
 
 #### Destination Chain Configuration
 
@@ -419,8 +433,22 @@ Enable the source pool:
 
 ##### Verify Destination Configuration
 
-Ensure all destination chain configurations are complete:
+Use the following functions to verify your configuration:
 
-1. Token has granted privileges to the pool
-2. Pool is configured with remote chain details
-3. Rate limits are set (if desired)
+1. Verify remote token address:
+
+   - Call `getRemoteToken` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
+   - Expected result: <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
+
+2. Verify remote pool address:
+
+   - Call `getRemotePools` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
+   - Expected result: [<StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />]
+
+3. Verify rate limits:
+   - Call `getCurrentInboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
+   - Call `getCurrentOutboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
+
+Call these functions on your token pool contract at <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
+
+<StepCheckbox stepId="destConfig" subStepId="dest-verification" client:only="react" />
