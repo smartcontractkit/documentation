@@ -37,14 +37,6 @@ export const TutorialBlockchainSelector = ({
     })
   }, [sourceChain, destinationChain, environment])
 
-  const handleSourceChange = (chain: string) => {
-    onSourceChange?.(chain)
-  }
-
-  const handleDestinationChange = (chain: string) => {
-    onDestinationChange?.(chain)
-  }
-
   return (
     <div className="tutorial-blockchain-selector">
       <div className={`selectors-row ${isLoading ? "is-loading" : ""}`}>
@@ -71,8 +63,10 @@ export const TutorialBlockchainSelector = ({
             title="Select the blockchain where your token will be deployed"
             onChange={(e) => {
               setSourceChain(e.target.value)
+              onSourceChange?.(e.target.value)
               if (e.target.value === destinationChain) {
                 setDestinationChain("")
+                onDestinationChange?.("")
               }
             }}
             className={sourceChain ? "has-value" : ""}
@@ -91,7 +85,7 @@ export const TutorialBlockchainSelector = ({
             value={destinationChain}
             onChange={(e) => {
               setDestinationChain(e.target.value)
-              handleDestinationChange(e.target.value)
+              onDestinationChange?.(e.target.value)
             }}
           >
             <option value="">Destination Blockchain</option>

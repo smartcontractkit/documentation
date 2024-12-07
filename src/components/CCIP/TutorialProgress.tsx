@@ -7,13 +7,10 @@ import { subscribeToProgress } from "@stores/lanes"
 
 export const TutorialProgress = () => {
   const state = useStore(laneStore)
-  console.log("TutorialProgress state:", state)
   const currentStep = determineCurrentStep(state)
-  console.log("Current step:", currentStep)
   const [expandedStep, setExpandedStep] = useState<string | null>(null)
   const [forceExpanded, setForceExpanded] = useState<string | null>(null)
   const [progressState, setProgressState] = useState(state.progress)
-  console.log("Progress state:", progressState)
   const [steps] = useState([
     { id: "setup", title: "Setup", stepNumber: 1 },
     { id: "sourceChain", title: "Source Chain", stepNumber: 2 },
@@ -25,7 +22,6 @@ export const TutorialProgress = () => {
   useEffect(() => {
     // Subscribe to progress updates
     const unsubscribe = subscribeToProgress((progress) => {
-      console.log("Progress update:", progress)
       setProgressState(progress)
       // Keep step expanded when interacting with checkboxes
       if (forceExpanded) {
@@ -44,7 +40,6 @@ export const TutorialProgress = () => {
     const stepProgress = progressState[stepId] || {}
     const totalSubSteps = Object.keys(TUTORIAL_STEPS[stepId].subSteps).length
     const completedSubSteps = Object.values(stepProgress).filter(Boolean).length
-    console.log(`Step ${stepId}:`, { totalSubSteps, completedSubSteps, progress: stepProgress })
 
     if (completedSubSteps === 0) return "not-started"
     if (completedSubSteps === totalSubSteps) return "completed"
@@ -69,7 +64,6 @@ export const TutorialProgress = () => {
         <div className="steps">
           {steps.map((step) => {
             const status = getStepStatus(step.id)
-            console.log(`Rendering step ${step.id} with status:`, status)
             return (
               <div key={step.id} className={`step-container ${status}`}>
                 <div className={`step ${status}`}>

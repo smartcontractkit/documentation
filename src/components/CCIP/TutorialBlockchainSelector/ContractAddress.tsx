@@ -1,10 +1,9 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, setSourceContract, setDestinationContract, updateStepProgress } from "@stores/lanes"
+import { laneStore, setSourceContract, setDestinationContract } from "@stores/lanes"
 import type { DeployedContracts } from "@stores/lanes"
 import { utils } from "ethers"
 import "./ContractAddress.css"
 import { useState } from "react"
-import { showConfirmationDialog } from "../../../utils/dialog"
 
 interface ContractAddressProps {
   type: keyof DeployedContracts
@@ -21,6 +20,7 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value
+    console.log("Contract address changed:", { type, chain, address })
     setInputValue(address)
     setIsDirty(true)
 

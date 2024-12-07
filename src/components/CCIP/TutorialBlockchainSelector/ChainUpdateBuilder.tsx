@@ -2,8 +2,7 @@ import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
 import styles from "./ChainUpdateBuilder.module.css"
 import { ethers } from "ethers"
-import { useStore } from "@nanostores/react"
-import { laneStore, updateStepProgress } from "@stores/lanes"
+import { updateStepProgress } from "@stores/lanes"
 
 interface RateLimiterConfig {
   isEnabled: boolean

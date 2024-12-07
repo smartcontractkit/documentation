@@ -148,7 +148,9 @@ export const laneStore = atom<LaneState>({
   },
 })
 
-laneStore.subscribe(checkProgress)
+laneStore.subscribe((state) => {
+  checkProgress(state)
+})
 
 // Helper functions to update contract addresses
 export const setSourceContract = (type: keyof DeployedContracts, address: string) => {

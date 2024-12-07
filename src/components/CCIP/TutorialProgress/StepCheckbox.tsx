@@ -9,10 +9,8 @@ interface StepCheckboxProps<T extends StepId> {
 
 export const StepCheckbox = <T extends StepId>({ stepId, subStepId, label }: StepCheckboxProps<T>) => {
   const state = useStore(laneStore)
-  const isCompleted = state.progress?.[stepId]?.[subStepId as string] || false
+  const completed = state.progress[stepId]?.[subStepId as string]
   const defaultLabel = TUTORIAL_STEPS[stepId]?.subSteps?.[subStepId as string] || subStepId
-
-  console.log("StepCheckbox:", { stepId, subStepId, TUTORIAL_STEPS: TUTORIAL_STEPS[stepId] })
 
   if (!TUTORIAL_STEPS[stepId]) {
     console.error(`Missing step configuration for ${stepId}`)
@@ -24,7 +22,7 @@ export const StepCheckbox = <T extends StepId>({ stepId, subStepId, label }: Ste
       <label>
         <input
           type="checkbox"
-          checked={isCompleted}
+          checked={completed}
           onChange={(e) => updateStepProgress(stepId.toString(), subStepId.toString(), e.target.checked)}
         />
         <span>{label || defaultLabel}</span>
