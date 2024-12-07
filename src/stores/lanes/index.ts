@@ -131,16 +131,6 @@ const checkProgress = (state: LaneState) => {
       check: (state: LaneState) => !!state.destinationContracts.registered,
     },
     {
-      stepId: "sourceConfig" as StepId,
-      subStepId: "source-pool-config",
-      check: (state: LaneState) => false,
-    },
-    {
-      stepId: "destConfig" as StepId,
-      subStepId: "dest-pool-config",
-      check: (state: LaneState) => false,
-    },
-    {
       stepId: "sourceChain" as StepId,
       subStepId: "admin-claimed",
       check: (state: LaneState) => state.progress.sourceChain?.["admin-claimed"] === true,
@@ -159,6 +149,16 @@ const checkProgress = (state: LaneState) => {
       stepId: "destinationChain" as StepId,
       subStepId: "admin-accepted",
       check: (state: LaneState) => state.progress.destinationChain?.["admin-accepted"] === true,
+    },
+    {
+      stepId: "sourceConfig" as StepId,
+      subStepId: "source-pool-config",
+      check: (state: LaneState) => state.progress.sourceConfig?.["source-pool-config"] === true,
+    },
+    {
+      stepId: "destConfig" as StepId,
+      subStepId: "dest-pool-config",
+      check: (state: LaneState) => state.progress.destConfig?.["dest-pool-config"] === true,
     },
   ]
 
