@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react"
 import { ethers } from "ethers"
-import { updateStepProgress, laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lanes"
+import { laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lanes"
 import { useStore } from "@nanostores/react"
 import styles from "./ChainUpdateBuilder.module.css"
-import { ReactCopyText } from "@components/ReactCopyText"
 import { ErrorBoundary } from "@components/ErrorBoundary"
 
 interface ChainUpdateBuilderProps {
@@ -55,43 +54,12 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
     return rateLimits?.inbound ?? defaultConfig.inbound
   })
 
-  const [formattedUpdate, setFormattedUpdate] = useState<string>("")
-
   const canGenerateUpdate = () => {
     return (
       readOnly.chainSelector &&
       ethers.utils.isAddress(readOnly.poolAddress) &&
       ethers.utils.isAddress(readOnly.tokenAddress)
     )
-  }
-
-  const generateAndSetUpdate = () => {
-    if (!canGenerateUpdate()) return
-
-    const chainUpdate = calculateChainUpdate(
-      readOnly.chainSelector,
-      [readOnly.poolAddress],
-      readOnly.tokenAddress,
-      outbound,
-      inbound
-    )
-    const formatted = onCalculate(chainUpdate)
-    setFormattedUpdate(formatted)
-    handleApplyConfig()
-  }
-
-  useEffect(() => {
-    if (canGenerateUpdate()) {
-      generateAndSetUpdate()
-    }
-  }, [outbound, inbound, readOnly])
-
-  const handleApplyConfig = () => {
-    if (chain === "source") {
-      updateStepProgress("sourceConfig", "source-pool-config", true)
-    } else {
-      updateStepProgress("destConfig", "dest-pool-config", true)
-    }
   }
 
   const handleRateLimitChange = (type: "inbound" | "outbound", field: keyof RateLimiterConfig, value: string) => {
@@ -127,7 +95,14 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
 
         // Force update of formatted data
         if (canGenerateUpdate()) {
-          generateAndSetUpdate()
+          const chainUpdate = calculateChainUpdate(
+            readOnly.chainSelector,
+            [readOnly.poolAddress],
+            readOnly.tokenAddress,
+            outbound,
+            inbound
+          )
+          onCalculate(chainUpdate)
         }
       }
     } catch (e) {
@@ -174,6 +149,19 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
       }))
     }
   }
+
+  useEffect(() => {
+    if (canGenerateUpdate()) {
+      const chainUpdate = calculateChainUpdate(
+        readOnly.chainSelector,
+        [readOnly.poolAddress],
+        readOnly.tokenAddress,
+        outbound,
+        inbound
+      )
+      onCalculate(chainUpdate)
+    }
+  }, [outbound, inbound, readOnly.chainSelector, readOnly.poolAddress, readOnly.tokenAddress])
 
   return (
     <ErrorBoundary
@@ -264,39 +252,11 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
           </div>
         </div>
 
-        {formattedUpdate && (
-          <div className={styles.section}>
-            <div className={styles.sectionTitle}>Configuration Data</div>
-            <div className={styles.field}>
-              <label>1. Copy these values to Remix:</label>
-              <div className={styles.copyGroup}>
-                <div>
-                  <small>remoteChainSelectorsToRemove:</small>
-                  <ReactCopyText text="[]" code={true} />
-                </div>
-                <div>
-                  <small>chainsToAdd:</small>
-                  <ReactCopyText text={JSON.parse(formattedUpdate).callData} code={true} />
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.confirmSection}>
-              <label>2. After applying in Remix:</label>
-              <button className={styles.confirmButton} onClick={handleApplyConfig}>
-                ✓ Mark Configuration as Complete
-              </button>
-            </div>
-          </div>
-        )}
-
         {!canGenerateUpdate() && (
           <div className={styles.notice}>
             Please ensure all remote addresses are available before generating the update
           </div>
         )}
-
-        <ReactCopyText text={formattedUpdate} />
       </div>
     </ErrorBoundary>
   )

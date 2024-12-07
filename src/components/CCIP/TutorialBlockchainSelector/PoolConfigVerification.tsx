@@ -244,10 +244,10 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
         <div className={styles.chainDetails}>
           <span>Current Blockchain</span>
           <div className={styles.chainValue}>
-            <code>{currentName}</code>
+            <code>{currentNetwork.name}</code>
             <div className={styles.chainSelector}>
               <span>Selector:</span>
-              <ReactCopyText text={currentSelector} code />
+              <ReactCopyText text={currentNetwork.chainSelector} code />
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
 
       <div className={styles.poolAddress}>
         <span>Pool Address</span>
-        <ReactCopyText text={poolAddress || ""} code />
+        <ReactCopyText text={poolAddress} code />
       </div>
 
       {verificationSteps.map((step, index) => (

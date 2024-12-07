@@ -1,0 +1,445 @@
+/* Reuse common styles from PoolConfigVerification */
+.verificationCard {
+  position: relative;
+  background: var(--color-background);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 16px 0;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  --section-spacing: 32px;
+}
+
+.verificationCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.verificationCard:hover::before {
+  opacity: 1;
+}
+
+.chainInfo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: var(--section-spacing);
+}
+
+.chainDetails {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  background: var(--color-background);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.chainDetails:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.chainValue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.chainValue code {
+  font-family: var(--font-family-mono);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.chainSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.chainSelector span {
+  color: var(--color-text-secondary);
+}
+
+.configurationSection {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.configurationData {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.dataField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dataField span {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .chainInfo {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.loadingState {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--color-text-secondary);
+}
+
+.loadingState span {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.loadingState p {
+  font-size: 14px;
+}
+
+.configurationBuilder {
+  margin-top: 24px;
+}
+
+.debugSection {
+  margin-top: 16px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 16px;
+}
+
+.debugToggle {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.debugToggle:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
+}
+
+.jsonData {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--color-background-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhance parameter styling */
+.parameter {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.parameter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.parameter:hover {
+  transform: translateY(-2px);
+}
+
+.parameter:hover::after {
+  transform: scaleX(1);
+}
+
+.parameterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.parameterName {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.parameterLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.parameterIdentifier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parameterIdentifier span {
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  color: var(--color-accent);
+}
+
+.parameterValue {
+  background: var(--color-background-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  animation: slideIn 0.3s ease;
+}
+
+/* Copy feedback animation */
+.copyWrapper {
+  position: relative;
+}
+
+.copyFeedback {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  background: var(--color-success);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.copyWrapper.copied .copyFeedback {
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.stepDescription {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.parameterNote {
+  margin-top: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.parameterList {
+  display: grid;
+  gap: 32px; /* Increased spacing between parameters */
+  margin-bottom: 40px;
+}
+
+.parameter {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.parameterLabel {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.copyInstructions {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+/* Enhanced animations */
+.parameter {
+  position: relative;
+  overflow: hidden;
+}
+
+.parameter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.parameter:hover::before {
+  opacity: 0.03;
+}
+
+.configurationSection {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* Pool Address Spacing */
+.poolAddress {
+  margin-bottom: var(--section-spacing);
+  padding: 20px;
+  background: var(--color-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Function Block */
+.functionBlock {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Parameter Styling */
+.parameterList {
+  display: grid;
+  gap: 40px;
+  margin-top: 32px;
+}
+
+.parameter {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* Copy Block Styling */
+.copyBlock {
+  background: var(--color-background-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.copyInstructions {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+/* Typography Consistency */
+.parameterLabel {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+}
+
+.parameterDetails {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* Rate Config Section */
+.rateConfigSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* Common section header style */
+.sectionHeader {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
