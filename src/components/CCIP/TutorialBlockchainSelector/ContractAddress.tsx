@@ -16,7 +16,7 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
   const state = useStore(laneStore)
   const contracts = chain === "source" ? state.sourceContracts : state.destinationContracts
   const setValue = chain === "source" ? setSourceContract : setDestinationContract
-  const [inputValue, setInputValue] = useState(contracts[type] || "")
+  const [inputValue, setInputValue] = useState<string>(contracts[type] || "")
   const [isDirty, setIsDirty] = useState(false)
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,8 +26,6 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
 
     if (address === "" || utils.isAddress(address)) {
       setValue(type, address)
-      if (type === "token") updateStepProgress("sourceChain", "token-deployed", !!address)
-      if (type === "tokenPool") updateStepProgress("sourceChain", "pool-deployed", !!address)
     }
   }
 
@@ -35,7 +33,7 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
     return address === "" || utils.isAddress(address)
   }
 
-  const showError = isDirty && inputValue && !isValidAddress(inputValue)
+  const showError = isDirty && inputValue !== "" && !isValidAddress(inputValue)
 
   return (
     <div className="contract-address-container">

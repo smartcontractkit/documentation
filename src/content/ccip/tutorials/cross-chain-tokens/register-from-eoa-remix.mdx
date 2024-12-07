@@ -148,14 +148,6 @@ The tutorial will use your provided token address for subsequent steps.
        <ContractAddress type="token" chain="source" placeholder="Enter deployed token address" client:load />
      </div>
 
-   <StepCheckbox stepId="sourceChain" subStepId="token-deployed" />
-
-<Aside type="note" title="About the Parameters">
-  The `name` and `symbol` help identify your token in wallets and applications - Using 18 `decimals` is standard for
-  most ERC20 tokens (1 token = 1000000000000000000 wei) - Setting `maxSupply` to 0 allows unlimited minting. For a
-  limited supply, specify the amount in wei (e.g., for max 1000 tokens with 18 decimals: 1000000000000000000000)
-</Aside>
-
 #### Claim and Accept Admin Role
 
 1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
@@ -224,8 +216,6 @@ After configuring:
     <ContractAddress type="tokenPool" chain="source" placeholder="Enter deployed pool address" client:load />
   </div>
 
-  <StepCheckbox stepId="sourceChain" subStepId="pool-deployed" client:only="react" />
-
 #### Set Token Pool in Registry
 
 1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
@@ -272,8 +262,6 @@ The tutorial will use your provided token address for subsequent steps.
        <ContractAddress type="token" chain="destination" placeholder="Enter deployed token address" client:load />
      </div>
 
-   <StepCheckbox stepId="destinationChain" subStepId="dest-token-deployed" client:only="react" />
-
 #### Claim and Accept Admin Role
 
 1. Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
@@ -287,7 +275,7 @@ The tutorial will use your provided token address for subsequent steps.
    - Call `registerAdminViaOwner` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
    - Confirm the transaction in MetaMask
 
-   <StepCheckbox stepId="destinationChain" subStepId="dest-admin-claimed" client:only="react" />
+   <StepCheckbox stepId="destinationChain" subStepId="admin-claimed" client:only="react" />
 
 1. Accept the admin role:
 
@@ -298,7 +286,7 @@ The tutorial will use your provided token address for subsequent steps.
    - Call `acceptAdminRole` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
    - Confirm the transaction in MetaMask
 
-   <StepCheckbox stepId="destinationChain" subStepId="dest-admin-accepted" client:only="react" />
+   <StepCheckbox stepId="destinationChain" subStepId="admin-accepted" client:only="react" />
 
 #### Deploy Token Pool
 
@@ -342,20 +330,18 @@ After configuring:
     <ContractAddress type="tokenPool" chain="destination" placeholder="Enter deployed pool address" client:load />
   </div>
 
-  <StepCheckbox stepId="destinationChain" subStepId="dest-pool-deployed" client:only="react" />
-
 #### Set Token Pool in Registry
 
 1. Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
 
 1. Configure the registry:
+
    - In the list of deployed contracts, select **TokenAdminRegistry** contract at <NetworkAddress type="tokenAdminRegistry" chain="destination" required={false} client:only="react" />
    - Call `setPool` with:
      - your token address <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
      - your token pool address <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
 
-{" "}
-<StepCheckbox stepId="destinationChain" subStepId="dest-pool-registered" client:only="react" />
+   <StepCheckbox stepId="destinationChain" subStepId="dest-pool-registered" client:only="react" />
 
 ### Configure Cross-Chain Communication
 

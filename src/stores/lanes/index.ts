@@ -102,6 +102,11 @@ const checkProgress = (state: LaneState) => {
       check: (state: LaneState) => !!state.sourceContracts.tokenPool,
     },
     {
+      stepId: "sourceChain" as StepId,
+      subStepId: "pool-registered",
+      check: (state: LaneState) => !!state.sourceContracts.token && !!state.sourceContracts.tokenPool,
+    },
+    {
       stepId: "destinationChain" as StepId,
       subStepId: "dest-token-deployed",
       check: (state: LaneState) => !!state.destinationContracts.token,
@@ -112,14 +117,9 @@ const checkProgress = (state: LaneState) => {
       check: (state: LaneState) => !!state.destinationContracts.tokenPool,
     },
     {
-      stepId: "sourceConfig" as StepId,
-      subStepId: "source-pool-config",
-      check: (state: LaneState) => !!state.sourceContracts.configured,
-    },
-    {
-      stepId: "destConfig" as StepId,
-      subStepId: "dest-pool-config",
-      check: (state: LaneState) => !!state.destinationContracts.configured,
+      stepId: "destinationChain" as StepId,
+      subStepId: "dest-pool-registered",
+      check: (state: LaneState) => !!state.destinationContracts.token && !!state.destinationContracts.tokenPool,
     },
   ]
 
