@@ -15,10 +15,10 @@ import {
   NetworkAddress,
   StoredContractAddress,
   ChainUpdateBuilder,
+  PoolConfigVerification,
 } from "@components/CCIP/TutorialBlockchainSelector"
 import { ChainUpdateBuilderWrapper } from "@components/CCIP/TutorialBlockchainSelector/ChainUpdateBuilderWrapper"
 import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
-import { TutorialProgress } from "@components/CCIP/TutorialProgress"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -30,40 +30,6 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
         - Check the [CCT Guides overview](/ccip/tutorials/cross-chain-tokens) to understand the general workflow for deploying and enabling your tokens in CCIP
 
 </Aside>
-
-## Contents
-
-1. [Before You Begin](#before-you-begin)
-
-   - [Prerequisites](#prerequisites)
-
-1. [Select Your Blockchains](#select-your-blockchains)
-
-1. [Import Required Contracts](#import-required-contracts)
-
-1. [Source Blockchain Setup](#source-blockchain-setup)
-
-   - [Deploy Token](#deploy-token)
-   - [Claim and Accept Admin Role](#claim-and-accept-admin-role)
-   - [Deploy Token Pool](#deploy-token-pool)
-   - [Set Token Pool in Registry](#set-token-pool-in-registry)
-
-1. [Destination Blockchain Setup](#destination-blockchain-setup)
-
-   - [Deploy Token](#deploy-token-1)
-   - [Claim and Accept Admin Role](#claim-and-accept-admin-role-1)
-   - [Deploy Token Pool](#deploy-token-pool-1)
-   - [Set Token Pool in Registry](#set-token-pool-in-registry-1)
-
-1. [Configure Cross-Chain Communication](#configure-cross-chain-communication)
-   - [Source Chain Configuration](#source-chain-configuration)
-     - [Grant Burn and Mint Privileges](#grant-burn-and-mint-privileges)
-     - [Configure Remote Pool](#configure-remote-pool)
-     - [Verify Source Configuration](#verify-source-configuration)
-   - [Destination Chain Configuration](#destination-chain-configuration)
-     - [Grant Burn and Mint Privileges](#grant-burn-and-mint-privileges-1)
-     - [Configure Remote Pool](#configure-remote-pool-1)
-     - [Verify Destination Configuration](#verify-destination-configuration)
 
 ## Before You Begin
 
@@ -379,23 +345,9 @@ Enable the destination pool:
 
 ##### Verify Source Configuration
 
-Use the following functions to verify your configuration:
+Call these functions on your Token Pool contract to verify your configuration:
 
-1. Verify remote token address:
-
-   - Call `getRemoteToken` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
-   - Expected result: <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
-
-2. Verify remote pool address:
-
-   - Call `getRemotePools` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
-   - Expected result: [<StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />]
-
-3. Verify rate limits:
-   - Call `getCurrentInboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
-   - Call `getCurrentOutboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="destination" required={false} client:only="react" />
-
-Call these functions on your token pool contract at <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
+<PoolConfigVerification chain="source" client:load />
 
 <StepCheckbox stepId="sourceConfig" subStepId="source-verification" client:only="react" />
 
@@ -433,22 +385,8 @@ Enable the source pool:
 
 ##### Verify Destination Configuration
 
-Use the following functions to verify your configuration:
+Call these functions on your Token Pool contract to verify your configuration:
 
-1. Verify remote token address:
-
-   - Call `getRemoteToken` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
-   - Expected result: <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
-
-2. Verify remote pool address:
-
-   - Call `getRemotePools` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
-   - Expected result: [<StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />]
-
-3. Verify rate limits:
-   - Call `getCurrentInboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
-   - Call `getCurrentOutboundRateLimiterState` with chain selector <NetworkAddress type="chainSelector" chain="source" required={false} client:only="react" />
-
-Call these functions on your token pool contract at <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
+<PoolConfigVerification chain="destination" client:load />
 
 <StepCheckbox stepId="destConfig" subStepId="dest-verification" client:only="react" />

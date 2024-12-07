@@ -1,12 +1,22 @@
 import { atom } from "nanostores"
 import { Environment } from "@config/data/ccip"
 import { debounce } from "@utils/performance"
+import type { Network } from "@config/data/ccip/types"
 
 export type DeployedContracts = {
   token?: string
   tokenPool?: string
+  tokenPools?: string[]
   registered?: boolean
   configured?: boolean
+}
+
+export interface TokenBucketState {
+  tokens: string
+  lastUpdated: number
+  isEnabled: boolean
+  capacity: string
+  rate: string
 }
 
 export const TUTORIAL_STEPS = {
@@ -65,13 +75,30 @@ export const TUTORIAL_STEPS = {
 export type StepId = keyof typeof TUTORIAL_STEPS
 export type SubStepId<T extends StepId> = keyof (typeof TUTORIAL_STEPS)[T]["subSteps"]
 
+export interface RateLimiterConfig {
+  enabled: boolean
+  capacity: string
+  rate: string
+}
+
+export type RateLimits = {
+  inbound: RateLimiterConfig
+  outbound: RateLimiterConfig
+}
+
 export type LaneState = {
   sourceChain: string
   destinationChain: string
   environment: Environment
+  sourceNetwork: Network | null
+  destinationNetwork: Network | null
   sourceContracts: DeployedContracts
   destinationContracts: DeployedContracts
   progress: Record<StepId, Record<string, boolean>>
+  inboundRateLimiter: TokenBucketState | null
+  outboundRateLimiter: TokenBucketState | null
+  sourceRateLimits: RateLimits | null
+  destinationRateLimits: RateLimits | null
 }
 
 export const updateStepProgress = (stepId: string, subStepId: string, completed: boolean) => {
@@ -193,6 +220,8 @@ export const laneStore = atom<LaneState>({
   sourceChain: "",
   destinationChain: "",
   environment: Environment.Testnet,
+  sourceNetwork: null,
+  destinationNetwork: null,
   sourceContracts: {},
   destinationContracts: {},
   progress: {
@@ -201,6 +230,16 @@ export const laneStore = atom<LaneState>({
     destinationChain: {},
     sourceConfig: {},
     destConfig: {},
+  },
+  inboundRateLimiter: null,
+  outboundRateLimiter: null,
+  sourceRateLimits: {
+    inbound: { enabled: false, capacity: "", rate: "" },
+    outbound: { enabled: false, capacity: "", rate: "" },
+  },
+  destinationRateLimits: {
+    inbound: { enabled: false, capacity: "", rate: "" },
+    outbound: { enabled: false, capacity: "", rate: "" },
   },
 })
 
@@ -328,4 +367,80 @@ export const subscribeToProgress = (callback: (progress: LaneState["progress"]) 
   return laneStore.subscribe((state) => {
     callback(state.progress)
   })
+}
+
+export const setRateLimiterState = (type: "inbound" | "outbound", state: TokenBucketState | null) => {
+  const current = laneStore.get()
+  laneStore.set({
+    ...current,
+    [type === "inbound" ? "inboundRateLimiter" : "outboundRateLimiter"]: state,
+  })
+}
+
+export const setRemotePools = (chain: "source" | "destination", pools: string[]) => {
+  const current = laneStore.get()
+  const contracts = chain === "source" ? "sourceContracts" : "destinationContracts"
+  laneStore.set({
+    ...current,
+    [contracts]: {
+      ...current[contracts],
+      tokenPool: pools[0],
+      tokenPools: pools,
+    },
+  })
+}
+
+export const validateRateLimits = (limits: RateLimits): boolean => {
+  if (!limits) return false
+
+  const validateConfig = (config: RateLimiterConfig) => {
+    if (config.enabled) {
+      try {
+        // Parse as BigInt and validate
+        const capacity = BigInt(config.capacity || "0")
+        const rate = BigInt(config.rate || "0")
+
+        // Ensure it's a valid uint128
+        const MAX_UINT128 = BigInt(2) ** BigInt(128) - BigInt(1)
+        return capacity >= 0n && capacity <= MAX_UINT128 && rate >= 0n && rate <= MAX_UINT128
+      } catch (e) {
+        console.error("Rate limit validation error:", e)
+        return false
+      }
+    }
+    return true
+  }
+
+  return validateConfig(limits.inbound) && validateConfig(limits.outbound)
+}
+
+// Helper to update rate limits with validation
+export const updateRateLimits = (
+  chain: "source" | "destination",
+  type: "inbound" | "outbound",
+  updates: Partial<RateLimiterConfig>
+) => {
+  const current = laneStore.get()
+  const rateLimitsKey = `${chain}RateLimits` as const
+  const currentLimits = current[rateLimitsKey] ?? {
+    inbound: { enabled: false, capacity: "", rate: "" },
+    outbound: { enabled: false, capacity: "", rate: "" },
+  }
+
+  const newLimits = {
+    ...currentLimits,
+    [type]: {
+      ...currentLimits[type],
+      ...updates,
+    },
+  }
+
+  if (validateRateLimits(newLimits)) {
+    laneStore.set({
+      ...current,
+      [rateLimitsKey]: newLimits,
+    })
+    return true
+  }
+  return false
 }

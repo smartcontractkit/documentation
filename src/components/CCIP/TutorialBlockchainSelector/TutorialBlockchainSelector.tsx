@@ -8,7 +8,6 @@ interface TutorialBlockchainSelectorProps {
   onDestinationChange?: (chain: string) => void
 }
 
-// Mark as client-side component
 export const TutorialBlockchainSelector = ({
   onSourceChange,
   onDestinationChange,
@@ -18,24 +17,91 @@ export const TutorialBlockchainSelector = ({
   const [destinationChain, setDestinationChain] = useState<string>("")
   const [networks, setNetworks] = useState(getAllNetworks({ filter: Environment.Testnet }))
   const [isLoading, setIsLoading] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   // Update networks when environment changes
   useEffect(() => {
     setIsLoading(true)
     setNetworks(getAllNetworks({ filter: environment }))
-    setTimeout(() => setIsLoading(false), 300) // Smooth transition
+    setTimeout(() => setIsLoading(false), 300)
   }, [environment])
 
-  // Update store when values change
-  useEffect(() => {
+  const handleEnvironmentChange = (newEnvironment: Environment) => {
+    // Safeguard: Clear networks and state when environment changes
     const current = laneStore.get()
     laneStore.set({
       ...current,
-      sourceChain,
-      destinationChain,
-      environment,
+      sourceChain: "",
+      destinationChain: "",
+      environment: newEnvironment,
+      sourceNetwork: null,
+      destinationNetwork: null,
+      sourceContracts: {},
+      destinationContracts: {},
     })
-  }, [sourceChain, destinationChain, environment])
+
+    setEnvironment(newEnvironment)
+    setSourceChain("")
+    setDestinationChain("")
+  }
+
+  const handleSourceChainSelect = async (chain: string) => {
+    if (isUpdating) return
+
+    setIsUpdating(true)
+    try {
+      const networks = getAllNetworks({ filter: environment })
+      const selectedNetwork = networks.find((n) => n.chain === chain)
+
+      // Safeguard: Validate network has required fields
+      if (selectedNetwork?.chainSelector && selectedNetwork?.name) {
+        const current = laneStore.get()
+        laneStore.set({
+          ...current,
+          sourceChain: chain,
+          sourceNetwork: selectedNetwork,
+        })
+
+        setSourceChain(chain)
+        onSourceChange?.(chain)
+
+        if (chain === destinationChain) {
+          setDestinationChain("")
+          onDestinationChange?.("")
+        }
+      } else {
+        console.warn(`Invalid network configuration for ${chain}`)
+      }
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDestinationChainSelect = async (chain: string) => {
+    if (isUpdating) return
+
+    setIsUpdating(true)
+    try {
+      const networks = getAllNetworks({ filter: environment })
+      const selectedNetwork = networks.find((n) => n.chain === chain)
+
+      if (selectedNetwork?.chainSelector && selectedNetwork?.name) {
+        const current = laneStore.get()
+        laneStore.set({
+          ...current,
+          destinationChain: chain,
+          destinationNetwork: selectedNetwork,
+        })
+
+        setDestinationChain(chain)
+        onDestinationChange?.(chain)
+      } else {
+        console.warn(`Invalid network configuration for ${chain}`)
+      }
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   return (
     <div className="tutorial-blockchain-selector">
@@ -44,12 +110,7 @@ export const TutorialBlockchainSelector = ({
           <select
             id="env-select"
             value={environment}
-            onChange={(e) => {
-              const newEnvironment = e.target.value as Environment
-              setEnvironment(newEnvironment)
-              setSourceChain("")
-              setDestinationChain("")
-            }}
+            onChange={(e) => handleEnvironmentChange(e.target.value as Environment)}
             className="env-select"
           >
             <option value={Environment.Testnet}>Testnet Environment</option>
@@ -61,14 +122,7 @@ export const TutorialBlockchainSelector = ({
           <select
             value={sourceChain}
             title="Select the blockchain where your token will be deployed"
-            onChange={(e) => {
-              setSourceChain(e.target.value)
-              onSourceChange?.(e.target.value)
-              if (e.target.value === destinationChain) {
-                setDestinationChain("")
-                onDestinationChange?.("")
-              }
-            }}
+            onChange={(e) => handleSourceChainSelect(e.target.value)}
             className={sourceChain ? "has-value" : ""}
           >
             <option value="">Source Blockchain</option>
@@ -81,13 +135,7 @@ export const TutorialBlockchainSelector = ({
         </div>
 
         <div className="selector-group">
-          <select
-            value={destinationChain}
-            onChange={(e) => {
-              setDestinationChain(e.target.value)
-              onDestinationChange?.(e.target.value)
-            }}
-          >
+          <select value={destinationChain} onChange={(e) => handleDestinationChainSelect(e.target.value)}>
             <option value="">Destination Blockchain</option>
             {networks
               .filter((n) => n.chain !== sourceChain)

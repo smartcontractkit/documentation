@@ -13,14 +13,14 @@ interface ChainUpdate {
   remotePoolAddresses: string[]
   remoteTokenAddress: string
   outboundRateLimiterConfig: {
-    isEnabled: boolean
-    capacity: bigint
-    rate: bigint
+    enabled: boolean
+    capacity: string
+    rate: string
   }
   inboundRateLimiterConfig: {
-    isEnabled: boolean
-    capacity: bigint
-    rate: bigint
+    enabled: boolean
+    capacity: string
+    rate: string
   }
 }
 
@@ -37,29 +37,25 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   if (!network || !chainId) return <div></div>
 
   const generateCallData = (chainUpdate: ChainUpdate) => {
-    // Ensure all required fields are present and properly formatted
     if (!chainUpdate.remoteChainSelector || !chainUpdate.remotePoolAddresses || !chainUpdate.remoteTokenAddress) {
       return ""
     }
 
-    // Format tuple array for Remix IDE: (uint64,bytes[],bytes,(bool,uint128,uint128),(bool,uint128,uint128))[]
     return JSON.stringify(
       [
         [
-          chainUpdate.remoteChainSelector.toString(), // uint64 remoteChainSelector
-          chainUpdate.remotePoolAddresses, // bytes[] remotePoolAddresses
-          chainUpdate.remoteTokenAddress, // bytes remoteTokenAddress
+          chainUpdate.remoteChainSelector.toString(),
+          chainUpdate.remotePoolAddresses,
+          chainUpdate.remoteTokenAddress,
           [
-            // outboundRateLimiterConfig tuple
-            chainUpdate.outboundRateLimiterConfig.isEnabled,
-            chainUpdate.outboundRateLimiterConfig.capacity.toString(),
-            chainUpdate.outboundRateLimiterConfig.rate.toString(),
+            chainUpdate.outboundRateLimiterConfig.enabled,
+            BigInt(chainUpdate.outboundRateLimiterConfig.capacity).toString(),
+            BigInt(chainUpdate.outboundRateLimiterConfig.rate).toString(),
           ],
           [
-            // inboundRateLimiterConfig tuple
-            chainUpdate.inboundRateLimiterConfig.isEnabled,
-            chainUpdate.inboundRateLimiterConfig.capacity.toString(),
-            chainUpdate.inboundRateLimiterConfig.rate.toString(),
+            chainUpdate.inboundRateLimiterConfig.enabled,
+            BigInt(chainUpdate.inboundRateLimiterConfig.capacity).toString(),
+            BigInt(chainUpdate.inboundRateLimiterConfig.rate).toString(),
           ],
         ],
       ],
@@ -77,47 +73,36 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
         tokenAddress: remoteContracts.token || "",
       }}
       defaultConfig={{
-        outbound: { isEnabled: false, capacity: "0", rate: "0" },
-        inbound: { isEnabled: false, capacity: "0", rate: "0" },
+        outbound: { enabled: false, capacity: "0", rate: "0" },
+        inbound: { enabled: false, capacity: "0", rate: "0" },
       }}
       onCalculate={(chainUpdate) => {
         const formattedUpdate = {
-          remoteChainSelector: BigInt(chainUpdate.remoteChainSelector),
+          remoteChainSelector: chainUpdate.remoteChainSelector,
           remotePoolAddresses: [chainUpdate.poolAddress].map((addr) =>
             ethers.utils.defaultAbiCoder.encode(["address"], [addr])
           ),
           remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [chainUpdate.tokenAddress]),
           outboundRateLimiterConfig: {
-            isEnabled: chainUpdate.outbound.isEnabled,
-            capacity: BigInt(chainUpdate.outbound.capacity || "0"),
-            rate: BigInt(chainUpdate.outbound.rate || "0"),
+            enabled: chainUpdate.outbound.enabled,
+            capacity: chainUpdate.outbound.capacity,
+            rate: chainUpdate.outbound.rate,
           },
           inboundRateLimiterConfig: {
-            isEnabled: chainUpdate.inbound.isEnabled,
-            capacity: BigInt(chainUpdate.inbound.capacity || "0"),
-            rate: BigInt(chainUpdate.inbound.rate || "0"),
+            enabled: chainUpdate.inbound.enabled,
+            capacity: chainUpdate.inbound.capacity,
+            rate: chainUpdate.inbound.rate,
           },
         }
 
-        // Generate both the JSON and the encoded call data
-        const callData = generateCallData(formattedUpdate)
-        const serializableUpdate = {
+        const callData = generateCallData({
           ...formattedUpdate,
-          remoteChainSelector: formattedUpdate.remoteChainSelector.toString(),
-          outboundRateLimiterConfig: {
-            ...formattedUpdate.outboundRateLimiterConfig,
-            capacity: formattedUpdate.outboundRateLimiterConfig.capacity.toString(),
-            rate: formattedUpdate.outboundRateLimiterConfig.rate.toString(),
-          },
-          inboundRateLimiterConfig: {
-            ...formattedUpdate.inboundRateLimiterConfig,
-            capacity: formattedUpdate.inboundRateLimiterConfig.capacity.toString(),
-            rate: formattedUpdate.inboundRateLimiterConfig.rate.toString(),
-          },
-        }
+          remoteChainSelector: BigInt(chainUpdate.remoteChainSelector),
+        })
+
         return JSON.stringify(
           {
-            json: [serializableUpdate],
+            json: [formattedUpdate],
             callData,
           },
           null,
