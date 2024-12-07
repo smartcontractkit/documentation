@@ -36,8 +36,8 @@ export const TUTORIAL_STEPS = {
     title: "Destination Chain",
     subSteps: {
       "dest-token-deployed": "Token Deployed",
-      "dest-admin-claimed": "Admin Role Claimed",
-      "dest-admin-accepted": "Admin Role Accepted",
+      "admin-claimed": "Admin Role Claimed",
+      "admin-accepted": "Admin Role Accepted",
       "dest-pool-deployed": "Pool Deployed",
       "dest-pool-registered": "Pool Registered",
     },
@@ -152,13 +152,13 @@ const checkProgress = (state: LaneState) => {
     },
     {
       stepId: "destinationChain" as StepId,
-      subStepId: "dest-admin-claimed",
-      check: (state: LaneState) => state.progress.destinationChain?.["dest-admin-claimed"] === true,
+      subStepId: "admin-claimed",
+      check: (state: LaneState) => state.progress.destinationChain?.["admin-claimed"] === true,
     },
     {
       stepId: "destinationChain" as StepId,
-      subStepId: "dest-admin-accepted",
-      check: (state: LaneState) => state.progress.destinationChain?.["dest-admin-accepted"] === true,
+      subStepId: "admin-accepted",
+      check: (state: LaneState) => state.progress.destinationChain?.["admin-accepted"] === true,
     },
   ]
 
