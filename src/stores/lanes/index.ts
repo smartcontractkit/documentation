@@ -140,6 +140,26 @@ const checkProgress = (state: LaneState) => {
       subStepId: "dest-pool-config",
       check: (state: LaneState) => false,
     },
+    {
+      stepId: "sourceChain" as StepId,
+      subStepId: "admin-claimed",
+      check: (state: LaneState) => state.progress.sourceChain?.["admin-claimed"] === true,
+    },
+    {
+      stepId: "sourceChain" as StepId,
+      subStepId: "admin-accepted",
+      check: (state: LaneState) => state.progress.sourceChain?.["admin-accepted"] === true,
+    },
+    {
+      stepId: "destinationChain" as StepId,
+      subStepId: "dest-admin-claimed",
+      check: (state: LaneState) => state.progress.destinationChain?.["dest-admin-claimed"] === true,
+    },
+    {
+      stepId: "destinationChain" as StepId,
+      subStepId: "dest-admin-accepted",
+      check: (state: LaneState) => state.progress.destinationChain?.["dest-admin-accepted"] === true,
+    },
   ]
 
   conditions.forEach(({ stepId, subStepId, check }) => {

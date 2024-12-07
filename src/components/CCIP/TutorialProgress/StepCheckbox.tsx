@@ -20,7 +20,6 @@ export const StepCheckbox = <T extends StepId>({ stepId, subStepId, label }: Ste
   const defaultLabel = TUTORIAL_STEPS[stepId]?.subSteps?.[subStepId as string] || subStepId
 
   if (!TUTORIAL_STEPS[stepId]) {
-    console.error(`Missing step configuration for ${stepId}`)
     return null
   }
 
@@ -31,12 +30,14 @@ export const StepCheckbox = <T extends StepId>({ stepId, subStepId, label }: Ste
           type="checkbox"
           checked={completed}
           onChange={(e) => {
+            console.log("Checkbox changed:", { stepId, subStepId, checked: e.target.checked })
+            updateStepProgress(stepId.toString(), subStepId.toString(), e.target.checked)
+            console.log("State after update:", laneStore.get())
+
             if (stepId === "sourceChain" && subStepId === "pool-registered") {
               setPoolRegistered("source", e.target.checked)
             } else if (stepId === "destinationChain" && subStepId === "dest-pool-registered") {
               setPoolRegistered("destination", e.target.checked)
-            } else {
-              updateStepProgress(stepId.toString(), subStepId.toString(), e.target.checked)
             }
           }}
         />
