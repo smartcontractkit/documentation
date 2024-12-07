@@ -1,0 +1,245 @@
+.tutorial-progress-container {
+  padding: var(--space-4x);
+}
+
+.progress-tracker {
+  position: relative;
+  margin-bottom: var(--space-8x);
+}
+
+.progress-bar {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 2px;
+  background: #375bd2;
+  transition: width 0.3s ease;
+  z-index: 0;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4x);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3x);
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+  background: #fafbfd;
+  padding: 4px 0;
+}
+
+.step-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.step.completed .step-indicator {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #16a34a;
+  font-size: 16px;
+}
+
+.step.completed .step-title {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.step.active {
+  color: var(--color-text-primary);
+}
+
+.step.active .step-indicator {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.configuration-status {
+  margin-top: var(--space-8x);
+}
+
+.configuration-status h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-4x);
+  color: var(--color-text-primary);
+}
+
+.status-grid {
+  display: grid;
+  gap: var(--space-4x);
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2x);
+  padding: var(--space-3x);
+  border-radius: 8px;
+  background: #ffffff;
+  border: 2px solid #375bd2;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.status-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.status-item.complete {
+  border-color: #1a2b6b;
+  background: #f5f7fd;
+}
+
+.status-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.status-value {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.status-check {
+  position: absolute;
+  top: var(--space-2x);
+  right: var(--space-2x);
+  color: var(--color-success);
+}
+
+.step-container {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid var(--color-border-primary);
+  margin-left: 15px;
+  padding-left: 15px;
+}
+
+.step-container.completed {
+  border-left-color: #16a34a;
+}
+
+.step-container.in-progress {
+  border-left-color: #ea580c;
+}
+
+.step.completed .step-indicator {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.step.in-progress .step-indicator {
+  background: #fef3c7;
+  border-color: #eab308;
+  color: #b45309;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+  margin: 0;
+  padding: 0;
+}
+
+.step.in-progress .step-indicator::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #ea580c;
+  border-radius: 50%;
+  right: -2px;
+  top: -2px;
+  box-shadow: 0 0 0 2px #fff;
+  animation: pulse 2s infinite;
+  z-index: 2;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(234, 88, 12, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
+  }
+}
+
+.step-details {
+  margin-left: 40px;
+  padding: 8px 0;
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.substep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  margin: 4px 0;
+}
+
+.substep.completed {
+  background: #f0fdf4;
+  padding-right: 32px;
+  position: relative;
+}
+
+.substep.completed::after {
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.substep-title {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.substep.completed .substep-title {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.step.in-progress .step-title {
+  color: #ea580c;
+  font-weight: 500;
+}
+
+/* Reset any potential conflicting styles */
+.step-container[class*="in-progress"],
+.step[class*="in-progress"],
+.step-indicator[class*="in-progress"] {
+  all: unset;
+}

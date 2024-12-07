@@ -17,10 +17,13 @@ export const TutorialBlockchainSelector = ({
   const [sourceChain, setSourceChain] = useState<string>("")
   const [destinationChain, setDestinationChain] = useState<string>("")
   const [networks, setNetworks] = useState(getAllNetworks({ filter: Environment.Testnet }))
+  const [isLoading, setIsLoading] = useState(false)
 
   // Update networks when environment changes
   useEffect(() => {
+    setIsLoading(true)
     setNetworks(getAllNetworks({ filter: environment }))
+    setTimeout(() => setIsLoading(false), 300) // Smooth transition
   }, [environment])
 
   // Update store when values change
@@ -44,18 +47,18 @@ export const TutorialBlockchainSelector = ({
 
   return (
     <div className="tutorial-blockchain-selector">
-      <div className="selectors-row">
+      <div className={`selectors-row ${isLoading ? "is-loading" : ""}`}>
         <div className="selector-group">
           <select
+            id="env-select"
             value={environment}
             onChange={(e) => {
               const newEnvironment = e.target.value as Environment
               setEnvironment(newEnvironment)
               setSourceChain("")
               setDestinationChain("")
-              handleSourceChange("")
-              handleDestinationChange("")
             }}
+            className="env-select"
           >
             <option value={Environment.Testnet}>Testnet Environment</option>
             <option value={Environment.Mainnet}>Mainnet Environment</option>
@@ -65,14 +68,14 @@ export const TutorialBlockchainSelector = ({
         <div className="selector-group">
           <select
             value={sourceChain}
+            title="Select the blockchain where your token will be deployed"
             onChange={(e) => {
               setSourceChain(e.target.value)
-              handleSourceChange(e.target.value)
               if (e.target.value === destinationChain) {
                 setDestinationChain("")
-                handleDestinationChange("")
               }
             }}
+            className={sourceChain ? "has-value" : ""}
           >
             <option value="">Source Blockchain</option>
             {networks.map((network) => (

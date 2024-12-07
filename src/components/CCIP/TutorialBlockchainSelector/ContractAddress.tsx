@@ -1,9 +1,10 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, setSourceContract, setDestinationContract } from "@stores/lanes"
+import { laneStore, setSourceContract, setDestinationContract, updateStepProgress } from "@stores/lanes"
 import type { DeployedContracts } from "@stores/lanes"
 import { utils } from "ethers"
 import "./ContractAddress.css"
 import { useState } from "react"
+import { showConfirmationDialog } from "../../../utils/dialog"
 
 interface ContractAddressProps {
   type: keyof DeployedContracts
@@ -18,13 +19,15 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
   const [inputValue, setInputValue] = useState(contracts[type] || "")
   const [isDirty, setIsDirty] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value
     setInputValue(address)
     setIsDirty(true)
 
     if (address === "" || utils.isAddress(address)) {
       setValue(type, address)
+      if (type === "token") updateStepProgress("sourceChain", "token-deployed", !!address)
+      if (type === "tokenPool") updateStepProgress("sourceChain", "pool-deployed", !!address)
     }
   }
 

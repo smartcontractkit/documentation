@@ -70,6 +70,7 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
 
   return (
     <ChainUpdateBuilder
+      chain={chain}
       readOnly={{
         chainSelector: network.chainSelector,
         poolAddress: remoteContracts.tokenPool || "",

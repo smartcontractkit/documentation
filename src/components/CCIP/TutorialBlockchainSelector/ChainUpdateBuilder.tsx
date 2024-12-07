@@ -2,6 +2,8 @@ import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
 import styles from "./ChainUpdateBuilder.module.css"
 import { ethers } from "ethers"
+import { useStore } from "@nanostores/react"
+import { laneStore, updateStepProgress } from "@stores/lanes"
 
 interface RateLimiterConfig {
   isEnabled: boolean
@@ -10,6 +12,7 @@ interface RateLimiterConfig {
 }
 
 interface ChainUpdateBuilderProps {
+  chain: "source" | "destination"
   readOnly: {
     chainSelector: string
     poolAddress: string
@@ -44,7 +47,7 @@ const calculateChainUpdate = (
   }
 }
 
-export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
+export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
   const [outbound, setOutbound] = useState(defaultConfig.outbound)
   const [inbound, setInbound] = useState(defaultConfig.inbound)
   const [formattedUpdate, setFormattedUpdate] = useState<string>("")
@@ -69,6 +72,7 @@ export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: Cha
     )
     const formatted = onCalculate(chainUpdate)
     setFormattedUpdate(formatted)
+    handleApplyConfig()
   }
 
   useEffect(() => {
@@ -76,6 +80,14 @@ export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: Cha
       generateAndSetUpdate()
     }
   }, [outbound, inbound, readOnly])
+
+  const handleApplyConfig = () => {
+    if (chain === "source") {
+      updateStepProgress("sourceConfig", "source-pool-config", true)
+    } else {
+      updateStepProgress("destConfig", "dest-pool-config", true)
+    }
+  }
 
   return (
     <div className={styles.builder}>
@@ -169,22 +181,26 @@ export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: Cha
 
       {formattedUpdate && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>Remix Low-Level Transaction Data</div>
+          <div className={styles.sectionTitle}>Configuration Data</div>
           <div className={styles.field}>
-            <label>remoteChainSelectorsToRemove:</label>
-            <ReactCopyText text="[]" code={true} />
-          </div>
-          <div className={styles.field}>
-            <label>chainsToAdd:</label>
-            <ReactCopyText text={JSON.parse(formattedUpdate).callData} code={true} />
+            <label>1. Copy these values to Remix:</label>
+            <div className={styles.copyGroup}>
+              <div>
+                <small>remoteChainSelectorsToRemove:</small>
+                <ReactCopyText text="[]" code={true} />
+              </div>
+              <div>
+                <small>chainsToAdd:</small>
+                <ReactCopyText text={JSON.parse(formattedUpdate).callData} code={true} />
+              </div>
+            </div>
           </div>
 
-          <div className={styles.sectionTitle} style={{ marginTop: "2rem" }}>
-            Debug Information
-          </div>
-          <div className={styles.field}>
-            <label>Chain Update:</label>
-            <ReactCopyText text={JSON.stringify(JSON.parse(formattedUpdate).json, null, 2)} code={true} />
+          <div className={styles.confirmSection}>
+            <label>2. After applying in Remix:</label>
+            <button className={styles.confirmButton} onClick={handleApplyConfig}>
+              ✓ Mark Configuration as Complete
+            </button>
           </div>
         </div>
       )}
@@ -194,6 +210,8 @@ export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: Cha
           Please ensure all remote addresses are available before generating the update
         </div>
       )}
+
+      <ReactCopyText text={formattedUpdate} />
     </div>
   )
 }

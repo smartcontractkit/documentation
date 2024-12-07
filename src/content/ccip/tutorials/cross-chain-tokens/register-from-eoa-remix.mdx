@@ -17,6 +17,8 @@ import {
   ChainUpdateBuilder,
 } from "@components/CCIP/TutorialBlockchainSelector"
 import { ChainUpdateBuilderWrapper } from "@components/CCIP/TutorialBlockchainSelector/ChainUpdateBuilderWrapper"
+import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
+import { TutorialProgress } from "@components/CCIP/TutorialProgress"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -54,12 +56,14 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
    - [Set Token Pool in Registry](#set-token-pool-in-registry-1)
 
 1. [Configure Cross-Chain Communication](#configure-cross-chain-communication)
-   - [Source Blockchain Configuration](#source-blockchain-configuration)
+   - [Source Chain Configuration](#source-chain-configuration)
      - [Grant Burn and Mint Privileges](#grant-burn-and-mint-privileges)
      - [Configure Remote Pool](#configure-remote-pool)
-   - [Destination Blockchain Configuration](#destination-blockchain-configuration)
+     - [Verify Source Configuration](#verify-source-configuration)
+   - [Destination Chain Configuration](#destination-chain-configuration)
      - [Grant Burn and Mint Privileges](#grant-burn-and-mint-privileges-1)
      - [Configure Remote Pool](#configure-remote-pool-1)
+     - [Verify Destination Configuration](#verify-destination-configuration)
 
 ## Before You Begin
 
@@ -81,9 +85,14 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
 
      - Follow MetaMask's [official guide](https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/) to add blockchains manually
 
-1. Get native tokens for gas fees:
+   <StepCheckbox stepId="setup" subStepId="browser-setup" client:only="react" />
+
+2. Get native tokens for gas fees:
+
    - For testnets, you can get these from blockchain-specific faucets
    - For mainnets, you'll need to acquire the native tokens through an exchange
+
+   <StepCheckbox stepId="setup" subStepId="gas-tokens" client:only="react" />
 
 <Aside type="note" title="Blockchain Requirements">
   Make sure your chosen blockchains are CCIP-supported. You can find the list of supported blockchains in the [CCIP
@@ -94,17 +103,7 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
 
 ### Select Your Blockchains
 
-<TutorialBlockchainSelector
-  client:load
-  onSourceChange={(chain) => {
-    // This will be used to dynamically update tutorial values
-    console.log("Source chain:", chain)
-  }}
-  onDestinationChange={(chain) => {
-    // This will be used to dynamically update tutorial values
-    console.log("Destination chain:", chain)
-  }}
-/>
+<TutorialBlockchainSelector client:load />
 
 ### Import Required Contracts
 
@@ -112,9 +111,9 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
 
    <CodeSample src="samples/CCIP/cct/TokenDependencies.sol" showButtonOnly={true} optimize={true} runs={1000} />
 
-1. Wait a few seconds for Remix to automatically compile all contracts. You'll see a green checkmark next to "Solidity Compiler" in the left sidebar when compilation is complete.
+1. Wait a few seconds for Remix to automatically compile all contracts.
 
-1. Once compilation is complete, click on "Deploy & Run Transactions" in the left sidebar to proceed with deployment.
+<StepCheckbox stepId="setup" subStepId="contracts-imported" client:only="react" />
 
 ### Source Blockchain Setup
 
@@ -134,6 +133,7 @@ The tutorial will use your provided token address for subsequent steps.
 1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
 
 1. In the "Deploy & Run Transactions" tab:
+
    - Set Environment to "Injected Provider - MetaMask"
    - Select **BurnMintERC677** contract
    - Configure deployment parameters:
@@ -147,6 +147,8 @@ The tutorial will use your provided token address for subsequent steps.
      <div style={{ marginTop: "0.5rem" }}>
        <ContractAddress type="token" chain="source" placeholder="Enter deployed token address" client:load />
      </div>
+
+   <StepCheckbox stepId="sourceChain" subStepId="token-deployed" />
 
 <Aside type="note" title="About the Parameters">
   The `name` and `symbol` help identify your token in wallets and applications - Using 18 `decimals` is standard for
@@ -167,13 +169,18 @@ The tutorial will use your provided token address for subsequent steps.
    - Call `registerAdminViaOwner` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="source" client:only="react" /></div>
    - Confirm the transaction in MetaMask
 
+   <StepCheckbox stepId="sourceChain" subStepId="admin-claimed" client:only="react" />
+
 1. Accept the admin role:
+
    - In the "Deploy & Run Transactions" tab, select **TokenAdminRegistry** contract
    - Use "At Address" with the TokenAdminRegistry contract: <div style={{ display: "inline" }}><NetworkAddress type="tokenAdminRegistry" chain="source" required={false} client:only="react" /></div>
    - The TokenAdminRegistry will be displayed in the "Deployed Contracts" section
    - Click on the TokenAdminRegistry contract address to open the contract details
    - Call `acceptAdminRole` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="source" client:only="react" /></div>
    - Confirm the transaction in MetaMask
+
+   <StepCheckbox stepId="sourceChain" subStepId="admin-accepted" client:only="react" />
 
 #### Deploy Token Pool
 
@@ -212,19 +219,25 @@ After configuring:
 
 - Click "Deploy" and confirm in MetaMask
 - Save your pool address:<br/>
+
   <div style={{ marginTop: "0.5rem" }}>
     <ContractAddress type="tokenPool" chain="source" placeholder="Enter deployed pool address" client:load />
   </div>
+
+  <StepCheckbox stepId="sourceChain" subStepId="pool-deployed" client:only="react" />
 
 #### Set Token Pool in Registry
 
 1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
 
 1. Configure the registry:
+
    - In the list of deployed contracts, select **TokenAdminRegistry** contract at <NetworkAddress type="tokenAdminRegistry" chain="source" required={false} client:only="react" />
    - Call `setPool` with:
      - your token address <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
      - your token pool address <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
+
+   <StepCheckbox stepId="sourceChain" subStepId="pool-registered" client:only="react" />
 
 ### Destination Blockchain Setup
 
@@ -244,6 +257,7 @@ The tutorial will use your provided token address for subsequent steps.
 1. Ensure MetaMask is connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
 
 1. In the "Deploy & Run Transactions" tab:
+
    - Set Environment to "Injected Provider - MetaMask"
    - Select **BurnMintERC677** contract
    - Configure deployment parameters:
@@ -258,6 +272,8 @@ The tutorial will use your provided token address for subsequent steps.
        <ContractAddress type="token" chain="destination" placeholder="Enter deployed token address" client:load />
      </div>
 
+   <StepCheckbox stepId="destinationChain" subStepId="dest-token-deployed" client:only="react" />
+
 #### Claim and Accept Admin Role
 
 1. Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
@@ -271,13 +287,18 @@ The tutorial will use your provided token address for subsequent steps.
    - Call `registerAdminViaOwner` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
    - Confirm the transaction in MetaMask
 
+   <StepCheckbox stepId="destinationChain" subStepId="dest-admin-claimed" client:only="react" />
+
 1. Accept the admin role:
+
    - In the "Deploy & Run Transactions" tab, select **TokenAdminRegistry** contract
    - Use "At Address" with the TokenAdminRegistry contract: <div style={{ display: "inline" }}><NetworkAddress type="tokenAdminRegistry" chain="destination" required={false} client:only="react" /></div>
    - The TokenAdminRegistry will be displayed in the "Deployed Contracts" section
    - Click on the TokenAdminRegistry contract address to open the contract details
    - Call `acceptAdminRole` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
    - Confirm the transaction in MetaMask
+
+   <StepCheckbox stepId="destinationChain" subStepId="dest-admin-accepted" client:only="react" />
 
 #### Deploy Token Pool
 
@@ -316,9 +337,12 @@ After configuring:
 
 - Click "Deploy" and confirm in MetaMask
 - Save your pool address:<br/>
+
   <div style={{ marginTop: "0.5rem" }}>
     <ContractAddress type="tokenPool" chain="destination" placeholder="Enter deployed pool address" client:load />
   </div>
+
+  <StepCheckbox stepId="destinationChain" subStepId="dest-pool-deployed" client:only="react" />
 
 #### Set Token Pool in Registry
 
@@ -330,9 +354,12 @@ After configuring:
      - your token address <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
      - your token pool address <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
 
+{" "}
+<StepCheckbox stepId="destinationChain" subStepId="dest-pool-registered" client:only="react" />
+
 ### Configure Cross-Chain Communication
 
-#### Source Blockchain Configuration
+#### Source Chain Configuration
 
 Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
 
@@ -345,6 +372,8 @@ Grant privileges to your token pool:
 - In the list of deployed contracts, select your **BurnMintERC677** token at <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
 - Call `grantMintAndBurnRoles` with your token pool address: <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
 - Confirm the transaction in MetaMask
+
+<StepCheckbox stepId="sourceConfig" subStepId="source-privileges" client:only="react" />
 
 ##### Configure Remote Pool
 
@@ -360,7 +389,17 @@ Enable the destination pool:
   - `chainsToAdd`: Copy the generated chain update from above
 - Confirm the transaction in MetaMask
 
-#### Destination Blockchain Configuration
+<StepCheckbox stepId="sourceConfig" subStepId="source-pool-config" client:only="react" />
+
+##### Verify Source Configuration
+
+Ensure all source chain configurations are complete:
+
+1. Token has granted privileges to the pool
+2. Pool is configured with remote chain details
+3. Rate limits are set (if desired)
+
+#### Destination Chain Configuration
 
 Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
 
@@ -373,6 +412,8 @@ Grant privileges to your token pool:
 - In the list of deployed contracts, select your **BurnMintERC677** token at <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
 - Call `grantMintAndBurnRoles` with your token pool address: <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
 - Confirm the transaction in MetaMask
+
+<StepCheckbox stepId="destConfig" subStepId="dest-privileges" client:only="react" />
 
 ##### Configure Remote Pool
 
@@ -387,3 +428,13 @@ Enable the source pool:
   - `remoteChainSelectorsToRemove`: `[]` (empty array)
   - `chainsToAdd`: Copy the generated chain update from above
 - Confirm the transaction in MetaMask
+
+<StepCheckbox stepId="destConfig" subStepId="dest-pool-config" client:only="react" />
+
+##### Verify Destination Configuration
+
+Ensure all destination chain configurations are complete:
+
+1. Token has granted privileges to the pool
+2. Pool is configured with remote chain details
+3. Rate limits are set (if desired)
