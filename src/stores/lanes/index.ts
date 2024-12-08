@@ -102,6 +102,9 @@ export type LaneState = {
 }
 
 export const updateStepProgress = (stepId: string, subStepId: string, completed: boolean) => {
+  console.log("Updating progress:", { stepId, subStepId, completed })
+  console.log("Before update:", laneStore.get())
+
   const current = laneStore.get()
   if (current.progress[stepId]?.[subStepId] === completed) return
 
