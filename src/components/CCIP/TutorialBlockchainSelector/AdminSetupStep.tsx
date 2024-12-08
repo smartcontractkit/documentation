@@ -77,7 +77,10 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
   )
 
   return (
-    <TutorialCard title="Claim and Accept Admin Role" description="Set up the admin permissions for your token">
+    <TutorialCard
+      title="Claim and Accept Admin Role"
+      description="Configure your EOA as CCIP administrator of your token"
+    >
       {content}
     </TutorialCard>
   )
