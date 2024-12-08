@@ -24,6 +24,7 @@ import { SetupSection } from "@components/CCIP/TutorialSetup/SetupSection"
 import { DeployTokenStep } from "@components/CCIP/TutorialBlockchainSelector/DeployTokenStep"
 import { TutorialCard } from "@components/CCIP/TutorialSetup/TutorialCard"
 import { AdminSetupStep } from "@components/CCIP/TutorialBlockchainSelector/AdminSetupStep"
+import { DeployPoolStep } from "@components/CCIP/TutorialBlockchainSelector/DeployPoolStep"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -83,47 +84,7 @@ The tutorial will use your provided token address for subsequent steps.
 
 <AdminSetupStep chain="source" client:only="react" />
 
-#### Deploy Token Pool
-
-1. Ensure MetaMask is still connected to source blockchain: <ChainValue type="source" bold required={false} client:load />
-
-1. Choose and deploy your token pool type:
-
-<Tabs sharedStore="poolType" client:visible>
-  <Fragment slot="tab.1">Lock & Release Pool</Fragment>
-  <Fragment slot="tab.2">Burn & Mint Pool</Fragment>
-  <Fragment slot="panel.1">
-    
-        Select **LockReleaseTokenPool** contract and configure deployment parameters:
-
-            - `tokenAddress`: Your deployed token address <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
-            - `localTokenDecimals`: Number of decimals for your token (e.g., 18)
-            - `allowlist`: Empty array `[]` to allow any address to transfer tokens, or specify addresses to restrict who can initiate transfers
-            - `rmnProxyAddress`: ARM Proxy contract <NetworkAddress type="armProxy" chain="source" required={false} client:only="react" />
-            - `acceptLiquidity`: When `true`, enables external liquidity for lock/release mechanism
-            - `router`: CCIP Router contract <NetworkAddress type="router" chain="source" required={false} client:only="react" />
-
-  </Fragment>
-  <Fragment slot="panel.2">
-        Select **BurnMintTokenPool** contract and configure deployment parameters:
-
-            - `tokenAddress`: Your deployed token address <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
-            - `localTokenDecimals`: Number of decimals for your token (e.g., 18)
-            - `allowlist`: Empty array `[]` to allow any address to transfer tokens, or specify addresses to restrict who can initiate transfers
-        - `rmnProxy`: ARM Proxy contract <NetworkAddress type="armProxy" chain="source" required={false} client:only="react" />
-        - `router`: CCIP Router contract <NetworkAddress type="router" chain="source" required={false} client:only="react" />
-
-  </Fragment>
-</Tabs>
-
-After configuring:
-
-- Click "Deploy" and confirm in MetaMask
-- Save your pool address:<br/>
-
-  <div style={{ marginTop: "0.5rem" }}>
-    <ContractAddress type="tokenPool" chain="source" placeholder="Enter deployed pool address" client:load />
-  </div>
+<DeployPoolStep chain="source" client:only="react" />
 
 #### Set Token Pool in Registry
 

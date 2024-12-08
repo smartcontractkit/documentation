@@ -5,7 +5,7 @@ interface SolidityParamProps {
   name: string
   type: string
   description: string
-  example?: string
+  example?: string | React.ReactNode
 }
 
 export const SolidityParam = ({ name, type, description, example }: SolidityParamProps) => (
