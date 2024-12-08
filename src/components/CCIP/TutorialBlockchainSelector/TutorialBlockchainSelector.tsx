@@ -1,16 +1,31 @@
 import { useStore } from "@nanostores/react"
 import { laneStore } from "@stores/lanes"
 import { Environment, getAllNetworks } from "@config/data/ccip"
+import type { Network } from "@config/data/ccip/types"
 import { ChainSelect } from "./ChainSelect"
 import styles from "./TutorialBlockchainSelector.module.css"
 
+type ChainUpdate = Partial<{
+  sourceChain: string
+  destinationChain: string
+  sourceNetwork: Network | null
+  destinationNetwork: Network | null
+  sourceContracts: Record<string, string>
+  destinationContracts: Record<string, string>
+}>
+
 export const TutorialBlockchainSelector = () => {
   const state = useStore(laneStore)
-  const networks = getAllNetworks({ filter: state.environment })
+  const allNetworks = getAllNetworks({ filter: state.environment })
+
+  // Filter available networks based on selection
+  const sourceNetworks = allNetworks.filter((n) => n.chain !== state.destinationChain)
+  const destinationNetworks = allNetworks.filter((n) => n.chain !== state.sourceChain)
 
   const handleEnvironmentChange = (newEnvironment: Environment) => {
     if (newEnvironment === state.environment) return
 
+    // Reset both chains when environment changes
     laneStore.set({
       ...state,
       environment: newEnvironment,
@@ -24,20 +39,42 @@ export const TutorialBlockchainSelector = () => {
   }
 
   const handleSourceChainChange = (chain: string) => {
-    const network = networks.find((n) => n.chain === chain)
-    laneStore.set({
-      ...state,
+    const network = allNetworks.find((n) => n.chain === chain)
+
+    const updates: ChainUpdate = {
       sourceChain: chain,
       sourceNetwork: network || null,
+    }
+
+    if (chain === state.destinationChain) {
+      updates.destinationChain = ""
+      updates.destinationNetwork = null
+      updates.destinationContracts = {}
+    }
+
+    laneStore.set({
+      ...state,
+      ...updates,
     })
   }
 
   const handleDestinationChainChange = (chain: string) => {
-    const network = networks.find((n) => n.chain === chain)
-    laneStore.set({
-      ...state,
+    const network = allNetworks.find((n) => n.chain === chain)
+
+    const updates: ChainUpdate = {
       destinationChain: chain,
       destinationNetwork: network || null,
+    }
+
+    if (chain === state.sourceChain) {
+      updates.sourceChain = ""
+      updates.sourceNetwork = null
+      updates.sourceContracts = {}
+    }
+
+    laneStore.set({
+      ...state,
+      ...updates,
     })
   }
 
@@ -66,7 +103,7 @@ export const TutorialBlockchainSelector = () => {
         <ChainSelect
           value={state.sourceChain}
           onChange={handleSourceChainChange}
-          options={networks}
+          options={sourceNetworks}
           placeholder="Select Source"
         />
 
@@ -85,7 +122,7 @@ export const TutorialBlockchainSelector = () => {
         <ChainSelect
           value={state.destinationChain}
           onChange={handleDestinationChainChange}
-          options={networks}
+          options={destinationNetworks}
           placeholder="Select Destination"
         />
       </div>
