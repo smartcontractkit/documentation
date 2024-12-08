@@ -3,7 +3,11 @@ import { laneStore, updateStepProgress, type StepId, TUTORIAL_STEPS } from "@sto
 
 interface StepCheckboxProps<T extends StepId> {
   stepId: T
-  subStepId: keyof (typeof TUTORIAL_STEPS)[T]["subSteps"]
+  subStepId: T extends "sourceChain"
+    ? "token-deployed" | "admin-claimed" | "admin-accepted" | "pool-deployed" | "pool-registered"
+    : T extends "destinationChain"
+    ? "dest-token-deployed" | "admin-claimed" | "admin-accepted" | "dest-pool-deployed" | "dest-pool-registered"
+    : string
   label?: string
   onChange?: (checked: boolean) => void
 }

@@ -121,6 +121,11 @@ export const updateStepProgress = (stepId: string, subStepId: string, completed:
 }
 
 const checkProgress = (state: LaneState) => {
+  console.log("🟡 checkProgress called with state:", {
+    sourceContracts: state.sourceContracts,
+    destinationContracts: state.destinationContracts,
+    progress: state.progress,
+  })
   let hasChanges = false
   const updates = new Set<{ stepId: StepId; subStepId: string; completed: boolean }>()
 
@@ -194,6 +199,7 @@ const checkProgress = (state: LaneState) => {
 
   conditions.forEach(({ stepId, subStepId, check }) => {
     const isComplete = check(state)
+    console.log("🟡 Checking condition:", { stepId, subStepId, isComplete, state: state.sourceContracts })
     if (isComplete !== state.progress[stepId]?.[subStepId]) {
       updates.add({ stepId, subStepId, completed: isComplete })
       hasChanges = true
@@ -282,16 +288,32 @@ export const setDestinationContract = (type: keyof DeployedContracts, address: s
 }
 
 export const setPoolRegistered = (chain: "source" | "destination", registered: boolean) => {
+  console.log("🔵 setPoolRegistered called:", { chain, registered })
   const current = laneStore.get()
+
   if (chain === "source") {
     laneStore.set({
       ...current,
       sourceContracts: { ...current.sourceContracts, registered },
+      progress: {
+        ...current.progress,
+        sourceChain: {
+          ...current.progress.sourceChain,
+          "pool-registered": registered,
+        },
+      },
     })
   } else {
     laneStore.set({
       ...current,
       destinationContracts: { ...current.destinationContracts, registered },
+      progress: {
+        ...current.progress,
+        destinationChain: {
+          ...current.progress.destinationChain,
+          "dest-pool-registered": registered,
+        },
+      },
     })
   }
 }
