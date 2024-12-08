@@ -40,16 +40,27 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
             <li>Click on the RegistryModuleOwnerCustom contract address to open the contract details</li>
             <li>
               Call <code>registerAdminViaOwner</code>:
-              <div className={styles.functionDescription}>
-                Register yourself as the CCIP administrator for your token. You must be the token owner.
-              </div>
-              <div className={styles.parameters}>
-                <SolidityParam
-                  name="token"
-                  type="address"
-                  description="The token contract you want to administer"
-                  example={state.sourceContracts.token || "Your deployed token address"}
-                />
+              <div className={styles.functionCall}>
+                <div className={styles.functionHeader}>
+                  <code className={styles.functionName}>registerAdminViaOwner</code>
+                  <div className={styles.functionPurpose}>
+                    Register yourself as the CCIP administrator for your token
+                  </div>
+                </div>
+
+                <div className={styles.functionRequirement}>⚠️ You must be the token owner to call this function</div>
+
+                <div className={styles.parametersSection}>
+                  <div className={styles.parametersTitle}>Parameters:</div>
+                  <div className={styles.parametersList}>
+                    <SolidityParam
+                      name="token"
+                      type="address"
+                      description="The token contract you want to administer"
+                      example={state.sourceContracts.token || "Your deployed token address"}
+                    />
+                  </div>
+                </div>
               </div>
             </li>
             <li>Confirm the transaction in MetaMask</li>
@@ -72,16 +83,27 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
             <li>Click on the TokenAdminRegistry contract address to open the contract details</li>
             <li>
               Call <code>acceptAdminRole</code>:
-              <div className={styles.functionDescription}>
-                Accept the pending administrator role for your token. Must be called after registerAdminViaOwner.
-              </div>
-              <div className={styles.parameters}>
-                <SolidityParam
-                  name="token"
-                  type="address"
-                  description="The token contract to accept administrator role for"
-                  example={state.sourceContracts.token || "Your deployed token address"}
-                />
+              <div className={styles.functionCall}>
+                <div className={styles.functionHeader}>
+                  <code className={styles.functionName}>acceptAdminRole</code>
+                  <div className={styles.functionPurpose}>Accept your role as CCIP administrator for your token</div>
+                </div>
+
+                <div className={styles.functionRequirement}>
+                  ⚠️ Must be called after registerAdminViaOwner is confirmed
+                </div>
+
+                <div className={styles.parametersSection}>
+                  <div className={styles.parametersTitle}>Parameters:</div>
+                  <div className={styles.parametersList}>
+                    <SolidityParam
+                      name="token"
+                      type="address"
+                      description="The token contract to accept administrator role for"
+                      example={state.sourceContracts.token || "Your deployed token address"}
+                    />
+                  </div>
+                </div>
               </div>
             </li>
             <li>Confirm the transaction in MetaMask</li>
