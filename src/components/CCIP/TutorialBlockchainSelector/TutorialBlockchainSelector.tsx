@@ -1,151 +1,93 @@
-import { useState, useEffect } from "react"
-import { getAllNetworks, Environment } from "@config/data/ccip"
+import { useStore } from "@nanostores/react"
 import { laneStore } from "@stores/lanes"
-import "./TutorialBlockchainSelector.css"
+import { Environment, getAllNetworks } from "@config/data/ccip"
+import { ChainSelect } from "./ChainSelect"
+import styles from "./TutorialBlockchainSelector.module.css"
 
-interface TutorialBlockchainSelectorProps {
-  onSourceChange?: (chain: string) => void
-  onDestinationChange?: (chain: string) => void
-}
-
-export const TutorialBlockchainSelector = ({
-  onSourceChange,
-  onDestinationChange,
-}: TutorialBlockchainSelectorProps) => {
-  const [environment, setEnvironment] = useState<Environment>(Environment.Testnet)
-  const [sourceChain, setSourceChain] = useState<string>("")
-  const [destinationChain, setDestinationChain] = useState<string>("")
-  const [networks, setNetworks] = useState(getAllNetworks({ filter: Environment.Testnet }))
-  const [isLoading, setIsLoading] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
-
-  // Update networks when environment changes
-  useEffect(() => {
-    setIsLoading(true)
-    setNetworks(getAllNetworks({ filter: environment }))
-    setTimeout(() => setIsLoading(false), 300)
-  }, [environment])
+export const TutorialBlockchainSelector = () => {
+  const state = useStore(laneStore)
+  const networks = getAllNetworks({ filter: state.environment })
 
   const handleEnvironmentChange = (newEnvironment: Environment) => {
-    // Safeguard: Clear networks and state when environment changes
-    const current = laneStore.get()
+    if (newEnvironment === state.environment) return
+
     laneStore.set({
-      ...current,
+      ...state,
+      environment: newEnvironment,
       sourceChain: "",
       destinationChain: "",
-      environment: newEnvironment,
       sourceNetwork: null,
       destinationNetwork: null,
       sourceContracts: {},
       destinationContracts: {},
     })
-
-    setEnvironment(newEnvironment)
-    setSourceChain("")
-    setDestinationChain("")
   }
 
-  const handleSourceChainSelect = async (chain: string) => {
-    if (isUpdating) return
-
-    setIsUpdating(true)
-    try {
-      const networks = getAllNetworks({ filter: environment })
-      const selectedNetwork = networks.find((n) => n.chain === chain)
-
-      // Safeguard: Validate network has required fields
-      if (selectedNetwork?.chainSelector && selectedNetwork?.name) {
-        const current = laneStore.get()
-        laneStore.set({
-          ...current,
-          sourceChain: chain,
-          sourceNetwork: selectedNetwork,
-        })
-
-        setSourceChain(chain)
-        onSourceChange?.(chain)
-
-        if (chain === destinationChain) {
-          setDestinationChain("")
-          onDestinationChange?.("")
-        }
-      } else {
-        console.warn(`Invalid network configuration for ${chain}`)
-      }
-    } finally {
-      setIsUpdating(false)
-    }
+  const handleSourceChainChange = (chain: string) => {
+    const network = networks.find((n) => n.chain === chain)
+    laneStore.set({
+      ...state,
+      sourceChain: chain,
+      sourceNetwork: network || null,
+    })
   }
 
-  const handleDestinationChainSelect = async (chain: string) => {
-    if (isUpdating) return
-
-    setIsUpdating(true)
-    try {
-      const networks = getAllNetworks({ filter: environment })
-      const selectedNetwork = networks.find((n) => n.chain === chain)
-
-      if (selectedNetwork?.chainSelector && selectedNetwork?.name) {
-        const current = laneStore.get()
-        laneStore.set({
-          ...current,
-          destinationChain: chain,
-          destinationNetwork: selectedNetwork,
-        })
-
-        setDestinationChain(chain)
-        onDestinationChange?.(chain)
-      } else {
-        console.warn(`Invalid network configuration for ${chain}`)
-      }
-    } finally {
-      setIsUpdating(false)
-    }
+  const handleDestinationChainChange = (chain: string) => {
+    const network = networks.find((n) => n.chain === chain)
+    laneStore.set({
+      ...state,
+      destinationChain: chain,
+      destinationNetwork: network || null,
+    })
   }
 
   return (
-    <div className="tutorial-blockchain-selector">
-      <div className={`selectors-row ${isLoading ? "is-loading" : ""}`}>
-        <div className="selector-group">
-          <select
-            id="env-select"
-            value={environment}
-            onChange={(e) => handleEnvironmentChange(e.target.value as Environment)}
-            className="env-select"
-          >
-            <option value={Environment.Testnet}>Testnet Environment</option>
-            <option value={Environment.Mainnet}>Mainnet Environment</option>
-          </select>
+    <div className={styles.blockchainSelector}>
+      <div className={styles.environmentToggle}>
+        <button
+          className={`${styles.toggleButton} ${state.environment === Environment.Testnet ? styles.active : ""}`}
+          onClick={() => handleEnvironmentChange(Environment.Testnet)}
+          aria-pressed={state.environment === Environment.Testnet}
+        >
+          <span className={styles.toggleIcon}>🔧</span>
+          Testnet
+        </button>
+        <button
+          className={`${styles.toggleButton} ${state.environment === Environment.Mainnet ? styles.active : ""}`}
+          onClick={() => handleEnvironmentChange(Environment.Mainnet)}
+          aria-pressed={state.environment === Environment.Mainnet}
+        >
+          <span className={styles.toggleIcon}>🌐</span>
+          Mainnet
+        </button>
+      </div>
+
+      <div className={styles.chainSelectors}>
+        <ChainSelect
+          value={state.sourceChain}
+          onChange={handleSourceChainChange}
+          options={networks}
+          placeholder="Select Source"
+        />
+
+        <div className={styles.arrowContainer}>
+          <svg className={styles.arrow} width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M3 12h18M15 5l7 7-7 7"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
 
-        <div className="selector-group">
-          <select
-            value={sourceChain}
-            title="Select the blockchain where your token will be deployed"
-            onChange={(e) => handleSourceChainSelect(e.target.value)}
-            className={sourceChain ? "has-value" : ""}
-          >
-            <option value="">Source Blockchain</option>
-            {networks.map((network) => (
-              <option key={network.chain} value={network.chain}>
-                {network.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="selector-group">
-          <select value={destinationChain} onChange={(e) => handleDestinationChainSelect(e.target.value)}>
-            <option value="">Destination Blockchain</option>
-            {networks
-              .filter((n) => n.chain !== sourceChain)
-              .map((network) => (
-                <option key={network.chain} value={network.chain}>
-                  {network.name}
-                </option>
-              ))}
-          </select>
-        </div>
+        <ChainSelect
+          value={state.destinationChain}
+          onChange={handleDestinationChainChange}
+          options={networks}
+          placeholder="Select Destination"
+        />
       </div>
     </div>
   )

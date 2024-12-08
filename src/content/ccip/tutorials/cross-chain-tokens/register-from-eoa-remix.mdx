@@ -19,6 +19,8 @@ import {
 } from "@components/CCIP/TutorialBlockchainSelector"
 import { ChainUpdateBuilderWrapper } from "@components/CCIP/TutorialBlockchainSelector/ChainUpdateBuilderWrapper"
 import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
+import { PrerequisitesCard } from "@components/CCIP/TutorialSetup/PrerequisitesCard"
+import { SetupSection } from "@components/CCIP/TutorialSetup/SetupSection"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -33,53 +35,30 @@ This tutorial will guide you through enabling your tokens in CCIP using only you
 
 ## Before You Begin
 
-### Prerequisites
+<PrerequisitesCard client:load />
 
-1. **Web Browser Setup**:
+<SetupSection
+  title="Select Your Blockchains"
+  description="Choose the source and destination blockchains for your cross-chain token"
+>
+  <TutorialBlockchainSelector client:load />
+</SetupSection>
 
-   - Install [MetaMask](https://metamask.io/) browser extension
-   - Configure MetaMask with your blockchains. You can do this in two ways:
+<SetupSection 
+  title="Import Required Contracts"
+  description="Import and compile the token contracts in Remix IDE"
+>
+  1. Open the pre-configured token contract in Remix:
 
-     **Option 1: Using Chainlist**
+{" "}
+<CodeSample src="samples/CCIP/cct/TokenDependencies.sol" showButtonOnly={true} optimize={true} runs={1000} />
 
-     1. Visit [Chainlist](https://chainlist.org/)
-     1. Search for your desired blockchains (check "Include Testnets" for testnets)
-     1. Click "Add to MetaMask" for each blockchain
-     1. Confirm the addition in MetaMask popup
+2. Wait a few seconds for Remix to automatically compile all contracts.
 
-     **Option 2: Manual Configuration**
-
-     - Follow MetaMask's [official guide](https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/) to add blockchains manually
-
-   <StepCheckbox stepId="setup" subStepId="browser-setup" client:only="react" />
-
-2. Get native tokens for gas fees:
-
-   - For testnets, you can get these from blockchain-specific faucets
-   - For mainnets, you'll need to acquire the native tokens through an exchange
-
-   <StepCheckbox stepId="setup" subStepId="gas-tokens" client:only="react" />
-
-<Aside type="note" title="Blockchain Requirements">
-  Make sure your chosen blockchains are CCIP-supported. You can find the list of supported blockchains in the [CCIP
-  Directory](/ccip/directory).
-</Aside>
+  <StepCheckbox stepId="setup" subStepId="contracts-imported" client:only="react" />
+</SetupSection>
 
 ## Tutorial
-
-### Select Your Blockchains
-
-<TutorialBlockchainSelector client:load />
-
-### Import Required Contracts
-
-1. Open the pre-configured token contract in Remix:
-
-   <CodeSample src="samples/CCIP/cct/TokenDependencies.sol" showButtonOnly={true} optimize={true} runs={1000} />
-
-1. Wait a few seconds for Remix to automatically compile all contracts.
-
-<StepCheckbox stepId="setup" subStepId="contracts-imported" client:only="react" />
 
 ### Source Blockchain Setup
 
