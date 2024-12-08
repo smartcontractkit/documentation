@@ -58,70 +58,73 @@ export const TutorialProgress = () => {
   }
 
   return (
-    <div className={styles["tutorial-progress-container"]}>
-      <div className={styles["progress-tracker"]}>
-        <div className={styles["progress-bar"]} style={{ width: `${(currentStep / 5) * 100}%` }} />
-        <div className={styles.steps}>
-          {steps.map((step) => {
-            const status = getStepStatus(step.id)
-            return (
-              <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
-                <div className={`${styles.step} ${styles[status]}`}>
-                  <div className={styles["step-indicator"]}>{status === "completed" ? "✓" : step.stepNumber}</div>
-                  <span className={styles["step-title"]}>{step.title}</span>
-                  <button className={styles["expand-button"]} onClick={() => toggleStepDetails(step.id)}>
-                    {expandedStep === step.id ? "−" : "+"}
-                  </button>
-                </div>
-                {expandedStep === step.id && (
-                  <div className={styles["step-details"]}>
-                    <div className={styles["step-progress"]}>
-                      {getStepProgress(step.id as StepId).map(({ id, title, completed }) => (
-                        <div key={id} className={`${styles.substep} ${completed ? styles.completed : ""}`}>
-                          <span className={styles["substep-title"]}>{title}</span>
-                        </div>
-                      ))}
-                    </div>
+    <section className={styles["sidebar-nav"]} aria-labelledby="grid-right" data-sticky>
+      <h2 className={styles.heading}>Tutorial Progress</h2>
+      <div className={styles["toc-wrapper"]}>
+        <div className={styles["progress-tracker"]}>
+          <div className={styles["progress-bar"]} style={{ width: `${(currentStep / 5) * 100}%` }} />
+          <div className={styles.steps}>
+            {steps.map((step) => {
+              const status = getStepStatus(step.id)
+              return (
+                <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
+                  <div className={`${styles.step} ${styles[status]}`}>
+                    <div className={styles["step-indicator"]}>{status === "completed" ? "✓" : step.stepNumber}</div>
+                    <span className={styles["step-title"]}>{step.title}</span>
+                    <button className={styles["expand-button"]} onClick={() => toggleStepDetails(step.id)}>
+                      {expandedStep === step.id ? "−" : "+"}
+                    </button>
                   </div>
-                )}
-              </div>
-            )
-          })}
+                  {expandedStep === step.id && (
+                    <div className={styles["step-details"]}>
+                      <div className={styles["step-progress"]}>
+                        {getStepProgress(step.id as StepId).map(({ id, title, completed }) => (
+                          <div key={id} className={`${styles.substep} ${completed ? styles.completed : ""}`}>
+                            <span className={styles["substep-title"]}>{title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className={styles["configuration-status"]}>
-        <h3>Configuration Status</h3>
-        <div className={styles["status-grid"]}>
-          <StatusItem label="Source Chain" value={<ChainValue type="source" />} isComplete={!!state.sourceChain} />
-          <StatusItem
-            label="Source Token"
-            value={<StoredContractAddress type="token" chain="source" />}
-            isComplete={!!state.sourceContracts.token}
-          />
-          <StatusItem
-            label="Source Pool"
-            value={<StoredContractAddress type="tokenPool" chain="source" />}
-            isComplete={!!state.sourceContracts.tokenPool}
-          />
-          <StatusItem
-            label="Destination Chain"
-            value={<ChainValue type="destination" />}
-            isComplete={!!state.destinationChain}
-          />
-          <StatusItem
-            label="Destination Token"
-            value={<StoredContractAddress type="token" chain="destination" />}
-            isComplete={!!state.destinationContracts.token}
-          />
-          <StatusItem
-            label="Destination Pool"
-            value={<StoredContractAddress type="tokenPool" chain="destination" />}
-            isComplete={!!state.destinationContracts.tokenPool}
-          />
+        <div className={styles["configuration-status"]}>
+          <h3>Configuration Status</h3>
+          <div className={styles["status-grid"]}>
+            <StatusItem label="Source Chain" value={<ChainValue type="source" />} isComplete={!!state.sourceChain} />
+            <StatusItem
+              label="Source Token"
+              value={<StoredContractAddress type="token" chain="source" />}
+              isComplete={!!state.sourceContracts.token}
+            />
+            <StatusItem
+              label="Source Pool"
+              value={<StoredContractAddress type="tokenPool" chain="source" />}
+              isComplete={!!state.sourceContracts.tokenPool}
+            />
+            <StatusItem
+              label="Destination Chain"
+              value={<ChainValue type="destination" />}
+              isComplete={!!state.destinationChain}
+            />
+            <StatusItem
+              label="Destination Token"
+              value={<StoredContractAddress type="token" chain="destination" />}
+              isComplete={!!state.destinationContracts.token}
+            />
+            <StatusItem
+              label="Destination Pool"
+              value={<StoredContractAddress type="tokenPool" chain="destination" />}
+              isComplete={!!state.destinationContracts.tokenPool}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
