@@ -1,8 +1,8 @@
 import { useStore } from "@nanostores/react"
 import { useState, useEffect } from "react"
 import { laneStore, TUTORIAL_STEPS, type StepId } from "@stores/lanes"
-import { ChainValue, StoredContractAddress } from "./TutorialBlockchainSelector"
-import "./TutorialProgress.css"
+import { ChainValue, StoredContractAddress } from "../TutorialBlockchainSelector"
+import styles from "./TutorialProgress.module.css"
 import { subscribeToProgress } from "@stores/lanes"
 
 export const TutorialProgress = () => {
@@ -58,27 +58,27 @@ export const TutorialProgress = () => {
   }
 
   return (
-    <div className="tutorial-progress-container">
-      <div className="progress-tracker">
-        <div className="progress-bar" style={{ width: `${(currentStep / 5) * 100}%` }} />
-        <div className="steps">
+    <div className={styles["tutorial-progress-container"]}>
+      <div className={styles["progress-tracker"]}>
+        <div className={styles["progress-bar"]} style={{ width: `${(currentStep / 5) * 100}%` }} />
+        <div className={styles.steps}>
           {steps.map((step) => {
             const status = getStepStatus(step.id)
             return (
-              <div key={step.id} className={`step-container ${status}`}>
-                <div className={`step ${status}`}>
-                  <div className="step-indicator">{status === "completed" ? "✓" : step.stepNumber}</div>
-                  <span className="step-title">{step.title}</span>
-                  <button className="expand-button" onClick={() => toggleStepDetails(step.id)}>
+              <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
+                <div className={`${styles.step} ${styles[status]}`}>
+                  <div className={styles["step-indicator"]}>{status === "completed" ? "✓" : step.stepNumber}</div>
+                  <span className={styles["step-title"]}>{step.title}</span>
+                  <button className={styles["expand-button"]} onClick={() => toggleStepDetails(step.id)}>
                     {expandedStep === step.id ? "−" : "+"}
                   </button>
                 </div>
                 {expandedStep === step.id && (
-                  <div className="step-details">
-                    <div className="step-progress">
+                  <div className={styles["step-details"]}>
+                    <div className={styles["step-progress"]}>
                       {getStepProgress(step.id as StepId).map(({ id, title, completed }) => (
-                        <div key={id} className={`substep ${completed ? "completed" : ""}`}>
-                          <span className="substep-title">{title}</span>
+                        <div key={id} className={`${styles.substep} ${completed ? styles.completed : ""}`}>
+                          <span className={styles["substep-title"]}>{title}</span>
                         </div>
                       ))}
                     </div>
@@ -90,9 +90,9 @@ export const TutorialProgress = () => {
         </div>
       </div>
 
-      <div className="configuration-status">
+      <div className={styles["configuration-status"]}>
         <h3>Configuration Status</h3>
-        <div className="status-grid">
+        <div className={styles["status-grid"]}>
           <StatusItem label="Source Chain" value={<ChainValue type="source" />} isComplete={!!state.sourceChain} />
           <StatusItem
             label="Source Token"
@@ -126,10 +126,10 @@ export const TutorialProgress = () => {
 }
 
 const StatusItem = ({ label, value, isComplete }) => (
-  <div className={`status-item ${isComplete ? "complete" : ""}`}>
-    <span className="status-label">{label}</span>
-    <div className="status-value">{value}</div>
-    {isComplete && <span className="status-check">✓</span>}
+  <div className={`${styles["status-item"]} ${isComplete ? styles.complete : ""}`}>
+    <span className={styles["status-label"]}>{label}</span>
+    <div className={styles["status-value"]}>{value}</div>
+    {isComplete && <span className={styles["status-check"]}>✓</span>}
   </div>
 )
 
