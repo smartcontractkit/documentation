@@ -74,61 +74,59 @@ export const PrerequisitesCard = () => {
 
   return (
     <div className={styles.card}>
-      <div className={styles.header}>
-        <h3>Prerequisites</h3>
-        <div className={styles.progress}>
-          <span>Required Setup</span>
-          <div className={styles.progressBar} />
-        </div>
-      </div>
-
-      <div className={styles.steps}>
-        {prerequisites.map((step) => (
-          <div key={step.id} className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepInfo}>
-                <span className={styles.stepTitle}>{step.title}</span>
-                <p className={styles.stepDescription}>{step.description}</p>
-              </div>
-              <div className={styles.stepActions}>
-                <StepCheckbox stepId="setup" subStepId={step.checkboxId} />
-                <button
-                  className={styles.expandButton}
-                  onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
-                  aria-label={activeStep === step.id ? "Collapse section" : "Expand section"}
-                >
-                  {activeStep === step.id ? "▼" : "▶"}
-                </button>
-              </div>
-            </div>
-
-            {activeStep === step.id && step.options && (
-              <div className={styles.optionsGrid}>
-                {step.options.map((option, idx) => (
-                  <div key={idx} className={styles.optionCard}>
-                    <h4>{option.title}</h4>
-                    <ul className={styles.stepsList}>
-                      {option.steps.map((step, stepIdx) => (
-                        <li key={stepIdx}>{step}</li>
-                      ))}
-                    </ul>
-                    {option.link && (
-                      <a
-                        href={option.link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionButton}
-                      >
-                        {option.link.text}
-                        <span className={styles.linkArrow}>→</span>
-                      </a>
-                    )}
+      <div className={styles.title}>Prerequisites</div>
+      <div className={styles.requirements}>
+        <div className={styles.section}>
+          <div className={styles.sectionTitle}>Wallet Setup</div>
+          <div className={styles.steps}>
+            {prerequisites.map((step) => (
+              <div key={step.id} className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}>
+                <div className={styles.stepHeader}>
+                  <div className={styles.stepInfo}>
+                    <span className={styles.stepTitle}>{step.title}</span>
+                    <p className={styles.stepDescription}>{step.description}</p>
                   </div>
-                ))}
+                  <div className={styles.stepActions}>
+                    <StepCheckbox stepId="setup" subStepId={step.checkboxId} />
+                    <button
+                      className={styles.expandButton}
+                      onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
+                      aria-label={activeStep === step.id ? "Collapse section" : "Expand section"}
+                    >
+                      {activeStep === step.id ? "▼" : "▶"}
+                    </button>
+                  </div>
+                </div>
+
+                {activeStep === step.id && step.options && (
+                  <div className={styles.optionsGrid}>
+                    {step.options.map((option, idx) => (
+                      <div key={idx} className={styles.optionCard}>
+                        <h4>{option.title}</h4>
+                        <ul className={styles.stepsList}>
+                          {option.steps.map((step, stepIdx) => (
+                            <li key={stepIdx}>{step}</li>
+                          ))}
+                        </ul>
+                        {option.link && (
+                          <a
+                            href={option.link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.actionButton}
+                          >
+                            {option.link.text}
+                            <span className={styles.linkArrow}>→</span>
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )

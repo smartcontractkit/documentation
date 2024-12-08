@@ -21,6 +21,8 @@ import { ChainUpdateBuilderWrapper } from "@components/CCIP/TutorialBlockchainSe
 import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
 import { PrerequisitesCard } from "@components/CCIP/TutorialSetup/PrerequisitesCard"
 import { SetupSection } from "@components/CCIP/TutorialSetup/SetupSection"
+import { DeployTokenStep } from "@components/CCIP/TutorialBlockchainSelector/DeployTokenStep"
+import { TutorialCard } from "@components/CCIP/TutorialSetup/TutorialCard"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -76,25 +78,7 @@ The tutorial will use your provided token address for subsequent steps.
 
 </Aside>
 
-#### Deploy Token
-
-1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
-
-1. In the "Deploy & Run Transactions" tab:
-
-   - Set Environment to "Injected Provider - MetaMask"
-   - Select **BurnMintERC677** contract
-   - Configure deployment parameters:
-     - `name`: Your token's full name (e.g., "My Cross Chain Token")
-     - `symbol`: A short identifier for your token (e.g., "MCCT")
-     - `decimals`: Number of decimal places for token amounts (e.g., 18)
-     - `maxSupply`: Maximum total supply in wei (use 0 for unlimited supply)
-   - Click "Deploy" and confirm in MetaMask
-   - Your new token address will be displayed in the "Deployed Contracts" section
-   - Save your token address:<br/>
-     <div style={{ marginTop: "0.5rem" }}>
-       <ContractAddress type="token" chain="source" placeholder="Enter deployed token address" client:load />
-     </div>
+<DeployTokenStep chain="source" client:only="react" />
 
 #### Claim and Accept Admin Role
 

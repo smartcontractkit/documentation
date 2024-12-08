@@ -1,0 +1,20 @@
+import styles from "./SolidityParam.module.css"
+import { ReactCopyText } from "@components/ReactCopyText"
+
+interface SolidityParamProps {
+  name: string
+  type: string
+  description: string
+  example?: string
+}
+
+export const SolidityParam = ({ name, type, description, example }: SolidityParamProps) => (
+  <div className={styles.parameter}>
+    <code className={styles.name}>{name}</code>
+    <code className={styles.type}>{type}</code>
+    <div className={styles.info}>
+      <p className={styles.description}>{description}</p>
+      {example && <ReactCopyText text={example} code />}
+    </div>
+  </div>
+)
