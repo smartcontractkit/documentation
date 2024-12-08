@@ -23,6 +23,7 @@ import { PrerequisitesCard } from "@components/CCIP/TutorialSetup/PrerequisitesC
 import { SetupSection } from "@components/CCIP/TutorialSetup/SetupSection"
 import { DeployTokenStep } from "@components/CCIP/TutorialBlockchainSelector/DeployTokenStep"
 import { TutorialCard } from "@components/CCIP/TutorialSetup/TutorialCard"
+import { AdminSetupStep } from "@components/CCIP/TutorialBlockchainSelector/AdminSetupStep"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -80,31 +81,7 @@ The tutorial will use your provided token address for subsequent steps.
 
 <DeployTokenStep chain="source" client:only="react" />
 
-#### Claim and Accept Admin Role
-
-1. Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
-
-1. Register as admin:
-
-   - In the "Deploy & Run Transactions" tab, select **RegistryModuleOwnerCustom** contract
-   - Use "At Address" with the RegistryModuleOwnerCustom contract: <div style={{ display: "inline" }}><NetworkAddress type="registryModule" chain="source" required={false} client:only="react" /></div>
-   - The RegistryModuleOwnerCustom will be displayed in the "Deployed Contracts" section
-   - Click on the RegistryModuleOwnerCustom contract address to open the contract details
-   - Call `registerAdminViaOwner` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="source" client:only="react" /></div>
-   - Confirm the transaction in MetaMask
-
-   <StepCheckbox stepId="sourceChain" subStepId="admin-claimed" client:only="react" />
-
-1. Accept the admin role:
-
-   - In the "Deploy & Run Transactions" tab, select **TokenAdminRegistry** contract
-   - Use "At Address" with the TokenAdminRegistry contract: <div style={{ display: "inline" }}><NetworkAddress type="tokenAdminRegistry" chain="source" required={false} client:only="react" /></div>
-   - The TokenAdminRegistry will be displayed in the "Deployed Contracts" section
-   - Click on the TokenAdminRegistry contract address to open the contract details
-   - Call `acceptAdminRole` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="source" client:only="react" /></div>
-   - Confirm the transaction in MetaMask
-
-   <StepCheckbox stepId="sourceChain" subStepId="admin-accepted" client:only="react" />
+<AdminSetupStep chain="source" client:only="react" />
 
 #### Deploy Token Pool
 
@@ -194,31 +171,7 @@ The tutorial will use your provided token address for subsequent steps.
        <ContractAddress type="token" chain="destination" placeholder="Enter deployed token address" client:load />
      </div>
 
-#### Claim and Accept Admin Role
-
-1. Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
-
-1. Register as admin:
-
-   - In the "Deploy & Run Transactions" tab, select **RegistryModuleOwnerCustom** contract
-   - Use "At Address" with the RegistryModuleOwnerCustom contract: <div style={{ display: "inline" }}><NetworkAddress type="registryModule" chain="destination" required={false} client:only="react" /></div>
-   - The RegistryModuleOwnerCustom will be displayed in the "Deployed Contracts" section
-   - Click on the RegistryModuleOwnerCustom contract address to open the contract details
-   - Call `registerAdminViaOwner` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
-   - Confirm the transaction in MetaMask
-
-   <StepCheckbox stepId="destinationChain" subStepId="admin-claimed" client:only="react" />
-
-1. Accept the admin role:
-
-   - In the "Deploy & Run Transactions" tab, select **TokenAdminRegistry** contract
-   - Use "At Address" with the TokenAdminRegistry contract: <div style={{ display: "inline" }}><NetworkAddress type="tokenAdminRegistry" chain="destination" required={false} client:only="react" /></div>
-   - The TokenAdminRegistry will be displayed in the "Deployed Contracts" section
-   - Click on the TokenAdminRegistry contract address to open the contract details
-   - Call `acceptAdminRole` with your token address: <div style={{ display: "inline" }}><StoredContractAddress type="token" required={false} chain="destination" client:only="react" /></div>
-   - Confirm the transaction in MetaMask
-
-   <StepCheckbox stepId="destinationChain" subStepId="admin-accepted" client:only="react" />
+<AdminSetupStep chain="destination" client:only="react" />
 
 #### Deploy Token Pool
 
