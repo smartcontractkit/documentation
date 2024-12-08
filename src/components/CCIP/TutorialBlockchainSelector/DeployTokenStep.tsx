@@ -68,21 +68,6 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
               example="0"
             />
           </div>
-
-          <div className={styles.parameterHelp}>
-            <div className={styles.helpItem}>
-              <span className={styles.helpLabel}>Parameter Name:</span>
-              <span>The exact name you'll type in Remix</span>
-            </div>
-            <div className={styles.helpItem}>
-              <span className={styles.helpLabel}>Type:</span>
-              <span>The Solidity data type required</span>
-            </div>
-            <div className={styles.helpItem}>
-              <span className={styles.helpLabel}>Example:</span>
-              <span>Click to copy a valid value</span>
-            </div>
-          </div>
         </TutorialStep>
 
         <TutorialStep title="Deploy Contract">
