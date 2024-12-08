@@ -18,6 +18,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
   const stepId = chain === "source" ? "sourceChain" : "destinationChain"
+  const tokenAddress = chain === "source" ? state.sourceContracts.token : state.destinationContracts.token
 
   const content = (
     <>
@@ -57,7 +58,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
                       name="token"
                       type="address"
                       description="The token contract you want to administer"
-                      example={state.sourceContracts.token || "Your deployed token address"}
+                      example={tokenAddress || "Your deployed token address"}
                     />
                   </div>
                 </div>
@@ -100,7 +101,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
                       name="token"
                       type="address"
                       description="The token contract to accept administrator role for"
-                      example={state.sourceContracts.token || "Your deployed token address"}
+                      example={tokenAddress || "Your deployed token address"}
                     />
                   </div>
                 </div>
