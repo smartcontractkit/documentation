@@ -10,7 +10,6 @@ interface SetupSectionProps {
   checkbox?: {
     stepId: StepId
     subStepId: SubStepId<StepId>
-    client?: "load" | "only" | "visible"
   }
 }
 
@@ -24,7 +23,7 @@ export const SetupSection = ({ title, description, children, checkbox }: SetupSe
         </div>
         {checkbox && (
           <div className={styles.headerActions}>
-            <StepCheckbox {...checkbox} />
+            <StepCheckbox stepId={checkbox.stepId} subStepId={checkbox.subStepId} />
           </div>
         )}
       </div>
