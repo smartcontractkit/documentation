@@ -24,19 +24,25 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
 
       <ol className={styles.steps}>
         <TutorialStep title="Register as Admin" checkbox={<StepCheckbox stepId={stepId} subStepId="admin-claimed" />}>
-          <div className={styles.contractInfo}>
-            <strong>Contract:</strong> RegistryModuleOwnerCustom
-            <NetworkAddress type="registryModule" chain={chain} />
-          </div>
-          <div className={styles.actionDetails}>
-            <div className={styles.actionTitle}>
-              Call <code>registerAdminViaOwner</code> with:
-            </div>
-            <div className={styles.parameter}>
-              <span className={styles.paramName}>token</span>
-              <StoredContractAddress type="token" chain={chain} />
-            </div>
-          </div>
+          <ol className={styles.instructions}>
+            <li>
+              <div className={styles.contractInfo}>
+                <strong>Contract:</strong> RegistryModuleOwnerCustom
+                <NetworkAddress type="registryModule" chain={chain} />
+              </div>
+            </li>
+            <li>
+              <div className={styles.actionDetails}>
+                <div className={styles.actionTitle}>
+                  Call <code>registerAdminViaOwner</code> with:
+                </div>
+                <div className={styles.parameter}>
+                  <span className={styles.paramName}>token</span>
+                  <StoredContractAddress type="token" chain={chain} />
+                </div>
+              </div>
+            </li>
+          </ol>
         </TutorialStep>
 
         <TutorialStep title="Accept Admin Role" checkbox={<StepCheckbox stepId={stepId} subStepId="admin-accepted" />}>
