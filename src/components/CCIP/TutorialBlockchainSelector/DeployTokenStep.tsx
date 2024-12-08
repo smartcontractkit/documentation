@@ -37,7 +37,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
           </ul>
         </TutorialStep>
 
-        <TutorialStep title="Set Contract Parameters">
+        <TutorialStep title="Set Parameters">
           <div className={styles.parametersIntro}>
             <p>Configure your token by setting these required parameters in Remix:</p>
           </div>
