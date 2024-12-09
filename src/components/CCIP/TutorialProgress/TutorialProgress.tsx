@@ -62,12 +62,15 @@ export const TutorialProgress = () => {
       <div className={styles.title}>Tutorial Progress</div>
       <div className={styles["toc-wrapper"]}>
         <div className={styles["progress-tracker"]}>
-          <div className={styles["progress-bar"]} style={{ width: `${(currentStep / 5) * 100}%` }} />
           <div className={styles.steps}>
-            {steps.map((step) => {
+            {steps.map((step, index) => {
               const status = getStepStatus(step.id)
               return (
                 <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
+                  <div
+                    className={`${styles.connector} ${getStepStatus(step.id) === "completed" ? styles.completed : ""}`}
+                  />
+
                   <button
                     className={`${styles.step} ${styles[status]} ${expandedStep === step.id ? styles.expanded : ""}`}
                     onClick={() => toggleStepDetails(step.id)}
@@ -78,6 +81,7 @@ export const TutorialProgress = () => {
                     <span className={styles["step-title"]}>{step.title}</span>
                     <div className={styles.chevron} aria-hidden="true" />
                   </button>
+
                   {expandedStep === step.id && (
                     <div className={styles["step-details"]}>
                       <div className={styles["step-progress"]}>

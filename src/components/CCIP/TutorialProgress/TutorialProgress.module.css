@@ -222,9 +222,8 @@
 }
 
 .steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4x);
+  position: relative;
+  padding-left: 16px; /* Space for connectors */
 }
 
 .step {
@@ -240,24 +239,23 @@
 }
 
 .step-indicator {
+  position: relative;
+  z-index: 2;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  background: #fff;
+  border: 2px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background-2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .step.completed .step-indicator {
-  background: #dcfce7;
-  border-color: #16a34a;
-  color: #16a34a;
-  font-size: 16px;
+  background: #375bd2;
+  border-color: #375bd2;
+  color: white;
 }
 
 .step.completed .step-title {
@@ -617,4 +615,119 @@
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+}
+
+.mainProgress {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.mainProgressHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.currentStep {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.totalSteps {
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.mainProgressBar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mainProgressFill {
+  height: 100%;
+  background: #375bd2;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Update existing progress bar to be more subtle */
+.progress-bar {
+  height: 4px;
+  background: #e2e8f0;
+  opacity: 0.5;
+}
+
+/* Enhance step visualization */
+.step-container {
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.step-container:hover {
+  background: #f1f5f9;
+}
+
+.step-container.completed {
+  border-left: 3px solid #375bd2;
+}
+
+.step-container.in-progress {
+  border-left: 3px solid #eab308;
+}
+
+/* Vertical connector line */
+.connector {
+  position: absolute;
+  left: -16px;
+  top: 16px;
+  height: calc(100% + 1rem);
+  width: 2px;
+  background: #e2e8f0;
+  transition: background-color 0.3s ease;
+}
+
+.connector.completed {
+  background: #375bd2;
+}
+
+.step-indicator {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step.completed .step-indicator {
+  background: #375bd2;
+  border-color: #375bd2;
+  color: white;
+}
+
+.step.in-progress .step-indicator {
+  border-color: #375bd2;
+  color: #375bd2;
+}
+
+/* Adjust last step's connector */
+.step-container:last-child {
+  margin-bottom: 0;
+}
+
+.step-container:last-child .connector {
+  height: calc(100% - 16px);
 }
