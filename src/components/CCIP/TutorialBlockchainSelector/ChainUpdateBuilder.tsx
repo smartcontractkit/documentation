@@ -262,7 +262,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                     <div className={styles.input}>
                       <div className={styles.inputLabel}>
                         <label>Capacity</label>
-                        <span className={styles.inputHint}>Maximum tokens allowed per period</span>
+                        <span className={styles.inputHint}>Maximum tokens allowed</span>
                       </div>
                       <input
                         type="text"
@@ -276,7 +276,9 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                     <div className={styles.input}>
                       <div className={styles.inputLabel}>
                         <label>Rate</label>
-                        <span className={styles.inputHint}>Tokens allowed per second</span>
+                        <span className={styles.inputHint}>
+                          Rate at which available capacity is replenished (tokens/second)
+                        </span>
                       </div>
                       <input
                         type="text"

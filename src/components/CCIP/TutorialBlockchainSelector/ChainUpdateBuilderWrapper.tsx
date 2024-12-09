@@ -6,7 +6,7 @@ import styles from "./ChainUpdateBuilderWrapper.module.css"
 import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
 import type { Network } from "@config/data/ccip/types"
-import { TutorialCard, SolidityParam, NetworkCheck } from "../TutorialSetup"
+import { TutorialCard, SolidityParam, NetworkCheck, TutorialStep } from "../TutorialSetup"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
 
 interface ChainUpdateBuilderWrapperProps {
@@ -50,6 +50,10 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const remoteTokenAddress = chain === "source" ? state.destinationContracts.token : state.sourceContracts.token
   const networkInfo = currentNetwork ? { name: currentNetwork.name, logo: currentNetwork.logo } : { name: "loading..." }
+
+  // Check if all required data is available
+  const isDataReady =
+    isValidNetwork(currentNetwork) && isValidNetwork(remoteNetwork) && poolAddress && remoteTokenAddress
 
   const generateCallData = (chainUpdate: ChainUpdate) => {
     if (!chainUpdate.remoteChainSelector || !chainUpdate.remotePoolAddresses || !chainUpdate.remoteTokenAddress) {
@@ -122,126 +126,103 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
     }
   }, [showCopyFeedback])
 
-  if (!isValidNetwork(currentNetwork) || !isValidNetwork(remoteNetwork)) {
-    return (
-      <div className={styles.verificationCard}>
-        <div className={styles.loadingState}>
-          <span>Select Blockchains</span>
-          <p>Please select valid source and destination blockchains.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!poolAddress) {
-    return (
-      <div className={styles.verificationCard}>
-        <div className={styles.loadingState}>
-          <span>Deploy Pool First</span>
-          <p>Please deploy your token pool contract before configuring.</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <TutorialCard title="Configure Remote Pool" description="Set up cross-chain communication parameters">
       <NetworkCheck network={networkInfo} />
-      <div className={styles.verificationCard}>
-        <div className={styles.chainInfo}>
-          <div className={styles.chainDetails}>
-            <span>Current Blockchain</span>
-            <div className={styles.chainValue}>
-              <code>{currentNetwork.name}</code>
-              <div className={styles.chainSelector}>
-                <span>Selector:</span>
-                <ReactCopyText text={currentNetwork.chainSelector} code />
-              </div>
-            </div>
-          </div>
-          <div className={styles.chainDetails}>
-            <span>Remote Blockchain</span>
-            <div className={styles.chainValue}>
-              <code>{remoteNetwork.name}</code>
-              <div className={styles.chainSelector}>
-                <span>Selector:</span>
-                <ReactCopyText text={remoteNetwork.chainSelector} code />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className={styles.poolAddress}>
-          <span>Pool Address</span>
-          <ReactCopyText text={poolAddress} code />
-        </div>
-
-        <div className={styles.functionCall}>
-          <div className={styles.functionHeader}>
-            <div className={styles.functionTitle}>
-              <code className={styles.functionName}>applyChainUpdates</code>
-              <StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-pool-config`} />
-            </div>
-            <div className={styles.functionPurpose}>
-              Sets the permissions for cross-chain communication and configures rate limits
-            </div>
-          </div>
-
-          <div className={styles.functionRequirement}>⚠️ Only callable by the token pool owner</div>
-
-          <div className={styles.parametersSection}>
-            <div className={styles.parametersTitle}>Parameters:</div>
-            <div className={styles.parametersList}>
-              <SolidityParam
-                name="remoteChainSelectorsToRemove"
-                type="uint64[]"
-                description="Chain selectors to remove from the allowed list"
-                example={<ReactCopyText text="[]" code />}
-              />
-
-              <SolidityParam
-                name="chainsToAdd"
-                type="ChainUpdate[]"
-                description="Configure permissions and rate limits for remote chains. The value for this parameter will be generated using the configuration tool below."
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.configurationTool}>
-          <div className={styles.configSteps}>
-            <h3 className={styles.configTitle}>Rate Limit Configuration</h3>
-            <p className={styles.configDescription}>
-              Configure the rate limits below. The generated value will be used for the chainsToAdd parameter.
-            </p>
-          </div>
-
-          <ChainUpdateBuilder
-            chain={chain}
-            readOnly={{
-              chainSelector: remoteNetwork.chainSelector,
-              poolAddress,
-              tokenAddress: remoteTokenAddress || "",
-            }}
-            defaultConfig={{
-              outbound: { enabled: false, capacity: "0", rate: "0" },
-              inbound: { enabled: false, capacity: "0", rate: "0" },
-            }}
-            onCalculate={handleCalculate}
-          />
-
-          {formattedUpdate && (
-            <div className={styles.resultSection}>
-              <div className={styles.copyBlock}>
-                <div className={styles.copyInstructions}>Copy generated value to Remix:</div>
-                <div className={styles.copyContainer}>
-                  <ReactCopyText text={callData} code />
-                </div>
-              </div>
-            </div>
+      <ol className={styles.steps}>
+        <TutorialStep
+          title="Enable Remote Blockchain"
+          checkbox={<StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-pool-config`} />}
+        >
+          {!isValidNetwork(currentNetwork) && (
+            <div className={styles.stepRequirement}>⚠️ Please select valid blockchains first</div>
           )}
-        </div>
-      </div>
+          {!poolAddress && (
+            <div className={styles.stepRequirement}>⚠️ Please deploy your token pool before proceeding</div>
+          )}
+
+          {isDataReady ? (
+            <ol className={styles.instructions}>
+              <li>
+                In the "Deploy & Run Transactions" tab, select your token pool at:
+                <div className={styles.contractInfo}>
+                  <strong>Contract:</strong> TokenPool
+                  <ReactCopyText text={poolAddress} code />
+                </div>
+              </li>
+
+              <li>Click on the contract to open its details</li>
+
+              <li>
+                Call <code>applyChainUpdates</code>:
+                <div className={styles.functionCall}>
+                  <div className={styles.functionHeader}>
+                    <div className={styles.functionTitle}>
+                      <code className={styles.functionName}>applyChainUpdates</code>
+                    </div>
+                    <div className={styles.functionPurpose}>
+                      Sets the permissions for cross-chain communication and configures rate limits
+                    </div>
+                  </div>
+
+                  <div className={styles.functionRequirement}>⚠️ Only callable by the token pool owner</div>
+
+                  <div className={styles.parametersSection}>
+                    <div className={styles.parametersTitle}>Parameters:</div>
+                    <div className={styles.parametersList}>
+                      <SolidityParam
+                        name="remoteChainSelectorsToRemove"
+                        type="uint64[]"
+                        description="Chain selectors to remove from the allowed list"
+                        example={<ReactCopyText text="[]" code />}
+                      />
+
+                      <SolidityParam
+                        name="chainsToAdd"
+                        type="ChainUpdate[]"
+                        description="Configure permissions and rate limits for remote chains. Use the configuration tool below to generate this value."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                Configure the rate limits below:
+                <div className={styles.configurationTool}>
+                  <ChainUpdateBuilder
+                    chain={chain}
+                    readOnly={{
+                      chainSelector: remoteNetwork.chainSelector,
+                      poolAddress,
+                      tokenAddress: remoteTokenAddress,
+                    }}
+                    defaultConfig={{
+                      outbound: { enabled: false, capacity: "0", rate: "0" },
+                      inbound: { enabled: false, capacity: "0", rate: "0" },
+                    }}
+                    onCalculate={handleCalculate}
+                  />
+                </div>
+              </li>
+
+              {formattedUpdate && (
+                <li>
+                  Copy the generated value and paste it into the chainsToAdd parameter in Remix:
+                  <div className={styles.copyBlock}>
+                    <div className={styles.copyContainer}>
+                      <ReactCopyText text={callData} code />
+                    </div>
+                  </div>
+                </li>
+              )}
+
+              <li>Confirm the transaction in MetaMask</li>
+            </ol>
+          ) : null}
+        </TutorialStep>
+      </ol>
     </TutorialCard>
   )
 }
