@@ -209,7 +209,13 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
         </div>
 
         <div className={styles.configurationTool}>
-          <h3 className={styles.configTitle}>Rate Limit Configuration Tool</h3>
+          <div className={styles.configSteps}>
+            <h3 className={styles.configTitle}>Rate Limit Configuration</h3>
+            <p className={styles.configDescription}>
+              Configure the rate limits below. The generated value will be used for the chainsToAdd parameter.
+            </p>
+          </div>
+
           <ChainUpdateBuilder
             chain={chain}
             readOnly={{

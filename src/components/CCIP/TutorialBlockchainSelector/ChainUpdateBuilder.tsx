@@ -212,23 +212,31 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                 {outbound.enabled && (
                   <div className={styles.rateLimiterInputs}>
                     <div className={styles.input}>
-                      <label>Capacity</label>
+                      <div className={styles.inputLabel}>
+                        <label>Capacity</label>
+                        <span className={styles.inputHint}>Maximum tokens allowed per period</span>
+                      </div>
                       <input
                         type="text"
                         value={outbound.capacity}
                         onChange={(e) => handleRateLimitChange("outbound", "capacity", e.target.value)}
-                        placeholder="Max tokens per period"
+                        placeholder="Enter amount..."
                         pattern="[0-9]*"
+                        className={styles.numericInput}
                       />
                     </div>
                     <div className={styles.input}>
-                      <label>Rate</label>
+                      <div className={styles.inputLabel}>
+                        <label>Rate</label>
+                        <span className={styles.inputHint}>Tokens allowed per second</span>
+                      </div>
                       <input
                         type="text"
                         value={outbound.rate}
                         onChange={(e) => handleRateLimitChange("outbound", "rate", e.target.value)}
-                        placeholder="Tokens per second"
+                        placeholder="Enter amount..."
                         pattern="[0-9]*"
+                        className={styles.numericInput}
                       />
                     </div>
                   </div>
@@ -252,23 +260,31 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                 {inbound.enabled && (
                   <div className={styles.rateLimiterInputs}>
                     <div className={styles.input}>
-                      <label>Capacity</label>
+                      <div className={styles.inputLabel}>
+                        <label>Capacity</label>
+                        <span className={styles.inputHint}>Maximum tokens allowed per period</span>
+                      </div>
                       <input
                         type="text"
                         value={inbound.capacity}
                         onChange={(e) => handleRateLimitChange("inbound", "capacity", e.target.value)}
-                        placeholder="Max tokens per period"
+                        placeholder="Enter amount..."
                         pattern="[0-9]*"
+                        className={styles.numericInput}
                       />
                     </div>
                     <div className={styles.input}>
-                      <label>Rate</label>
+                      <div className={styles.inputLabel}>
+                        <label>Rate</label>
+                        <span className={styles.inputHint}>Tokens allowed per second</span>
+                      </div>
                       <input
                         type="text"
                         value={inbound.rate}
                         onChange={(e) => handleRateLimitChange("inbound", "rate", e.target.value)}
-                        placeholder="Tokens per second"
+                        placeholder="Enter amount..."
                         pattern="[0-9]*"
+                        className={styles.numericInput}
                       />
                     </div>
                   </div>
