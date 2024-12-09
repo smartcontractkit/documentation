@@ -56,18 +56,18 @@ export const TUTORIAL_STEPS = {
     id: "sourceConfig",
     title: "Source Configuration",
     subSteps: {
-      "source-privileges": "Grant Burn and Mint Privileges",
-      "source-pool-config": "Configure Pool",
-      "source-verification": "Verify Configuration",
+      "source-privileges": "Burn and Mint Privileges Granted",
+      "source-pool-config": "Pool Configured",
+      "source-verification": "Verification Complete",
     },
   },
   destinationConfig: {
     id: "destinationConfig",
     title: "Destination Configuration",
     subSteps: {
-      "dest-privileges": "Grant Burn and Mint Privileges",
-      "dest-pool-config": "Configure Pool",
-      "dest-verification": "Verify Configuration",
+      "dest-privileges": "Burn and Mint Privileges Granted",
+      "dest-pool-config": "Pool Configured",
+      "dest-verification": "Verification Complete",
     },
   },
 } as const
