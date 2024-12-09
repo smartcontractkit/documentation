@@ -102,82 +102,13 @@ The tutorial will use your provided token address for subsequent steps.
 
 </Aside>
 
-#### Deploy Token
-
-1. Ensure MetaMask is connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
-
-1. In the "Deploy & Run Transactions" tab:
-
-   - Set Environment to "Injected Provider - MetaMask"
-   - Select **BurnMintERC677** contract
-   - Configure deployment parameters:
-     - `name`: Same name as source token (e.g., "My Cross Chain Token")
-     - `symbol`: Same symbol as source token (e.g., "MCCT")
-     - `decimals`: Same decimals as source token (e.g., 18)
-     - `maxSupply`: Maximum total supply in wei (use 0 for unlimited supply)
-   - Click "Deploy" and confirm in MetaMask
-   - Your new token address will be displayed in the "Deployed Contracts" section
-   - Save your token address:<br/>
-     <div style={{ marginTop: "0.5rem" }}>
-       <ContractAddress type="token" chain="destination" placeholder="Enter deployed token address" client:load />
-     </div>
+<DeployTokenStep chain="destination" client:only="react" />
 
 <AdminSetupStep chain="destination" client:only="react" />
 
-#### Deploy Token Pool
+<DeployPoolStep chain="destination" client:only="react" />
 
-1. Ensure MetaMask is still connected to destination blockchain: <ChainValue type="destination" bold required={false} client:load />
-
-1. Choose and deploy your token pool type:
-
-<Tabs sharedStore="poolType" client:visible>
-  <Fragment slot="tab.1">Lock & Release Pool</Fragment>
-  <Fragment slot="tab.2">Burn & Mint Pool</Fragment>
-  <Fragment slot="panel.1">
-    
-        Select **LockReleaseTokenPool** contract and configure deployment parameters:
-
-            - `tokenAddress`: Your deployed token address <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
-            - `localTokenDecimals`: Number of decimals for your token (e.g., 18)
-            - `allowlist`: Empty array `[]` to allow any address to transfer tokens, or specify addresses to restrict who can initiate transfers
-            - `rmnProxyAddress`: ARM Proxy contract <NetworkAddress type="armProxy" chain="destination" required={false} client:only="react" />
-            - `acceptLiquidity`: When `true`, enables external liquidity for lock/release mechanism
-            - `router`: CCIP Router contract <NetworkAddress type="router" chain="destination" required={false} client:only="react" />
-
-  </Fragment>
-  <Fragment slot="panel.2">
-        Select **BurnMintTokenPool** contract and configure deployment parameters:
-
-            - `tokenAddress`: Your deployed token address <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
-            - `localTokenDecimals`: Number of decimals for your token (e.g., 18)
-            - `allowlist`: Empty array `[]` to allow any address to transfer tokens, or specify addresses to restrict who can initiate transfers
-        - `rmnProxy`: ARM Proxy contract <NetworkAddress type="armProxy" chain="destination" required={false} client:only="react" />
-        - `router`: CCIP Router contract <NetworkAddress type="router" chain="destination" required={false} client:only="react" />
-
-  </Fragment>
-</Tabs>
-
-After configuring:
-
-- Click "Deploy" and confirm in MetaMask
-- Save your pool address:<br/>
-
-  <div style={{ marginTop: "0.5rem" }}>
-    <ContractAddress type="tokenPool" chain="destination" placeholder="Enter deployed pool address" client:load />
-  </div>
-
-#### Set Token Pool in Registry
-
-1. Ensure MetaMask is still connected to the destination blockchain: <ChainValue type="destination" bold required={false} client:load />
-
-1. Configure the registry:
-
-   - In the list of deployed contracts, select **TokenAdminRegistry** contract at <NetworkAddress type="tokenAdminRegistry" chain="destination" required={false} client:only="react" />
-   - Call `setPool` with:
-     - your token address <StoredContractAddress type="token" chain="destination" required={false} client:only="react" />
-     - your token pool address <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
-
-   <StepCheckbox stepId="destinationChain" subStepId="dest-pool-registered" client:only="react" />
+<SetPoolStep chain="destination" client:only="react" />
 
 ### Configure Cross-Chain Communication
 

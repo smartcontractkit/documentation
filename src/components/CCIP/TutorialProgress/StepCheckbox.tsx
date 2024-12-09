@@ -1,5 +1,6 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, updateStepProgress, type StepId, TUTORIAL_STEPS } from "@stores/lanes"
+import { laneStore, updateStepProgress, type StepId, type LaneState, TUTORIAL_STEPS } from "@stores/lanes"
+import { useCallback } from "react"
 
 interface StepCheckboxProps<T extends StepId> {
   stepId: T
@@ -16,23 +17,21 @@ export const StepCheckbox = <T extends StepId>({ stepId, subStepId, label, onCha
   const state = useStore(laneStore)
   const completed = state.progress[stepId]?.[subStepId as string] ?? false
 
-  console.log("StepCheckbox render:", { stepId, subStepId, completed })
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (onChange) {
+        onChange(e.target.checked)
+      } else {
+        updateStepProgress(stepId.toString(), subStepId.toString(), e.target.checked)
+      }
+    },
+    [onChange, stepId, subStepId]
+  )
 
   return (
     <div className="step-checkbox">
       <label>
-        <input
-          type="checkbox"
-          checked={completed}
-          onChange={(e) => {
-            console.log("Checkbox onChange:", { checked: e.target.checked })
-            if (onChange) {
-              onChange(e.target.checked)
-            } else {
-              updateStepProgress(stepId.toString(), subStepId.toString(), e.target.checked)
-            }
-          }}
-        />
+        <input type="checkbox" checked={completed} onChange={handleChange} />
         <span>{label || TUTORIAL_STEPS[stepId]?.subSteps?.[subStepId as string] || subStepId}</span>
       </label>
     </div>
