@@ -97,55 +97,60 @@ export const TutorialProgress = () => {
 
         <div className={styles["configuration-status"]}>
           <div className={styles.sectionTitle}>Configuration Status</div>
-          <div className={styles["status-grid"]}>
-            <StatusItem
-              label="Source Chain"
-              value={
-                <div className={styles.networkInfo}>
-                  {state.sourceNetwork && (
+
+          {/* Source Chain Block */}
+          <div className={styles.chainBlock}>
+            <div className={styles.chainHeader}>
+              <div className={styles.chainIdentity}>
+                {state.sourceNetwork && (
+                  <>
                     <img src={state.sourceNetwork.logo} alt={state.sourceNetwork.name} className={styles.networkLogo} />
-                  )}
-                  <ChainValue type="source" />
-                </div>
-              }
-              isComplete={!!state.sourceChain}
-            />
-            <StatusItem
-              label="Destination Chain"
-              value={
-                <div className={styles.networkInfo}>
-                  {state.destinationNetwork && (
-                    <img
-                      src={state.destinationNetwork.logo}
-                      alt={state.destinationNetwork.name}
-                      className={styles.networkLogo}
-                    />
-                  )}
-                  <ChainValue type="destination" />
-                </div>
-              }
-              isComplete={!!state.destinationChain}
-            />
-            <StatusItem
-              label="Source Token"
-              value={<StoredContractAddress type="token" chain="source" />}
-              isComplete={!!state.sourceContracts.token}
-            />
-            <StatusItem
-              label="Source Pool"
-              value={<StoredContractAddress type="tokenPool" chain="source" />}
-              isComplete={!!state.sourceContracts.tokenPool}
-            />
-            <StatusItem
-              label="Destination Token"
-              value={<StoredContractAddress type="token" chain="destination" />}
-              isComplete={!!state.destinationContracts.token}
-            />
-            <StatusItem
-              label="Destination Pool"
-              value={<StoredContractAddress type="tokenPool" chain="destination" />}
-              isComplete={!!state.destinationContracts.tokenPool}
-            />
+                    <span className={styles.chainName}>{state.sourceNetwork.name || "Source Chain"}</span>
+                  </>
+                )}
+                {!state.sourceNetwork && <span className={styles.chainName}>Source Chain</span>}
+              </div>
+            </div>
+            <div className={styles.chainConfigs}>
+              <StatusItem
+                label="Token"
+                value={<StoredContractAddress type="token" chain="source" />}
+                isComplete={!!state.sourceContracts.token}
+              />
+              <StatusItem
+                label="Pool"
+                value={<StoredContractAddress type="tokenPool" chain="source" />}
+                isComplete={!!state.sourceContracts.tokenPool}
+              />
+            </div>
+          </div>
+
+          {/* Destination Chain Block */}
+          <div className={styles.chainBlock}>
+            <div className={styles.chainHeader}>
+              <div className={styles.chainIdentity}>
+                {state.destinationNetwork && (
+                  <img
+                    src={state.destinationNetwork.logo}
+                    alt={state.destinationNetwork.name}
+                    className={styles.networkLogo}
+                  />
+                )}
+                <span className={styles.chainName}>Destination Chain</span>
+              </div>
+            </div>
+            <div className={styles.chainConfigs}>
+              <StatusItem
+                label="Token"
+                value={<StoredContractAddress type="token" chain="destination" />}
+                isComplete={!!state.destinationContracts.token}
+              />
+              <StatusItem
+                label="Pool"
+                value={<StoredContractAddress type="tokenPool" chain="destination" />}
+                isComplete={!!state.destinationContracts.tokenPool}
+              />
+            </div>
           </div>
         </div>
       </div>
