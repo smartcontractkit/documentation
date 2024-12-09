@@ -175,7 +175,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
         <div className={styles.configSection}>
           {/* Remote Configuration Section */}
           <div className={styles.remoteConfig}>
-            <h4 className={styles.configTitle}>Remote Configuration</h4>
+            <span className={styles.sectionLabel}>Remote Configuration</span>
             <div className={styles.field}>
               <label>Chain Selector:</label>
               <code>{readOnly.chainSelector}</code>
@@ -192,13 +192,13 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
 
           {/* Rate Limits Section */}
           <div className={styles.rateLimits}>
-            <h4 className={styles.configTitle}>Rate Limit Configuration</h4>
+            <span className={styles.sectionLabel}>Rate Limit Configuration</span>
 
             <div className={styles.rateLimiterGroup}>
               {/* Outbound Configuration */}
               <div className={styles.rateLimiter}>
                 <div className={styles.rateLimiterHeader}>
-                  <h5>Outbound Transfers</h5>
+                  <span>Outbound Transfers</span>
                   <label className={styles.toggle}>
                     <input
                       type="checkbox"
@@ -238,7 +238,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
               {/* Inbound Configuration */}
               <div className={styles.rateLimiter}>
                 <div className={styles.rateLimiterHeader}>
-                  <h5>Inbound Transfers</h5>
+                  <span className={styles.sectionLabel}>Inbound Transfers</span>
                   <label className={styles.toggle}>
                     <input
                       type="checkbox"

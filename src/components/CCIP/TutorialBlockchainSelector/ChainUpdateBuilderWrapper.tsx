@@ -7,6 +7,7 @@ import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
 import type { Network } from "@config/data/ccip/types"
 import { TutorialCard, SolidityParam, NetworkCheck } from "../TutorialSetup"
+import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
 
 interface ChainUpdateBuilderWrapperProps {
   chain: "source" | "destination"
@@ -78,6 +79,42 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
     )
   }
 
+  const handleCalculate = (input: ChainUpdateInput) => {
+    const update = {
+      remoteChainSelector: input.remoteChainSelector,
+      remotePoolAddresses: [input.poolAddress].map((addr) => ethers.utils.defaultAbiCoder.encode(["address"], [addr])),
+      remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
+      outboundRateLimiterConfig: {
+        enabled: input.outbound.enabled,
+        capacity: input.outbound.capacity,
+        rate: input.outbound.rate,
+      },
+      inboundRateLimiterConfig: {
+        enabled: input.inbound.enabled,
+        capacity: input.inbound.capacity,
+        rate: input.inbound.rate,
+      },
+    }
+
+    const generatedCallData = generateCallData({
+      ...update,
+      remoteChainSelector: BigInt(input.remoteChainSelector),
+    })
+
+    const formatted = JSON.stringify(
+      {
+        json: [update],
+        callData: generatedCallData,
+      },
+      null,
+      2
+    )
+
+    setCallData(generatedCallData)
+    setFormattedUpdate(formatted)
+    return formatted
+  }
+
   useEffect(() => {
     if (showCopyFeedback) {
       const timer = setTimeout(() => setShowCopyFeedback(false), 2000)
@@ -141,7 +178,10 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
 
         <div className={styles.functionCall}>
           <div className={styles.functionHeader}>
-            <code className={styles.functionName}>applyChainUpdates</code>
+            <div className={styles.functionTitle}>
+              <code className={styles.functionName}>applyChainUpdates</code>
+              <StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-pool-config`} />
+            </div>
             <div className={styles.functionPurpose}>
               Sets the permissions for cross-chain communication and configures rate limits
             </div>
@@ -162,71 +202,38 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
               <SolidityParam
                 name="chainsToAdd"
                 type="ChainUpdate[]"
-                description="Configure permissions and rate limits for remote chains"
-              >
-                <div className={styles.parameterDetails}>
-                  Configure the rate limits below to generate this parameter's value:
-                </div>
-                <div className={styles.rateConfigSection}>
-                  <ChainUpdateBuilder
-                    chain={chain}
-                    readOnly={{
-                      chainSelector: remoteNetwork.chainSelector,
-                      poolAddress,
-                      tokenAddress: remoteTokenAddress || "",
-                    }}
-                    defaultConfig={{
-                      outbound: { enabled: false, capacity: "0", rate: "0" },
-                      inbound: { enabled: false, capacity: "0", rate: "0" },
-                    }}
-                    onCalculate={(input: ChainUpdateInput) => {
-                      const update = {
-                        remoteChainSelector: input.remoteChainSelector,
-                        remotePoolAddresses: [input.poolAddress].map((addr) =>
-                          ethers.utils.defaultAbiCoder.encode(["address"], [addr])
-                        ),
-                        remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
-                        outboundRateLimiterConfig: {
-                          enabled: input.outbound.enabled,
-                          capacity: input.outbound.capacity,
-                          rate: input.outbound.rate,
-                        },
-                        inboundRateLimiterConfig: {
-                          enabled: input.inbound.enabled,
-                          capacity: input.inbound.capacity,
-                          rate: input.inbound.rate,
-                        },
-                      }
-
-                      const generatedCallData = generateCallData({
-                        ...update,
-                        remoteChainSelector: BigInt(input.remoteChainSelector),
-                      })
-
-                      const formatted = JSON.stringify(
-                        {
-                          json: [update],
-                          callData: generatedCallData,
-                        },
-                        null,
-                        2
-                      )
-
-                      setCallData(generatedCallData)
-                      setFormattedUpdate(formatted)
-                      return formatted
-                    }}
-                  />
-                </div>
-                {formattedUpdate && (
-                  <div className={styles.copyBlock}>
-                    <div className={styles.copyInstructions}>Copy generated value to Remix:</div>
-                    <ReactCopyText text={callData} code />
-                  </div>
-                )}
-              </SolidityParam>
+                description="Configure permissions and rate limits for remote chains. The value for this parameter will be generated using the configuration tool below."
+              />
             </div>
           </div>
+        </div>
+
+        <div className={styles.configurationTool}>
+          <h3 className={styles.configTitle}>Rate Limit Configuration Tool</h3>
+          <ChainUpdateBuilder
+            chain={chain}
+            readOnly={{
+              chainSelector: remoteNetwork.chainSelector,
+              poolAddress,
+              tokenAddress: remoteTokenAddress || "",
+            }}
+            defaultConfig={{
+              outbound: { enabled: false, capacity: "0", rate: "0" },
+              inbound: { enabled: false, capacity: "0", rate: "0" },
+            }}
+            onCalculate={handleCalculate}
+          />
+
+          {formattedUpdate && (
+            <div className={styles.resultSection}>
+              <div className={styles.copyBlock}>
+                <div className={styles.copyInstructions}>Copy generated value to Remix:</div>
+                <div className={styles.copyContainer}>
+                  <ReactCopyText text={callData} code />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </TutorialCard>
