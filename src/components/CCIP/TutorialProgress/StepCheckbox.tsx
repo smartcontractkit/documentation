@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, updateStepProgress, type StepId, type LaneState, TUTORIAL_STEPS } from "@stores/lanes"
+import { laneStore, updateStepProgress, type StepId, TUTORIAL_STEPS } from "@stores/lanes"
 import { useCallback } from "react"
 
 interface StepCheckboxProps<T extends StepId> {

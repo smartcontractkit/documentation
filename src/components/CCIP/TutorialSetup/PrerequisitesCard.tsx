@@ -1,7 +1,6 @@
 import { useState } from "react"
 import styles from "./PrerequisitesCard.module.css"
-import { useStore } from "@nanostores/react"
-import { laneStore, type SubStepId } from "@stores/lanes"
+import { type SubStepId } from "@stores/lanes"
 import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
 
 interface PrerequisiteStep {
@@ -21,7 +20,6 @@ interface PrerequisiteStep {
 }
 
 export const PrerequisitesCard = () => {
-  const state = useStore(laneStore)
   const [activeStep, setActiveStep] = useState<string | null>("browser-setup")
 
   const prerequisites: PrerequisiteStep[] = [

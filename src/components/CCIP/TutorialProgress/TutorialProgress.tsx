@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react"
 import { useState, useEffect } from "react"
 import { laneStore, TUTORIAL_STEPS, type StepId } from "@stores/lanes"
-import { ChainValue, StoredContractAddress } from "../TutorialBlockchainSelector"
+import { StoredContractAddress } from "../TutorialBlockchainSelector"
 import styles from "./TutorialProgress.module.css"
 import { subscribeToProgress } from "@stores/lanes"
 
