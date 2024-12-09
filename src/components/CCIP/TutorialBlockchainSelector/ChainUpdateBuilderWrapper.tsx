@@ -6,25 +6,32 @@ import styles from "./ChainUpdateBuilderWrapper.module.css"
 import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
 import type { Network } from "@config/data/ccip/types"
+import { TutorialCard, SolidityParam, NetworkCheck } from "../TutorialSetup"
 
 interface ChainUpdateBuilderWrapperProps {
   chain: "source" | "destination"
+}
+
+interface RateLimiterConfig {
+  enabled: boolean
+  capacity: string
+  rate: string
 }
 
 interface ChainUpdate {
   remoteChainSelector: bigint
   remotePoolAddresses: string[]
   remoteTokenAddress: string
-  outboundRateLimiterConfig: {
-    enabled: boolean
-    capacity: string
-    rate: string
-  }
-  inboundRateLimiterConfig: {
-    enabled: boolean
-    capacity: string
-    rate: string
-  }
+  outboundRateLimiterConfig: RateLimiterConfig
+  inboundRateLimiterConfig: RateLimiterConfig
+}
+
+interface ChainUpdateInput {
+  remoteChainSelector: string
+  poolAddress: string
+  tokenAddress: string
+  outbound: RateLimiterConfig
+  inbound: RateLimiterConfig
 }
 
 const isValidNetwork = (network: Network | null): network is Network => {
@@ -41,6 +48,7 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const remoteNetwork = chain === "source" ? state.destinationNetwork : state.sourceNetwork
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const remoteTokenAddress = chain === "source" ? state.destinationContracts.token : state.sourceContracts.token
+  const networkInfo = currentNetwork ? { name: currentNetwork.name, logo: currentNetwork.logo } : { name: "loading..." }
 
   const generateCallData = (chainUpdate: ChainUpdate) => {
     if (!chainUpdate.remoteChainSelector || !chainUpdate.remotePoolAddresses || !chainUpdate.remoteTokenAddress) {
@@ -100,82 +108,62 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   }
 
   return (
-    <div className={styles.verificationCard}>
-      <div className={styles.chainInfo}>
-        <div className={styles.chainDetails}>
-          <span>Current Blockchain</span>
-          <div className={styles.chainValue}>
-            <code>{currentNetwork.name}</code>
-            <div className={styles.chainSelector}>
-              <span>Selector:</span>
-              <ReactCopyText text={currentNetwork.chainSelector} code />
+    <TutorialCard title="Configure Remote Pool" description="Set up cross-chain communication parameters">
+      <NetworkCheck network={networkInfo} />
+      <div className={styles.verificationCard}>
+        <div className={styles.chainInfo}>
+          <div className={styles.chainDetails}>
+            <span>Current Blockchain</span>
+            <div className={styles.chainValue}>
+              <code>{currentNetwork.name}</code>
+              <div className={styles.chainSelector}>
+                <span>Selector:</span>
+                <ReactCopyText text={currentNetwork.chainSelector} code />
+              </div>
+            </div>
+          </div>
+          <div className={styles.chainDetails}>
+            <span>Remote Blockchain</span>
+            <div className={styles.chainValue}>
+              <code>{remoteNetwork.name}</code>
+              <div className={styles.chainSelector}>
+                <span>Selector:</span>
+                <ReactCopyText text={remoteNetwork.chainSelector} code />
+              </div>
             </div>
           </div>
         </div>
-        <div className={styles.chainDetails}>
-          <span>Remote Blockchain</span>
-          <div className={styles.chainValue}>
-            <code>{remoteNetwork.name}</code>
-            <div className={styles.chainSelector}>
-              <span>Selector:</span>
-              <ReactCopyText text={remoteNetwork.chainSelector} code />
-            </div>
-          </div>
+
+        <div className={styles.poolAddress}>
+          <span>Pool Address</span>
+          <ReactCopyText text={poolAddress} code />
         </div>
-      </div>
 
-      <div className={styles.poolAddress}>
-        <span>Pool Address</span>
-        <ReactCopyText text={poolAddress} code />
-      </div>
-
-      <div className={styles.functionBlock}>
-        <div className={styles.stepContent}>
-          <div className={styles.stepHeader}>
-            <span className={styles.stepTitle}>
-              <code>applyChainUpdates</code>
-            </span>
-          </div>
-
-          <div className={styles.stepDescription}>
-            <p>Sets permissions and rate limits for cross-chain communication.</p>
-            <p className={styles.parameterNote}>This function requires two parameters:</p>
-          </div>
-
-          <div className={styles.parameterList}>
-            <div className={styles.parameter}>
-              <div className={styles.parameterHeader}>
-                <div className={styles.parameterName}>
-                  <span className={styles.parameterLabel}>Parameter 1</span>
-                  <div className={styles.parameterIdentifier}>
-                    <span>remoteChainSelectorsToRemove</span>
-                    <code>uint64[]</code>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.parameterValue}>
-                <div className={styles.copyBlock}>
-                  <div className={styles.copyInstructions}>Copy this value to Remix:</div>
-                  <div className={`${styles.copyWrapper} ${showCopyFeedback ? styles.copied : ""}`}>
-                    <ReactCopyText text="[]" code />
-                    <span className={styles.copyFeedback}>Copied!</span>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.parameterDetails}>Empty array is used when adding new chain configuration.</div>
+        <div className={styles.functionCall}>
+          <div className={styles.functionHeader}>
+            <code className={styles.functionName}>applyChainUpdates</code>
+            <div className={styles.functionPurpose}>
+              Sets the permissions for cross-chain communication and configures rate limits
             </div>
+          </div>
 
-            <div className={styles.parameter}>
-              <div className={styles.parameterHeader}>
-                <div className={styles.parameterName}>
-                  <span className={styles.parameterLabel}>Parameter 2</span>
-                  <div className={styles.parameterIdentifier}>
-                    <span>chainsToAdd</span>
-                    <code>ChainUpdate[]</code>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.parameterValue}>
+          <div className={styles.functionRequirement}>⚠️ Only callable by the token pool owner</div>
+
+          <div className={styles.parametersSection}>
+            <div className={styles.parametersTitle}>Parameters:</div>
+            <div className={styles.parametersList}>
+              <SolidityParam
+                name="remoteChainSelectorsToRemove"
+                type="uint64[]"
+                description="Chain selectors to remove from the allowed list"
+                example={<ReactCopyText text="[]" code />}
+              />
+
+              <SolidityParam
+                name="chainsToAdd"
+                type="ChainUpdate[]"
+                description="Configure permissions and rate limits for remote chains"
+              >
                 <div className={styles.parameterDetails}>
                   Configure the rate limits below to generate this parameter's value:
                 </div>
@@ -191,31 +179,28 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
                       outbound: { enabled: false, capacity: "0", rate: "0" },
                       inbound: { enabled: false, capacity: "0", rate: "0" },
                     }}
-                    onCalculate={(chainUpdate) => {
+                    onCalculate={(input: ChainUpdateInput) => {
                       const update = {
-                        remoteChainSelector: chainUpdate.remoteChainSelector,
-                        remotePoolAddresses: [chainUpdate.poolAddress].map((addr) =>
+                        remoteChainSelector: input.remoteChainSelector,
+                        remotePoolAddresses: [input.poolAddress].map((addr) =>
                           ethers.utils.defaultAbiCoder.encode(["address"], [addr])
                         ),
-                        remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(
-                          ["address"],
-                          [chainUpdate.tokenAddress]
-                        ),
+                        remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
                         outboundRateLimiterConfig: {
-                          enabled: chainUpdate.outbound.enabled,
-                          capacity: chainUpdate.outbound.capacity,
-                          rate: chainUpdate.outbound.rate,
+                          enabled: input.outbound.enabled,
+                          capacity: input.outbound.capacity,
+                          rate: input.outbound.rate,
                         },
                         inboundRateLimiterConfig: {
-                          enabled: chainUpdate.inbound.enabled,
-                          capacity: chainUpdate.inbound.capacity,
-                          rate: chainUpdate.inbound.rate,
+                          enabled: input.inbound.enabled,
+                          capacity: input.inbound.capacity,
+                          rate: input.inbound.rate,
                         },
                       }
 
                       const generatedCallData = generateCallData({
                         ...update,
-                        remoteChainSelector: BigInt(chainUpdate.remoteChainSelector),
+                        remoteChainSelector: BigInt(input.remoteChainSelector),
                       })
 
                       const formatted = JSON.stringify(
@@ -239,11 +224,11 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
                     <ReactCopyText text={callData} code />
                   </div>
                 )}
-              </div>
+              </SolidityParam>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </TutorialCard>
   )
 }

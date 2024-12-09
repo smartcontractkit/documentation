@@ -168,95 +168,121 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
       fallback={<div>Error configuring rate limits. Please refresh and try again.</div>}
       onError={(error) => {
         console.error("Rate limit configuration error:", error)
-        // Could add error reporting here
+        reportError?.(error) // Assuming you have an error reporting service
       }}
     >
       <div className={styles.builder}>
-        <div className={styles.section}>
-          <div className={styles.sectionTitle}>Remote Configuration</div>
-          <div className={styles.field}>
-            <label>Remote Chain Selector:</label>
-            <code>{readOnly.chainSelector}</code>
+        <div className={styles.configSection}>
+          {/* Remote Configuration Section */}
+          <div className={styles.remoteConfig}>
+            <h4 className={styles.configTitle}>Remote Configuration</h4>
+            <div className={styles.field}>
+              <label>Chain Selector:</label>
+              <code>{readOnly.chainSelector}</code>
+            </div>
+            <div className={styles.field}>
+              <label>Pool Address:</label>
+              <code>{readOnly.poolAddress}</code>
+            </div>
+            <div className={styles.field}>
+              <label>Token Address:</label>
+              <code>{readOnly.tokenAddress}</code>
+            </div>
           </div>
-          <div className={styles.field}>
-            <label>Remote Pool Address:</label>
-            <code>{readOnly.poolAddress}</code>
+
+          {/* Rate Limits Section */}
+          <div className={styles.rateLimits}>
+            <h4 className={styles.configTitle}>Rate Limit Configuration</h4>
+
+            <div className={styles.rateLimiterGroup}>
+              {/* Outbound Configuration */}
+              <div className={styles.rateLimiter}>
+                <div className={styles.rateLimiterHeader}>
+                  <h5>Outbound Transfers</h5>
+                  <label className={styles.toggle}>
+                    <input
+                      type="checkbox"
+                      checked={outbound.enabled}
+                      onChange={(e) => handleRateLimitToggle("outbound", e.target.checked)}
+                    />
+                    <span>Enable Limits</span>
+                  </label>
+                </div>
+
+                {outbound.enabled && (
+                  <div className={styles.rateLimiterInputs}>
+                    <div className={styles.input}>
+                      <label>Capacity</label>
+                      <input
+                        type="text"
+                        value={outbound.capacity}
+                        onChange={(e) => handleRateLimitChange("outbound", "capacity", e.target.value)}
+                        placeholder="Max tokens per period"
+                        pattern="[0-9]*"
+                      />
+                    </div>
+                    <div className={styles.input}>
+                      <label>Rate</label>
+                      <input
+                        type="text"
+                        value={outbound.rate}
+                        onChange={(e) => handleRateLimitChange("outbound", "rate", e.target.value)}
+                        placeholder="Tokens per second"
+                        pattern="[0-9]*"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Inbound Configuration */}
+              <div className={styles.rateLimiter}>
+                <div className={styles.rateLimiterHeader}>
+                  <h5>Inbound Transfers</h5>
+                  <label className={styles.toggle}>
+                    <input
+                      type="checkbox"
+                      checked={inbound.enabled}
+                      onChange={(e) => handleRateLimitToggle("inbound", e.target.checked)}
+                    />
+                    <span>Enable Limits</span>
+                  </label>
+                </div>
+
+                {inbound.enabled && (
+                  <div className={styles.rateLimiterInputs}>
+                    <div className={styles.input}>
+                      <label>Capacity</label>
+                      <input
+                        type="text"
+                        value={inbound.capacity}
+                        onChange={(e) => handleRateLimitChange("inbound", "capacity", e.target.value)}
+                        placeholder="Max tokens per period"
+                        pattern="[0-9]*"
+                      />
+                    </div>
+                    <div className={styles.input}>
+                      <label>Rate</label>
+                      <input
+                        type="text"
+                        value={inbound.rate}
+                        onChange={(e) => handleRateLimitChange("inbound", "rate", e.target.value)}
+                        placeholder="Tokens per second"
+                        pattern="[0-9]*"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <div className={styles.field}>
-            <label>Remote Token Address:</label>
-            <code>{readOnly.tokenAddress}</code>
-          </div>
+
+          {!canGenerateUpdate() && (
+            <div className={styles.notice}>
+              Please ensure all remote addresses are available before generating the update
+            </div>
+          )}
         </div>
-
-        <div className={styles.section}>
-          <div className={styles.sectionTitle}>Rate Limits (Optional)</div>
-
-          <div className={styles.rateLimiterConfig}>
-            <h5>Outbound Configuration</h5>
-            <label>
-              <input
-                type="checkbox"
-                checked={outbound.enabled}
-                onChange={(e) => handleRateLimitToggle("outbound", e.target.checked)}
-              />
-              Enable Rate Limit
-            </label>
-            {outbound.enabled && (
-              <>
-                <input
-                  type="text"
-                  value={outbound.capacity}
-                  onChange={(e) => handleRateLimitChange("outbound", "capacity", e.target.value)}
-                  placeholder="Capacity (uint128)"
-                  pattern="[0-9]*"
-                />
-                <input
-                  type="text"
-                  value={outbound.rate}
-                  onChange={(e) => handleRateLimitChange("outbound", "rate", e.target.value)}
-                  placeholder="Rate (uint128)"
-                  pattern="[0-9]*"
-                />
-              </>
-            )}
-          </div>
-
-          <div className={styles.rateLimiterConfig}>
-            <h5>Inbound Configuration</h5>
-            <label>
-              <input
-                type="checkbox"
-                checked={inbound.enabled}
-                onChange={(e) => handleRateLimitToggle("inbound", e.target.checked)}
-              />
-              Enable Rate Limit
-            </label>
-            {inbound.enabled && (
-              <>
-                <input
-                  type="text"
-                  value={inbound.capacity}
-                  onChange={(e) => handleRateLimitChange("inbound", "capacity", e.target.value)}
-                  placeholder="Capacity (uint128)"
-                  pattern="[0-9]*"
-                />
-                <input
-                  type="text"
-                  value={inbound.rate}
-                  onChange={(e) => handleRateLimitChange("inbound", "rate", e.target.value)}
-                  placeholder="Rate (uint128)"
-                  pattern="[0-9]*"
-                />
-              </>
-            )}
-          </div>
-        </div>
-
-        {!canGenerateUpdate() && (
-          <div className={styles.notice}>
-            Please ensure all remote addresses are available before generating the update
-          </div>
-        )}
       </div>
     </ErrorBoundary>
   )
