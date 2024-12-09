@@ -64,9 +64,65 @@
 .step {
   display: flex;
   align-items: center;
-  gap: var(--space-2x);
-  padding: var(--space-2x) 0;
-  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-3x);
+  width: 100%;
+  padding: var(--space-3x);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* Reset button styles */
+  appearance: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+}
+
+.step:hover {
+  background: var(--color-background-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Visual feedback on click */
+.step:active {
+  transform: translateY(0);
+}
+
+/* Chevron indicator */
+.chevron {
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.step.expanded .chevron {
+  transform: rotate(-135deg);
+}
+
+/* Step details animation */
+.step-details {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.step.expanded + .step-details {
+  max-height: 500px; /* Adjust based on content */
+  opacity: 1;
+  padding: var(--space-3x) 0;
+}
+
+/* Focus styles for accessibility */
+.step:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .stepIndicator {

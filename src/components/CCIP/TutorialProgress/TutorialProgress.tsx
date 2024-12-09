@@ -68,13 +68,16 @@ export const TutorialProgress = () => {
               const status = getStepStatus(step.id)
               return (
                 <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
-                  <div className={`${styles.step} ${styles[status]}`}>
+                  <button
+                    className={`${styles.step} ${styles[status]} ${expandedStep === step.id ? styles.expanded : ""}`}
+                    onClick={() => toggleStepDetails(step.id)}
+                    aria-expanded={expandedStep === step.id}
+                    aria-controls={`details-${step.id}`}
+                  >
                     <div className={styles["step-indicator"]}>{status === "completed" ? "✓" : step.stepNumber}</div>
                     <span className={styles["step-title"]}>{step.title}</span>
-                    <button className={styles["expand-button"]} onClick={() => toggleStepDetails(step.id)}>
-                      {expandedStep === step.id ? "−" : "+"}
-                    </button>
-                  </div>
+                    <div className={styles.chevron} aria-hidden="true" />
+                  </button>
                   {expandedStep === step.id && (
                     <div className={styles["step-details"]}>
                       <div className={styles["step-progress"]}>
