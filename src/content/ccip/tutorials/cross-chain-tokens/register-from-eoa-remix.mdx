@@ -26,6 +26,7 @@ import { TutorialCard } from "@components/CCIP/TutorialSetup/TutorialCard"
 import { AdminSetupStep } from "@components/CCIP/TutorialBlockchainSelector/AdminSetupStep"
 import { DeployPoolStep } from "@components/CCIP/TutorialBlockchainSelector/DeployPoolStep"
 import { SetPoolStep } from "@components/CCIP/TutorialBlockchainSelector/SetPoolStep"
+import { GrantPrivilegesStep } from "@components/CCIP/TutorialBlockchainSelector/GrantPrivilegesStep"
 
 This tutorial will guide you through enabling your tokens in CCIP using only your web browser and [Remix IDE](https://remix.ethereum.org). You'll learn how to deploy tokens and set up token pools without needing to install any development tools.
 
@@ -114,20 +115,7 @@ The tutorial will use your provided token address for subsequent steps.
 
 #### Source Chain Configuration
 
-Ensure MetaMask is still connected to the source blockchain: <ChainValue type="source" bold required={false} client:load />
-
-##### Grant Burn and Mint Privileges
-
-<Aside type="note">Skip this section if you deployed a LockReleaseTokenPool</Aside>
-
-Grant privileges to your token pool:
-
-- In the list of deployed contracts, select your **BurnMintERC677** token at <StoredContractAddress type="token" chain="source" required={false} client:only="react" />
-- Call `grantMintAndBurnRoles` with your token pool address: <StoredContractAddress type="tokenPool" chain="source" required={false} client:only="react" />
-- Confirm the transaction in MetaMask
-
-<StepCheckbox stepId="sourceConfig" subStepId="source-privileges" client:only="react" />
-
+<GrantPrivilegesStep chain="source" client:only="react" />
 ##### Configure Remote Pool
 
 Call the following function on your Token Pool contract to configure cross-chain communication:
@@ -158,7 +146,7 @@ Grant privileges to your token pool:
 - Call `grantMintAndBurnRoles` with your token pool address: <StoredContractAddress type="tokenPool" chain="destination" required={false} client:only="react" />
 - Confirm the transaction in MetaMask
 
-<StepCheckbox stepId="destConfig" subStepId="dest-privileges" client:only="react" />
+<StepCheckbox stepId="destinationConfig" subStepId="dest-privileges" client:only="react" />
 
 ##### Configure Remote Pool
 
@@ -166,7 +154,7 @@ Call the following function on your Token Pool contract to configure cross-chain
 
 <ChainUpdateBuilderWrapper chain="destination" client:load />
 
-<StepCheckbox stepId="destConfig" subStepId="dest-pool-config" client:only="react" />
+<StepCheckbox stepId="destinationConfig" subStepId="dest-pool-config" client:only="react" />
 
 ##### Verify Destination Configuration
 
@@ -174,4 +162,4 @@ Call these functions on your Token Pool contract to verify your configuration:
 
 <PoolConfigVerification chain="destination" client:load />
 
-<StepCheckbox stepId="destConfig" subStepId="dest-verification" client:only="react" />
+<StepCheckbox stepId="destinationConfig" subStepId="dest-verification" client:only="react" />

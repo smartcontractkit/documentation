@@ -16,7 +16,7 @@ export const TutorialProgress = () => {
     { id: "sourceChain", title: "Source Chain", stepNumber: 2 },
     { id: "destinationChain", title: "Destination Chain", stepNumber: 3 },
     { id: "sourceConfig", title: "Source Configuration", stepNumber: 4 },
-    { id: "destConfig", title: "Destination Configuration", stepNumber: 5 },
+    { id: "destinationConfig", title: "Destination Configuration", stepNumber: 5 },
   ])
 
   useEffect(() => {

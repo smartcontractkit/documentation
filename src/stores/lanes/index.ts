@@ -61,8 +61,8 @@ export const TUTORIAL_STEPS = {
       "source-verification": "Verify Configuration",
     },
   },
-  destConfig: {
-    id: "destConfig",
+  destinationConfig: {
+    id: "destinationConfig",
     title: "Destination Configuration",
     subSteps: {
       "dest-privileges": "Grant Burnt Mint Privileges",
@@ -191,9 +191,9 @@ const checkProgress = (state: LaneState) => {
       check: (state: LaneState) => state.progress.sourceConfig?.["source-pool-config"] === true,
     },
     {
-      stepId: "destConfig" as StepId,
+      stepId: "destinationConfig" as StepId,
       subStepId: "dest-pool-config",
-      check: (state: LaneState) => state.progress.destConfig?.["dest-pool-config"] === true,
+      check: (state: LaneState) => state.progress.destinationConfig?.["dest-pool-config"] === true,
     },
   ]
 
@@ -238,7 +238,7 @@ export const laneStore = atom<LaneState>({
     sourceChain: {},
     destinationChain: {},
     sourceConfig: {},
-    destConfig: {},
+    destinationConfig: {},
   },
   inboundRateLimiter: null,
   outboundRateLimiter: null,
@@ -341,7 +341,7 @@ interface StepProgress {
     privileges: SubStep[]
     poolConfig: SubStep[]
   }
-  destConfig: {
+  destinationConfig: {
     privileges: SubStep[]
     poolConfig: SubStep[]
   }
@@ -382,7 +382,7 @@ export const initialProgress: StepProgress = {
     privileges: [{ id: "source-privileges", title: "Grant Burnt Mint Privileges", completed: false }],
     poolConfig: [{ id: "source-pool-config", title: "Configure Pool", completed: false }],
   },
-  destConfig: {
+  destinationConfig: {
     privileges: [{ id: "dest-privileges", title: "Grant Burnt Mint Privileges", completed: false }],
     poolConfig: [{ id: "dest-pool-config", title: "Configure Pool", completed: false }],
   },
