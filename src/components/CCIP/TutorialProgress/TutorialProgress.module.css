@@ -7,14 +7,12 @@
   min-width: calc(315px - var(--space-16x));
 }
 
-.heading {
-  margin-bottom: 0;
-  color: var(--gray-900, #141921);
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 130%;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+.title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4x);
 }
 
 .toc-wrapper {
@@ -43,14 +41,12 @@
 }
 
 /* Section headers - match RightSidebar headings */
-.heading {
-  margin-bottom: 0;
-  color: var(--gray-900, #141921);
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 130%;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3x);
 }
 
 /* Progress section */
@@ -392,4 +388,62 @@
 .step[class*="in-progress"],
 .step-indicator[class*="in-progress"] {
   all: unset;
+}
+
+/* Add network logo styles */
+.networkInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  position: relative;
+}
+
+.networkLogo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  /* Smooth transitions for all animations */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Subtle shadow for depth */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Initial state for glow effect */
+  filter: brightness(1);
+}
+
+/* Hover effect with glow and slight scale */
+.networkInfo:hover .networkLogo {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 0 4px rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* Pulse animation for active state */
+@keyframes logoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--color-accent-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0);
+  }
+}
+
+/* Add pulse animation when network is active/selected */
+.networkLogo.active {
+  animation: logoPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Reduce motion if user prefers */
+@media (prefers-reduced-motion: reduce) {
+  .networkLogo {
+    transition: none;
+    animation: none;
+  }
+
+  .networkInfo:hover .networkLogo {
+    transform: none;
+  }
 }

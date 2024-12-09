@@ -59,7 +59,7 @@ export const TutorialProgress = () => {
 
   return (
     <section className={styles["sidebar-nav"]} aria-labelledby="grid-right" data-sticky>
-      <h2 className={styles.heading}>Tutorial Progress</h2>
+      <div className={styles.title}>Tutorial Progress</div>
       <div className={styles["toc-wrapper"]}>
         <div className={styles["progress-tracker"]}>
           <div className={styles["progress-bar"]} style={{ width: `${(currentStep / 5) * 100}%` }} />
@@ -93,9 +93,36 @@ export const TutorialProgress = () => {
         </div>
 
         <div className={styles["configuration-status"]}>
-          <h3>Configuration Status</h3>
+          <div className={styles.sectionTitle}>Configuration Status</div>
           <div className={styles["status-grid"]}>
-            <StatusItem label="Source Chain" value={<ChainValue type="source" />} isComplete={!!state.sourceChain} />
+            <StatusItem
+              label="Source Chain"
+              value={
+                <div className={styles.networkInfo}>
+                  {state.sourceNetwork && (
+                    <img src={state.sourceNetwork.logo} alt={state.sourceNetwork.name} className={styles.networkLogo} />
+                  )}
+                  <ChainValue type="source" />
+                </div>
+              }
+              isComplete={!!state.sourceChain}
+            />
+            <StatusItem
+              label="Destination Chain"
+              value={
+                <div className={styles.networkInfo}>
+                  {state.destinationNetwork && (
+                    <img
+                      src={state.destinationNetwork.logo}
+                      alt={state.destinationNetwork.name}
+                      className={styles.networkLogo}
+                    />
+                  )}
+                  <ChainValue type="destination" />
+                </div>
+              }
+              isComplete={!!state.destinationChain}
+            />
             <StatusItem
               label="Source Token"
               value={<StoredContractAddress type="token" chain="source" />}
@@ -105,11 +132,6 @@ export const TutorialProgress = () => {
               label="Source Pool"
               value={<StoredContractAddress type="tokenPool" chain="source" />}
               isComplete={!!state.sourceContracts.tokenPool}
-            />
-            <StatusItem
-              label="Destination Chain"
-              value={<ChainValue type="destination" />}
-              isComplete={!!state.destinationChain}
             />
             <StatusItem
               label="Destination Token"
