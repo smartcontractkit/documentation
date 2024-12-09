@@ -26,7 +26,7 @@ export const GrantPrivilegesStep = ({ chain }: GrantPrivilegesStepProps) => {
           title="Grant Burn and Mint Privileges"
           checkbox={<StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-privileges`} />}
         >
-          <Callout type="note">
+          <Callout type="note" title="Optional Step" className={styles.skipNote}>
             Skip this section if you deployed a <strong>LockReleaseTokenPool</strong>
           </Callout>
 
