@@ -3,7 +3,7 @@ import { laneStore, type RateLimits } from "@stores/lanes"
 import { utils } from "ethers"
 import { ReactCopyText } from "@components/ReactCopyText"
 import styles from "./PoolConfigVerification.module.css"
-import { TutorialCard, TutorialStep, NetworkCheck } from "../TutorialSetup"
+import { TutorialCard, TutorialStep, NetworkCheck, SolidityParam } from "../TutorialSetup"
 import { Callout } from "../TutorialSetup/Callout"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
 
@@ -86,14 +86,12 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                 <div className={styles.parametersSection}>
                   <div className={styles.parametersTitle}>Parameters:</div>
                   <div className={styles.parametersList}>
-                    <div className={styles.parameter}>
-                      <div className={styles.parameterName}>
-                        <span>remoteChainSelector:</span>
-                        <code>uint64</code>
-                      </div>
-                      {remoteSelector && <ReactCopyText text={remoteSelector} code />}
-                      <div className={styles.parameterDescription}>Chain selector for {remoteName}</div>
-                    </div>
+                    <SolidityParam
+                      name="remoteChainSelector"
+                      type="uint64"
+                      description={`Chain selector for ${remoteName}`}
+                      example={remoteSelector && <ReactCopyText text={remoteSelector} code />}
+                    />
                   </div>
                 </div>
 
@@ -135,14 +133,12 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                 <div className={styles.parametersSection}>
                   <div className={styles.parametersTitle}>Parameters:</div>
                   <div className={styles.parametersList}>
-                    <div className={styles.parameter}>
-                      <div className={styles.parameterName}>
-                        <span>remoteChainSelector:</span>
-                        <code>uint64</code>
-                      </div>
-                      {remoteSelector && <ReactCopyText text={remoteSelector} code />}
-                      <div className={styles.parameterDescription}>Chain selector for {remoteName}</div>
-                    </div>
+                    <SolidityParam
+                      name="remoteChainSelector"
+                      type="uint64"
+                      description={`Chain selector for ${remoteName}`}
+                      example={remoteSelector && <ReactCopyText text={remoteSelector} code />}
+                    />
                   </div>
                 </div>
 
@@ -184,14 +180,12 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                 <div className={styles.parametersSection}>
                   <div className={styles.parametersTitle}>Parameters:</div>
                   <div className={styles.parametersList}>
-                    <div className={styles.parameter}>
-                      <div className={styles.parameterName}>
-                        <span>remoteChainSelector:</span>
-                        <code>uint64</code>
-                      </div>
-                      {remoteSelector && <ReactCopyText text={remoteSelector} code />}
-                      <div className={styles.parameterDescription}>Chain selector for {remoteName}</div>
-                    </div>
+                    <SolidityParam
+                      name="remoteChainSelector"
+                      type="uint64"
+                      description={`Chain selector for ${remoteName}`}
+                      example={remoteSelector && <ReactCopyText text={remoteSelector} code />}
+                    />
                   </div>
                 </div>
 
@@ -226,14 +220,12 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                 <div className={styles.parametersSection}>
                   <div className={styles.parametersTitle}>Parameters:</div>
                   <div className={styles.parametersList}>
-                    <div className={styles.parameter}>
-                      <div className={styles.parameterName}>
-                        <span>remoteChainSelector:</span>
-                        <code>uint64</code>
-                      </div>
-                      {remoteSelector && <ReactCopyText text={remoteSelector} code />}
-                      <div className={styles.parameterDescription}>Chain selector for {remoteName}</div>
-                    </div>
+                    <SolidityParam
+                      name="remoteChainSelector"
+                      type="uint64"
+                      description={`Chain selector for ${remoteName}`}
+                      example={remoteSelector && <ReactCopyText text={remoteSelector} code />}
+                    />
                   </div>
                 </div>
 
