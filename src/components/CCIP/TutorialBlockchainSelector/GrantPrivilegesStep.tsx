@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
+import { laneStore, TUTORIAL_STEPS } from "@stores/lanes"
 import { TutorialStep } from "../TutorialSetup/TutorialStep"
 import { NetworkCheck } from "../TutorialSetup/NetworkCheck"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
@@ -18,13 +18,19 @@ export const GrantPrivilegesStep = ({ chain }: GrantPrivilegesStepProps) => {
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
 
+  const stepId = `${chain}Config` as const
+  const subStepId = chain === "source" ? "source-privileges" : "dest-privileges"
+
   return (
-    <TutorialCard title="Configure Token Privileges" description="Grant required privileges to your token pool">
+    <TutorialCard
+      title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+      description="Grant required privileges to your token pool"
+    >
       <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
         <TutorialStep
-          title="Grant Burn and Mint Privileges"
-          checkbox={<StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-privileges`} />}
+          title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+          checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >
           <Callout type="note" title="Optional Step" className={styles.skipNote}>
             Skip this section if you deployed a <strong>LockReleaseTokenPool</strong>

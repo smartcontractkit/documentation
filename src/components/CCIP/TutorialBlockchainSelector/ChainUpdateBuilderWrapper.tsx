@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
+import { laneStore, TUTORIAL_STEPS } from "@stores/lanes"
 import { ChainUpdateBuilder } from "./ChainUpdateBuilder"
 import { ethers } from "ethers"
 import styles from "./ChainUpdateBuilderWrapper.module.css"
@@ -126,14 +126,19 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
     }
   }, [showCopyFeedback])
 
-  return (
-    <TutorialCard title="Configure Remote Pool" description="Set up cross-chain communication parameters">
-      <NetworkCheck network={networkInfo} />
+  const stepId = `${chain}Config` as const
+  const subStepId = chain === "source" ? "source-pool-config" : "dest-pool-config"
 
+  return (
+    <TutorialCard
+      title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+      description="Set up cross-chain communication parameters"
+    >
+      <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
         <TutorialStep
-          title="Enable Remote Blockchain"
-          checkbox={<StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-pool-config`} />}
+          title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+          checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >
           {!isValidNetwork(currentNetwork) && (
             <div className={styles.stepRequirement}>⚠️ Please select valid blockchains first</div>

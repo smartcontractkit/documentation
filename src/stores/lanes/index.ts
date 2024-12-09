@@ -56,7 +56,7 @@ export const TUTORIAL_STEPS = {
     id: "sourceConfig",
     title: "Source Configuration",
     subSteps: {
-      "source-privileges": "Grant Burnt Mint Privileges",
+      "source-privileges": "Grant Burn and Mint Privileges",
       "source-pool-config": "Configure Pool",
       "source-verification": "Verify Configuration",
     },
@@ -65,7 +65,7 @@ export const TUTORIAL_STEPS = {
     id: "destinationConfig",
     title: "Destination Configuration",
     subSteps: {
-      "dest-privileges": "Grant Burnt Mint Privileges",
+      "dest-privileges": "Grant Burn and Mint Privileges",
       "dest-pool-config": "Configure Pool",
       "dest-verification": "Verify Configuration",
     },
@@ -379,11 +379,11 @@ export const initialProgress: StepProgress = {
     ],
   },
   sourceConfig: {
-    privileges: [{ id: "source-privileges", title: "Grant Burnt Mint Privileges", completed: false }],
+    privileges: [{ id: "source-privileges", title: "Grant Burn and Mint Privileges", completed: false }],
     poolConfig: [{ id: "source-pool-config", title: "Configure Pool", completed: false }],
   },
   destinationConfig: {
-    privileges: [{ id: "dest-privileges", title: "Grant Burnt Mint Privileges", completed: false }],
+    privileges: [{ id: "dest-privileges", title: "Grant Burn and Mint Privileges", completed: false }],
     poolConfig: [{ id: "dest-pool-config", title: "Configure Pool", completed: false }],
   },
 }

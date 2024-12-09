@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, type RateLimits } from "@stores/lanes"
+import { laneStore, TUTORIAL_STEPS, type RateLimits } from "@stores/lanes"
 import { utils } from "ethers"
 import { ReactCopyText } from "@components/ReactCopyText"
 import styles from "./PoolConfigVerification.module.css"
@@ -49,12 +49,20 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
 
-  return (
-    <TutorialCard title="Verify Configuration" description="Confirm your cross-chain setup is correct">
-      <NetworkCheck network={networkInfo} />
+  const stepId = `${chain}Config` as const
+  const subStepId = chain === "source" ? "source-verification" : "dest-verification"
 
+  return (
+    <TutorialCard
+      title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+      description="Confirm your cross-chain setup is correct"
+    >
+      <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
-        <TutorialStep title="Access Token Pool">
+        <TutorialStep
+          title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+          checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
+        >
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select your token pool (<strong>BurnMintTokenPool</strong> or{" "}
@@ -68,10 +76,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
           </ol>
         </TutorialStep>
 
-        <TutorialStep
-          title="Verify Remote Token"
-          checkbox={<StepCheckbox stepId={`${chain}Config`} subStepId={`${chain}-verification`} />}
-        >
+        <TutorialStep title="Verify Remote Token">
           <ol className={styles.instructions}>
             <li>
               Call <code>getRemoteToken</code>:
