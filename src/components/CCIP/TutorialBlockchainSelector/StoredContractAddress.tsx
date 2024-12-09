@@ -2,27 +2,41 @@ import { useStore } from "@nanostores/react"
 import { laneStore } from "@stores/lanes"
 import type { DeployedContracts } from "@stores/lanes"
 import { ReactCopyText } from "@components/ReactCopyText"
-import { ethers } from "ethers"
+import { utils } from "ethers"
+
+type AddressFields = Extract<keyof DeployedContracts, "token" | "tokenPool" | "tokenPools">
 
 interface StoredContractAddressProps {
-  type: keyof DeployedContracts
+  type: AddressFields
   chain: "source" | "destination"
-  required?: boolean
+  code?: boolean
   encode?: boolean
 }
 
-export const StoredContractAddress = ({ type, chain, required = true, encode = false }: StoredContractAddressProps) => {
+export const StoredContractAddress = ({ type, chain, code = true, encode = false }: StoredContractAddressProps) => {
   const state = useStore(laneStore)
   const contracts = chain === "source" ? state.sourceContracts : state.destinationContracts
-  const address = contracts[type]
+  const value = contracts[type]
 
-  if (!address) {
-    return required ? <code>[No address saved yet]</code> : null
-  }
+  // Format and encode addresses
+  const displayAddress = (() => {
+    if (!value) return ""
 
-  const displayAddress = encode
-    ? ethers.utils.defaultAbiCoder.encode(["address"], [address]).toString()
-    : address.toString()
+    if (Array.isArray(value)) {
+      const validAddresses = value.filter((addr): addr is string => typeof addr === "string" && utils.isAddress(addr))
+      if (!validAddresses.length) return ""
 
-  return <ReactCopyText text={displayAddress} code={true} />
+      return encode
+        ? validAddresses.map((addr) => utils.defaultAbiCoder.encode(["address"], [addr])).join(", ")
+        : validAddresses.join(", ")
+    }
+
+    if (typeof value === "string" && value) {
+      return encode ? utils.defaultAbiCoder.encode(["address"], [utils.getAddress(value)]) : utils.getAddress(value)
+    }
+
+    return ""
+  })()
+
+  return <ReactCopyText text={displayAddress} code={code} />
 }

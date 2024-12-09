@@ -14,7 +14,9 @@ export const SolidityParam = ({ name, type, description, example }: SolidityPara
     <code className={styles.type}>{type}</code>
     <div className={styles.info}>
       <p className={styles.description}>{description}</p>
-      {example && <ReactCopyText text={example} code />}
+      {
+        example && (typeof example === "string" ? <ReactCopyText text={example} code /> : example) // Render React element directly
+      }
     </div>
   </div>
 )

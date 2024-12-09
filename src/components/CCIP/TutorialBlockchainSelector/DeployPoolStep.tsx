@@ -32,6 +32,23 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
 
           <div className={styles.poolOptions}>
             <button
+              className={`${styles.poolOption} ${poolType === "burn" ? styles.selected : ""}`}
+              onClick={() => setPoolType("burn")}
+            >
+              <div className={styles.poolTitle}>
+                <span className={styles.poolName}>Burn & Mint Pool</span>
+                {poolType === "burn" && <span className={styles.selectedIndicator} />}
+              </div>
+              <div className={styles.poolContent}>
+                <p className={styles.poolDescription}>
+                  Standard mechanism for cross-chain transfers. Tokens are burned on one chain and minted on another,
+                  maintaining constant total supply.
+                </p>
+                <div className={styles.poolNote}>ℹ️ Use this for new tokens or tokens with burn/mint capability</div>
+              </div>
+            </button>
+
+            <button
               className={`${styles.poolOption} ${poolType === "lock" ? styles.selected : ""}`}
               onClick={() => setPoolType("lock")}
             >
@@ -49,23 +66,6 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
                 </div>
               </div>
             </button>
-
-            <button
-              className={`${styles.poolOption} ${poolType === "burn" ? styles.selected : ""}`}
-              onClick={() => setPoolType("burn")}
-            >
-              <div className={styles.poolTitle}>
-                <span className={styles.poolName}>Burn & Mint Pool</span>
-                {poolType === "burn" && <span className={styles.selectedIndicator} />}
-              </div>
-              <div className={styles.poolContent}>
-                <p className={styles.poolDescription}>
-                  Standard mechanism for cross-chain transfers. Tokens are burned on one chain and minted on another,
-                  maintaining constant total supply.
-                </p>
-                <div className={styles.poolNote}>ℹ️ Use this for new tokens or tokens with burn/mint capability</div>
-              </div>
-            </button>
           </div>
         </TutorialStep>
 
@@ -77,48 +77,9 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
             {poolType === "lock" ? (
               <>
                 <SolidityParam
-                  name="tokenAddress"
+                  name="token"
                   type="address"
-                  description="The token contract this pool will manage"
-                  example={<StoredContractAddress type="token" chain={chain} />}
-                />
-                <SolidityParam
-                  name="localTokenDecimals"
-                  type="uint8"
-                  description="Number of decimals for your token"
-                  example="18"
-                />
-                <SolidityParam
-                  name="allowlist"
-                  type="address[]"
-                  description="Addresses allowed to transfer tokens (empty array for no restrictions)"
-                  example="[]"
-                />
-                <SolidityParam
-                  name="rmnProxyAddress"
-                  type="address"
-                  description="ARM Proxy contract"
-                  example={<NetworkAddress type="armProxy" chain={chain} />}
-                />
-                <SolidityParam
-                  name="acceptLiquidity"
-                  type="bool"
-                  description="Enable external liquidity for lock/release mechanism"
-                  example="true"
-                />
-                <SolidityParam
-                  name="router"
-                  type="address"
-                  description="CCIP Router contract"
-                  example={<NetworkAddress type="router" chain={chain} />}
-                />
-              </>
-            ) : (
-              <>
-                <SolidityParam
-                  name="tokenAddress"
-                  type="address"
-                  description="The token contract this pool will manage"
+                  description="Address of the token to be released/locked"
                   example={<StoredContractAddress type="token" chain={chain} />}
                 />
                 <SolidityParam
@@ -136,13 +97,52 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
                 <SolidityParam
                   name="rmnProxy"
                   type="address"
-                  description="ARM Proxy contract"
+                  description="Address of the RMN contract"
+                  example={<NetworkAddress type="armProxy" chain={chain} />}
+                />
+                <SolidityParam
+                  name="acceptLiquidity"
+                  type="bool"
+                  description="Enable external liquidity for lock/release mechanism"
+                  example="true"
+                />
+                <SolidityParam
+                  name="router"
+                  type="address"
+                  description="Address of the CCIP Router contract"
+                  example={<NetworkAddress type="router" chain={chain} />}
+                />
+              </>
+            ) : (
+              <>
+                <SolidityParam
+                  name="token"
+                  type="address"
+                  description="Address of the token to be minted/burned"
+                  example={<StoredContractAddress type="token" chain={chain} />}
+                />
+                <SolidityParam
+                  name="localTokenDecimals"
+                  type="uint8"
+                  description="Number of decimals for your token"
+                  example="18"
+                />
+                <SolidityParam
+                  name="allowlist"
+                  type="address[]"
+                  description="Addresses allowed to transfer tokens (empty array for no restrictions)"
+                  example="[]"
+                />
+                <SolidityParam
+                  name="rmnProxy"
+                  type="address"
+                  description="Address of the RMN contract"
                   example={<NetworkAddress type="armProxy" chain={chain} />}
                 />
                 <SolidityParam
                   name="router"
                   type="address"
-                  description="CCIP Router contract"
+                  description="Address of the CCIP Router contract"
                   example={<NetworkAddress type="router" chain={chain} />}
                 />
               </>
