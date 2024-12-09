@@ -15,7 +15,7 @@ interface DeployPoolStepProps {
 }
 
 export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
-  const [poolType, setPoolType] = useState<"lock" | "burn">("lock")
+  const [poolType, setPoolType] = useState<"lock" | "burn">("burn")
   const state = useStore(laneStore)
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
