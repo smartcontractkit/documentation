@@ -1,4 +1,6 @@
-export * from "./TutorialCard"
+export { PrerequisitesCard } from "./PrerequisitesCard"
+export { SetupSection } from "./SetupSection"
+export { TutorialCard } from "./TutorialCard"
 export * from "./TutorialStep"
 export * from "./SolidityParam"
 export * from "./NetworkCheck"
