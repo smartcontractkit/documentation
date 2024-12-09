@@ -5,6 +5,7 @@ import { TutorialCard } from "../TutorialSetup/TutorialCard"
 import { TutorialStep } from "../TutorialSetup/TutorialStep"
 import { NetworkCheck } from "../TutorialSetup/NetworkCheck"
 import { SolidityParam } from "../TutorialSetup/SolidityParam"
+import { Callout } from "../TutorialSetup/Callout"
 import styles from "./DeployTokenStep.module.css"
 
 interface DeployTokenStepProps {
@@ -26,6 +27,17 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
     <>
       <NetworkCheck network={networkInfo} />
 
+      <Callout type="note" title="Already Have a Token?">
+        If you have an existing token that meets the{" "}
+        <a href="/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens">CCT requirements</a>:
+        <ul>
+          <li>Skip the "Deploy Token" section</li>
+          <li>Enter your existing token address in the address field below</li>
+          <li>Continue with "Claim and Accept Admin Role"</li>
+        </ul>
+        <p>The tutorial will use your provided token address for subsequent steps.</p>
+      </Callout>
+
       <ol className={styles.steps}>
         <TutorialStep title="Configure Remix">
           <ul>
@@ -41,6 +53,17 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
           <div className={styles.parametersIntro}>
             <p>Configure your token by setting these required parameters in Remix:</p>
           </div>
+
+          <Callout type="note" title="About the Parameters">
+            <ul>
+              <li>The name and symbol help identify your token in wallets and applications</li>
+              <li>Using 18 decimals is standard for most ERC20 tokens (1 token = 1000000000000000000 wei)</li>
+              <li>
+                Setting maxSupply to 0 allows unlimited minting. For a limited supply, specify the amount in wei (e.g.,
+                for max 1000 tokens with 18 decimals: 1000000000000000000000)
+              </li>
+            </ul>
+          </Callout>
 
           <div className={styles.parameters}>
             <SolidityParam
