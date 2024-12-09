@@ -214,7 +214,7 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
 
               {formattedUpdate && (
                 <li>
-                  Copy the generated value and paste it into the chainsToAdd parameter in Remix:
+                  Copy the generated value and paste it into the <code>chainsToAdd</code> parameter in Remix:
                   <div className={styles.copyBlock}>
                     <div className={styles.copyContainer}>
                       <ReactCopyText text={callData} code />

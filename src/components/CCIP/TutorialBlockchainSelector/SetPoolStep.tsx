@@ -39,7 +39,7 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
               In the "Deploy & Run Transactions" tab, select <strong>TokenAdminRegistry</strong> contract
             </li>
             <li>
-              Use "At Address" with:
+              Click "At Address" with:
               <div className={styles.contractInfo}>
                 <strong>Contract:</strong> TokenAdminRegistry
                 <NetworkAddress type="tokenAdminRegistry" chain={chain} />
