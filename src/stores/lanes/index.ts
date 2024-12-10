@@ -99,6 +99,7 @@ export type LaneState = {
   outboundRateLimiter: TokenBucketState | null
   sourceRateLimits: RateLimits | null
   destinationRateLimits: RateLimits | null
+  currentStep?: StepId
 }
 
 // Add performance monitoring
@@ -557,4 +558,23 @@ export const checkProgress = (stepId: StepId, subStepId: string) => {
       checkSpecificProgress(relevantConditions, state)
     }
   }
+}
+
+export const navigateToStep = (stepId: StepId) => {
+  const store = getStoreForStep(stepId)
+  const currentState = store.get()
+
+  // Update lane store to reflect the current step
+  const currentLaneState = laneStore.get()
+  laneStore.set({
+    ...currentLaneState,
+    currentStep: stepId,
+  })
+
+  // Emit navigation event for scroll handling
+  window.dispatchEvent(
+    new CustomEvent("tutorial-navigate", {
+      detail: { stepId },
+    })
+  )
 }

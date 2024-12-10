@@ -4,6 +4,7 @@ import { laneStore, progressStore, TUTORIAL_STEPS, type StepId, type LaneState }
 import styles from "./TutorialProgress.module.css"
 import { ChainSelectorDisplay } from "./ChainSelectorDisplay"
 import { ContractAddressDisplay } from "./ContractAddressDisplay"
+import { SectionProgress } from "./SectionProgress"
 
 // Helper function to determine current step
 const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {
@@ -20,9 +21,6 @@ export const TutorialProgress = () => {
   const [expandedStep, setExpandedStep] = useState<string | null>(null)
   const [forceExpanded, setForceExpanded] = useState<string | null>(null)
 
-  // Use currentStep to determine which step should be expanded by default
-  const currentStepNumber = useMemo(() => determineCurrentStep(mainState), [mainState])
-
   const steps = useMemo(
     () => [
       { id: "setup", title: "Setup", stepNumber: 1 },
@@ -32,6 +30,54 @@ export const TutorialProgress = () => {
       { id: "destinationConfig", title: "Destination Configuration", stepNumber: 5 },
     ],
     []
+  )
+
+  const getStepStatus = useCallback(
+    (stepId: string) => {
+      const stepProgress = progress[stepId] || {}
+      const totalSubSteps = Object.keys(TUTORIAL_STEPS[stepId].subSteps).length
+      const completedSubSteps = Object.values(stepProgress).filter(Boolean).length
+
+      if (completedSubSteps === 0) return "not-started"
+      if (completedSubSteps === totalSubSteps) return "completed"
+      return "in-progress"
+    },
+    [progress]
+  )
+
+  // Calculate the highest completed step
+  const highestCompletedStep = useMemo(() => {
+    return steps.reduce((highest, step) => {
+      const status = getStepStatus(step.id)
+      if (status === "completed") {
+        return Math.max(highest, step.stepNumber)
+      }
+      return highest
+    }, 0)
+  }, [steps, getStepStatus])
+
+  // Determine the displayed step number (should be the lowest incomplete step)
+  const displayedStepNumber = useMemo(() => {
+    const inProgressStep = steps.find((step) => getStepStatus(step.id) === "in-progress")
+    if (inProgressStep) return inProgressStep.stepNumber
+
+    // If no step is in progress, show the next step after highest completed
+    const nextStep = highestCompletedStep + 1
+    return Math.min(nextStep, steps.length)
+  }, [steps, getStepStatus, highestCompletedStep])
+
+  // Use currentStep to determine which step should be expanded by default
+  const currentStepNumber = useMemo(() => determineCurrentStep(mainState), [mainState])
+
+  // Create steps data for progress bar
+  const progressSteps = useMemo(
+    () =>
+      steps.map((step) => ({
+        id: step.id as StepId,
+        stepNumber: step.stepNumber,
+        status: getStepStatus(step.id),
+      })),
+    [steps, getStepStatus]
   )
 
   // Auto-expand current step on initial render
@@ -59,19 +105,6 @@ export const TutorialProgress = () => {
     [expandedStep]
   )
 
-  const getStepStatus = useCallback(
-    (stepId: string) => {
-      const stepProgress = progress[stepId] || {}
-      const totalSubSteps = Object.keys(TUTORIAL_STEPS[stepId].subSteps).length
-      const completedSubSteps = Object.values(stepProgress).filter(Boolean).length
-
-      if (completedSubSteps === 0) return "not-started"
-      if (completedSubSteps === totalSubSteps) return "completed"
-      return "in-progress"
-    },
-    [progress]
-  )
-
   const getStepProgress = useCallback(
     (stepId: StepId) => {
       const stepConfig = TUTORIAL_STEPS[stepId]
@@ -88,6 +121,12 @@ export const TutorialProgress = () => {
   return (
     <section className={styles.tutorialProgress} aria-label="Tutorial Progress">
       <div className={styles.title}>Tutorial Progress</div>
+      <SectionProgress
+        currentStep={displayedStepNumber}
+        totalSteps={steps.length}
+        sectionTitle="Tutorial Progress"
+        steps={progressSteps}
+      />
       <div className={styles.progressSteps}>
         <div className={styles.steps}>
           {steps.map((step) => {
