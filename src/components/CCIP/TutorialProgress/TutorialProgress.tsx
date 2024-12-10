@@ -2,6 +2,8 @@ import { useStore } from "@nanostores/react"
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { laneStore, progressStore, TUTORIAL_STEPS, type StepId, type LaneState } from "@stores/lanes"
 import styles from "./TutorialProgress.module.css"
+import { ChainSelectorDisplay } from "./ChainSelectorDisplay"
+import { ContractAddressDisplay } from "./ContractAddressDisplay"
 
 // Helper function to determine current step
 const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {
@@ -10,12 +12,6 @@ const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {
   if (!state.destinationContracts.token || !state.destinationContracts.tokenPool) return 3
   if (!state.sourceContracts.configured) return 4
   return 5
-}
-
-// Add truncateChainSelector function after truncateAddress
-const truncateChainSelector = (selector: string) => {
-  if (!selector) return ""
-  return `${selector.slice(0, 4)}...${selector.slice(-4)}`
 }
 
 export const TutorialProgress = () => {
@@ -89,13 +85,8 @@ export const TutorialProgress = () => {
     [progress]
   )
 
-  const truncateAddress = (address: string) => {
-    if (!address) return ""
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
-
   return (
-    <section className={styles.tutorialProgress}>
+    <section className={styles.tutorialProgress} aria-label="Tutorial Progress">
       <div className={styles.title}>Tutorial Progress</div>
       <div className={styles.progressSteps}>
         <div className={styles.steps}>
@@ -161,9 +152,7 @@ export const TutorialProgress = () => {
                 {mainState.sourceNetwork?.chainSelector ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.sourceNetwork.chainSelector}>
-                      {truncateChainSelector(mainState.sourceNetwork.chainSelector)}
-                    </div>
+                    <ChainSelectorDisplay selector={mainState.sourceNetwork.chainSelector} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Available</span>
@@ -176,9 +165,7 @@ export const TutorialProgress = () => {
                 {mainState.sourceContracts.token ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.sourceContracts.token}>
-                      {truncateAddress(mainState.sourceContracts.token)}
-                    </div>
+                    <ContractAddressDisplay address={mainState.sourceContracts.token} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Deployed</span>
@@ -191,9 +178,7 @@ export const TutorialProgress = () => {
                 {mainState.sourceContracts.tokenPool ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.sourceContracts.tokenPool}>
-                      {truncateAddress(mainState.sourceContracts.tokenPool)}
-                    </div>
+                    <ContractAddressDisplay address={mainState.sourceContracts.tokenPool} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Deployed</span>
@@ -222,9 +207,7 @@ export const TutorialProgress = () => {
                 {mainState.destinationNetwork?.chainSelector ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.destinationNetwork.chainSelector}>
-                      {truncateChainSelector(mainState.destinationNetwork.chainSelector)}
-                    </div>
+                    <ChainSelectorDisplay selector={mainState.destinationNetwork.chainSelector} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Available</span>
@@ -237,9 +220,7 @@ export const TutorialProgress = () => {
                 {mainState.destinationContracts.token ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.destinationContracts.token}>
-                      {truncateAddress(mainState.destinationContracts.token)}
-                    </div>
+                    <ContractAddressDisplay address={mainState.destinationContracts.token} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Deployed</span>
@@ -252,9 +233,7 @@ export const TutorialProgress = () => {
                 {mainState.destinationContracts.tokenPool ? (
                   <div className={styles.statusValueWithAddress}>
                     <span className={styles.statusCheck}>✓</span>
-                    <div className={styles.valueContainer} data-tooltip={mainState.destinationContracts.tokenPool}>
-                      {truncateAddress(mainState.destinationContracts.tokenPool)}
-                    </div>
+                    <ContractAddressDisplay address={mainState.destinationContracts.tokenPool} />
                   </div>
                 ) : (
                   <span className={styles.statusPending}>Not Deployed</span>
