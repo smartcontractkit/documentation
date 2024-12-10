@@ -68,19 +68,19 @@ We will cover the following key steps:
 
 1. **Creating a Safe Account**: You will create a 2-of-3 multi-signature Safe that will serve as the owner of the token and token pool contracts. This Safe will also manage administrative tasks, such as configuring token pools and registering as the token admin in the token admin registry.
 
-1. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and BASE Sepolia testnets and transfer ownership to the Safe account.
+1. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and BASE Sepolia testnets and transfer ownership to the Safe account.
 
-1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/v1.5.1/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
 
 1. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
 
-   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
+   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/v1.5.1/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
 
-   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/token-admin-registry#acceptadminrole) function to complete the registration process.
+   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/v1.5.1/token-admin-registry#acceptadminrole) function to complete the registration process.
 
    Meta-transactions are used here to batch these two actions, allowing both steps to be executed efficiently. The meta-transactions are created off-chain and signed by each of the two required Safe owners. This off-chain signing process reduces gas costs and enhances security, as the transactions are only broadcasted to the blockchain once all required signatures are collected.
 
-1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/token-admin-registry) contract's [`setPool`](/ccip/api-reference/token-admin-registry#setpool) function to associate each token with its respective token pool.
+1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) function to associate each token with its respective token pool.
 
 1. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
 
@@ -200,12 +200,12 @@ Below is an explanation of the parameters used during deployment:
 
    ```bash
    $ npx hardhat deploySafe --owners 0x9d087fC03ae39b088326b67fA3C788236645b717,0x109690437eC588caA0caA414D1bb447aA423d018,0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0 --threshold 2 --network sepolia
-   024-10-20T14:57:28.031Z info: Initializing Safe Protocol Kit...
-   2024-10-20T14:57:28.541Z info: Deploying Safe with the following configuration:
-   2024-10-20T14:57:28.542Z info: Owners: 0x9d087fC03ae39b088326b67fA3C788236645b717, 0x109690437eC588caA0caA414D1bb447aA423d018, 0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0
-   2024-10-20T14:57:28.542Z info: Threshold: 2
-   2024-10-20T14:57:28.542Z info: Salt nonce: 102665029316435310121057348181745079700181767429012824209946078868006320683778
-   2024-10-20T14:57:42.551Z info: Safe deployed successfully at address: 0x5899B1556Bc0769F678961B9F9B044DBe1868748
+   2024-12-02T23:01:59.320Z info: Initializing Safe Protocol Kit...
+   2024-12-02T23:01:59.808Z info: Deploying Safe with the following configuration:
+   2024-12-02T23:01:59.809Z info: Owners: 0x9d087fC03ae39b088326b67fA3C788236645b717, 0x109690437eC588caA0caA414D1bb447aA423d018, 0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0
+   2024-12-02T23:01:59.809Z info: Threshold: 2
+   2024-12-02T23:01:59.809Z info: Salt nonce: 44732637531171408606989766710428919000007326803927296239662283839576508833896
+   2024-12-02T23:02:43.023Z info: Safe deployed successfully at address: 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
    ```
 
 1. **Deploy a Safe on BASE Sepolia** (Replace `0xOwnerAddress1`, `0xOwnerAddress2`, and `0xOwnerAddress3` with your Ethereum addresses):
@@ -218,12 +218,12 @@ Below is an explanation of the parameters used during deployment:
 
    ```bash
    $ npx hardhat deploySafe --owners 0x9d087fC03ae39b088326b67fA3C788236645b717,0x109690437eC588caA0caA414D1bb447aA423d018,0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0 --threshold 2 --network baseSepolia
-   2024-10-20T14:58:41.430Z info: Initializing Safe Protocol Kit...
-   2024-10-20T14:58:42.123Z info: Deploying Safe with the following configuration:
-   2024-10-20T14:58:42.123Z info: Owners: 0x9d087fC03ae39b088326b67fA3C788236645b717, 0x109690437eC588caA0caA414D1bb447aA423d018, 0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0
-   2024-10-20T14:58:42.123Z info: Threshold: 2
-   2024-10-20T14:58:42.123Z info: Salt nonce: 77196524336537926223375508408885200380673362997640380014548358436098374575834
-   2024-10-20T14:58:48.581Z info: Safe deployed successfully at address: 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
+   2024-12-02T23:03:49.928Z info: Initializing Safe Protocol Kit...
+   2024-12-02T23:03:50.524Z info: Deploying Safe with the following configuration:
+   2024-12-02T23:03:50.524Z info: Owners: 0x9d087fC03ae39b088326b67fA3C788236645b717, 0x109690437eC588caA0caA414D1bb447aA423d018, 0x2Ae947aDC044091EE1b8D4FB8262308C6A4F34E0
+   2024-12-02T23:03:50.524Z info: Threshold: 2
+   2024-12-02T23:03:50.524Z info: Salt nonce: 80136379846828664797424433947440198365341293162528355696584324855044899786181
+   2024-12-02T23:03:57.037Z info: Safe deployed successfully at address: 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
    ```
 
 <Aside type="note" title="Record Safe contract addresses">
@@ -245,52 +245,60 @@ Below is an explanation of the parameters used during deployment:
 | `name`             | The full name of the token.                                                                                                                        | N/A     | Yes      |
 | `symbol`           | The shorthand symbol representing the token.                                                                                                       | N/A     | Yes      |
 | `decimals`         | The number of decimal places the token supports (e.g., `18` means 1 token is represented as 1e18 smallest units).                                  | `18`    | No       |
-| `initialsupply`    | The initial supply of tokens to be created upon deployment. Set to `0` to deploy the token with no initial supply.                                 | `0`     | No       |
+| `maxsupply`        | The maximum supply of tokens. Set to `0` for unlimited supply.                                                                                     | `0`     | No       |
 | `verifycontract`   | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                      | `false` | No       |
 | `network`          | The blockchain on which the token will be deployed. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for BASE Sepolia.            | N/A     | Yes      |
 
 1. **Deploy a token on Ethereum Sepolia** (Replace `0xSafeAddress` with the address of the Safe smart account. You can also adapt the token name and symbol as needed):
 
    ```bash
-   npx hardhat deployTokenWithSafe --safeaddress 0xSafeAddress --name "BnM aem multisig" --symbol BnMaem --decimals 18 --initialsupply 0 --verifycontract true --network sepolia
+   npx hardhat deployTokenWithSafe \
+     --name "BnM aem" \
+     --symbol BnMaem \
+     --decimals 18 \
+     --maxsupply 0 \
+     --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C \
+     --verifycontract true \
+     --network sepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenWithSafe --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --name "BnM aem multisig" --symbol BnMaem --decimals 18 --initialsupply 0 --withgetccipadmin false --verifycontract true --network sepolia
-   2024-10-20T15:07:52.374Z info: Deploying BurnMintERC677 contract to sepolia
-   2024-10-20T15:07:52.375Z info: Waiting 2 blocks for transaction 0xbef44f47fb24f94bcb4c68ecf16f4f8e0b7a6b89e85d616ac578725ff372e0de to be confirmed...
-   2024-10-20T15:08:25.556Z info: Token deployed to: 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af
-   2024-10-20T15:08:25.556Z info: Verifying contract on Etherscan...
-   The contract 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.etherscan.io/address/0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af#code
-
-   2024-10-20T15:08:26.203Z info: Token contract deployed and verified
-   2024-10-20T15:08:26.203Z info: Transferring ownership of token to Safe at 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-   2024-10-20T15:08:48.980Z info: Ownership of token transferred to Safe at 0x5899B1556Bc0769F678961B9F9B044DBe1868748
+   2024-12-02T23:06:00.415Z info: Deploying BurnMintERC677 contract to sepolia
+   2024-12-02T23:06:00.417Z info: Waiting 2 blocks for transaction 0x55b43a65f4193951ccf82805a910dffe1d7b5da6159f041e8e5d33f3920607cd to be confirmed...
+   2024-12-02T23:06:26.113Z info: Token deployed to: 0xee78C4D525Df5591ba1F3e697A28a84b83b53822
+   2024-12-02T23:06:26.114Z info: Verifying contract on Etherscan...
+   2024-12-02T23:06:29.829Z info: Transferring ownership of token to Safe at 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+   2024-12-02T23:06:50.958Z info: Ownership of token transferred to Safe at 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
    ```
 
 1. **Deploy a token on BASE Sepolia** (Replace `0xSafeAddress` with the address of the Safe smart account. You can also adapt the token name and symbol as needed):
 
    ```bash
-   npx hardhat deployTokenWithSafe --safeaddress 0xSafeAddress --name "BnM aem multisig" --symbol BnMaem --decimals 18 --initialsupply 0 --verifycontract true --network baseSepolia
+   npx hardhat deployTokenWithSafe \
+     --name "BnM aem" \
+     --symbol BnMaem \
+     --decimals 18 \
+     --maxsupply 0 \
+     --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 \
+     --verifycontract true \
+     --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenWithSafe --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --name "BnM aem multisig" --symbol BnMaem --decimals 18 --initialsupply 0 --verifycontract true --network baseSepolia
-   2024-10-20T15:11:32.755Z info: Deploying BurnMintERC677 contract to baseSepolia
-   2024-10-20T15:11:32.757Z info: Waiting 2 blocks for transaction 0x193b01f218978daa3dc5e3b818d66736d75c0ed360f650ef87c28f4177d6fa30 to be confirmed...
-   2024-10-20T15:11:32.912Z info: Token deployed to: 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b
-   2024-10-20T15:11:32.912Z info: Verifying contract on Etherscan...
-   The contract 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.basescan.org/address/0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b#code
+   2024-12-02T23:07:38.938Z info: Deploying BurnMintERC677 contract to baseSepolia
+   2024-12-02T23:07:38.938Z info: Waiting 2 blocks for transaction 0xaba0e03fdba755deca088e3a6e889c88ee742e18e2e852fc8b280a2feeedba2f to be confirmed...
+   2024-12-02T23:07:40.807Z info: Token deployed to: 0xa322ED07Ed115980fc79f920D1f049e90882F699
+   2024-12-02T23:07:40.807Z info: Verifying contract on Etherscan...
+   The contract 0xa322ED07Ed115980fc79f920D1f049e90882F699 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+   https://sepolia.basescan.org/address/0xa322ED07Ed115980fc79f920D1f049e90882F699#code
 
-   2024-10-20T15:11:33.484Z info: Token contract deployed and verified
-   2024-10-20T15:11:33.485Z info: Transferring ownership of token to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-   2024-10-20T15:11:39.419Z info: Ownership of token transferred to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
+   2024-12-02T23:07:41.309Z info: Token contract deployed and verified
+   2024-12-02T23:07:41.309Z info: Transferring ownership of token to Safe at 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+   2024-12-02T23:07:44.654Z info: Ownership of token transferred to Safe at 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
    ```
 
 <Aside type="note" title="Record Token contract addresses">
@@ -321,37 +329,37 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-   2024-10-20T15:16:56.678Z info: Encoding acceptOwnership call for contract at 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
-   2024-10-20T15:16:56.680Z info: Setting up Safe transaction...
-   2024-10-20T15:16:58.379Z info: Safe transaction created
-   2024-10-20T15:16:59.019Z info: Safe transaction signed by owner 1
-   2024-10-20T15:16:59.602Z info: Safe transaction signed by owner 2
-   2024-10-20T15:16:59.602Z info: Executing Safe transaction to accept ownership...
-   2024-10-20T15:17:00.890Z info: Executed Safe transaction
-   2024-10-20T15:17:00.890Z info: Waiting for 2 blocks for transaction 0x81407f7787bfd73b35394482da3f968836ffebda35769a34ef7406bfefec2d2d to be confirmed...
-   2024-10-20T15:18:02.704Z info: Transaction confirmed after 2 blocks.
+   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+   2024-12-02T23:10:10.118Z info: Encoding acceptOwnership call for contract at 0xee78C4D525Df5591ba1F3e697A28a84b83b53822...
+   2024-12-02T23:10:10.421Z info: Setting up Safe transaction...
+   2024-12-02T23:10:11.888Z info: Safe transaction created
+   2024-12-02T23:10:12.482Z info: Safe transaction signed by owner 1
+   2024-12-02T23:10:13.069Z info: Safe transaction signed by owner 2
+   2024-12-02T23:10:13.069Z info: Executing Safe transaction to accept ownership...
+   2024-12-02T23:10:14.785Z info: Executed Safe transaction
+   2024-12-02T23:10:14.785Z info: Waiting for 2 blocks for transaction 0xd531b50df0714d2d6237b2f1032dec932b7057943ef3b02844186cf6b373e9e8 to be confirmed...
+   2024-12-02T23:10:39.677Z info: Transaction confirmed after 2 blocks.
    ```
 
 1. **Accept ownership of the token on BASE Sepolia** (Replace `0xContractAddress` and `0xSafeAddress` with the token contract address and Safe smart account address, respectively):
 
    ```bash
-    npx hardhat acceptOwnershipFromSafe --contractaddress 0xContractAddress --safeaddress 0xSafeAddress --network baseSepolia
+   npx hardhat acceptOwnershipFromSafe --contractaddress 0xContractAddress --safeaddress 0xSafeAddress --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-   2024-10-20T15:19:31.675Z info: Encoding acceptOwnership call for contract at 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b...
-   2024-10-20T15:19:31.678Z info: Setting up Safe transaction...
-   2024-10-20T15:19:34.256Z info: Safe transaction created
-   2024-10-20T15:19:35.057Z info: Safe transaction signed by owner 1
-   2024-10-20T15:19:35.988Z info: Safe transaction signed by owner 2
-   2024-10-20T15:19:35.988Z info: Executing Safe transaction to accept ownership...
-   2024-10-20T15:19:37.811Z info: Executed Safe transaction
-   2024-10-20T15:19:37.812Z info: Waiting for 2 blocks for transaction 0x0012997ef1d2120c7720d8a9be6def0a7c34572a91b3ee24fb1abad15115eeb7 to be confirmed...
-   2024-10-20T15:19:42.328Z info: Transaction confirmed after 2 blocks.
+   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --network baseSepolia
+   2024-12-02T23:10:47.743Z info: Encoding acceptOwnership call for contract at 0xa322ED07Ed115980fc79f920D1f049e90882F699...
+   2024-12-02T23:10:48.061Z info: Setting up Safe transaction...
+   2024-12-02T23:10:50.230Z info: Safe transaction created
+   2024-12-02T23:10:50.948Z info: Safe transaction signed by owner 1
+   2024-12-02T23:10:51.628Z info: Safe transaction signed by owner 2
+   2024-12-02T23:10:51.629Z info: Executing Safe transaction to accept ownership...
+   2024-12-02T23:10:53.119Z info: Executed Safe transaction
+   2024-12-02T23:10:53.120Z info: Waiting for 2 blocks for transaction 0xcead2aa68e89cb29ec5db86db221bbe8bb16629fff60005a09fc579a779b88bd to be confirmed...
+   2024-12-02T23:10:57.683Z info: Transaction confirmed after 2 blocks.
    ```
 
 ### Deploy Token Pools
@@ -362,53 +370,81 @@ In this step, you will deploy a token pool on both Ethereum Sepolia and BASE Sep
 
 Below is an explanation of the parameters used during deployment:
 
-| Parameter        | Description                                                                                                                                  | Default | Required |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress`   | The address of the token that the pool will manage.                                                                                          | N/A     | Yes      |
-| `safeaddress`    | The address of the Safe smart account that will own the token pool.                                                                          | N/A     | Yes      |
-| `verifycontract` | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                | `false` | No       |
-| `network`        | The blockchain on which the token pool will be deployed. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for BASE Sepolia. | N/A     | Yes      |
+| Parameter            | Description                                                                                                                                  | Default | Required |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `tokenaddress`       | The address of the token that the pool will manage.                                                                                          | N/A     | Yes      |
+| `safeaddress`        | The address of the Safe smart account that will own the token pool.                                                                          | N/A     | Yes      |
+| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                          | `18`    | No       |
+| `verifycontract`     | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                | `false` | No       |
+| `network`            | The blockchain on which the token pool will be deployed. Examples include `sepolia` for Ethereum Sepolia and `baseSepolia` for BASE Sepolia. | N/A     | Yes      |
 
 1. **Deploy a Burn and Mint token pool on Ethereum Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat deployTokenPoolWithSafe --tokenaddress 0xTokenAddress --safeaddress 0xSafeAddress --verifycontract true --network sepolia
+   npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xTokenAddress \
+     --safeaddress 0xSafeAddress \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network sepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenPoolWithSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --verifycontract true --network sepolia
-   2024-10-20T15:23:27.745Z info: Waiting 2 blocks for transaction 0xec12b302cf81a79e1458386bd1f13c7b38175e749ef4841706bd768ee23da1ec to be confirmed...
-   2024-10-20T15:24:01.936Z info: Token pool deployed to: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B
-   2024-10-20T15:24:01.937Z info: Verifying contract on Etherscan...
-   The contract 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.etherscan.io/address/0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B#code
+   $ npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 \
+     --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network sepolia
+   2024-12-02T23:22:17.155Z info: Waiting 2 blocks for transaction 0xe55dcd04eece509f326b636481ecf686bf3e73ddf550eb30edd7aea8f9db9cc9 to be confirmed...
+   2024-12-02T23:22:38.666Z info: Token pool deployed to: 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1
+   2024-12-02T23:22:38.666Z info: Verifying contract on Etherscan...
+   Successfully submitted source code for contract
+   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1
+   for verification on the block explorer. Waiting for verification result...
 
-   2024-10-20T15:24:02.471Z info: Token pool contract deployed and verified
-   2024-10-20T15:24:02.471Z info: Transferring ownership of Token Pool to Safe at 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-   2024-10-20T15:24:36.953Z info: Ownership of Token Pool transferred to Safe at 0x5899B1556Bc0769F678961B9F9B044DBe1868748
+   Successfully verified contract BurnMintTokenPool on the block explorer.
+   https://sepolia.etherscan.io/address/0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1#code
+
+   2024-12-02T23:22:49.407Z info: Token pool contract deployed and verified
+   2024-12-02T23:22:49.409Z info: Transferring ownership of Token Pool to Safe at 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+   2024-12-02T23:23:13.352Z info: Ownership of Token Pool transferred to Safe at 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
    ```
 
 1. **Deploy a Burn and Mint token pool on BASE Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat deployTokenPoolWithSafe --tokenaddress 0xTokenAddress --safeaddress 0xSafeAddress --verifycontract true --network baseSepolia
+   npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xTokenAddress \
+     --safeaddress 0xSafeAddress \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat deployTokenPoolWithSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --verifycontract true --network baseSepolia
-   2024-10-20T15:25:35.193Z info: Waiting 2 blocks for transaction 0x4637fed18d6d8c15e3c4b817e9d40719f926992f807fa1c2a503aecafc29bb3d to be confirmed...
-   2024-10-20T15:25:35.370Z info: Token pool deployed to: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B
-   2024-10-20T15:25:35.371Z info: Verifying contract on Etherscan...
-   The contract 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.basescan.org/address/0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B#code
+   $ npx hardhat deployTokenPoolWithSafe \
+     --tokenaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 \
+     --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network baseSepolia
+   2024-12-02T23:23:41.538Z info: Waiting 2 blocks for transaction 0xc9cbb0f753e494da52c9e9b441f7ce62e8be659ea462b0e24d1ab93aaecccffb to be confirmed...
+   2024-12-02T23:23:41.708Z info: Token pool deployed to: 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F
+   2024-12-02T23:23:41.709Z info: Verifying contract on Etherscan...
+   Successfully submitted source code for contract
+   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F
+   for verification on the block explorer. Waiting for verification result...
 
-   2024-10-20T15:25:35.977Z info: Token pool contract deployed and verified
-   2024-10-20T15:25:35.977Z info: Transferring ownership of Token Pool to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-   2024-10-20T15:25:41.866Z info: Ownership of Token Pool transferred to Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
+   Successfully verified contract BurnMintTokenPool on the block explorer.
+   https://sepolia.basescan.org/address/0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F#code
+   2024-12-02T23:23:53.062Z info: Token pool contract deployed and verified
+   2024-12-02T23:23:53.062Z info: Transferring ownership of Token Pool to Safe at 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+   2024-12-02T23:23:59.050Z info: Ownership of Token Pool transferred to Safe at 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
    ```
 
 <Aside type="note" title="Record Token Pool contract addresses">
@@ -433,37 +469,39 @@ Refer to the table in the [Accept Ownership of Tokens](#accept-ownership-of-toke
    Example output:
 
    ```bash
-   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-   2024-10-20T15:33:01.991Z info: Encoding acceptOwnership call for contract at 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B...
-   2024-10-20T15:33:01.993Z info: Setting up Safe transaction...
-   2024-10-20T15:33:03.611Z info: Safe transaction created
-   2024-10-20T15:33:04.199Z info: Safe transaction signed by owner 1
-   2024-10-20T15:33:04.850Z info: Safe transaction signed by owner 2
-   2024-10-20T15:33:04.850Z info: Executing Safe transaction to accept ownership...
-   2024-10-20T15:33:06.065Z info: Executed Safe transaction
-   2024-10-20T15:33:06.065Z info: Waiting for 2 blocks for transaction 0x17be8c25eef474b958523e8aebba3ef29dc34375b62a74fa33091f2bbd4290b1 to be confirmed...
-   2024-10-20T15:33:26.810Z info: Transaction confirmed after 2 blocks.
+   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+   2024-12-02T23:26:22.913Z info: Encoding acceptOwnership call for contract at 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1...
+   2024-12-02T23:26:23.213Z info: Setting up Safe transaction...
+   2024-12-02T23:26:24.848Z info: Safe transaction created
+   2024-12-02T23:26:25.473Z info: Safe transaction signed by owner 1
+   2024-12-02T23:26:26.110Z info: Safe transaction signed by owner 2
+   2024-12-02T23:26:26.110Z info: Executing Safe transaction to accept ownership...
+   2024-12-02T23:26:27.498Z info: Executed Safe transaction
+   2024-12-02T23:26:27.499Z info: Waiting for 2 blocks for transaction 0x0c83e22b1c3a9f1ae154375d7c837f3638a98ea1c0c07314801fe9741b501843 to be confirmed...
+   2024-12-02T23:26:52.337Z info: Transaction confirmed after 2 blocks.
    ```
 
 1. **Accept ownership of the token pool on BASE Sepolia** (Replace `0xContractAddress` and `0xSafeAddress` with the token pool contract address and Safe smart account address, respectively):
 
    ```bash
-    npx hardhat acceptOwnershipFromSafe --contractaddress 0xContractAddress --safeaddress 0xSafeAddress --network baseSepolia
+   npx hardhat acceptOwnershipFromSafe \
+     --contractaddress 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F \
+     --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 \
+     --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-   $ npx hardhat acceptOwnershipFromSafe --contractaddress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-   2024-10-20T15:34:31.588Z info: Encoding acceptOwnership call for contract at 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B...
-   2024-10-20T15:34:31.590Z info: Setting up Safe transaction...
-   2024-10-20T15:34:34.216Z info: Safe transaction created
-   2024-10-20T15:34:34.976Z info: Safe transaction signed by owner 1
-   2024-10-20T15:34:36.161Z info: Safe transaction signed by owner 2
-   2024-10-20T15:34:36.162Z info: Executing Safe transaction to accept ownership...
-   2024-10-20T15:34:37.915Z info: Executed Safe transaction
-   2024-10-20T15:34:37.916Z info: Waiting for 2 blocks for transaction 0x53550833781a2ec1b1b1bab4b700291baffc368184f35b55aef550834a0ed8a1 to be confirmed...
-   2024-10-20T15:34:46.638Z info: Transaction confirmed after 2 blocks.
+   2024-12-02T23:27:14.894Z info: Encoding acceptOwnership call for contract at 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F...
+   2024-12-02T23:27:15.190Z info: Setting up Safe transaction...
+   2024-12-02T23:27:17.149Z info: Safe transaction created
+   2024-12-02T23:27:17.912Z info: Safe transaction signed by owner 1
+   2024-12-02T23:27:18.741Z info: Safe transaction signed by owner 2
+   2024-12-02T23:27:18.741Z info: Executing Safe transaction to accept ownership...
+   2024-12-02T23:27:20.056Z info: Executed Safe transaction
+   2024-12-02T23:27:20.056Z info: Waiting for 2 blocks for transaction 0x33294e27a07816bf64f80e4cb5f4874a20ed6bb8ff6a14ef036304949c6e2b95 to be confirmed...
+   2024-12-02T23:27:28.458Z info: Transaction confirmed after 2 blocks.
    ```
 
 ### Claim and Accept Token Admin Role using Safe
@@ -490,18 +528,18 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-    $ npx hardhat claimAndAcceptAdminRoleFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-    2024-10-20T15:41:45.186Z info: Current token owner: 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-    2024-10-20T15:41:45.187Z info: Claiming admin of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af for Safe at 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-    2024-10-20T15:41:45.189Z info: Adding second MetaTransaction to accept admin role for token 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af
-    2024-10-20T15:41:46.807Z info: Safe transaction with two meta transactions created
-    2024-10-20T15:41:47.388Z info: Safe transaction signed by owner 1
-    2024-10-20T15:41:47.947Z info: Safe transaction signed by owner 2
-    2024-10-20T15:41:47.947Z info: Executing Safe transaction to claim and accept admin role...
-    2024-10-20T15:41:49.288Z info: Executed Safe transaction
-    2024-10-20T15:41:49.289Z info: Waiting for 2 blocks for transaction 0x53877d20d5b680124cc31869b65492de7a5e3331e45e92a875116cdbda0b18a1 to be confirmed...
-    2024-10-20T15:42:26.501Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T15:42:26.502Z info: Claiming admin of token 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af via Safe and accepted admin role successfully.
+   $ npx hardhat claimAndAcceptAdminRoleFromSafe --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+   2024-12-02T23:41:43.721Z info: Current token owner: 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+   2024-12-02T23:41:43.722Z info: Claiming admin of 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 for Safe at 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+   2024-12-02T23:41:43.724Z info: Adding second MetaTransaction to accept admin role for token 0xee78C4D525Df5591ba1F3e697A28a84b83b53822
+   2024-12-02T23:41:45.796Z info: Safe transaction with two meta transactions created
+   2024-12-02T23:41:46.433Z info: Safe transaction signed by owner 1
+   2024-12-02T23:41:46.976Z info: Safe transaction signed by owner 2
+   2024-12-02T23:41:46.976Z info: Executing Safe transaction to claim and accept admin role...
+   2024-12-02T23:41:48.362Z info: Executed Safe transaction
+   2024-12-02T23:41:48.362Z info: Waiting for 2 blocks for transaction 0xad9f1fee7fa2384f804cabca7a6069328c9fe83a2b429a30f09d3763ab80fba9 to be confirmed...
+   2024-12-02T23:42:17.316Z info: Transaction confirmed after 2 blocks.
+   2024-12-02T23:42:17.317Z info: Claiming admin of token 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 via Safe and accepted admin role successfully.
    ```
 
 1. **Claim and accept the admin role for the token on BASE Sepolia** (Replace `0xTokenAddress` and `0xSafeAddress` with the token address and Safe smart account address, respectively):
@@ -513,18 +551,18 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-    $ npx hardhat claimAndAcceptAdminRoleFromSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-    2024-10-20T16:09:57.904Z info: Current token owner: 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-    2024-10-20T16:09:57.906Z info: Claiming admin of 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b for Safe at 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-    2024-10-20T16:09:57.907Z info: Adding second MetaTransaction to accept admin role for token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b
-    2024-10-20T16:10:00.272Z info: Safe transaction with two meta transactions created
-    2024-10-20T16:10:01.109Z info: Safe transaction signed by owner 1
-    2024-10-20T16:10:01.953Z info: Safe transaction signed by owner 2
-    2024-10-20T16:10:01.953Z info: Executing Safe transaction to claim and accept admin role...
-    2024-10-20T16:10:03.819Z info: Executed Safe transaction
-    2024-10-20T16:10:03.819Z info: Waiting for 2 blocks for transaction 0xc50eeb9f04592e8f2ce0df4717a60d7276d5ff0545530287a32707b1b6252015 to be confirmed...
-    2024-10-20T16:10:08.375Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:10:08.375Z info: Claiming admin of token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b via Safe and accepted admin role successfully.
+   $ npx hardhat claimAndAcceptAdminRoleFromSafe --tokenaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --network baseSepolia
+   2024-12-02T23:42:22.896Z info: Current token owner: 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+   2024-12-02T23:42:22.898Z info: Claiming admin of 0xa322ED07Ed115980fc79f920D1f049e90882F699 for Safe at 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+   2024-12-02T23:42:22.900Z info: Adding second MetaTransaction to accept admin role for token 0xa322ED07Ed115980fc79f920D1f049e90882F699
+   2024-12-02T23:42:24.751Z info: Safe transaction with two meta transactions created
+   2024-12-02T23:42:25.522Z info: Safe transaction signed by owner 1
+   2024-12-02T23:42:26.217Z info: Safe transaction signed by owner 2
+   2024-12-02T23:42:26.217Z info: Executing Safe transaction to claim and accept admin role...
+   2024-12-02T23:42:27.697Z info: Executed Safe transaction
+   2024-12-02T23:42:27.697Z info: Waiting for 2 blocks for transaction 0xfedbda5b4079f98d27bdd0371ef832491398763a1d65cc9c6c6c581191ead256 to be confirmed...
+   2024-12-02T23:42:31.978Z info: Transaction confirmed after 2 blocks.
+   2024-12-02T23:42:31.978Z info: Claiming admin of token 0xa322ED07Ed115980fc79f920D1f049e90882F699 via Safe and accepted admin role successfully.
    ```
 
 ### Grant Mint and Burn Roles using Safe
@@ -548,24 +586,27 @@ Below is an explanation of the parameters used during this task:
 1. **Grant mint and burn roles on Ethereum Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xTokenAddress --burnerminters 0xPoolAddress,0xSafeAddress --safeaddress 0xSafeAddress --network sepolia
+   npx hardhat grantMintBurnRoleFromSafe \
+     --tokenaddress 0xTokenAddress \
+     --burnerminters 0xPoolAddress,0xSafeAddress \
+     --safeaddress 0xSafeAddress \
+     --network sepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --burnerminters 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B,0x5899B1556Bc0769F678961B9F9B044DBe1868748 --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-    2024-10-20T16:55:24.316Z info: Connecting to token contract at 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
-    2024-10-20T16:55:25.919Z info: Setting up Safe transactions to grant mint and burn roles to: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B, 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-    2024-10-20T16:55:26.187Z info: Safe transaction created
-    2024-10-20T16:55:26.798Z info: Safe transaction signed by owner 1
-    2024-10-20T16:55:27.359Z info: Safe transaction signed by owner 2
-    2024-10-20T16:55:27.359Z info: Executing Safe transaction to grant mint and burn roles...
-    2024-10-20T16:55:28.788Z info: Executed Safe transaction
-    2024-10-20T16:55:28.788Z info: Waiting for 2 blocks for transaction 0x6dc4441c3bdef5513a0bd46f7842323b3101c506f1219136ab6e8ce87e5a0111 to be confirmed...
-    2024-10-20T16:55:49.527Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:55:49.528Z info: Mint and burn roles granted to 0x1e602Ba0
-
+    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --burnerminters 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1,0x9960eDf0dC0E861f0f4A672273A8ac237402561C --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+    2024-12-02T23:48:42.196Z info: Connecting to token contract at 0xee78C4D525Df5591ba1F3e697A28a84b83b53822...
+    2024-12-02T23:48:44.194Z info: Setting up Safe transactions to grant mint and burn roles to: 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1, 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+    2024-12-02T23:48:44.479Z info: Safe transaction created
+    2024-12-02T23:48:45.053Z info: Safe transaction signed by owner 1
+    2024-12-02T23:48:45.674Z info: Safe transaction signed by owner 2
+    2024-12-02T23:48:45.674Z info: Executing Safe transaction to grant mint and burn roles...
+    2024-12-02T23:48:47.323Z info: Executed Safe transaction
+    2024-12-02T23:48:47.323Z info: Waiting for 2 blocks for transaction 0x72370f03a9f4a0b27adea7c20ed0d90e68e643b3109e962b32f56843693e01b0 to be confirmed...
+    2024-12-02T23:49:03.937Z info: Transaction confirmed after 2 blocks.
+    2024-12-02T23:49:03.937Z info: Mint and burn roles granted to 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1, 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
    ```
 
 1. **Grant mint and burn roles on BASE Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
@@ -577,17 +618,17 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --burnerminters 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B,0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-    2024-10-20T16:56:53.698Z info: Connecting to token contract at 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b...
-    2024-10-20T16:56:55.988Z info: Setting up Safe transactions to grant mint and burn roles to: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-    2024-10-20T16:56:56.335Z info: Safe transaction created
-    2024-10-20T16:56:57.239Z info: Safe transaction signed by owner 1
-    2024-10-20T16:56:58.080Z info: Safe transaction signed by owner 2
-    2024-10-20T16:56:58.080Z info: Executing Safe transaction to grant mint and burn roles...
-    2024-10-20T16:56:59.974Z info: Executed Safe transaction
-    2024-10-20T16:56:59.975Z info: Waiting for 2 blocks for transaction 0x8633b45f1598b35460f953e92f7995daaba9529d501add8771a9fadf6439e075 to be confirmed...
-    2024-10-20T16:57:08.752Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:57:08.753Z info: Mint and burn roles granted to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B, 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
+    $ npx hardhat grantMintBurnRoleFromSafe --tokenaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 --burnerminters 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F,0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --network baseSepolia
+    2024-12-02T23:49:10.027Z info: Connecting to token contract at 0xa322ED07Ed115980fc79f920D1f049e90882F699...
+    2024-12-02T23:49:12.390Z info: Setting up Safe transactions to grant mint and burn roles to: 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F, 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+    2024-12-02T23:49:12.697Z info: Safe transaction created
+    2024-12-02T23:49:13.409Z info: Safe transaction signed by owner 1
+    2024-12-02T23:49:14.175Z info: Safe transaction signed by owner 2
+    2024-12-02T23:49:14.176Z info: Executing Safe transaction to grant mint and burn roles...
+    2024-12-02T23:49:15.596Z info: Executed Safe transaction
+    2024-12-02T23:49:15.596Z info: Waiting for 2 blocks for transaction 0xb3f583c489c3dbbc3afc1654aa4384e1ded06fa102c30ea6a2e27129a266a7dc to be confirmed...
+    2024-12-02T23:49:19.942Z info: Transaction confirmed after 2 blocks.
+    2024-12-02T23:49:19.942Z info: Mint and burn roles granted to 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F, 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
    ```
 
 ### Set Pool using Safe
@@ -612,17 +653,17 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-   $ npx hardhat setPoolFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --pooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-   2024-10-20T16:14:17.906Z info: Connecting to TokenAdminRegistry contract at 0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82...
-   2024-10-20T16:14:18.216Z info: Setting pool for token 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B by 0x5899B1556Bc0769F678961B9F9B044DBe1868748
-   2024-10-20T16:14:19.742Z info: Safe transaction created for setting the pool
-   2024-10-20T16:14:20.332Z info: Safe transaction signed by owner 1
-   2024-10-20T16:14:20.860Z info: Safe transaction signed by owner 2
-   2024-10-20T16:14:20.861Z info: Executing Safe transaction to set pool for token 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
-   2024-10-20T16:14:22.037Z info: Executed Safe transaction
-   2024-10-20T16:14:22.038Z info: Waiting for 2 blocks for transaction 0x0556c0c861d815f289062999b7ef4e7ff8cb78f6c56033ba08530b50150b5fa1 to be confirmed...
-   2024-10-20T16:14:38.663Z info: Transaction confirmed after 2 blocks.
-   2024-10-20T16:14:38.663Z info: Pool set for token 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B successfully.
+   $ npx hardhat setPoolFromSafe --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --pooladdress 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+   2024-12-02T23:51:49.178Z info: Connecting to TokenAdminRegistry contract at 0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82...
+   2024-12-02T23:51:49.719Z info: Setting pool for token 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 by 0x9960eDf0dC0E861f0f4A672273A8ac237402561C
+   2024-12-02T23:51:51.446Z info: Safe transaction created for setting the pool
+   2024-12-02T23:51:52.068Z info: Safe transaction signed by owner 1
+   2024-12-02T23:51:52.624Z info: Safe transaction signed by owner 2
+   2024-12-02T23:51:52.624Z info: Executing Safe transaction to set pool for token 0xee78C4D525Df5591ba1F3e697A28a84b83b53822...
+   2024-12-02T23:51:53.996Z info: Executed Safe transaction
+   2024-12-02T23:51:53.997Z info: Waiting for 2 blocks for transaction 0xe1dec8f7594a6ded69de7ac40ec833d33f200e820a0cdbf41544ccc9a85c7dbc to be confirmed...
+   2024-12-02T23:52:14.678Z info: Transaction confirmed after 2 blocks.
+   2024-12-02T23:52:14.679Z info: Pool set for token 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 successfully.
    ```
 
 1. **Set the token pool on BASE Sepolia** (Replace `0xTokenAddress`, `0xPoolAddress`, and `0xSafeAddress` with the token address, token pool address, and Safe smart account address, respectively):
@@ -634,17 +675,17 @@ Below is an explanation of the parameters used during this task:
    Example output:
 
    ```bash
-    $ npx hardhat setPoolFromSafe --tokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --pooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-    2024-10-20T16:15:47.979Z info: Connecting to TokenAdminRegistry contract at 0x736D0bBb318c1B27Ff686cd19804094E66250e17...
-    2024-10-20T16:15:48.411Z info: Setting pool for token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B by 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9
-    2024-10-20T16:15:51.088Z info: Safe transaction created for setting the pool
-    2024-10-20T16:15:52.058Z info: Safe transaction signed by owner 1
-    2024-10-20T16:15:52.985Z info: Safe transaction signed by owner 2
-    2024-10-20T16:15:52.985Z info: Executing Safe transaction to set pool for token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b...
-    2024-10-20T16:15:54.664Z info: Executed Safe transaction
-    2024-10-20T16:15:54.665Z info: Waiting for 2 blocks for transaction 0x95341bb4572c66c1fec59105010cdcf75d6e7e13d651f86214a8e6fd3c0524d9 to be confirmed...
-    2024-10-20T16:15:59.274Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:15:59.274Z info: Pool set for token 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b to 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B successfully.
+    $ npx hardhat setPoolFromSafe --tokenaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 --pooladdress 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --network baseSepolia
+    2024-12-02T23:52:22.061Z info: Connecting to TokenAdminRegistry contract at 0x736D0bBb318c1B27Ff686cd19804094E66250e17...
+    2024-12-02T23:52:22.704Z info: Setting pool for token 0xa322ED07Ed115980fc79f920D1f049e90882F699 to 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F by 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030
+    2024-12-02T23:52:24.570Z info: Safe transaction created for setting the pool
+    2024-12-02T23:52:25.231Z info: Safe transaction signed by owner 1
+    2024-12-02T23:52:25.899Z info: Safe transaction signed by owner 2
+    2024-12-02T23:52:25.899Z info: Executing Safe transaction to set pool for token 0xa322ED07Ed115980fc79f920D1f049e90882F699...
+    2024-12-02T23:52:27.471Z info: Executed Safe transaction
+    2024-12-02T23:52:27.471Z info: Waiting for 2 blocks for transaction 0xb9672a354f217570af726b97c7e2edba39308ce0e1cc5bfdd8e7758f294272f5 to be confirmed...
+    2024-12-02T23:52:31.740Z info: Transaction confirmed after 2 blocks.
+    2024-12-02T23:52:31.740Z info: Pool set for token 0xa322ED07Ed115980fc79f920D1f049e90882F699 to 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F successfully.
    ```
 
 ### Configure Token Pools using Safe
@@ -659,8 +700,7 @@ Below is an explanation of the parameters used during this task:
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
 | `pooladdress`               | The address of the token pool to be configured.                                                                                           | N/A     | Yes      |
 | `remotechain`               | The identifier of the remote blockchain (e.g., `sepolia` for Ethereum Sepolia or `baseSepolia` for BASE Sepolia).                         | N/A     | Yes      |
-| `allowed`                   | A flag indicating whether token transfers to the remote chain are allowed.                                                                | `true`  | No       |
-| `remotepooladdress`         | The address of the remote token pool on the remote chain.                                                                                 | N/A     | Yes      |
+| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                                                            | N/A     | Yes      |
 | `remotetokenaddress`        | The address of the token on the remote chain.                                                                                             | N/A     | Yes      |
 | `outboundratelimitenabled`  | Whether the outbound rate limit for the token pool is enabled.                                                                            | `false` | No       |
 | `outboundratelimitcapacity` | The maximum number of tokens that can be transferred outbound in a single burst (bucket capacity for the outbound rate limiter).          | `0`     | No       |
@@ -674,43 +714,49 @@ Below is an explanation of the parameters used during this task:
 1. **Configure the token pool on Ethereum Sepolia** (Replace `0xPoolAddress`, `0xRemotePoolAddress`, `0xRemoteTokenAddress`, and `0xSafeAddress` with the token pool address, remote token pool address, remote token address, and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain baseSepolia  --remotepooladdress 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network sepolia
+   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain baseSepolia  --remotepooladdresses 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network sepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotechain baseSepolia --remotepooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotetokenaddress 0xCa6485F192605FEe752b6c81Eef9EFB6d73C898b --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-    2024-10-20T16:28:59.975Z info: Configuring pool at address: 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B for remote chain baseSepolia
-    2024-10-20T16:29:01.657Z info: Safe transaction created for configuring the pool
-    2024-10-20T16:29:02.242Z info: Safe transaction signed by owner 1
-    2024-10-20T16:29:02.798Z info: Safe transaction signed by owner 2
-    2024-10-20T16:29:02.798Z info: Executing Safe transaction to configure pool 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B...
-    2024-10-20T16:29:04.169Z info: Executed Safe transaction
-    2024-10-20T16:29:04.169Z info: Waiting for 2 blocks for transaction 0x435defb5b024696d7cd0e1242bc1fc9d3789fc98618637fde2373394aef8da2a to be confirmed...
-    2024-10-20T16:29:29.013Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:29:29.013Z info: Pool configured successfully for remote chain baseSepolia
+    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 --remotechain baseSepolia --remotepooladdresses 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F --remotetokenaddress 0xa322ED07Ed115980fc79f920D1f049e90882F699 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+    2024-12-02T23:59:41.749Z info: Configuring pool at address: 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 for remote chain baseSepolia
+    2024-12-02T23:59:41.749Z info: Remote chain selector: 10344971235874465080
+    2024-12-02T23:59:41.749Z info: Remote pool addresses: 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F
+    2024-12-02T23:59:41.749Z info: Remote token address: 0xa322ED07Ed115980fc79f920D1f049e90882F699
+    2024-12-02T23:59:43.654Z info: Safe transaction created for configuring the pool
+    2024-12-02T23:59:44.159Z info: Safe transaction signed by owner 1
+    2024-12-02T23:59:44.691Z info: Safe transaction signed by owner 2
+    2024-12-02T23:59:44.692Z info: Executing Safe transaction to configure pool 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1...
+    2024-12-02T23:59:46.073Z info: Executed Safe transaction
+    2024-12-02T23:59:46.073Z info: Waiting for 2 blocks for transaction 0xff93804c9202be76577c225cb7436bb8abc56910ba768fda80dad423c90f20d6 to be confirmed...
+    2024-12-03T00:00:19.060Z info: Transaction confirmed after 2 blocks.
+    2024-12-03T00:00:19.060Z info: Pool configured successfully for remote chain baseSepolia
    ```
 
 1. **Configure the token pool on BASE Sepolia** (Replace `0xPoolAddress`, `0xRemotePoolAddress`, `0xRemoteTokenAddress`, and `0xSafeAddress` with the token pool address, remote token pool address, remote token address, and Safe smart account address, respectively):
 
    ```bash
-   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain sepolia  --remotepooladdress 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network baseSepolia
+   npx hardhat applyChainUpdatesFromSafe --pooladdress 0xPoolAddress --remotechain sepolia  --remotepooladdresses 0xRemotePoolAddress --remotetokenaddress 0xRemoteTokenAddress --safeaddress 0xSafeAddress --network baseSepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B --remotechain sepolia --remotepooladdress 0x1e602Ba0B6A7DE4e4586FeA9c175cB22C86B274B --remotetokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --safeaddress 0x9f0cF3CC2cd1d86A43d85896c3b5f9f8720123a9 --network baseSepolia
-    2024-10-20T16:30:23.128Z info: Configuring pool at address: 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B for remote chain sepolia
-    2024-10-20T16:30:25.787Z info: Safe transaction created for configuring the pool
-    2024-10-20T16:30:26.730Z info: Safe transaction signed by owner 1
-    2024-10-20T16:30:27.673Z info: Safe transaction signed by owner 2
-    2024-10-20T16:30:27.673Z info: Executing Safe transaction to configure pool 0xaBFAF5B0683d0aCA58129510E6B90388e74D9E1B...
-    2024-10-20T16:30:29.407Z info: Executed Safe transaction
-    2024-10-20T16:30:29.407Z info: Waiting for 2 blocks for transaction 0x79d1e9a31a622a6a83f63c241344361e7328b5809f72d2a182530f35c9b3c9b1 to be confirmed...
-    2024-10-20T16:30:33.975Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:30:33.975Z info: Pool configured successfully for remote chain sepolia
+    $ npx hardhat applyChainUpdatesFromSafe --pooladdress 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F --remotechain sepolia --remotepooladdresses 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1 --remotetokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --safeaddress 0xF08F65610F1c2cfD3146ea93cf15d2F980C68030 --network baseSepolia
+    2024-12-03T00:00:41.018Z info: Configuring pool at address: 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F for remote chain sepolia
+    2024-12-03T00:00:41.019Z info: Remote chain selector: 16015286601757825753
+    2024-12-03T00:00:41.019Z info: Remote pool addresses: 0x836cbb728CD32Ff30902879575CdAB2BCDd72eB1
+    2024-12-03T00:00:41.019Z info: Remote token address: 0xee78C4D525Df5591ba1F3e697A28a84b83b53822
+    2024-12-03T00:00:43.622Z info: Safe transaction created for configuring the pool
+    2024-12-03T00:00:44.280Z info: Safe transaction signed by owner 1
+    2024-12-03T00:00:44.943Z info: Safe transaction signed by owner 2
+    2024-12-03T00:00:44.943Z info: Executing Safe transaction to configure pool 0x79BDd00F5b20c0ED512626B5bc0ac755F8535b2F...
+    2024-12-03T00:00:46.374Z info: Executed Safe transaction
+    2024-12-03T00:00:46.375Z info: Waiting for 2 blocks for transaction 0x9d93df59dddbdc6148dbedee1402ef7b105b99a336c33d97e7ca66ba7a772328 to be confirmed...
+    2024-12-03T00:00:54.861Z info: Transaction confirmed after 2 blocks.
+    2024-12-03T00:00:54.861Z info: Pool configured successfully for remote chain sepolia
    ```
 
 ### Mint Tokens to an EOA using Safe
@@ -730,24 +776,29 @@ Below is an explanation of the parameters used during this task:
 1. **Mint tokens to an EOA on Ethereum Sepolia** (Replace `0xTokenAddress`, `0xSafeAddress`, and `0xReceiverAddress` with the token address, Safe smart account address, and recipient address, respectively):
 
    ```bash
-   npx hardhat mintTokensFromSafe --tokenaddress 0xTokenAddress --amount 100000000000000000000 --receiveraddresses 0xReceiverAddress --safeaddress 0xSafeAddress --network sepolia
+   npx hardhat mintTokensFromSafe \
+     --tokenaddress 0xTokenAddress \
+     --receiveraddresses 0xReceiverAddress \
+     --amount 100000000000000000000 \
+     --safeaddress 0xSafeAddress \
+     --network sepolia
    ```
 
    Example output:
 
    ```bash
-    $ npx hardhat mintTokensFromSafe --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --amount 100000000000000000000 --receiveraddresses 0x9d087fc03ae39b088326b67fa3c788236645b717 --safeaddress 0x5899B1556Bc0769F678961B9F9B044DBe1868748 --network sepolia
-    2024-10-20T16:58:19.897Z info: Connecting to token contract at 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af...
-    2024-10-20T16:58:19.958Z info: Minting 100000000000000000000 of BnMaem tokens to multiple addresses: 0x9d087fc03ae39b088326b67fa3c788236645b717
-    2024-10-20T16:58:21.563Z info: Safe transaction created
-    2024-10-20T16:58:22.111Z info: Safe transaction signed by owner 1
-    2024-10-20T16:58:22.636Z info: Safe transaction signed by owner 2
-    2024-10-20T16:58:22.636Z info: Executing Safe transaction to mint tokens to multiple addresses...
-    2024-10-20T16:58:23.874Z info: Executed Safe transaction
-    2024-10-20T16:58:23.875Z info: Waiting for 2 blocks for transaction 0x8a21f04dafb3aa8695b5a1d875935a2fea60ed29d62202c1a109ee99c8a94b56 to be confirmed...
-    2024-10-20T16:58:52.804Z info: Transaction confirmed after 2 blocks.
-    2024-10-20T16:58:52.893Z info: Minted 100000000000000000000 of BnMaem tokens to 0x9d087fc03ae39b088326b67fa3c788236645b717
-    2024-10-20T16:58:52.992Z info: Current balance of 0x9d087fc03ae39b088326b67fa3c788236645b717 is 200000000000000000000 BnMaem
+    $ npx hardhat mintTokensFromSafe --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --receiveraddresses 0x9d087fC03ae39b088326b67fA3C788236645b717 --amount 100000000000000000000 --safeaddress 0x9960eDf0dC0E861f0f4A672273A8ac237402561C --network sepolia
+    2024-12-03T00:04:41.003Z info: Connecting to token contract at 0xee78C4D525Df5591ba1F3e697A28a84b83b53822...
+    2024-12-03T00:04:41.408Z info: Minting 100000000000000000000 of BnMaem tokens to multiple addresses: 0x9d087fC03ae39b088326b67fA3C788236645b717
+    2024-12-03T00:04:43.277Z info: Safe transaction created
+    2024-12-03T00:04:43.911Z info: Safe transaction signed by owner 1
+    2024-12-03T00:04:44.606Z info: Safe transaction signed by owner 2
+    2024-12-03T00:04:44.606Z info: Executing Safe transaction to mint tokens to multiple addresses...
+    2024-12-03T00:04:45.865Z info: Executed Safe transaction
+    2024-12-03T00:04:45.865Z info: Waiting for 2 blocks for transaction 0x8bae0bbfb25d85d77b6569e2544c98cb9f203a04e5ba3d73c4c9d255b3f7da0f to be confirmed...
+    2024-12-03T00:05:02.485Z info: Transaction confirmed after 2 blocks.
+    2024-12-03T00:05:02.601Z info: Minted 100000000000000000000 of BnMaem tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+    2024-12-03T00:05:02.693Z info: Current balance of 0x9d087fC03ae39b088326b67fA3C788236645b717 is 100000000000000000000 BnMaem
    ```
 
 ### Transfer Tokens
@@ -778,36 +829,38 @@ npx hardhat transferTokens --tokenaddress 0xTokenAddress --amount 20000000000000
 Example output:
 
 ```bash
-$ npx hardhat transferTokens --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0x9d087fc03ae39b088326b67fa3c788236645b717 --fee LINK --network sepolia
-2024-10-20T17:01:57.420Z info: Estimated fees: 19882491967266251
-2024-10-20T17:01:57.421Z info: Approving 2000000000000000000 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-2024-10-20T17:02:12.753Z info: Approving 19882491967266251 LINK to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-2024-10-20T17:02:37.159Z info: Transferring 2000000000000000000 of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x9d087fc03ae39b088326b67fa3c788236645b717 on chain baseSepolia with 19882491967266251 of LINK as fees
-2024-10-20T17:03:02.102Z info: Transaction hash: 0x33cbc6eed84483716e8d5a19040101fe09e42be8c14f8c315ed1c099ccd36213
-2024-10-20T17:03:02.321Z info: ✅ Transferred 2000000000000000000 of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x9d087fc03ae39b088326b67fa3c788236645b717 on chain baseSepolia. Transaction hash: 0x33cbc6eed84483716e8d5a19040101fe09e42be8c14f8c315ed1c099ccd36213 - CCIP message id: 0x5e6d50efc9a9d325cee140058893698c8e591e0e1b0f36da5d24c04c1d1c3136
-2024-10-20T17:03:02.322Z info: Check status of message on https://ccip.chain.link/msg/0x5e6d50efc9a9d325cee140058893698c8e591e0e1b0f36da5d24c04c1d1c3136
+$ npx hardhat transferTokens --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0x9d087fc03ae39b088326b67fa3c788236645b717 --fee LINK --network sepolia
+2024-12-03T00:08:31.734Z info: Estimated fees: 9170545289377130
+2024-12-03T00:08:31.738Z info: Approving 2000000000000000000 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+2024-12-03T00:08:49.288Z info: Approving 9170545289377130 LINK to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+2024-12-03T00:09:25.656Z info: Transferring 2000000000000000000 of 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain baseSepolia with 9170545289377130 of LINK as fees
+2024-12-03T00:10:05.234Z info: Transaction hash: 0x54f5b69415e9a4d4c0f69dceb53c6c4454363bb0b2c2e5a20c0ef74b61f555a0
+2024-12-03T00:10:05.256Z info: Message dispatched. Message id: 0xc6865de87f95e9ab80587dff6ddbe0eed862e018bee4c0da66ed86a48886757f
+2024-12-03T00:10:05.256Z info: ✅ Transferred 2000000000000000000 of 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain baseSepolia. Transaction hash: 0x54f5b69415e9a4d4c0f69dceb53c6c4454363bb0b2c2e5a20c0ef74b61f555a0 - CCIP message id: 0xc6865de87f95e9ab80587dff6ddbe0eed862e018bee4c0da66ed86a48886757f
+2024-12-03T00:10:05.256Z info: Check status of message on https://ccip.chain.link/msg/0xc6865de87f95e9ab80587dff6ddbe0eed862e018bee4c0da66ed86a48886757f
 ```
 
-You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0x5e6d50efc9a9d325cee140058893698c8e591e0e1b0f36da5d24c04c1d1c3136`.
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0xc6865de87f95e9ab80587dff6ddbe0eed862e018bee4c0da66ed86a48886757f`.
 
 #### Pay fees in native gas tokens
 
 Call the CCIP Router to transfer tokens from Ethereum Sepolia to BASE Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
-npx hardhat transferTokens --tokenaddress 0xTokenAddress --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0xReceiverAddress --fee native --network sepolia
+npx hardhat transferTokens --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0x9d087fC03ae39b088326b67fA3C788236645b717 --fee native --network sepolia
 ```
 
 Example output:
 
 ```bash
-$ npx hardhat transferTokens --tokenaddress 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0x9d087fc03ae39b088326b67fa3c788236645b717 --fee native --network sepolia
-2024-10-20T17:03:48.908Z info: Estimated fees: 95096968223814
-2024-10-20T17:03:48.909Z info: Approving 2000000000000000000 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-2024-10-20T17:04:37.334Z info: Transferring 2000000000000000000 of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x9d087fc03ae39b088326b67fa3c788236645b717 on chain baseSepolia with 95096968223814 of native token as fees
-2024-10-20T17:05:26.122Z info: Transaction hash: 0x506559fd215347866f0c08ec4d38b1ca4a8882812a37900cf1ec244b9877e78b
-2024-10-20T17:05:26.152Z info: ✅ Transferred 2000000000000000000 of 0xa852f8E6FCEfCFf4F74828811055c7eCDFf247af to 0x9d087fc03ae39b088326b67fa3c788236645b717 on chain baseSepolia. Transaction hash: 0x506559fd215347866f0c08ec4d38b1ca4a8882812a37900cf1ec244b9877e78b - CCIP message id: 0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b
-2024-10-20T17:05:26.152Z info: Check status of message on https://ccip.chain.link/msg/0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b
+$ npx hardhat transferTokens --tokenaddress 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 --amount 2000000000000000000 --destinationchain baseSepolia --receiveraddress 0x9d087fC03ae39b088326b67fA3C788236645b717 --fee native --network sepolia
+2024-12-03T00:10:12.136Z info: Estimated fees: 69599297456410
+2024-12-03T00:10:12.137Z info: Approving 2000000000000000000 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+2024-12-03T00:10:49.970Z info: Transferring 2000000000000000000 of 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain baseSepolia with 69599297456410 of native token as fees
+2024-12-03T00:11:14.707Z info: Transaction hash: 0x80bebe5067000eb5507986baae620b99f6e10c84dec5620b6939564fabcd86f0
+2024-12-03T00:11:14.727Z info: Message dispatched. Message id: 0x5cd29ba4c7e4517d5a5c9df49fb03c59020a2163a4dc7617101eb682fd63f44b
+2024-12-03T00:11:14.727Z info: ✅ Transferred 2000000000000000000 of 0xee78C4D525Df5591ba1F3e697A28a84b83b53822 to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain baseSepolia. Transaction hash: 0x80bebe5067000eb5507986baae620b99f6e10c84dec5620b6939564fabcd86f0 - CCIP message id: 0x5cd29ba4c7e4517d5a5c9df49fb03c59020a2163a4dc7617101eb682fd63f44b
+2024-12-03T00:11:14.727Z info: Check status of message on https://ccip.chain.link/msg/0x5cd29ba4c7e4517d5a5c9df49fb03c59020a2163a4dc7617101eb682fd63f44b
 ```
 
-You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0x05a8af8effe1b5baaea0bf7117e9da2a15bd0d3c7c0702048e44ef444abad33b`.
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link) by visiting the provided URL. In this example, the message ID is `0x5cd29ba4c7e4517d5a5c9df49fb03c59020a2163a4dc7617101eb682fd63f44b`.

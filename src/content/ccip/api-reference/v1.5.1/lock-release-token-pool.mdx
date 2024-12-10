@@ -1,0 +1,262 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 LockReleaseTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the LockReleaseTokenPool contract in Chainlink CCIP v1.5.1, implementing lock/release functionality for tokens on their native chain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+The [`LockReleaseTokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) contract manages tokens on their original blockchain (native chain). When tokens are transferred across chains:
+
+- On the source chain: tokens are locked (held) in this pool
+- On the destination chain: an equivalent amount is released to the recipient
+
+Since this pool needs to hold tokens to release them later, it includes features to:
+
+- Add and remove liquidity (token reserves)
+- Track balances for both users and liquidity providers
+- Ensure proper accounting of all token movements
+
+<Aside type="note">Each LockReleaseTokenPool can manage only one type of token.</Aside>
+
+## Errors
+
+### InsufficientLiquidity
+
+```solidity
+error InsufficientLiquidity()
+```
+
+Thrown when there is not enough liquidity in the pool for a withdrawal.
+
+### LiquidityNotAccepted
+
+```solidity
+error LiquidityNotAccepted()
+```
+
+Thrown when trying to provide liquidity to a pool that doesn't accept it.
+
+## Events
+
+### LiquidityTransferred
+
+```solidity
+event LiquidityTransferred(address indexed from, uint256 amount)
+```
+
+Emitted when liquidity is transferred from an old pool version.
+
+| Parameter | Type    | Description                     |
+| --------- | ------- | ------------------------------- |
+| from      | address | Address of the old pool         |
+| amount    | uint256 | Amount of liquidity transferred |
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(
+    IERC20 token,
+    uint8 localTokenDecimals,
+    address[] memory allowlist,
+    address rmnProxy,
+    bool acceptLiquidity,
+    address router
+) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router)
+```
+
+Initializes the token pool with the specified parameters.
+
+#### Parameters
+
+| Name               | Type      | Description                                                                                                                                                              |
+| ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| token              | IERC20    | The token managed by this pool                                                                                                                                           |
+| localTokenDecimals | uint8     | The number of decimals for the token on the local chain                                                                                                                  |
+| allowlist          | address[] | List of addresses allowed to be original senders for token transfers. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens |
+| rmnProxy           | address   | Address of the RMN proxy                                                                                                                                                 |
+| acceptLiquidity    | bool      | Whether the pool accepts external liquidity                                                                                                                              |
+| router             | address   | Address of the router                                                                                                                                                    |
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(
+    Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) external virtual override returns (Pool.LockOrBurnOutV1 memory)
+```
+
+Locks the token in the pool.
+
+<Aside type="caution">The _validateLockOrBurn check is an essential security check.</Aside>
+
+#### Parameters
+
+| Name         | Type                | Description                             |
+| ------------ | ------------------- | --------------------------------------- |
+| lockOrBurnIn | Pool.LockOrBurnInV1 | Input parameters for the lock operation |
+
+#### Return Value
+
+| Type                 | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| Pool.LockOrBurnOutV1 | Struct containing destination token address and pool data |
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(
+    Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) external virtual override returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+Releases tokens from the pool to the recipient.
+
+<Aside type="caution">The _validateReleaseOrMint check is an essential security check.</Aside>
+
+#### Parameters
+
+| Name            | Type                   | Description                                |
+| --------------- | ---------------------- | ------------------------------------------ |
+| releaseOrMintIn | Pool.ReleaseOrMintInV1 | Input parameters for the release operation |
+
+#### Return Value
+
+| Type                    | Description                              |
+| ----------------------- | ---------------------------------------- |
+| Pool.ReleaseOrMintOutV1 | Struct containing the destination amount |
+
+### Liquidity Management Functions
+
+### getRebalancer
+
+```solidity
+function getRebalancer() external view returns (address)
+```
+
+Gets the LiquidityManager address.
+
+#### Return Value
+
+| Type    | Description                                                          |
+| ------- | -------------------------------------------------------------------- |
+| address | The current liquidity manager (can be address(0) if none configured) |
+
+### setRebalancer
+
+```solidity
+function setRebalancer(
+    address rebalancer
+) external onlyOwner
+```
+
+Sets the LiquidityManager address.
+
+#### Parameters
+
+| Name       | Type    | Description            |
+| ---------- | ------- | ---------------------- |
+| rebalancer | address | New rebalancer address |
+
+### canAcceptLiquidity
+
+```solidity
+function canAcceptLiquidity() external view returns (bool)
+```
+
+Checks if the pool can accept liquidity.
+
+#### Return Value
+
+| Type | Description                           |
+| ---- | ------------------------------------- |
+| bool | True if the pool can accept liquidity |
+
+### provideLiquidity
+
+```solidity
+function provideLiquidity(
+    uint256 amount
+) external
+```
+
+Adds liquidity to the pool. The tokens should be approved first.
+
+#### Parameters
+
+| Name   | Type    | Description                    |
+| ------ | ------- | ------------------------------ |
+| amount | uint256 | Amount of liquidity to provide |
+
+### withdrawLiquidity
+
+```solidity
+function withdrawLiquidity(
+    uint256 amount
+) external
+```
+
+Removes liquidity from the pool. The tokens will be sent to msg.sender.
+
+#### Parameters
+
+| Name   | Type    | Description                   |
+| ------ | ------- | ----------------------------- |
+| amount | uint256 | Amount of liquidity to remove |
+
+### transferLiquidity
+
+```solidity
+function transferLiquidity(address from, uint256 amount) external onlyOwner
+```
+
+Transfers liquidity from an old version of the pool to this new pool. This function is specifically designed for pool upgrades.
+
+<Aside type="note">
+  Prerequisites:
+
+        - This pool must be set as the rebalancer in the old pool version
+        - Only the owner can call this function
+
+</Aside>
+
+There are two ways to use this function during a pool upgrade:
+
+1. **Single Transaction Upgrade** (if multicall is available):
+
+   - Call this function at the same time as updating the pool in TokenAdminRegistry
+   - This ensures a smooth transition of both liquidity and transactions
+
+2. **Gradual Upgrade** (if multicall is not available):
+   1. First, transfer some liquidity to the new pool
+   2. Update the TokenAdminRegistry to use the new pool
+   3. New transactions will now use the new pool and its liquidity
+   4. Finally, transfer the remaining liquidity using this function
+
+#### Parameters
+
+| Name   | Type    | Description                     |
+| ------ | ------- | ------------------------------- |
+| from   | address | Address of the old pool         |
+| amount | uint256 | Amount of liquidity to transfer |
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "LockReleaseTokenPool 1.5.1"
+```
+
+Returns the type and version of the contract.
+
+#### Return Value
+
+| Type   | Description                             |
+| ------ | --------------------------------------- |
+| string | The string "LockReleaseTokenPool 1.5.1" |
