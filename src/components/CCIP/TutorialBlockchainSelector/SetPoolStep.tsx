@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, setPoolRegistered } from "@stores/lanes"
+import { laneStore } from "@stores/lanes"
 import { NetworkCheck } from "../TutorialSetup/NetworkCheck"
 import { TutorialCard } from "../TutorialSetup/TutorialCard"
 import { TutorialStep } from "../TutorialSetup/TutorialStep"
@@ -18,22 +18,14 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
   const stepId = chain === "source" ? "sourceChain" : "destinationChain"
+  const subStepId = chain === "source" ? "pool-registered" : "dest-pool-registered"
 
   return (
     <TutorialCard title="Configure Token Registry" description="Register your token pool in the CCIP registry">
       <NetworkCheck network={networkInfo} />
 
       <ol className={styles.steps}>
-        <TutorialStep
-          title="Configure Registry"
-          checkbox={
-            <StepCheckbox
-              stepId={stepId}
-              subStepId={chain === "source" ? "pool-registered" : "dest-pool-registered"}
-              onChange={(checked) => setPoolRegistered(chain, checked)}
-            />
-          }
-        >
+        <TutorialStep title="Configure Registry" checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}>
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select <strong>TokenAdminRegistry</strong> contract

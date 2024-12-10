@@ -4,7 +4,7 @@ import { ChainUpdateBuilder } from "./ChainUpdateBuilder"
 import { ethers } from "ethers"
 import styles from "./ChainUpdateBuilderWrapper.module.css"
 import { ReactCopyText } from "@components/ReactCopyText"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import type { Network } from "@config/data/ccip/types"
 import { TutorialCard, SolidityParam, NetworkCheck, TutorialStep } from "../TutorialSetup"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
@@ -39,92 +39,149 @@ const isValidNetwork = (network: Network | null): network is Network => {
   return !!network && typeof network.chainSelector === "string" && typeof network.name === "string"
 }
 
+const generateCallData = (chainUpdate: ChainUpdate) => {
+  if (!chainUpdate.remoteChainSelector || !chainUpdate.remotePoolAddresses || !chainUpdate.remoteTokenAddress) {
+    return ""
+  }
+
+  return JSON.stringify(
+    [
+      [
+        chainUpdate.remoteChainSelector.toString(),
+        chainUpdate.remotePoolAddresses,
+        chainUpdate.remoteTokenAddress,
+        [
+          chainUpdate.outboundRateLimiterConfig.enabled,
+          BigInt(chainUpdate.outboundRateLimiterConfig.capacity).toString(),
+          BigInt(chainUpdate.outboundRateLimiterConfig.rate).toString(),
+        ],
+        [
+          chainUpdate.inboundRateLimiterConfig.enabled,
+          BigInt(chainUpdate.inboundRateLimiterConfig.capacity).toString(),
+          BigInt(chainUpdate.inboundRateLimiterConfig.rate).toString(),
+        ],
+      ],
+    ],
+    null,
+    2
+  )
+}
+
 export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperProps) => {
   const state = useStore(laneStore)
   const [formattedUpdate, setFormattedUpdate] = useState<string>("")
   const [callData, setCallData] = useState<string>("")
-  const [showCopyFeedback, setShowCopyFeedback] = useState(false)
 
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[RenderTrack] ChainUpdateBuilderWrapper-${chain} rendered`)
+  }
+
+  // Get current network info
   const currentNetwork = chain === "source" ? state.sourceNetwork : state.destinationNetwork
-  const remoteNetwork = chain === "source" ? state.destinationNetwork : state.sourceNetwork
-  const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
-  const remoteTokenAddress = chain === "source" ? state.destinationContracts.token : state.sourceContracts.token
   const networkInfo = currentNetwork ? { name: currentNetwork.name, logo: currentNetwork.logo } : { name: "loading..." }
 
-  // Check if all required data is available
-  const isDataReady =
-    isValidNetwork(currentNetwork) && isValidNetwork(remoteNetwork) && poolAddress && remoteTokenAddress
+  // Get remote network info
+  const remoteNetwork = chain === "source" ? state.destinationNetwork : state.sourceNetwork
+  const remoteContracts = chain === "source" ? state.destinationContracts : state.sourceContracts
 
-  const generateCallData = (chainUpdate: ChainUpdate) => {
-    if (!chainUpdate.remoteChainSelector || !chainUpdate.remotePoolAddresses || !chainUpdate.remoteTokenAddress) {
+  // Get contract addresses
+  const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
+
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[ConfigTrack] ${chain}-update-builder:`, {
+      currentNetwork: currentNetwork?.name,
+      remoteNetwork: remoteNetwork?.name,
+      poolAddress,
+      remoteContracts,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  const isDataReady = isValidNetwork(currentNetwork) && isValidNetwork(remoteNetwork) && Boolean(poolAddress)
+
+  const canGenerateUpdate = () => {
+    return (
+      isDataReady &&
+      remoteNetwork?.chainSelector &&
+      remoteContracts.tokenPool &&
+      ethers.utils.isAddress(remoteContracts.tokenPool) &&
+      remoteContracts.token &&
+      ethers.utils.isAddress(remoteContracts.token)
+    )
+  }
+
+  const handleCalculate = (input: ChainUpdateInput): string => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[UpdateCalculation] ${chain}-update-builder:`, {
+        input,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    try {
+      // Validate addresses
+      if (!ethers.utils.isAddress(input.poolAddress) || !ethers.utils.isAddress(input.tokenAddress)) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`[UpdateSkipped] ${chain}-update-builder: Invalid addresses`, {
+            validPoolAddress: ethers.utils.isAddress(input.poolAddress),
+            validTokenAddress: ethers.utils.isAddress(input.tokenAddress),
+            timestamp: new Date().toISOString(),
+          })
+        }
+        return ""
+      }
+
+      const formattedUpdate = {
+        remoteChainSelector: input.remoteChainSelector,
+        remotePoolAddresses: [input.poolAddress].map((addr) =>
+          ethers.utils.defaultAbiCoder.encode(["address"], [addr])
+        ),
+        remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
+        outboundRateLimiterConfig: {
+          enabled: input.outbound.enabled,
+          capacity: input.outbound.capacity,
+          rate: input.outbound.rate,
+        },
+        inboundRateLimiterConfig: {
+          enabled: input.inbound.enabled,
+          capacity: input.inbound.capacity,
+          rate: input.inbound.rate,
+        },
+      }
+
+      const generatedCallData = generateCallData({
+        ...formattedUpdate,
+        remoteChainSelector: BigInt(input.remoteChainSelector),
+      })
+
+      const formatted = JSON.stringify(
+        {
+          json: [formattedUpdate],
+          callData: generatedCallData,
+        },
+        null,
+        2
+      )
+
+      setFormattedUpdate(formatted)
+      setCallData(generatedCallData)
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[UpdateSuccess] ${chain}-update-builder:`, {
+          formatted,
+          callData: generatedCallData,
+          timestamp: new Date().toISOString(),
+        })
+      }
+
+      return formatted
+    } catch (error) {
+      console.error("Error formatting chain update:", error)
+      setFormattedUpdate("")
+      setCallData("")
       return ""
     }
-
-    return JSON.stringify(
-      [
-        [
-          chainUpdate.remoteChainSelector.toString(),
-          chainUpdate.remotePoolAddresses,
-          chainUpdate.remoteTokenAddress,
-          [
-            chainUpdate.outboundRateLimiterConfig.enabled,
-            BigInt(chainUpdate.outboundRateLimiterConfig.capacity).toString(),
-            BigInt(chainUpdate.outboundRateLimiterConfig.rate).toString(),
-          ],
-          [
-            chainUpdate.inboundRateLimiterConfig.enabled,
-            BigInt(chainUpdate.inboundRateLimiterConfig.capacity).toString(),
-            BigInt(chainUpdate.inboundRateLimiterConfig.rate).toString(),
-          ],
-        ],
-      ],
-      null,
-      2
-    )
   }
-
-  const handleCalculate = (input: ChainUpdateInput) => {
-    const update = {
-      remoteChainSelector: input.remoteChainSelector,
-      remotePoolAddresses: [input.poolAddress].map((addr) => ethers.utils.defaultAbiCoder.encode(["address"], [addr])),
-      remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
-      outboundRateLimiterConfig: {
-        enabled: input.outbound.enabled,
-        capacity: input.outbound.capacity,
-        rate: input.outbound.rate,
-      },
-      inboundRateLimiterConfig: {
-        enabled: input.inbound.enabled,
-        capacity: input.inbound.capacity,
-        rate: input.inbound.rate,
-      },
-    }
-
-    const generatedCallData = generateCallData({
-      ...update,
-      remoteChainSelector: BigInt(input.remoteChainSelector),
-    })
-
-    const formatted = JSON.stringify(
-      {
-        json: [update],
-        callData: generatedCallData,
-      },
-      null,
-      2
-    )
-
-    setCallData(generatedCallData)
-    setFormattedUpdate(formatted)
-    return formatted
-  }
-
-  useEffect(() => {
-    if (showCopyFeedback) {
-      const timer = setTimeout(() => setShowCopyFeedback(false), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [showCopyFeedback])
 
   const stepId = `${chain}Config` as const
   const subStepId = chain === "source" ? "source-pool-config" : "dest-pool-config"
@@ -153,25 +210,19 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
                 In the "Deploy & Run Transactions" tab, select your token pool at:
                 <div className={styles.contractInfo}>
                   <strong>Contract:</strong> TokenPool
-                  <ReactCopyText text={poolAddress} code />
+                  <ReactCopyText text={poolAddress || ""} code />
                 </div>
               </li>
 
               <li>Click on the contract to open its details</li>
 
               <li>
-                Call <code>applyChainUpdates</code>:
+                Call <code>addRemoteTokensAndPools</code>:
                 <div className={styles.functionCall}>
                   <div className={styles.functionHeader}>
-                    <div className={styles.functionTitle}>
-                      <code className={styles.functionName}>applyChainUpdates</code>
-                    </div>
-                    <div className={styles.functionPurpose}>
-                      Sets the permissions for cross-chain communication and configures rate limits
-                    </div>
+                    <code className={styles.functionName}>addRemoteTokensAndPools</code>
+                    <div className={styles.functionPurpose}>Configure cross-chain token and pool mapping</div>
                   </div>
-
-                  <div className={styles.functionRequirement}>⚠️ Only callable by the token pool owner</div>
 
                   <div className={styles.parametersSection}>
                     <div className={styles.parametersTitle}>Parameters:</div>
@@ -193,39 +244,54 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
                 </div>
               </li>
 
-              <li>
-                Configure the rate limits below:
-                <div className={styles.configurationTool}>
-                  <ChainUpdateBuilder
-                    chain={chain}
-                    readOnly={{
-                      chainSelector: remoteNetwork.chainSelector,
-                      poolAddress,
-                      tokenAddress: remoteTokenAddress,
-                    }}
-                    defaultConfig={{
-                      outbound: { enabled: false, capacity: "0", rate: "0" },
-                      inbound: { enabled: false, capacity: "0", rate: "0" },
-                    }}
-                    onCalculate={handleCalculate}
-                  />
-                </div>
-              </li>
-
-              {formattedUpdate && (
-                <li>
-                  Copy the generated value and paste it into the <code>chainsToAdd</code> parameter in Remix:
-                  <div className={styles.copyBlock}>
-                    <div className={styles.copyContainer}>
-                      <ReactCopyText text={callData} code />
+              {canGenerateUpdate() && (
+                <>
+                  <li>
+                    Configure the rate limits below:
+                    <div className={styles.configurationTool}>
+                      <ChainUpdateBuilder
+                        chain={chain}
+                        readOnly={{
+                          chainSelector: remoteNetwork?.chainSelector || "",
+                          poolAddress: remoteContracts.tokenPool || "",
+                          tokenAddress: remoteContracts.token || "",
+                        }}
+                        defaultConfig={{
+                          outbound: { enabled: false, capacity: "0", rate: "0" },
+                          inbound: { enabled: false, capacity: "0", rate: "0" },
+                        }}
+                        onCalculate={handleCalculate}
+                      />
                     </div>
-                  </div>
-                </li>
-              )}
+                  </li>
 
-              <li>Confirm the transaction in MetaMask</li>
+                  {formattedUpdate && (
+                    <li>
+                      Copy the generated value and paste it into the <code>chainsToAdd</code> parameter in Remix:
+                      <div className={styles.copyBlock}>
+                        <div className={styles.copyContainer}>
+                          <ReactCopyText text={callData} code />
+                        </div>
+                      </div>
+                    </li>
+                  )}
+
+                  <li>Confirm the transaction in MetaMask</li>
+                </>
+              )}
             </ol>
-          ) : null}
+          ) : (
+            <div className={styles.prerequisites}>
+              <div className={styles.prerequisitesIcon}>⚡️</div>
+              <div className={styles.prerequisitesContent}>
+                <h4>Current Chain Prerequisites</h4>
+                <ul>
+                  {!isValidNetwork(currentNetwork) && <li>Select valid blockchains for the transfer</li>}
+                  {!poolAddress && <li>Deploy your token pool on the current chain</li>}
+                </ul>
+              </div>
+            </div>
+          )}
         </TutorialStep>
       </ol>
     </TutorialCard>

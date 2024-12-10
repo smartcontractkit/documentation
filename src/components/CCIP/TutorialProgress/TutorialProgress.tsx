@@ -1,61 +1,87 @@
 import { useStore } from "@nanostores/react"
-import { useState, useEffect } from "react"
-import { laneStore, TUTORIAL_STEPS, type StepId } from "@stores/lanes"
-import { StoredContractAddress } from "../TutorialBlockchainSelector"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { laneStore, progressStore, TUTORIAL_STEPS, type StepId, type LaneState } from "@stores/lanes"
 import styles from "./TutorialProgress.module.css"
-import { subscribeToProgress } from "@stores/lanes"
+
+// Helper function to determine current step
+const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {
+  if (!state.sourceChain || !state.destinationChain) return 1
+  if (!state.sourceContracts.token || !state.sourceContracts.tokenPool) return 2
+  if (!state.destinationContracts.token || !state.destinationContracts.tokenPool) return 3
+  if (!state.sourceContracts.configured) return 4
+  return 5
+}
 
 export const TutorialProgress = () => {
-  const state = useStore(laneStore)
-  const currentStep = determineCurrentStep(state)
+  const mainState = useStore(laneStore)
+  const progress = useStore(progressStore)
   const [expandedStep, setExpandedStep] = useState<string | null>(null)
   const [forceExpanded, setForceExpanded] = useState<string | null>(null)
-  const [progressState, setProgressState] = useState(state.progress)
-  const [steps] = useState([
-    { id: "setup", title: "Setup", stepNumber: 1 },
-    { id: "sourceChain", title: "Source Chain", stepNumber: 2 },
-    { id: "destinationChain", title: "Destination Chain", stepNumber: 3 },
-    { id: "sourceConfig", title: "Source Configuration", stepNumber: 4 },
-    { id: "destinationConfig", title: "Destination Configuration", stepNumber: 5 },
-  ])
+
+  // Use currentStep to determine which step should be expanded by default
+  const currentStepNumber = useMemo(() => determineCurrentStep(mainState), [mainState])
+
+  const steps = useMemo(
+    () => [
+      { id: "setup", title: "Setup", stepNumber: 1 },
+      { id: "sourceChain", title: "Source Chain", stepNumber: 2 },
+      { id: "destinationChain", title: "Destination Chain", stepNumber: 3 },
+      { id: "sourceConfig", title: "Source Configuration", stepNumber: 4 },
+      { id: "destinationConfig", title: "Destination Configuration", stepNumber: 5 },
+    ],
+    []
+  )
+
+  // Auto-expand current step on initial render
+  useEffect(() => {
+    if (!expandedStep) {
+      const currentStep = steps.find((step) => step.stepNumber === currentStepNumber)
+      if (currentStep) {
+        setExpandedStep(currentStep.id)
+        setForceExpanded(currentStep.id)
+      }
+    }
+  }, [currentStepNumber, steps, expandedStep])
 
   useEffect(() => {
-    // Subscribe to progress updates
-    const unsubscribe = subscribeToProgress((progress) => {
-      setProgressState(progress)
-      // Keep step expanded when interacting with checkboxes
-      if (forceExpanded) {
-        setExpandedStep(forceExpanded)
-      }
-    })
-    return () => unsubscribe()
+    if (forceExpanded) {
+      setExpandedStep(forceExpanded)
+    }
   }, [forceExpanded])
 
-  const toggleStepDetails = (stepId) => {
-    setForceExpanded(stepId)
-    setExpandedStep(expandedStep === stepId ? null : stepId)
-  }
+  const toggleStepDetails = useCallback(
+    (stepId: string) => {
+      setForceExpanded(stepId)
+      setExpandedStep(expandedStep === stepId ? null : stepId)
+    },
+    [expandedStep]
+  )
 
-  const getStepStatus = (stepId: string) => {
-    const stepProgress = progressState[stepId] || {}
-    const totalSubSteps = Object.keys(TUTORIAL_STEPS[stepId].subSteps).length
-    const completedSubSteps = Object.values(stepProgress).filter(Boolean).length
+  const getStepStatus = useCallback(
+    (stepId: string) => {
+      const stepProgress = progress[stepId] || {}
+      const totalSubSteps = Object.keys(TUTORIAL_STEPS[stepId].subSteps).length
+      const completedSubSteps = Object.values(stepProgress).filter(Boolean).length
 
-    if (completedSubSteps === 0) return "not-started"
-    if (completedSubSteps === totalSubSteps) return "completed"
-    return "in-progress"
-  }
+      if (completedSubSteps === 0) return "not-started"
+      if (completedSubSteps === totalSubSteps) return "completed"
+      return "in-progress"
+    },
+    [progress]
+  )
 
-  const getStepProgress = (stepId: StepId) => {
-    const stepConfig = TUTORIAL_STEPS[stepId]
-    const stepProgress = progressState[stepId] || {}
-    const subSteps = Object.entries(stepConfig.subSteps).map(([id, title]) => ({
-      id,
-      title,
-      completed: !!stepProgress[id],
-    }))
-    return subSteps
-  }
+  const getStepProgress = useCallback(
+    (stepId: StepId) => {
+      const stepConfig = TUTORIAL_STEPS[stepId]
+      const stepProgress = progress[stepId] || {}
+      return Object.entries(stepConfig.subSteps).map(([id, title]) => ({
+        id,
+        title,
+        completed: !!stepProgress[id],
+      }))
+    },
+    [progress]
+  )
 
   return (
     <section className={styles["sidebar-nav"]} aria-labelledby="grid-right" data-sticky>
@@ -63,10 +89,14 @@ export const TutorialProgress = () => {
       <div className={styles["toc-wrapper"]}>
         <div className={styles["progress-tracker"]}>
           <div className={styles.steps}>
-            {steps.map((step, index) => {
+            {steps.map((step) => {
               const status = getStepStatus(step.id)
+              const isCurrentStep = step.stepNumber === currentStepNumber
               return (
-                <div key={step.id} className={`${styles["step-container"]} ${styles[status]}`}>
+                <div
+                  key={step.id}
+                  className={`${styles["step-container"]} ${styles[status]} ${isCurrentStep ? styles.current : ""}`}
+                >
                   <div
                     className={`${styles.connector} ${getStepStatus(step.id) === "completed" ? styles.completed : ""}`}
                   />
@@ -98,83 +128,7 @@ export const TutorialProgress = () => {
             })}
           </div>
         </div>
-
-        <div className={styles["configuration-status"]}>
-          <div className={styles.sectionTitle}>Configuration Status</div>
-
-          {/* Source Chain Block */}
-          <div className={styles.chainBlock}>
-            <div className={styles.chainHeader}>
-              <div className={styles.chainIdentity}>
-                {state.sourceNetwork && (
-                  <>
-                    <img src={state.sourceNetwork.logo} alt={state.sourceNetwork.name} className={styles.networkLogo} />
-                    <span className={styles.chainName}>{state.sourceNetwork.name || "Source Chain"}</span>
-                  </>
-                )}
-                {!state.sourceNetwork && <span className={styles.chainName}>Source Chain</span>}
-              </div>
-            </div>
-            <div className={styles.chainConfigs}>
-              <StatusItem
-                label="Token"
-                value={<StoredContractAddress type="token" chain="source" />}
-                isComplete={!!state.sourceContracts.token}
-              />
-              <StatusItem
-                label="Pool"
-                value={<StoredContractAddress type="tokenPool" chain="source" />}
-                isComplete={!!state.sourceContracts.tokenPool}
-              />
-            </div>
-          </div>
-
-          {/* Destination Chain Block */}
-          <div className={styles.chainBlock}>
-            <div className={styles.chainHeader}>
-              <div className={styles.chainIdentity}>
-                {state.destinationNetwork && (
-                  <img
-                    src={state.destinationNetwork.logo}
-                    alt={state.destinationNetwork.name}
-                    className={styles.networkLogo}
-                  />
-                )}
-                <span className={styles.chainName}>Destination Chain</span>
-              </div>
-            </div>
-            <div className={styles.chainConfigs}>
-              <StatusItem
-                label="Token"
-                value={<StoredContractAddress type="token" chain="destination" />}
-                isComplete={!!state.destinationContracts.token}
-              />
-              <StatusItem
-                label="Pool"
-                value={<StoredContractAddress type="tokenPool" chain="destination" />}
-                isComplete={!!state.destinationContracts.tokenPool}
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   )
-}
-
-const StatusItem = ({ label, value, isComplete }) => (
-  <div className={`${styles["status-item"]} ${isComplete ? styles.complete : ""}`}>
-    <span className={styles["status-label"]}>{label}</span>
-    <div className={styles["status-value"]}>{value}</div>
-    {isComplete && <span className={styles["status-check"]}>✓</span>}
-  </div>
-)
-
-const determineCurrentStep = (state) => {
-  if (!state.sourceChain || !state.destinationChain) return 1
-  if (!state.sourceContracts.token || !state.sourceContracts.tokenPool) return 2
-  if (!state.destinationContracts.token || !state.destinationContracts.tokenPool) return 3
-  if (!state.sourceContracts.configured) return 4
-  if (!state.destinationContracts.configured) return 5
-  return 5
 }

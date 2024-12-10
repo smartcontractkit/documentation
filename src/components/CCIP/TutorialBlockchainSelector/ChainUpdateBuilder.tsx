@@ -42,6 +42,10 @@ const calculateChainUpdate = (
 }
 
 export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[RenderTrack] ChainUpdateBuilder-${chain} rendered`)
+  }
+
   const state = useStore(laneStore)
 
   const [outbound, setOutbound] = useState<RateLimiterConfig>(() => {
@@ -63,6 +67,13 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
   }
 
   const handleRateLimitChange = (type: "inbound" | "outbound", field: keyof RateLimiterConfig, value: string) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[RateLimitChange] ${chain}-${type}-${field}:`, {
+        value,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
     // Validate input as BigInt
     try {
       // Remove any non-numeric characters
@@ -111,6 +122,13 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
   }
 
   const handleRateLimitToggle = (type: "inbound" | "outbound", enabled: boolean) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[RateLimitToggle] ${chain}-${type}:`, {
+        enabled,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
     const current = laneStore.get()
     const rateLimitsKey = chain === "source" ? "sourceRateLimits" : "destinationRateLimits"
 
@@ -163,6 +181,15 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
     }
   }, [outbound, inbound, readOnly.chainSelector, readOnly.poolAddress, readOnly.tokenAddress])
 
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[ConfigState] ${chain}-rate-limits:`, {
+      outbound,
+      inbound,
+      readOnly,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
   return (
     <ErrorBoundary
       fallback={<div>Error configuring rate limits. Please refresh and try again.</div>}
@@ -214,7 +241,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                     <div className={styles.input}>
                       <div className={styles.inputLabel}>
                         <label>Capacity</label>
-                        <span className={styles.inputHint}>Maximum tokens allowed per period</span>
+                        <span className={styles.inputHint}>Maximum tokens allowed</span>
                       </div>
                       <input
                         type="text"
@@ -228,7 +255,9 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                     <div className={styles.input}>
                       <div className={styles.inputLabel}>
                         <label>Rate</label>
-                        <span className={styles.inputHint}>Tokens allowed per second</span>
+                        <span className={styles.inputHint}>
+                          Rate at which available capacity is replenished (tokens/second)
+                        </span>
                       </div>
                       <input
                         type="text"
@@ -297,7 +326,30 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
 
           {!canGenerateUpdate() && (
             <div className={styles.notice}>
-              Please ensure all remote addresses are available before generating the update
+              <div className={styles.noticeHeader}>
+                <span className={styles.noticeIcon}>⚠️</span>
+                <span className={styles.noticeTitle}>Action Required</span>
+              </div>
+              <div className={styles.noticeContent}>
+                {!ethers.utils.isAddress(readOnly.tokenAddress) && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Please deploy your token first to proceed with configuration</span>
+                  </div>
+                )}
+                {!ethers.utils.isAddress(readOnly.poolAddress) && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Token pool address is required</span>
+                  </div>
+                )}
+                {!readOnly.chainSelector && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Chain selector is required</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

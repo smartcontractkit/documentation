@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
+import { laneStore, updateStepProgress } from "@stores/lanes"
 import { Environment, getAllNetworks } from "@config/data/ccip"
 import type { Network } from "@config/data/ccip/types"
 import { ChainSelect } from "./ChainSelect"
@@ -22,6 +22,18 @@ export const TutorialBlockchainSelector = () => {
   const sourceNetworks = allNetworks.filter((n) => n.chain !== state.destinationChain)
   const destinationNetworks = allNetworks.filter((n) => n.chain !== state.sourceChain)
 
+  const checkAndUpdateProgress = () => {
+    // Use the latest state from the store instead of component state
+    const currentState = laneStore.get()
+    const bothChainsSelected = Boolean(
+      currentState.sourceChain &&
+        currentState.destinationChain &&
+        currentState.sourceNetwork &&
+        currentState.destinationNetwork
+    )
+    updateStepProgress("setup", "blockchains-selected", bothChainsSelected)
+  }
+
   const handleEnvironmentChange = (newEnvironment: Environment) => {
     if (newEnvironment === state.environment) return
 
@@ -36,6 +48,9 @@ export const TutorialBlockchainSelector = () => {
       sourceContracts: {},
       destinationContracts: {},
     })
+
+    // Reset progress when environment changes
+    updateStepProgress("setup", "blockchains-selected", false)
   }
 
   const handleSourceChainChange = (chain: string) => {
@@ -52,10 +67,14 @@ export const TutorialBlockchainSelector = () => {
       updates.destinationContracts = {}
     }
 
+    // Update store first
     laneStore.set({
       ...state,
       ...updates,
     })
+
+    // Then schedule progress check for next frame
+    requestAnimationFrame(checkAndUpdateProgress)
   }
 
   const handleDestinationChainChange = (chain: string) => {
@@ -72,10 +91,14 @@ export const TutorialBlockchainSelector = () => {
       updates.sourceContracts = {}
     }
 
+    // Update store first
     laneStore.set({
       ...state,
       ...updates,
     })
+
+    // Then schedule progress check for next frame
+    requestAnimationFrame(checkAndUpdateProgress)
   }
 
   return (

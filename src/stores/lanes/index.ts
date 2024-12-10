@@ -1,7 +1,7 @@
-import { atom } from "nanostores"
+import { atom, computed } from "nanostores"
 import { Environment } from "@config/data/ccip"
-import { debounce } from "@utils/performance"
 import type { Network } from "@config/data/ccip/types"
+import { utils } from "ethers"
 
 export type DeployedContracts = {
   token?: string
@@ -101,131 +101,168 @@ export type LaneState = {
   destinationRateLimits: RateLimits | null
 }
 
-export const updateStepProgress = (stepId: string, subStepId: string, completed: boolean) => {
-  console.log("Updating progress:", { stepId, subStepId, completed })
-  console.log("Before update:", laneStore.get())
-
-  const current = laneStore.get()
-  if (current.progress[stepId]?.[subStepId] === completed) return
-
-  laneStore.set({
-    ...current,
-    progress: {
-      ...current.progress,
-      [stepId]: {
-        ...current.progress[stepId],
-        [subStepId]: completed,
-      },
-    },
-  })
-}
-
-const checkProgress = (state: LaneState) => {
-  console.log("🟡 checkProgress called with state:", {
-    sourceContracts: state.sourceContracts,
-    destinationContracts: state.destinationContracts,
-    progress: state.progress,
-  })
-  let hasChanges = false
-  const updates = new Set<{ stepId: StepId; subStepId: string; completed: boolean }>()
-
-  const conditions = [
-    {
-      stepId: "setup" as StepId,
-      subStepId: "blockchains-selected",
-      check: (state: LaneState) => !!state.sourceChain && !!state.destinationChain,
-    },
-    {
-      stepId: "sourceChain" as StepId,
-      subStepId: "token-deployed",
-      check: (state: LaneState) => !!state.sourceContracts.token,
-    },
-    {
-      stepId: "sourceChain" as StepId,
-      subStepId: "pool-deployed",
-      check: (state: LaneState) => !!state.sourceContracts.tokenPool,
-    },
-    {
-      stepId: "sourceChain" as StepId,
-      subStepId: "pool-registered",
-      check: (state: LaneState) => !!state.sourceContracts.registered,
-    },
-    {
-      stepId: "destinationChain" as StepId,
-      subStepId: "dest-token-deployed",
-      check: (state: LaneState) => !!state.destinationContracts.token,
-    },
-    {
-      stepId: "destinationChain" as StepId,
-      subStepId: "dest-pool-deployed",
-      check: (state: LaneState) => !!state.destinationContracts.tokenPool,
-    },
-    {
-      stepId: "destinationChain" as StepId,
-      subStepId: "dest-pool-registered",
-      check: (state: LaneState) => !!state.destinationContracts.registered,
-    },
-    {
-      stepId: "sourceChain" as StepId,
-      subStepId: "admin-claimed",
-      check: (state: LaneState) => state.progress.sourceChain?.["admin-claimed"] === true,
-    },
-    {
-      stepId: "sourceChain" as StepId,
-      subStepId: "admin-accepted",
-      check: (state: LaneState) => state.progress.sourceChain?.["admin-accepted"] === true,
-    },
-    {
-      stepId: "destinationChain" as StepId,
-      subStepId: "admin-claimed",
-      check: (state: LaneState) => state.progress.destinationChain?.["admin-claimed"] === true,
-    },
-    {
-      stepId: "destinationChain" as StepId,
-      subStepId: "admin-accepted",
-      check: (state: LaneState) => state.progress.destinationChain?.["admin-accepted"] === true,
-    },
-    {
-      stepId: "sourceConfig" as StepId,
-      subStepId: "source-pool-config",
-      check: (state: LaneState) => state.progress.sourceConfig?.["source-pool-config"] === true,
-    },
-    {
-      stepId: "destinationConfig" as StepId,
-      subStepId: "dest-pool-config",
-      check: (state: LaneState) => state.progress.destinationConfig?.["dest-pool-config"] === true,
-    },
-  ]
-
-  conditions.forEach(({ stepId, subStepId, check }) => {
-    const isComplete = check(state)
-    console.log("🟡 Checking condition:", { stepId, subStepId, isComplete, state: state.sourceContracts })
-    if (isComplete !== state.progress[stepId]?.[subStepId]) {
-      updates.add({ stepId, subStepId, completed: isComplete })
-      hasChanges = true
-    }
-  })
-
-  if (hasChanges) {
-    const current = laneStore.get()
-    if (current !== state) return
-    const newProgress = { ...current.progress }
-
-    updates.forEach(({ stepId, subStepId, completed }) => {
-      newProgress[stepId] = {
-        ...newProgress[stepId],
-        [subStepId]: completed,
-      }
-    })
-
-    laneStore.set({
-      ...current,
-      progress: newProgress,
+// Add performance monitoring
+const monitorStoreUpdate = (action: string, details: Record<string, unknown>) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[StoreAction] ${action}:`, {
+      ...details,
+      timestamp: new Date().toISOString(),
     })
   }
 }
 
-export const laneStore = atom<LaneState>({
+// Define conditions at the top level
+const conditions = [
+  // Prerequisites conditions
+  {
+    stepId: "setup" as StepId,
+    subStepId: "browser-setup",
+    check: (state: LaneState) => state.progress.setup?.["browser-setup"] === true,
+    dependencies: [] as StepId[],
+  },
+  {
+    stepId: "setup" as StepId,
+    subStepId: "gas-tokens",
+    check: (state: LaneState) => state.progress.setup?.["gas-tokens"] === true,
+    dependencies: ["setup"] as StepId[],
+  },
+  {
+    stepId: "setup" as StepId,
+    subStepId: "blockchains-selected",
+    check: (state: LaneState) => {
+      const sourceSelected = Boolean(state.sourceChain && state.sourceNetwork)
+      const destSelected = Boolean(state.destinationChain && state.destinationNetwork)
+      return sourceSelected && destSelected
+    },
+    dependencies: ["setup"] as StepId[],
+  },
+  {
+    stepId: "setup" as StepId,
+    subStepId: "contracts-imported",
+    check: (state: LaneState) => state.progress.setup?.["contracts-imported"] === true,
+    dependencies: ["setup"] as StepId[],
+  },
+  // Token deployment conditions
+  {
+    stepId: "sourceChain" as StepId,
+    subStepId: "token-deployed",
+    check: (state: LaneState) => {
+      const hasToken = !!state.sourceContracts.token && utils.isAddress(state.sourceContracts.token)
+      return hasToken
+    },
+    dependencies: ["setup"] as StepId[],
+  },
+  {
+    stepId: "sourceChain" as StepId,
+    subStepId: "pool-deployed",
+    check: (state: LaneState) => {
+      const hasPool = !!state.sourceContracts.tokenPool && utils.isAddress(state.sourceContracts.tokenPool)
+      return hasPool
+    },
+    dependencies: ["sourceChain"] as StepId[],
+  },
+  {
+    stepId: "sourceChain" as StepId,
+    subStepId: "pool-registered",
+    check: (state: LaneState) => !!state.sourceContracts.registered,
+    dependencies: ["sourceChain"] as StepId[],
+  },
+  {
+    stepId: "destinationChain" as StepId,
+    subStepId: "dest-token-deployed",
+    check: (state: LaneState) => !!state.destinationContracts.token,
+    dependencies: ["setup"] as StepId[],
+  },
+  {
+    stepId: "destinationChain" as StepId,
+    subStepId: "dest-pool-deployed",
+    check: (state: LaneState) => {
+      const hasPool = !!state.destinationContracts.tokenPool && utils.isAddress(state.destinationContracts.tokenPool)
+      return hasPool
+    },
+    dependencies: ["destinationChain"] as StepId[],
+  },
+  {
+    stepId: "destinationChain" as StepId,
+    subStepId: "dest-pool-registered",
+    check: (state: LaneState) => !!state.destinationContracts.registered,
+    dependencies: ["destinationChain"] as StepId[],
+  },
+  {
+    stepId: "sourceChain" as StepId,
+    subStepId: "admin-claimed",
+    check: (state: LaneState) => state.progress.sourceChain?.["admin-claimed"] === true,
+    dependencies: ["sourceChain"] as StepId[],
+  },
+  {
+    stepId: "sourceChain" as StepId,
+    subStepId: "admin-accepted",
+    check: (state: LaneState) => state.progress.sourceChain?.["admin-accepted"] === true,
+    dependencies: ["sourceChain"] as StepId[],
+  },
+  {
+    stepId: "destinationChain" as StepId,
+    subStepId: "admin-claimed",
+    check: (state: LaneState) => state.progress.destinationChain?.["admin-claimed"] === true,
+    dependencies: ["destinationChain"] as StepId[],
+  },
+  {
+    stepId: "destinationChain" as StepId,
+    subStepId: "admin-accepted",
+    check: (state: LaneState) => state.progress.destinationChain?.["admin-accepted"] === true,
+    dependencies: ["destinationChain"] as StepId[],
+  },
+  {
+    stepId: "sourceConfig" as StepId,
+    subStepId: "source-pool-config",
+    check: (state: LaneState) => state.progress.sourceConfig?.["source-pool-config"] === true,
+    dependencies: ["sourceChain"] as StepId[],
+  },
+  {
+    stepId: "destinationConfig" as StepId,
+    subStepId: "dest-pool-config",
+    check: (state: LaneState) => state.progress.destinationConfig?.["dest-pool-config"] === true,
+    dependencies: ["destinationChain"] as StepId[],
+  },
+]
+
+// Helper function to check if prerequisites are complete
+export const arePrerequisitesComplete = (state: LaneState): boolean => {
+  return (
+    state.progress.setup?.["browser-setup"] === true &&
+    state.progress.setup?.["gas-tokens"] === true &&
+    state.progress.setup?.["blockchains-selected"] === true &&
+    state.progress.setup?.["contracts-imported"] === true
+  )
+}
+
+// Create individual atoms for each step's progress
+export const setupProgressStore = atom<Record<string, boolean>>({})
+export const sourceChainProgressStore = atom<Record<string, boolean>>({})
+export const destinationChainProgressStore = atom<Record<string, boolean>>({})
+export const sourceConfigProgressStore = atom<Record<string, boolean>>({})
+export const destinationConfigProgressStore = atom<Record<string, boolean>>({})
+
+// Computed store that combines all progress
+export const progressStore = computed(
+  [
+    setupProgressStore,
+    sourceChainProgressStore,
+    destinationChainProgressStore,
+    sourceConfigProgressStore,
+    destinationConfigProgressStore,
+  ],
+  (setup, sourceChain, destinationChain, sourceConfig, destinationConfig) => ({
+    setup,
+    sourceChain,
+    destinationChain,
+    sourceConfig,
+    destinationConfig,
+  })
+)
+
+// Main store without progress
+export const laneStore = atom<Omit<LaneState, "progress">>({
   sourceChain: "",
   destinationChain: "",
   environment: Environment.Testnet,
@@ -233,13 +270,6 @@ export const laneStore = atom<LaneState>({
   destinationNetwork: null,
   sourceContracts: {},
   destinationContracts: {},
-  progress: {
-    setup: {},
-    sourceChain: {},
-    destinationChain: {},
-    sourceConfig: {},
-    destinationConfig: {},
-  },
   inboundRateLimiter: null,
   outboundRateLimiter: null,
   sourceRateLimits: {
@@ -252,146 +282,145 @@ export const laneStore = atom<LaneState>({
   },
 })
 
-const debouncedCheckProgress = debounce((state: LaneState) => {
-  checkProgress(state)
-}, 100)
+// Helper to get the correct store for a step with type safety
+const getStoreForStep = (stepId: StepId) => {
+  switch (stepId) {
+    case "setup":
+      return setupProgressStore
+    case "sourceChain":
+      return sourceChainProgressStore
+    case "destinationChain":
+      return destinationChainProgressStore
+    case "sourceConfig":
+      return sourceConfigProgressStore
+    case "destinationConfig":
+      return destinationConfigProgressStore
+    default:
+      throw new Error(`Invalid step ID: ${stepId}`)
+  }
+}
 
-laneStore.subscribe((state) => {
-  debouncedCheckProgress(state)
-})
+// Standard progress update function for all checkboxes
+export const updateStepProgress = (stepId: string, subStepId: string, completed: boolean) => {
+  const startTime = Date.now()
+  const store = getStoreForStep(stepId as StepId)
+  const current = store.get()
 
-// Helper functions to update contract addresses
-export const setSourceContract = (type: keyof DeployedContracts, address: string) => {
-  const current = laneStore.get()
-  if (current.sourceContracts[type] === address) return
+  if (current[subStepId] === completed) {
+    monitorStoreUpdate("SkippedUpdate", {
+      stepId,
+      subStepId,
+      reason: "No change needed",
+      duration: Date.now() - startTime,
+    })
+    return
+  }
+
+  monitorStoreUpdate("StartUpdate", {
+    stepId,
+    subStepId,
+    completed,
+    currentState: current,
+  })
+
+  // Batch updates to minimize renders
+  const updates = new Map()
+
+  // Update progress store
+  updates.set(store, {
+    ...current,
+    [subStepId]: completed,
+  })
+
+  // For pool registration, also update contract state
+  if (
+    (stepId === "sourceChain" && subStepId === "pool-registered") ||
+    (stepId === "destinationChain" && subStepId === "dest-pool-registered")
+  ) {
+    const chain = stepId === "sourceChain" ? "source" : "destination"
+    const contractsKey = `${chain}Contracts` as const
+    const currentState = laneStore.get()
+
+    updates.set(laneStore, {
+      ...currentState,
+      [contractsKey]: {
+        ...currentState[contractsKey],
+        registered: completed,
+      },
+    })
+  }
+
+  // Apply all updates in a single batch
+  updates.forEach((value, store) => {
+    store.set(value)
+  })
+
+  monitorStoreUpdate("CompleteUpdate", {
+    stepId,
+    subStepId,
+    duration: Date.now() - startTime,
+  })
+}
+
+// Helper to update progress for a specific step (internal use only)
+function updateProgressForStep(stepId: StepId, updates: Record<string, boolean>) {
+  const store = getStoreForStep(stepId)
+  const current = store.get()
+  store.set({
+    ...current,
+    ...updates,
+  })
+}
+
+// Utility function to handle contract progress updates
+const updateContractProgress = (type: keyof DeployedContracts, chain: "source" | "destination", value: string) => {
+  const isValidAddress = Boolean(value) && utils.isAddress(value)
+
+  if (type === "token") {
+    updateProgressForStep(chain === "source" ? "sourceChain" : "destinationChain", {
+      [chain === "source" ? "token-deployed" : "dest-token-deployed"]: isValidAddress,
+    })
+  } else if (type === "tokenPool") {
+    updateProgressForStep(chain === "source" ? "sourceChain" : "destinationChain", {
+      [chain === "source" ? "pool-deployed" : "dest-pool-deployed"]: isValidAddress,
+    })
+  }
+}
+
+export const setSourceContract = (type: keyof DeployedContracts, value: string) => {
+  const currentState = laneStore.get()
+  monitorStoreUpdate("setSourceContract", { type, value })
 
   laneStore.set({
-    ...current,
+    ...currentState,
     sourceContracts: {
-      ...current.sourceContracts,
-      [type]: address,
+      ...currentState.sourceContracts,
+      [type]: value,
     },
   })
+
+  updateContractProgress(type, "source", value)
 }
 
-export const setDestinationContract = (type: keyof DeployedContracts, address: string) => {
-  const current = laneStore.get()
-  if (current.destinationContracts[type] === address) return
+export const setDestinationContract = (type: keyof DeployedContracts, value: string) => {
+  const currentState = laneStore.get()
+  monitorStoreUpdate("setDestinationContract", { type, value })
 
   laneStore.set({
-    ...current,
+    ...currentState,
     destinationContracts: {
-      ...current.destinationContracts,
-      [type]: address,
+      ...currentState.destinationContracts,
+      [type]: value,
     },
   })
+
+  updateContractProgress(type, "destination", value)
 }
 
-export const setPoolRegistered = (chain: "source" | "destination", registered: boolean) => {
-  console.log("🔵 setPoolRegistered called:", { chain, registered })
-  const current = laneStore.get()
-
-  if (chain === "source") {
-    laneStore.set({
-      ...current,
-      sourceContracts: { ...current.sourceContracts, registered },
-      progress: {
-        ...current.progress,
-        sourceChain: {
-          ...current.progress.sourceChain,
-          "pool-registered": registered,
-        },
-      },
-    })
-  } else {
-    laneStore.set({
-      ...current,
-      destinationContracts: { ...current.destinationContracts, registered },
-      progress: {
-        ...current.progress,
-        destinationChain: {
-          ...current.progress.destinationChain,
-          "dest-pool-registered": registered,
-        },
-      },
-    })
-  }
-}
-
-interface SubStep {
-  id: string
-  title: string
-  completed: boolean
-}
-
-interface StepProgress {
-  setup: {
-    prerequisites: SubStep[]
-    chainSelection: SubStep[]
-  }
-  sourceChain: {
-    deployment: SubStep[]
-    adminSetup: SubStep[]
-  }
-  destinationChain: {
-    deployment: SubStep[]
-    adminSetup: SubStep[]
-  }
-  sourceConfig: {
-    privileges: SubStep[]
-    poolConfig: SubStep[]
-  }
-  destinationConfig: {
-    privileges: SubStep[]
-    poolConfig: SubStep[]
-  }
-}
-
-export const initialProgress: StepProgress = {
-  setup: {
-    prerequisites: [
-      { id: "browser-setup", title: "Web Browser Setup", completed: false },
-      { id: "gas-tokens", title: "Gas Tokens Ready", completed: false },
-    ],
-    chainSelection: [
-      { id: "source-chain", title: "Source Chain Selected", completed: false },
-      { id: "dest-chain", title: "Destination Chain Selected", completed: false },
-    ],
-  },
-  sourceChain: {
-    deployment: [
-      { id: "token-deployed", title: "Token Deployed", completed: false },
-      { id: "pool-deployed", title: "Pool Deployed", completed: false },
-    ],
-    adminSetup: [
-      { id: "admin-claimed", title: "Admin Role Claimed", completed: false },
-      { id: "admin-accepted", title: "Admin Role Accepted", completed: false },
-    ],
-  },
-  destinationChain: {
-    deployment: [
-      { id: "dest-token-deployed", title: "Token Deployed", completed: false },
-      { id: "dest-pool-deployed", title: "Pool Deployed", completed: false },
-    ],
-    adminSetup: [
-      { id: "dest-admin-claimed", title: "Admin Role Claimed", completed: false },
-      { id: "dest-admin-accepted", title: "Admin Role Accepted", completed: false },
-    ],
-  },
-  sourceConfig: {
-    privileges: [{ id: "source-privileges", title: "Grant Burn and Mint Privileges", completed: false }],
-    poolConfig: [{ id: "source-pool-config", title: "Configure Pool", completed: false }],
-  },
-  destinationConfig: {
-    privileges: [{ id: "dest-privileges", title: "Grant Burn and Mint Privileges", completed: false }],
-    poolConfig: [{ id: "dest-pool-config", title: "Configure Pool", completed: false }],
-  },
-}
-
-export const subscribeToProgress = (callback: (progress: LaneState["progress"]) => void) => {
-  return laneStore.subscribe((state) => {
-    callback(state.progress)
-  })
+// Helper to subscribe to specific step's progress
+export const subscribeToStepProgress = (stepId: StepId, callback: (progress: Record<string, boolean>) => void) => {
+  const store = getStoreForStep(stepId)
+  return store.subscribe(callback)
 }
 
 export const setRateLimiterState = (type: "inbound" | "outbound", state: TokenBucketState | null) => {
@@ -468,4 +497,64 @@ export const updateRateLimits = (
     return true
   }
   return false
+}
+
+// Helper function to get complete state
+const getCompleteState = (): LaneState => ({
+  ...laneStore.get(),
+  progress: progressStore.get(),
+})
+
+// Update checkSpecificProgress to optionally accept state
+const checkSpecificProgress = (conditionsToCheck: typeof conditions, providedState?: LaneState) => {
+  const state = providedState || getCompleteState()
+
+  // Only check dependent conditions if prerequisites are complete
+  if (!arePrerequisitesComplete(state) && !conditionsToCheck.every((c) => c.stepId === "setup")) {
+    return
+  }
+
+  for (const condition of conditionsToCheck) {
+    const startTime = performance.now()
+    const isComplete = condition.check(state)
+
+    monitorStoreUpdate("ConditionCheck", {
+      stepId: condition.stepId,
+      subStepId: condition.subStepId,
+      isComplete,
+      duration: Math.round(performance.now() - startTime),
+    })
+
+    // Update progress if needed
+    if (isComplete !== state.progress[condition.stepId]?.[condition.subStepId]) {
+      updateProgressForStep(condition.stepId, { [condition.subStepId]: isComplete })
+    }
+  }
+}
+
+// Update the progress check function to be more focused
+export const checkProgress = (stepId: StepId, subStepId: string) => {
+  const state = getCompleteState()
+  monitorStoreUpdate("StartUpdate", { stepId, subStepId, currentState: state })
+
+  // For setup steps, check all setup conditions and their dependencies
+  if (stepId === "setup") {
+    const setupConditions = conditions.filter((condition) => condition.stepId === "setup")
+    checkSpecificProgress(setupConditions, state)
+
+    // If all prerequisites are complete, check dependent conditions
+    if (arePrerequisitesComplete(state)) {
+      const dependentConditions = conditions.filter((condition) => condition.dependencies.includes("setup"))
+      checkSpecificProgress(dependentConditions, state)
+    }
+  } else {
+    // For other steps, check only directly related conditions
+    const relevantConditions = conditions.filter(
+      (condition) =>
+        (condition.stepId === stepId && condition.subStepId === subStepId) || condition.dependencies.includes(stepId)
+    )
+    if (relevantConditions.length > 0) {
+      checkSpecificProgress(relevantConditions, state)
+    }
+  }
 }

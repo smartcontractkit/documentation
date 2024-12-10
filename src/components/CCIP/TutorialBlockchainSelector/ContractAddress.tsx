@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react"
 import { utils } from "ethers"
-import { useStore } from "@nanostores/react"
-import { laneStore, setSourceContract, setDestinationContract } from "@stores/lanes"
+import { setSourceContract, setDestinationContract } from "@stores/lanes"
 import type { DeployedContracts } from "@stores/lanes"
 import "./ContractAddress.css"
 
