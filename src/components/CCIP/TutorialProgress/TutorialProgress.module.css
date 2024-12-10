@@ -1,9 +1,9 @@
-/* Main container - match RightSidebar */
-.sidebar-nav {
-  height: fit-content;
-  padding: var(--doc-padding) 0;
+/* Base container */
+.tutorialProgress {
   position: sticky;
   top: 0;
+  height: fit-content;
+  padding: var(--doc-padding) 0;
   min-width: calc(315px - var(--space-16x));
 }
 
@@ -13,34 +13,9 @@
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: var(--space-4x);
+  pointer-events: none;
 }
 
-.toc-wrapper {
-  padding: 0;
-  margin-bottom: var(--space-8x);
-}
-
-/* Progress tracking styles */
-.progressContainer {
-  padding: var(--space-4x);
-}
-
-.progressTracker {
-  position: relative;
-  margin-bottom: var(--space-8x);
-}
-
-.progressBar {
-  position: absolute;
-  top: 15px;
-  left: 0;
-  height: 2px;
-  background: #375bd2;
-  transition: width 0.3s ease;
-  z-index: 0;
-}
-
-/* Section headers - match RightSidebar headings */
 .sectionTitle {
   font-family: var(--font-display);
   font-size: var(--font-size-base);
@@ -49,361 +24,110 @@
   margin-bottom: var(--space-4x);
   padding-bottom: var(--space-2x);
   border-bottom: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
-/* Progress section */
-.progressSection {
-  margin-bottom: var(--space-8x);
-}
-
-.progressList {
-  padding: 0;
-  list-style: none;
-  margin: var(--space-4x) 0;
-}
-
-/* Progress steps - match TableOfContents style */
-.step {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3x);
-  width: 100%;
-  padding: var(--space-3x);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  /* Reset button styles */
-  appearance: none;
-  border: none;
-  font: inherit;
-  text-align: left;
-}
-
-.step:hover {
-  background: var(--color-background-secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Visual feedback on click */
-.step:active {
-  transform: translateY(0);
-}
-
-/* Chevron indicator */
-.chevron {
-  margin-left: auto;
-  width: 12px;
-  height: 12px;
-  border-right: 2px solid var(--color-text-secondary);
-  border-bottom: 2px solid var(--color-text-secondary);
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-}
-
-.step.expanded .chevron {
-  transform: rotate(-135deg);
-}
-
-/* Step details animation */
-.step-details {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: all 0.3s ease;
-}
-
-.step.expanded + .step-details {
-  max-height: 500px; /* Adjust based on content */
-  opacity: 1;
-  padding: var(--space-3x) 0;
-}
-
-/* Focus styles for accessibility */
-.step:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.stepIndicator {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  background: var(--color-background-secondary);
-  color: var(--color-text-secondary);
-}
-
-.step.completed .stepIndicator {
-  background: var(--color-success);
-  color: white;
-}
-
-.step.in-progress .stepIndicator {
-  background: var(--color-accent);
-  color: white;
-}
-
-.stepTitle {
-  font-size: 14px;
-  color: var(--color-text-primary);
-}
-
-/* Configuration section */
-.configSection {
-  margin-top: var(--space-8x);
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-4x);
-}
-
-.statusGrid {
-  display: grid;
-  gap: var(--space-2x);
-  margin-top: var(--space-3x);
-}
-
-.statusItem {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: var(--space-2x);
-  padding: var(--space-2x);
-  background: var(--color-background-secondary);
-  border-radius: 4px;
-}
-
-.statusLabel {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.statusValue {
-  font-size: 14px;
-  color: var(--color-text-primary);
-}
-
-.statusCheck {
-  color: var(--color-success);
-}
-
-.statusItem.complete {
-  background: var(--color-success-light);
-}
-
-/* Responsive behavior */
-@media (max-width: 1200px) {
-  .sidebar-nav {
-    display: none;
-  }
-}
-
-.tutorial-progress-container {
-  padding: var(--space-4x);
-}
-
-.progress-tracker {
-  position: relative;
-  margin-bottom: var(--space-8x);
-}
-
-.progress-bar {
-  position: absolute;
-  top: 15px;
-  left: 0;
-  height: 2px;
-  background: #375bd2;
-  transition: width 0.3s ease;
-  z-index: 0;
+/* Progress Steps */
+.progressSteps {
+  margin-bottom: 24px;
 }
 
 .steps {
   position: relative;
-  padding-left: 16px; /* Space for connectors */
-}
-
-.step {
   display: flex;
-  align-items: center;
-  gap: var(--space-3x);
-  color: var(--color-text-secondary);
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
-  background: #fafbfd;
-  padding: 4px 0;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
 }
 
-.step-indicator {
-  position: relative;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.step.completed .step-indicator {
-  background: #375bd2;
-  border-color: #375bd2;
-  color: white;
-}
-
-.step.completed .step-title {
-  color: #16a34a;
-  font-weight: 500;
-}
-
-.step.active {
-  color: var(--color-text-primary);
-}
-
-.step.active .step-indicator {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: white;
-  font-weight: 600;
-}
-
-.configuration-status {
-  margin-top: var(--space-8x);
-  padding-top: var(--space-4x);
-  border-top: 1px solid var(--color-border);
-}
-
-.status-grid {
-  display: grid;
-  gap: var(--space-3x);
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  padding: var(--space-3x);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  transition: all 0.2s ease;
-  position: relative;
-  animation: fadeIn 0.3s ease;
-}
-
-.status-item:hover {
-  background: var(--color-background-secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.status-item.complete {
-  border-color: var(--color-success);
-  background: var(--color-success-light);
-}
-
-.status-item.complete .status-check {
-  color: var(--color-success);
-  position: absolute;
-  right: var(--space-3x);
-  font-size: var(--font-size-base);
-}
-
-.status-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-  margin-bottom: var(--space-1x);
-}
-
-.status-value {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2x);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
-
-.status-check {
-  position: absolute;
-  top: var(--space-2x);
-  right: var(--space-2x);
-  color: var(--color-success);
-}
-
-.step-container {
+.stepContainer {
   display: flex;
   flex-direction: column;
   border-left: 2px solid var(--color-border-primary);
   margin-left: 15px;
   padding-left: 15px;
+  transition: all 0.3s ease;
 }
 
-.step-container.completed {
+.stepContainer.completed {
   border-left-color: #16a34a;
 }
 
-.step-container.in-progress {
+.stepContainer.in-progress {
   border-left-color: #ea580c;
 }
 
-.step.completed .step-indicator {
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.step:hover {
+  transform: translateX(4px);
+  background: var(--color-background-secondary);
+}
+
+.stepIndicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.completed .stepIndicator {
   background: #dcfce7;
   border-color: #16a34a;
   color: #16a34a;
 }
 
-.step.in-progress .step-indicator {
+.in-progress .stepIndicator {
   background: #fef3c7;
   border-color: #eab308;
   color: #b45309;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border-width: 2px;
-  border-style: solid;
-  margin: 0;
-  padding: 0;
 }
 
-.step.in-progress .step-indicator::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #ea580c;
-  border-radius: 50%;
-  right: -2px;
-  top: -2px;
-  box-shadow: 0 0 0 2px #fff;
-  animation: pulse 2s infinite;
-  z-index: 2;
+.stepTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  flex: 1;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(234, 88, 12, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
-  }
+.step.in-progress .stepTitle {
+  color: #ea580c;
 }
 
-.step-details {
+.chevron {
+  width: 16px;
+  height: 16px;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.expanded .chevron {
+  transform: rotate(-135deg);
+}
+
+.stepDetails {
   margin-left: 40px;
   padding: 8px 0;
   border-left: 2px solid var(--color-border-primary);
@@ -416,12 +140,12 @@
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.03);
   margin: 4px 0;
 }
 
 .substep.completed {
-  background: #f0fdf4;
+  background: rgba(22, 163, 74, 0.1);
   padding-right: 32px;
   position: relative;
 }
@@ -434,300 +158,168 @@
   font-weight: bold;
 }
 
-.substep-title {
+.substepTitle {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 
-.substep.completed .substep-title {
+.substep.completed .substepTitle {
   color: #16a34a;
   font-weight: 500;
 }
 
-.step.in-progress .step-title {
-  color: #ea580c;
-  font-weight: 500;
-}
-
-/* Reset any potential conflicting styles */
-.step-container[class*="in-progress"],
-.step[class*="in-progress"],
-.step-indicator[class*="in-progress"] {
-  all: unset;
-}
-
-/* Add network logo styles */
-.networkInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2x);
-}
-
-.networkLogo {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
+/* Chain section styles */
+.chainBlock {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
 }
 
-/* Hover effect with glow and slight scale */
-.networkInfo:hover .networkLogo {
-  transform: scale(1.1);
-  filter: brightness(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 0 4px rgba(var(--color-accent-rgb), 0.1);
-}
-
-/* Pulse animation for active state */
-@keyframes logoPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(var(--color-accent-rgb), 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0);
-  }
-}
-
-/* Add pulse animation when network is active/selected */
-.networkLogo.active {
-  animation: logoPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Reduce motion if user prefers */
-@media (prefers-reduced-motion: reduce) {
-  .networkLogo {
-    transition: none;
-    animation: none;
-  }
-
-  .networkInfo:hover .networkLogo {
-    transform: none;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Common card-like styling */
-.step-container,
-.status-item {
-  background: var(--color-background);
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease-in-out;
-}
-
-/* Hover effect for both */
-.step-container:hover,
-.status-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-}
-
-.chainBlock {
-  background: var(--color-background);
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  margin-bottom: var(--space-4x);
-  transition: all 0.2s ease-in-out;
-}
-
-.chainBlock:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-}
-
 .chainHeader {
-  padding: var(--space-3x);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chainIdentity {
   display: flex;
   align-items: center;
-  gap: var(--space-3x);
-  padding: var(--space-2x);
+  gap: 12px;
 }
 
-.chainName {
-  font-family: var(--font-display);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  line-height: 1.4;
-  text-align: left;
-}
-
-.networkLogo {
-  width: 32px;
-  height: 32px;
+.chainLogo {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.chainConfigs {
-  padding: var(--space-4x);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3x);
-}
-
-/* Status items */
-.status-item {
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  padding: var(--space-3x);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
 }
 
-.status-item:hover {
-  background: var(--color-background);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.status-label {
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
-.status-value {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.mainProgress {
-  background: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  border: 1px solid #e2e8f0;
-}
-
-.mainProgressHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.currentStep {
-  font-size: 1.25rem;
+.chainName {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-primary);
+  font-size: 1.1em;
+  pointer-events: none;
 }
 
-.totalSteps {
-  color: #64748b;
-  font-size: 1rem;
+.chainConfigs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.mainProgressBar {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
+/* Status styles */
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
 }
 
-.mainProgressFill {
-  height: 100%;
-  background: #375bd2;
-  border-radius: 4px;
-  transition: width 0.3s ease;
+.statusLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  font-weight: 500;
+  pointer-events: none;
 }
 
-/* Update existing progress bar to be more subtle */
-.progress-bar {
-  height: 4px;
-  background: #e2e8f0;
-  opacity: 0.5;
-}
-
-/* Enhance step visualization */
-.step-container {
-  position: relative;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.step-container:hover {
-  background: #f1f5f9;
-}
-
-.step-container.completed {
-  border-left: 3px solid #375bd2;
-}
-
-.step-container.in-progress {
-  border-left: 3px solid #eab308;
-}
-
-/* Vertical connector line */
-.connector {
-  position: absolute;
-  left: -16px;
-  top: 16px;
-  height: calc(100% + 1rem);
-  width: 2px;
-  background: #e2e8f0;
-  transition: background-color 0.3s ease;
-}
-
-.connector.completed {
-  background: #375bd2;
-}
-
-.step-indicator {
-  position: relative;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #e2e8f0;
+.statusValue {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  min-width: 0;
 }
 
-.step.completed .step-indicator {
-  background: #375bd2;
-  border-color: #375bd2;
+.statusValueWithAddress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  max-width: 140px;
+}
+
+.statusCheck {
+  color: #4caf50;
+  font-weight: bold;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.statusPending {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  pointer-events: none;
+}
+
+/* Value container with tooltip */
+.valueContainer {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  position: relative;
+  cursor: help;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
+
+.valueContainer:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Tooltip styles */
+.valueContainer[data-tooltip] {
+  position: relative;
+}
+
+.valueContainer[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.85);
   color: white;
+  font-size: 0.85em;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
-.step.in-progress .step-indicator {
-  border-color: #375bd2;
-  color: #375bd2;
+.valueContainer[data-tooltip]::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  z-index: 10;
 }
 
-/* Adjust last step's connector */
-.step-container:last-child {
-  margin-bottom: 0;
-}
-
-.step-container:last-child .connector {
-  height: calc(100% - 16px);
+.valueContainer[data-tooltip]:hover::before,
+.valueContainer[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
