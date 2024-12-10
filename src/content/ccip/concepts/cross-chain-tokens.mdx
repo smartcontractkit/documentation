@@ -450,7 +450,7 @@ The **Token Pool contract** is responsible for executing the cross-chain token t
   - **BurnMintTokenPool**: Handles the burning, or minting of tokens depending whether it is the source or destination blockchain.
   - **LockReleaseTokenPool**: Handles the locking or releasing of tokens depending on whether it is the source or destination blockchain.
 
-For more information on the token pool contracts and their functionalities, refer to the [Requirement for Token Pools](#requirement-for-token-pools) section.
+For more information on the token pool contracts and their functionalities, refer to the [Requirement for Token Pools](#requirements-for-token-pools) section.
 
 ### Registration
 
@@ -548,13 +548,15 @@ The configuration of token pools includes adding new blockchains, setting remote
    - **Usage**:
      - To add a new blockchain, the pool owner provides the remote chain selector, pool address, token address, and rate limiter configurations.
      - To remove a blockchain, the `allowed` flag is set to `false`, and the chain is removed from the list of supported chains.
-1. [`setRemotePool`](/ccip/api-reference/v1.5.1/token-pool#setremotepool):
+1. [`addRemotePool`](/ccip/api-reference/v1.5.1/token-pool#addremotepool):
 
-   - **Purpose**: Set the remote pool's address to link the current token pool to a corresponding pool on a remote blockchain.
+   - **Purpose**: Adds a new remote pool address for a specific blockchain, enabling support for multiple pools per chain.
    - **Details**:
-     - This function is used to establish the connection between token pools on different blockchains.
-     - It validates the provided chain selector and updates the remote pool address for the selected chain.
-   - **Usage**: This function sets or updates the remote pool address for a specific blockchain.
+     - Allows adding multiple pools for a single chain selector, which is crucial during pool upgrades
+     - Maintains support for in-flight messages from existing pools while adding new ones
+     - Validates chain selector support and prevents duplicate pool additions
+     - Each pool address is hashed and stored for efficient lookup
+   - **Usage**: This function is particularly useful during pool upgrades, allowing seamless transitions between pool versions while maintaining transaction support.
 
 1. [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.1/token-pool#setchainratelimiterconfig):
 
