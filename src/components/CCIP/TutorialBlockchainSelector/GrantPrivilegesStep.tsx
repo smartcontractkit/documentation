@@ -18,8 +18,9 @@ export const GrantPrivilegesStep = ({ chain }: GrantPrivilegesStepProps) => {
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
 
-  const stepId = `${chain}Config` as const
+  const stepId = chain === "source" ? "sourceConfig" : "destinationConfig"
   const subStepId = chain === "source" ? "source-privileges" : "dest-privileges"
+  const navigationId = `${stepId}-${subStepId}`
 
   return (
     <TutorialCard
@@ -29,6 +30,7 @@ export const GrantPrivilegesStep = ({ chain }: GrantPrivilegesStepProps) => {
       <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
         <TutorialStep
+          id={navigationId}
           title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
           checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >

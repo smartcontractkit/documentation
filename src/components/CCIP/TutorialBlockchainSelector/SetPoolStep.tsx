@@ -20,12 +20,18 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
   const stepId = chain === "source" ? "sourceChain" : "destinationChain"
   const subStepId = chain === "source" ? "pool-registered" : "dest-pool-registered"
 
+  const getSubStepId = (subStep: string) => `${stepId}-${subStep}`
+
   return (
     <TutorialCard title="Configure Token Registry" description="Register your token pool in the CCIP registry">
       <NetworkCheck network={networkInfo} />
 
       <ol className={styles.steps}>
-        <TutorialStep title="Configure Registry" checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}>
+        <TutorialStep
+          id={getSubStepId(subStepId)}
+          title="Configure Registry"
+          checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
+        >
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select <strong>TokenAdminRegistry</strong> contract

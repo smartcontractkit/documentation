@@ -23,6 +23,10 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
       }
     : { name: "loading..." }
 
+  const stepId = chain === "source" ? "sourceChain" : "destinationChain"
+  const getSubStepId = (subStep: string) => `${stepId}-${subStep}`
+  const deployedStepId = chain === "source" ? "token-deployed" : "dest-token-deployed"
+
   const content = (
     <>
       <NetworkCheck network={networkInfo} />
@@ -39,7 +43,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
       </Callout>
 
       <ol className={styles.steps}>
-        <TutorialStep title="Configure Remix">
+        <TutorialStep id={getSubStepId("token-config")} title="Configure Remix">
           <ul>
             <li>Open the "Deploy & Run Transactions" tab</li>
             <li>Set Environment to "Injected Provider - MetaMask"</li>
@@ -49,7 +53,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
           </ul>
         </TutorialStep>
 
-        <TutorialStep title="Set Parameters">
+        <TutorialStep id={getSubStepId("token-params")} title="Set Parameters">
           <div className={styles.parametersIntro}>
             <p>Configure your token by setting these required parameters in Remix:</p>
           </div>
@@ -93,7 +97,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
           </div>
         </TutorialStep>
 
-        <TutorialStep title="Deploy Contract">
+        <TutorialStep id={getSubStepId(deployedStepId)} title="Deploy Contract">
           <ul>
             <li>Click "Deploy" and confirm in MetaMask</li>
             <li>Copy your token address from "Deployed Contracts"</li>

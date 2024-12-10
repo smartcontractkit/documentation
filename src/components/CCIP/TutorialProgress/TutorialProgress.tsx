@@ -15,6 +15,31 @@ const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {
   return 5
 }
 
+// Add navigation helper
+const navigateToSubStep = (stepId: StepId, subStepId: string) => {
+  // First, ensure the parent step is expanded
+  const elementId = `${stepId}-${subStepId}`
+  const element = document.getElementById(elementId)
+
+  if (element) {
+    // Expand the parent step if needed
+    laneStore.set({
+      ...laneStore.get(),
+      currentStep: stepId,
+    })
+
+    // Scroll to the element
+    element.scrollIntoView({ behavior: "smooth", block: "center" })
+
+    // Add a temporary highlight
+    element.style.transition = "background-color 0.3s ease"
+    element.style.backgroundColor = "rgba(55, 91, 210, 0.1)"
+    setTimeout(() => {
+      element.style.backgroundColor = ""
+    }, 1500)
+  }
+}
+
 export const TutorialProgress = () => {
   const mainState = useStore(laneStore)
   const progress = useStore(progressStore)
@@ -118,6 +143,24 @@ export const TutorialProgress = () => {
     [progress]
   )
 
+  // Update the substep rendering to be clickable
+  const renderSubSteps = useCallback(
+    (stepId: StepId) => {
+      const subSteps = getStepProgress(stepId)
+      return subSteps.map(({ id: subStepId, title, completed }) => (
+        <button
+          key={subStepId}
+          className={`${styles.substep} ${completed ? styles.completed : ""}`}
+          onClick={() => navigateToSubStep(stepId, subStepId)}
+          aria-label={`Go to ${title}`}
+        >
+          <span className={styles.substepTitle}>{title}</span>
+        </button>
+      ))
+    },
+    [getStepProgress]
+  )
+
   return (
     <section className={styles.tutorialProgress} aria-label="Tutorial Progress">
       <div className={styles.title}>Tutorial Progress</div>
@@ -154,13 +197,7 @@ export const TutorialProgress = () => {
 
                 {expandedStep === step.id && (
                   <div className={styles.stepDetails}>
-                    <div className={styles.stepProgress}>
-                      {getStepProgress(step.id as StepId).map(({ id, title, completed }) => (
-                        <div key={id} className={`${styles.substep} ${completed ? styles.completed : ""}`}>
-                          <span className={styles.substepTitle}>{title}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <div className={styles.stepProgress}>{renderSubSteps(step.id as StepId)}</div>
                   </div>
                 )}
               </div>

@@ -215,15 +215,39 @@ const conditions = [
   },
   {
     stepId: "sourceConfig" as StepId,
+    subStepId: "source-privileges",
+    check: (state: LaneState) => state.progress.sourceConfig?.["source-privileges"] === true,
+    dependencies: ["sourceChain"],
+  },
+  {
+    stepId: "sourceConfig" as StepId,
     subStepId: "source-pool-config",
     check: (state: LaneState) => state.progress.sourceConfig?.["source-pool-config"] === true,
-    dependencies: ["sourceChain"] as StepId[],
+    dependencies: ["sourceChain"],
+  },
+  {
+    stepId: "sourceConfig" as StepId,
+    subStepId: "source-verification",
+    check: (state: LaneState) => state.progress.sourceConfig?.["source-verification"] === true,
+    dependencies: ["sourceChain"],
+  },
+  {
+    stepId: "destinationConfig" as StepId,
+    subStepId: "dest-privileges",
+    check: (state: LaneState) => state.progress.destinationConfig?.["dest-privileges"] === true,
+    dependencies: ["destinationChain"],
   },
   {
     stepId: "destinationConfig" as StepId,
     subStepId: "dest-pool-config",
     check: (state: LaneState) => state.progress.destinationConfig?.["dest-pool-config"] === true,
-    dependencies: ["destinationChain"] as StepId[],
+    dependencies: ["destinationChain"],
+  },
+  {
+    stepId: "destinationConfig" as StepId,
+    subStepId: "dest-verification",
+    check: (state: LaneState) => state.progress.destinationConfig?.["dest-verification"] === true,
+    dependencies: ["destinationChain"],
   },
 ]
 

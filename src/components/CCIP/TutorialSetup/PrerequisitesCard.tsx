@@ -22,6 +22,9 @@ interface PrerequisiteStep {
 export const PrerequisitesCard = () => {
   const [activeStep, setActiveStep] = useState<string | null>("browser-setup")
 
+  // Generate unique IDs for each substep
+  const getSubStepId = (subStepId: string) => `setup-${subStepId}`
+
   const prerequisites: PrerequisiteStep[] = [
     {
       id: "browser-setup",
@@ -78,7 +81,11 @@ export const PrerequisitesCard = () => {
           <div className={styles.sectionTitle}>Wallet Setup</div>
           <div className={styles.steps}>
             {prerequisites.map((step) => (
-              <div key={step.id} className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}>
+              <div
+                key={step.id}
+                id={getSubStepId(step.checkboxId)}
+                className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}
+              >
                 <div className={styles.stepHeader}>
                   <div className={styles.stepInfo}>
                     <span className={styles.stepTitle}>{step.title}</span>

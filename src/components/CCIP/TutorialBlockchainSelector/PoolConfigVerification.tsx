@@ -49,8 +49,9 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
 
-  const stepId = `${chain}Config` as const
+  const stepId = chain === "source" ? "sourceConfig" : "destinationConfig"
   const subStepId = chain === "source" ? "source-verification" : "dest-verification"
+  const navigationId = `${stepId}-${subStepId}`
 
   return (
     <TutorialCard
@@ -60,7 +61,8 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
       <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
         <TutorialStep
-          title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
+          id={navigationId}
+          title="Verify Configuration"
           checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >
           <ol className={styles.instructions}>

@@ -20,12 +20,16 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = network ? { name: network.name, logo: network.logo } : { name: "loading..." }
 
+  const stepId = chain === "source" ? "sourceChain" : "destinationChain"
+  const getSubStepId = (subStep: string) => `${stepId}-${subStep}`
+  const deployedStepId = chain === "source" ? "pool-deployed" : "dest-pool-deployed"
+
   return (
     <TutorialCard title="Deploy Token Pool" description="Choose your pool type and deploy using Remix IDE">
       <NetworkCheck network={networkInfo} />
 
       <ol className={styles.steps}>
-        <TutorialStep title="Choose Pool Type">
+        <TutorialStep id={getSubStepId("pool-type")} title="Choose Pool Type">
           <div className={styles.selectionDescription}>
             Select the appropriate pool type based on your token's characteristics and requirements
           </div>
@@ -69,7 +73,7 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
           </div>
         </TutorialStep>
 
-        <TutorialStep title="Set Parameters">
+        <TutorialStep id={getSubStepId("pool-params")} title="Set Parameters">
           <div className={styles.parametersIntro}>
             <p>Configure your pool by setting these required parameters in Remix:</p>
           </div>
@@ -150,7 +154,7 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
           </div>
         </TutorialStep>
 
-        <TutorialStep title="Deploy Contract">
+        <TutorialStep id={getSubStepId(deployedStepId)} title="Deploy Contract">
           <ul>
             <li>Click "Deploy" and confirm in MetaMask</li>
             <li>Copy your pool address from "Deployed Contracts"</li>

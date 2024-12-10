@@ -19,12 +19,18 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
   const stepId = chain === "source" ? "sourceChain" : "destinationChain"
   const tokenAddress = chain === "source" ? state.sourceContracts.token : state.destinationContracts.token
 
+  const getSubStepId = (subStepId: string) => `${stepId}-${subStepId}`
+
   const content = (
     <>
       <NetworkCheck network={networkInfo} />
 
       <ol className={styles.steps}>
-        <TutorialStep title="Register as Admin" checkbox={<StepCheckbox stepId={stepId} subStepId="admin-claimed" />}>
+        <TutorialStep
+          id={getSubStepId("admin-claimed")}
+          title="Register as Admin"
+          checkbox={<StepCheckbox stepId={stepId} subStepId="admin-claimed" />}
+        >
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select <strong>RegistryModuleOwnerCustom</strong> contract
@@ -67,7 +73,11 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
           </ol>
         </TutorialStep>
 
-        <TutorialStep title="Accept Admin Role" checkbox={<StepCheckbox stepId={stepId} subStepId="admin-accepted" />}>
+        <TutorialStep
+          id={getSubStepId("admin-accepted")}
+          title="Accept Admin Role"
+          checkbox={<StepCheckbox stepId={stepId} subStepId="admin-accepted" />}
+        >
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select <strong>TokenAdminRegistry</strong> contract

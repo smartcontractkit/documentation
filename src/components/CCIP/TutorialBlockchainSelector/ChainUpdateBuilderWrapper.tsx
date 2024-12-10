@@ -183,8 +183,9 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
     }
   }
 
-  const stepId = `${chain}Config` as const
+  const stepId = chain === "source" ? "sourceConfig" : "destinationConfig"
   const subStepId = chain === "source" ? "source-pool-config" : "dest-pool-config"
+  const navigationId = `${stepId}-${subStepId}`
 
   return (
     <TutorialCard
@@ -194,6 +195,7 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
       <NetworkCheck network={networkInfo} />
       <ol className={styles.steps}>
         <TutorialStep
+          id={navigationId}
           title={TUTORIAL_STEPS[stepId].subSteps[subStepId]}
           checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >

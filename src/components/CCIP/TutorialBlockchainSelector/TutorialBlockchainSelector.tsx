@@ -22,6 +22,9 @@ export const TutorialBlockchainSelector = () => {
   const sourceNetworks = allNetworks.filter((n) => n.chain !== state.destinationChain)
   const destinationNetworks = allNetworks.filter((n) => n.chain !== state.sourceChain)
 
+  // Generate unique IDs for each substep
+  const getSubStepId = (subStepId: string) => `setup-${subStepId}`
+
   const checkAndUpdateProgress = () => {
     // Use the latest state from the store instead of component state
     const currentState = laneStore.get()
@@ -103,7 +106,7 @@ export const TutorialBlockchainSelector = () => {
 
   return (
     <div className={styles.blockchainSelector}>
-      <div className={styles.environmentToggle}>
+      <div id={getSubStepId("browser-setup")} className={styles.environmentToggle}>
         <button
           className={`${styles.toggleButton} ${state.environment === Environment.Testnet ? styles.active : ""}`}
           onClick={() => handleEnvironmentChange(Environment.Testnet)}
@@ -122,7 +125,7 @@ export const TutorialBlockchainSelector = () => {
         </button>
       </div>
 
-      <div className={styles.chainSelectors}>
+      <div id={getSubStepId("blockchains-selected")} className={styles.chainSelectors}>
         <ChainSelect
           value={state.sourceChain}
           onChange={handleSourceChainChange}
