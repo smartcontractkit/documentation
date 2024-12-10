@@ -137,11 +137,17 @@ export const TutorialProgress = () => {
         <div className={styles.chainBlock}>
           <div className={styles.chainHeader}>
             <div className={styles.chainIdentity}>
-              <img
-                src={mainState.sourceNetwork?.logo}
-                alt={mainState.sourceNetwork?.name}
-                className={styles.chainLogo}
-              />
+              <div className={styles.chainLogo}>
+                {mainState.sourceNetwork?.logo ? (
+                  <img
+                    src={mainState.sourceNetwork.logo}
+                    alt={mainState.sourceNetwork.name}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                ) : null}
+              </div>
               <div className={styles.chainName}>{mainState.sourceNetwork?.name || "Source Chain"}</div>
             </div>
           </div>
@@ -192,11 +198,17 @@ export const TutorialProgress = () => {
         <div className={styles.chainBlock}>
           <div className={styles.chainHeader}>
             <div className={styles.chainIdentity}>
-              <img
-                src={mainState.destinationNetwork?.logo}
-                alt={mainState.destinationNetwork?.name}
-                className={styles.chainLogo}
-              />
+              <div className={styles.chainLogo}>
+                {mainState.destinationNetwork?.logo ? (
+                  <img
+                    src={mainState.destinationNetwork.logo}
+                    alt={mainState.destinationNetwork.name}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                ) : null}
+              </div>
               <div className={styles.chainName}>{mainState.destinationNetwork?.name || "Destination Chain"}</div>
             </div>
           </div>
