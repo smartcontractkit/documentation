@@ -1,13 +1,15 @@
 import { useState } from "react"
 import styles from "./PrerequisitesCard.module.css"
-import { type SubStepId } from "@stores/lanes"
+import { type StepId, type SubStepId } from "@stores/lanes"
 import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
+import { SetupSection } from "./SetupSection"
+import { TutorialCard } from "./TutorialCard"
 
 interface PrerequisiteStep {
   id: string
   title: string
   description: string
-  checkboxId: SubStepId<"setup">
+  checkboxId: SubStepId<StepId>
   defaultOpen?: boolean
   options?: {
     title: string
@@ -22,14 +24,13 @@ interface PrerequisiteStep {
 export const PrerequisitesCard = () => {
   const [activeStep, setActiveStep] = useState<string | null>("browser-setup")
 
-  // Generate unique IDs for each substep
   const getSubStepId = (subStepId: string) => `setup-${subStepId}`
 
   const prerequisites: PrerequisiteStep[] = [
     {
       id: "browser-setup",
-      checkboxId: "browser-setup" as SubStepId<"setup">,
-      title: "Web Browser Setup",
+      checkboxId: "browser-setup" as SubStepId<StepId>,
+      title: "1. Web Browser Setup",
       description: "Configure your browser with the required extensions and networks",
       defaultOpen: true,
       options: [
@@ -57,8 +58,8 @@ export const PrerequisitesCard = () => {
     },
     {
       id: "gas-tokens",
-      checkboxId: "gas-tokens" as SubStepId<"setup">,
-      title: "Native Gas Tokens",
+      checkboxId: "gas-tokens" as SubStepId<StepId>,
+      title: "2. Native Gas Tokens",
       description: "Acquire tokens for transaction fees",
       options: [
         {
@@ -74,43 +75,38 @@ export const PrerequisitesCard = () => {
   ]
 
   return (
-    <div className={styles.card}>
-      <div className={styles.title}>Prerequisites</div>
+    <TutorialCard title="Prerequisites" description="Complete these steps before starting the tutorial">
       <div className={styles.requirements}>
-        <div className={styles.section}>
-          <div className={styles.sectionTitle}>Wallet Setup</div>
-          <div className={styles.steps}>
-            {prerequisites.map((step) => (
-              <div
-                key={step.id}
-                id={getSubStepId(step.checkboxId)}
-                className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}
-              >
-                <div className={styles.stepHeader}>
-                  <div className={styles.stepInfo}>
-                    <span className={styles.stepTitle}>{step.title}</span>
-                    <p className={styles.stepDescription}>{step.description}</p>
-                  </div>
-                  <div className={styles.stepActions}>
-                    <StepCheckbox stepId="setup" subStepId={step.checkboxId} />
-                    <button
-                      className={styles.expandButton}
-                      onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
-                      aria-label={activeStep === step.id ? "Collapse section" : "Expand section"}
-                    >
-                      {activeStep === step.id ? "▼" : "▶"}
-                    </button>
-                  </div>
-                </div>
-
+        {prerequisites.map((step) => (
+          <div
+            key={step.id}
+            id={getSubStepId(step.checkboxId)}
+            className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}
+          >
+            <SetupSection
+              title={step.title}
+              description={step.description}
+              checkbox={{
+                stepId: "setup" as StepId,
+                subStepId: step.checkboxId,
+              }}
+            >
+              <div className={styles.stepContent}>
+                <button
+                  className={styles.expandButton}
+                  onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
+                  aria-label={activeStep === step.id ? "Collapse section" : "Expand section"}
+                >
+                  {activeStep === step.id ? "▼" : "▶"}
+                </button>
                 {activeStep === step.id && step.options && (
                   <div className={styles.optionsGrid}>
                     {step.options.map((option, idx) => (
                       <div key={idx} className={styles.optionCard}>
                         <h4>{option.title}</h4>
                         <ul className={styles.stepsList}>
-                          {option.steps.map((step, stepIdx) => (
-                            <li key={stepIdx}>{step}</li>
+                          {option.steps.map((stepText, stepIdx) => (
+                            <li key={stepIdx}>{stepText}</li>
                           ))}
                         </ul>
                         {option.link && (
@@ -129,10 +125,10 @@ export const PrerequisitesCard = () => {
                   </div>
                 )}
               </div>
-            ))}
+            </SetupSection>
           </div>
-        </div>
+        ))}
       </div>
-    </div>
+    </TutorialCard>
   )
 }

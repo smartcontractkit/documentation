@@ -4,6 +4,8 @@ import { Environment, getAllNetworks } from "@config/data/ccip"
 import type { Network } from "@config/data/ccip/types"
 import { ChainSelect } from "./ChainSelect"
 import styles from "./TutorialBlockchainSelector.module.css"
+import { TutorialCard } from "../TutorialSetup/TutorialCard"
+import { SetupSection } from "../TutorialSetup/SetupSection"
 
 type ChainUpdate = Partial<{
   sourceChain: string
@@ -105,53 +107,63 @@ export const TutorialBlockchainSelector = () => {
   }
 
   return (
-    <div className={styles.blockchainSelector}>
-      <div id={getSubStepId("browser-setup")} className={styles.environmentToggle}>
-        <button
-          className={`${styles.toggleButton} ${state.environment === Environment.Testnet ? styles.active : ""}`}
-          onClick={() => handleEnvironmentChange(Environment.Testnet)}
-          aria-pressed={state.environment === Environment.Testnet}
-        >
-          <span className={styles.toggleIcon}>🔧</span>
-          Testnet
-        </button>
-        <button
-          className={`${styles.toggleButton} ${state.environment === Environment.Mainnet ? styles.active : ""}`}
-          onClick={() => handleEnvironmentChange(Environment.Mainnet)}
-          aria-pressed={state.environment === Environment.Mainnet}
-        >
-          <span className={styles.toggleIcon}>🌐</span>
-          Mainnet
-        </button>
-      </div>
+    <TutorialCard
+      title="Blockchain Setup"
+      description="Choose the source and destination blockchains for your cross-chain token"
+    >
+      <SetupSection
+        title="Select Your Blockchains"
+        description="Choose the source and destination blockchains for your cross-chain token"
+      >
+        <div className={styles.blockchainSelector}>
+          <div id={getSubStepId("browser-setup")} className={styles.environmentToggle}>
+            <button
+              className={`${styles.toggleButton} ${state.environment === Environment.Testnet ? styles.active : ""}`}
+              onClick={() => handleEnvironmentChange(Environment.Testnet)}
+              aria-pressed={state.environment === Environment.Testnet}
+            >
+              <span className={styles.toggleIcon}>🔧</span>
+              Testnet
+            </button>
+            <button
+              className={`${styles.toggleButton} ${state.environment === Environment.Mainnet ? styles.active : ""}`}
+              onClick={() => handleEnvironmentChange(Environment.Mainnet)}
+              aria-pressed={state.environment === Environment.Mainnet}
+            >
+              <span className={styles.toggleIcon}>🌐</span>
+              Mainnet
+            </button>
+          </div>
 
-      <div id={getSubStepId("blockchains-selected")} className={styles.chainSelectors}>
-        <ChainSelect
-          value={state.sourceChain}
-          onChange={handleSourceChainChange}
-          options={sourceNetworks}
-          placeholder="Select Source"
-        />
-
-        <div className={styles.arrowContainer}>
-          <svg className={styles.arrow} width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M3 12h18M15 5l7 7-7 7"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div id={getSubStepId("blockchains-selected")} className={styles.chainSelectors}>
+            <ChainSelect
+              value={state.sourceChain}
+              onChange={handleSourceChainChange}
+              options={sourceNetworks}
+              placeholder="Select Source"
             />
-          </svg>
-        </div>
 
-        <ChainSelect
-          value={state.destinationChain}
-          onChange={handleDestinationChainChange}
-          options={destinationNetworks}
-          placeholder="Select Destination"
-        />
-      </div>
-    </div>
+            <div className={styles.arrowContainer}>
+              <svg className={styles.arrow} width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M3 12h18M15 5l7 7-7 7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <ChainSelect
+              value={state.destinationChain}
+              onChange={handleDestinationChainChange}
+              options={destinationNetworks}
+              placeholder="Select Destination"
+            />
+          </div>
+        </div>
+      </SetupSection>
+    </TutorialCard>
   )
 }

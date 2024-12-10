@@ -16,6 +16,12 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  const handleSelect = (chain: string) => {
+    onChange(chain)
+    setIsOpen(false)
+    setFocusedIndex(-1)
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -53,10 +59,9 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
           setFocusedIndex(options.length - 1)
           break
         case "Enter":
+          event.preventDefault()
           if (focusedIndex >= 0) {
-            onChange(options[focusedIndex].chain)
-            setIsOpen(false)
-            setFocusedIndex(-1)
+            handleSelect(options[focusedIndex].chain)
           }
           break
         case "Escape":
@@ -125,10 +130,7 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
               className={`${styles.option} ${value === option.chain ? styles.selected : ""} ${
                 focusedIndex === idx ? styles.focused : ""
               }`}
-              onClick={() => {
-                onChange(option.chain)
-                setIsOpen(false)
-              }}
+              onClick={() => handleSelect(option.chain)}
               onMouseEnter={() => setFocusedIndex(idx)}
             >
               <img src={option.logo} alt="" className={styles.chainLogo} />
