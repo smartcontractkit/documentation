@@ -624,7 +624,8 @@ const StreamsTr = ({ proxy, isMainnet }) => (
                 {proxy.docs.assetClass}
                 {proxy.docs.assetSubClass &&
                 proxy.docs.assetSubClass !== "Crypto" &&
-                proxy.docs.assetSubClass !== "Forex"
+                proxy.docs.assetSubClass !== "Forex" &&
+                proxy.docs.assetSubClass !== "Commodity"
                   ? " - " + proxy.docs.assetSubClass
                   : ""}
               </dd>
@@ -674,8 +675,8 @@ const StreamsTr = ({ proxy, isMainnet }) => (
               </dd>
             </div>
           )}{" "}
-          {proxy.docs.feedType === "Forex" && (
-            <div className={tableStyles.definitionGroup}>
+          {["Forex", "Commodity"].includes(proxy.docs.feedType) && (
+            <div>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
@@ -733,7 +734,7 @@ export const MainnetTable = ({
       }
 
       if (dataFeedType === "streamsRwa") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        return chain.contractType === "verifier" && ["Forex", "Commodity"].includes(chain.docs.feedType ?? "")
       }
 
       if (isSmartData) {
@@ -837,7 +838,7 @@ export const TestnetTable = ({
           return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
         }
         if (dataFeedType === "streamsRwa") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+          return chain.contractType === "verifier" && ["Forex", "Commodity"].includes(chain.docs.feedType ?? "")
         }
       }
       if (isSmartData) return !!chain.docs.porType
