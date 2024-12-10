@@ -176,9 +176,9 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       </div>
       {!isTestnet && (
         <div>
-          <dl className={tableStyles.porDl}>
+          <dl className={tableStyles.listContainer}>
             {proxy.docs.assetName && (
-              <div>
+              <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset name:</span>
                 </dt>
@@ -186,7 +186,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
               </div>
             )}
             {proxy.docs.feedType && (
-              <div>
+              <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset type:</span>
                 </dt>
@@ -197,7 +197,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
               </div>
             )}
             {proxy.docs.marketHours && (
-              <div>
+              <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Market hours:</span>
                 </dt>
@@ -294,15 +294,15 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
         </button>
       </div>
       <div>
-        <dl className={tableStyles.porDl}>
-          <div>
+        <dl className={tableStyles.listContainer}>
+          <div className={tableStyles.definitionGroup}>
             <dt>
               <span className="label">Asset name:</span>
             </dt>
             <dd>{proxy.docs.assetName}</dd>
           </div>
           {proxy.docs.porType && (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Reserve type:</span>
               </dt>
@@ -310,14 +310,14 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             </div>
           )}
           {proxy.docs.porAuditor && (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Data source:</span>
               </dt>
               <dd>{proxy.docs.porAuditor}</dd>
             </div>
           )}
-          <div>
+          <div className={tableStyles.definitionGroup}>
             <dt>
               <span className="label">
                 {proxy.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
@@ -326,7 +326,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             <dd>{proxy.docs.porSource}</dd>
           </div>
           {proxy.docs.issuer ? (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Issuer:</span>
               </dt>
@@ -401,12 +401,27 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Optimism",
+    logoUrl: "/assets/chains/optimism.svg",
+    networkStatus: "https://status.optimism.io/",
+    mainnet: {
+      label: "Optimism Mainnet",
+      verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
+      explorerUrl: "https://optimistic.etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Optimism Testnet",
+      verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
+      explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
     testnet: {
       label: "Soneium Minato Testnet",
       verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
-      explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+      explorerUrl: "https://soneium-minato.blockscout.com/address/%s",
     },
   },
   {
@@ -547,7 +562,7 @@ const streamsCategoryMap = {
   },
 }
 
-const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
+const StreamsTr = ({ proxy, isMainnet }) => (
   <tr>
     <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -564,8 +579,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
     </td>
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
-        <span className="label">ID:</span>
-        {proxy.feedId}
+        <span className={tableStyles.streamAddress}>{proxy.feedId}</span>
         <button
           className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
@@ -584,9 +598,9 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
         </button>
       </div>
       <div>
-        <dl className={tableStyles.porDl}>
+        <dl className={tableStyles.listContainer}>
           {isMainnet && proxy.docs.clicProductName && (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Full name:</span>
               </dt>
@@ -594,7 +608,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           )}
           {proxy.docs.assetName && (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
@@ -602,7 +616,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           )}
           {proxy.docs.assetClass ? (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset class:</span>
               </dt>
@@ -618,19 +632,19 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : null}
           {proxy.docs.marketHours ? (
-            <div aria-hidden={!showExtraDetails}>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Market hours:</span>
               </dt>
               <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                <a href="/data-streams/market-hours" target="_blank">
                   {proxy.docs.marketHours}
                 </a>
               </dd>
             </div>
           ) : null}
           {streamsCategoryMap[proxy.docs.feedCategory] ? (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Category:</span>
               </dt>
@@ -642,7 +656,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : null}
           {proxy.decimals ? (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Decimals:</span>
               </dt>
@@ -650,7 +664,7 @@ const StreamsTr = ({ proxy, showExtraDetails, isMainnet }) => (
             </div>
           ) : null}
           {proxy.docs.feedType === "Crypto" && (
-            <div>
+            <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
@@ -780,7 +794,7 @@ export const MainnetTable = ({
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
-                    {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet />}
+                    {isStreams && <StreamsTr proxy={proxy} isMainnet />}
                     {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                   </>
@@ -847,7 +861,7 @@ export const TestnetTable = ({
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isStreams && <StreamsTr proxy={proxy} showExtraDetails={showExtraDetails} isMainnet={false} />}
+              {isStreams && <StreamsTr proxy={proxy} isMainnet={false} />}
               {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}

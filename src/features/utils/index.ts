@@ -181,6 +181,18 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "polkadot-mainnet-astar":
+      return "ASTAR_MAINNET"
+    case "polkadot-testnet-astar-shibuya":
+      return "ASTAR_SHIBUYA"
+    case "ethereum-testnet-sepolia-zircuit-1":
+      return "ZIRCUIT_TESTNET"
+    case "ethereum-mainnet-zircuit-1":
+      return "ZIRCUIT_MAINNET"
+    case "ethereum-mainnet-mantle-1":
+      return "MANTLE_MAINNET"
+    case "ethereum-testnet-sepolia-mantle-1":
+      return "MANTLE_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -260,6 +272,18 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ASTAR_MAINNET":
+      return "polkadot-mainnet-astar"
+    case "ASTAR_SHIBUYA":
+      return "polkadot-testnet-astar-shibuya"
+    case "ZIRCUIT_TESTNET":
+      return "ethereum-testnet-sepolia-zircuit-1"
+    case "ZIRCUIT_MAINNET":
+      return "ethereum-mainnet-zircuit-1"
+    case "MANTLE_MAINNET":
+      return "ethereum-mainnet-mantle-1"
+    case "MANTLE_SEPOLIA":
+      return "ethereum-testnet-sepolia-mantle-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

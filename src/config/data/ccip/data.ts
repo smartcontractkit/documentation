@@ -11,6 +11,15 @@ import {
   NetworkFees,
   LaneConfig,
 } from "."
+import { SupportedChain } from "@config/types"
+import {
+  directoryToSupportedChain,
+  getChainIcon,
+  getExplorer,
+  getExplorerAddressUrl,
+  getTitle,
+  supportedChainToChainInRdd,
+} from "@features/utils"
 
 // For mainnet
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
@@ -23,32 +32,42 @@ import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
 
-// errors
-
-import erc20CCIPSendErrors from "@config/data/ccip/errors/erc20.json"
-import routerCCIPSendErrors from "@config/data/ccip/errors/router.json"
-import onrampCCIPSendErrors from "@config/data/ccip/errors/onramp.json"
-import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json"
-import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
-
-import { SupportedChain } from "@config/types"
-import {
-  directoryToSupportedChain,
-  getChainIcon,
-  getExplorer,
-  getExplorerAddressUrl,
-  getTitle,
-  supportedChainToChainInRdd,
-} from "@features/utils"
+// Import errors by version
+// eslint-disable-next-line camelcase
+import * as errors_v1_5_0 from "./errors/v1_5_0"
+// eslint-disable-next-line camelcase
+import * as errors_v1_5_1 from "./errors/v1_5_1"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
 
-export const erc20Errors: CCIPSendErrorEntry[] = erc20CCIPSendErrors
-export const routerErrors: CCIPSendErrorEntry[] = routerCCIPSendErrors
-export const onrampErrors: CCIPSendErrorEntry[] = onrampCCIPSendErrors
-export const ratelimiterErrors: CCIPSendErrorEntry[] = ratelimiterCCIPSendErrors
-export const priceRegistryErrors: CCIPSendErrorEntry[] = priceregistryCCIPSendErrors
+// Type for v1.5.0 errors
+type ErrorTypesV150 = {
+  erc20CCIPSendErrors: CCIPSendErrorEntry[]
+  routerCCIPSendErrors: CCIPSendErrorEntry[]
+  onrampCCIPSendErrors: CCIPSendErrorEntry[]
+  ratelimiterCCIPSendErrors: CCIPSendErrorEntry[]
+  priceregistryCCIPSendErrors: CCIPSendErrorEntry[]
+}
+
+// Type for v1.5.1 errors
+type ErrorTypesV151 = ErrorTypesV150 & {
+  poolCCIPSendErrors: CCIPSendErrorEntry[]
+  burnMintERC20CCIPSendErrors: CCIPSendErrorEntry[]
+}
+
+type VersionedErrors = {
+  v1_5_0: ErrorTypesV150
+  v1_5_1: ErrorTypesV151
+}
+
+// Export errors by version with type safety
+export const errors: VersionedErrors = {
+  // eslint-disable-next-line camelcase
+  v1_5_0: errors_v1_5_0 as ErrorTypesV150,
+  // eslint-disable-next-line camelcase
+  v1_5_1: errors_v1_5_1 as ErrorTypesV151,
+}
 
 export const networkFees: NetworkFees = {
   tokenTransfers: {

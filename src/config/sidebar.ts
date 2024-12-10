@@ -1,10 +1,14 @@
 import { Sections } from "../content/config"
 import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
+
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
 type SectionEntry = {
   section: string
@@ -35,7 +39,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "SmartData Feeds",
+          title: "SmartData",
           url: "data-feeds/smartdata",
         },
         {
@@ -250,6 +254,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "RWA streams",
           url: "data-streams/rwa-streams",
+        },
+        {
+          title: "Market hours",
+          url: "data-streams/market-hours",
         },
       ],
     },
@@ -1103,44 +1111,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "API Reference",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "Overview",
+          url: "ccip/api-reference",
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
+          title: "v1.5.1 (Latest)",
+          url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
+          children: ccipV151Contents,
         },
         {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "RegistryModuleOwnerCustom",
-          url: "ccip/api-reference/registry-module-owner-custom",
-        },
-        {
-          title: "TokenAdminRegistry",
-          url: "ccip/api-reference/token-admin-registry",
-        },
-        {
-          title: "TokenPool",
-          url: "ccip/api-reference/token-pool",
-        },
-        {
-          title: "Pool Library",
-          url: "ccip/api-reference/pool",
-        },
-        {
-          title: "BurnMintTokenPool",
-          url: "ccip/api-reference/burn-mint-token-pool",
-        },
-        {
-          title: "LockReleaseTokenPool",
-          url: "ccip/api-reference/lock-release-token-pool",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "v1.5.0",
+          url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
+          children: ccipV150Contents,
         },
       ],
     },

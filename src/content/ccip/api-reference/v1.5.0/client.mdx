@@ -1,13 +1,16 @@
 ---
 section: ccip
 date: Last Modified
-title: "Client Library API Reference"
+title: "CCIP v1.5.0 Client Library API Reference"
+metadata:
+  description: "API documentation for the Client library in Chainlink CCIP v1.5.0, used for building and handling cross-chain messages."
+  canonical: "/ccip/api-reference/v1.5.1/client"
 ---
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="importCCIPPackage" />
+<CcipCommon callout="importCCIPPackage150" />
 
 CCIP senders and receivers use the CCIP [`Client`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/libraries/Client.sol) library to build CCIP messages.
 
@@ -81,21 +84,13 @@ struct EVM2AnyMessage {
 
 #### EVM_EXTRA_ARGS_V1_TAG
 
-<Aside type="note">
-  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
-  of Order Execution" property set to **Optional** or **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
+<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
 
 ```solidity
 bytes4 EVM_EXTRA_ARGS_V1_TAG
 ```
 
 #### EVM_EXTRA_ARGS_V2_TAG
-
-<Aside type="note">
-  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
-  **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
 
 ```solidity
 bytes4 EVM_EXTRA_ARGS_V2_TAG
@@ -105,10 +100,7 @@ bytes4 EVM_EXTRA_ARGS_V2_TAG
 
 #### EVMExtraArgsV1
 
-<Aside type="note">
-  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
-  of Order Execution" property set to **Optional** or **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
+<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
 
 ```solidity
 struct EVMExtraArgsV1 {
@@ -121,11 +113,6 @@ struct EVMExtraArgsV1 {
 | gasLimit | uint256 | specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. Read [Setting gasLimit](/ccip/best-practices#setting-gaslimit) for more details. |
 
 #### EVMExtraArgsV2
-
-<Aside type="note">
-  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
-  **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
 
 ```solidity
 struct EVMExtraArgsV2 {
@@ -145,10 +132,7 @@ struct EVMExtraArgsV2 {
 
 #### \_argsToBytes (v1)
 
-<Aside type="note">
-  This version (v1) is maintained for backward compatibility. You can already switch to v2 for lanes that have the "Out
-  of Order Execution" property set to **Optional** or **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
+<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
 
 ```solidity
 function _argsToBytes(struct Client.EVMExtraArgsV1 extraArgs) internal pure returns (bytes bts)
@@ -169,11 +153,6 @@ It is used to convert the arguments to bytes.
 | bts  | bytes | Encoded extra arguments in _bytes_. |
 
 #### \_argsToBytes (v2)
-
-<Aside type="note">
-  This version (v2) is only available on lanes that have the **Out of Order Execution** property set to **Optional** or
-  **Required** (see the [CCIP Directory](/ccip/directory)).
-</Aside>
 
 ```solidity
 function _argsToBytes(struct Client.EVMExtraArgsV2 extraArgs) internal pure returns (bytes bts)
