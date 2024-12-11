@@ -1,7 +1,7 @@
 import { clsx } from "../lib"
 import "./ReactCopyText.css"
 
-export type Props = {
+interface ReactCopyTextProps {
   text: string
   code?: boolean
   format?: boolean
@@ -18,7 +18,14 @@ interface Window {
 
 declare const window: Window
 
-export const ReactCopyText = ({ text, code, format, formatType, eventName, additionalInfo = {} }: Props) => {
+export const ReactCopyText = ({
+  text,
+  code,
+  format,
+  formatType,
+  eventName,
+  additionalInfo = {},
+}: ReactCopyTextProps) => {
   const formatText = (text: string, type: string | undefined) => {
     if (type === "bytes32" && text.length > 10) {
       return text.slice(0, 6) + "..." + text.slice(-4)

@@ -1,15 +1,13 @@
-import { ReactCopyText } from "@components/ReactCopyText"
 import { useState, useEffect } from "react"
-import styles from "./ChainUpdateBuilder.module.css"
 import { ethers } from "ethers"
-
-interface RateLimiterConfig {
-  isEnabled: boolean
-  capacity: string
-  rate: string
-}
+import { laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lanes"
+import { useStore } from "@nanostores/react"
+import styles from "./ChainUpdateBuilder.module.css"
+import { ErrorBoundary } from "@components/ErrorBoundary"
+import { Callout } from "../TutorialSetup/Callout"
 
 interface ChainUpdateBuilderProps {
+  chain: "source" | "destination"
   readOnly: {
     chainSelector: string
     poolAddress: string
@@ -44,10 +42,48 @@ const calculateChainUpdate = (
   }
 }
 
-export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
-  const [outbound, setOutbound] = useState(defaultConfig.outbound)
-  const [inbound, setInbound] = useState(defaultConfig.inbound)
-  const [formattedUpdate, setFormattedUpdate] = useState<string>("")
+const validateRateLimiterConfig = (config: RateLimiterConfig): string | null => {
+  const rate = BigInt(config.rate || "0")
+  const capacity = BigInt(config.capacity || "0")
+
+  if (config.enabled) {
+    // For enabled config: 0 < rate < capacity
+    if (rate <= BigInt(0)) {
+      return "Rate must be greater than 0 when enabled"
+    }
+    if (rate >= capacity) {
+      return "Rate must be less than capacity for effective rate limiting"
+    }
+  } else {
+    // For disabled config: rate = 0 and capacity = 0
+    if (rate !== BigInt(0) || capacity !== BigInt(0)) {
+      return "Rate and capacity must be 0 when disabled"
+    }
+  }
+  return null
+}
+
+export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[RenderTrack] ChainUpdateBuilder-${chain} rendered`)
+  }
+
+  const state = useStore(laneStore)
+
+  const [outbound, setOutbound] = useState<RateLimiterConfig>(() => {
+    const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
+    return rateLimits?.outbound ?? defaultConfig.outbound
+  })
+
+  const [inbound, setInbound] = useState<RateLimiterConfig>(() => {
+    const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
+    return rateLimits?.inbound ?? defaultConfig.inbound
+  })
+
+  const [validationErrors, setValidationErrors] = useState<{
+    inbound: string | null
+    outbound: string | null
+  }>({ inbound: null, outbound: null })
 
   const canGenerateUpdate = () => {
     return (
@@ -57,143 +93,329 @@ export const ChainUpdateBuilder = ({ readOnly, defaultConfig, onCalculate }: Cha
     )
   }
 
-  const generateAndSetUpdate = () => {
-    if (!canGenerateUpdate()) return
+  const handleRateLimitChange = (type: "inbound" | "outbound", field: keyof RateLimiterConfig, value: string) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[RateLimitChange] ${chain}-${type}-${field}:`, {
+        value,
+        timestamp: new Date().toISOString(),
+      })
+    }
 
-    const chainUpdate = calculateChainUpdate(
-      readOnly.chainSelector,
-      [readOnly.poolAddress],
-      readOnly.tokenAddress,
-      outbound,
-      inbound
-    )
-    const formatted = onCalculate(chainUpdate)
-    setFormattedUpdate(formatted)
+    // Validate input as BigInt
+    try {
+      // Remove any non-numeric characters
+      const cleanValue = value.replace(/[^0-9]/g, "")
+      // Always update the state, using "0" for empty values
+      const stringValue = cleanValue ? BigInt(cleanValue).toString() : "0"
+
+      // Check uint128 range only for non-empty values
+      if (cleanValue) {
+        const bigIntValue = BigInt(cleanValue)
+        const MAX_UINT128 = BigInt(2) ** BigInt(128) - BigInt(1)
+
+        // Ensure it's within uint128 range
+        if (bigIntValue > MAX_UINT128) {
+          console.warn("Value exceeds uint128 maximum")
+          return
+        }
+      }
+
+      // Update local state first
+      if (type === "inbound") {
+        setInbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
+      } else {
+        setOutbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
+      }
+
+      // Then update store
+      updateRateLimits(chain, type, {
+        [field]: stringValue,
+        enabled: true,
+      })
+
+      // Force update of formatted data
+      if (canGenerateUpdate()) {
+        const chainUpdate = calculateChainUpdate(
+          readOnly.chainSelector,
+          [readOnly.poolAddress],
+          readOnly.tokenAddress,
+          outbound,
+          inbound
+        )
+        onCalculate(chainUpdate)
+      }
+    } catch (e) {
+      console.error("Invalid BigInt value:", e)
+    }
+  }
+
+  const handleRateLimitToggle = (type: "inbound" | "outbound", enabled: boolean) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[RateLimitToggle] ${chain}-${type}:`, {
+        enabled,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    const current = laneStore.get()
+    const rateLimitsKey = chain === "source" ? "sourceRateLimits" : "destinationRateLimits"
+
+    const currentLimits = {
+      inbound: { enabled: false, capacity: "0", rate: "0" },
+      outbound: { enabled: false, capacity: "0", rate: "0" },
+      ...current[rateLimitsKey],
+    }
+
+    laneStore.set({
+      ...current,
+      [rateLimitsKey]: {
+        ...currentLimits,
+        [type]: {
+          ...currentLimits[type],
+          enabled,
+          capacity: enabled ? currentLimits[type].capacity : "0",
+          rate: enabled ? currentLimits[type].rate : "0",
+        },
+      },
+    })
+
+    if (type === "inbound") {
+      setInbound((prev) => ({
+        ...prev,
+        enabled,
+        capacity: enabled ? prev.capacity : "0",
+        rate: enabled ? prev.rate : "0",
+      }))
+    } else {
+      setOutbound((prev) => ({
+        ...prev,
+        enabled,
+        capacity: enabled ? prev.capacity : "0",
+        rate: enabled ? prev.rate : "0",
+      }))
+    }
   }
 
   useEffect(() => {
     if (canGenerateUpdate()) {
-      generateAndSetUpdate()
+      const chainUpdate = calculateChainUpdate(
+        readOnly.chainSelector,
+        [readOnly.poolAddress],
+        readOnly.tokenAddress,
+        outbound,
+        inbound
+      )
+      onCalculate(chainUpdate)
     }
-  }, [outbound, inbound, readOnly])
+  }, [outbound, inbound, readOnly.chainSelector, readOnly.poolAddress, readOnly.tokenAddress])
+
+  useEffect(() => {
+    // Validate configurations whenever they change
+    setValidationErrors({
+      inbound: validateRateLimiterConfig(inbound),
+      outbound: validateRateLimiterConfig(outbound),
+    })
+  }, [inbound, outbound])
+
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[ConfigState] ${chain}-rate-limits:`, {
+      outbound,
+      inbound,
+      readOnly,
+      timestamp: new Date().toISOString(),
+    })
+  }
 
   return (
-    <div className={styles.builder}>
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>Remote Configuration</div>
-        <div className={styles.field}>
-          <label>Remote Chain Selector:</label>
-          <code>{readOnly.chainSelector}</code>
-        </div>
-        <div className={styles.field}>
-          <label>Remote Pool Address:</label>
-          <code>{readOnly.poolAddress}</code>
-        </div>
-        <div className={styles.field}>
-          <label>Remote Token Address:</label>
-          <code>{readOnly.tokenAddress}</code>
-        </div>
-      </div>
+    <ErrorBoundary
+      fallback={<div>Error configuring rate limits. Please refresh and try again.</div>}
+      onError={(error) => {
+        console.error("Rate limit configuration error:", error)
+        reportError?.(error)
+      }}
+    >
+      <div className={styles.builder}>
+        {/* Validation Warnings */}
+        {(validationErrors.inbound || validationErrors.outbound) && (
+          <div className={styles.validationWarnings}>
+            {validationErrors.outbound && (
+              <Callout type="caution" title="Outbound Rate Limit Warning">
+                {validationErrors.outbound}
+              </Callout>
+            )}
+            {validationErrors.inbound && (
+              <Callout type="caution" title="Inbound Rate Limit Warning">
+                {validationErrors.inbound}
+              </Callout>
+            )}
+          </div>
+        )}
 
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>Rate Limits (Optional)</div>
+        <div className={styles.configSection}>
+          {/* Remote Configuration Section */}
+          <div className={styles.remoteConfig}>
+            <span className={styles.sectionLabel}>Remote Configuration</span>
+            <div className={styles.field}>
+              <label>Chain Selector:</label>
+              <code>{readOnly.chainSelector}</code>
+            </div>
+            <div className={styles.field}>
+              <label>Pool Address:</label>
+              <code>{readOnly.poolAddress}</code>
+            </div>
+            <div className={styles.field}>
+              <label>Token Address:</label>
+              <code>{readOnly.tokenAddress}</code>
+            </div>
+          </div>
 
-        <div className={styles.rateLimiterConfig}>
-          <h5>Outbound Configuration</h5>
-          <label>
-            <input
-              type="checkbox"
-              checked={outbound.isEnabled}
-              onChange={(e) =>
-                setOutbound({
-                  isEnabled: e.target.checked,
-                  capacity: e.target.checked ? outbound.capacity : "0",
-                  rate: e.target.checked ? outbound.rate : "0",
-                })
-              }
-            />
-            Enable Rate Limit
-          </label>
-          {outbound.isEnabled && (
-            <>
-              <input
-                type="number"
-                value={outbound.capacity}
-                onChange={(e) => setOutbound({ ...outbound, capacity: e.target.value })}
-                placeholder="Capacity"
-              />
-              <input
-                type="number"
-                value={outbound.rate}
-                onChange={(e) => setOutbound({ ...outbound, rate: e.target.value })}
-                placeholder="Rate"
-              />
-            </>
+          {/* Rate Limits Section */}
+          <div className={styles.rateLimits}>
+            <span className={styles.sectionLabel}>Rate Limit Configuration</span>
+
+            {/* MaxSupply Consideration Callout */}
+            {(outbound.enabled || inbound.enabled) && (
+              <div className={styles.maxSupplyInfo}>
+                <Callout type="note" title="Rate Limit Capacity Consideration">
+                  Ensure the capacity is not set higher than your token's maximum supply (configured during token
+                  deployment). Setting a capacity larger than the maximum supply would create an ineffective rate limit.
+                </Callout>
+              </div>
+            )}
+
+            <div className={styles.rateLimiterGroup}>
+              {/* Outbound Configuration */}
+              <div className={styles.rateLimiter}>
+                <div className={styles.rateLimiterHeader}>
+                  <span>Outbound Transfers</span>
+                  <label className={styles.toggle}>
+                    <input
+                      type="checkbox"
+                      checked={outbound.enabled}
+                      onChange={(e) => handleRateLimitToggle("outbound", e.target.checked)}
+                    />
+                    <span>Enable Limits</span>
+                  </label>
+                </div>
+
+                {outbound.enabled && (
+                  <div className={styles.rateLimiterInputs}>
+                    <div className={styles.input}>
+                      <div className={styles.inputLabel}>
+                        <label>Capacity</label>
+                        <span className={styles.inputHint}>Maximum tokens allowed</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={outbound.capacity}
+                        onChange={(e) => handleRateLimitChange("outbound", "capacity", e.target.value)}
+                        placeholder="Enter amount..."
+                        pattern="[0-9]*"
+                        className={styles.numericInput}
+                      />
+                    </div>
+                    <div className={styles.input}>
+                      <div className={styles.inputLabel}>
+                        <label>Rate</label>
+                        <span className={styles.inputHint}>
+                          Rate at which available capacity is replenished (tokens/second)
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={outbound.rate}
+                        onChange={(e) => handleRateLimitChange("outbound", "rate", e.target.value)}
+                        placeholder="Enter amount..."
+                        pattern="[0-9]*"
+                        className={styles.numericInput}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Inbound Configuration */}
+              <div className={styles.rateLimiter}>
+                <div className={styles.rateLimiterHeader}>
+                  <span className={styles.sectionLabel}>Inbound Transfers</span>
+                  <label className={styles.toggle}>
+                    <input
+                      type="checkbox"
+                      checked={inbound.enabled}
+                      onChange={(e) => handleRateLimitToggle("inbound", e.target.checked)}
+                    />
+                    <span>Enable Limits</span>
+                  </label>
+                </div>
+
+                {inbound.enabled && (
+                  <div className={styles.rateLimiterInputs}>
+                    <div className={styles.input}>
+                      <div className={styles.inputLabel}>
+                        <label>Capacity</label>
+                        <span className={styles.inputHint}>Maximum tokens allowed</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={inbound.capacity}
+                        onChange={(e) => handleRateLimitChange("inbound", "capacity", e.target.value)}
+                        placeholder="Enter amount..."
+                        pattern="[0-9]*"
+                        className={styles.numericInput}
+                      />
+                    </div>
+                    <div className={styles.input}>
+                      <div className={styles.inputLabel}>
+                        <label>Rate</label>
+                        <span className={styles.inputHint}>
+                          Rate at which available capacity is replenished (tokens/second)
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={inbound.rate}
+                        onChange={(e) => handleRateLimitChange("inbound", "rate", e.target.value)}
+                        placeholder="Enter amount..."
+                        pattern="[0-9]*"
+                        className={styles.numericInput}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {!canGenerateUpdate() && (
+            <div className={styles.notice}>
+              <div className={styles.noticeHeader}>
+                <span className={styles.noticeIcon}>⚠️</span>
+                <span className={styles.noticeTitle}>Action Required</span>
+              </div>
+              <div className={styles.noticeContent}>
+                {!ethers.utils.isAddress(readOnly.tokenAddress) && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Please deploy your token first to proceed with configuration</span>
+                  </div>
+                )}
+                {!ethers.utils.isAddress(readOnly.poolAddress) && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Token pool address is required</span>
+                  </div>
+                )}
+                {!readOnly.chainSelector && (
+                  <div className={styles.noticeItem}>
+                    <span className={styles.noticeItemIcon}>→</span>
+                    <span>Chain selector is required</span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
-
-        <div className={styles.rateLimiterConfig}>
-          <h5>Inbound Configuration</h5>
-          <label>
-            <input
-              type="checkbox"
-              checked={inbound.isEnabled}
-              onChange={(e) =>
-                setInbound({
-                  isEnabled: e.target.checked,
-                  capacity: e.target.checked ? inbound.capacity : "0",
-                  rate: e.target.checked ? inbound.rate : "0",
-                })
-              }
-            />
-            Enable Rate Limit
-          </label>
-          {inbound.isEnabled && (
-            <>
-              <input
-                type="number"
-                value={inbound.capacity}
-                onChange={(e) => setInbound({ ...inbound, capacity: e.target.value })}
-                placeholder="Capacity"
-              />
-              <input
-                type="number"
-                value={inbound.rate}
-                onChange={(e) => setInbound({ ...inbound, rate: e.target.value })}
-                placeholder="Rate"
-              />
-            </>
-          )}
-        </div>
       </div>
-
-      {formattedUpdate && (
-        <div className={styles.section}>
-          <div className={styles.sectionTitle}>Remix Low-Level Transaction Data</div>
-          <div className={styles.field}>
-            <label>remoteChainSelectorsToRemove:</label>
-            <ReactCopyText text="[]" code={true} />
-          </div>
-          <div className={styles.field}>
-            <label>chainsToAdd:</label>
-            <ReactCopyText text={JSON.parse(formattedUpdate).callData} code={true} />
-          </div>
-
-          <div className={styles.sectionTitle} style={{ marginTop: "2rem" }}>
-            Debug Information
-          </div>
-          <div className={styles.field}>
-            <label>Chain Update:</label>
-            <ReactCopyText text={JSON.stringify(JSON.parse(formattedUpdate).json, null, 2)} code={true} />
-          </div>
-        </div>
-      )}
-
-      {!canGenerateUpdate() && (
-        <div className={styles.notice}>
-          Please ensure all remote addresses are available before generating the update
-        </div>
-      )}
-    </div>
+    </ErrorBoundary>
   )
 }
