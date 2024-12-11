@@ -74,7 +74,10 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
               onClick={() => setPoolType("burn")}
             >
               <div className={styles.poolTitle}>
-                <span className={styles.poolName}>Burn & Mint Pool</span>
+                <span className={styles.poolName}>
+                  Burn & Mint Pool
+                  <span className={styles.contractName}>BurnMintTokenPool</span>
+                </span>
                 {poolType === "burn" && <span className={styles.selectedIndicator} />}
               </div>
               <div className={styles.poolContent}>
@@ -91,7 +94,10 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
               onClick={() => setPoolType("lock")}
             >
               <div className={styles.poolTitle}>
-                <span className={styles.poolName}>Lock & Release Pool</span>
+                <span className={styles.poolName}>
+                  Lock & Release Pool
+                  <span className={styles.contractName}>LockReleaseTokenPool</span>
+                </span>
                 {poolType === "lock" && <span className={styles.selectedIndicator} />}
               </div>
               <div className={styles.poolContent}>
@@ -105,6 +111,16 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
               </div>
             </button>
           </div>
+        </TutorialStep>
+
+        <TutorialStep id={getSubStepId("pool-remix")} title="Configure Remix">
+          <ul>
+            <li>Open the "Deploy & Run Transactions" tab</li>
+            <li>Set Environment to "Injected Provider - MetaMask"</li>
+            <li>
+              Select <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong> contract
+            </li>
+          </ul>
         </TutorialStep>
 
         <TutorialStep id={getSubStepId("pool-params")} title="Set Parameters">

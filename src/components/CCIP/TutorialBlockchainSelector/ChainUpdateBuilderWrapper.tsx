@@ -219,10 +219,10 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
               <li>Click on the contract to open its details</li>
 
               <li>
-                Call <code>addRemoteTokensAndPools</code>:
+                Call <code>applyChainUpdates</code>:
                 <div className={styles.functionCall}>
                   <div className={styles.functionHeader}>
-                    <code className={styles.functionName}>addRemoteTokensAndPools</code>
+                    <code className={styles.functionName}>applyChainUpdates</code>
                     <div className={styles.functionPurpose}>Configure cross-chain token and pool mapping</div>
                   </div>
 
