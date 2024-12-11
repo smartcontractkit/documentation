@@ -41,12 +41,14 @@ export const productChainLinks: ProductChainLinks = {
       scroll: "/ccip/directory/mainnet/chain/ethereum-mainnet-scroll-1",
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
       zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
+      ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
     },
   },
   "Data Feeds": {
     learnMoreLink: "data-feeds",
     logo: dataFeedsLogo,
     chains: {
+      aptos: "/data-feeds/price-feeds/addresses?network=aptos",
       arbitrum: "/data-feeds/price-feeds/addresses?network=arbitrum",
       avalanche: "/data-feeds/price-feeds/addresses?network=avalanche",
       base: "/data-feeds/price-feeds/addresses?network=base",
@@ -154,10 +156,12 @@ export const productChainLinks: ProductChainLinks = {
     wemix: "/resources/link-token-contracts#wemix",
     zksync: "/resources/link-token-contracts#zksync",
     zircuit: "/resources/link-token-contracts#zircuit",
+    ronin: "/resources/link-token-contracts#ronin",
   },
 }
 
 export const chainNames: Record<string, string> = {
+  aptos: "Aptos",
   arbitrum: "Arbitrum",
   astar: "Astar",
   avalanche: "Avalanche",
@@ -187,4 +191,5 @@ export const chainNames: Record<string, string> = {
   mode: "Mode",
   blast: "Blast",
   zircuit: "Zircuit",
+  ronin: "Ronin",
 }

@@ -139,6 +139,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
+        },
+      ],
+    },
+    {
       section: "API Reference",
       contents: [
         {
