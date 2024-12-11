@@ -24,6 +24,7 @@ export type SupportedTechnology =
   | "ASTAR"
   | "ZIRCUIT"
   | "MANTLE"
+  | "RONIN"
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
@@ -73,6 +74,8 @@ export type SupportedChain =
   | "ZIRCUIT_TESTNET"
   | "MANTLE_MAINNET"
   | "MANTLE_SEPOLIA"
+  | "RONIN_MAINNET"
+  | "RONIN_SAIGON"
 
 export type Chains = Record<
   SupportedTechnology,
