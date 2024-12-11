@@ -118,17 +118,21 @@ const handleClick = (e, additionalInfo) => {
   window.dataLayer.push(dataLayerEvent)
 }
 
-const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
-  <thead>
-    <tr>
-      <th className={tableStyles.heading}>Pair</th>
-      <th aria-hidden={!showExtraDetails}>Deviation</th>
-      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-      <th aria-hidden={!showExtraDetails}>Dec</th>
-      <th>Address and info</th>
-    </tr>
-  </thead>
-)
+const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
+  const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+
+  return (
+    <thead>
+      <tr>
+        <th className={tableStyles.heading}>Pair</th>
+        <th aria-hidden={!showExtraDetails}>Deviation</th>
+        <th aria-hidden={!showExtraDetails}>Heartbeat</th>
+        <th aria-hidden={!showExtraDetails}>Dec</th>
+        <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
+      </tr>
+    </thead>
+  )
+}
 
 const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
@@ -789,7 +793,7 @@ export const MainnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
@@ -855,8 +859,8 @@ export const TestnetTable = ({
       <table className={tableStyles.table}>
         {isStreams && <StreamsTHead />}
         {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
-        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
