@@ -42,12 +42,35 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
       updateDropdownPosition()
       window.addEventListener("scroll", updateDropdownPosition)
       window.addEventListener("resize", updateDropdownPosition)
+
+      // Scroll selected option into view when dropdown opens
+      if (dropdownRef.current && value) {
+        requestAnimationFrame(() => {
+          const dropdown = dropdownRef.current
+          if (!dropdown) return
+
+          const selectedOptionElement = dropdown.querySelector(`.${styles.selected}`) as HTMLElement
+          if (selectedOptionElement) {
+            // Calculate the dropdown's visible height
+            const dropdownHeight = dropdown.clientHeight
+            const optionHeight = selectedOptionElement.offsetHeight
+
+            // Scroll the selected option to be in the middle of the dropdown
+            const scrollPosition = selectedOptionElement.offsetTop - dropdownHeight / 2 + optionHeight / 2
+
+            dropdown.scrollTo({
+              top: Math.max(0, scrollPosition),
+              behavior: "instant", // Use 'instant' to prevent visible scrolling when opening
+            })
+          }
+        })
+      }
     }
     return () => {
       window.removeEventListener("scroll", updateDropdownPosition)
       window.removeEventListener("resize", updateDropdownPosition)
     }
-  }, [isOpen])
+  }, [isOpen, value])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
