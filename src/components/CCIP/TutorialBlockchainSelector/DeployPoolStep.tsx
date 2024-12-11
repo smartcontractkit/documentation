@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useStore } from "@nanostores/react"
 import { laneStore } from "@stores/lanes"
 import { ContractAddress } from "./ContractAddress"
@@ -11,6 +11,7 @@ import { NetworkAddress } from "./NetworkAddress"
 import { ContractVerificationStep } from "./ContractVerificationStep"
 import type { LaneState, DeployedContracts } from "@stores/lanes"
 import styles from "./DeployPoolStep.module.css"
+import { utils } from "ethers"
 
 interface DeployPoolStepProps {
   chain: "source" | "destination"
@@ -32,6 +33,42 @@ interface ExtendedLaneState extends Omit<LaneState, "progress" | "sourceContract
 export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
   const [poolType, setPoolType] = useState<"lock" | "burn">("burn")
   const state = useStore(laneStore) as ExtendedLaneState
+
+  // Add effect to store pool type when valid address is provided
+  useEffect(() => {
+    const currentContracts = chain === "source" ? state.sourceContracts : state.destinationContracts
+
+    // Only update pool type when we have a valid address
+    if (currentContracts.tokenPool && utils.isAddress(currentContracts.tokenPool)) {
+      const current = laneStore.get()
+
+      // Debug log before update
+      console.log(`[PoolType Update] ${chain}:`, {
+        address: currentContracts.tokenPool,
+        currentPoolType: currentContracts.poolType,
+        newPoolType: poolType,
+        timestamp: new Date().toISOString(),
+      })
+
+      if (chain === "source") {
+        laneStore.set({
+          ...current,
+          sourceContracts: {
+            ...current.sourceContracts,
+            poolType,
+          },
+        })
+      } else {
+        laneStore.set({
+          ...current,
+          destinationContracts: {
+            ...current.destinationContracts,
+            poolType,
+          },
+        })
+      }
+    }
+  }, [chain, poolType, state.sourceContracts.tokenPool, state.destinationContracts.tokenPool])
 
   // Debug store values
   console.log("DeployPoolStep Store:", {

@@ -84,14 +84,16 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const remoteNetwork = chain === "source" ? state.destinationNetwork : state.sourceNetwork
   const remoteContracts = chain === "source" ? state.destinationContracts : state.sourceContracts
 
-  // Get contract addresses
+  // Get contract addresses and pool type
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
+  const poolType = chain === "source" ? state.sourceContracts.poolType : state.destinationContracts.poolType
 
   if (process.env.NODE_ENV === "development") {
     console.log(`[ConfigTrack] ${chain}-update-builder:`, {
       currentNetwork: currentNetwork?.name,
       remoteNetwork: remoteNetwork?.name,
       poolAddress,
+      poolType,
       remoteContracts,
       timestamp: new Date().toISOString(),
     })
@@ -209,10 +211,10 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
           {isDataReady ? (
             <ol className={styles.instructions}>
               <li>
-                In the "Deploy & Run Transactions" tab, select your token pool (<strong>BurnMintTokenPool</strong> or{" "}
-                <strong>LockReleaseTokenPool</strong>) at:
+                In the "Deploy & Run Transactions" tab, select your token pool (
+                <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong>) at:
                 <div className={styles.contractInfo}>
-                  <strong>Contract:</strong> TokenPool
+                  <strong>Contract:</strong> {poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}
                   <ReactCopyText text={poolAddress || ""} code />
                 </div>
               </li>

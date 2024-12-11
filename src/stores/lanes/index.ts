@@ -9,6 +9,7 @@ export type DeployedContracts = {
   tokenPools?: string[]
   registered?: boolean
   configured?: boolean
+  poolType?: "lock" | "burn"
 }
 
 export interface TokenBucketState {

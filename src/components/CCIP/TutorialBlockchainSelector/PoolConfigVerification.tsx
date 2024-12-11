@@ -48,6 +48,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
   const remoteContracts = chain === "source" ? state.destinationContracts : state.sourceContracts
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
+  const poolType = chain === "source" ? state.sourceContracts.poolType : state.destinationContracts.poolType
 
   const stepId = chain === "source" ? "sourceConfig" : "destinationConfig"
   const subStepId = chain === "source" ? "source-verification" : "dest-verification"
@@ -67,10 +68,10 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
         >
           <ol className={styles.instructions}>
             <li>
-              In the "Deploy & Run Transactions" tab, select your token pool (<strong>BurnMintTokenPool</strong> or{" "}
-              <strong>LockReleaseTokenPool</strong>) at:
+              In the "Deploy & Run Transactions" tab, select your token pool (
+              <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong>) at:
               <div className={styles.contractInfo}>
-                <strong>Contract:</strong> TokenPool
+                <strong>Contract:</strong> {poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}
                 <ReactCopyText text={poolAddress || ""} code />
               </div>
             </li>
