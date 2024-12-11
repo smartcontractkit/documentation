@@ -209,7 +209,8 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
           {isDataReady ? (
             <ol className={styles.instructions}>
               <li>
-                In the "Deploy & Run Transactions" tab, select your token pool at:
+                In the "Deploy & Run Transactions" tab, select your token pool (<strong>BurnMintTokenPool</strong> or{" "}
+                <strong>LockReleaseTokenPool</strong>) at:
                 <div className={styles.contractInfo}>
                   <strong>Contract:</strong> TokenPool
                   <ReactCopyText text={poolAddress || ""} code />
