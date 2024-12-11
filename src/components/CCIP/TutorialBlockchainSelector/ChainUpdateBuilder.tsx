@@ -272,6 +272,16 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
           <div className={styles.rateLimits}>
             <span className={styles.sectionLabel}>Rate Limit Configuration</span>
 
+            {/* MaxSupply Consideration Callout */}
+            {(outbound.enabled || inbound.enabled) && (
+              <div className={styles.maxSupplyInfo}>
+                <Callout type="note" title="Rate Limit Capacity Consideration">
+                  Ensure the capacity is not set higher than your token's maximum supply (configured during token
+                  deployment). Setting a capacity larger than the maximum supply would create an ineffective rate limit.
+                </Callout>
+              </div>
+            )}
+
             <div className={styles.rateLimiterGroup}>
               {/* Outbound Configuration */}
               <div className={styles.rateLimiter}>
