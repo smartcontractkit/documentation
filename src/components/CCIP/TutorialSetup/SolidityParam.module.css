@@ -1,0 +1,90 @@
+.parameter {
+  display: grid;
+  gap: var(--space-3x);
+  align-items: start;
+
+  /* Default mobile-first layout: stacked */
+  grid-template-columns: 1fr;
+
+  /* Tablet (768px and up) */
+  @media (min-width: 768px) {
+    grid-template-columns: 120px 1fr;
+    grid-template-areas:
+      "name info"
+      "type info";
+  }
+
+  /* Desktop (1024px and up) */
+  @media (min-width: 1024px) {
+    grid-template-columns: 120px 80px 1fr;
+    grid-template-areas: "name type info";
+  }
+}
+
+.name {
+  font-size: var(--font-size-sm);
+  padding: var(--space-1x) var(--space-2x);
+  border-radius: 4px;
+  grid-area: name;
+}
+
+.type {
+  font-size: var(--font-size-sm);
+  grid-area: type;
+
+  /* On mobile/tablet, align with name */
+  @media (max-width: 1023px) {
+    margin-top: calc(-1 * var(--space-2x));
+  }
+}
+
+.info {
+  font-size: var(--font-size-sm);
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1x);
+}
+
+/* Parent container adjustments */
+.parameters {
+  padding: var(--space-2x);
+  font-size: var(--font-size-sm);
+
+  @media (min-width: 768px) {
+    padding: var(--space-3x);
+  }
+
+  @media (min-width: 1024px) {
+    padding: var(--space-4x);
+  }
+}
+
+.parameterHelp {
+  /* Stack help items on mobile */
+  @media (max-width: 767px) {
+    .helpItem {
+      flex-direction: column;
+      gap: var(--space-1x);
+    }
+  }
+}
+
+/* Ensure text remains readable */
+.description {
+  line-height: var(--line-height-base);
+  font-size: var(--font-size-sm);
+
+  @media (min-width: 768px) {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Adjust spacing for different screen sizes */
+.example {
+  margin-top: var(--space-1x);
+
+  @media (min-width: 768px) {
+    margin-top: var(--space-2x);
+  }
+}

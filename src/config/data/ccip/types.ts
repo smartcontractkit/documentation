@@ -147,3 +147,25 @@ export enum LaneStatus {
   DEGRADED = "DEGRADED",
   CURSED = "CURSED",
 }
+
+export interface Network {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  totalLanes: number
+  totalTokens: number
+  key: string
+  tokenAdminRegistry?: string
+  explorerUrl: string
+  registryModule?: string
+  router?: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  routerExplorerUrl: string
+}

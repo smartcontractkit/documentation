@@ -1,0 +1,37 @@
+---
+import { CollectionEntry, getCollection } from "astro:content"
+import TutorialLayout from "../../../layouts/TutorialLayout.astro"
+import DocsLayout from "../../../layouts/DocsLayout.astro"
+
+type Props = {
+  entry: CollectionEntry<"ccip">
+}
+
+export async function getStaticPaths() {
+  const entries = await getCollection("ccip", (entry) => {
+    return entry.slug.startsWith("tutorials/")
+  })
+
+  const paths: { params: { slug: string }; props: Props }[] = []
+
+  entries.forEach((entry) => {
+    const tutorialSlug = entry.slug.replace("tutorials/", "")
+    paths.push({
+      params: { slug: tutorialSlug },
+      props: { entry },
+    })
+  })
+
+  return paths
+}
+
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+
+// Only use TutorialLayout for specific interactive tutorials
+const Layout = entry.id === "tutorials/cross-chain-tokens/register-from-eoa-remix.mdx" ? TutorialLayout : DocsLayout
+---
+
+<Layout frontmatter={entry.data} headings={headings}>
+  <Content />
+</Layout>

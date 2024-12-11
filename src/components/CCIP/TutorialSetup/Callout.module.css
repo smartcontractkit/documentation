@@ -1,0 +1,104 @@
+.callout {
+  /* Base variables */
+  --callout-bg: var(--color-background-info);
+  --callout-text: var(--color-text-info);
+  --callout-border: var(--theme-text-light);
+
+  padding: var(--space-4x);
+  gap: var(--space-4x);
+  background-color: var(--callout-bg);
+  border: 2px dotted var(--callout-border);
+  border-radius: var(--border-radius);
+  color: var(--callout-text);
+
+  /* For forced colors mode */
+  outline: 1px solid transparent;
+
+  display: flex;
+}
+
+/* Type-specific styles */
+.caution {
+  --callout-bg: var(--color-background-warning);
+}
+
+.danger {
+  --callout-bg: var(--color-background-error);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1.5em;
+  height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.content {
+  /* Typography */
+  --content-font-size: 14px;
+  --content-line-height: 1.5;
+  --content-gap: var(--space-2x);
+
+  flex: 1;
+}
+
+.title {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--theme-text);
+  margin-bottom: var(--space-2x);
+}
+
+.message {
+  color: var(--theme-text-light);
+}
+
+/* Content styling */
+.message p,
+.message li {
+  color: var(--theme-text-light);
+  font-size: var(--content-font-size);
+  line-height: var(--content-line-height);
+}
+
+.message p {
+  margin-bottom: 0;
+}
+
+.message p + p {
+  margin-top: var(--content-gap);
+}
+
+.message p + :is(ul, ol) {
+  margin-top: var(--space-1x);
+}
+
+.message li {
+  margin-top: var(--space-1x);
+}
+
+/* Link styling */
+.message :global(a),
+.message :global(a > code:not([class*="language"])) {
+  color: var(--color-text-link);
+  text-decoration: underline;
+}
+
+/* Dark theme support */
+:global(.theme-dark) .message :global(code:not([class*="language"])) {
+  color: var(--theme-code-text);
+}
+
+/* Focus handling */
+.callout:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

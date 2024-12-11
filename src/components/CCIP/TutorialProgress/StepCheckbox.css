@@ -1,0 +1,100 @@
+.step-checkbox {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(55, 91, 210, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.step-checkbox:hover {
+  background: #f1f5f9;
+  border-color: #375bd2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(55, 91, 210, 0.1);
+}
+
+.step-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.step-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid #94a3b8;
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.step-checkbox input[type="checkbox"]:hover {
+  border-color: #375bd2;
+  box-shadow: 0 0 0 4px rgba(55, 91, 210, 0.1);
+}
+
+.step-checkbox input[type="checkbox"]:checked {
+  background: #375bd2;
+  border-color: #375bd2;
+  animation: checkbox-pop 0.3s ease-out;
+}
+
+.step-checkbox input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: white;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.125rem;
+  font-weight: bold;
+}
+
+.step-checkbox span {
+  font-size: 1.125rem;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+/* Add completion indicator */
+.step-checkbox:has(input:checked) {
+  border-color: #375bd2;
+  background: linear-gradient(to right, rgba(55, 91, 210, 0.05), transparent);
+}
+
+.step-checkbox:has(input:checked) span {
+  color: #375bd2;
+}
+
+/* Add visual feedback animation */
+@keyframes checkbox-pop {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Add completion badge */
+.step-checkbox:has(input:checked)::after {
+  content: "Completed!";
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  font-size: 0.875rem;
+  color: #375bd2;
+  font-weight: 600;
+  opacity: 0.8;
+}

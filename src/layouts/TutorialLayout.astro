@@ -1,0 +1,138 @@
+---
+import PageContent from "~/components/PageContent/PageContent.astro"
+import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
+import * as CONFIG from "~/config"
+import type { BaseFrontmatter } from "~/content/config"
+import WhatsNext from "~/components/PageContent/WhatsNext.astro"
+import type { MarkdownHeading } from "astro"
+import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
+import { TutorialProgress } from "~/components/CCIP/TutorialProgress/TutorialProgress"
+
+interface Props {
+  frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const filteredHeadings = headings?.filter((h) => h.depth < 5)
+const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
+
+const whatsNext = frontmatter.whatsnext
+const currentPage = new URL(Astro.request.url).pathname
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+---
+
+<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage} />
+  <main>
+    <div id="left-bg"></div>
+    <div class="layout">
+      <aside id="grid-left" title="Site Navigation">
+        <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
+      </aside>
+      <div id="grid-main">
+        <PageContent {titleHeading}>
+          <slot />
+        </PageContent>
+        {whatsNext && <WhatsNext content={whatsNext} />}
+      </div>
+      <aside id="grid-right" title="Tutorial Progress">
+        <TutorialProgress client:load />
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    margin-bottom: 0 !important;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: auto;
+    --gutter: var(--space-6x);
+    --doc-padding: var(--space-6x);
+    margin-bottom: 0;
+  }
+
+  #grid-left,
+  #grid-right {
+    display: none;
+  }
+
+  #grid-main {
+    padding: var(--doc-padding) var(--gutter);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-10x);
+    min-width: 0;
+  }
+
+  @media (min-width: 50em) {
+    main {
+      display: grid;
+      grid-template-columns: auto fit-content(100%) auto;
+    }
+
+    .layout {
+      grid-template-columns: auto 1fr auto;
+      gap: var(--gutter);
+      width: 100vw;
+      max-width: 1440px;
+    }
+
+    #grid-left,
+    #left-bg {
+      background: #fafbfd;
+    }
+
+    #grid-left,
+    #grid-right {
+      display: flex;
+    }
+
+    #grid-main {
+      padding: 0 0 var(--doc-padding) 0;
+    }
+
+    #grid-left {
+      width: 260px;
+      padding-left: var(--space-8x);
+    }
+
+    #grid-right {
+      width: 0;
+      padding-right: 0;
+      transition: 300ms ease-in-out;
+      transition-property: width padding-right;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      gap: var(--doc-padding);
+    }
+
+    #grid-left {
+      width: 285px;
+      padding-left: var(--space-16x);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    #grid-right {
+      width: 315px;
+      padding-right: var(--space-16x);
+    }
+  }
+</style>

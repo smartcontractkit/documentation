@@ -8,8 +8,10 @@ export type Props = {
   src: string
   lang?: string
   showButtonOnly?: boolean
+  optimize?: boolean
+  runs?: number
 }
-const { src, lang, showButtonOnly } = Astro.props as Props
+const { src, lang, showButtonOnly, optimize, runs } = Astro.props as Props
 
 const data = (await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")).toString()
 
@@ -18,13 +20,20 @@ const isSample = isSolidityFile && (src.indexOf("samples/") === 0 || src.indexOf
 
 // remove leading slashes
 const cleanSrc = src.replace(/^\/+/, "")
+
+// Build optimization parameters string if provided
+const optimizationParams = [optimize && "optimize=true", runs && `runs=${runs}`].filter(Boolean).join("&")
+
+const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${cleanSrc}&autoCompile=true${
+  optimizationParams ? `&${optimizationParams}` : ""
+}`
 ---
 
 {!showButtonOnly && <Prism code={data} lang={lang ?? "solidity"} />}
 {
   isSample && (
     <div class="remix-callout">
-      <a href={`https://remix.ethereum.org/#url=https://docs.chain.link/${cleanSrc}&autoCompile=true`} target="_blank">
+      <a href={remixUrl} target="_blank">
         Open in Remix
       </a>
       <a href="/getting-started/conceptual-overview#what-is-remix">What is Remix?</a>
