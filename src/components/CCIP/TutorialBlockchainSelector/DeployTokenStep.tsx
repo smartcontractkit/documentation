@@ -6,6 +6,8 @@ import { TutorialStep } from "../TutorialSetup/TutorialStep"
 import { NetworkCheck } from "../TutorialSetup/NetworkCheck"
 import { SolidityParam } from "../TutorialSetup/SolidityParam"
 import { Callout } from "../TutorialSetup/Callout"
+import { ContractVerificationStep } from "./ContractVerificationStep"
+import type { LaneState, DeployedContracts } from "@stores/lanes"
 import styles from "./DeployTokenStep.module.css"
 
 interface DeployTokenStepProps {
@@ -13,9 +15,32 @@ interface DeployTokenStepProps {
   isEnabled: boolean
 }
 
+// Extend LaneState to include the properties we need
+interface ExtendedLaneState extends Omit<LaneState, "progress" | "sourceContracts" | "destinationContracts"> {
+  tokenAddress?: {
+    [key in "source" | "destination"]?: string
+  }
+  sourceContracts: DeployedContracts
+  destinationContracts: DeployedContracts
+}
+
 export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
-  const state = useStore(laneStore)
+  const state = useStore(laneStore) as ExtendedLaneState
+
+  // Debug store values
+  console.log("DeployTokenStep Store:", {
+    chain,
+    tokenAddress: state.tokenAddress,
+    sourceContract: state.sourceContracts?.token,
+    destContract: state.destinationContracts?.token,
+    chainTokenAddress: state.tokenAddress?.[chain],
+    network: state.sourceNetwork,
+    stateKeys: Object.keys(state),
+  })
+
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
+  const contractAddress = chain === "source" ? state.sourceContracts?.token : state.destinationContracts?.token
+
   const networkInfo = network
     ? {
         name: network.name,
@@ -106,6 +131,13 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
             <ContractAddress type="token" chain={chain} placeholder="Enter deployed token address" />
           </div>
         </TutorialStep>
+
+        <ContractVerificationStep
+          stepId={getSubStepId("verify-contract")}
+          network={network}
+          contractAddress={contractAddress}
+          contractType="token"
+        />
       </ol>
     </>
   )
