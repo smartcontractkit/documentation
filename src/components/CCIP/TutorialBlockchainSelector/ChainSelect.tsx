@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import styles from "./ChainSelect.module.css"
 import type { Network } from "@config/data/ccip/types"
 
@@ -9,16 +10,52 @@ interface ChainSelectProps {
   placeholder: string
 }
 
+interface DropdownPosition {
+  top: number
+  left: number
+  width: number
+}
+
 export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSelectProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const selectedOption = options.find((opt) => opt.chain === value)
 
+  // Update dropdown position when opening
+  const updateDropdownPosition = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4, // 4px gap as per original CSS
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      })
+    }
+  }
+
+  // Update position on open and scroll
+  useEffect(() => {
+    if (isOpen) {
+      updateDropdownPosition()
+      window.addEventListener("scroll", updateDropdownPosition)
+      window.addEventListener("resize", updateDropdownPosition)
+    }
+    return () => {
+      window.removeEventListener("scroll", updateDropdownPosition)
+      window.removeEventListener("resize", updateDropdownPosition)
+    }
+  }, [isOpen])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      // Check if click is outside both the container and the dropdown
+      const isOutsideContainer = containerRef.current && !containerRef.current.contains(event.target as Node)
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target as Node)
+
+      if (isOutsideContainer && isOutsideDropdown) {
         setIsOpen(false)
         setFocusedIndex(-1)
       }
@@ -86,6 +123,44 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
     }
   }, [focusedIndex, isOpen])
 
+  const renderDropdown = () => {
+    if (!isOpen || !dropdownPosition) return null
+
+    const dropdown = (
+      <div
+        ref={dropdownRef}
+        className={styles.dropdown}
+        style={{
+          position: "absolute",
+          top: `${dropdownPosition.top}px`,
+          left: `${dropdownPosition.left}px`,
+          width: `${dropdownPosition.width}px`,
+        }}
+      >
+        {options.map((option, idx) => (
+          <button
+            key={option.chain}
+            className={`${styles.option} ${option.chain === value ? styles.selected : ""} ${
+              focusedIndex === idx ? styles.focused : ""
+            }`}
+            onClick={() => {
+              onChange(option.chain)
+              setIsOpen(false)
+              setFocusedIndex(-1)
+            }}
+            onMouseEnter={() => setFocusedIndex(idx)}
+            type="button"
+          >
+            <img src={option.logo} alt={option.name} className={styles.chainLogo} />
+            {option.name}
+          </button>
+        ))}
+      </div>
+    )
+
+    return createPortal(dropdown, document.body)
+  }
+
   return (
     <div ref={containerRef} className={styles.container}>
       <button
@@ -104,28 +179,7 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
         <span className={styles.arrow}>▼</span>
       </button>
 
-      {isOpen && (
-        <div ref={dropdownRef} className={styles.dropdown}>
-          {options.map((option, idx) => (
-            <button
-              key={option.chain}
-              className={`${styles.option} ${option.chain === value ? styles.selected : ""} ${
-                focusedIndex === idx ? styles.focused : ""
-              }`}
-              onClick={() => {
-                onChange(option.chain)
-                setIsOpen(false)
-                setFocusedIndex(-1)
-              }}
-              onMouseEnter={() => setFocusedIndex(idx)}
-              type="button"
-            >
-              <img src={option.logo} alt={option.name} className={styles.chainLogo} />
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
+      {renderDropdown()}
     </div>
   )
 }
