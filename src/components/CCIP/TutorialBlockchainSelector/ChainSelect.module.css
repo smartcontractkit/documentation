@@ -99,39 +99,60 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-bottom: 1px solid rgba(var(--color-border-rgb), 0.06);
   position: relative;
+  min-height: 44px;
 }
 
 .option:hover,
 .option.focused {
-  background: rgba(var(--color-accent-rgb), 0.12);
+  background: rgba(var(--color-accent-rgb), 0.15);
   color: var(--color-accent);
-  transform: scale(1.01);
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15);
+  font-weight: 600;
+  padding-left: 20px;
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15), inset 4px 0 0 var(--color-accent);
+}
+
+.option:hover::before,
+.option.focused::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--color-accent);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.option:hover::after,
+.option.focused::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.08));
+  pointer-events: none;
+}
+
+.option:hover .chainLogo,
+.option.focused .chainLogo {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.3), 0 0 0 2px var(--color-accent);
 }
 
 .option.selected {
   background: rgba(var(--color-accent-rgb), 0.08);
   color: var(--color-accent);
   font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--color-accent);
 }
 
-/* Add highlight effect */
-.option:hover::after,
-.option.focused::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, rgba(var(--color-accent-rgb), 0.05), rgba(var(--color-accent-rgb), 0.1));
-  pointer-events: none;
-  border-radius: inherit;
-}
+@media (prefers-reduced-motion: reduce) {
+  .option,
+  .option .chainLogo {
+    transition: none;
+  }
 
-/* Enhance the chain logo on hover */
-.option:hover .chainLogo,
-.option.focused .chainLogo {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.2);
+  .option:hover,
+  .option.focused {
+    transform: none;
+  }
 }
 
 .option:last-child {
