@@ -4,6 +4,7 @@ import { laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lan
 import { useStore } from "@nanostores/react"
 import styles from "./ChainUpdateBuilder.module.css"
 import { ErrorBoundary } from "@components/ErrorBoundary"
+import { Callout } from "../TutorialSetup/Callout"
 
 interface ChainUpdateBuilderProps {
   chain: "source" | "destination"
@@ -41,6 +42,27 @@ const calculateChainUpdate = (
   }
 }
 
+const validateRateLimiterConfig = (config: RateLimiterConfig): string | null => {
+  const rate = BigInt(config.rate || "0")
+  const capacity = BigInt(config.capacity || "0")
+
+  if (config.enabled) {
+    // For enabled config: 0 < rate < capacity
+    if (rate <= BigInt(0)) {
+      return "Rate must be greater than 0 when enabled"
+    }
+    if (rate >= capacity) {
+      return "Rate must be less than capacity for effective rate limiting"
+    }
+  } else {
+    // For disabled config: rate = 0 and capacity = 0
+    if (rate !== BigInt(0) || capacity !== BigInt(0)) {
+      return "Rate and capacity must be 0 when disabled"
+    }
+  }
+  return null
+}
+
 export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
   if (process.env.NODE_ENV === "development") {
     console.log(`[RenderTrack] ChainUpdateBuilder-${chain} rendered`)
@@ -57,6 +79,11 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
     const rateLimits = chain === "source" ? state.sourceRateLimits : state.destinationRateLimits
     return rateLimits?.inbound ?? defaultConfig.inbound
   })
+
+  const [validationErrors, setValidationErrors] = useState<{
+    inbound: string | null
+    outbound: string | null
+  }>({ inbound: null, outbound: null })
 
   const canGenerateUpdate = () => {
     return (
@@ -181,6 +208,14 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
     }
   }, [outbound, inbound, readOnly.chainSelector, readOnly.poolAddress, readOnly.tokenAddress])
 
+  useEffect(() => {
+    // Validate configurations whenever they change
+    setValidationErrors({
+      inbound: validateRateLimiterConfig(inbound),
+      outbound: validateRateLimiterConfig(outbound),
+    })
+  }, [inbound, outbound])
+
   if (process.env.NODE_ENV === "development") {
     console.log(`[ConfigState] ${chain}-rate-limits:`, {
       outbound,
@@ -195,10 +230,26 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
       fallback={<div>Error configuring rate limits. Please refresh and try again.</div>}
       onError={(error) => {
         console.error("Rate limit configuration error:", error)
-        reportError?.(error) // Assuming you have an error reporting service
+        reportError?.(error)
       }}
     >
       <div className={styles.builder}>
+        {/* Validation Warnings */}
+        {(validationErrors.inbound || validationErrors.outbound) && (
+          <div className={styles.validationWarnings}>
+            {validationErrors.outbound && (
+              <Callout type="caution" title="Outbound Rate Limit Warning">
+                {validationErrors.outbound}
+              </Callout>
+            )}
+            {validationErrors.inbound && (
+              <Callout type="caution" title="Inbound Rate Limit Warning">
+                {validationErrors.inbound}
+              </Callout>
+            )}
+          </div>
+        )}
+
         <div className={styles.configSection}>
           {/* Remote Configuration Section */}
           <div className={styles.remoteConfig}>
