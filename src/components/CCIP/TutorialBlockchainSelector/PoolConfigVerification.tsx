@@ -67,15 +67,15 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
           checkbox={<StepCheckbox stepId={stepId} subStepId={subStepId} />}
         >
           <ol className={styles.instructions}>
+            <li>Open the "Deploy & Run Transactions" tab in Remix</li>
             <li>
-              In the "Deploy & Run Transactions" tab, select your token pool (
-              <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong>) at:
+              Select your token pool contract:
               <div className={styles.contractInfo}>
-                <strong>Contract:</strong> {poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}
+                <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong>
                 <ReactCopyText text={poolAddress || ""} code />
               </div>
             </li>
-            <li>Click on the contract to open its details</li>
+            <li>Click the contract to view its functions</li>
           </ol>
         </TutorialStep>
 
