@@ -47,6 +47,7 @@
   height: 24px;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .arrow {
@@ -102,18 +103,35 @@
 
 .option:hover,
 .option.focused {
-  background: var(--color-background-secondary);
-  transform: translateX(4px);
-  box-shadow: 0 0 0 1px rgba(var(--color-accent-rgb), 0.1);
-  border-radius: 6px;
-  margin: 0 4px;
-  width: calc(100% - 8px);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-accent);
+  transform: scale(1.01);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15);
 }
 
 .option.selected {
   background: rgba(var(--color-accent-rgb), 0.08);
   color: var(--color-accent);
   font-weight: 500;
+}
+
+/* Add highlight effect */
+.option:hover::after,
+.option.focused::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(var(--color-accent-rgb), 0.05), rgba(var(--color-accent-rgb), 0.1));
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Enhance the chain logo on hover */
+.option:hover .chainLogo,
+.option.focused .chainLogo {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.2);
 }
 
 .option:last-child {
