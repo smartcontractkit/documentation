@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useRef, useState, useEffect } from "react"
 import styles from "./ChainSelect.module.css"
 import type { Network } from "@config/data/ccip/types"
 
@@ -11,16 +11,10 @@ interface ChainSelectProps {
 
 export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSelectProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const selectedOption = options.find((opt) => opt.chain === value)
   const [focusedIndex, setFocusedIndex] = useState(-1)
+  const containerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const handleSelect = (chain: string) => {
-    onChange(chain)
-    setIsOpen(false)
-    setFocusedIndex(-1)
-  }
+  const selectedOption = options.find((opt) => opt.chain === value)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,73 +24,70 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
       }
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return
 
-      switch (event.key) {
+      switch (e.key) {
         case "ArrowDown":
-          event.preventDefault()
+          e.preventDefault()
           setFocusedIndex((prev) => Math.min(prev + 1, options.length - 1))
           break
         case "ArrowUp":
-          event.preventDefault()
+          e.preventDefault()
           setFocusedIndex((prev) => Math.max(prev - 1, 0))
           break
-        case "PageDown":
-          event.preventDefault()
-          setFocusedIndex((prev) => Math.min(prev + 5, options.length - 1))
-          break
         case "PageUp":
-          event.preventDefault()
-          setFocusedIndex((prev) => Math.max(prev - 5, 0))
-          break
-        case "Home":
-          event.preventDefault()
+          e.preventDefault()
           setFocusedIndex(0)
           break
-        case "End":
-          event.preventDefault()
+        case "PageDown":
+          e.preventDefault()
           setFocusedIndex(options.length - 1)
           break
         case "Enter":
-          event.preventDefault()
+          e.preventDefault()
           if (focusedIndex >= 0) {
-            handleSelect(options[focusedIndex].chain)
+            onChange(options[focusedIndex].chain)
+            setIsOpen(false)
+            setFocusedIndex(-1)
           }
           break
         case "Escape":
+          e.preventDefault()
           setIsOpen(false)
           setFocusedIndex(-1)
           break
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    document.addEventListener("keydown", handleKeyDown)
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown)
+    }
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
       document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isOpen, options, onChange, focusedIndex])
+  }, [isOpen, focusedIndex, options, onChange])
 
+  // Scroll focused option into view
   useEffect(() => {
     if (isOpen && focusedIndex >= 0 && dropdownRef.current) {
-      const focusedElement = dropdownRef.current.children[focusedIndex] as HTMLElement
-      if (focusedElement) {
-        focusedElement.scrollIntoView({ block: "nearest", behavior: "smooth" })
+      const options = dropdownRef.current.getElementsByClassName(styles.option)
+      const focusedOption = options[focusedIndex] as HTMLElement
+      if (focusedOption) {
+        focusedOption.scrollIntoView({ block: "nearest", behavior: "smooth" })
       }
     }
   }, [focusedIndex, isOpen])
 
   return (
-    <div
-      ref={containerRef}
-      className={styles.container}
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-haspopup="listbox"
-      aria-controls="chain-select-dropdown"
-    >
+    <div ref={containerRef} className={styles.container}>
       <button
         className={`${styles.trigger} ${isOpen ? styles.active : ""}`}
         onClick={() => setIsOpen(!isOpen)}
@@ -104,37 +95,33 @@ export const ChainSelect = ({ value, onChange, options, placeholder }: ChainSele
       >
         {selectedOption ? (
           <>
-            <img src={selectedOption.logo} alt="" className={styles.chainLogo} />
-            <span>{selectedOption.name}</span>
+            <img src={selectedOption.logo} alt={selectedOption.name} className={styles.chainLogo} />
+            {selectedOption.name}
           </>
         ) : (
           <span className={styles.placeholder}>{placeholder}</span>
         )}
-        <span className={styles.arrow}>▾</span>
+        <span className={styles.arrow}>▼</span>
       </button>
 
       {isOpen && (
-        <div
-          ref={dropdownRef}
-          id="chain-select-dropdown"
-          className={styles.dropdown}
-          role="listbox"
-          aria-label="Select blockchain"
-          tabIndex={-1}
-        >
+        <div ref={dropdownRef} className={styles.dropdown}>
           {options.map((option, idx) => (
             <button
               key={option.chain}
-              role="option"
-              aria-selected={value === option.chain}
-              className={`${styles.option} ${value === option.chain ? styles.selected : ""} ${
+              className={`${styles.option} ${option.chain === value ? styles.selected : ""} ${
                 focusedIndex === idx ? styles.focused : ""
               }`}
-              onClick={() => handleSelect(option.chain)}
+              onClick={() => {
+                onChange(option.chain)
+                setIsOpen(false)
+                setFocusedIndex(-1)
+              }}
               onMouseEnter={() => setFocusedIndex(idx)}
+              type="button"
             >
-              <img src={option.logo} alt="" className={styles.chainLogo} />
-              <span>{option.name}</span>
+              <img src={option.logo} alt={option.name} className={styles.chainLogo} />
+              {option.name}
             </button>
           ))}
         </div>

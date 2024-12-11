@@ -1,6 +1,7 @@
 .container {
   position: relative;
   width: 100%;
+  z-index: 100;
 }
 
 .trigger {
@@ -65,17 +66,26 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: rgba(var(--color-background-rgb), 0.85);
+  background: var(--color-background-secondary);
   border: 1px solid rgba(var(--color-border-rgb), 0.1);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08);
   max-height: 300px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
-  z-index: 100;
-  animation: slideDown 0.2s ease;
-  backdrop-filter: blur(8px);
+  animation: dropdownAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .option {
@@ -89,34 +99,29 @@
   font-size: 14px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-bottom: 1px solid rgba(var(--color-border-rgb), 0.06);
+  position: relative;
 }
 
-.option:hover {
+.option:hover,
+.option.focused {
   background: var(--color-background-secondary);
   transform: translateX(4px);
+  box-shadow: 0 0 0 1px rgba(var(--color-accent-rgb), 0.1);
+  border-radius: 6px;
+  margin: 0 4px;
+  width: calc(100% - 8px);
 }
 
 .option.selected {
-  background: rgba(var(--color-accent-rgb), 0.1);
+  background: rgba(var(--color-accent-rgb), 0.08);
   color: var(--color-accent);
   font-weight: 500;
 }
 
 .option:last-child {
   border-bottom: none;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .dropdown::-webkit-scrollbar {
@@ -132,30 +137,6 @@
   border-radius: 4px;
 }
 
-.chainSection {
-  background: var(--color-background);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-  margin-bottom: 24px;
-}
-
-.option.focused {
-  background: var(--color-background-secondary);
-  outline: none;
-  position: relative;
-}
-
-.option.focused::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-accent);
-}
-
 .dropdown::before {
   content: "Use arrow keys or Page Up/Down to navigate";
   display: block;
@@ -163,4 +144,8 @@
   color: var(--color-text-secondary);
   font-size: 12px;
   border-bottom: 1px solid var(--color-border);
+}
+
+.dropdownBackdrop {
+  display: none;
 }
