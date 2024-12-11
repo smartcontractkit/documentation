@@ -105,6 +105,10 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
     try {
       // Remove any non-numeric characters
       const cleanValue = value.replace(/[^0-9]/g, "")
+      // Always update the state, using "0" for empty values
+      const stringValue = cleanValue ? BigInt(cleanValue).toString() : "0"
+
+      // Check uint128 range only for non-empty values
       if (cleanValue) {
         const bigIntValue = BigInt(cleanValue)
         const MAX_UINT128 = BigInt(2) ** BigInt(128) - BigInt(1)
@@ -114,34 +118,31 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
           console.warn("Value exceeds uint128 maximum")
           return
         }
+      }
 
-        // Update with validated value
-        const stringValue = bigIntValue.toString()
+      // Update local state first
+      if (type === "inbound") {
+        setInbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
+      } else {
+        setOutbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
+      }
 
-        // Update local state first
-        if (type === "inbound") {
-          setInbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
-        } else {
-          setOutbound((prev) => ({ ...prev, [field]: stringValue, enabled: true }))
-        }
+      // Then update store
+      updateRateLimits(chain, type, {
+        [field]: stringValue,
+        enabled: true,
+      })
 
-        // Then update store
-        updateRateLimits(chain, type, {
-          [field]: stringValue,
-          enabled: true,
-        })
-
-        // Force update of formatted data
-        if (canGenerateUpdate()) {
-          const chainUpdate = calculateChainUpdate(
-            readOnly.chainSelector,
-            [readOnly.poolAddress],
-            readOnly.tokenAddress,
-            outbound,
-            inbound
-          )
-          onCalculate(chainUpdate)
-        }
+      // Force update of formatted data
+      if (canGenerateUpdate()) {
+        const chainUpdate = calculateChainUpdate(
+          readOnly.chainSelector,
+          [readOnly.poolAddress],
+          readOnly.tokenAddress,
+          outbound,
+          inbound
+        )
+        onCalculate(chainUpdate)
       }
     } catch (e) {
       console.error("Invalid BigInt value:", e)
