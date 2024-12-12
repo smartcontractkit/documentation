@@ -4,8 +4,8 @@ date: Last Modified
 title: "Using the CCIP JavaScript SDK"
 ---
 
-import { Aside } from "@components"
-import { Tabs, TabsContent } from "@components/Tabs"
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
 
 The [CCIP JavaScript SDK](https://github.com/smartcontractkit/ccip-javascript-sdk/tree/main) is a tool that helps you to simplify management of cross-chain token transfers, and to integrate CCIP with the frontend of your own app.
 
@@ -64,12 +64,23 @@ Failure to escape or sanitize error messages could expose your application to **
     ```
     </Fragment>
     </Tabs>
-    - The `./pnpm-workspace.yaml` file specifies all the packages in this repo, and the install command installs dependencies for each of the listed packages.
     - `pnpm dev-example` runs an example NextJS app locally. Navigate to http://localhost:3000 in your browser.
 
 ## Run an example app
 
-If you run the example NextJS app (using `pnpm dev-example`), you can interact with an example UI that uses the CCIPWidget.
+The example Next.js app included with the CCIP JavaScript SDK demonstrates the SDK's functionalities within an interactive web application, allowing you to see its features in action.
+
+To get started:
+
+1. Launch the app by using the following command:
+
+   ```sh
+   pnpm dev-example
+   ```
+
+1. In your browser, navigate to http://localhost:3000/ to see the interactive app:
+
+   <ClickToZoom src="/images/ccip/ccip-sdk-example-app-ui.png" alt="CCIP JavaScript SDK example app" />
 
 ## Review a basic UI example
 
@@ -83,7 +94,7 @@ Review the reference documentation:
 
 Review the basic UI example below:
 
-```solidity
+```ts
 import 'ccip-react-components/dist/style.css';
 import { CCIPWidget, Config, Token } from 'ccip-react-components';
 import { sepolia, optimismSepolia } from 'viem/chains';
@@ -130,9 +141,47 @@ const config: Config = {
 <CCIPWidget config={config} tokensList={tokensList} />;
 ```
 
-## Run a CCIP-JS example app
+### Theme configuration
 
-This example app covers the following steps:
+You can customize the component's theme to be in line with your app design. These are all the options available for theme configuration:
+
+```ts
+import { Config } from 'ccip-react-components';
+const config: Config = { theme:
+    {
+    /** Define the app colors in HEX format */
+    palette?: {
+      /** Titles color and primary button background, default #000000 */
+      primary?: string;
+      /** Background color, default '#FFFFFF' */
+      background?: string;
+      /** Border color, default '#B3B7C0' */
+      border?: string;
+      /** Text color, default '#000000' */
+      text?: string;
+      /** Secondary text, inactive and placeholders color, default '#6D7480' */
+      muted?: string;
+      /** Input fields background color, default '#FFFFFF' */
+      input?: string;
+      /** Popovers, dropdowns and select fields background color, default '#F5F7FA' */
+      popover?: string;
+      /** Selected field from a dropdown background color, default '#D7DBE0' */
+      selected?: string;
+      /** Warning text color, default '#F7B955' */
+      warning?: string;
+      /** Warning text background color, default '#FFF5E0' */
+      warningBackground?: string;
+    };
+    shape?: {
+      /** Border radius size in px default 6 */
+      radius?: number;
+    };
+  };}
+```
+
+## Review a CCIP-JS example
+
+This example uses the `ccip-js` package and covers the following steps:
 
 - Initialize CCIP-JS Client for mainnet
 - Approve tokens for transfer
@@ -145,10 +194,10 @@ Review the [reference documentation](https://github.com/smartcontractkit/ccip-ja
 
 ### Review the code
 
-```solidity
-import * as CCIP from '@chainlink/ccip-js'
-import { createWalletClient, custom } from 'viem'
-import { mainnet } from 'viem/chains'
+```ts
+import * as CCIP from "@chainlink/ccip-js"
+import { createWalletClient, custom } from "viem"
+import { mainnet } from "viem/chains"
 
 // Initialize CCIP-JS Client for mainnet
 const ccipClient = CCIP.createClient()
@@ -164,8 +213,8 @@ const walletClient = createWalletClient({
 // Approve Router to transfer tokens on user's behalf
 const { txHash, txReceipt } = await ccipClient.approveRouter({
   client: walletClient,
-  routerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
-  tokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
+  routerAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+  tokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
   amount: 1000000000000000000n,
   waitForReceipt: true,
 })
@@ -175,11 +224,11 @@ console.log(`Transfer approved. Transaction hash: ${txHash}. Transaction receipt
 // Get fee for the transfer
 const fee = await ccipClient.getFee({
   client: publicClient,
-  routerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
-  tokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
+  routerAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+  tokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
   amount: 1000000000000000000n,
-  destinationAccount: '0x1234567890abcdef1234567890abcdef12345678',
-  destinationChainSelector: '1234',
+  destinationAccount: "0x1234567890abcdef1234567890abcdef12345678",
+  destinationChainSelector: "1234",
 })
 
 console.log(`Fee: ${fee.toLocaleString()}`)
@@ -187,11 +236,11 @@ console.log(`Fee: ${fee.toLocaleString()}`)
 // Variant 1: Transfer via CCIP using native token fee
 const { txHash, messageId } = await client.transferTokens({
   client: walletClient,
-  routerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
-  tokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
+  routerAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+  tokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
   amount: 1000000000000000000n,
-  destinationAccount: '0x1234567890abcdef1234567890abcdef12345678',
-  destinationChainSelector: '1234',
+  destinationAccount: "0x1234567890abcdef1234567890abcdef12345678",
+  destinationChainSelector: "1234",
 })
 
 console.log(`Transfer success. Transaction hash: ${txHash}. Message ID: ${messageId}`)
@@ -199,12 +248,12 @@ console.log(`Transfer success. Transaction hash: ${txHash}. Message ID: ${messag
 // Variant 2: Transfer via CCIP using the provided supported token for fee payment
 const { txHash, messageId } = await client.transferTokens({
   client: walletClient,
-  routerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
-  tokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
+  routerAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+  tokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
   amount: 1000000000000000000n,
-  destinationAccount: '0x1234567890abcdef1234567890abcdef12345678',
-  destinationChainSelector: '1234',
-  feeTokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
+  destinationAccount: "0x1234567890abcdef1234567890abcdef12345678",
+  destinationChainSelector: "1234",
+  feeTokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
 })
 ```
 
@@ -212,18 +261,8 @@ const { txHash, messageId } = await client.transferTokens({
 
 Optionally, if you need to modify the packages and use your modified version, follow these instructions to build the packages:
 
-{/* prettier-ignore */}
-<TabsContent sharedStore="buildOption" client:visible>
-<Fragment slot="tab.1">Build packages together</Fragment>
-<Fragment slot="tab.2">Build packages individually</Fragment>
-<Fragment slot="panel.1">
-To build both packages together, run the following command:
-```sh
-pnpm build
-```
-</Fragment>
-<Fragment slot="panel.2">
-If you're building each package individually, make sure to build the `build-ccip-js` package before you build the `ccip-react-components` package. The React components depend on the JS package.
+You can use `pnpm build` to build both packages together. If you're building each package individually, make sure to build the `build-ccip-js` package before you build the `ccip-react-components` package. The React components depend on the JS package.
+
 1.  Build the `build-ccip-js` package:
     ```sh
     pnpm i -w
@@ -233,5 +272,12 @@ If you're building each package individually, make sure to build the `build-ccip
     ```sh
     pnpm build-components
     ```
-</Fragment>
-</TabsContent>
+1.  Update the `ccip-react-components` package to use the local `ccip-js` version by modifying the `packages/ccip-react-components/package.json` file. Replace the `@chainlink/ccip-js` dependency with the workspace reference:
+    ```
+    "@chainlink/ccip-js": "workspace:*"
+    ```
+1.  Update the `examples/nextjs` app to use both local `ccip-js` and `ccip-react-components` versions by modifying the `examples/nextjs/package.json` file. Replace the `@chainlink/ccip-js` and `@chainlink/ccip-react-components` dependencies with these relative paths:
+    ```
+    "@chainlink/ccip-js": "link:../../packages/ccip-js",
+    "@chainlink/ccip-react-components": "link:../../packages/ccip-react-components",
+    ```
