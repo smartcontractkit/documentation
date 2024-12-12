@@ -1,10 +1,14 @@
 ---
 import { Metadata } from "~/content/config"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
+import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
+
 export interface Props {
   metadata?: Metadata
   canonicalURL: URL | string
 }
+
 const { metadata, canonicalURL } = Astro.props
 const formattedContentTitle = metadata?.title
   ? `${metadata.title} | ${SITE.title}`
@@ -24,7 +28,15 @@ if (metadata?.image) {
     canonicalImageSrc = imageUrl
   }
 }
+
+// Detect if this is an API reference page and get the product
+const currentPage = new URL(Astro.request.url).pathname
+const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 ---
+
+<!-- Version-specific SEO tags for API reference pages -->{
+  isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
+}
 
 <!-- Page Metadata -->
 <link rel="canonical" href={canonicalURL} />
