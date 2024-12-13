@@ -235,26 +235,10 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
       }}
     >
       <div className={styles.builder}>
-        {/* Validation Warnings */}
-        {(validationErrors.inbound || validationErrors.outbound) && (
-          <div className={styles.validationWarnings}>
-            {validationErrors.outbound && (
-              <Callout type="caution" title="Outbound Rate Limit Warning">
-                {validationErrors.outbound}
-              </Callout>
-            )}
-            {validationErrors.inbound && (
-              <Callout type="caution" title="Inbound Rate Limit Warning">
-                {validationErrors.inbound}
-              </Callout>
-            )}
-          </div>
-        )}
-
         <Callout type="note" title="About Rate Limits">
           <p>
             Rate limits control how many tokens can be transferred over a given blockchain lane within a specific time
-            frame. Each rate limit has:
+            frame. When working with rate limits, consider the following:
           </p>
           <ul>
             <li>
@@ -264,10 +248,14 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
             <li>
               <strong>Refill rate:</strong> How quickly this capacity is restored over time after transfers occur.
             </li>
-            <li>Setting both capacity and rate to 0 removes all limitations, allowing unlimited transfers.</li>
             <li>
-              When defining these limits, remember to account for token decimals. For example, for a token with 18
-              decimals, to allow a maximum capacity of 1 whole token, set it to <code>1000000000000000000</code>.
+              <strong>Disabling rate limits:</strong> Setting both capacity and rate to 0 removes all limitations,
+              allowing unlimited transfers.
+            </li>
+            <li>
+              <strong>Token decimals:</strong> When defining these limits, remember to account for token decimals. For
+              example, for a token with 18 decimals, to allow a maximum capacity of 1 whole token, set it to{" "}
+              <code>1000000000000000000</code>.
             </li>
           </ul>
           <p>
@@ -307,6 +295,22 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
               </div>
             )}
 
+            {/* Validation Warnings */}
+            {(validationErrors.inbound || validationErrors.outbound) && (
+              <div className={styles.validationWarnings}>
+                {validationErrors.outbound && (
+                  <Callout type="caution" title="Outbound Rate Limit Warning">
+                    {validationErrors.outbound}
+                  </Callout>
+                )}
+                {validationErrors.inbound && (
+                  <Callout type="caution" title="Inbound Rate Limit Warning">
+                    {validationErrors.inbound}
+                  </Callout>
+                )}
+              </div>
+            )}
+
             <div className={styles.rateLimiterGroup}>
               {/* Outbound Configuration */}
               <div className={styles.rateLimiter}>
@@ -335,7 +339,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                         onChange={(e) => handleRateLimitChange("outbound", "capacity", e.target.value)}
                         placeholder="Enter amount..."
                         pattern="[0-9]*"
-                        className={styles.numericInput}
+                        className={`${styles.numericInput} ${validationErrors.outbound ? styles.inputError : ""}`}
                       />
                     </div>
                     <div className={styles.input}>
@@ -351,7 +355,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                         onChange={(e) => handleRateLimitChange("outbound", "rate", e.target.value)}
                         placeholder="Enter amount..."
                         pattern="[0-9]*"
-                        className={styles.numericInput}
+                        className={`${styles.numericInput} ${validationErrors.outbound ? styles.inputError : ""}`}
                       />
                     </div>
                   </div>
