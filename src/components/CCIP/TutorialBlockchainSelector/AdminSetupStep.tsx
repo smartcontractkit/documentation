@@ -45,7 +45,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
 
           <ol className={styles.instructions}>
             <li>
-              In the "Deploy & Run Transactions" tab, select <strong>RegistryModuleOwnerCustom</strong> contract
+              In the "Deploy & Run Transactions" tab, select the <strong>RegistryModuleOwnerCustom</strong> contract
             </li>
             <li>
               Click "At Address" with:
