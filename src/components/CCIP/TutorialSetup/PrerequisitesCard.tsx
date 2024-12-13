@@ -34,7 +34,7 @@ export const PrerequisitesCard = () => {
     {
       id: "browser-setup",
       checkboxId: "browser-setup" as SubStepId<StepId>,
-      title: "1. Web Browser Setup",
+      title: "Web Browser Setup",
       description: "Configure your browser with the required extensions and networks",
       defaultOpen: true,
       options: [
@@ -71,7 +71,7 @@ export const PrerequisitesCard = () => {
     {
       id: "gas-tokens",
       checkboxId: "gas-tokens" as SubStepId<StepId>,
-      title: "2. Native Gas Tokens",
+      title: "Native Gas Tokens",
       description: "Acquire tokens for transaction fees",
       options: [
         {
@@ -99,14 +99,14 @@ export const PrerequisitesCard = () => {
   return (
     <TutorialCard title="Prerequisites" description="Complete these steps before starting the tutorial">
       <div className={styles.requirements}>
-        {prerequisites.map((step) => (
+        {prerequisites.map((step, index) => (
           <div
             key={step.id}
             id={getSubStepId(step.checkboxId)}
             className={`${styles.step} ${activeStep === step.id ? styles.active : ""}`}
           >
             <SetupSection
-              title={step.title}
+              title={`${index + 1}. ${step.title}`}
               description={step.description}
               checkbox={{
                 stepId: "setup" as StepId,
