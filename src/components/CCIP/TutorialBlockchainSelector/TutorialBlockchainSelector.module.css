@@ -190,21 +190,110 @@
 
 /* Arrow styling */
 .arrowContainer {
+  --touch-target-size: 44px;
+  --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+  padding: 0 1rem;
+  cursor: default;
+  position: relative;
+  outline: none;
+  transition: transform 0.2s var(--animation-timing);
+}
+
+/* RTL Support */
+[dir="rtl"] .arrowContainer {
+  transform: scaleX(-1);
 }
 
 .arrow {
-  color: var(--color-accent);
-  opacity: 0.6;
-  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+  transition: all 0.3s var(--animation-timing);
+  will-change: transform, opacity;
 }
 
-/* Add subtle animation when chains are selected */
-.chainSelectors:has([value]:not([value=""])) .arrow {
-  opacity: 1;
-  transform: translateX(2px);
+.arrowGroup {
+  transform-origin: center;
+  transition: transform 0.3s var(--animation-timing);
+}
+
+/* Interactive States */
+.arrowContainer:hover .arrow {
+  color: var(--color-primary);
+}
+
+.arrowContainer:hover .arrowGroup {
+  transform: scale(1.05);
+}
+
+.arrowContainer:active .arrowGroup {
+  transform: scale(0.95);
+}
+
+/* Focus States */
+.arrowContainer:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Animations */
+@media (prefers-reduced-motion: no-preference) {
+  .arrowPath {
+    opacity: 0.8;
+    animation: bidirectionalFlow 3s var(--animation-timing) infinite;
+  }
+
+  .arrowLine {
+    opacity: 0.6;
+    animation: fadeInOut 3s var(--animation-timing) infinite;
+  }
+
+  /* Stagger animations */
+  .arrowPath:first-child {
+    animation-delay: 0s;
+  }
+
+  .arrowPath:last-child {
+    animation-delay: 1.5s;
+  }
+
+  @keyframes bidirectionalFlow {
+    0%,
+    100% {
+      opacity: 0.8;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+
+  @keyframes fadeInOut {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+/* Mobile/Touch Optimization */
+@media (hover: none) {
+  .arrowContainer {
+    cursor: pointer;
+  }
+
+  .arrowContainer:active .arrow {
+    transform: scale(0.95);
+  }
 }
 
 @media (max-width: 1200px) {

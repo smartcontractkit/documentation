@@ -143,15 +143,47 @@ export const TutorialBlockchainSelector = () => {
               placeholder="Select Source"
             />
 
-            <div className={styles.arrowContainer}>
-              <svg className={styles.arrow} width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 12h18M15 5l7 7-7 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+            <div
+              className={styles.arrowContainer}
+              role="img"
+              aria-label="Bidirectional token transfer enabled"
+              tabIndex={0}
+              title="Tokens can be transferred in both directions"
+            >
+              <svg
+                className={styles.arrow}
+                width="44"
+                height="44"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="arrow-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="currentColor" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="currentColor" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+                <g className={styles.arrowGroup}>
+                  <path
+                    className={styles.arrowPath}
+                    d="M9 7l-7 5 7 5M15 7l7 5-7 5"
+                    stroke="url(#arrow-gradient)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <line
+                    className={styles.arrowLine}
+                    x1="2"
+                    y1="12"
+                    x2="22"
+                    y2="12"
+                    stroke="url(#arrow-gradient)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </g>
               </svg>
             </div>
 
