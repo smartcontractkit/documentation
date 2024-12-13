@@ -65,7 +65,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
     }
 
     // Assumes the subscription is funded sufficiently.
-    function requestRandomWords() external onlyOwner {
+    function requestRandomWords(bool enableNativePayment) external onlyOwner {
         // Will revert if subscription is not set and funded.
         s_requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -75,7 +75,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
                 callbackGasLimit: callbackGasLimit,
                 numWords: numWords,
                 extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
                 )
             })
         );
