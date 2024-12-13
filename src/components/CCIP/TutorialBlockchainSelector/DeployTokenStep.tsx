@@ -85,11 +85,19 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
 
           <Callout type="note" title="About the Parameters">
             <ul>
-              <li>The name and symbol help identify your token in wallets and applications</li>
-              <li>Using 18 decimals is standard for most ERC20 tokens (1 token = 1000000000000000000 wei)</li>
+              <li>The name and symbol help identify your token in wallets and applications.</li>
               <li>
-                Setting maxSupply to 0 allows unlimited minting. For a limited supply, specify the amount in wei (e.g.,
-                for max 1000 tokens with 18 decimals: 1000000000000000000000)
+                Using 18 decimals is standard for most ERC20 tokens (1 token = 1000000000000000000 wei or 10
+                <sup>18</sup>).
+              </li>
+              <li>
+                If maxSupply is set to 0, it allows unlimited minting. For a limited supply, you must scale the amount
+                according to the number of decimals. For example, if you want a max supply of 1,000 tokens with 18
+                decimals, the maxSupply would be
+                <code>
+                  1000 * 10<sup>18</sup>
+                </code>{" "}
+                = <code>1000000000000000000000</code> (that's 1 followed by 21 zeros).
               </li>
             </ul>
           </Callout>
