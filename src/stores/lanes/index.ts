@@ -26,7 +26,7 @@ export const TUTORIAL_STEPS = {
     title: "Setup",
     subSteps: {
       "browser-setup": "Web Browser Setup",
-      "gas-tokens": "native Gas Tokens Ready",
+      "gas-tokens": "Native Gas Tokens Ready",
       "blockchains-selected": "Blockchains Selected",
       "contracts-imported": "Contracts Imported",
     },
