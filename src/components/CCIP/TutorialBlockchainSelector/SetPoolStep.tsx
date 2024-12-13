@@ -34,10 +34,12 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
         >
           <ol className={styles.instructions}>
             <li>
-              In the "Deploy & Run Transactions" tab, select the <strong>TokenAdminRegistry</strong> contract in the <i>Contracts</i> drop-down list.
+              In the "Deploy & Run Transactions" tab, select the <strong>TokenAdminRegistry</strong> contract in the{" "}
+              <i>Contracts</i> drop-down list.
             </li>
             <li>
-              Next to the <b>At Address</b> button, fill in the following contract address, and then click the <b>At Address</b> button.
+              Next to the <b>At Address</b> button, fill in the following contract address, and then click the{" "}
+              <b>At Address</b> button.
               <div className={styles.contractInfo}>
                 <strong>Contract:</strong> TokenAdminRegistry
                 <NetworkAddress type="tokenAdminRegistry" chain={chain} />
