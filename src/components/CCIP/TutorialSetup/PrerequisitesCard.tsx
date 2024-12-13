@@ -1,7 +1,6 @@
 import { useState } from "react"
 import styles from "./PrerequisitesCard.module.css"
 import { type StepId, type SubStepId } from "@stores/lanes"
-import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
 import { SetupSection } from "./SetupSection"
 import { TutorialCard } from "./TutorialCard"
 
