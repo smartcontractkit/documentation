@@ -10,6 +10,7 @@ import {
   TokenMechanism,
   NetworkFees,
   LaneConfig,
+  Network,
 } from "."
 import { SupportedChain } from "@config/types"
 import {
@@ -376,7 +377,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
   })
 }
 
-export const getAllNetworks = ({ filter }: { filter: Environment }) => {
+export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
