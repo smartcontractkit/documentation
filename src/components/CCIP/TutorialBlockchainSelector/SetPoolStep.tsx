@@ -43,7 +43,7 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
                 <NetworkAddress type="tokenAdminRegistry" chain={chain} />
               </div>
             </li>
-            <li>Click on the TokenAdminRegistry contract to open its details</li>
+            <li>Select the TokenAdminRegistry contract to expand its details</li>
             <li>
               Call <code>setPool</code>:
               <div className={styles.functionCall}>
