@@ -34,7 +34,7 @@ export const SetPoolStep = ({ chain }: SetPoolStepProps) => {
         >
           <ol className={styles.instructions}>
             <li>
-              In the "Deploy & Run Transactions" tab, select <strong>TokenAdminRegistry</strong> contract
+              In the "Deploy & Run Transactions" tab, select the <strong>TokenAdminRegistry</strong> contract in the <i>Contracts</i> drop-down list.
             </li>
             <li>
               Click "At Address" with:
