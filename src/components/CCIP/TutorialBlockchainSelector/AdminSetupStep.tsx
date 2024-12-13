@@ -6,6 +6,7 @@ import { TutorialStep } from "../TutorialSetup/TutorialStep"
 import { NetworkAddress } from "./NetworkAddress"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
 import { SolidityParam } from "../TutorialSetup/SolidityParam"
+import { Callout } from "../TutorialSetup/Callout"
 import styles from "./AdminSetupStep.module.css"
 
 interface AdminSetupStepProps {
@@ -31,6 +32,17 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
           title="Register as Admin"
           checkbox={<StepCheckbox stepId={stepId} subStepId="admin-claimed" />}
         >
+          <Callout type="note" title="Admin Registration Options">
+            The Cross-Chain Token (CCT) standard supports multiple methods for registering as a token administrator. We
+            use <code>registerAdminViaOwner()</code> in this tutorial because our deployed BurnMintERC677 token
+            implements the <code>owner()</code> function. For other token implementations, you might use different
+            registration methods. See the{" "}
+            <a href="/ccip/concepts/cross-chain-tokens#self-service-registration-flow">
+              self-service registration documentation
+            </a>{" "}
+            for all available options.
+          </Callout>
+
           <ol className={styles.instructions}>
             <li>
               In the "Deploy & Run Transactions" tab, select <strong>RegistryModuleOwnerCustom</strong> contract
