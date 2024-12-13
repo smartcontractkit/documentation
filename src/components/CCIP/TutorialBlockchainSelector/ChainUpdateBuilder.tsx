@@ -251,6 +251,30 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
           </div>
         )}
 
+        <Callout type="note" title="About Rate Limits">
+          <p>
+            Rate limits control how many tokens can be transferred over a given blockchain lane within a specific time
+            frame. Each rate limit has:
+          </p>
+          <ul>
+            <li>
+              <strong>Maximum capacity:</strong> The total amount of tokens that can be transferred before the pool is
+              fully consumed.
+            </li>
+            <li>
+              <strong>Refill rate:</strong> How quickly this capacity is restored over time after transfers occur.
+            </li>
+            <li>Setting both capacity and rate to 0 removes all limitations, allowing unlimited transfers.</li>
+            <li>
+              When defining these limits, remember to account for token decimals. For example, for a token with 18
+              decimals, to allow a maximum capacity of 1 whole token, set it to <code>1000000000000000000</code>.
+            </li>
+          </ul>
+          <p>
+            Learn more in the <a href="/ccip/architecture#ccip-rate-limits">CCIP rate limits documentation</a>.
+          </p>
+        </Callout>
+
         <div className={styles.configSection}>
           {/* Remote Configuration Section */}
           <div className={styles.remoteConfig}>
