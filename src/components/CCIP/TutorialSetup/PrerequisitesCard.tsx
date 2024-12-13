@@ -4,6 +4,11 @@ import { type StepId, type SubStepId } from "@stores/lanes"
 import { SetupSection } from "./SetupSection"
 import { TutorialCard } from "./TutorialCard"
 
+interface Link {
+  text: string
+  url: string
+}
+
 interface PrerequisiteStep {
   id: string
   title: string
@@ -12,11 +17,11 @@ interface PrerequisiteStep {
   defaultOpen?: boolean
   options?: {
     title: string
-    steps: string[]
-    link?: {
+    steps: {
       text: string
-      url: string
-    }
+      type?: "numbered" | "bullet" | "header" // Default to 'numbered' if not specified
+    }[]
+    links?: Link[]
   }[]
 }
 
@@ -36,22 +41,30 @@ export const PrerequisitesCard = () => {
         {
           title: "Using Chainlist (Recommended)",
           steps: [
-            "Visit Chainlist",
-            "Search for your desired blockchains",
-            'Click "Add to MetaMask" for each blockchain',
+            { text: "Visit Chainlist", type: "numbered" },
+            { text: "Search for your desired blockchains", type: "numbered" },
+            { text: 'Click "Add to MetaMask" for each blockchain', type: "numbered" },
           ],
-          link: {
-            text: "Open Chainlist",
-            url: "https://chainlist.org",
-          },
+          links: [
+            {
+              text: "Open Chainlist",
+              url: "https://chainlist.org",
+            },
+          ],
         },
         {
           title: "Manual Configuration",
-          steps: ["Open MetaMask Settings", "Select Networks", "Add Network manually"],
-          link: {
-            text: "View Guide",
-            url: "https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/",
-          },
+          steps: [
+            { text: "Open MetaMask Settings", type: "numbered" },
+            { text: "Select Networks", type: "numbered" },
+            { text: "Add Network manually", type: "numbered" },
+          ],
+          links: [
+            {
+              text: "View Guide",
+              url: "https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/",
+            },
+          ],
         },
       ],
     },
@@ -63,11 +76,21 @@ export const PrerequisitesCard = () => {
       options: [
         {
           title: "Testnet Setup",
-          steps: ["Visit blockchain-specific faucets", "Request test tokens"],
+          steps: [
+            { text: "Choose one of these options:", type: "header" },
+            { text: "Visit blockchain-specific faucets", type: "bullet" },
+            { text: "Use the Chainlink faucet for supported networks", type: "bullet" },
+          ],
+          links: [
+            {
+              text: "Visit Chainlink Faucet",
+              url: "https://faucets.chain.link/",
+            },
+          ],
         },
         {
           title: "Mainnet Setup",
-          steps: ["Acquire tokens through an exchange"],
+          steps: [{ text: "Acquire tokens through an exchange", type: "bullet" }],
         },
       ],
     },
@@ -104,21 +127,31 @@ export const PrerequisitesCard = () => {
                       <div key={idx} className={styles.optionCard}>
                         <h4>{option.title}</h4>
                         <ul className={styles.stepsList}>
-                          {option.steps.map((stepText, stepIdx) => (
-                            <li key={stepIdx}>{stepText}</li>
+                          {option.steps.map((step, stepIdx) => (
+                            <li
+                              key={stepIdx}
+                              className={`
+                                ${step.type === "bullet" ? styles.bulletItem : ""}
+                                ${step.type === "header" ? styles.headerItem : ""}
+                                ${step.type === "numbered" ? styles.numberedItem : ""}
+                              `}
+                            >
+                              {step.text}
+                            </li>
                           ))}
                         </ul>
-                        {option.link && (
+                        {option.links?.map((link, linkIdx) => (
                           <a
-                            href={option.link.url}
+                            key={linkIdx}
+                            href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={styles.actionButton}
                           >
-                            {option.link.text}
+                            {link.text}
                             <span className={styles.linkArrow}>→</span>
                           </a>
-                        )}
+                        ))}
                       </div>
                     ))}
                   </div>
