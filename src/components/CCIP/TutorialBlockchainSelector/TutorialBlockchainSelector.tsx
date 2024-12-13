@@ -145,10 +145,18 @@ export const TutorialBlockchainSelector = () => {
 
             <div
               className={styles.arrowContainer}
-              role="img"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               aria-label="Bidirectional token transfer enabled"
               tabIndex={0}
-              title="Tokens can be transferred in both directions"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  // Toggle focus state for visual feedback
+                  e.currentTarget.classList.toggle(styles.focused)
+                }
+              }}
             >
               <svg
                 className={styles.arrow}
@@ -157,6 +165,7 @@ export const TutorialBlockchainSelector = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <defs>
                   <linearGradient id="arrow-gradient" x1="0%" y1="50%" x2="100%" y2="50%">

@@ -191,23 +191,37 @@
 /* Arrow styling */
 .arrowContainer {
   --touch-target-size: 44px;
-  --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-timing: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --arrow-rotation: 0deg;
 
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
-  padding: 0 1rem;
+  margin-inline: auto;
+  padding-block: 0;
+  padding-inline: 1rem;
   cursor: default;
   position: relative;
   outline: none;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+
+  /* Performance optimizations */
+  contain: layout style;
+  view-transition-name: arrow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+
   transition: transform 0.2s var(--animation-timing);
 }
 
-/* RTL Support */
-[dir="rtl"] .arrowContainer {
-  transform: scaleX(-1);
+/* RTL and vertical writing mode support */
+[dir="rtl"] .arrowContainer,
+[writing-mode="vertical-rl"] .arrowContainer {
+  transform: rotate(var(--arrow-rotation));
 }
 
 .arrow {
@@ -218,15 +232,17 @@
 
 .arrowGroup {
   transform-origin: center;
-  transition: transform 0.3s var(--animation-timing);
+  transition: transform 0.6s var(--animation-timing);
 }
 
 /* Interactive States */
-.arrowContainer:hover .arrow {
+.arrowContainer:hover .arrow,
+.arrowContainer.focused .arrow {
   color: var(--color-primary);
 }
 
-.arrowContainer:hover .arrowGroup {
+.arrowContainer:hover .arrowGroup,
+.arrowContainer.focused .arrowGroup {
   transform: scale(1.05);
 }
 
@@ -241,7 +257,7 @@
   border-radius: 4px;
 }
 
-/* Animations */
+/* Enhanced Animations */
 @media (prefers-reduced-motion: no-preference) {
   .arrowPath {
     opacity: 0.8;
@@ -253,7 +269,6 @@
     animation: fadeInOut 3s var(--animation-timing) infinite;
   }
 
-  /* Stagger animations */
   .arrowPath:first-child {
     animation-delay: 0s;
   }
@@ -285,10 +300,13 @@
   }
 }
 
-/* Mobile/Touch Optimization */
+/* Perfect Touch Optimization */
 @media (hover: none) {
   .arrowContainer {
     cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .arrowContainer:active .arrow {
