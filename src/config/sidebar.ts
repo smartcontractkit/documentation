@@ -1031,6 +1031,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
             {
+              title: "Deploy and Register Using Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
+            {
               title: "Register from an EOA (Burn & Mint)",
               url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
               highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],

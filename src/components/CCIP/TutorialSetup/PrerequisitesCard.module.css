@@ -1,0 +1,192 @@
+.card {
+  background: var(--color-background);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 24px;
+}
+
+.requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.step {
+  position: relative;
+  background: var(--color-background);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.step:target {
+  background-color: rgba(55, 91, 210, 0.1);
+  border-color: rgba(55, 91, 210, 0.3);
+  box-shadow: 0 0 0 2px rgba(55, 91, 210, 0.2);
+}
+
+.step.active {
+  border-color: var(--color-primary);
+}
+
+.stepContent {
+  position: relative;
+  padding: 16px 0;
+}
+
+.expandButton {
+  position: absolute;
+  top: -40px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.expandButton:hover {
+  color: var(--color-text-primary);
+  background: var(--color-background-secondary);
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+  animation: slideDown 0.3s ease;
+}
+
+.optionCard {
+  background: var(--color-background-secondary);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.optionCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.optionCard h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.stepsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  counter-reset: item;
+}
+
+.stepsList li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* Numbered items */
+.numberedItem {
+  counter-increment: item;
+}
+
+.numberedItem::before {
+  content: counter(item) ".";
+  position: absolute;
+  left: 8px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+/* Bullet items */
+.bulletItem {
+  padding-left: 24px !important;
+}
+
+.bulletItem::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+  color: var(--color-text-primary);
+}
+
+/* Header items */
+.headerItem {
+  padding-left: 0 !important;
+  font-weight: 500;
+  color: var(--color-text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--color-accent);
+  color: var(--color-background) !important;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.actionButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.2);
+  filter: brightness(1.05);
+}
+
+.linkArrow {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.actionButton:hover .linkArrow {
+  transform: translateX(4px);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .optionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
