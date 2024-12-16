@@ -516,6 +516,13 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Hedera Mainnet",
+        explorerUrl: "https://hashscan.io/mainnet/contract/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-mainnet.json",
+        queryString: "hedera-mainnet",
+      },
+      {
         name: "Hedera Testnet",
         explorerUrl: "https://hashscan.io/testnet/contract/%s",
         networkType: "testnet",
