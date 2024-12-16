@@ -1,0 +1,581 @@
+.verificationCard {
+  position: relative;
+  background: var(--color-background);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 16px 0;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  --section-spacing: 32px;
+}
+
+.verificationCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.verificationCard:hover::before {
+  opacity: 1;
+}
+
+.chainInfo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: var(--section-spacing);
+}
+
+.chainDetails {
+  position: relative;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--color-background);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.chainDetails::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
+.chainDetails:hover::after {
+  transform: scaleX(1);
+}
+
+.step {
+  position: relative;
+  padding: 32px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+  background: var(--color-background);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.step:hover {
+  border-color: var(--color-accent);
+  transform: translateX(4px);
+}
+
+.step::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: var(--color-accent);
+  opacity: 0;
+  border-radius: 12px;
+  z-index: -1;
+  transition: opacity 0.2s ease;
+}
+
+.step:hover::after {
+  opacity: 0.1;
+}
+
+.step:not(:last-child) {
+  border-bottom: none;
+}
+
+.step:first-child {
+  margin-top: 0;
+}
+
+.stepContent {
+  position: relative;
+  z-index: 1;
+}
+
+.stepHeader {
+  margin-bottom: 20px;
+}
+
+.parameterList {
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  margin: 16px 0;
+  padding: 16px;
+}
+
+.parameter {
+  position: relative;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: var(--color-background);
+}
+
+.parameter:hover {
+  background: var(--color-background-secondary);
+}
+
+.parameter:not(:last-child) {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tokenBucketItem {
+  border-radius: 8px;
+  background: var(--color-background);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 1px solid var(--color-border);
+  transition: border-color 0.2s ease;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.tokenBucketItem:hover {
+  border-color: var(--color-accent);
+  transform: translate3d(4px, 0, 0);
+}
+
+.tokenBucketItem::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  transform: translate3d(0, 0, 0) scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+  will-change: transform;
+}
+
+.tokenBucketItem:hover::after {
+  transform: translate3d(0, 0, 0) scaleX(1);
+}
+
+.configured,
+.notConfigured {
+  position: relative;
+  padding-left: 16px;
+}
+
+.configured::before,
+.notConfigured::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.configured::before {
+  background: var(--color-success);
+}
+
+.notConfigured::before {
+  background: var(--color-warning);
+}
+
+.loadingState {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--color-text-secondary);
+}
+
+.loadingState span {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.loadingState p {
+  font-size: 14px;
+}
+
+.chainValue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chainValue code {
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.chainSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.chainSelector span {
+  color: var(--color-text-secondary);
+}
+
+.poolAddress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 24px;
+  margin-bottom: var(--section-spacing);
+  border-bottom: 1px solid var(--color-border);
+  padding: 20px;
+  background: var(--color-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.poolAddress span {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.stepTitle {
+  font-family: var(--font-family-mono);
+  font-size: 16px;
+  color: var(--color-accent);
+}
+
+.functionDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.functionName {
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  color: var(--color-accent);
+  padding: 4px 8px;
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+}
+
+.stepDescription {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.parameter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.parameter:last-child {
+  margin-bottom: 0;
+}
+
+.parameterHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.parameterName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parameterName span {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.parameterName code {
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  padding: 2px 6px;
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+  color: var(--color-accent);
+}
+
+.parameterRequired {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  background: var(--color-background);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.parameterValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parameterChainName {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.expectedResult {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-3x);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3x);
+}
+
+.resultLabel {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.resultContent {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  margin-bottom: var(--space-2x);
+}
+
+.expectedResult :global(.callout) {
+  margin: 0;
+}
+
+.tokenBucket {
+  display: grid;
+  gap: 8px;
+}
+
+.tokenBucketItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--color-background);
+  border-radius: 4px;
+}
+
+.tokenBucketItem span {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.tokenBucketItem code {
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+
+.tokenBucketNote {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.tokenBucketNote span {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.tokenBucketNote p {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.tokenBucketNote code {
+  font-size: 11px;
+  padding: 1px 4px;
+  background: var(--color-background);
+  border-radius: 3px;
+}
+
+.tokenBucketItem code {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tokenBucketItem code span {
+  font-family: var(--font-family-mono);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .chainInfo {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.configurationSection {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+/* Returns Section - Unique to verification */
+.returnsSection {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3x);
+}
+
+.returnsTitle {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2x);
+}
+
+.returnsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2x);
+}
+
+.returnValue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1x);
+}
+
+.returnType {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.returnDescription {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+/* Token Bucket Display */
+.tokenBucket {
+  display: grid;
+  gap: var(--space-2x);
+}
+
+.tokenBucketItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2x);
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+}
+
+.tokenBucketItem span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.tokenBucketItem code {
+  font-family: var(--font-mono);
+  color: var(--color-text-primary);
+}
+
+/* Expected Result Section */
+.expectedResult {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-3x);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3x);
+}
+
+.resultContent {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  margin-bottom: var(--space-2x);
+}
+
+/* Callout positioning */
+.expectedResult :global(.callout) {
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tokenBucket {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Function Call Styling */
+.functionCall {
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-4x);
+  margin: var(--space-2x) 0;
+}
+
+.functionHeader {
+  margin-bottom: var(--space-3x);
+}
+
+.functionName {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  padding: var(--space-1x) var(--space-2x);
+  border-radius: 4px;
+}
+
+.functionPurpose {
+  color: var(--color-text);
+  margin-top: var(--space-2x);
+  font-size: var(--font-size-base);
+}

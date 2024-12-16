@@ -139,6 +139,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
+        },
+      ],
+    },
+    {
       section: "API Reference",
       contents: [
         {
@@ -1002,6 +1011,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Using the CCIP JavaScript SDK",
+          url: "ccip/ccip-javascript-sdk",
+        },
+        {
           title: "Transfer Tokens",
           url: "ccip/tutorials/transfer-tokens-from-contract",
         },
@@ -1017,6 +1030,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
+            {
+              title: "Deploy and RegisterUsing Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
             {
               title: "Register from an EOA (Burn & Mint)",
               url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",

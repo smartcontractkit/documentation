@@ -31,8 +31,8 @@ const handleLinkClick = (productTitle: string, network: string, url: string) => 
   window.dataLayer.push({
     event: "quick_link_clicked",
     product: productTitle,
-    network: network,
-    url: url,
+    network,
+    url,
   })
 }
 

@@ -48,6 +48,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-feeds",
     logo: dataFeedsLogo,
     chains: {
+      aptos: "/data-feeds/price-feeds/addresses?network=aptos",
       arbitrum: "/data-feeds/price-feeds/addresses?network=arbitrum",
       avalanche: "/data-feeds/price-feeds/addresses?network=avalanche",
       base: "/data-feeds/price-feeds/addresses?network=base",
@@ -160,6 +161,7 @@ export const productChainLinks: ProductChainLinks = {
 }
 
 export const chainNames: Record<string, string> = {
+  aptos: "Aptos",
   arbitrum: "Arbitrum",
   astar: "Astar",
   avalanche: "Avalanche",
