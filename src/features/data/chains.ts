@@ -349,7 +349,7 @@ export const CHAINS: Chain[] = [
     title: "Scroll Data Feeds",
     img: "/assets/chains/scroll.svg",
     networkStatusUrl: "https://status.scroll.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -359,6 +359,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
         queryString: "scroll-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Scroll Sepolia testnet",
