@@ -1031,7 +1031,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
             {
-              title: "Deploy and RegisterUsing Remix IDE",
+              title: "Deploy and Register Using Remix IDE",
               url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
             },
             {
