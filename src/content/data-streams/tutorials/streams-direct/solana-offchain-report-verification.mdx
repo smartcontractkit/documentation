@@ -1,7 +1,7 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Verify report data offchain (Solana)"
+title: "Verify report data - Offchain integration (Solana)"
 whatsnext:
   {
     "Find the list of available Stream IDs": "/data-streams/crypto-streams",
@@ -128,14 +128,14 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-data-streams-solana-verifier-sdk = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "data-streams-solana-verifier-sdk", submodules = false }
-sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain", submodules = false }
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop", subdir = "contracts/crates/chainlink-solana-data-streams" }
 data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git" }
+sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain"}
 
-# Additional required dependencies
 solana-sdk = "1.18.26"
 solana-client = "1.18.26"
 hex = "0.4.3"
+borsh = "0.10.3"
 ```
 
 #### 3. Implement the verification library
@@ -152,8 +152,7 @@ use solana_sdk::{
     signature::read_keypair_file,
     signer::Signer,
 };
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
 
 pub fn default_keypair_path() -> String {
     let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".to_string()));
@@ -161,7 +160,11 @@ pub fn default_keypair_path() -> String {
     path.to_str().unwrap().to_string()
 }
 
-pub fn verify_report(signed_report: &[u8], program_id: &str, access_controller: &str) -> Result<ReportDataV3, Box<dyn std::error::Error>> {
+pub fn verify_report(
+    signed_report: &[u8],
+    program_id: &str,
+    access_controller: &str
+) -> Result<ReportDataV3, Box<dyn std::error::Error>> {
     // Initialize RPC client with confirmed commitment level
     let rpc_client = RpcClient::new_with_commitment(
         "https://api.devnet.solana.com",
@@ -170,16 +173,16 @@ pub fn verify_report(signed_report: &[u8], program_id: &str, access_controller: 
 
     // Load the keypair that will pay for and sign verification transactions
     let payer = read_keypair_file(default_keypair_path())?;
-    println!("Using keypair: {}", payer.try_pubkey()?);
+    println!("Using keypair: {}", payer.pubkey());
 
-    // Set verifier program and access controller addresses
-    let program_id = Pubkey::from_str(program_id)?;
-    let access_controller = Pubkey::from_str(access_controller)?;
-    println!("Program ID: {}", program_id);
-    println!("Access Controller: {}", access_controller);
+    // Convert to Pubkey
+    let program_pubkey = Pubkey::from_str(program_id)?;
+    let access_controller_pubkey = Pubkey::from_str(access_controller)?;
+    println!("Program ID: {}", program_pubkey);
+    println!("Access Controller: {}", access_controller_pubkey);
 
-    // Create verification client
-    let client = VerificationClient::new(program_id, access_controller, rpc_client, payer);
+    // Create a verification client instance
+    let client = VerificationClient::new(program_pubkey, access_controller_pubkey, rpc_client, payer);
 
     // Verify the report
     println!("Verifying report of {} bytes...", signed_report.len());
@@ -188,7 +191,9 @@ pub fn verify_report(signed_report: &[u8], program_id: &str, access_controller: 
         e
     })?;
 
-    let report = ReportDataV3::decode(&result.return_data.ok_or("No return data")?)?;
+    // Decode the returned data into a ReportDataV3 struct
+    let return_data = result.return_data.ok_or("No return data")?;
+    let report = ReportDataV3::decode(&return_data)?;
     Ok(report)
 }
 ```
@@ -202,6 +207,9 @@ Create `programs/example_verify/src/bin/main.rs`:
 ```rust
 use example_verify::verify_report;
 use std::env;
+use std::str::FromStr;
+use hex;
+use solana_sdk::pubkey::Pubkey;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -213,11 +221,21 @@ fn main() {
         std::process::exit(1);
     }
 
-    let program_id = &args[1];
-    let access_controller = &args[2];
+    let program_id_str = &args[1];
+    let access_controller_str = &args[2];
     let hex_report = &args[3];
 
-    // Decode the hex string
+    // Validate program_id and access_controller
+    if Pubkey::from_str(program_id_str).is_err() {
+        eprintln!("Invalid program ID provided");
+        std::process::exit(1);
+    }
+    if Pubkey::from_str(access_controller_str).is_err() {
+        eprintln!("Invalid access controller address provided");
+        std::process::exit(1);
+    }
+
+    // Decode the hex string for the signed report
     let signed_report = match hex::decode(hex_report) {
         Ok(bytes) => bytes,
         Err(e) => {
@@ -226,21 +244,22 @@ fn main() {
         }
     };
 
-    // Verify the report
-    match verify_report(&signed_report, program_id, access_controller) {
+    // Perform verification off-chain
+    match verify_report(&signed_report, program_id_str, access_controller_str) {
         Ok(report) => {
-            println!("FeedId: {}", report.feed_id);
+            println!("\nVerified Report Data:");
+            println!("Feed ID: {}", report.feed_id);
             println!("Valid from timestamp: {}", report.valid_from_timestamp);
             println!("Observations timestamp: {}", report.observations_timestamp);
             println!("Native fee: {}", report.native_fee);
             println!("Link fee: {}", report.link_fee);
             println!("Expires at: {}", report.expires_at);
-            println!("Price: {}", report.benchmark_price);
+            println!("Benchmark price: {}", report.benchmark_price);
             println!("Bid: {}", report.bid);
             println!("Ask: {}", report.ask);
         }
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Verification failed: {}", e);
             std::process::exit(1);
         }
     }
