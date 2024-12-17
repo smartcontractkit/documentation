@@ -42,6 +42,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
       zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
       ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
+      bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
     },
   },
   "Data Feeds": {
@@ -192,4 +193,5 @@ export const chainNames: Record<string, string> = {
   blast: "Blast",
   zircuit: "Zircuit",
   ronin: "Ronin",
+  bsquared: "B²",
 }
