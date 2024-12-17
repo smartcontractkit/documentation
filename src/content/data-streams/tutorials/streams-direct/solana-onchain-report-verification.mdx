@@ -21,12 +21,12 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/solidity_logo.svg",
     },
     {
-      name: "Solana (Rust) - Onchain verification",
+      name: "Solana (Rust) - Onchain integration",
       url: "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
       icon: "/images/tutorial-icons/solanaLogoMark.svg",
     },
     {
-      name: "Solana (Rust) - Offchain verification",
+      name: "Solana (Rust) - Offchain integration",
       url: "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
       icon: "/images/tutorial-icons/solanaLogoMark.svg",
     },
@@ -133,11 +133,11 @@ Replace `<YOUR_PROGRAM_ID>` with your program ID. You can run <CopyText text="so
 
 #### 3. Set up your program's dependencies
 
-In your program's manifest file (`programs/example_verify/Cargo.toml`), add the verifier SDK and the report crate as dependencies:
+In your program's manifest file (`programs/example_verify/Cargo.toml`), add the Chainlink Data Streams client and the report crate as dependencies:
 
 ```toml
 [dependencies]
-data-streams-solana-verifier-sdk = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "data-streams-solana-verifier-sdk" }
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop", subdir = "contracts/crates/chainlink-solana-data-streams" }
 data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
 
 # Additional required dependencies
@@ -150,13 +150,17 @@ Navigate to your program main file (`programs/example_verify/src/lib.rs`). This 
 
 ```rust
 // Import required dependencies for Anchor, Solana, and Data Streams
-use anchor_lang::prelude::borsh::{BorshDeserialize};
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::{get_return_data, invoke};
-use data_streams_report::report::{v3::ReportDataV3};
-use data_streams_solana_verifier_sdk::VerifierInstructions;
+use anchor_lang::solana_program::{
+    program::{get_return_data, invoke},
+    pubkey::Pubkey,
+    instruction::Instruction,
+};
+use data_streams_report::report::v3::ReportDataV3;
+use chainlink_solana_data_streams::VerifierInstructions;
 
-declare_id!("<YOUR_PROGRAM_ID>");
+
+declare_id!("Ens8sA3fwQWFMxzbU6Zf6tMe234Taf3ADnqdBsfL9RiR");
 
 #[program]
 pub mod example_verify {
@@ -165,19 +169,25 @@ pub mod example_verify {
     /// Verifies a Data Streams report using Cross-Program Invocation to the Verifier program
     /// Returns the decoded report data if verification succeeds
     pub fn verify(ctx: Context<ExampleProgramContext>, signed_report: Vec<u8>) -> Result<()> {
-        // Create verification instruction with required accounts and signed report
-        let verify_ix = VerifierInstructions::verify(
-            &ctx.accounts.verifier_program_id.key(),
-            &ctx.accounts.verifier_account.key(),
-            &ctx.accounts.access_controller.key(),
-            &ctx.accounts.user.key(),
-            &ctx.accounts.config_account.key(),
-            signed_report
+        let program_id = ctx.accounts.verifier_program_id.key();
+        let verifier_account = ctx.accounts.verifier_account.key();
+        let access_controller = ctx.accounts.access_controller.key();
+        let user = ctx.accounts.user.key();
+        let config_account = ctx.accounts.config_account.key();
+
+        // Create verification instruction
+        let chainlink_ix: Instruction = VerifierInstructions::verify(
+            &program_id,
+            &verifier_account,
+            &access_controller,
+            &user,
+            &config_account,
+            signed_report,
         );
 
-        // Invoke the Verifier program with required account infos
+        // Invoke the Verifier program
         invoke(
-            &verify_ix,
+            &chainlink_ix,
             &[
                 ctx.accounts.verifier_account.to_account_info(),
                 ctx.accounts.access_controller.to_account_info(),
@@ -189,11 +199,12 @@ pub mod example_verify {
         // Decode and log the verified report data
         if let Some((_program_id, return_data)) = get_return_data() {
             msg!("Report data found");
-            let report = ReportDataV3::decode(&return_data).unwrap();
+            let report = ReportDataV3::decode(&return_data)
+                .map_err(|_| error!(CustomError::InvalidReportData))?;
 
             // Log report fields
             msg!("FeedId: {}", report.feed_id);
-            msg!("valid from timestamp: {}", report.valid_from_timestamp);
+            msg!("Valid from timestamp: {}", report.valid_from_timestamp);
             msg!("Observations Timestamp: {}", report.observations_timestamp);
             msg!("Native Fee: {}", report.native_fee);
             msg!("Link Fee: {}", report.link_fee);
@@ -203,30 +214,36 @@ pub mod example_verify {
             msg!("Ask: {}", report.ask);
         } else {
             msg!("No report data found");
+            return Err(error!(CustomError::NoReportData));
         }
 
         Ok(())
     }
 }
 
+#[error_code]
+pub enum CustomError {
+    #[msg("No valid report data found")]
+    NoReportData,
+    #[msg("Invalid report data format")]
+    InvalidReportData,
+}
+
 #[derive(Accounts)]
 pub struct ExampleProgramContext<'info> {
     /// The Verifier Account stores the DON's public keys and other verification parameters.
     /// This account must match the PDA derived from the verifier program.
-    /// CHECK: The account structure is validated by the verifier program.
+    /// CHECK: The account is validated by the verifier program.
     pub verifier_account: AccountInfo<'info>,
-    /// The Access Controller Account manages permissions for report verification.
-    /// This account must match the PDA derived from the verifier program.
+    /// The Access Controller Account
     /// CHECK: The account structure is validated by the verifier program.
     pub access_controller: AccountInfo<'info>,
-    /// The account that signs the transaction. This account must be allowlisted
-    /// in the access controller to verify reports.
+    /// The account that signs the transaction.
     pub user: Signer<'info>,
-    /// The Config Account contains feed-specific settings and constraints.
-    /// CHECK: The account structure is validated by the verifier program.
+    /// The Config Account is a PDA derived from a signed report
+    /// CHECK: The account is validated by the verifier program.
     pub config_account: UncheckedAccount<'info>,
     /// The Verifier Program ID specifies the target Chainlink Data Streams Verifier Program.
-    /// This ID differs between devnet and mainnet environments.
     /// CHECK: The program ID is validated by the verifier program.
     pub verifier_program_id: AccountInfo<'info>,
 }
@@ -461,7 +478,7 @@ In this section, you'll write a client script to interact with your deployed pro
 
 #### Program Derived Addresses (PDAs)
 
-The verification process relies on two important PDAs that are handled automatically by the [verifier SDK](https://github.com/smartcontractkit/data-streams-solana-integration/tree/main/verify-sdk):
+The verification process relies on two important PDAs that are handled automatically by the [Chainlink Data Streams Client for Solana](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/crates/chainlink-solana-data-streams):
 
 - **Verifier config account PDA**:
 
