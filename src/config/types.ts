@@ -76,6 +76,10 @@ export type SupportedChain =
   | "MANTLE_SEPOLIA"
   | "RONIN_MAINNET"
   | "RONIN_SAIGON"
+  | "BSQUARED_MAINNET"
+  | "BSQUARED_TESTNET"
+  | "SHIBARIUM_MAINNET"
+  | "SHIBARIUM_PUPPYNET"
 
 export type Chains = Record<
   SupportedTechnology,
