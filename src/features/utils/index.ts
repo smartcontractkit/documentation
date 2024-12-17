@@ -201,6 +201,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BSQUARED_MAINNET"
     case "bitcoin-testnet-bsquared-1":
       return "BSQUARED_TESTNET"
+    case "shibarium-mainnet":
+      return "SHIBARIUM_MAINNET"
+    case "shibarium-testnet-puppynet":
+      return "SHIBARIUM_PUPPYNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -300,6 +304,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "bitcoin-mainnet-bsquared-1"
     case "BSQUARED_TESTNET":
       return "bitcoin-testnet-bsquared-1"
+    case "SHIBARIUM_MAINNET":
+      return "shibarium-mainnet"
+    case "SHIBARIUM_PUPPYNET":
+      return "shibarium-testnet-puppynet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
