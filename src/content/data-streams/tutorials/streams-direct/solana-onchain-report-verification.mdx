@@ -1,0 +1,511 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Verify report data - Onchain integration (Solana)"
+whatsnext:
+  {
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Learn how to verify reports on Solana offchain": "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+  }
+---
+
+import { CodeSample, CopyText, ClickToZoom, PageTabs, Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "EVM Chains (Solidity)",
+      url: "/data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+      icon: "/images/tutorial-icons/solidity_logo.svg",
+    },
+    {
+      name: "Solana (Rust) - Onchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+    {
+      name: "Solana (Rust) - Offchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+  ]}
+/>
+
+<DataStreams section="dsNotes" />
+
+To verify a Data Streams report, you must confirm the report integrity signed by the Decentralized Oracle Network (DON).
+
+You have two options to verify Data Streams reports on Solana:
+
+1. **Onchain integration**: Verify reports directly within your Solana program using [Cross-Program Invocation (CPI)](https://solana.com/docs/core/cpi) to the Verifier program. You'll learn how to implement this method in this guide.
+
+1. **Offchain integration**: Verify reports client-side using an SDK. Learn more about this method in the [offchain verification guide](/data-streams/tutorials/streams-direct/solana-offchain-report-verification).
+
+Both methods use the same underlying verification logic and security guarantees, differing only in where the verification occurs.
+
+## Onchain integration
+
+You can verify Data Streams reports directly within your Solana program using this integration. This method ensures atomic verification and processing of report data.
+
+In this guide, you'll learn how to:
+
+- Integrate with the Chainlink Data Streams Verifier program
+- Create and invoke the verification instruction
+- Retrieve the verified report data
+
+<DataStreams section="asideDisclaimer" />
+
+### Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Rust](https://www.rust-lang.org/learn) programming
+- Understanding of [Solana](https://solana.com/docs) concepts:
+  - [Accounts](https://solana.com/docs/core/accounts)
+  - [Instructions](https://solana.com/docs/core/transactions#instruction)
+  - [Program Derived Addresses (PDAs)](https://solana.com/docs/core/pda)
+- Knowledge of the [Anchor](https://www.anchor-lang.com/) framework
+- An allowlisted account in the Data Streams Access Controller. ([Contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to get started with Early Access).
+
+### Requirements
+
+To complete this guide, you'll need:
+
+- **Rust and Cargo**: Install the latest version using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
+
+- **Solana CLI tools**: Install the latest version following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
+
+- **Anchor Framework**: Follow the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code /> to verify your installation.
+
+- **Node.js and npm**: [Install Node.js 20 or later](https://nodejs.org/). Verify your installation with <CopyText text="node --version" code/>.
+
+- **ts-node**: Install globally using npm: <CopyText text="npm install -g ts-node" code/>. Verify your installation with <CopyText text="ts-node --version" code/>.
+
+- **Devnet SOL**: You'll need devnet SOL for deployment and testing. Use the [Solana CLI](https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started) or the [Solana Faucet](https://faucet.solana.com/) to get devnet SOL.
+
+> **Note**: While this guide uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana program framework. The verifier SDK is written in Rust, but you can integrate it into your preferred Rust program structure.
+
+### Implementation guide
+
+#### 1. Create a new Anchor project
+
+1. Open your terminal and run the following command to create a new Anchor project:
+
+   ```bash
+   anchor init example_verify
+   ```
+
+   This command creates a new directory named `example_verify` with the basic structure of an Anchor project.
+
+1. Navigate to the project directory:
+
+   ```bash
+   cd example_verify
+   ```
+
+#### 2. Configure your project for devnet
+
+Open your `Anchor.toml` file at the root of your project and update it to use devnet:
+
+```toml
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+# Replace with your program ID
+example_verify = "<YOUR_PROGRAM_ID>"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+```
+
+Replace `<YOUR_PROGRAM_ID>` with your program ID. You can run <CopyText text="solana-keygen pubkey target/deploy/example_verify-keypair.json" code/> to get your program ID.
+
+#### 3. Set up your program's dependencies
+
+In your program's manifest file (`programs/example_verify/Cargo.toml`), add the Chainlink Data Streams client and the report crate as dependencies:
+
+```toml
+[dependencies]
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop", subdir = "contracts/crates/chainlink-solana-data-streams" }
+data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+
+# Additional required dependencies
+anchor-lang = "0.29.0"
+```
+
+#### 4. Write the program
+
+Navigate to your program main file (`programs/example_verify/src/lib.rs`). This is where you'll write your program logic. Replace the contents of `lib.rs` with the following example code:
+
+```rust
+// Import required dependencies for Anchor, Solana, and Data Streams
+use anchor_lang::prelude::*;
+use anchor_lang::solana_program::{
+    program::{get_return_data, invoke},
+    pubkey::Pubkey,
+    instruction::Instruction,
+};
+use data_streams_report::report::v3::ReportDataV3;
+use chainlink_solana_data_streams::VerifierInstructions;
+
+
+declare_id!("<YOUR_PROGRAM_ID>");
+
+#[program]
+pub mod example_verify {
+    use super::*;
+
+    /// Verifies a Data Streams report using Cross-Program Invocation to the Verifier program
+    /// Returns the decoded report data if verification succeeds
+    pub fn verify(ctx: Context<ExampleProgramContext>, signed_report: Vec<u8>) -> Result<()> {
+        let program_id = ctx.accounts.verifier_program_id.key();
+        let verifier_account = ctx.accounts.verifier_account.key();
+        let access_controller = ctx.accounts.access_controller.key();
+        let user = ctx.accounts.user.key();
+        let config_account = ctx.accounts.config_account.key();
+
+        // Create verification instruction
+        let chainlink_ix: Instruction = VerifierInstructions::verify(
+            &program_id,
+            &verifier_account,
+            &access_controller,
+            &user,
+            &config_account,
+            signed_report,
+        );
+
+        // Invoke the Verifier program
+        invoke(
+            &chainlink_ix,
+            &[
+                ctx.accounts.verifier_account.to_account_info(),
+                ctx.accounts.access_controller.to_account_info(),
+                ctx.accounts.user.to_account_info(),
+                ctx.accounts.config_account.to_account_info(),
+            ],
+        )?;
+
+        // Decode and log the verified report data
+        if let Some((_program_id, return_data)) = get_return_data() {
+            msg!("Report data found");
+            let report = ReportDataV3::decode(&return_data)
+                .map_err(|_| error!(CustomError::InvalidReportData))?;
+
+            // Log report fields
+            msg!("FeedId: {}", report.feed_id);
+            msg!("Valid from timestamp: {}", report.valid_from_timestamp);
+            msg!("Observations Timestamp: {}", report.observations_timestamp);
+            msg!("Native Fee: {}", report.native_fee);
+            msg!("Link Fee: {}", report.link_fee);
+            msg!("Expires At: {}", report.expires_at);
+            msg!("Benchmark Price: {}", report.benchmark_price);
+            msg!("Bid: {}", report.bid);
+            msg!("Ask: {}", report.ask);
+        } else {
+            msg!("No report data found");
+            return Err(error!(CustomError::NoReportData));
+        }
+
+        Ok(())
+    }
+}
+
+#[error_code]
+pub enum CustomError {
+    #[msg("No valid report data found")]
+    NoReportData,
+    #[msg("Invalid report data format")]
+    InvalidReportData,
+}
+
+#[derive(Accounts)]
+pub struct ExampleProgramContext<'info> {
+    /// The Verifier Account stores the DON's public keys and other verification parameters.
+    /// This account must match the PDA derived from the verifier program.
+    /// CHECK: The account is validated by the verifier program.
+    pub verifier_account: AccountInfo<'info>,
+    /// The Access Controller Account
+    /// CHECK: The account structure is validated by the verifier program.
+    pub access_controller: AccountInfo<'info>,
+    /// The account that signs the transaction.
+    pub user: Signer<'info>,
+    /// The Config Account is a PDA derived from a signed report
+    /// CHECK: The account is validated by the verifier program.
+    pub config_account: UncheckedAccount<'info>,
+    /// The Verifier Program ID specifies the target Chainlink Data Streams Verifier Program.
+    /// CHECK: The program ID is validated by the verifier program.
+    pub verifier_program_id: AccountInfo<'info>,
+}
+```
+
+Replace `<YOUR_PROGRAM_ID>` with your program ID in the `declare_id!` macro. You can run <CopyText text="solana-keygen pubkey target/deploy/example_verify-keypair.json" code/> to get your program ID.
+
+Note how the `VerifierInstructions::verify` helper method automatically handles the PDA computations internally. Refer to the [Program Derived Addresses (PDAs)](#program-derived-addresses-pdas) section for more information.
+
+> This example uses the [V3 schema](/data-streams/reference/report-schema) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V4 schema](/data-streams/reference/report-schema-v4) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+
+#### 5. Deploy your program
+
+1. Run the following command to build your program:
+
+   ```bash
+   anchor build
+   ```
+
+   **Note**: If you run into this error, set the `version` field at the top of your `cargo.lock` file to `3`.
+
+   ```bash
+   warning: virtual workspace defaulting to `resolver = "1"` despite one or more workspace members being on edition 2021 which implies `resolver = "2"`
+   note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
+   note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
+   note: for more details see https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
+   warning: .../example_verify/programs/example_verify/Cargo.toml: unused manifest key: dependencies.data-streams-report.subdir
+   error: failed to parse lock file at: .../example_verify/Cargo.lock
+
+   Caused by:
+   lock file version 4 requires `-Znext-lockfile-bump`
+   ```
+
+1. Deploy your program to a Solana cluster (devnet in this example) using:
+
+   ```bash
+   anchor deploy
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Deploying cluster: https://api.devnet.solana.com
+   Upgrade authority: ~/.config/solana/id.json
+   Deploying program "example_verify"...
+   Program path: ~/example_verify/target/deploy/example_verify.so...
+   Program Id: 8XcUbDgY2UaUYNHkirKsWqXJtzPXezBSyj5Yh87dXums
+
+   Signature: 3ky6VkpebDGq7x1n8JB32daybmjvbRBsD4yR2uCCussSWhokaEESTXuSa5s8NMvKTz2NZjoq9aoQ9pvuw9bYoibt
+
+   Deploy success
+   ```
+
+#### 6. Interact with the Verifier Program
+
+In this section, you'll write a client script to interact with your deployed program, which will use [Cross-Program Invocation (CPI)](https://solana.com/docs/core/cpi) to verify reports through the Chainlink Data Streams Verifier Program.
+
+1. In the `tests` directory, create a new file <CopyText text="verify_test.ts" code/> to interact with your deployed program.
+
+1. Populate your `verify_tests.ts` file with the example client script below.
+
+   - Replace `<YOUR_PROGRAM_ID>` with your program ID.
+   - This example provides a report payload. To use your own report payload, update the `hexString` variable.
+
+   ```typescript
+   import * as anchor from "@coral-xyz/anchor"
+   import { Program } from "@coral-xyz/anchor"
+   import { PublicKey } from "@solana/web3.js"
+   import { ExampleVerify } from "../target/types/example_verify"
+   import * as snappy from "snappy"
+
+   // Data Streams Verifier Program ID on Devnet
+   const VERIFIER_PROGRAM_ID = new PublicKey("Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c")
+
+   async function main() {
+     // Setup connection and provider
+     const provider = anchor.AnchorProvider.env()
+     anchor.setProvider(provider)
+
+     // Initialize your program using the IDL and your program ID
+     const program = new Program<ExampleVerify>(
+       require("../target/idl/example_verify.json"),
+       "<YOUR_PROGRAM_ID>",
+       provider
+     )
+
+     // Convert the hex string to a Uint8Array
+     // This is an example report payload for a crypto stream
+     const hexString =
+       "0x00064f2cd1be62b7496ad4897b984db99243e0921906f66ded15149d993ef42c000000000000000000000000000000000000000000000000000000000103c90c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200003684ea93c43ed7bd00ab3bb189bb62f880436589f1ca58b599cd97d6007fb0000000000000000000000000000000000000000000000000000000067570fa40000000000000000000000000000000000000000000000000000000067570fa400000000000000000000000000000000000000000000000000004c6ac85bf854000000000000000000000000000000000000000000000000002e1bf13b772a9c0000000000000000000000000000000000000000000000000000000067586124000000000000000000000000000000000000000000000000002bb4cf7662949c000000000000000000000000000000000000000000000000002bae04e2661000000000000000000000000000000000000000000000000000002bb6a26c3fbeb80000000000000000000000000000000000000000000000000000000000000002af5e1b45dd8c84b12b4b58651ff4173ad7ca3f5d7f5374f077f71cce020fca787124749ce727634833d6ca67724fd912535c5da0f42fa525f46942492458f2c2000000000000000000000000000000000000000000000000000000000000000204e0bfa6e82373ae7dff01a305b72f1debe0b1f942a3af01bad18e0dc78a599f10bc40c2474b4059d43a591b75bdfdd80aafeffddfd66d0395cca2fdeba1673d"
+
+     // Remove the '0x' prefix if present
+     const cleanHexString = hexString.startsWith("0x") ? hexString.slice(2) : hexString
+
+     // Validate hex string format
+     if (!/^[0-9a-fA-F]+$/.test(cleanHexString)) {
+       throw new Error("Invalid hex string format")
+     }
+
+     // Convert hex to Uint8Array
+     const signedReport = new Uint8Array(cleanHexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
+
+     // Compress the report using Snappy
+     const compressedReport = await snappy.compress(Buffer.from(signedReport))
+
+     // Derive necessary PDAs using the SDK's helper functions
+     const verifierAccount = await PublicKey.findProgramAddressSync([Buffer.from("verifier")], VERIFIER_PROGRAM_ID)
+
+     const configAccount = await PublicKey.findProgramAddressSync([signedReport.slice(0, 32)], VERIFIER_PROGRAM_ID)
+
+     // The Data Streams access controller on devnet
+     const accessController = new PublicKey("2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb")
+
+     try {
+       console.log("\n📝 Transaction Details")
+       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+       console.log("🔑 Signer:", provider.wallet.publicKey.toString())
+
+       const tx = await program.methods
+         .verify(compressedReport)
+         .accounts({
+           verifierAccount: verifierAccount[0],
+           accessController: accessController,
+           user: provider.wallet.publicKey,
+           configAccount: configAccount[0],
+           verifierProgramId: VERIFIER_PROGRAM_ID,
+         })
+         .rpc({ commitment: "confirmed" })
+
+       console.log("✅ Transaction successful!")
+       console.log("🔗 Signature:", tx)
+
+       // Fetch and display logs
+       const txDetails = await provider.connection.getTransaction(tx, {
+         commitment: "confirmed",
+         maxSupportedTransactionVersion: 0,
+       })
+
+       console.log("\n📋 Program Logs")
+       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+       let indentLevel = 0
+       let currentProgramId = ""
+       txDetails.meta.logMessages.forEach((log) => {
+         // Handle indentation for inner program calls
+         if (log.includes("Program invoke")) {
+           const programIdMatch = log.match(/Program (.*?) invoke/)
+           if (programIdMatch) {
+             currentProgramId = programIdMatch[1]
+             // Remove "Unknown Program" prefix if present
+             currentProgramId = currentProgramId.replace("Unknown Program ", "")
+             // Remove parentheses if present
+             currentProgramId = currentProgramId.replace(/[()]/g, "")
+           }
+           console.log("  ".repeat(indentLevel) + "🔄", log.trim())
+           indentLevel++
+           return
+         }
+         if (log.includes("Program return") || log.includes("Program consumed")) {
+           indentLevel = Math.max(0, indentLevel - 1)
+         }
+
+         // Add indentation to all logs
+         const indent = "  ".repeat(indentLevel)
+
+         if (log.includes("Program log:")) {
+           const logMessage = log.replace("Program log:", "").trim()
+           if (log.includes("Program log:")) {
+             console.log(indent + "📍", logMessage)
+           } else if (log.includes("Program data:")) {
+             console.log(indent + "📊", log.replace("Program data:", "").trim())
+           }
+         }
+       })
+       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+     } catch (error) {
+       console.log("\n❌ Transaction Failed")
+       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+       console.error("Error:", error)
+       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+     }
+   }
+
+   main()
+   ```
+
+   **Note**: The Program IDs and Access Controller Accounts are available on the [Stream Addresses](/data-streams/crypto-streams) page.
+
+1. Add the `snappy` dependency to your project:
+
+   ```bash
+   yarn add snappy
+   ```
+
+   `snappy` is a compression library that is used to compress the report data.
+
+1. Execute the test script to interact with your program:
+
+   ```bash
+   ANCHOR_PROVIDER_URL="https://api.devnet.solana.com" ANCHOR_WALLET="~/.config/solana/id.json" ts-node tests/verify_test.ts
+   ```
+
+   Replace `~/.config/solana/id.json` with the path to your Solana wallet (e.g., `/Users/username/.config/solana/id.json`).
+
+1. Verify the output logs to ensure the report data is processed correctly. Expect to see the decoded report fields logged to the console:
+
+   ```bash
+   📝 Transaction Details
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🔑 Signer: 1BZZU8cJsrMSBaQQGUxTE4LQYX2SU2jjs97pkrz7rHD
+   ✅ Transaction successful!
+   🔗 Signature: 2CTZ7kgAxTogvMgb7QFDJUAq9xFBUVTEvyjf7UuhoVrHDhYKtHpQmd8hEy9XvLhfgWMdVTpCRvdf18r1ixgtncUc
+
+   📋 Program Logs
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📍 Instruction: Verify
+   📍 Instruction: Verify
+   📍 Report data found
+   📍 FeedId: 0x0003684ea93c43ed7bd00ab3bb189bb62f880436589f1ca58b599cd97d6007fb
+   📍 valid from timestamp: 1733758884
+   📍 Observations Timestamp: 1733758884
+   📍 Native Fee: 84021511714900
+   📍 Link Fee: 12978571827423900
+   📍 Expires At: 1733845284
+   📍 Benchmark Price: 12302227135960220
+   📍 Bid: 12294760000000000
+   📍 Ask: 12304232715632312
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+
+### Learn more
+
+#### Program Derived Addresses (PDAs)
+
+The verification process relies on two important PDAs that are handled automatically by the [Chainlink Data Streams Solana SDK](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/crates/chainlink-solana-data-streams):
+
+- **Verifier config account PDA**:
+
+  - Derived using the verifier program ID as a seed
+  - Stores verification-specific configuration
+  - Used to ensure consistent verification parameters across all reports
+
+- **Report config account PDA**:
+  - Derived using the feed ID (first 32 bytes of the uncompressed signed report) as a seed
+  - Contains feed-specific configuration and constraints
+  - Ensures that each feed's verification follows its designated rules
+
+The SDK's `VerifierInstructions::verify` helper method performs these steps:
+
+1. Extracts the necessary seeds
+2. Computes the PDAs using `Pubkey::find_program_derived_address`
+3. Includes these derived addresses in the instruction data
+
+#### Best practices
+
+This guide provides a basic example on how to verify reports. When you implement reports verification, consider the following best practices:
+
+- Implement robust error handling:
+  - Handle verification failures and invalid reports comprehensively
+  - Implement proper error reporting and logging for debugging
+  - Add custom error types for different failure scenarios
+- Add appropriate validations:
+  - Price threshold checks to prevent processing extreme values
+  - Timestamp validations to ensure data freshness
+  - Custom feed-specific validations based on your use case
