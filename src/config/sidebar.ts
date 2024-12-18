@@ -284,7 +284,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Streams Direct SDK",
+          title: "Streams Direct",
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
@@ -298,8 +298,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
             },
             {
-              title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
+              title: "Verify report data",
+              url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+              highlightAsCurrent: [
+                "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+                "data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+              ],
             },
           ],
         },
@@ -347,7 +351,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
             },
             {
-              title: "Onchain report data verification",
+              title: "Onchain report data verification (EVM chains)",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
