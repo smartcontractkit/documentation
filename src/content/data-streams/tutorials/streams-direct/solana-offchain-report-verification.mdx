@@ -131,8 +131,9 @@ default = []
 data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git" }
 sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain"}
 
-solana-sdk = "1.18.26"
-solana-client = "1.18.26"
+solana-program = "2.1.6"
+solana-sdk = "2.1.6"
+solana-client = "2.1.6"
 hex = "0.4.3"
 borsh = "0.10.3"
 ```
@@ -151,7 +152,7 @@ use solana_sdk::{
     signature::read_keypair_file,
     signer::Signer,
 };
-use std::{path::PathBuf, str::FromStr};
+use std::{ path::PathBuf, str::FromStr };
 
 pub fn default_keypair_path() -> String {
     let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".to_string()));
@@ -181,7 +182,12 @@ pub fn verify_report(
     println!("Access Controller: {}", access_controller_pubkey);
 
     // Create a verification client instance
-    let client = VerificationClient::new(program_pubkey, access_controller_pubkey, rpc_client, payer);
+    let client = VerificationClient::new(
+        program_pubkey,
+        access_controller_pubkey,
+        rpc_client,
+        payer
+    );
 
     // Verify the report
     println!("Verifying report of {} bytes...", signed_report.len());
@@ -290,7 +296,7 @@ fn main() {
    Example:
 
    ```bash
-   cargo run -- Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c 2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578...
+   cargo run -- Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c 2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb 0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f56930f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675ca37000000000000000000000000000000000000000000000000000000000675ca3700000000000000000000000000000000000000000000000000000174be1bd8758000000000000000000000000000000000000000000000000000cb326ce8c3ea800000000000000000000000000000000000000000000000000000000675df4f00000000000000000000000000000000000000000000000d3a30bcc15e207c0000000000000000000000000000000000000000000000000d3a1557b5e634060200000000000000000000000000000000000000000000000d3ab99a974ff10f400000000000000000000000000000000000000000000000000000000000000000292bdd75612560e46ed9b0c2437898f81eb0e18b6b902a161b9708e9177175cf3b8ef2b279f230f766fb29306250ee90856516ee349ca42b2d7fb141deb006745000000000000000000000000000000000000000000000000000000000000000221c156e80276827e1bfeb6542ab064dfa958f5be955f516fb62b1c93437472c31cc65fcaba68c9d661701190bc32025a0690af0eefe027ac218fd15c588dd4d5
    ```
 
    Expect the output to be similar to the following:
