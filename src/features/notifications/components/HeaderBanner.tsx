@@ -33,18 +33,31 @@ const bannerTypes: Record<BannerType, { primaryColour: string; textColour: strin
 
 export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bannerContent }) => {
   const [cookieValue, setCookieValue] = useState([])
-  const [isDismissed, setIsDismissed] = useState(true) // Change to false to show banner later to prevent flasing on page load for users who have already dismissed it
+  const [isBannerShown, setBannerShown] = useState(false) // Change to false to show banner later to prevent flasing on page load for users who have already dismissed it
 
-  if (!bannerContent) return null
+  if (!bannerContent) {
+    return null
+  }
+
   useEffect(() => {
     const dismissedBannersCookie = getCookie("headerBannerDismissed")
     const parsedCookieValue = JSON.parse(dismissedBannersCookie || "[]")
     setCookieValue(parsedCookieValue)
     if (!parsedCookieValue.includes(bannerContent.description)) {
-      setIsDismissed(false)
+      setBannerShown(true)
     }
-  }, [isDismissed])
-  if (isDismissed) return null
+  }, [isBannerShown])
+
+  if (!isBannerShown) {
+    return null
+  }
+
+  const handleCloseBanner = () => {
+    const newCookieValue = [...cookieValue, bannerContent.description]
+    setCookie("headerBannerDismissed", JSON.stringify(newCookieValue), 365)
+    setBannerShown(false)
+  }
+
   return (
     <div
       className={clsx(headerbanner.container, headerbannerCustom.container)}
@@ -62,21 +75,14 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
           </a>
         )}
       </p>
-      <button
-        className={headerbannerCustom.dismiss}
-        onClick={() => {
-          const newCookieValue = [...cookieValue, bannerContent.description]
-          setCookie("headerBannerDismissed", JSON.stringify(newCookieValue), 365)
-          setIsDismissed(true)
-        }}
-      >
+      <button className={headerbannerCustom.dismiss} onClick={handleCloseBanner}>
         <CloseIcon />
       </button>
     </div>
   ) as React.ReactElement // Explicitly assigning to ReactElement cause TS is confused otherwise
 }
 
-function getCookie(cname) {
+function getCookie(cname: string) {
   const name = cname + "="
   const decodedCookie = decodeURIComponent(document.cookie)
   const ca = decodedCookie.split(";")
@@ -91,7 +97,7 @@ function getCookie(cname) {
   }
   return undefined
 }
-function setCookie(cname, cvalue, exdays = 365) {
+function setCookie(cname: string, cvalue: string, exdays = 365) {
   const baseDomain = getBaseDomain(window.location.href)
   const d = new Date()
   d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
@@ -99,7 +105,7 @@ function setCookie(cname, cvalue, exdays = 365) {
   document.cookie = `${cname}=${cvalue};${expires};path=/;domain=${baseDomain}`
 }
 
-function getBaseDomain(url) {
+function getBaseDomain(url: string) {
   try {
     const hostname = new URL(url).hostname
     const parts = hostname.split(".").reverse()
