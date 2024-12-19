@@ -421,6 +421,20 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Shibarium",
+    logoUrl: "/assets/chains/shibarium.svg",
+    mainnet: {
+      label: "Shibarium Mainnet",
+      verifierProxy: "0xBE9f07f73de2412A9d0Ed64C42De7d9A10C9F28C",
+      explorerUrl: "https://www.shibariumscan.io/address/%s",
+    },
+    testnet: {
+      label: "Shibarium Puppynet",
+      verifierProxy: "0xc44eb6c00A0F89D044279cD91Bdfd5f62f752Da3",
+      explorerUrl: "https://puppyscan.shib.io/address/%s",
+    },
+  },
+  {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
     testnet: {
