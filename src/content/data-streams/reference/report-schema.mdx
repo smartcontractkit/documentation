@@ -1,18 +1,34 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Report Schema"
+title: "Report Schemas"
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
 
 <DataStreams section="dsNotes" />
 
-Data Streams feeds have the following values specifically applicable to market pricing data. Current Data Streams feeds adhere to the schema outlined below:
+<PageTabs
+  pages={[
+    {
+      name: "Crypto Schema (v3)",
+      url: "/data-streams/reference/report-schema",
+    },
+    {
+      name: "Real World Asset (RWA) Schema (v4)",
+      url: "/data-streams/reference/report-schema-v4",
+    },
+  ]}
+  headerTitle="Available Schemas"
+  headerDescription="Choose the schema version you want to explore."
+/>
+
+Crypto streams adhere to the report schema outlined below:
 
 | Value                   | Type      | Description                                                                           |
 | ----------------------- | --------- | ------------------------------------------------------------------------------------- |
-| `feedID`                | `bytes32` | The unique identifier for the Data Streams feed                                       |
+| `feedID`                | `bytes32` | The unique identifier for the stream                                                  |
 | `validFromTimestamp`    | `uint32`  | The earliest timestamp during which the price is valid                                |
 | `observationsTimestamp` | `uint32`  | The latest timestamp during which the price is valid                                  |
 | `nativeFee`             | `uint192` | The cost to verify this report onchain when paying with the blockchain's native token |
@@ -22,4 +38,4 @@ Data Streams feeds have the following values specifically applicable to market p
 | `bid`                   | `int192`  | The simulated price impact of a buy order up to the X% depth of liquidity usage       |
 | `ask`                   | `int192`  | Simulated price impact of a sell order up to the X% depth of liquidity usage          |
 
-**Note**: Future Data Streams feeds may use different report schemas.
+**Note**: Future Crypto streams may use different report schemas.

@@ -1,0 +1,23 @@
+We will cover the following key steps:
+
+1. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Avalanche Fuji and Arbitrum Sepolia testnets.
+
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/v1.5.1/burn-mint-token-pool) token pools on Avalanche Fuji and Arbitrum Sepolia. These pools are essential for minting and burning tokens during cross-chain transfers. Each token will be linked to a pool, which will manage token transfers and ensure proper handling of assets across chains.
+
+1. **Claiming Mint and Burn Roles**: You will [claim the mint and burn roles](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol#L141) for the token pools, allowing your token pools to control how tokens are minted and burned during cross-chain transfers.
+
+1. **Claiming and Accepting the Admin Role**: This is a two-step process:
+
+   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/v1.5.1/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner) function to register your EOA as the token admin. This role is required to enable your token in CCIP.
+
+   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/v1.5.1/token-admin-registry#acceptadminrole) function to complete the registration process.
+
+1. **Linking Tokens to Pools**: You will call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) function to associate each token with its respective token pool.
+
+1. **Configuring Token Pools**: You will call the [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates) function on your token pools to configure each pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains.
+
+1. **Minting Tokens**: You will call the [`mint`](https://github.com/smartcontractkit/ccip/blob/f8d2f981e54aa7eb739d21ab925a954e043da9b6/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol#L128) function to mint tokens on Avalanche Fuji for your EOA. These tokens will later be used to test cross-chain transfers to Arbitrum Sepolia.
+
+1. **Transferring Tokens**: Finally, you will transfer tokens from Avalanche Fuji to Arbitrum Sepolia using CCIP. You will have the option to pay CCIP fees in either LINK tokens or native gas tokens.
+
+By the end of this tutorial, you will have successfully deployed, registered, configured, and enabled your tokens and token pools for use in CCIP.

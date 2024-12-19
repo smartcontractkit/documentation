@@ -9,6 +9,8 @@ import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
 import DocsNavigation from "~/components/DocsNavigation"
+import { VersionSelector } from "~/components/CCIP/VersionSelector/VersionSelector"
+import type { CCIPVersion } from "@config/versions/ccip"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -41,6 +43,14 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+
+// Match any version pattern in CCIP API reference
+const CCIP_API_VERSION_PATTERN = /^\/ccip\/api-reference\/v\d+\.\d+/
+const isCCIPApiReference = CCIP_API_VERSION_PATTERN.test(currentPage)
+
+// Extract and validate CCIP version
+const extractedVersion = isCCIPApiReference ? currentPage.split("/")[3] : null
+const ccipVersion = extractedVersion === "v1.5.0" || extractedVersion === "v1.5.1" ? extractedVersion : null
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
@@ -53,6 +63,11 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
+        {
+          isCCIPApiReference && ccipVersion && (
+            <VersionSelector currentVersion={ccipVersion as CCIPVersion} currentPath={currentPage} client:load />
+          )
+        }
         <PageContent {titleHeading}>
           <slot />
         </PageContent>
@@ -73,7 +88,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       display: grid;
       grid-template-columns: auto;
       --gutter: var(--space-6x);
-      --doc-padding: 2rem;
+      --doc-padding: var(--space-6x);
       margin-bottom: 0;
     }
 
@@ -97,8 +112,9 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       }
 
       .layout {
-        grid-template-columns: auto auto auto;
+        grid-template-columns: auto 1fr auto;
         gap: var(--gutter);
+        width: 100vw;
         max-width: 1440px;
       }
 

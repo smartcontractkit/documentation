@@ -75,17 +75,20 @@ export function ProductNavigation() {
                       Resources
                       <CaretRightIcon />
                     </button>
-                    <a href="" className={styles.productContentLink}>
+                    <a href="/" className={styles.productContentLink}>
                       Docs
                     </a>
-                    <a href="" className={styles.productContentLink}>
+                    <a href="https://dev.chain.link/demos" className={styles.productContentLink}>
                       Demos
                     </a>
-                    <a href="" className={styles.productContentLink}>
+                    <a href="https://dev.chain.link/tools" className={styles.productContentLink}>
                       Tools
                     </a>
-                    <a href="" className={styles.productContentLink}>
+                    <a href="https://dev.chain.link/chainlog" className={styles.productContentLink}>
                       Changelog
+                    </a>
+                    <a href="https://dev.chain.link/certification" className={styles.productContentLink}>
+                      Get Certified
                     </a>
                   </ul>
                 </div>

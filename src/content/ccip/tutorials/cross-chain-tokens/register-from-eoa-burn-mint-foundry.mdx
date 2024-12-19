@@ -1,0 +1,426 @@
+---
+section: ccip
+date: Last Modified
+title: "Enable your tokens in CCIP (Burn & Mint): Register from an EOA using Foundry"
+---
+
+import { Aside, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Hardhat (Burn & Mint)",
+      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+    {
+      name: "Foundry (Burn & Mint)",
+      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+  ]}
+/>
+
+This tutorial will guide you through the process of enabling your own tokens in CCIP using [Foundry](https://book.getfoundry.sh/). You will learn how to deploy tokens and set up _Burn & Mint_ token pools. After that, you will register them in CCIP and configure them without needing manual intervention. Finally, you will test the **Burn & Mint** token handling mechanism, where tokens are burned on the source blockchain and an equivalent amount is minted on the destination blockchain.
+
+<CcipCommon callout="registerFromEOAIntro" />
+
+## Before You Begin
+
+1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
+    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+
+    ```bash
+    nvm use 18
+    ```
+
+    Verify that the correct version of Node.js is installed:
+
+    ```bash
+    node -v
+    ```
+
+    Example output:
+
+    ```bash
+    $ node -v
+    v18.7.0
+    ```
+
+1.  **Install Foundry**:
+    If you haven't already, follow the instructions in the [Foundry documentation](https://book.getfoundry.sh/getting-started/installation) to install Foundry.
+
+1.  **Clone the repository and navigate to the project directory**:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/smart-contract-examples.git
+    cd smart-contract-examples/ccip/cct/foundry
+    ```
+
+1.  **Set up your environment**: Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Example `.env` file:
+
+    ```bash
+    PRIVATE_KEY=<your_private_key>
+    RPC_URL_FUJI=<your_rpc_url_fuji>
+    RPC_URL_ARBITRUM_SEPOLIA=<your_rpc_url_arbitrum_sepolia>
+    ETHERSCAN_API_KEY=<your_etherscan_api_key>
+    ARBISCAN_API_KEY=<your_arbiscan_api_key>
+    ```
+
+    Variables to configure:
+
+    - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note**: This key is required for signing transactions like token transfers.
+    - `RPC_URL_FUJI`: The RPC URL for the Fuji testnet. You can get this from the [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/) website.
+    - `RPC_URL_ARBITRUM_SEPOLIA`: The RPC URL for the Arbitrum Sepolia testnet. You can get this from the [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/) website.
+    - `ETHERSCAN_API_KEY`: An API key from Etherscan to verify your contracts. You can obtain one from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
+    - `ARBISCAN_API_KEY`: An API key from Arbiscan to verify your contracts on Arbitrum. See [this guide](https://docs.arbiscan.io/getting-started/viewing-api-usage-statistics) to get one from Arbiscan.
+
+1.  **Load the environment variables** into the terminal session where you will run the commands:
+
+    ```bash
+    source .env
+    ```
+
+1.  **Install dependencies**:
+
+    ```bash
+    forge install && npm install
+    ```
+
+1.  **Compile the contracts**:
+
+    ```bash
+    forge compile
+    ```
+
+### Optional: Configure your `config.json` file
+
+Before running the scripts, you can customize the `config.json` within the `script` folder to your needs.
+
+- By default, this guide and the accompanying scripts are configured to work with Avalanche Fuji (chain ID `43113`) and Arbitrum Sepolia (chain ID `421614`). If you do not make any changes to the `config.json` file, you will mint your tokens on Avalanche Fuji and transfer them to Arbitrum Sepolia.
+
+- If you wish to customize the token parameters such as the token name, symbol, decimals, amount to mint, or amount to transfer, you can modify these fields in the `config.json` file accordingly.
+
+  **Note**: If you decide to change the chain IDs in the `remoteChains` section to use different networks, you will also need to update your `.env` file with the appropriate RPC URLs for those networks.
+
+Example `config.json` file:
+
+```json
+{
+  "BnMToken": {
+    "name": "BnM KH",
+    "symbol": "BnMkh",
+    "decimals": 18,
+    "maxSupply": 0,
+    "withGetCCIPAdmin": false,
+    "ccipAdminAddress": "0x0000000000000000000000000000000000000000"
+  },
+  "tokenAmountToMint": 1000000000000000000000,
+  "tokenAmountToTransfer": 10000,
+  "feeType": "link",
+  "remoteChains": {
+    "43113": 421614,
+    "421614": 43113
+  }
+}
+```
+
+The `config.json` file contains the following parameters:
+
+| Field                   | Description                                                                                                                                                                                                                                                                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                  | The name of the token you are going to deploy. Replace `"BnM KH"` with your desired token name.                                                                                                                                                                                                                                                          |
+| `symbol`                | The symbol of the token. Replace `"BnMkh"` with your desired token symbol.                                                                                                                                                                                                                                                                               |
+| `decimals`              | The number of decimals for the token (usually `18` for standard ERC tokens).                                                                                                                                                                                                                                                                             |
+| `maxSupply`             | The maximum supply of tokens (in the smallest unit, based on `decimals`). When `maxSupply` is 0, the supply is unlimited.                                                                                                                                                                                                                                |
+| `withGetCCIPAdmin`      | A boolean to determine whether the token contract has a `getCCIPAdmin()` function. If set to `true`, a CCIP admin is required. When `false`, token admin registration will use the token `owner()` function.                                                                                                                                             |
+| `ccipAdminAddress`      | The address of the CCIP admin, only applicable if `withgetccipadmin` is set to `true`.                                                                                                                                                                                                                                                                   |
+| ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
+| `tokenAmountToMint`     | The amount of tokens to mint when running the minting script. This value should be specified in wei (1 token with 18 decimals = `1000000000000000000` wei).                                                                                                                                                                                              |
+| ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
+| `tokenAmountToTransfer` | The amount of tokens to transfer when running the token transfer script. Specify the number of tokens you want to transfer across chains.                                                                                                                                                                                                                |
+| ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
+| `feeType`               | Defines the fee type for transferring tokens across chains. Options are `"link"` (for paying fees in LINK tokens) or `"native"` (for paying fees in native tokens).                                                                                                                                                                                      |
+| ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
+| `remoteChains`          | Defines the relationship between source and remote (destination) chain IDs. The keys in this object are the current chain IDs, and the values represent the corresponding remote chain. Example: `"43113": 421614` means that if you're running a script on Avalanche Fuji (chain ID `43113`), the remote chain is Arbitrum Sepolia (chain ID `421614`). |
+
+## Tutorial
+
+<Aside type="note" title="Explore the Code">
+  All Foundry scripts used in this tutorial are located in the `script/` directory of the repository. Each script is
+  thoroughly commented and directly linked to a key step in the tutorial, making the code self-explanatory. Read the
+  code and comments to gain a deeper understanding of the process or explore the implementation details.
+</Aside>
+
+### Deploy Tokens
+
+In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
+
+The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+
+1. Deploy tokens on Avalanche Fuji:
+
+   ```bash
+   forge script script/DeployToken.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast --verify
+   ```
+
+   Example output:
+
+   ```bash
+   Deployed BurnMintERC677 at: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Writing deployed token address to file: ./script/output/deployedToken_avalancheFuji.json
+   ```
+
+1. Deploy tokens on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/DeployToken.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify
+   ```
+
+   Example output:
+
+   ```bash
+   Deployed BurnMintERC677 at: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Writing deployed token address to file: ./script/output/deployedToken_arbitrumSepolia.json
+   ```
+
+### Deploy Token Pools
+
+<CcipCommon callout="gasLimitPool" />
+
+In this step, you will use the `DeployBurnMintTokenPool.s.sol` script to deploy Burn & Mint token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia and grant mint and burn roles to the token pools.
+
+1. Deploy a Burn & Mint token pool for the deployed token on Avalanche Fuji:
+
+   ```bash
+   forge script script/DeployBurnMintTokenPool.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast --verify
+   ```
+
+   Example output:
+
+   ```bash
+   Burn & Mint token pool deployed to: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Granted mint and burn roles to token pool: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Writing deployed token pool address to file: ./script/output/deployedTokenPool_avalancheFuji.json
+   ```
+
+1. Deploy a Burn & Mint token pool for the deployed token on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/DeployBurnMintTokenPool.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify
+   ```
+
+   Example output:
+
+   ```bash
+   Burn & Mint token pool deployed to: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Granted mint and burn roles to token pool: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Writing deployed token pool address to file: ./script/output/deployedTokenPool_arbitrumSepolia.json
+   ```
+
+### Claim Admin Role
+
+In this step, you will use the `ClaimAdmin.s.sol` script to register your EOA as the administrator for the deployed tokens on both Avalanche Fuji and Arbitrum Sepolia testnets. This process involves interacting with the `RegistryModuleOwnerCustom` contract to set up your EOA as the admin.
+
+The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
+
+1. Claim the Admin role for the token on Avalanche Fuji:
+
+   ```bash
+   forge script script/ClaimAdmin.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Admin claimed successfully for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   ```
+
+1. Claim the Admin role for the token on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/ClaimAdmin.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Admin claimed successfully for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   ```
+
+### Accept Admin Role
+
+In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admin role for the deployed tokens on both Avalanche Fuji and Arbitrum Sepolia testnets. Once you have claimed the role, accepting the role finalizes your control over the token administration.
+
+1. Accept the admin role for the token on Avalanche Fuji:
+
+   ```bash
+   forge script script/AcceptAdminRole.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Accepted admin role for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   ```
+
+1. Accept the admin role for the token on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/AcceptAdminRole.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Accepted admin role for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   ```
+
+### Set Token Pool
+
+In this step, you will use the `SetPool.s.sol` script to link each token with its respective token pool on both testnets.
+
+1. Link the token to its respective token pool on Avalanche Fuji:
+
+   ```bash
+   forge script script/SetPool.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Setting pool for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   New pool address: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Pool set for token 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0 to 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   ```
+
+1. Link the token to its respective token pool on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/SetPool.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Setting pool for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   New pool address: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Pool set for token 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd to 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   ```
+
+### Configure Token Pools
+
+In this step, you will use the `ApplyChainUpdates.s.sol` script to initialize the token pool configuration on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. This involves linking the token pool on one blockchain to a corresponding pool on another blockchain, allowing cross-chain token transfers. You will interact with the `TokenPool` contract by calling the `applyChainUpdates()` function to set up cross-chain parameters and rate limits.
+
+**Parameters used in pool configuration**:
+
+- **Main Parameters**:
+
+| Parameter                   | Description                                                                                           | Default     | Required |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- | -------- |
+| **`poolAddress`**           | The address of the token pool being configured on the current chain.                                  | N/A         | Yes      |
+| **`chainSelectorRemovals`** | An array of chain selectors (identifiers) for which configurations should be removed.                 | Empty array | No       |
+| **`chainUpdates`**          | An array of `ChainUpdate` structs, each containing configuration updates for a specific remote chain. | N/A         | Yes      |
+
+- **`ChainUpdate` Struct Parameters:**
+
+Each `ChainUpdate` struct in the `chainUpdates` array includes the following fields:
+
+| Field                           | Description                                                                                                                                             | Required |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **`remoteChainSelector`**       | The chain selector (identifier) of the remote blockchain to which this pool will be linked.                                                             | Yes      |
+| **`remotePoolAddresses`**       | An array of addresses of the token pools on the remote blockchain, each encoded as bytes (`abi.encode(remotePoolAddress)`).                             | Yes      |
+| **`remoteTokenAddress`**        | The address of the token on the remote blockchain, encoded as bytes (`abi.encode(remoteTokenAddress)`).                                                 | Yes      |
+| **`outboundRateLimiterConfig`** | Configuration for outbound rate limiting (transfers from current chain to remote chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`. | No       |
+| **`inboundRateLimiterConfig`**  | Configuration for inbound rate limiting (transfers from remote chain to current chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`.  | No       |
+
+- **Fields within `outboundRateLimiterConfig` and `inboundRateLimiterConfig`:**
+
+| Sub-Parameter   | Description                                                                                                        | Default | Required |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
+| **`isEnabled`** | A flag indicating whether rate limiting is enabled (`true` or `false`).                                            | `false` | No       |
+| **`capacity`**  | The maximum number of tokens allowed in the bucket for rate limiting. Applicable only if rate limiting is enabled. | `0`     | No       |
+| **`rate`**      | The rate at which tokens are refilled into the bucket per second. Applicable only if rate limiting is enabled.     | `0`     | No       |
+
+1. Configure the token pool on Avalanche Fuji:
+
+   ```bash
+   forge script script/ApplyChainUpdates.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Chain update applied to pool at address: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   ```
+
+1. Configure the token pool on Arbitrum Sepolia:
+
+   ```bash
+   forge script script/ApplyChainUpdates.s.sol --rpc-url $RPC_URL_ARBITRUM_SEPOLIA --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Example output:
+
+   ```bash
+   Chain update applied to pool at address: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   ```
+
+### Mint Tokens
+
+In this step, you will use the `MintTokens.s.sol` script to mint tokens to your Externally Owned Account (EOA) on Avalanche Fuji. Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
+
+The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
+
+Mint tokens for your EOA on Avalanche Fuji:
+
+```bash
+forge script script/MintTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+```
+
+Example output:
+
+```bash
+Minting 1000000000000000000000 tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+Waiting for confirmations...
+Minted 1000000000000000000000 tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+Current balance of receiver is 1000000000000000000000 BnMkh
+```
+
+### Transfer Tokens Across Networks
+
+In this step, you will use the `TransferTokens.s.sol` script to transfer tokens from Avalanche Fuji to Arbitrum Sepolia using CCIP. You can choose to pay CCIP fees using LINK tokens or the native gas token.
+
+The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
+
+Transfer tokens from Avalanche Fuji to Arbitrum Sepolia:
+
+```bash
+forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+```
+
+Example output:
+
+```bash
+Estimated fees: 17658138577908911
+Message ID:
+0x2895eae406f09dd2a99975fa8eb5e597678ebbfc2e12cbe74447f2cb341c495f
+Check status of the message at https://ccip.chain.link/msg/2895eae406f09dd2a99975fa8eb5e597678ebbfc2e12cbe74447f2cb341c495f
+```
+
+You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link/) using the message ID provided in the output.

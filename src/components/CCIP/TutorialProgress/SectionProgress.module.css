@@ -1,0 +1,101 @@
+.progressContainer {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.stepCount {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.progressBar {
+  height: 8px;
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+}
+
+.progressSegment {
+  height: 100%;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: #e2e8f0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressSegment::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.progressSegment:hover::after {
+  opacity: 1;
+}
+
+.progressSegment.completed {
+  background: #375bd2;
+}
+
+.progressSegment.in-progress {
+  background: #eab308;
+}
+
+.progressSegment.not-started {
+  background: #e2e8f0;
+}
+
+.progressSegment.active {
+  transform: scaleY(1.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip styles */
+.progressSegment:hover::before {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Focus styles for accessibility */
+.progressSegment:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #375bd2;
+}

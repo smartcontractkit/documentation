@@ -44,4 +44,38 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MODE_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.mode.network"),
   BLAST_MAINNET: () => new providers.JsonRpcProvider("https://rpc.blast.io"),
   BLAST_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.blast.io"),
+  SONEIUM_MINATO: () => new providers.JsonRpcProvider("	https://rpc.minato.soneium.org/"),
+  ETHEREUM_HOLESKY: () => new providers.JsonRpcProvider("https://ethereum-holesky-rpc.publicnode.com"),
+  ASTAR_MAINNET: () => new providers.JsonRpcProvider("https://rpc.astar.network"),
+  ASTAR_SHIBUYA: () => new providers.JsonRpcProvider("https://evm.shibuya.astar.network/"),
+  ZIRCUIT_MAINNET: () => new providers.JsonRpcProvider("https://zircuit1-mainnet.liquify.com"),
+  ZIRCUIT_TESTNET: () => new providers.JsonRpcProvider("https://zircuit1-testnet.p2pify.com"),
+  MANTLE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.mantle.xyz"),
+  MANTLE_SEPOLIA: () => new providers.JsonRpcProvider("https://rpc.sepolia.mantle.xyz"),
+  RONIN_MAINNET: () => new providers.JsonRpcProvider("https://ronin.lgns.net/rpc"),
+  RONIN_SAIGON: () => new providers.JsonRpcProvider("https://saigon-testnet.roninchain.com/rpc"),
+  BSQUARED_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/b2"),
+  BSQUARED_TESTNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/b2_testnet"),
+  SHIBARIUM_MAINNET: () => new providers.JsonRpcProvider("https://www.shibrpc.com"),
+  SHIBARIUM_PUPPYNET: () => new providers.JsonRpcProvider("https://puppynet.shibrpc.com"),
+}
+
+export const getRpcUrlForChain = (chain: SupportedChain): string => {
+  const envVarName = `${chain}_RPC_URL`
+  const rpcUrl = process.env[envVarName]
+
+  if (!rpcUrl) {
+    console.warn(`Environment variable ${envVarName} is not set for chain ${chain}`)
+    return ""
+  }
+
+  return rpcUrl
+}
+
+export const getProviderForChain = (chain: SupportedChain): providers.JsonRpcProvider => {
+  const rpcUrl = getRpcUrlForChain(chain)
+  if (!rpcUrl) {
+    throw new Error(`No RPC URL found for chain ${chain}`)
+  }
+  return new providers.JsonRpcProvider(rpcUrl)
 }

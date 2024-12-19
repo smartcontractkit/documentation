@@ -68,8 +68,7 @@ export const getTokenIconUrl = (token: string) => {
   return `https://d2f70xi62kby8n.cloudfront.net/tokens/${token.toLowerCase()}.webp?auto=compress%2Cformat`
 }
 
-export const fallbackTokenIconUrl =
-  "https://d2f70xi62kby8n.cloudfront.net/ccip-ui/ccip-hexagon-bg.svg?auto=compress%2Cformat"
+export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
 
 export const getChainId = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
@@ -178,6 +177,34 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SCROLL_MAINNET"
     case "ethereum-testnet-sepolia-scroll-1":
       return "SCROLL_SEPOLIA"
+    case "ethereum-testnet-sepolia-soneium-1":
+      return "SONEIUM_MINATO"
+    case "ethereum-testnet-holesky":
+      return "ETHEREUM_HOLESKY"
+    case "polkadot-mainnet-astar":
+      return "ASTAR_MAINNET"
+    case "polkadot-testnet-astar-shibuya":
+      return "ASTAR_SHIBUYA"
+    case "ethereum-testnet-sepolia-zircuit-1":
+      return "ZIRCUIT_TESTNET"
+    case "ethereum-mainnet-zircuit-1":
+      return "ZIRCUIT_MAINNET"
+    case "ethereum-mainnet-mantle-1":
+      return "MANTLE_MAINNET"
+    case "ethereum-testnet-sepolia-mantle-1":
+      return "MANTLE_SEPOLIA"
+    case "ronin-mainnet":
+      return "RONIN_MAINNET"
+    case "ronin-testnet-saigon":
+      return "RONIN_SAIGON"
+    case "bitcoin-mainnet-bsquared-1":
+      return "BSQUARED_MAINNET"
+    case "bitcoin-testnet-bsquared-1":
+      return "BSQUARED_TESTNET"
+    case "shibarium-mainnet":
+      return "SHIBARIUM_MAINNET"
+    case "shibarium-testnet-puppynet":
+      return "SHIBARIUM_PUPPYNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -253,6 +280,34 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-mainnet-scroll-1"
     case "SCROLL_SEPOLIA":
       return "ethereum-testnet-sepolia-scroll-1"
+    case "SONEIUM_MINATO":
+      return "ethereum-testnet-sepolia-soneium-1"
+    case "ETHEREUM_HOLESKY":
+      return "ethereum-testnet-holesky"
+    case "ASTAR_MAINNET":
+      return "polkadot-mainnet-astar"
+    case "ASTAR_SHIBUYA":
+      return "polkadot-testnet-astar-shibuya"
+    case "ZIRCUIT_TESTNET":
+      return "ethereum-testnet-sepolia-zircuit-1"
+    case "ZIRCUIT_MAINNET":
+      return "ethereum-mainnet-zircuit-1"
+    case "MANTLE_MAINNET":
+      return "ethereum-mainnet-mantle-1"
+    case "MANTLE_SEPOLIA":
+      return "ethereum-testnet-sepolia-mantle-1"
+    case "RONIN_MAINNET":
+      return "ronin-mainnet"
+    case "RONIN_SAIGON":
+      return "ronin-testnet-saigon"
+    case "BSQUARED_MAINNET":
+      return "bitcoin-mainnet-bsquared-1"
+    case "BSQUARED_TESTNET":
+      return "bitcoin-testnet-bsquared-1"
+    case "SHIBARIUM_MAINNET":
+      return "shibarium-mainnet"
+    case "SHIBARIUM_PUPPYNET":
+      return "shibarium-testnet-puppynet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

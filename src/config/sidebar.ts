@@ -1,10 +1,14 @@
 import { Sections } from "../content/config"
 import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
+
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
 type SectionEntry = {
   section: string
@@ -35,8 +39,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "Proof of Reserve Feeds",
-          url: "data-feeds/proof-of-reserve",
+          title: "SmartData",
+          url: "data-feeds/smartdata",
         },
         {
           title: "Rate and Volatility Feeds",
@@ -56,8 +60,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "Proof of Reserve Addresses",
-          url: "data-feeds/proof-of-reserve/addresses",
+          title: "SmartData Feed Addresses",
+          url: "data-feeds/smartdata/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -131,6 +135,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
         },
       ],
     },
@@ -227,10 +240,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
-          title: "Data Streams Feeds",
-          url: "data-streams/stream-ids",
-        },
-        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -241,6 +250,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Release Notes",
           url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Stream Addresses",
+      contents: [
+        {
+          title: "Crypto streams",
+          url: "data-streams/crypto-streams",
+        },
+        {
+          title: "RWA streams",
+          url: "data-streams/rwa-streams",
+        },
+        {
+          title: "Market hours",
+          url: "data-streams/market-hours",
         },
       ],
     },
@@ -258,20 +284,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Streams Direct SDK",
+          title: "Streams Direct",
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
               title: "Fetch and decode reports",
               url: "data-streams/tutorials/streams-direct/streams-direct-api",
+              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-api-rwa"],
             },
             {
               title: "Stream and decode reports (WebSocket)",
               url: "data-streams/tutorials/streams-direct/streams-direct-ws",
+              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
             },
             {
-              title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
+              title: "Verify report data",
+              url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+              highlightAsCurrent: [
+                "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+                "data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+              ],
             },
           ],
         },
@@ -294,8 +326,9 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Reference",
       contents: [
         {
-          title: "Report Schema",
+          title: "Report Schemas",
           url: "data-streams/reference/report-schema",
+          highlightAsCurrent: ["data-streams/reference/report-schema-v4"],
         },
         {
           title: "Streams Trade Interface",
@@ -318,7 +351,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
             },
             {
-              title: "Onchain report data verification",
+              title: "Onchain report data verification (EVM chains)",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
@@ -420,6 +453,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "chainlink-automation/concepts/best-practice",
+        },
+        {
+          title: "Service Limits",
+          url: "chainlink-automation/overview/service-limits",
         },
         {
           title: "Release Notes",
@@ -939,16 +976,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/getting-started",
         },
         {
-          title: "Supported Networks",
-          url: "ccip/supported-networks",
+          title: "CCIP Directory",
+          url: "ccip/directory",
           children: [
             {
               title: "Mainnet",
-              url: "ccip/supported-networks/v1_2_0/mainnet",
+              url: "ccip/directory/mainnet",
             },
             {
               title: "Testnet",
-              url: "ccip/supported-networks/v1_2_0/testnet",
+              url: "ccip/directory/testnet",
             },
           ],
         },
@@ -978,8 +1015,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Using the CCIP JavaScript SDK",
+          url: "ccip/ccip-javascript-sdk",
+        },
+        {
           title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          url: "ccip/tutorials/transfer-tokens-from-contract",
         },
         {
           title: "Transfer Tokens with Data",
@@ -988,6 +1029,35 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Transfer Tokens with Data - Defensive Example",
           url: "ccip/tutorials/programmable-token-transfers-defensive",
+        },
+        {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/tutorials/cross-chain-tokens",
+          children: [
+            {
+              title: "Deploy and Register Using Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
+            {
+              title: "Register from an EOA (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+            },
+            {
+              title: "Register from an EOA (Lock & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+            },
+            {
+              title: "Set Token Pool rate limits",
+              url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+            },
+            {
+              title: "Register from a Safe Smart Account (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+            },
+          ],
         },
         {
           title: "Test CCIP Locally",
@@ -999,7 +1069,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+              url: "ccip/tutorials/transfer-tokens-from-eoa",
             },
             {
               title: "Checking CCIP Message Status",
@@ -1045,6 +1115,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/concepts/cross-chain-tokens",
+        },
+        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },
@@ -1058,20 +1132,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "API Reference",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "Overview",
+          url: "ccip/api-reference",
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
+          title: "v1.5.1 (Latest)",
+          url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
+          children: ccipV151Contents,
         },
         {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "v1.5.0",
+          url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
+          children: ccipV150Contents,
         },
       ],
     },
@@ -1182,6 +1256,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
+            },
+            {
+              title: "Using the CCIP Local Simulator to fork mainnets",
+              url: "chainlink-local/build/ccip/foundry/forking-mainnets",
+            },
+            {
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
             },
           ],
         },

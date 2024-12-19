@@ -20,10 +20,15 @@ export type SupportedTechnology =
   | "KROMA"
   | "MODE"
   | "ZKSYNC"
-
+  | "SONEIUM"
+  | "ASTAR"
+  | "ZIRCUIT"
+  | "MANTLE"
+  | "RONIN"
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
+  | "ETHEREUM_HOLESKY"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"
@@ -62,6 +67,19 @@ export type SupportedChain =
   | "KROMA_SEPOLIA"
   | "MODE_MAINNET"
   | "MODE_SEPOLIA"
+  | "SONEIUM_MINATO"
+  | "ASTAR_MAINNET"
+  | "ASTAR_SHIBUYA"
+  | "ZIRCUIT_MAINNET"
+  | "ZIRCUIT_TESTNET"
+  | "MANTLE_MAINNET"
+  | "MANTLE_SEPOLIA"
+  | "RONIN_MAINNET"
+  | "RONIN_SAIGON"
+  | "BSQUARED_MAINNET"
+  | "BSQUARED_TESTNET"
+  | "SHIBARIUM_MAINNET"
+  | "SHIBARIUM_PUPPYNET"
 
 export type Chains = Record<
   SupportedTechnology,

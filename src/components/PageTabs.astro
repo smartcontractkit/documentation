@@ -1,99 +1,337 @@
 ---
+/**
+ * PageTabs Component
+ *
+ * A dropdown-based navigation component that allows users to switch between different versions
+ * or variations of a page.
+ *
+ * @component
+ *
+ * @example
+ * ```mdx
+ * import { PageTabs } from "@components"
+ *
+ * <PageTabs
+ *   pages={[
+ *     {
+ *       name: "Version 1.0",
+ *       url: "/docs/feature/v1",
+ *       icon: "/images/icons/v1-icon.svg",
+ *     },
+ *     {
+ *       name: "Version 2.0 (Latest)",
+ *       url: "/docs/feature/v2",
+ *       icon: "/images/icons/v2-icon.svg",
+ *     }
+ *   ]}
+ *   // Optional: showHeader={false} to hide the header section
+ *   // Optional: headerTitle="Custom Title" (defaults to "Guide Versions")
+ *   // Optional: headerDescription="Custom description" (defaults to "This guide is available in multiple versions. Choose the one that matches your needs.")
+ * />
+ * ```
+ *
+ * @typedef {Object} Page
+ * @property {string} name - The display name for the page/version
+ * @property {string} url - The URL path for the page/version
+ * @property {string} [icon] - Optional path to an icon image (SVG or PNG recommended)
+ *
+ * Props:
+ * @property {Page[]} pages - Array of page objects containing name, url, and optional icon
+ * @property {boolean} [showHeader=true] - Whether to show the header section
+ * @property {string} [headerTitle] - Custom title for the header. Defaults to "Guide Versions"
+ * @property {string} [headerDescription] - Custom description. Defaults to "This guide is available in multiple versions. Choose the one that matches your needs."
+ *
+ * Features:
+ * - Responsive dropdown interface
+ * - Optional icons for each page/version (SVG or PNG recommended)
+ * - Customizable header section (can be hidden)
+ * - Active state indication
+ * - Keyboard accessible
+ * - Click-outside to close
+ *
+ * Styling:
+ * - Responsive design with mobile breakpoints
+ *
+ * Default Values:
+ * - showHeader = true
+ * - headerTitle = "Guide Versions"
+ * - headerDescription = "This guide is available in multiple versions. Choose the one that matches your needs."
+ */
+
 export interface Props {
   pages: Array<{
     name: string
     url: string
-    icon?: string // icon is optional
+    icon?: string
   }>
+  showHeader?: boolean
+  headerTitle?: string
+  headerDescription?: string
 }
 
-const { pages } = Astro.props as Props
+const { pages, showHeader = true } = Astro.props as Props
+const {
+  headerTitle = "Guide Versions",
+  headerDescription = "This guide is available in multiple versions. Choose the one that matches your needs.",
+} = Astro.props as Props
 
 const currentPath = Astro.url.pathname
 
-const normalizeUrl = (url: string) => {
-  return url.trim().replace(/\/$/, "")
-}
+const normalizeUrl = (url: string) => url.trim().replace(/\/$/, "")
+const isActive = (pageUrl: string) => normalizeUrl(currentPath) === normalizeUrl(pageUrl)
 
-const isActive = (pageUrl: string) => {
-  const normalizedCurrentPath = normalizeUrl(currentPath)
-  const normalizedPageUrl = normalizeUrl(pageUrl)
-  return normalizedCurrentPath === normalizedPageUrl
-}
-
-const pageDetails = pages.filter((page): page is { name: string; url: string; icon?: string } => page.url !== undefined)
+// Add current page info for mobile dropdown
+const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
 ---
 
-<div class="pages-table">
+<div class="tabs-section">
   {
-    pageDetails.map((page) => (
-      <a href={page.url} class={`page-column ${isActive(page.url) ? "active" : ""}`}>
-        {page.icon && <img src={page.icon} alt={`${page.name} icon`} class="page-icon" />}
-        <div>{page.name}</div>
-      </a>
-    ))
+    showHeader && (
+      <div class="tabs-header">
+        <h2 class="tabs-title">{headerTitle}</h2>
+        <p class="tabs-description">{headerDescription}</p>
+      </div>
+    )
   }
+
+  <div class="dropdown-container">
+    <button class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+      {
+        currentPage.icon && (
+          <span class="icon-wrapper">
+            <img src={currentPage.icon} alt="" aria-hidden="true" />
+          </span>
+        )
+      }
+      <span class="current-text">{currentPage.name}</span>
+      <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M2.5 4.5L6 8L9.5 4.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <div class="dropdown-content" role="menu">
+      {
+        pages.map((page) => (
+          <a
+            href={page.url}
+            class:list={["dropdown-item", { active: isActive(page.url) }]}
+            role="menuitem"
+            aria-current={isActive(page.url) ? "page" : undefined}
+          >
+            {page.icon && (
+              <span class="icon-wrapper">
+                <img src={page.icon} alt="" aria-hidden="true" />
+              </span>
+            )}
+            <span class="dropdown-text">{page.name}</span>
+            {isActive(page.url) && (
+              <svg
+                class="check"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13.5 4.5L6 12L2.5 8.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            )}
+          </a>
+        ))
+      }
+    </div>
+  </div>
 </div>
 
 <style>
-  .pages-table {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-    padding: 1rem;
+  .tabs-section {
+    margin: 2.5rem 0;
+    padding: var(--section-padding, 2rem);
+    background: var(--gray-100);
+    border: 1px solid var(--gray-100);
+    border-radius: 1rem;
   }
 
-  .page-column {
+  .tabs-header {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    text-align: center;
+  }
+
+  .tabs-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+  }
+
+  .tabs-description {
+    font-size: 0.9375rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+  }
+
+  .dropdown-container {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    color: var(--gray-900);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-trigger:hover {
+    background: var(--gray-50);
+  }
+
+  .current-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    color: var(--gray-400);
+    transition: transform 0.2s ease;
+  }
+
+  .dropdown-trigger[aria-expanded="true"] .chevron {
+    transform: rotate(180deg);
+  }
+
+  .icon-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    cursor: pointer;
-    border-bottom: 2px solid var(--gray-200, rgb(236, 237, 239));
-    color: var(--gray-500, rgb(133, 138, 149));
-    font-size: 1rem;
-    line-height: 24px;
-    margin-bottom: 16px;
-    padding: 9px 20px;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    opacity: 0.7;
+    padding: 0.375rem;
+    background: var(--gray-50);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .icon-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    z-index: 50;
+    padding: 0.5rem;
+  }
+
+  .dropdown-content[data-visible="true"] {
+    display: block;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    color: var(--gray-700);
     text-decoration: none;
-    -webkit-font-smoothing: antialiased;
-    box-sizing: border-box;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
   }
 
-  .page-column:hover:not(.active) {
+  .dropdown-item:hover {
+    background: var(--gray-50);
+  }
+
+  .dropdown-item.active {
     color: var(--blue-700);
-    border-bottom-color: var(--blue-700);
+    font-weight: 500;
   }
 
-  .page-icon {
-    margin-right: 10px;
-    width: 23px;
-    height: 23px;
+  .dropdown-text {
+    flex: 1;
+    font-size: 0.9375rem;
   }
 
-  .page-column.active {
-    color: var(--blue-600, rgb(55, 91, 210));
-    border-bottom-color: var(--blue-600, rgb(55, 91, 210));
+  .check {
+    flex-shrink: 0;
+    color: var(--blue-500);
   }
 
   @media (max-width: 768px) {
-    .pages-table {
-      padding: 0.5rem;
-    }
-
-    .page-column {
-      padding: 9px 10px;
-      flex-direction: column;
-    }
-
-    .pages-table {
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-
-    .page-icon {
-      margin-right: 0;
-      margin-bottom: 5px;
+    .tabs-section {
+      margin: 2rem -1rem;
+      padding: 1.5rem 1rem;
     }
   }
 </style>
+
+<script>
+  function initDropdown() {
+    const trigger = document.querySelector(".dropdown-trigger")
+    const content = document.querySelector(".dropdown-content")
+
+    if (!trigger || !content) return
+
+    trigger.addEventListener("click", () => {
+      const isExpanded = trigger.getAttribute("aria-expanded") === "true"
+      trigger.setAttribute("aria-expanded", (!isExpanded).toString())
+      content.setAttribute("data-visible", (!isExpanded).toString())
+    })
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (event) => {
+      if (!trigger.contains(event.target as Node)) {
+        trigger.setAttribute("aria-expanded", "false")
+        content.setAttribute("data-visible", "false")
+      }
+    })
+  }
+
+  window.addEventListener("load", initDropdown)
+
+  // Update padding based on header visibility
+  const section = document.querySelector(".tabs-section") as HTMLElement
+  const header = document.querySelector(".tabs-header")
+
+  if (section && !header) {
+    section.style.setProperty("--section-padding", "1rem")
+  }
+</script>
