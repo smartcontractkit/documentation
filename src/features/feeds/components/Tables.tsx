@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { useState } from "preact/hooks"
 import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
@@ -431,118 +432,204 @@ const StreamsNetworksData = [
   {
     network: "Solana",
     logoUrl: "/assets/chains/solana.svg",
-    contactUs: true,
-    message: "to talk to an expert about integrating Chainlink Data Streams on Solana.",
+    networkStatus: "https://status.solana.com/",
+    isSolana: true,
+    mainnet: {
+      label: "Solana Mainnet",
+      verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
+      accessController: "7mSn5MoBjyRLKoJShgkep8J17ueGG8rYioVAiSg5YWMF",
+      explorerUrl: "https://explorer.solana.com/address/%s",
+    },
+    testnet: {
+      label: "Solana Devnet",
+      verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
+      accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
+      explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
   },
 ]
 
-export const StreamsVerifierProxyTable = () => {
+type NetworkDetails = {
+  verifierProxy?: string
+  verifierProgramId?: string
+  accessController?: string
+  explorerUrl: string
+  label: string
+}
+
+type NetworkData = {
+  network: string
+  logoUrl: string
+  networkStatus?: string
+  mainnet?: NetworkDetails
+  testnet?: NetworkDetails
+  message?: string
+  isSolana?: boolean
+}
+
+export const StreamsNetworkAddressesTable = () => {
+  const [activeNetwork, setActiveNetwork] = useState<string | null>(null)
+
+  const toggleNetwork = (network: string) => {
+    setActiveNetwork(activeNetwork === network ? null : network)
+  }
+
   return (
-    <table className={clsx(feedList.verifierProxyTable, tableStyles.table)}>
-      <thead>
-        <tr>
-          <th>Network</th>
-          <th>Verifier proxy address</th>
-        </tr>
-      </thead>
-      <tbody>
-        {StreamsNetworksData.map((network) => (
-          <tr key={network.network}>
-            <td className={tableStyles.pairCol} style={{ textAlign: "center" }}>
-              <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
-              <div className={tableStyles.assetPair}>{network.network}</div>
-            </td>
-            <td style={{ width: "80%" }}>
-              {network.contactUs ? (
-                <div className={tableStyles.contactUsMessage}>
-                  <a href="https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs">
-                    Contact us
-                  </a>{" "}
-                  {network.message}
-                </div>
-              ) : (
-                <>
-                  {network.mainnet && (
-                    <div className={tableStyles.assetAddress}>
-                      <span style={{ fontSize: "0.9em" }}>{network.mainnet.label}: </span>
-                      <a
-                        style={{ fontSize: "0.9em" }}
-                        className={tableStyles.addressLink}
-                        href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {network.mainnet.verifierProxy}
-                      </a>
-                      <button
-                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                        data-clipboard-text={network.mainnet.verifierProxy}
-                        onClick={(e) =>
-                          handleClick(e, {
-                            product: "STREAMS",
-                            action: "verifierProxyAddress_copied",
-                            extraInfo1: "Mainnet",
-                            extraInfo2: network.mainnet.label,
-                          })
-                        }
-                      >
-                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                      </button>
-                    </div>
-                  )}
+    <div className={tableStyles.networksContainer}>
+      {StreamsNetworksData.map((network: NetworkData) => (
+        <div key={network.network} className={tableStyles.networkCard}>
+          <button
+            className={clsx(tableStyles.networkHeader, activeNetwork === network.network && tableStyles.active)}
+            onClick={() => toggleNetwork(network.network)}
+          >
+            <div className={tableStyles.networkInfo}>
+              <img src={network.logoUrl} alt={`${network.network} logo`} width={32} height={32} />
+              <span>{network.network}</span>
+            </div>
+            <span className={tableStyles.expandIcon}>{activeNetwork === network.network ? "−" : "+"}</span>
+          </button>
 
-                  {network.testnet && (
-                    <div className={tableStyles.assetAddress}>
-                      <span style={{ fontSize: "0.9em" }}>{network.testnet.label}: </span>
-                      <a
-                        style={{ fontSize: "0.9em" }}
-                        className={tableStyles.addressLink}
-                        href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {network.testnet.verifierProxy}
-                      </a>
-                      <button
-                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                        data-clipboard-text={network.testnet.verifierProxy}
-                        onClick={(e) =>
-                          handleClick(e, {
-                            product: "STREAMS",
-                            action: "verifierProxyAddress_copied",
-                            extraInfo1: "Testnet",
-                            extraInfo2: network.testnet.label,
-                          })
-                        }
-                      >
-                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                      </button>
-                    </div>
-                  )}
+          {activeNetwork === network.network && (
+            <div className={tableStyles.networkDetails}>
+              <>
+                {network.mainnet && (
+                  <div className={tableStyles.networkEnvironment}>
+                    <h4>{network.mainnet.label}</h4>
+                    {network.isSolana ? (
+                      <>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Verifier Program ID:</span>
+                          <CopyableAddress
+                            address={network?.mainnet?.verifierProgramId}
+                            explorerUrl={network?.mainnet?.explorerUrl}
+                            network={network}
+                            environment="Mainnet"
+                            type="verifierProgramId"
+                          />
+                        </div>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Access Controller Account:</span>
+                          <CopyableAddress
+                            address={network?.mainnet?.accessController}
+                            explorerUrl={network?.mainnet?.explorerUrl}
+                            network={network}
+                            environment="Mainnet"
+                            type="accessController"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className={tableStyles.evmAddress}>
+                        <span>Verifier Proxy Address:</span>
+                        <CopyableAddress
+                          address={network.mainnet.verifierProxy}
+                          explorerUrl={network.mainnet.explorerUrl}
+                          network={network}
+                          environment="Mainnet"
+                          type="verifierProxy"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                  {network.networkStatus && (
-                    <div className={tableStyles.assetAddress}>
-                      <span
-                        style={{
-                          fontSize: "0.9em",
-                          paddingTop: "1em",
-                          display: "block",
-                        }}
-                      >
-                        Track the status of this network at{" "}
-                        <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
-                          {network.networkStatus}
-                        </a>
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+                {network.testnet && (
+                  <div className={tableStyles.networkEnvironment}>
+                    <h4>{network.testnet.label}</h4>
+                    {network.isSolana ? (
+                      <>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Verifier Program ID:</span>
+                          <CopyableAddress
+                            address={network?.testnet?.verifierProgramId}
+                            explorerUrl={network?.testnet?.explorerUrl}
+                            network={network}
+                            environment="Testnet"
+                            type="verifierProgramId"
+                          />
+                        </div>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Access Controller Account:</span>
+                          <CopyableAddress
+                            address={network?.testnet?.accessController}
+                            explorerUrl={network?.testnet?.explorerUrl}
+                            network={network}
+                            environment="Testnet"
+                            type="accessController"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className={tableStyles.evmAddress}>
+                        <span>Verifier Proxy Address:</span>
+                        <CopyableAddress
+                          address={network.testnet.verifierProxy}
+                          explorerUrl={network.testnet.explorerUrl}
+                          network={network}
+                          environment="Testnet"
+                          type="verifierProxy"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {network.networkStatus && (
+                  <div className={tableStyles.networkStatus}>
+                    <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
+                      View Network Status →
+                    </a>
+                  </div>
+                )}
+              </>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const CopyableAddress = ({
+  address,
+  explorerUrl,
+  network,
+  environment,
+  type,
+}: {
+  address?: string
+  explorerUrl: string
+  network: NetworkData
+  environment: string
+  type: string
+}) => {
+  if (!address) return null
+
+  return (
+    <div className={tableStyles.addressContainer}>
+      <a
+        className={tableStyles.addressLink}
+        href={explorerUrl.replace("%s", address)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {address}
+      </a>
+      <button
+        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+        data-clipboard-text={address}
+        onClick={(e) =>
+          handleClick(e, {
+            product: "STREAMS",
+            action: "verifierProxyAddress_copied",
+            extraInfo1: environment,
+            extraInfo2: network.network,
+          })
+        }
+      >
+        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+      </button>
+    </div>
   )
 }
 

@@ -42,6 +42,8 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
       zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
       ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
+      bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
+      shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
     },
   },
   "Data Feeds": {
@@ -157,6 +159,8 @@ export const productChainLinks: ProductChainLinks = {
     zksync: "/resources/link-token-contracts#zksync",
     zircuit: "/resources/link-token-contracts#zircuit",
     ronin: "/resources/link-token-contracts#ronin",
+    bsquared: "/resources/link-token-contracts#bsquared",
+    shibarium: "/resources/link-token-contracts#shibarium",
   },
 }
 
@@ -192,4 +196,6 @@ export const chainNames: Record<string, string> = {
   blast: "Blast",
   zircuit: "Zircuit",
   ronin: "Ronin",
+  bsquared: "B²",
+  shibarium: "Shibarium",
 }

@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsVerifierProxyTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
 import { clsx } from "~/lib"
@@ -129,8 +129,8 @@ export const FeedList = ({
 
     return (
       <>
-        <SectionWrapper title="Verifier Proxy Addresses" depth={2}>
-          <StreamsVerifierProxyTable />
+        <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+          <StreamsNetworkAddressesTable />
         </SectionWrapper>
 
         <SectionWrapper title={streamsMainnetSectionTitle} depth={2}>
