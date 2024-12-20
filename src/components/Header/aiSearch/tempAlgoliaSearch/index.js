@@ -16,10 +16,10 @@ var ge = { exports: {} },
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- */ var ar
+ */ var nr
 function Kr() {
-  if (ar) return ie
-  ar = 1
+  if (nr) return ie
+  nr = 1
   var a = k,
     s = Symbol.for("react.element"),
     l = Symbol.for("react.fragment"),
@@ -47,11 +47,11 @@ var ce = {}
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- */ var nr
+ */ var sr
 function Yr() {
   return (
-    nr ||
-      ((nr = 1),
+    sr ||
+      ((sr = 1),
       process.env.NODE_ENV !== "production" &&
         (function () {
           var a = k,
@@ -97,7 +97,7 @@ function Yr() {
           var I = !1,
             K = !1,
             de = !1,
-            Pe = !1,
+            ve = !1,
             he = !1,
             O
           O = Symbol.for("react.module.reference")
@@ -111,7 +111,7 @@ function Yr() {
               t === y ||
               t === n ||
               t === c ||
-              Pe ||
+              ve ||
               t === m ||
               I ||
               K ||
@@ -191,24 +191,24 @@ function Yr() {
             B = 0,
             $,
             ne,
-            De,
             Ue,
             Me,
             We,
-            Fe
-          function Ve() {}
-          Ve.__reactDisabledLog = !0
+            Fe,
+            Ve
+          function Xe() {}
+          Xe.__reactDisabledLog = !0
           function pr() {
             {
               if (B === 0) {
                 ;($ = console.log),
                   (ne = console.info),
-                  (De = console.warn),
-                  (Ue = console.error),
-                  (Me = console.group),
-                  (We = console.groupCollapsed),
-                  (Fe = console.groupEnd)
-                var t = { configurable: !0, enumerable: !0, value: Ve, writable: !0 }
+                  (Ue = console.warn),
+                  (Me = console.error),
+                  (We = console.group),
+                  (Fe = console.groupCollapsed),
+                  (Ve = console.groupEnd)
+                var t = { configurable: !0, enumerable: !0, value: Xe, writable: !0 }
                 Object.defineProperties(console, {
                   info: t,
                   log: t,
@@ -229,53 +229,53 @@ function Yr() {
                 Object.defineProperties(console, {
                   log: V({}, t, { value: $ }),
                   info: V({}, t, { value: ne }),
-                  warn: V({}, t, { value: De }),
-                  error: V({}, t, { value: Ue }),
-                  group: V({}, t, { value: Me }),
-                  groupCollapsed: V({}, t, { value: We }),
-                  groupEnd: V({}, t, { value: Fe }),
+                  warn: V({}, t, { value: Ue }),
+                  error: V({}, t, { value: Me }),
+                  group: V({}, t, { value: We }),
+                  groupCollapsed: V({}, t, { value: Fe }),
+                  groupEnd: V({}, t, { value: Ve }),
                 })
               }
               B < 0 && P("disabledDepth fell below zero. This is a bug in React. Please file an issue.")
             }
           }
-          var ve = C.ReactCurrentDispatcher,
-            qe
+          var qe = C.ReactCurrentDispatcher,
+            xe
           function me(t, f, w) {
             {
-              if (qe === void 0)
+              if (xe === void 0)
                 try {
                   throw Error()
                 } catch (S) {
                   var v = S.stack.trim().match(/\n( *(at )?)/)
-                  qe = (v && v[1]) || ""
+                  xe = (v && v[1]) || ""
                 }
               return (
                 `
 ` +
-                qe +
+                xe +
                 t
               )
             }
           }
-          var xe = !1,
+          var be = !1,
             fe
           {
             var wr = typeof WeakMap == "function" ? WeakMap : Map
             fe = new wr()
           }
-          function Xe(t, f) {
-            if (!t || xe) return ""
+          function He(t, f) {
+            if (!t || be) return ""
             {
               var w = fe.get(t)
               if (w !== void 0) return w
             }
             var v
-            xe = !0
+            be = !0
             var S = Error.prepareStackTrace
             Error.prepareStackTrace = void 0
             var j
-            ;(j = ve.current), (ve.current = null), pr()
+            ;(j = qe.current), (qe.current = null), pr()
             try {
               if (f) {
                 var b = function () {
@@ -318,39 +318,39 @@ function Yr() {
 `),
                     N = v.stack.split(`
 `),
-                    R = x.length - 1,
-                    T = N.length - 1;
-                  R >= 1 && T >= 0 && x[R] !== N[T];
+                    T = x.length - 1,
+                    R = N.length - 1;
+                  T >= 1 && R >= 0 && x[T] !== N[R];
 
                 )
-                  T--
-                for (; R >= 1 && T >= 0; R--, T--)
-                  if (x[R] !== N[T]) {
-                    if (R !== 1 || T !== 1)
+                  R--
+                for (; T >= 1 && R >= 0; T--, R--)
+                  if (x[T] !== N[R]) {
+                    if (T !== 1 || R !== 1)
                       do
-                        if ((R--, T--, T < 0 || x[R] !== N[T])) {
+                        if ((T--, R--, R < 0 || x[T] !== N[R])) {
                           var M =
                             `
-` + x[R].replace(" at new ", " at ")
+` + x[T].replace(" at new ", " at ")
                           return (
                             t.displayName && M.includes("<anonymous>") && (M = M.replace("<anonymous>", t.displayName)),
                             typeof t == "function" && fe.set(t, M),
                             M
                           )
                         }
-                      while (R >= 1 && T >= 0)
+                      while (T >= 1 && R >= 0)
                     break
                   }
               }
             } finally {
-              ;(xe = !1), (ve.current = j), gr(), (Error.prepareStackTrace = S)
+              ;(be = !1), (qe.current = j), gr(), (Error.prepareStackTrace = S)
             }
             var re = t ? t.displayName || t.name : "",
               _ = re ? me(re) : ""
             return typeof t == "function" && fe.set(t, _), _
           }
           function Cr(t, f, w) {
-            return Xe(t, !1)
+            return He(t, !1)
           }
           function Pr(t) {
             var f = t.prototype
@@ -358,7 +358,7 @@ function Yr() {
           }
           function ye(t, f, w) {
             if (t == null) return ""
-            if (typeof t == "function") return Xe(t, Pr(t))
+            if (typeof t == "function") return He(t, Pr(t))
             if (typeof t == "string") return me(t)
             switch (t) {
               case n:
@@ -384,14 +384,14 @@ function Yr() {
             return ""
           }
           var se = Object.prototype.hasOwnProperty,
-            He = {},
-            Ge = C.ReactDebugCurrentFrame
+            Ge = {},
+            Ke = C.ReactDebugCurrentFrame
           function pe(t) {
             if (t) {
               var f = t._owner,
                 w = ye(t.type, t._source, f ? f.type : null)
-              Ge.setExtraStackFrame(w)
-            } else Ge.setExtraStackFrame(null)
+              Ke.setExtraStackFrame(w)
+            } else Ke.setExtraStackFrame(null)
           }
           function vr(t, f, w, v, S) {
             {
@@ -414,8 +414,8 @@ function Yr() {
                       throw ((N.name = "Invariant Violation"), N)
                     }
                     x = t[b](f, b, v, w, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED")
-                  } catch (R) {
-                    x = R
+                  } catch (T) {
+                    x = T
                   }
                   x &&
                     !(x instanceof Error) &&
@@ -429,13 +429,13 @@ function Yr() {
                     ),
                     pe(null)),
                     x instanceof Error &&
-                      !(x.message in He) &&
-                      ((He[x.message] = !0), pe(S), P("Failed %s type: %s", w, x.message), pe(null))
+                      !(x.message in Ge) &&
+                      ((Ge[x.message] = !0), pe(S), P("Failed %s type: %s", w, x.message), pe(null))
                 }
             }
           }
           var qr = Array.isArray
-          function be(t) {
+          function Ee(t) {
             return qr(t)
           }
           function xr(t) {
@@ -447,30 +447,30 @@ function Yr() {
           }
           function br(t) {
             try {
-              return Ke(t), !1
+              return Ye(t), !1
             } catch {
               return !0
             }
           }
-          function Ke(t) {
+          function Ye(t) {
             return "" + t
           }
-          function Ye(t) {
+          function _e(t) {
             if (br(t))
               return (
                 P(
                   "The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.",
                   xr(t)
                 ),
-                Ke(t)
+                Ye(t)
               )
           }
           var oe = C.ReactCurrentOwner,
             Er = { key: !0, ref: !0, __self: !0, __source: !0 },
-            _e,
             Ze,
-            Ee
-          Ee = {}
+            Je,
+            Se
+          Se = {}
           function Sr(t) {
             if (se.call(t, "ref")) {
               var f = Object.getOwnPropertyDescriptor(t, "ref").get
@@ -488,20 +488,20 @@ function Yr() {
           function kr(t, f) {
             if (typeof t.ref == "string" && oe.current && f && oe.current.stateNode !== f) {
               var w = U(oe.current.type)
-              Ee[w] ||
+              Se[w] ||
                 (P(
                   'Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref',
                   U(oe.current.type),
                   t.ref
                 ),
-                (Ee[w] = !0))
+                (Se[w] = !0))
             }
           }
           function Ar(t, f) {
             {
               var w = function () {
-                _e ||
-                  ((_e = !0),
+                Ze ||
+                  ((Ze = !0),
                   P(
                     "%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
@@ -513,8 +513,8 @@ function Yr() {
           function Ir(t, f) {
             {
               var w = function () {
-                Ze ||
-                  ((Ze = !0),
+                Je ||
+                  ((Je = !0),
                   P(
                     "%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
@@ -523,7 +523,7 @@ function Yr() {
               ;(w.isReactWarning = !0), Object.defineProperty(t, "ref", { get: w, configurable: !0 })
             }
           }
-          var Rr = function (t, f, w, v, S, j, b) {
+          var Tr = function (t, f, w, v, S, j, b) {
             var x = { $$typeof: s, type: t, key: f, ref: w, props: b, _owner: j }
             return (
               (x._store = {}),
@@ -539,45 +539,45 @@ function Yr() {
               x
             )
           }
-          function Tr(t, f, w, v, S) {
+          function Rr(t, f, w, v, S) {
             {
               var j,
                 b = {},
                 x = null,
                 N = null
-              w !== void 0 && (Ye(w), (x = "" + w)),
-                jr(f) && (Ye(f.key), (x = "" + f.key)),
+              w !== void 0 && (_e(w), (x = "" + w)),
+                jr(f) && (_e(f.key), (x = "" + f.key)),
                 Sr(f) && ((N = f.ref), kr(f, S))
               for (j in f) se.call(f, j) && !Er.hasOwnProperty(j) && (b[j] = f[j])
               if (t && t.defaultProps) {
-                var R = t.defaultProps
-                for (j in R) b[j] === void 0 && (b[j] = R[j])
+                var T = t.defaultProps
+                for (j in T) b[j] === void 0 && (b[j] = T[j])
               }
               if (x || N) {
-                var T = typeof t == "function" ? t.displayName || t.name || "Unknown" : t
-                x && Ar(b, T), N && Ir(b, T)
+                var R = typeof t == "function" ? t.displayName || t.name || "Unknown" : t
+                x && Ar(b, R), N && Ir(b, R)
               }
-              return Rr(t, x, N, S, v, oe.current, b)
+              return Tr(t, x, N, S, v, oe.current, b)
             }
           }
-          var Se = C.ReactCurrentOwner,
-            Je = C.ReactDebugCurrentFrame
+          var je = C.ReactCurrentOwner,
+            Qe = C.ReactDebugCurrentFrame
           function ee(t) {
             if (t) {
               var f = t._owner,
                 w = ye(t.type, t._source, f ? f.type : null)
-              Je.setExtraStackFrame(w)
-            } else Je.setExtraStackFrame(null)
+              Qe.setExtraStackFrame(w)
+            } else Qe.setExtraStackFrame(null)
           }
-          var je
-          je = !1
-          function ke(t) {
+          var ke
+          ke = !1
+          function Ae(t) {
             return typeof t == "object" && t !== null && t.$$typeof === s
           }
-          function Qe() {
+          function ze() {
             {
-              if (Se.current) {
-                var t = U(Se.current.type)
+              if (je.current) {
+                var t = U(je.current.type)
                 if (t)
                   return (
                     `
@@ -593,10 +593,10 @@ Check the render method of \`` +
           function Or(t) {
             return ""
           }
-          var ze = {}
+          var $e = {}
           function Lr(t) {
             {
-              var f = Qe()
+              var f = ze()
               if (!f) {
                 var w = typeof t == "string" ? t : t.displayName || t.name
                 w &&
@@ -610,15 +610,15 @@ Check the top-level render call using <` +
               return f
             }
           }
-          function $e(t, f) {
+          function er(t, f) {
             {
               if (!t._store || t._store.validated || t.key != null) return
               t._store.validated = !0
               var w = Lr(f)
-              if (ze[w]) return
-              ze[w] = !0
+              if ($e[w]) return
+              $e[w] = !0
               var v = ""
-              t && t._owner && t._owner !== Se.current && (v = " It was passed a child from " + U(t._owner.type) + "."),
+              t && t._owner && t._owner !== je.current && (v = " It was passed a child from " + U(t._owner.type) + "."),
                 ee(t),
                 P(
                   'Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.',
@@ -628,19 +628,19 @@ Check the top-level render call using <` +
                 ee(null)
             }
           }
-          function er(t, f) {
+          function rr(t, f) {
             {
               if (typeof t != "object") return
-              if (be(t))
+              if (Ee(t))
                 for (var w = 0; w < t.length; w++) {
                   var v = t[w]
-                  ke(v) && $e(v, f)
+                  Ae(v) && er(v, f)
                 }
-              else if (ke(t)) t._store && (t._store.validated = !0)
+              else if (Ae(t)) t._store && (t._store.validated = !0)
               else if (t) {
                 var S = A(t)
                 if (typeof S == "function" && S !== t.entries)
-                  for (var j = S.call(t), b; !(b = j.next()).done; ) ke(b.value) && $e(b.value, f)
+                  for (var j = S.call(t), b; !(b = j.next()).done; ) Ae(b.value) && er(b.value, f)
               }
             }
           }
@@ -655,8 +655,8 @@ Check the top-level render call using <` +
               if (w) {
                 var v = U(f)
                 vr(w, t.props, "prop", v, t)
-              } else if (f.PropTypes !== void 0 && !je) {
-                je = !0
+              } else if (f.PropTypes !== void 0 && !ke) {
+                ke = !0
                 var S = U(f)
                 P(
                   "Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?",
@@ -687,8 +687,8 @@ Check the top-level render call using <` +
               t.ref !== null && (ee(t), P("Invalid attribute `ref` supplied to `React.Fragment`."), ee(null))
             }
           }
-          var rr = {}
-          function tr(t, f, w, v, S, j) {
+          var tr = {}
+          function ar(t, f, w, v, S, j) {
             {
               var b = ae(t)
               if (!b) {
@@ -697,44 +697,44 @@ Check the top-level render call using <` +
                   (x +=
                     " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.")
                 var N = Or()
-                N ? (x += N) : (x += Qe())
-                var R
+                N ? (x += N) : (x += ze())
+                var T
                 t === null
-                  ? (R = "null")
-                  : be(t)
-                  ? (R = "array")
+                  ? (T = "null")
+                  : Ee(t)
+                  ? (T = "array")
                   : t !== void 0 && t.$$typeof === s
-                  ? ((R = "<" + (U(t.type) || "Unknown") + " />"),
+                  ? ((T = "<" + (U(t.type) || "Unknown") + " />"),
                     (x = " Did you accidentally export a JSX literal instead of a component?"))
-                  : (R = typeof t),
+                  : (T = typeof t),
                   P(
                     "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
-                    R,
+                    T,
                     x
                   )
               }
-              var T = Tr(t, f, w, S, j)
-              if (T == null) return T
+              var R = Rr(t, f, w, S, j)
+              if (R == null) return R
               if (b) {
                 var M = f.children
                 if (M !== void 0)
                   if (v)
-                    if (be(M)) {
-                      for (var re = 0; re < M.length; re++) er(M[re], t)
+                    if (Ee(M)) {
+                      for (var re = 0; re < M.length; re++) rr(M[re], t)
                       Object.freeze && Object.freeze(M)
                     } else
                       P(
                         "React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead."
                       )
-                  else er(M, t)
+                  else rr(M, t)
               }
               if (se.call(f, "key")) {
                 var _ = U(t),
                   D = Object.keys(f).filter(function (Vr) {
                     return Vr !== "key"
                   }),
-                  Ae = D.length > 0 ? "{key: someKey, " + D.join(": ..., ") + ": ...}" : "{key: someKey}"
-                if (!rr[_ + Ae]) {
+                  Ie = D.length > 0 ? "{key: someKey, " + D.join(": ..., ") + ": ...}" : "{key: someKey}"
+                if (!tr[_ + Ie]) {
                   var Fr = D.length > 0 ? "{" + D.join(": ..., ") + ": ...}" : "{}"
                   P(
                     `A props object containing a "key" prop is being spread into JSX:
@@ -743,22 +743,22 @@ Check the top-level render call using <` +
 React keys must be passed directly to JSX without using spread:
   let props = %s;
   <%s key={someKey} {...props} />`,
-                    Ae,
+                    Ie,
                     _,
                     Fr,
                     _
                   ),
-                    (rr[_ + Ae] = !0)
+                    (tr[_ + Ie] = !0)
                 }
               }
-              return t === d ? Br(T) : Nr(T), T
+              return t === d ? Br(R) : Nr(R), R
             }
           }
           function Dr(t, f, w) {
-            return tr(t, f, w, !0)
+            return ar(t, f, w, !0)
           }
           function Ur(t, f, w) {
-            return tr(t, f, w, !1)
+            return ar(t, f, w, !1)
           }
           var Mr = Ur,
             Wr = Dr
@@ -767,9 +767,9 @@ React keys must be passed directly to JSX without using spread:
     ce
   )
 }
-var sr
+var or
 function _r() {
-  return sr || ((sr = 1), process.env.NODE_ENV === "production" ? (ge.exports = Kr()) : (ge.exports = Yr())), ge.exports
+  return or || ((or = 1), process.env.NODE_ENV === "production" ? (ge.exports = Kr()) : (ge.exports = Yr())), ge.exports
 }
 var o = _r()
 const H = { MAC: "Mac", WINDOWS: "Windows", LINUX: "Linux", OTHER: "Other" },
@@ -914,7 +914,7 @@ function ue(a) {
         },
       }
 }
-function Ie(a = { serializable: !0 }) {
+function Te(a = { serializable: !0 }) {
   let s = {}
   return {
     get(l, d, y = { miss: () => Promise.resolve() }) {
@@ -994,32 +994,32 @@ function tt() {
     },
   }
 }
-var or = 2 * 60 * 1e3
-function ir(a, s = "up") {
+var ir = 2 * 60 * 1e3
+function cr(a, s = "up") {
   const l = Date.now()
   function d() {
-    return s === "up" || Date.now() - l > or
+    return s === "up" || Date.now() - l > ir
   }
   function y() {
-    return s === "timed out" && Date.now() - l <= or
+    return s === "timed out" && Date.now() - l <= ir
   }
   return { ...a, status: s, lastUpdate: l, isUp: d, isTimedOut: y }
 }
-var dr = class extends Error {
+var hr = class extends Error {
     constructor(s, l) {
       super(s)
       te(this, "name", "AlgoliaError")
       l && (this.name = l)
     }
   },
-  hr = class extends dr {
+  mr = class extends hr {
     constructor(s, l, d) {
       super(s, d)
       te(this, "stackTrace")
       this.stackTrace = l
     }
   },
-  at = class extends hr {
+  at = class extends mr {
     constructor(a) {
       super(
         "Unreachable hosts - your application id may be incorrect. If the error persists, please reach out to the Algolia Support team: https://alg.li/support.",
@@ -1028,21 +1028,21 @@ var dr = class extends Error {
       )
     }
   },
-  Ce = class extends hr {
+  Pe = class extends mr {
     constructor(s, l, d, y = "ApiError") {
       super(s, d, y)
       te(this, "status")
       this.status = l
     }
   },
-  nt = class extends dr {
+  nt = class extends hr {
     constructor(s, l) {
       super(s, "DeserializationError")
       te(this, "response")
       this.response = l
     }
   },
-  st = class extends Ce {
+  st = class extends Pe {
     constructor(s, l, d, y) {
       super(s, l, y, "DetailedApiError")
       te(this, "error")
@@ -1101,9 +1101,9 @@ function dt(a) {
 function ht({ content: a, status: s }, l) {
   try {
     const d = JSON.parse(a)
-    return "error" in d ? new st(d.message, s, d.error, l) : new Ce(d.message, s, l)
+    return "error" in d ? new st(d.message, s, d.error, l) : new Pe(d.message, s, l)
   } catch {}
-  return new Ce(a, s, l)
+  return new Pe(a, s, l)
 }
 function mt({ isTimedOut: a, status: s }) {
   return !a && ~~s === 0
@@ -1115,9 +1115,9 @@ function yt({ status: a }) {
   return ~~(a / 100) === 2
 }
 function pt(a) {
-  return a.map((s) => mr(s))
+  return a.map((s) => fr(s))
 }
-function mr(a) {
+function fr(a) {
   const s = a.request.headers["x-algolia-api-key"] ? { "x-algolia-api-key": "*****" } : {}
   return { ...a, request: { ...a.request, headers: { ...a.request.headers, ...s } } }
 }
@@ -1134,7 +1134,7 @@ function gt({
   responsesCache: n,
 }) {
   async function c(m) {
-    const g = await Promise.all(m.map((E) => s.get(E, () => Promise.resolve(ir(E))))),
+    const g = await Promise.all(m.map((E) => s.get(E, () => Promise.resolve(cr(E))))),
       q = g.filter((E) => E.isUp()),
       A = g.filter((E) => E.isTimedOut()),
       C = [...q, ...A]
@@ -1178,16 +1178,16 @@ function gt({
           const $ = V(B)
           return (
             B.isTimedOut && K++,
-            d.info("Retryable failure", mr($)),
-            await s.set(Y, ir(Y, B.isTimedOut ? "timed out" : "down")),
+            d.info("Retryable failure", fr($)),
+            await s.set(Y, cr(Y, B.isTimedOut ? "timed out" : "down")),
             de(O, ae)
           )
         }
         if (yt(B)) return dt(B)
         throw (V(B), ht(B, A))
       },
-      Pe = a.filter((O) => O.accept === "readWrite" || (q ? O.accept === "read" : O.accept === "write")),
-      he = await c(Pe)
+      ve = a.filter((O) => O.accept === "readWrite" || (q ? O.accept === "read" : O.accept === "write")),
+      he = await c(ve)
     return de([...he.hosts].reverse(), he.getTimeout)
   }
   function u(m, g = {}) {
@@ -1225,7 +1225,7 @@ function gt({
     responsesCache: n,
   }
 }
-var fr = "5.17.1"
+var yr = "5.17.1"
 function wt(a) {
   return [
     { url: `${a}-dsn.algolia.net`, accept: "read", protocol: "https" },
@@ -1243,7 +1243,7 @@ function Ct({ appId: a, apiKey: s, authMode: l, algoliaAgents: d, ...y }) {
     h = gt({
       hosts: wt(a),
       ...y,
-      algoliaAgent: rt({ algoliaAgents: d, client: "Search", version: fr }),
+      algoliaAgent: rt({ algoliaAgents: d, client: "Search", version: yr }),
       baseHeaders: { "content-type": "text/plain", ...p.headers(), ...y.baseHeaders },
       baseQueryParameters: { ...p.queryParameters(), ...y.baseQueryParameters },
     })
@@ -1422,7 +1422,7 @@ function Ct({ appId: a, apiKey: s, authMode: l, algoliaAgents: d, ...y }) {
       try {
         await this.getSettings({ indexName: e })
       } catch (r) {
-        if (r instanceof Ce && r.status === 404) return !1
+        if (r instanceof Pe && r.status === 404) return !1
         throw r
       }
       return !0
@@ -2111,34 +2111,46 @@ function Pt(a, s, l) {
     requester: Jr(),
     algoliaAgents: [{ segment: "Browser" }],
     authMode: "WithinQueryParameters",
-    responsesCache: Ie(),
-    requestsCache: Ie({ serializable: !1 }),
-    hostsCache: ue({ caches: [Qr({ key: `${fr}-${a}` }), Ie()] }),
+    responsesCache: Te(),
+    requestsCache: Te({ serializable: !1 }),
+    hostsCache: ue({ caches: [Qr({ key: `${yr}-${a}` }), Te()] }),
     ...l,
   })
 }
-const yr = {
+const we = {
     BLOG: "Blog",
     BOOTCAMP: "Bootcamp",
     CASE_STUDY: "Case Study",
     CHANGELOG: "Changelog",
+    DOCUMENTATION: "Documentation",
     GUIDE: "Guide",
     QUICKSTART: "Quickstart",
     TECH_TALK: "Tech Talk",
     TUTORIAL: "Tutorial",
     VIDEO: "Video",
   },
-  vt = Object.values(yr),
+  vt = Object.values(we),
   qt = (a = "") => vt.map((s) => ({ indexName: s, query: a })),
   xt = (a) =>
     a
       .map((s) =>
-        s.hits.map((l) => {
-          const d = l.name ?? "",
-            y = s.index === yr.CHANGELOG ? "https://dev.chain.link/changelog" : l.link ?? "",
-            p = s.index ?? ""
-          return { name: d, link: y, index: p }
-        })
+        s.index === we.DOCUMENTATION
+          ? (console.log("Documentation results", s),
+            s.hits.map((l) => {
+              const d = Object.values(l.hierarchy ?? {})
+                  .slice(1)
+                  .filter(Boolean)
+                  .join(" > "),
+                y = l.url ?? "",
+                p = we.DOCUMENTATION
+              return { name: d, link: y, index: p }
+            }))
+          : s.hits.map((l) => {
+              const d = l.name ?? "",
+                y = s.index === we.CHANGELOG ? "https://dev.chain.link/changelog" : l.link ?? "",
+                p = s.index ?? ""
+              return { name: d, link: y, index: p }
+            })
       )
       .filter((s) => !!s.length),
   bt = (a, s = 5) => {
@@ -2174,18 +2186,18 @@ const yr = {
   kt = "_body_837gc_1",
   At = "_bodyS_837gc_16",
   It = "_bodySemiS_837gc_27",
-  Rt = "_bodyXS_837gc_38",
-  Tt = "_bodySemiXS_837gc_49",
-  Be = { body: kt, bodyS: At, bodySemiS: It, bodyXS: Rt, bodySemiXS: Tt },
+  Tt = "_bodyXS_837gc_38",
+  Rt = "_bodySemiXS_837gc_49",
+  De = { body: kt, bodyS: At, bodySemiS: It, bodyXS: Tt, bodySemiXS: Rt },
   L = ({ variant: a = "default", className: s = "", children: l }) => {
-    const d = a === "default" ? Be.body : Be[a]
+    const d = a === "default" ? De.body : De[a]
     return o.jsx("span", { className: `${d} ${s}`, children: l })
   },
   Ot = "_miniCard_qi33g_1",
   Lt = "_miniCardImage_qi33g_14",
   Nt = "_miniCardLabelContainer_qi33g_19",
   Re = { miniCard: Ot, miniCardImage: Lt, miniCardLabelContainer: Nt },
-  cr = ({ link: a, label: s, imageSrc: l }) =>
+  ur = ({ link: a, label: s, imageSrc: l }) =>
     o.jsxs("a", {
       href: a,
       className: Re.miniCard,
@@ -2300,7 +2312,7 @@ const yr = {
         strokeWidth: "1.5",
       }),
     }),
-  Te = ({ ...a }) =>
+  Oe = ({ ...a }) =>
     o.jsx(F, {
       ...a,
       width: "1rem",
@@ -2515,14 +2527,14 @@ const yr = {
     }),
   Yt = "_boxVertical_ttylk_1",
   _t = "_boxHorizontal_ttylk_9",
-  ur = { boxVertical: Yt, boxHorizontal: _t },
+  lr = { boxVertical: Yt, boxHorizontal: _t },
   le = ({ variant: a = "vertical", title: s = "", ariaLabel: l = "", header: d, children: y }) => {
     const p = d || (!!s && o.jsx("div", { children: o.jsx(L, { variant: "bodySemiXS", children: s }) }))
     return o.jsxs("div", {
       role: "region",
       "aria-label": l || s,
-      className: ur.boxVertical,
-      children: [p, a === "vertical" ? y : o.jsx("div", { className: ur.boxHorizontal, children: y })],
+      className: lr.boxVertical,
+      children: [p, a === "vertical" ? y : o.jsx("div", { className: lr.boxHorizontal, children: y })],
     })
   },
   Zt = "_searchResultList_ic9rv_1",
@@ -2541,7 +2553,7 @@ const yr = {
     itemLink: ea,
     itemLabel: ra,
   },
-  we = ({ className: a = "", children: s, ...l }) =>
+  Ce = ({ className: a = "", children: s, ...l }) =>
     o.jsx("ul", { ...l, className: `${J.searchResultList} ${a}`, children: s }),
   Q = ({ icon: a, itemLabel: s, itemLink: l, className: d = "", itemActive: y = !1 }) => {
     const p = k.useRef(null)
@@ -2568,25 +2580,25 @@ const yr = {
   ta = "_defaultModalBodyContainer_h1y68_1",
   aa = "_defaultModalBodyLeft_h1y68_7",
   na = "_defaultModalBodyRight_h1y68_14",
-  Oe = { defaultModalBodyContainer: ta, defaultModalBodyLeft: aa, defaultModalBodyRight: na },
+  Le = { defaultModalBodyContainer: ta, defaultModalBodyLeft: aa, defaultModalBodyRight: na },
   sa = "_certificationCard_vrzug_1",
   oa = "_certificationCardHeader_vrzug_14",
   ia = "_certificationCardBody_vrzug_34",
-  Le = { certificationCard: sa, certificationCardHeader: oa, certificationCardBody: ia },
+  Ne = { certificationCard: sa, certificationCardHeader: oa, certificationCardBody: ia },
   ca = ({ link: a, title: s, label: l, imageOrIcon: d, level: y = "beginner" }) => {
     let p
     return (
       y === "beginner" && (p = o.jsx(Vt, {})),
       o.jsxs("a", {
         href: a,
-        className: Le.certificationCard,
+        className: Ne.certificationCard,
         children: [
           o.jsxs("div", {
-            className: Le.certificationCardHeader,
+            className: Ne.certificationCardHeader,
             children: [d, o.jsx(L, { variant: "bodyS", children: s })],
           }),
           o.jsxs("div", {
-            className: Le.certificationCardBody,
+            className: Ne.certificationCardBody,
             children: [p, o.jsx(L, { variant: "bodyXS", children: l })],
           }),
         ],
@@ -2595,17 +2607,17 @@ const yr = {
   },
   ua = () =>
     o.jsxs("div", {
-      className: Oe.defaultModalBodyContainer,
+      className: Le.defaultModalBodyContainer,
       children: [
         o.jsx("div", {
-          className: Oe.defaultModalBodyLeft,
+          className: Le.defaultModalBodyLeft,
           children: o.jsx(le, {
             title: "Popular links",
-            children: o.jsxs(we, {
+            children: o.jsxs(Ce, {
               children: [
-                o.jsx(Q, { icon: o.jsx(Te, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
-                o.jsx(Q, { icon: o.jsx(Te, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
-                o.jsx(Q, { icon: o.jsx(Te, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
+                o.jsx(Q, { icon: o.jsx(Oe, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
+                o.jsx(Q, { icon: o.jsx(Oe, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
+                o.jsx(Q, { icon: o.jsx(Oe, {}), itemLabel: "Example link", itemLink: "https://example.com" }),
                 o.jsx(Q, {
                   icon: o.jsx(Wt, {}),
                   itemLabel: "Talk to an expert",
@@ -2616,14 +2628,14 @@ const yr = {
           }),
         }),
         o.jsxs("div", {
-          className: Oe.defaultModalBodyRight,
+          className: Le.defaultModalBodyRight,
           children: [
             o.jsxs(le, {
               variant: "horizontal",
               title: "Expand your knowledge",
               children: [
-                o.jsx(cr, { imageSrc: jt, label: "Doc", link: "https://docs.chain.link/" }),
-                o.jsx(cr, { imageSrc: St, label: "Blog", link: "https://blog.chain.link/" }),
+                o.jsx(ur, { imageSrc: jt, label: "Doc", link: "https://docs.chain.link/" }),
+                o.jsx(ur, { imageSrc: St, label: "Blog", link: "https://blog.chain.link/" }),
               ],
             }),
             o.jsx(le, {
@@ -2711,7 +2723,7 @@ const yr = {
       ],
     })
   },
-  lr = ({ categories: a, activeCategory: s, onCategoryClicked: l }) => {
+  dr = ({ categories: a, activeCategory: s, onCategoryClicked: l }) => {
     const [d, y] = k.useState(!1),
       p = k.useRef(null)
     k.useEffect(() => {
@@ -2728,7 +2740,7 @@ const yr = {
       ],
     })
   },
-  Ne = 3,
+  Be = 3,
   ka = ({ items: a, categoryOrder: s }) => {
     var A
     const [l, d] = k.useState([]),
@@ -2736,7 +2748,7 @@ const yr = {
       [h, e] = k.useState({ Suggestions: !0 }),
       [r, n] = k.useState(-1),
       c = bt(a)
-    let i = [[...c], ...a].flatMap((C) => (h != null && h[C == null ? void 0 : C[0].index] ? C : C.slice(0, Ne)))
+    let i = [[...c], ...a].flatMap((C) => (h != null && h[C == null ? void 0 : C[0].index] ? C : C.slice(0, Be)))
     const u = k.useCallback(
       (C) => {
         var P
@@ -2771,7 +2783,7 @@ const yr = {
         o.jsxs("div", {
           className: X.modalBodyContainer,
           children: [
-            o.jsx(lr, { categories: l, activeCategory: y, onCategoryClicked: g }),
+            o.jsx(dr, { categories: l, activeCategory: y, onCategoryClicked: g }),
             o.jsxs("div", {
               className: X.modalBodyResultFiltered,
               children: [
@@ -2783,7 +2795,7 @@ const yr = {
                     o.jsx(L, { variant: "bodyS", className: X.backToAllResultsButtonText, children: "All results" }),
                   ],
                 }),
-                o.jsx(we, {
+                o.jsx(Ce, {
                   children: C.map((P) =>
                     o.jsx(Q, { itemLabel: P.name, itemLink: P.link ?? "", itemActive: q(P) }, `${P.index}-${P.name}`)
                   ),
@@ -2797,11 +2809,11 @@ const yr = {
     return o.jsxs("div", {
       className: X.modalBodyContainer,
       children: [
-        o.jsx(lr, { categories: l, activeCategory: y, onCategoryClicked: g }),
+        o.jsx(dr, { categories: l, activeCategory: y, onCategoryClicked: g }),
         !!c.length &&
           o.jsx(le, {
             title: "Suggestions",
-            children: o.jsx(we, {
+            children: o.jsx(Ce, {
               children: c.map((C) =>
                 o.jsx(Q, { itemLabel: C.name, itemLink: C.link ?? "", itemActive: q(C) }, `${C.index}-${C.name}`)
               ),
@@ -2810,7 +2822,7 @@ const yr = {
         a.map((C, P) => {
           let E = ""
           return (
-            C.length > Ne && (E += `(${C.length})`),
+            C.length > Be && (E += `(${C.length})`),
             o.jsx(
               le,
               {
@@ -2823,7 +2835,7 @@ const yr = {
                     return m((I = C == null ? void 0 : C[0]) == null ? void 0 : I.index)
                   },
                 }),
-                children: o.jsx(we, {
+                children: o.jsx(Ce, {
                   children: C.map((I, K) =>
                     o.jsx(
                       Q,
@@ -2831,7 +2843,7 @@ const yr = {
                         itemLabel: I.name,
                         itemLink: I.link ?? "",
                         itemActive: q(I),
-                        className: K >= Ne && !(h != null && h[I.index]) ? X.hideItem : "",
+                        className: K >= Be && !(h != null && h[I.index]) ? X.hideItem : "",
                       },
                       `${I.index}-${I.name}`
                     )
@@ -2864,8 +2876,8 @@ const yr = {
       ],
     }),
   Ia = "_modalOverlay_beeny_1",
-  Ra = "_modalInner_beeny_12",
-  Ta = "_modalContainer_beeny_21",
+  Ta = "_modalInner_beeny_12",
+  Ra = "_modalContainer_beeny_21",
   Oa = "_modalHeader_beeny_32",
   La = "_searchInput_beeny_43",
   Na = "_clearButton_beeny_67",
@@ -2875,8 +2887,8 @@ const yr = {
   Ma = "_modalFooterShortcut_beeny_98",
   W = {
     modalOverlay: Ia,
-    modalInner: Ra,
-    modalContainer: Ta,
+    modalInner: Ta,
+    modalContainer: Ra,
     modalHeader: Oa,
     searchInput: La,
     clearButton: Na,
@@ -2950,7 +2962,7 @@ const yr = {
           placeholder: "Search across Chainlink resources",
           autoFocus: !0,
           onChange: h,
-          className: `${Be.body} ${W.searchInput}`,
+          className: `${De.body} ${W.searchInput}`,
         }),
         !!l &&
           o.jsxs("button", {
