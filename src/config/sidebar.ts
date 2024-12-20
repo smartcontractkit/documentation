@@ -1010,6 +1010,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "Using the Token Manager",
+          url: "ccip/tutorials/token-manager",
+        },
+        {
           title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
