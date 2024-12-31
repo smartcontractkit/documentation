@@ -544,8 +544,7 @@ export const CHAINS: Chain[] = [
         name: "Aptos Testnet",
         explorerUrl: "",
         networkType: "testnet",
-        rddUrl:
-          "https://gist.githubusercontent.com/khadni/0894bd57169f2aaa840b89e40440e21a/raw/2cc8db69ab04f370de3ec2cee2d94b46c1282480/feeds-aptos-testnet.json",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-testnet.json",
         queryString: "aptos-testnet",
       },
     ],

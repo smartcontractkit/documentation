@@ -85,6 +85,7 @@ export const productChainLinks: ProductChainLinks = {
       opbnb: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
+      shibarium: "/data-streams/crypto-streams",
     },
   },
   Functions: {
