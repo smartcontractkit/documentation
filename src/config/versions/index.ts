@@ -21,6 +21,16 @@ export const VERSIONS = {
       "v1.5.1": "2023-12-04T00:00:00Z", // 4 December 2023
     },
   },
+  // Chainlink Local Versions
+  "chainlink-local": {
+    LATEST: "v0.2.3",
+    ALL: ["v0.2.3", "v0.2.2", "v0.2.1"] as const,
+    RELEASE_DATES: {
+      "v0.2.1": "2024-07-05T00:00:00Z", // 5 July 2024
+      "v0.2.2": "2024-10-15T00:00:00Z", // 15 October 2024
+      "v0.2.3": "2024-11-30T00:00:00Z", // 30 November 2024
+    },
+  },
   // Add new products here following the same pattern
   // example: {
   //   LATEST: "v1.0.0",
@@ -36,8 +46,6 @@ export const VERSIONS = {
 export type ProductVersions = {
   [K in Collection]?: VersionConfig
 }
-
-export type CCIPVersion = (typeof VERSIONS.ccip.ALL)[number]
 
 // Re-export for convenience
 export type { Collection }

@@ -24,11 +24,5 @@ export interface VersionSelectorProps<T extends string = string> {
   onChange?: (newVersion: T) => void
 }
 
-// Legacy support for CCIP - keeping for backward compatibility
-export interface CCIPVersionWrapper {
-  currentVersion: string
-  currentPath: string
-}
-
 // Re-export for convenience
 export type { Collection }
