@@ -129,20 +129,7 @@ export const VersionSelectorClient = <T extends string>({
             }
 
             // Check if page is not available in target version
-            if (pageConfig.notAvailableIn?.includes(newVersion)) {
-              if (pageConfig.redirectTo?.[newVersion]) {
-                const redirectPath =
-                  buildVersionUrl(
-                    { ...config.product, name: config.product.name as Collection },
-                    currentPath.replace(pagePath, pageConfig.redirectTo[newVersion]),
-                    currentVersion,
-                    newVersion
-                  ) + (hasTrailingSlash ? "/" : "")
-
-                window.location.href = redirectPath
-                return
-              }
-
+            if (pageConfig.notAvailableIn && pageConfig.notAvailableIn.includes(newVersion)) {
               setIsChanging(false)
               setError(`This page is not available in version ${newVersion}`)
               return

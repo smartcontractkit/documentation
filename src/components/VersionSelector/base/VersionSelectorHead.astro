@@ -7,6 +7,7 @@ import {
   getProductVersionConfig,
   getVersionReleaseDate,
 } from "../utils"
+import { PAGE_AVAILABILITY } from "@config/versions/page-availability"
 
 interface Props {
   product: Collection
@@ -31,6 +32,30 @@ const sortedVersions = sortVersions(versionConfig.ALL)
 const isNotLatest = validatedVersion !== versionConfig.LATEST
 const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? false
 
+// Extract page path to check availability
+const pageMatch = currentPath.match(new RegExp(`/${product}/api-reference/v[^/]+/(.+?)/?$`))
+const pagePath = pageMatch ? pageMatch[1] : null
+const productAvailability = PAGE_AVAILABILITY[product]
+
+// Function to check if a version is available for this page
+const isVersionAvailable = (version: string): boolean => {
+  let isAvailable = true
+
+  if (pagePath && productAvailability) {
+    const pageConfig = productAvailability[pagePath]
+
+    if (pageConfig) {
+      if (pageConfig.onlyAvailableIn) {
+        isAvailable = pageConfig.onlyAvailableIn.includes(version)
+      } else if (pageConfig.notAvailableIn) {
+        isAvailable = !pageConfig.notAvailableIn.includes(version)
+      }
+    }
+  }
+
+  return isAvailable
+}
+
 // Get release date for the current version
 const releaseDate = getVersionReleaseDate(product, validatedVersion)
 
@@ -42,6 +67,9 @@ const productConfig = {
 
 // Generate changelog URL (points to API reference index)
 const changelogUrl = `/${product}/api-reference`
+
+// Filter versions based on availability
+const availableVersions = sortedVersions.filter((version) => isVersionAvailable(version))
 
 // SEO: Generate structured data
 const structuredData = {
@@ -57,7 +85,7 @@ const structuredData = {
   isPartOf: {
     "@type": "APIReference",
     name: product,
-    versionList: sortedVersions.map((version) => ({
+    versionList: availableVersions.map((version) => ({
       "@type": "SoftwareVersion",
       version: version,
       url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
@@ -67,8 +95,8 @@ const structuredData = {
   },
 }
 
-// SEO: Version alternates with metadata
-const versions = sortedVersions.map((version) => ({
+// SEO: Version alternates with metadata (only for available versions)
+const versions = availableVersions.map((version) => ({
   url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
   version,
   isLatest: version === versionConfig.LATEST,
@@ -84,7 +112,7 @@ const versions = sortedVersions.map((version) => ({
 <meta name="version-status" content={isNotLatest ? "outdated" : "latest"} />
 {isDeprecated && <meta name="robots" content="noindex,follow" />}
 
-{/* SEO: Version alternates */}
+{/* SEO: Version alternates - only for available versions */}
 {
   versions.map(({ url, version, isLatest, isDeprecated }) => (
     <link
