@@ -115,23 +115,15 @@ export const VersionSelectorClient = <T extends string>({
         const productAvailability = PAGE_AVAILABILITY[config.product.name]
         const pageConfig = productAvailability?.[pagePath]
 
-        if (!pageConfig) {
-          // Page not in config = available everywhere
-          window.location.href = buildVersionUrl(
-            { ...config.product, name: config.product.name as Collection },
-            currentPath,
-            currentVersion,
-            newVersion
-          )
-          return
-        }
-
         // Check if page is not available in target version
-        if (pageConfig.notAvailableIn?.includes(newVersion)) {
-          // Check if there's a redirect
+        if (pageConfig?.notAvailableIn?.includes(newVersion)) {
           if (pageConfig.redirectTo?.[newVersion]) {
-            const redirectPath = currentPath.replace(pagePath, pageConfig.redirectTo[newVersion])
-            window.location.href = redirectPath
+            // Build new URL with redirect path
+            const newPath = currentPath.replace(
+              new RegExp(`${pagePath}/?$`), // Handle trailing slash
+              `${pageConfig.redirectTo[newVersion]}/`
+            )
+            window.location.href = newPath
             return
           }
 
@@ -140,19 +132,14 @@ export const VersionSelectorClient = <T extends string>({
           return
         }
 
-        // Page is available, proceed normally
+        // Page is available or not in config (assume available)
         const newUrl = buildVersionUrl(
           { ...config.product, name: config.product.name as Collection },
           currentPath,
           currentVersion,
           newVersion
         )
-        try {
-          window.history.replaceState({}, "", newUrl)
-          window.location.reload()
-        } catch {
-          window.location.href = newUrl
-        }
+        window.location.href = newUrl
       } catch (err) {
         setIsChanging(false)
         setError("Failed to change version. Please try again.")

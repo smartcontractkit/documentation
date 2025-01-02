@@ -84,17 +84,6 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const poolType = chain === "source" ? state.sourceContracts.poolType : state.destinationContracts.poolType
 
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[ConfigTrack] ${chain}-update-builder:`, {
-      currentNetwork: currentNetwork?.name,
-      remoteNetwork: remoteNetwork?.name,
-      poolAddress,
-      poolType,
-      remoteContracts,
-      timestamp: new Date().toISOString(),
-    })
-  }
-
   const isDataReady = isValidNetwork(currentNetwork) && isValidNetwork(remoteNetwork) && Boolean(poolAddress)
 
   const canGenerateUpdate = () => {
