@@ -16,15 +16,6 @@ export const ContractVerificationStep = ({
   contractAddress,
   contractType,
 }: ContractVerificationStepProps) => {
-  // Debug values
-  console.log("ContractVerificationStep Props:", {
-    network,
-    contractAddress,
-    contractType,
-    hasNetwork: !!network?.explorerUrl,
-    hasAddress: !!contractAddress,
-  })
-
   const explorerContractUrl =
     contractAddress && network?.explorerUrl ? `${network.explorerUrl}/address/${contractAddress}#code` : undefined
 

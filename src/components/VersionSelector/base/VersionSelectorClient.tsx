@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { getVersionLabel, buildVersionUrl } from "../utils"
+import { PAGE_AVAILABILITY } from "@config/versions/page-availability"
 import styles from "../styles/components/VersionSelector.module.css"
 import { Collection } from "../types"
 
@@ -97,6 +98,49 @@ export const VersionSelectorClient = <T extends string>({
       setIsChanging(true)
 
       try {
+        // Extract the page path from current URL
+        const pathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+)`))
+        if (!pathMatch) {
+          // If no page path (e.g. index), proceed normally
+          window.location.href = buildVersionUrl(
+            { ...config.product, name: config.product.name as Collection },
+            currentPath,
+            currentVersion,
+            newVersion
+          )
+          return
+        }
+
+        const pagePath = pathMatch[1].replace(/\/$/, "") // Remove trailing slash
+        const productAvailability = PAGE_AVAILABILITY[config.product.name]
+        const pageConfig = productAvailability?.[pagePath]
+
+        if (!pageConfig) {
+          // Page not in config = available everywhere
+          window.location.href = buildVersionUrl(
+            { ...config.product, name: config.product.name as Collection },
+            currentPath,
+            currentVersion,
+            newVersion
+          )
+          return
+        }
+
+        // Check if page is not available in target version
+        if (pageConfig.notAvailableIn?.includes(newVersion)) {
+          // Check if there's a redirect
+          if (pageConfig.redirectTo?.[newVersion]) {
+            const redirectPath = currentPath.replace(pagePath, pageConfig.redirectTo[newVersion])
+            window.location.href = redirectPath
+            return
+          }
+
+          setIsChanging(false)
+          setError(`This page is not available in version ${newVersion}`)
+          return
+        }
+
+        // Page is available, proceed normally
         const newUrl = buildVersionUrl(
           { ...config.product, name: config.product.name as Collection },
           currentPath,

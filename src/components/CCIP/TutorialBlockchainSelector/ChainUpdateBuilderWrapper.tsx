@@ -72,10 +72,6 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const [formattedUpdate, setFormattedUpdate] = useState<string>("")
   const [callData, setCallData] = useState<string>("")
 
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[RenderTrack] ChainUpdateBuilderWrapper-${chain} rendered`)
-  }
-
   // Get current network info
   const currentNetwork = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = currentNetwork ? { name: currentNetwork.name, logo: currentNetwork.logo } : { name: "loading..." }
