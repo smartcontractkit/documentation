@@ -98,10 +98,11 @@ export const VersionSelectorClient = <T extends string>({
       setIsChanging(true)
 
       try {
-        // Extract the page path from current URL
-        const pathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+)`))
+        // Extract the page path from current URL with improved regex
+        const pathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
+
+        // If no specific page (e.g., index), proceed normally
         if (!pathMatch) {
-          // If no page path (e.g. index), proceed normally
           window.location.href = buildVersionUrl(
             { ...config.product, name: config.product.name as Collection },
             currentPath,
@@ -111,34 +112,56 @@ export const VersionSelectorClient = <T extends string>({
           return
         }
 
-        const pagePath = pathMatch[1].replace(/\/$/, "") // Remove trailing slash
+        const pagePath = pathMatch[1] // Path without trailing slash
+        const hasTrailingSlash = currentPath.endsWith("/")
         const productAvailability = PAGE_AVAILABILITY[config.product.name]
-        const pageConfig = productAvailability?.[pagePath]
 
-        // Check if page is not available in target version
-        if (pageConfig?.notAvailableIn?.includes(newVersion)) {
-          if (pageConfig.redirectTo?.[newVersion]) {
-            // Build new URL with redirect path
-            const newPath = currentPath.replace(
-              new RegExp(`${pagePath}/?$`), // Handle trailing slash
-              `${pageConfig.redirectTo[newVersion]}/`
-            )
-            window.location.href = newPath
-            return
+        if (productAvailability) {
+          const pageConfig = productAvailability[pagePath]
+
+          // Check version-specific availability
+          if (pageConfig) {
+            // Check if page is only available in specific versions
+            if (pageConfig.onlyAvailableIn && !pageConfig.onlyAvailableIn.includes(newVersion)) {
+              setIsChanging(false)
+              setError(`This page is only available in versions: ${pageConfig.onlyAvailableIn.join(", ")}`)
+              return
+            }
+
+            // Check if page is not available in target version
+            if (pageConfig.notAvailableIn?.includes(newVersion)) {
+              if (pageConfig.redirectTo?.[newVersion]) {
+                const redirectPath =
+                  buildVersionUrl(
+                    { ...config.product, name: config.product.name as Collection },
+                    currentPath.replace(pagePath, pageConfig.redirectTo[newVersion]),
+                    currentVersion,
+                    newVersion
+                  ) + (hasTrailingSlash ? "/" : "")
+
+                window.location.href = redirectPath
+                return
+              }
+
+              setIsChanging(false)
+              setError(`This page is not available in version ${newVersion}`)
+              return
+            }
           }
-
-          setIsChanging(false)
-          setError(`This page is not available in version ${newVersion}`)
-          return
         }
 
-        // Page is available or not in config (assume available)
-        const newUrl = buildVersionUrl(
-          { ...config.product, name: config.product.name as Collection },
-          currentPath,
-          currentVersion,
-          newVersion
-        )
+        // If we get here, either:
+        // 1. Product has no availability config
+        // 2. Page has no specific config
+        // 3. Page exists in target version
+        const newUrl =
+          buildVersionUrl(
+            { ...config.product, name: config.product.name as Collection },
+            currentPath,
+            currentVersion,
+            newVersion
+          ) + (hasTrailingSlash ? "/" : "")
+
         window.location.href = newUrl
       } catch (err) {
         setIsChanging(false)

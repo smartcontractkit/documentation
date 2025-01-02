@@ -5,6 +5,7 @@ type RedirectMap = {
 type PageAvailability = {
   notAvailableIn?: string[]
   redirectTo?: RedirectMap
+  onlyAvailableIn?: string[]
 }
 
 export const PAGE_AVAILABILITY: Record<string, Record<string, PageAvailability>> = {
@@ -17,6 +18,11 @@ export const PAGE_AVAILABILITY: Record<string, Record<string, PageAvailability>>
     },
     "rate-limiter": {
       notAvailableIn: ["v1.5.0"],
+    },
+  },
+  "chainlink-local": {
+    "mock-evm2evm-offramp": {
+      onlyAvailableIn: ["v0.2.1"],
     },
   },
 }
