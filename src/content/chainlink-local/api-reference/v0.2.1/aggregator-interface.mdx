@@ -1,0 +1,130 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "AggregatorInterface v0.2.1 API Reference"
+metadata:
+  description: "API documentation for AggregatorInterface in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## AggregatorInterface
+
+[`AggregatorInterface`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/data-feeds/interfaces/AggregatorInterface.sol) defines the standard interface for Chainlink Data Feed aggregators. This interface provides methods to access price feed data and timestamps, as well as historical values.
+
+## Events
+
+### AnswerUpdated
+
+```solidity
+event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 updatedAt)
+```
+
+Emitted when a new answer is available for a price feed.
+
+| Parameter | Type      | Description                            |
+| --------- | --------- | -------------------------------------- |
+| current   | `int256`  | The new price value (indexed)          |
+| roundId   | `uint256` | The round ID for this update (indexed) |
+| updatedAt | `uint256` | Timestamp when this answer was updated |
+
+### NewRound
+
+```solidity
+event NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)
+```
+
+Emitted when a new round of price updates begins.
+
+| Parameter | Type      | Description                                |
+| --------- | --------- | ------------------------------------------ |
+| roundId   | `uint256` | The round ID that started (indexed)        |
+| startedBy | `address` | Address that initiated the round (indexed) |
+| startedAt | `uint256` | Timestamp when the round started           |
+
+## Functions
+
+### getAnswer
+
+```solidity
+function getAnswer(uint256 roundId) external view returns (int256)
+```
+
+Retrieves the answer for a specific round.
+
+**Parameters:**
+
+| Parameter | Type      | Description           |
+| --------- | --------- | --------------------- |
+| roundId   | `uint256` | The round ID to query |
+
+**Returns:**
+
+| Type     | Description                              |
+| -------- | ---------------------------------------- |
+| `int256` | The price answer for the specified round |
+
+### getTimestamp
+
+```solidity
+function getTimestamp(uint256 roundId) external view returns (uint256)
+```
+
+Retrieves the timestamp for a specific round.
+
+**Parameters:**
+
+| Parameter | Type      | Description           |
+| --------- | --------- | --------------------- |
+| roundId   | `uint256` | The round ID to query |
+
+**Returns:**
+
+| Type      | Description                              |
+| --------- | ---------------------------------------- |
+| `uint256` | The timestamp when the round was updated |
+
+### latestAnswer
+
+```solidity
+function latestAnswer() external view returns (int256)
+```
+
+Retrieves the most recent answer.
+
+**Returns:**
+
+| Type     | Description                  |
+| -------- | ---------------------------- |
+| `int256` | The latest price feed answer |
+
+### latestRound
+
+```solidity
+function latestRound() external view returns (uint256)
+```
+
+Retrieves the most recent round ID.
+
+**Returns:**
+
+| Type      | Description         |
+| --------- | ------------------- |
+| `uint256` | The latest round ID |
+
+### latestTimestamp
+
+```solidity
+function latestTimestamp() external view returns (uint256)
+```
+
+Retrieves the timestamp of the latest answer.
+
+**Returns:**
+
+| Type      | Description                                      |
+| --------- | ------------------------------------------------ |
+| `uint256` | The timestamp when the latest answer was updated |

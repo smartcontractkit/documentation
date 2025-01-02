@@ -1,0 +1,332 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockV3Aggregator v0.2.3 API Reference"
+metadata:
+  description: "API documentation for MockV3Aggregator in Solidity, version v0.2.3."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage023" />
+
+## MockV3Aggregator
+
+A mock implementation of the AggregatorV2V3Interface for testing purposes.
+
+[`MockV3Aggregator`](https://github.com/smartcontractkit/chainlink-local/blob/7d8b2f888e1f10c8841ccd9e0f4af0f5baf11dab/src/data-feeds/MockV3Aggregator.sol)
+
+<Aside>
+  This contract inherits from AggregatorV2V3Interface and interacts with a MockOffchainAggregator to simulate price
+  feeds.
+</Aside>
+
+## Variables
+
+### aggregator
+
+```solidity
+address public aggregator
+```
+
+<Aside>The address of the current aggregator.</Aside>
+
+### proposedAggregator
+
+```solidity
+address public proposedAggregator
+```
+
+<Aside>The address of the proposed aggregator.</Aside>
+
+### version
+
+```solidity
+uint256 public constant override version = 0
+```
+
+<Aside>The version of the aggregator.</Aside>
+
+## Functions
+
+### confirmAggregator
+
+Confirms the proposed aggregator.
+
+```solidity
+function confirmAggregator(address _aggregator) external
+```
+
+<Aside>Confirms the proposed aggregator.</Aside>
+
+#### Parameters
+
+| Parameter    | Type      | Description                            |
+| ------------ | --------- | -------------------------------------- |
+| \_aggregator | `address` | The address of the proposed aggregator |
+
+#### Possible Reverts
+
+- Reverts if the provided aggregator address does not match the proposed aggregator with "Invalid proposed aggregator"
+
+### constructor
+
+Initializes the contract with decimals and initial answer.
+
+```solidity
+constructor(uint8 _decimals, int256 _initialAnswer)
+```
+
+<Aside>Constructor to initialize the MockV3Aggregator contract with initial parameters.</Aside>
+
+#### Parameters
+
+| Parameter       | Type     | Description                               |
+| --------------- | -------- | ----------------------------------------- |
+| \_decimals      | `uint8`  | The number of decimals for the aggregator |
+| \_initialAnswer | `int256` | The initial answer to be set              |
+
+### decimals
+
+Gets the number of decimals used by the aggregator.
+
+```solidity
+function decimals() external view returns (uint8)
+```
+
+<Aside>Gets the number of decimals from the underlying aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type    | Description            |
+| --------- | ------- | ---------------------- |
+| (unnamed) | `uint8` | The number of decimals |
+
+### description
+
+Gets the description of the aggregator.
+
+```solidity
+function description() external pure returns (string memory)
+```
+
+<Aside>Gets the description of the aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type     | Description                          |
+| --------- | -------- | ------------------------------------ |
+| (unnamed) | `string` | The contract path as the description |
+
+### getAnswer
+
+Gets the answer for a specific round ID.
+
+```solidity
+function getAnswer(uint256 roundId) external view returns (int256)
+```
+
+<Aside>Gets the answer for a specific round ID from the underlying aggregator.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                    |
+| --------- | --------- | ------------------------------ |
+| roundId   | `uint256` | The round ID to get answer for |
+
+#### Returns
+
+| Parameter | Type     | Description                       |
+| --------- | -------- | --------------------------------- |
+| (unnamed) | `int256` | The answer for the given round ID |
+
+### getRoundData
+
+Gets the round data for a specific round ID.
+
+```solidity
+function getRoundData(uint80 _roundId)
+    external
+    view
+    returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    )
+```
+
+<Aside>Gets the round data for a specific round ID from the underlying aggregator.</Aside>
+
+#### Parameters
+
+| Parameter | Type     | Description                      |
+| --------- | -------- | -------------------------------- |
+| \_roundId | `uint80` | The round ID to get the data for |
+
+#### Returns
+
+| Parameter       | Type      | Description                                   |
+| --------------- | --------- | --------------------------------------------- |
+| roundId         | `uint80`  | The round ID                                  |
+| answer          | `int256`  | The answer for the round                      |
+| startedAt       | `uint256` | The timestamp when the round started          |
+| updatedAt       | `uint256` | The timestamp when the round was updated      |
+| answeredInRound | `uint80`  | The round ID in which the answer was computed |
+
+### getTimestamp
+
+Gets the timestamp for a specific round ID.
+
+```solidity
+function getTimestamp(uint256 roundId) external view returns (uint256)
+```
+
+<Aside>Gets the timestamp for a specific round ID from the underlying aggregator.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                       |
+| --------- | --------- | --------------------------------- |
+| roundId   | `uint256` | The round ID to get timestamp for |
+
+#### Returns
+
+| Parameter | Type      | Description                          |
+| --------- | --------- | ------------------------------------ |
+| (unnamed) | `uint256` | The timestamp for the given round ID |
+
+### latestAnswer
+
+Gets the latest answer from the aggregator.
+
+```solidity
+function latestAnswer() external view returns (int256)
+```
+
+<Aside>Gets the latest answer from the underlying aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type     | Description       |
+| --------- | -------- | ----------------- |
+| (unnamed) | `int256` | The latest answer |
+
+### latestRound
+
+Gets the latest round ID from the aggregator.
+
+```solidity
+function latestRound() external view returns (uint256)
+```
+
+<Aside>Gets the latest round ID from the underlying aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type      | Description         |
+| --------- | --------- | ------------------- |
+| (unnamed) | `uint256` | The latest round ID |
+
+### latestRoundData
+
+Gets the latest round data.
+
+```solidity
+function latestRoundData()
+    external
+    view
+    returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    )
+```
+
+<Aside>Gets the latest round data from the underlying aggregator.</Aside>
+
+#### Returns
+
+| Parameter       | Type      | Description                                          |
+| --------------- | --------- | ---------------------------------------------------- |
+| roundId         | `uint80`  | The latest round ID                                  |
+| answer          | `int256`  | The latest answer                                    |
+| startedAt       | `uint256` | The timestamp when the latest round started          |
+| updatedAt       | `uint256` | The timestamp when the latest round was updated      |
+| answeredInRound | `uint80`  | The round ID in which the latest answer was computed |
+
+### latestTimestamp
+
+Gets the timestamp of the latest answer.
+
+```solidity
+function latestTimestamp() external view returns (uint256)
+```
+
+<Aside>Gets the timestamp of the latest answer from the underlying aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| (unnamed) | `uint256` | The timestamp of the latest answer |
+
+### proposeAggregator
+
+Proposes a new aggregator.
+
+```solidity
+function proposeAggregator(AggregatorV2V3Interface _aggregator) external
+```
+
+<Aside>Proposes a new aggregator.</Aside>
+
+#### Parameters
+
+| Parameter    | Type                      | Description                            |
+| ------------ | ------------------------- | -------------------------------------- |
+| \_aggregator | `AggregatorV2V3Interface` | The address of the proposed aggregator |
+
+#### Possible Reverts
+
+- Reverts if the proposed aggregator is the zero address with "Proposed aggregator cannot be zero address"
+- Reverts if the proposed aggregator is the current aggregator with "Proposed aggregator cannot be current aggregator"
+
+### updateAnswer
+
+Updates the answer in the mock aggregator.
+
+```solidity
+function updateAnswer(int256 _answer) public
+```
+
+<Aside>Updates the answer in the underlying mock aggregator.</Aside>
+
+#### Parameters
+
+| Parameter | Type     | Description              |
+| --------- | -------- | ------------------------ |
+| \_answer  | `int256` | The new answer to be set |
+
+### updateRoundData
+
+Updates the round data in the mock aggregator.
+
+```solidity
+function updateRoundData(uint80 _roundId, int256 _answer, uint256 _timestamp, uint256 _startedAt) public
+```
+
+<Aside>Updates the round data in the underlying mock aggregator.</Aside>
+
+#### Parameters
+
+| Parameter   | Type      | Description                          |
+| ----------- | --------- | ------------------------------------ |
+| \_roundId   | `uint80`  | The round ID to be updated           |
+| \_answer    | `int256`  | The new answer to be set             |
+| \_timestamp | `uint256` | The timestamp to be set              |
+| \_startedAt | `uint256` | The timestamp when the round started |

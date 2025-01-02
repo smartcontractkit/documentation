@@ -64,10 +64,6 @@ const validateRateLimiterConfig = (config: RateLimiterConfig): string | null => 
 }
 
 export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate }: ChainUpdateBuilderProps) => {
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[RenderTrack] ChainUpdateBuilder-${chain} rendered`)
-  }
-
   const state = useStore(laneStore)
 
   const [outbound, setOutbound] = useState<RateLimiterConfig>(() => {

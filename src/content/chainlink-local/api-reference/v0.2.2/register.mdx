@@ -1,0 +1,145 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register v0.2.2 API Reference"
+metadata:
+  description: "API documentation for Register in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## Register
+
+A contract that manages network configuration details for various blockchain networks, storing and retrieving network-specific parameters.
+
+[`Register`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/ccip/Register.sol)
+
+## Structs
+
+### NetworkDetails
+
+Configuration details for a CCIP network.
+
+```solidity
+struct NetworkDetails {
+  uint64 chainSelector;
+  address routerAddress;
+  address linkAddress;
+  address wrappedNativeAddress;
+  address ccipBnMAddress;
+  address ccipLnMAddress;
+  address rmnProxyAddress;
+  address registryModuleOwnerCustomAddress;
+  address tokenAdminRegistryAddress;
+}
+```
+
+#### Fields
+
+| Field                            | Type    | Description                                              |
+| -------------------------------- | ------- | -------------------------------------------------------- |
+| chainSelector                    | uint64  | The unique identifier for the chain                      |
+| routerAddress                    | address | The address of the CCIP router contract                  |
+| linkAddress                      | address | The address of the LINK token                            |
+| wrappedNativeAddress             | address | The address of the wrapped native token                  |
+| ccipBnMAddress                   | address | The address of the CCIP BnM token                        |
+| ccipLnMAddress                   | address | The address of the CCIP LnM token                        |
+| rmnProxyAddress                  | address | The address of the RMN proxy                             |
+| registryModuleOwnerCustomAddress | address | The address of the registry module owner custom contract |
+| tokenAdminRegistryAddress        | address | The address of the token admin registry                  |
+
+## Variables
+
+### s_networkDetails
+
+```solidity
+mapping(uint256 chainId => NetworkDetails) internal s_networkDetails
+```
+
+<Aside>
+
+Mapping to store network details based on chain ID.
+
+</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract with predefined network configurations for various test networks.
+
+```solidity
+constructor()
+```
+
+<Aside>
+
+Constructor to initialize the network details for various chains:
+
+- Polygon Amoy (Chain ID: 80002)
+- Arbitrum Sepolia (Chain ID: 421614)
+- Base Sepolia (Chain ID: 84532)
+- Blast Sepolia (Chain ID: 168587773)
+- BNB Chain Testnet (Chain ID: 97)
+- Celo Testnet Alfajores (Chain ID: 44787)
+- Avalanche Fuji (Chain ID: 43113)
+- Gnosis Chiado (Chain ID: 10200)
+- Kroma Sepolia (Chain ID: 2358)
+- Metis Sepolia (Chain ID: 59902)
+- Mode Sepolia (Chain ID: 919)
+- Optimism Sepolia (Chain ID: 11155420)
+- Ethereum Sepolia (Chain ID: 11155111)
+- WEMIX Testnet (Chain ID: 1112)
+- zkSync Sepolia (Chain ID: 300)
+
+</Aside>
+
+### getNetworkDetails
+
+Fetches the network configuration for a specified chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (NetworkDetails memory networkDetails)
+```
+
+<Aside>
+
+Retrieves network details for a given chain ID.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type    | Description                                |
+| --------- | ------- | ------------------------------------------ |
+| chainId   | uint256 | The ID of the chain to get the details for |
+
+#### Returns
+
+| Parameter      | Type           | Description                                    |
+| -------------- | -------------- | ---------------------------------------------- |
+| networkDetails | NetworkDetails | The network details for the specified chain ID |
+
+### setNetworkDetails
+
+Updates or adds network configuration details for a specific chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, NetworkDetails memory networkDetails) external
+```
+
+<Aside>
+
+Sets the network details for a given chain ID.
+
+</Aside>
+
+#### Parameters
+
+| Parameter      | Type           | Description                                           |
+| -------------- | -------------- | ----------------------------------------------------- |
+| chainId        | uint256        | The ID of the chain to set the details for            |
+| networkDetails | NetworkDetails | The network details to set for the specified chain ID |

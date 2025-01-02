@@ -1,0 +1,90 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.1 API Reference"
+metadata:
+  description: "API documentation for the CCIPLocalSimulatorFork JavaScript in Chainlink Local v0.2.1, used to run CCIP in forked environments within your Hardhat project."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## CCIPLocalSimulatorFork
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/main/scripts/CCIPLocalSimulatorFork.js) provides utilities for simulating Cross-Chain Interoperability Protocol (CCIP) operations in a forked environment. It enables testing of cross-chain messaging and token transfers within a Hardhat project.
+
+## Types
+
+### EVM2EVMMessage
+
+An object representing a cross-chain message with the following structure:
+
+| Property            | Type                                     | Description                            |
+| ------------------- | ---------------------------------------- | -------------------------------------- |
+| sourceChainSelector | `bigint`                                 | The chain selector of the source chain |
+| sender              | `string`                                 | The address of the message sender      |
+| receiver            | `string`                                 | The address of the message receiver    |
+| sequenceNumber      | `bigint`                                 | Message sequence number                |
+| gasLimit            | `bigint`                                 | Gas limit for message execution        |
+| strict              | `boolean`                                | Whether strict mode is enabled         |
+| nonce               | `bigint`                                 | Message nonce                          |
+| feeToken            | `string`                                 | Address of the token used for fees     |
+| feeTokenAmount      | `bigint`                                 | Amount of fee token                    |
+| data                | `string`                                 | Message payload data                   |
+| tokenAmounts        | `Array<{token: string, amount: bigint}>` | Array of token transfers               |
+| sourceTokenData     | `Array<string>`                          | Source token metadata                  |
+| messageId           | `string`                                 | Unique message identifier              |
+
+## Functions
+
+### requestLinkFromTheFaucet
+
+Requests LINK tokens from a faucet contract for testing purposes.
+
+| Parameter   | Type     | Description                                             |
+| ----------- | -------- | ------------------------------------------------------- |
+| linkAddress | `string` | The address of the LINK contract on the current network |
+| to          | `string` | The address to receive the LINK tokens                  |
+| amount      | `bigint` | The amount of LINK tokens to request                    |
+
+**Returns**: `Promise<string>` - The transaction hash of the fund transfer
+
+<Aside type="note">
+  The function uses a hardcoded faucet address and requires the ability to impersonate accounts in the forked
+  environment.
+</Aside>
+
+### getEvm2EvmMessage
+
+Parses a transaction receipt to extract CCIP message details from the `CCIPSendRequested` event.
+
+| Parameter | Type     | Description                                      |
+| --------- | -------- | ------------------------------------------------ |
+| receipt   | `object` | The transaction receipt from the `ccipSend` call |
+
+**Returns**: `object | null` - The parsed EVM2EVMMessage object or null if no valid message is found
+
+<Aside type="tip">
+  This function is particularly useful for testing cross-chain message transmission and verification.
+</Aside>
+
+### routeMessage
+
+Routes a sent message from the source network to the destination network in the forked environment.
+
+| Parameter      | Type     | Description                                |
+| -------------- | -------- | ------------------------------------------ |
+| routerAddress  | `string` | Address of the destination Router contract |
+| evm2EvmMessage | `object` | The cross-chain message to be routed       |
+
+**Returns**: `Promise<void>` - Resolves when the message is successfully routed
+
+<Aside type="caution">
+  This function will throw an error if:
+
+        - No off-ramp matches the message's source chain selector
+        - The call to `router.getOffRamps()` fails
+
+</Aside>
