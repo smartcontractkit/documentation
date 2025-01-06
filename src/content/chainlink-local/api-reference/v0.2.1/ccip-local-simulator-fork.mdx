@@ -1,0 +1,170 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.1 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## CCIPLocalSimulatorFork
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/ccip/CCIPLocalSimulatorFork.sol) enables testing of CCIP cross-chain messaging in forked network environments. This contract provides essential utilities for configuring networks and simulating message routing between chains in a Foundry test environment.
+
+<Aside type="note">Works with Foundry only</Aside>
+
+## Events
+
+### CCIPSendRequested
+
+```solidity
+event CCIPSendRequested(Internal.EVM2EVMMessage message)
+```
+
+Emitted when a cross-chain message is requested to be sent through CCIP.
+
+## Variables
+
+### i_register
+
+```solidity
+Register immutable i_register
+```
+
+Stores and manages network configuration details required for CCIP operations.
+
+### LINK_FAUCET
+
+```solidity
+address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE
+```
+
+Provides test LINK tokens to addresses during testing.
+
+### s_processedMessages
+
+```solidity
+mapping(bytes32 messageId => bool isProcessed) internal s_processedMessages
+```
+
+Prevents duplicate processing by tracking which messages have already been handled.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+Initializes the simulator environment by deploying and configuring a persistent Register contract.
+
+<Aside type="note">Records logs and makes the Register contract persistent in the test environment.</Aside>
+
+### getNetworkDetails
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (Register.NetworkDetails memory)
+```
+
+Retrieves network-specific CCIP configuration details. Use this function to access default settings or custom configurations for a given network.
+
+<Aside type="note">
+  Returns the default values for currently CCIP supported networks. If network is not present or some of the values are
+  changed, user can manually add new network details using the `setNetworkDetails` function.
+</Aside>
+
+**Parameters:**
+
+| Parameter | Type      | Description                                                                                          |
+| --------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector. |
+
+**Returns:**
+
+| Parameter      | Type                      | Description          |
+| -------------- | ------------------------- | -------------------- |
+| networkDetails | `Register.NetworkDetails` | A struct containing: |
+
+• chainSelector - The unique CCIP Chain Selector
+• routerAddress - The address of the CCIP Router contract
+• linkAddress - The address of the LINK token
+• wrappedNativeAddress - The address of the wrapped native token for CCIP fees
+• ccipBnMAddress - The address of the CCIP BnM token
+• ccipLnMAddress - The address of the CCIP LnM token |
+
+### requestLinkFromFaucet
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+Transfers LINK tokens from the faucet to a specified address for testing purposes.
+
+<Aside type="note">
+  Requests LINK tokens from the faucet. The provided amount of tokens are transferred to provided destination address.
+</Aside>
+
+**Parameters:**
+
+| Parameter | Type      | Description                                     |
+| --------- | --------- | ----------------------------------------------- |
+| to        | `address` | The address to which LINK tokens are to be sent |
+| amount    | `uint256` | The amount of LINK tokens to send               |
+
+**Returns:**
+
+| Parameter | Type   | Description                                                                |
+| --------- | ------ | -------------------------------------------------------------------------- |
+| success   | `bool` | Returns `true` if the transfer of tokens was successful, otherwise `false` |
+
+### setNetworkDetails
+
+```solidity
+function setNetworkDetails(uint256 chainId, Register.NetworkDetails memory networkDetails) external
+```
+
+Updates or adds CCIP configuration details for a specific blockchain network.
+
+<Aside type="note">
+  If network details are not present or some of the values are changed, user can manually add new network details using
+  the `setNetworkDetails` function.
+</Aside>
+
+**Parameters:**
+
+| Parameter      | Type                      | Description                                                                                          |
+| -------------- | ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| chainId        | `uint256`                 | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector. |
+| networkDetails | `Register.NetworkDetails` | A struct containing:                                                                                 |
+
+• chainSelector - The unique CCIP Chain Selector
+• routerAddress - The address of the CCIP Router contract
+• linkAddress - The address of the LINK token
+• wrappedNativeAddress - The address of the wrapped native token for CCIP fees
+• ccipBnMAddress - The address of the CCIP BnM token
+• ccipLnMAddress - The address of the CCIP LnM token |
+
+### switchChainAndRouteMessage
+
+```solidity
+function switchChainAndRouteMessage(uint256 forkId) external
+```
+
+Processes a cross-chain message by switching to the destination fork and executing the message.
+
+<Aside type="note">
+  To be called after the sending of the cross-chain message (`ccipSend`). Goes through the list of past logs and looks
+  for the `CCIPSendRequested` event. Switches to a destination network fork. Routes the sent cross-chain message on the
+  destination network.
+</Aside>
+
+**Parameters:**
+
+| Parameter | Type      | Description                                                                                                  |
+| --------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| forkId    | `uint256` | The ID of the destination network fork. This is the returned value of `createFork()` or `createSelectFork()` |

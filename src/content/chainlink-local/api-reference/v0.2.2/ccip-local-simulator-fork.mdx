@@ -1,0 +1,253 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.2 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## CCIPLocalSimulatorFork
+
+A contract that simulates CCIP (Cross-Chain Interoperability Protocol) message routing in forked network environments, specifically designed to work with Foundry for testing cross-chain applications.
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/ccip/CCIPLocalSimulatorFork.sol)
+
+## Events
+
+### CCIPSendRequested
+
+```solidity
+event CCIPSendRequested(Internal.EVM2EVMMessage message)
+```
+
+<Aside>
+
+Event emitted when a CCIP send request is made.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type                    | Description                       |
+| --------- | ----------------------- | --------------------------------- |
+| message   | Internal.EVM2EVMMessage | The EVM2EVM message that was sent |
+
+## Interfaces
+
+### IEVM2EVMOffRampFork
+
+Interface for executing CCIP messages on the off-ramp.
+
+```solidity
+interface IEVM2EVMOffRampFork {
+  function executeSingleMessage(
+    Internal.EVM2EVMMessage memory message,
+    bytes[] memory offchainTokenData,
+    uint32[] memory tokenGasOverrides
+  ) external;
+}
+```
+
+<Aside>
+
+Executes a single CCIP message on the offRamp.
+
+</Aside>
+
+### IRouterFork
+
+Interface for accessing off-ramp configurations.
+
+```solidity
+interface IRouterFork {
+  struct OffRamp {
+    uint64 sourceChainSelector;
+    address offRamp;
+  }
+
+  function getOffRamps() external view returns (OffRamp[] memory);
+}
+```
+
+<Aside>
+
+Gets the list of offRamps.
+
+</Aside>
+
+## Structs
+
+### OffRamp
+
+Configuration for a CCIP off-ramp.
+
+```solidity
+struct OffRamp {
+  uint64 sourceChainSelector;
+  address offRamp;
+}
+```
+
+#### Fields
+
+| Field               | Type    | Description                             |
+| ------------------- | ------- | --------------------------------------- |
+| sourceChainSelector | uint64  | The chain selector for the source chain |
+| offRamp             | address | The address of the offRamp contract     |
+
+## Variables
+
+### i_register
+
+```solidity
+Register immutable i_register
+```
+
+<Aside>
+
+The immutable register instance.
+
+</Aside>
+
+### LINK_FAUCET
+
+```solidity
+address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE
+```
+
+<Aside>
+
+The address of the LINK faucet.
+
+</Aside>
+
+### s_processedMessages
+
+```solidity
+mapping(bytes32 messageId => bool isProcessed) internal s_processedMessages
+```
+
+<Aside>
+
+Mapping to track processed messages.
+
+</Aside>
+
+## Functions
+
+### constructor
+
+Sets up the simulator environment by creating a persistent register instance and enabling event recording.
+
+```solidity
+constructor()
+```
+
+<Aside>
+
+Constructor to initialize the contract:
+
+- Records logs for event tracking
+- Creates a new Register instance
+- Makes the register instance persistent
+
+</Aside>
+
+### getNetworkDetails
+
+Fetches the network configuration for a specified blockchain network ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (Register.NetworkDetails memory)
+```
+
+<Aside>
+
+Returns the default values for currently CCIP supported networks. If network is not present or some of the values are changed, user can manually add new network details using the `setNetworkDetails` function.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type    | Description                                                                                         |
+| --------- | ------- | --------------------------------------------------------------------------------------------------- |
+| chainId   | uint256 | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector |
+
+#### Returns
+
+| Parameter      | Type                    | Description                                                                                                           |
+| -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| networkDetails | Register.NetworkDetails | The tuple containing: chainSelector, routerAddress, linkAddress, wrappedNativeAddress, ccipBnMAddress, ccipLnMAddress |
+
+### requestLinkFromFaucet
+
+Transfers LINK tokens from the faucet to a specified recipient address.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>
+
+Requests LINK tokens from the faucet. The provided amount of tokens are transferred to provided destination address.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type    | Description                                     |
+| --------- | ------- | ----------------------------------------------- |
+| to        | address | The address to which LINK tokens are to be sent |
+| amount    | uint256 | The amount of LINK tokens to send               |
+
+#### Returns
+
+| Parameter | Type | Description                                                            |
+| --------- | ---- | ---------------------------------------------------------------------- |
+| success   | bool | Returns true if the transfer of tokens was successful, otherwise false |
+
+### setNetworkDetails
+
+Registers or updates the network configuration for a specific blockchain.
+
+```solidity
+function setNetworkDetails(uint256 chainId, Register.NetworkDetails memory networkDetails) external
+```
+
+<Aside>
+
+If network details are not present or some of the values are changed, user can manually add new network details using this function.
+
+</Aside>
+
+#### Parameters
+
+| Parameter      | Type                    | Description                                                                                                           |
+| -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| chainId        | uint256                 | The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector                   |
+| networkDetails | Register.NetworkDetails | The tuple containing: chainSelector, routerAddress, linkAddress, wrappedNativeAddress, ccipBnMAddress, ccipLnMAddress |
+
+### switchChainAndRouteMessage
+
+Routes a cross-chain message by finding it in the event logs, switching to the destination chain, and executing it through the appropriate off-ramp.
+
+```solidity
+function switchChainAndRouteMessage(uint256 forkId) external
+```
+
+<Aside>
+
+To be called after the sending of the cross-chain message (`ccipSend`). Goes through the list of past logs and looks for the `CCIPSendRequested` event. Switches to a destination network fork. Routes the sent cross-chain message on the destination network.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type    | Description                                                                                                  |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| forkId    | uint256 | The ID of the destination network fork. This is the returned value of `createFork()` or `createSelectFork()` |

@@ -1,0 +1,183 @@
+/* Version Selector Component */
+.versionSelector {
+  container-type: inline-size;
+  width: 100%;
+  position: relative;
+  margin: var(--vs-space-4) 0;
+  min-height: var(--vs-initial-height);
+}
+
+.versionSelectorEnhanced {
+  container-name: version-selector;
+}
+
+/* Static Version Display */
+.staticVersion {
+  display: flex;
+  gap: var(--vs-space-2);
+  align-items: center;
+  padding: var(--vs-space-2) var(--vs-space-4);
+  border: var(--vs-border-width) solid var(--vs-border-default);
+  border-radius: var(--vs-radius-md);
+  background: var(--vs-surface-primary);
+  color: var(--vs-text-primary);
+}
+
+.staticLabel {
+  font-weight: 500;
+  color: var(--vs-text-secondary);
+}
+
+.staticVersionText {
+  font-weight: 600;
+}
+
+.staticWarning {
+  color: var(--vs-warning-text);
+  font-size: var(--vs-text-sm);
+  margin-left: auto;
+}
+
+/* Hide/Show Static Content */
+[data-client-hidden] {
+  display: none;
+}
+
+:global(html:not(.js)) [data-client-hidden] {
+  display: flex;
+}
+
+/* Select Wrapper */
+.selectWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--vs-space-3);
+}
+
+/* Label */
+.label {
+  font-weight: 500;
+  color: var(--vs-text-secondary);
+  font-size: var(--vs-text-base);
+}
+
+/* Select Container */
+.selectContainer {
+  position: relative;
+  width: max-content;
+}
+
+/* Select Element */
+.select {
+  appearance: none;
+  background: var(--vs-surface-primary);
+  border: var(--vs-border-width) solid var(--vs-border-default);
+  border-radius: var(--vs-radius-md);
+  color: var(--vs-text-primary);
+  cursor: pointer;
+  font-size: var(--vs-text-base);
+  line-height: var(--vs-leading-normal);
+  padding: var(--vs-space-2) var(--vs-space-4);
+  padding-right: var(--vs-space-8);
+  width: 100%;
+  min-width: 150px;
+
+  &:hover:not(:disabled) {
+    border-color: var(--vs-border-hover);
+    transform: translateY(var(--vs-hover-y-offset));
+    box-shadow: var(--vs-shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--vs-border-focus);
+    box-shadow: 0 0 0 var(--vs-focus-ring-offset) var(--vs-focus-ring);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+/* Select Icon */
+.selectIcon {
+  position: absolute;
+  right: var(--vs-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  opacity: 0.5;
+  transition: opacity var(--vs-duration-normal) var(--vs-ease-spring);
+}
+
+.selectContainer:hover .selectIcon {
+  opacity: 0.8;
+}
+
+/* Warning Section */
+.warning {
+  margin-top: var(--vs-space-4);
+  padding: var(--vs-space-3);
+  border-radius: var(--vs-radius-md);
+  background: var(--vs-warning-bg);
+  border: var(--vs-border-width) solid var(--vs-warning-border);
+  display: flex;
+  gap: var(--vs-space-3);
+  align-items: flex-start;
+}
+
+.warningIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F59E0B'%3E%3Cpath fill-rule='evenodd' d='M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-.53 14.03a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06L12 14.69l-2.47-2.47a.75.75 0 00-1.06 1.06l3 3zm4.28-9.78a.75.75 0 00-1.06-1.06L12 7.81l-2.47-2.47a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.warningText {
+  color: var(--vs-warning-text);
+  font-size: var(--vs-text-sm);
+  margin: 0;
+  line-height: var(--vs-leading-normal);
+}
+
+.warningLink {
+  color: var(--vs-warning-link);
+  text-decoration: underline;
+  font-weight: 500;
+
+  &:hover {
+    color: var(--vs-warning-link-hover);
+  }
+}
+
+/* Container Queries */
+@container version-selector (min-width: 300px) {
+  .select {
+    min-width: 200px;
+  }
+}
+
+@container (max-width: 480px) {
+  .selectWrapper,
+  .staticVersion {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--vs-space-2);
+  }
+
+  .selectContainer {
+    width: 100%;
+  }
+
+  .select {
+    width: 100%;
+  }
+
+  .staticWarning {
+    margin-left: 0;
+  }
+}

@@ -1,7 +1,9 @@
 import { Sections } from "../content/config"
-import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
 import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
 import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json"
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json"
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json"
 
 export type SectionContent = {
   title: string
@@ -14,8 +16,6 @@ type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
-
-const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   dataFeeds: [
@@ -1297,7 +1297,33 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    { ...chainlinkLocalAPIReferenceTyped },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
   ],
   nodeOperator: [
     {

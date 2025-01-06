@@ -111,3 +111,5 @@ export const collections = {
   ccip: ccipCollection,
   "chainlink-local": baseCollection,
 }
+
+export type Collection = keyof typeof collections

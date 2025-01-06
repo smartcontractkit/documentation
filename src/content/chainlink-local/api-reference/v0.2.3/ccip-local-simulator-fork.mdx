@@ -1,0 +1,230 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.3 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in Solidity, version v0.2.3."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage023" />
+
+## CCIPLocalSimulatorFork
+
+A contract that simulates CCIP (Cross-Chain Interoperability Protocol) message routing in a Foundry test environment.
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/7d8b2f888e1f10c8841ccd9e0f4af0f5baf11dab/src/ccip/CCIPLocalSimulatorFork.sol)
+
+<Aside>
+  This contract provides utilities for testing cross-chain message routing by simulating message sending and receiving
+  between different blockchain networks in a Foundry test environment.
+</Aside>
+
+## Interfaces
+
+### IRouterFork
+
+Interface for interacting with the CCIP Router contract in a forked environment.
+
+#### OffRamp
+
+```solidity
+struct OffRamp {
+  uint64 sourceChainSelector;
+  address offRamp;
+}
+```
+
+| Field               | Type      | Description                             |
+| ------------------- | --------- | --------------------------------------- |
+| sourceChainSelector | `uint64`  | The chain selector for the source chain |
+| offRamp             | `address` | The address of the offRamp contract     |
+
+#### getOffRamps
+
+```solidity
+function getOffRamps() external view returns (OffRamp[] memory)
+```
+
+<Aside>Gets the list of off-ramp configurations from the router contract.</Aside>
+
+#### Returns
+
+| Parameter | Type        | Description                      |
+| --------- | ----------- | -------------------------------- |
+| (unnamed) | `OffRamp[]` | Array of off-ramp configurations |
+
+### IEVM2EVMOffRampFork
+
+Interface for executing CCIP messages on an off-ramp contract in a forked environment.
+
+#### executeSingleMessage
+
+```solidity
+function executeSingleMessage(
+    Internal.EVM2EVMMessage memory message,
+    bytes[] memory offchainTokenData,
+    uint32[] memory tokenGasOverrides
+) external
+```
+
+<Aside>Executes a single CCIP message on the off-ramp contract.</Aside>
+
+#### Parameters
+
+| Parameter         | Type             | Description                             |
+| ----------------- | ---------------- | --------------------------------------- |
+| message           | `EVM2EVMMessage` | The CCIP message to be executed         |
+| offchainTokenData | `bytes[]`        | Additional off-chain token data         |
+| tokenGasOverrides | `uint32[]`       | Gas limit overrides for token transfers |
+
+## Events
+
+### CCIPSendRequested
+
+```solidity
+event CCIPSendRequested(Internal.EVM2EVMMessage message)
+```
+
+<Aside>Emitted when a CCIP send request is made.</Aside>
+
+#### Parameters
+
+| Parameter | Type             | Description                       |
+| --------- | ---------------- | --------------------------------- |
+| message   | `EVM2EVMMessage` | The EVM2EVM message that was sent |
+
+## Variables
+
+### i_register
+
+```solidity
+Register immutable i_register
+```
+
+<Aside>The immutable Register contract instance used to store network configuration details.</Aside>
+
+### LINK_FAUCET
+
+```solidity
+address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE
+```
+
+<Aside>The address of the LINK token faucet contract.</Aside>
+
+### s_processedMessages
+
+```solidity
+mapping(bytes32 messageId => bool isProcessed) internal s_processedMessages
+```
+
+<Aside>Internal mapping to track which messages have been processed to prevent duplicate processing.</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract and sets up logging and persistence.
+
+```solidity
+constructor()
+```
+
+<Aside>
+Initializes the contract by:
+
+- Setting up log recording
+- Creating a new Register instance
+- Making the Register contract address persistent
+
+</Aside>
+
+### switchChainAndRouteMessage
+
+Routes a cross-chain message on the destination network after switching to the specified fork.
+
+```solidity
+function switchChainAndRouteMessage(uint256 forkId) external
+```
+
+<Aside>
+To be called after sending a cross-chain message (`ccipSend`). The function:
+
+- Searches past logs for CCIPSendRequested events
+- Switches to the destination network fork
+- Routes the sent message on the destination network
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                                                                 |
+| --------- | --------- | ------------------------------------------------------------------------------------------- |
+| forkId    | `uint256` | The ID of the destination network fork (returned by `createFork()` or `createSelectFork()`) |
+
+### getNetworkDetails
+
+Returns the network configuration details for a specified chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (Register.NetworkDetails memory)
+```
+
+<Aside>
+  Returns the default values for currently CCIP supported networks. If a network is not present or values have changed,
+  new network details can be added using setNetworkDetails.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                                           |
+| --------- | --------- | --------------------------------------------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia) |
+
+#### Returns
+
+| Parameter | Type             | Description                                               |
+| --------- | ---------------- | --------------------------------------------------------- |
+| (unnamed) | `NetworkDetails` | The network configuration details for the specified chain |
+
+### setNetworkDetails
+
+Updates or adds new network configuration details for a specified chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, Register.NetworkDetails memory networkDetails) external
+```
+
+<Aside>Used to add or update network details when they are not present or have changed from default values.</Aside>
+
+#### Parameters
+
+| Parameter      | Type             | Description                                                           |
+| -------------- | ---------------- | --------------------------------------------------------------------- |
+| chainId        | `uint256`        | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia) |
+| networkDetails | `NetworkDetails` | The network configuration details to be stored                        |
+
+### requestLinkFromFaucet
+
+Requests LINK tokens from the faucet for a specified address.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>Transfers the specified amount of LINK tokens from the faucet to the provided destination address.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                            |
+| --------- | --------- | -------------------------------------- |
+| to        | `address` | The address to receive the LINK tokens |
+| amount    | `uint256` | The amount of LINK tokens to transfer  |
+
+#### Returns
+
+| Parameter | Type   | Description                                       |
+| --------- | ------ | ------------------------------------------------- |
+| success   | `bool` | Returns true if the token transfer was successful |
