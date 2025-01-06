@@ -3,7 +3,7 @@ var Zr = Object.defineProperty
 var Jr = (a, s, l) => (s in a ? Zr(a, s, { enumerable: !0, configurable: !0, writable: !0, value: l }) : (a[s] = l))
 var ae = (a, s, l) => Jr(a, typeof s != "symbol" ? s + "" : s, l)
 import pr, {
-  useRef as ve,
+  useRef as qe,
   useEffect as z,
   useState as V,
   useCallback as gr,
@@ -76,24 +76,24 @@ function rt() {
             u = Symbol.for("react.lazy"),
             h = Symbol.for("react.offscreen"),
             p = Symbol.iterator,
-            v = "@@iterator"
+            q = "@@iterator"
           function A(t) {
             if (t === null || typeof t != "object") return null
-            var f = (p && t[p]) || t[v]
+            var f = (p && t[p]) || t[q]
             return typeof f == "function" ? f : null
           }
           var C = a.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
-          function P(t) {
+          function v(t) {
             {
-              for (var f = arguments.length, w = new Array(f > 1 ? f - 1 : 0), x = 1; x < f; x++)
-                w[x - 1] = arguments[x]
+              for (var f = arguments.length, w = new Array(f > 1 ? f - 1 : 0), P = 1; P < f; P++)
+                w[P - 1] = arguments[P]
               b("error", t, w)
             }
           }
           function b(t, f, w) {
             {
-              var x = C.ReactDebugCurrentFrame,
-                S = x.getStackAddendum()
+              var P = C.ReactDebugCurrentFrame,
+                S = P.getStackAddendum()
               S !== "" && ((f += "%s"), (w = w.concat([S])))
               var j = w.map(function (E) {
                 return String(E)
@@ -104,7 +104,7 @@ function rt() {
           var k = !1,
             _ = !1,
             he = !1,
-            qe = !1,
+            xe = !1,
             me = !1,
             O
           O = Symbol.for("react.module.reference")
@@ -118,7 +118,7 @@ function rt() {
               t === y ||
               t === n ||
               t === c ||
-              qe ||
+              xe ||
               t === h ||
               k ||
               _ ||
@@ -138,8 +138,8 @@ function rt() {
             )
           }
           function K(t, f, w) {
-            var x = t.displayName
-            if (x) return x
+            var P = t.displayName
+            if (P) return P
             var S = f.displayName || f.name || ""
             return S !== "" ? w + "(" + S + ")" : w
           }
@@ -150,7 +150,7 @@ function rt() {
             if (t == null) return null
             if (
               (typeof t.tag == "number" &&
-                P(
+                v(
                   "Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue."
                 ),
               typeof t == "function")
@@ -182,8 +182,8 @@ function rt() {
                 case r:
                   return K(t, t.render, "ForwardRef")
                 case i:
-                  var x = t.displayName || null
-                  return x !== null ? x : B(t.type) || "Memo"
+                  var P = t.displayName || null
+                  return P !== null ? P : B(t.type) || "Memo"
                 case u: {
                   var S = t,
                     j = S._payload,
@@ -208,7 +208,7 @@ function rt() {
             He
           function Ge() {}
           Ge.__reactDisabledLog = !0
-          function vr() {
+          function qr() {
             {
               if (N === 0) {
                 ;(ee = console.log),
@@ -237,7 +237,7 @@ function rt() {
               N++
             }
           }
-          function qr() {
+          function xr() {
             {
               if ((N--, N === 0)) {
                 var t = {
@@ -269,7 +269,7 @@ function rt() {
                   }),
                 })
               }
-              N < 0 && P("disabledDepth fell below zero. This is a bug in React. Please file an issue.")
+              N < 0 && v("disabledDepth fell below zero. This is a bug in React. Please file an issue.")
             }
           }
           var Ee = C.ReactCurrentDispatcher,
@@ -280,8 +280,8 @@ function rt() {
                 try {
                   throw Error()
                 } catch (S) {
-                  var x = S.stack.trim().match(/\n( *(at )?)/)
-                  be = (x && x[1]) || ""
+                  var P = S.stack.trim().match(/\n( *(at )?)/)
+                  be = (P && P[1]) || ""
                 }
               return (
                 `
@@ -303,12 +303,12 @@ function rt() {
               var w = ye.get(t)
               if (w !== void 0) return w
             }
-            var x
+            var P
             Se = !0
             var S = Error.prepareStackTrace
             Error.prepareStackTrace = void 0
             var j
-            ;(j = Ee.current), (Ee.current = null), vr()
+            ;(j = Ee.current), (Ee.current = null), qr()
             try {
               if (f) {
                 var E = function () {
@@ -325,14 +325,14 @@ function rt() {
                   try {
                     Reflect.construct(E, [])
                   } catch (D) {
-                    x = D
+                    P = D
                   }
                   Reflect.construct(t, [], E)
                 } else {
                   try {
                     E.call()
                   } catch (D) {
-                    x = D
+                    P = D
                   }
                   t.call(E.prototype)
                 }
@@ -340,31 +340,31 @@ function rt() {
                 try {
                   throw Error()
                 } catch (D) {
-                  x = D
+                  P = D
                 }
                 t()
               }
             } catch (D) {
-              if (D && x && typeof D.stack == "string") {
+              if (D && P && typeof D.stack == "string") {
                 for (
-                  var q = D.stack.split(`
+                  var x = D.stack.split(`
 `),
-                    L = x.stack.split(`
+                    L = P.stack.split(`
 `),
-                    I = q.length - 1,
+                    I = x.length - 1,
                     T = L.length - 1;
-                  I >= 1 && T >= 0 && q[I] !== L[T];
+                  I >= 1 && T >= 0 && x[I] !== L[T];
 
                 )
                   T--
                 for (; I >= 1 && T >= 0; I--, T--)
-                  if (q[I] !== L[T]) {
+                  if (x[I] !== L[T]) {
                     if (I !== 1 || T !== 1)
                       do
-                        if ((I--, T--, T < 0 || q[I] !== L[T])) {
+                        if ((I--, T--, T < 0 || x[I] !== L[T])) {
                           var M =
                             `
-` + q[I].replace(" at new ", " at ")
+` + x[I].replace(" at new ", " at ")
                           return (
                             t.displayName && M.includes("<anonymous>") && (M = M.replace("<anonymous>", t.displayName)),
                             typeof t == "function" && ye.set(t, M),
@@ -376,7 +376,7 @@ function rt() {
                   }
               }
             } finally {
-              ;(Se = !1), (Ee.current = j), qr(), (Error.prepareStackTrace = S)
+              ;(Se = !1), (Ee.current = j), xr(), (Error.prepareStackTrace = S)
             }
             var te = t ? t.displayName || t.name : "",
               Y = te ? fe(te) : ""
@@ -406,9 +406,9 @@ function rt() {
                 case i:
                   return pe(t.type, f, w)
                 case u: {
-                  var x = t,
-                    S = x._payload,
-                    j = x._init
+                  var P = t,
+                    S = P._payload,
+                    j = P._init
                   try {
                     return pe(j(S), f, w)
                   } catch {}
@@ -426,16 +426,16 @@ function rt() {
               Ye.setExtraStackFrame(w)
             } else Ye.setExtraStackFrame(null)
           }
-          function jr(t, f, w, x, S) {
+          function jr(t, f, w, P, S) {
             {
               var j = Function.call.bind(oe)
               for (var E in t)
                 if (j(t, E)) {
-                  var q = void 0
+                  var x = void 0
                   try {
                     if (typeof t[E] != "function") {
                       var L = Error(
-                        (x || "React class") +
+                        (P || "React class") +
                           ": " +
                           w +
                           " type `" +
@@ -446,24 +446,24 @@ function rt() {
                       )
                       throw ((L.name = "Invariant Violation"), L)
                     }
-                    q = t[E](f, E, x, w, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED")
+                    x = t[E](f, E, P, w, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED")
                   } catch (I) {
-                    q = I
+                    x = I
                   }
-                  q &&
-                    !(q instanceof Error) &&
+                  x &&
+                    !(x instanceof Error) &&
                     (ge(S),
-                    P(
+                    v(
                       "%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).",
-                      x || "React class",
+                      P || "React class",
                       w,
                       E,
-                      typeof q
+                      typeof x
                     ),
                     ge(null)),
-                    q instanceof Error &&
-                      !(q.message in Ke) &&
-                      ((Ke[q.message] = !0), ge(S), P("Failed %s type: %s", w, q.message), ge(null))
+                    x instanceof Error &&
+                      !(x.message in Ke) &&
+                      ((Ke[x.message] = !0), ge(S), v("Failed %s type: %s", w, x.message), ge(null))
                 }
             }
           }
@@ -491,7 +491,7 @@ function rt() {
           function Je(t) {
             if (Ir(t))
               return (
-                P(
+                v(
                   "The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.",
                   Ar(t)
                 ),
@@ -527,7 +527,7 @@ function rt() {
             if (typeof t.ref == "string" && ie.current && f && ie.current.stateNode !== f) {
               var w = B(ie.current.type)
               ke[w] ||
-                (P(
+                (v(
                   'Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref',
                   B(ie.current.type),
                   t.ref
@@ -540,7 +540,7 @@ function rt() {
               var w = function () {
                 Qe ||
                   ((Qe = !0),
-                  P(
+                  v(
                     "%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
                   ))
@@ -557,7 +557,7 @@ function rt() {
               var w = function () {
                 ze ||
                   ((ze = !0),
-                  P(
+                  v(
                     "%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
                   ))
@@ -569,8 +569,8 @@ function rt() {
                 })
             }
           }
-          var Br = function (t, f, w, x, S, j, E) {
-            var q = {
+          var Br = function (t, f, w, P, S, j, E) {
+            var x = {
               // This tag allows us to uniquely identify this as a React Element
               $$typeof: s,
               // Built-in properties that belong on the element
@@ -582,48 +582,48 @@ function rt() {
               _owner: j,
             }
             return (
-              (q._store = {}),
-              Object.defineProperty(q._store, "validated", {
+              (x._store = {}),
+              Object.defineProperty(x._store, "validated", {
                 configurable: !1,
                 enumerable: !1,
                 writable: !0,
                 value: !1,
               }),
-              Object.defineProperty(q, "_self", {
+              Object.defineProperty(x, "_self", {
                 configurable: !1,
                 enumerable: !1,
                 writable: !1,
-                value: x,
+                value: P,
               }),
-              Object.defineProperty(q, "_source", {
+              Object.defineProperty(x, "_source", {
                 configurable: !1,
                 enumerable: !1,
                 writable: !1,
                 value: S,
               }),
-              Object.freeze && (Object.freeze(q.props), Object.freeze(q)),
-              q
+              Object.freeze && (Object.freeze(x.props), Object.freeze(x)),
+              x
             )
           }
-          function Ur(t, f, w, x, S) {
+          function Ur(t, f, w, P, S) {
             {
               var j,
                 E = {},
-                q = null,
+                x = null,
                 L = null
-              w !== void 0 && (Je(w), (q = "" + w)),
-                Or(f) && (Je(f.key), (q = "" + f.key)),
+              w !== void 0 && (Je(w), (x = "" + w)),
+                Or(f) && (Je(f.key), (x = "" + f.key)),
                 Rr(f) && ((L = f.ref), Lr(f, S))
               for (j in f) oe.call(f, j) && !Tr.hasOwnProperty(j) && (E[j] = f[j])
               if (t && t.defaultProps) {
                 var I = t.defaultProps
                 for (j in I) E[j] === void 0 && (E[j] = I[j])
               }
-              if (q || L) {
+              if (x || L) {
                 var T = typeof t == "function" ? t.displayName || t.name || "Unknown" : t
-                q && Nr(E, T), L && Dr(E, T)
+                x && Nr(E, T), L && Dr(E, T)
               }
-              return Br(t, q, L, S, x, ie.current, E)
+              return Br(t, x, L, S, P, ie.current, E)
             }
           }
           var Ae = C.ReactCurrentOwner,
@@ -683,13 +683,13 @@ Check the top-level render call using <` +
               var w = Wr(f)
               if (rr[w]) return
               rr[w] = !0
-              var x = ""
-              t && t._owner && t._owner !== Ae.current && (x = " It was passed a child from " + B(t._owner.type) + "."),
+              var P = ""
+              t && t._owner && t._owner !== Ae.current && (P = " It was passed a child from " + B(t._owner.type) + "."),
                 re(t),
-                P(
+                v(
                   'Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.',
                   w,
-                  x
+                  P
                 ),
                 re(null)
             }
@@ -699,8 +699,8 @@ Check the top-level render call using <` +
               if (typeof t != "object") return
               if (je(t))
                 for (var w = 0; w < t.length; w++) {
-                  var x = t[w]
-                  Te(x) && tr(x, f)
+                  var P = t[w]
+                  Te(P) && tr(P, f)
                 }
               else if (Te(t)) t._store && (t._store.validated = !0)
               else if (t) {
@@ -725,19 +725,19 @@ Check the top-level render call using <` +
                 w = f.propTypes
               else return
               if (w) {
-                var x = B(f)
-                jr(w, t.props, "prop", x, t)
+                var P = B(f)
+                jr(w, t.props, "prop", P, t)
               } else if (f.PropTypes !== void 0 && !Ie) {
                 Ie = !0
                 var S = B(f)
-                P(
+                v(
                   "Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?",
                   S || "Unknown"
                 )
               }
               typeof f.getDefaultProps == "function" &&
                 !f.getDefaultProps.isReactClassApproved &&
-                P(
+                v(
                   "getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead."
                 )
             }
@@ -745,31 +745,31 @@ Check the top-level render call using <` +
           function Vr(t) {
             {
               for (var f = Object.keys(t.props), w = 0; w < f.length; w++) {
-                var x = f[w]
-                if (x !== "children" && x !== "key") {
+                var P = f[w]
+                if (P !== "children" && P !== "key") {
                   re(t),
-                    P(
+                    v(
                       "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.",
-                      x
+                      P
                     ),
                     re(null)
                   break
                 }
               }
-              t.ref !== null && (re(t), P("Invalid attribute `ref` supplied to `React.Fragment`."), re(null))
+              t.ref !== null && (re(t), v("Invalid attribute `ref` supplied to `React.Fragment`."), re(null))
             }
           }
           var nr = {}
-          function sr(t, f, w, x, S, j) {
+          function sr(t, f, w, P, S, j) {
             {
               var E = ne(t)
               if (!E) {
-                var q = ""
+                var x = ""
                 ;(t === void 0 || (typeof t == "object" && t !== null && Object.keys(t).length === 0)) &&
-                  (q +=
+                  (x +=
                     " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.")
                 var L = Mr()
-                L ? (q += L) : (q += er())
+                L ? (x += L) : (x += er())
                 var I
                 t === null
                   ? (I = "null")
@@ -777,12 +777,12 @@ Check the top-level render call using <` +
                   ? (I = "array")
                   : t !== void 0 && t.$$typeof === s
                   ? ((I = "<" + (B(t.type) || "Unknown") + " />"),
-                    (q = " Did you accidentally export a JSX literal instead of a component?"))
+                    (x = " Did you accidentally export a JSX literal instead of a component?"))
                   : (I = typeof t),
-                  P(
+                  v(
                     "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
                     I,
-                    q
+                    x
                   )
               }
               var T = Ur(t, f, w, S, j)
@@ -790,12 +790,12 @@ Check the top-level render call using <` +
               if (E) {
                 var M = f.children
                 if (M !== void 0)
-                  if (x)
+                  if (P)
                     if (je(M)) {
                       for (var te = 0; te < M.length; te++) ar(M[te], t)
                       Object.freeze && Object.freeze(M)
                     } else
-                      P(
+                      v(
                         "React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead."
                       )
                   else ar(M, t)
@@ -808,7 +808,7 @@ Check the top-level render call using <` +
                   Re = D.length > 0 ? "{key: someKey, " + D.join(": ..., ") + ": ...}" : "{key: someKey}"
                 if (!nr[Y + Re]) {
                   var Kr = D.length > 0 ? "{" + D.join(": ..., ") + ": ...}" : "{}"
-                  P(
+                  v(
                     `A props object containing a "key" prop is being spread into JSX:
   let props = %s;
   <%s {...props} />
@@ -1140,7 +1140,7 @@ var wr = class extends Error {
       )
     }
   },
-  xe = class extends Cr {
+  Pe = class extends Cr {
     constructor(s, l, m, y = "ApiError") {
       super(s, m, y)
       ae(this, "status")
@@ -1154,7 +1154,7 @@ var wr = class extends Error {
       this.response = l
     }
   },
-  mt = class extends xe {
+  mt = class extends Pe {
     constructor(s, l, m, y) {
       super(s, l, y, "DetailedApiError")
       ae(this, "error")
@@ -1215,26 +1215,26 @@ function Ct(a) {
     throw new ht(s.message, a)
   }
 }
-function Pt({ content: a, status: s }, l) {
+function vt({ content: a, status: s }, l) {
   try {
     const m = JSON.parse(a)
-    return "error" in m ? new mt(m.message, s, m.error, l) : new xe(m.message, s, l)
+    return "error" in m ? new mt(m.message, s, m.error, l) : new Pe(m.message, s, l)
   } catch {}
-  return new xe(a, s, l)
+  return new Pe(a, s, l)
 }
-function xt({ isTimedOut: a, status: s }) {
+function Pt({ isTimedOut: a, status: s }) {
   return !a && ~~s === 0
 }
-function vt({ isTimedOut: a, status: s }) {
-  return a || xt({ isTimedOut: a, status: s }) || (~~(s / 100) !== 2 && ~~(s / 100) !== 4)
+function qt({ isTimedOut: a, status: s }) {
+  return a || Pt({ isTimedOut: a, status: s }) || (~~(s / 100) !== 2 && ~~(s / 100) !== 4)
 }
-function qt({ status: a }) {
+function xt({ status: a }) {
   return ~~(a / 100) === 2
 }
 function Et(a) {
-  return a.map((s) => Pr(s))
+  return a.map((s) => vr(s))
 }
-function Pr(a) {
+function vr(a) {
   const s = a.request.headers["x-algolia-api-key"] ? { "x-algolia-api-key": "*****" } : {}
   return {
     ...a,
@@ -1261,9 +1261,9 @@ function bt({
 }) {
   async function c(h) {
     const p = await Promise.all(h.map((b) => s.get(b, () => Promise.resolve(lr(b))))),
-      v = p.filter((b) => b.isUp()),
+      q = p.filter((b) => b.isUp()),
       A = p.filter((b) => b.isTimedOut()),
-      C = [...v, ...A]
+      C = [...q, ...A]
     return {
       hosts: C.length > 0 ? C : h,
       getTimeout(b, k) {
@@ -1271,10 +1271,10 @@ function bt({
       },
     }
   }
-  async function i(h, p, v = !0) {
+  async function i(h, p, q = !0) {
     const A = [],
       C = gt(h, p),
-      P = wt(l, h.headers, p.headers),
+      v = wt(l, h.headers, p.headers),
       b =
         h.method === "GET"
           ? {
@@ -1299,11 +1299,11 @@ function bt({
         const $ = { ...d, ...p.timeouts },
           B = {
             data: C,
-            headers: P,
+            headers: v,
             method: h.method,
             url: yt(K, h.path, k),
             connectTimeout: ne(_, $.connect),
-            responseTimeout: ne(_, v ? $.read : $.write),
+            responseTimeout: ne(_, q ? $.read : $.write),
           },
           X = (ee) => {
             const se = {
@@ -1315,28 +1315,28 @@ function bt({
             return A.push(se), se
           },
           N = await e.send(B)
-        if (vt(N)) {
+        if (qt(N)) {
           const ee = X(N)
           return (
             N.isTimedOut && _++,
-            m.info("Retryable failure", Pr(ee)),
+            m.info("Retryable failure", vr(ee)),
             await s.set(K, lr(K, N.isTimedOut ? "timed out" : "down")),
             he(O, ne)
           )
         }
-        if (qt(N)) return Ct(N)
-        throw (X(N), Pt(N, A))
+        if (xt(N)) return Ct(N)
+        throw (X(N), vt(N, A))
       },
-      qe = a.filter((O) => O.accept === "readWrite" || (v ? O.accept === "read" : O.accept === "write")),
-      me = await c(qe)
+      xe = a.filter((O) => O.accept === "readWrite" || (q ? O.accept === "read" : O.accept === "write")),
+      me = await c(xe)
     return he([...me.hosts].reverse(), me.getTimeout)
   }
   function u(h, p = {}) {
-    const v = h.useReadTransporter || h.method === "GET"
-    if (!v) return i(h, p, v)
+    const q = h.useReadTransporter || h.method === "GET"
+    if (!q) return i(h, p, q)
     const A = () => i(h, p)
     if ((p.cacheable || h.cacheable) !== !0) return A()
-    const P = {
+    const v = {
       request: h,
       requestOptions: p,
       transporter: {
@@ -1345,19 +1345,19 @@ function bt({
       },
     }
     return n.get(
-      P,
+      v,
       () =>
-        r.get(P, () =>
+        r.get(v, () =>
           /**
            * Finally, if there is no request in progress with the same key,
            * this `createRetryableRequest()` will actually trigger the
            * retryable request.
            */
           r
-            .set(P, A())
+            .set(v, A())
             .then(
-              (b) => Promise.all([r.delete(P), b]),
-              (b) => Promise.all([r.delete(P), Promise.reject(b)])
+              (b) => Promise.all([r.delete(v), b]),
+              (b) => Promise.all([r.delete(v), Promise.reject(b)])
             )
             .then(([b, k]) => k)
         ),
@@ -1367,7 +1367,7 @@ function bt({
          * tell response cache to actually store the received response
          * to be used later.
          */
-        miss: (b) => n.set(P, b),
+        miss: (b) => n.set(v, b),
       }
     )
   }
@@ -1385,7 +1385,7 @@ function bt({
     responsesCache: n,
   }
 }
-var xr = "5.17.1"
+var Pr = "5.17.1"
 function St(a) {
   return [
     {
@@ -1426,7 +1426,7 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
       algoliaAgent: ut({
         algoliaAgents: m,
         client: "Search",
-        version: xr,
+        version: Pr,
       }),
       baseHeaders: {
         "content-type": "text/plain",
@@ -1553,13 +1553,13 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         return Z({
           ...p,
           func: () => this.getApiKey({ key: r }, u),
-          validate: (v) => {
+          validate: (q) => {
             for (const A of Object.keys(n)) {
               const C = n[A],
-                P = v[A]
-              if (Array.isArray(C) && Array.isArray(P)) {
-                if (C.length !== P.length || C.some((b, k) => b !== P[k])) return !1
-              } else if (C !== P) return !1
+                v = q[A]
+              if (Array.isArray(C) && Array.isArray(v)) {
+                if (C.length !== v.length || C.some((b, k) => b !== v[k])) return !1
+              } else if (C !== v) return !1
             }
             return !0
           },
@@ -1568,10 +1568,10 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
       return Z({
         ...p,
         func: () =>
-          this.getApiKey({ key: r }, u).catch((v) => {
-            if (v.status !== 404) throw v
+          this.getApiKey({ key: r }, u).catch((q) => {
+            if (q.status !== 404) throw q
           }),
-        validate: (v) => (e === "add" ? v !== void 0 : v === void 0),
+        validate: (q) => (e === "add" ? q !== void 0 : q === void 0),
       })
     },
     /**
@@ -1685,8 +1685,8 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
     async chunkedBatch({ indexName: e, objects: r, action: n = "addObject", waitForTasks: c, batchSize: i = 1e3 }, u) {
       let h = []
       const p = [],
-        v = r.entries()
-      for (const [A, C] of v)
+        q = r.entries()
+      for (const [A, C] of q)
         h.push({ action: n, body: C }),
           (h.length === i || A === r.length - 1) &&
             (p.push(await this.batch({ indexName: e, batchWriteParams: { requests: h } }, u)), (h = []))
@@ -1802,7 +1802,7 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
           indexName: u,
           taskID: h.taskID,
         })
-      const v = await this.operationIndex(
+      const q = await this.operationIndex(
         {
           indexName: u,
           operationIndexParams: { operation: "move", destination: e },
@@ -1812,16 +1812,16 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
       return (
         await this.waitForTask({
           indexName: u,
-          taskID: v.taskID,
+          taskID: q.taskID,
         }),
-        { copyOperationResponse: h, batchResponses: p, moveOperationResponse: v }
+        { copyOperationResponse: h, batchResponses: p, moveOperationResponse: q }
       )
     },
     async indexExists({ indexName: e }) {
       try {
         await this.getSettings({ indexName: e })
       } catch (r) {
-        if (r instanceof xe && r.status === 404) return !1
+        if (r instanceof Pe && r.status === 404) return !1
         throw r
       }
       return !0
@@ -2424,13 +2424,13 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         r !== void 0 && (p.length = r.toString()),
         n !== void 0 && (p.indexName = n.toString()),
         c !== void 0 && (p.type = c.toString())
-      const v = {
+      const q = {
         method: "GET",
         path: u,
         queryParameters: p,
         headers: h,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * Retrieves one record by its object ID.  To retrieve more than one record, use the [`objects` operation](#tag/Records/operation/getObjects).
@@ -2786,14 +2786,14 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.createIfNotExists = c.toString())
-      const v = {
+      const q = {
         method: "POST",
         path: u,
         queryParameters: p,
         headers: h,
         data: n,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * Deletes a user ID and its associated data from the clusters.
@@ -2899,14 +2899,14 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.forwardToReplicas = c.toString())
-      const v = {
+      const q = {
         method: "PUT",
         path: u,
         queryParameters: p,
         headers: h,
         data: n,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * Create or update multiple rules.  If a rule with the specified object ID doesn\'t exist, Algolia creates a new one. Otherwise, existing rules are replaced.  This operation is subject to [indexing rate limits](https://support.algolia.com/hc/en-us/articles/4406975251089-Is-there-a-rate-limit-for-indexing-on-Algolia).
@@ -2927,14 +2927,14 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       n !== void 0 && (p.forwardToReplicas = n.toString()), c !== void 0 && (p.clearExistingRules = c.toString())
-      const v = {
+      const q = {
         method: "POST",
         path: u,
         queryParameters: p,
         headers: h,
         data: r,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * If a synonym with the specified object ID doesn\'t exist, Algolia adds a new one. Otherwise, the existing synonym is replaced. To add multiple synonyms in a single API request, use the [`batch` operation](#tag/Synonyms/operation/saveSynonyms).
@@ -2960,14 +2960,14 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.forwardToReplicas = c.toString())
-      const v = {
+      const q = {
         method: "PUT",
         path: u,
         queryParameters: p,
         headers: h,
         data: n,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * If a synonym with the `objectID` doesn\'t exist, Algolia adds a new one. Otherwise, existing synonyms are replaced.  This operation is subject to [indexing rate limits](https://support.algolia.com/hc/en-us/articles/4406975251089-Is-there-a-rate-limit-for-indexing-on-Algolia).
@@ -2988,14 +2988,14 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       n !== void 0 && (p.forwardToReplicas = n.toString()), c !== void 0 && (p.replaceExistingSynonyms = c.toString())
-      const v = {
+      const q = {
         method: "POST",
         path: u,
         queryParameters: p,
         headers: h,
         data: r,
       }
-      return d.request(v, i)
+      return d.request(q, i)
     },
     /**
      * Sends multiple search requests to one or more indices.  This can be useful in these cases:  - Different indices for different purposes, such as, one index for products, another one for marketing content. - Multiple searches to the same index—for example, with different filters.
@@ -3010,15 +3010,15 @@ function jt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         (e &&
           Array.isArray(e) &&
           (e = {
-            requests: e.map(({ params: p, ...v }) =>
-              v.type === "facet"
+            requests: e.map(({ params: p, ...q }) =>
+              q.type === "facet"
                 ? {
-                    ...v,
+                    ...q,
                     ...p,
                     type: "facet",
                   }
                 : {
-                    ...v,
+                    ...q,
                     ...p,
                     facet: void 0,
                     maxFacetHits: void 0,
@@ -3281,7 +3281,7 @@ function kt(a, s, l) {
     responsesCache: Oe(),
     requestsCache: Oe({ serializable: !1 }),
     hostsCache: le({
-      caches: [st({ key: `${xr}-${a}` }), Oe()],
+      caches: [st({ key: `${Pr}-${a}` }), Oe()],
     }),
     ...l,
   })
@@ -3753,10 +3753,10 @@ const dr = (a, s) => {
     itemLink: ca,
     itemLabel: ua,
   },
-  Pe = ({ className: a = "", children: s, ...l }) =>
+  ve = ({ className: a = "", children: s, ...l }) =>
     /* @__PURE__ */ o.jsx("ul", { ...l, className: `${J.searchResultList} ${a}`, children: s }),
   Q = ({ icon: a, itemLabel: s, itemLink: l, className: m = "", itemActive: y = !1, isExternalLink: g = !1 }) => {
-    const d = ve(null)
+    const d = qe(null)
     return (
       z(() => {
         var e
@@ -3778,9 +3778,9 @@ const dr = (a, s) => {
       })
     )
   },
-  la = "_defaultModalBodyContainer_h1y68_1",
-  da = "_defaultModalBodyLeft_h1y68_7",
-  ha = "_defaultModalBodyRight_h1y68_14",
+  la = "_defaultModalBodyContainer_1j6ia_1",
+  da = "_defaultModalBodyLeft_1j6ia_8",
+  ha = "_defaultModalBodyRight_1j6ia_15",
   De = {
     defaultModalBodyContainer: la,
     defaultModalBodyLeft: da,
@@ -3822,7 +3822,7 @@ const dr = (a, s) => {
           className: De.defaultModalBodyLeft,
           children: /* @__PURE__ */ o.jsx(de, {
             title: "Popular links",
-            children: /* @__PURE__ */ o.jsxs(Pe, {
+            children: /* @__PURE__ */ o.jsxs(ve, {
               children: [
                 /* @__PURE__ */ o.jsx(Q, {
                   icon: /* @__PURE__ */ o.jsx(Ne, {}),
@@ -3883,20 +3883,20 @@ const dr = (a, s) => {
     }),
   wa = "_modalBodyContainer_3bx9m_1",
   Ca = "_hideItem_3bx9m_11",
-  Pa = "_modalBodyCategoryList_3bx9m_16",
-  xa = "_modalBodyResultFiltered_3bx9m_26",
-  va = "_backToAllResultsButton_3bx9m_35",
-  qa = "_backToAllResultsButtonText_3bx9m_49",
+  va = "_modalBodyCategoryList_3bx9m_16",
+  Pa = "_modalBodyResultFiltered_3bx9m_26",
+  qa = "_backToAllResultsButton_3bx9m_35",
+  xa = "_backToAllResultsButtonText_3bx9m_49",
   Ea = "_searchGroupHeader_3bx9m_54",
   ba = "_totalCount_3bx9m_61",
   Sa = "_showAllButton_3bx9m_66",
   F = {
     modalBodyContainer: wa,
     hideItem: Ca,
-    modalBodyCategoryList: Pa,
-    modalBodyResultFiltered: xa,
-    backToAllResultsButton: va,
-    backToAllResultsButtonText: qa,
+    modalBodyCategoryList: va,
+    modalBodyResultFiltered: Pa,
+    backToAllResultsButton: qa,
+    backToAllResultsButtonText: xa,
     searchGroupHeader: Ea,
     totalCount: ba,
     showAllButton: Sa,
@@ -3961,7 +3961,7 @@ const dr = (a, s) => {
   },
   fr = 5,
   yr = ({ categories: a, activeCategory: s, onCategoryClicked: l }) => {
-    const m = ve(null),
+    const m = qe(null),
       y = a.slice(0, fr),
       g = a.slice(fr)
     return /* @__PURE__ */ o.jsxs("div", {
@@ -3996,23 +3996,23 @@ const dr = (a, s) => {
       [r, n] = V(-1),
       c = Rt(a)
     let i = [[...c], ...a].flatMap((C) => {
-      var P
-      return d != null && d[(P = C == null ? void 0 : C[0]) == null ? void 0 : P.index] ? C : C.slice(0, Ue)
+      var v
+      return d != null && d[(v = C == null ? void 0 : C[0]) == null ? void 0 : v.index] ? C : C.slice(0, Ue)
     })
     const u = gr(
       (C) => {
-        var P
+        var v
         C.key === "ArrowDown"
           ? (C.preventDefault(), n((b) => (b + 1 < i.length ? b + 1 : b)))
           : C.key === "ArrowUp"
           ? (C.preventDefault(), n((b) => (b - 1 < 0 ? 0 : b - 1)))
-          : C.key === "Enter" && r >= 0 && (window.location.href = ((P = i[r]) == null ? void 0 : P.link) ?? "#")
+          : C.key === "Enter" && r >= 0 && (window.location.href = ((v = i[r]) == null ? void 0 : v.link) ?? "#")
       },
       [r, i]
     )
     z(() => (window.addEventListener("keydown", u), () => window.removeEventListener("keydown", u)), [u]),
       z(() => {
-        const C = a.map((P) => P[0].index)
+        const C = a.map((v) => v[0].index)
         m(["All", ...Ot(C, s ?? [])]), g("All"), e({ Suggestions: !0 }), n(-1)
       }, [a, s])
     const h = (C) => {
@@ -4026,9 +4026,9 @@ const dr = (a, s) => {
       p = (C) => {
         g(C), n(-1)
       },
-      v = (C) => {
-        const P = i[r]
-        return P && P.index === C.index && P.name === C.name && P.link === C.link
+      q = (C) => {
+        const v = i[r]
+        return v && v.index === C.index && v.name === C.name && v.link === C.link
       }
     if (!a.length)
       return /* @__PURE__ */ o.jsx("div", {
@@ -4036,7 +4036,7 @@ const dr = (a, s) => {
         children: /* @__PURE__ */ o.jsx(R, { variant: "bodyS", children: "No record found." }),
       })
     if (y !== "All") {
-      const C = ((A = a.filter((P) => (P == null ? void 0 : P[0].index) === y)) == null ? void 0 : A.flat()) || []
+      const C = ((A = a.filter((v) => (v == null ? void 0 : v[0].index) === y)) == null ? void 0 : A.flat()) || []
       return (
         (i = [...C]),
         /* @__PURE__ */ o.jsxs("div", {
@@ -4062,17 +4062,17 @@ const dr = (a, s) => {
                     }),
                   ],
                 }),
-                /* @__PURE__ */ o.jsx(Pe, {
-                  children: C.map((P) =>
+                /* @__PURE__ */ o.jsx(ve, {
+                  children: C.map((v) =>
                     /* @__PURE__ */ o.jsx(
                       Q,
                       {
-                        itemLabel: P.name,
-                        itemLink: P.link ?? "",
-                        itemActive: v(P),
-                        isExternalLink: P.isExternal,
+                        itemLabel: v.name,
+                        itemLink: v.link ?? "",
+                        itemActive: q(v),
+                        isExternalLink: v.isExternal,
                       },
-                      `${P.index}-${P.name}`
+                      `${v.index}-${v.name}`
                     )
                   ),
                 }),
@@ -4093,14 +4093,14 @@ const dr = (a, s) => {
         !!c.length &&
           /* @__PURE__ */ o.jsx(de, {
             title: "Suggestions",
-            children: /* @__PURE__ */ o.jsx(Pe, {
+            children: /* @__PURE__ */ o.jsx(ve, {
               children: c.map((C) =>
                 /* @__PURE__ */ o.jsx(
                   Q,
                   {
                     itemLabel: C.name,
                     itemLink: C.link ?? "",
-                    itemActive: v(C),
+                    itemActive: q(C),
                     isExternalLink: C.isExternal,
                   },
                   `${C.index}-${C.name}`
@@ -4108,7 +4108,7 @@ const dr = (a, s) => {
               ),
             }),
           }),
-        a.map((C, P) => {
+        a.map((C, v) => {
           let b = ""
           return (
             C.length > Ue && (b += `(${C.length})`),
@@ -4124,14 +4124,14 @@ const dr = (a, s) => {
                     return h((k = C == null ? void 0 : C[0]) == null ? void 0 : k.index)
                   },
                 }),
-                children: /* @__PURE__ */ o.jsx(Pe, {
+                children: /* @__PURE__ */ o.jsx(ve, {
                   children: C.map((k, _) =>
                     /* @__PURE__ */ o.jsx(
                       Q,
                       {
                         itemLabel: k.name,
                         itemLink: k.link ?? "",
-                        itemActive: v(k),
+                        itemActive: q(k),
                         isExternalLink: k.isExternal,
                         className: _ >= Ue && !(d != null && d[k.index]) ? F.hideItem : "",
                       },
@@ -4140,7 +4140,7 @@ const dr = (a, s) => {
                   ),
                 }),
               },
-              `result-box-${P}`
+              `result-box-${v}`
             )
           )
         }),
@@ -4165,17 +4165,17 @@ const dr = (a, s) => {
           }),
       ],
     }),
-  Ua = "_modalOverlay_1xx83_1",
-  Ma = "_modalOverlayActive_1xx83_19",
-  Wa = "_modalInner_1xx83_23",
-  Fa = "_modalContainer_1xx83_32",
-  Va = "_modalHeader_1xx83_43",
-  Xa = "_searchInput_1xx83_54",
-  Ha = "_clearButton_1xx83_78",
-  Ga = "_modalBody_1xx83_93",
-  _a = "_modalFooter_1xx83_99",
-  Ka = "_modalFooterShortcuts_1xx83_109",
-  Ya = "_modalFooterShortcut_1xx83_109",
+  Ua = "_modalOverlay_hhvgd_1",
+  Ma = "_modalOverlayActive_hhvgd_19",
+  Wa = "_modalInner_hhvgd_23",
+  Fa = "_modalContainer_hhvgd_32",
+  Va = "_modalHeader_hhvgd_42",
+  Xa = "_searchInput_hhvgd_53",
+  Ha = "_clearButton_hhvgd_77",
+  Ga = "_modalBody_hhvgd_92",
+  _a = "_modalFooter_hhvgd_98",
+  Ka = "_modalFooterShortcuts_hhvgd_108",
+  Ya = "_modalFooterShortcut_hhvgd_108",
   U = {
     modalOverlay: Ua,
     modalOverlayActive: Ma,
@@ -4232,7 +4232,7 @@ const dr = (a, s) => {
     }),
   Ja = ({ onSearchInputChange: a }) => {
     const [s, l] = V(""),
-      m = ve(null),
+      m = qe(null),
       y = gr(() => {
         var d
         l(""), a(""), (d = m.current) == null || d.focus()
@@ -4281,14 +4281,16 @@ const dr = (a, s) => {
     const [y, g] = V(!1),
       [d, e] = V(!0),
       [r, n] = V([]),
-      c = ve(""),
+      c = qe(""),
       i = Qr(() => kt(s, l), [s, l])
     z(() => {
-      g(!0)
+      g(!0), (document.body.style.overflow = "hidden")
     }, []),
       z(() => {
         const h = (p) => {
-          p.key === "Escape" && !c.current && (p.preventDefault(), g(!1), setTimeout(() => a(), 250))
+          p.key === "Escape" &&
+            !c.current &&
+            (p.preventDefault(), g(!1), (document.body.style.overflow = ""), setTimeout(() => a(), 250))
         }
         return (
           window.addEventListener("keydown", h),
@@ -4298,18 +4300,18 @@ const dr = (a, s) => {
         )
       }, [a])
     const u = async (h) => {
-      if (((c.current = h), !h || h.length <= 2)) {
+      if (((c.current = h), !h)) {
         e(!0)
         return
       }
       const p = await i.search({
           requests: It(h),
         }),
-        v = Tt(
+        q = Tt(
           // We know the result should be a `SearchResponse` type from the request we just made above
           (p == null ? void 0 : p.results) ?? []
         )
-      n(v), e(!1)
+      n(q), e(!1)
     }
     return $r.createPortal(
       /* @__PURE__ */ o.jsx("div", {

@@ -69,24 +69,24 @@ function Zr() {
             u = Symbol.for("react.lazy"),
             h = Symbol.for("react.offscreen"),
             p = Symbol.iterator,
-            v = "@@iterator"
+            q = "@@iterator"
           function I(t) {
             if (t === null || typeof t != "object") return null
-            var f = (p && t[p]) || t[v]
+            var f = (p && t[p]) || t[q]
             return typeof f == "function" ? f : null
           }
           var C = a.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
-          function P(t) {
+          function v(t) {
             {
-              for (var f = arguments.length, w = new Array(f > 1 ? f - 1 : 0), x = 1; x < f; x++)
-                w[x - 1] = arguments[x]
+              for (var f = arguments.length, w = new Array(f > 1 ? f - 1 : 0), P = 1; P < f; P++)
+                w[P - 1] = arguments[P]
               b("error", t, w)
             }
           }
           function b(t, f, w) {
             {
-              var x = C.ReactDebugCurrentFrame,
-                S = x.getStackAddendum()
+              var P = C.ReactDebugCurrentFrame,
+                S = P.getStackAddendum()
               S !== "" && ((f += "%s"), (w = w.concat([S])))
               var k = w.map(function (E) {
                 return String(E)
@@ -97,7 +97,7 @@ function Zr() {
           var A = !1,
             _ = !1,
             de = !1,
-            xe = !1,
+            Pe = !1,
             he = !1,
             L
           L = Symbol.for("react.module.reference")
@@ -111,7 +111,7 @@ function Zr() {
               t === y ||
               t === n ||
               t === c ||
-              xe ||
+              Pe ||
               t === h ||
               A ||
               _ ||
@@ -128,8 +128,8 @@ function Zr() {
             )
           }
           function K(t, f, w) {
-            var x = t.displayName
-            if (x) return x
+            var P = t.displayName
+            if (P) return P
             var S = f.displayName || f.name || ""
             return S !== "" ? w + "(" + S + ")" : w
           }
@@ -140,7 +140,7 @@ function Zr() {
             if (t == null) return null
             if (
               (typeof t.tag == "number" &&
-                P(
+                v(
                   "Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue."
                 ),
               typeof t == "function")
@@ -172,8 +172,8 @@ function Zr() {
                 case r:
                   return K(t, t.render, "ForwardRef")
                 case i:
-                  var x = t.displayName || null
-                  return x !== null ? x : U(t.type) || "Memo"
+                  var P = t.displayName || null
+                  return P !== null ? P : U(t.type) || "Memo"
                 case u: {
                   var S = t,
                     k = S._payload,
@@ -236,24 +236,24 @@ function Zr() {
                   groupEnd: X({}, t, { value: Ve }),
                 })
               }
-              D < 0 && P("disabledDepth fell below zero. This is a bug in React. Please file an issue.")
+              D < 0 && v("disabledDepth fell below zero. This is a bug in React. Please file an issue.")
             }
           }
-          var ve = C.ReactCurrentDispatcher,
-            qe
+          var qe = C.ReactCurrentDispatcher,
+            xe
           function me(t, f, w) {
             {
-              if (qe === void 0)
+              if (xe === void 0)
                 try {
                   throw Error()
                 } catch (S) {
-                  var x = S.stack.trim().match(/\n( *(at )?)/)
-                  qe = (x && x[1]) || ""
+                  var P = S.stack.trim().match(/\n( *(at )?)/)
+                  xe = (P && P[1]) || ""
                 }
               return (
                 `
 ` +
-                qe +
+                xe +
                 t
               )
             }
@@ -261,8 +261,8 @@ function Zr() {
           var Ee = !1,
             fe
           {
-            var Pr = typeof WeakMap == "function" ? WeakMap : Map
-            fe = new Pr()
+            var vr = typeof WeakMap == "function" ? WeakMap : Map
+            fe = new vr()
           }
           function He(t, f) {
             if (!t || Ee) return ""
@@ -270,12 +270,12 @@ function Zr() {
               var w = fe.get(t)
               if (w !== void 0) return w
             }
-            var x
+            var P
             Ee = !0
             var S = Error.prepareStackTrace
             Error.prepareStackTrace = void 0
             var k
-            ;(k = ve.current), (ve.current = null), wr()
+            ;(k = qe.current), (qe.current = null), wr()
             try {
               if (f) {
                 var E = function () {
@@ -292,14 +292,14 @@ function Zr() {
                   try {
                     Reflect.construct(E, [])
                   } catch (B) {
-                    x = B
+                    P = B
                   }
                   Reflect.construct(t, [], E)
                 } else {
                   try {
                     E.call()
                   } catch (B) {
-                    x = B
+                    P = B
                   }
                   t.call(E.prototype)
                 }
@@ -307,31 +307,31 @@ function Zr() {
                 try {
                   throw Error()
                 } catch (B) {
-                  x = B
+                  P = B
                 }
                 t()
               }
             } catch (B) {
-              if (B && x && typeof B.stack == "string") {
+              if (B && P && typeof B.stack == "string") {
                 for (
-                  var q = B.stack.split(`
+                  var x = B.stack.split(`
 `),
-                    N = x.stack.split(`
+                    N = P.stack.split(`
 `),
-                    T = q.length - 1,
+                    T = x.length - 1,
                     R = N.length - 1;
-                  T >= 1 && R >= 0 && q[T] !== N[R];
+                  T >= 1 && R >= 0 && x[T] !== N[R];
 
                 )
                   R--
                 for (; T >= 1 && R >= 0; T--, R--)
-                  if (q[T] !== N[R]) {
+                  if (x[T] !== N[R]) {
                     if (T !== 1 || R !== 1)
                       do
-                        if ((T--, R--, R < 0 || q[T] !== N[R])) {
+                        if ((T--, R--, R < 0 || x[T] !== N[R])) {
                           var W =
                             `
-` + q[T].replace(" at new ", " at ")
+` + x[T].replace(" at new ", " at ")
                           return (
                             t.displayName && W.includes("<anonymous>") && (W = W.replace("<anonymous>", t.displayName)),
                             typeof t == "function" && fe.set(t, W),
@@ -343,22 +343,22 @@ function Zr() {
                   }
               }
             } finally {
-              ;(Ee = !1), (ve.current = k), Cr(), (Error.prepareStackTrace = S)
+              ;(Ee = !1), (qe.current = k), Cr(), (Error.prepareStackTrace = S)
             }
             var re = t ? t.displayName || t.name : "",
               Y = re ? me(re) : ""
             return typeof t == "function" && fe.set(t, Y), Y
           }
-          function xr(t, f, w) {
+          function Pr(t, f, w) {
             return He(t, !1)
           }
-          function vr(t) {
+          function qr(t) {
             var f = t.prototype
             return !!(f && f.isReactComponent)
           }
           function ye(t, f, w) {
             if (t == null) return ""
-            if (typeof t == "function") return He(t, vr(t))
+            if (typeof t == "function") return He(t, qr(t))
             if (typeof t == "string") return me(t)
             switch (t) {
               case n:
@@ -369,13 +369,13 @@ function Zr() {
             if (typeof t == "object")
               switch (t.$$typeof) {
                 case r:
-                  return xr(t.render)
+                  return Pr(t.render)
                 case i:
                   return ye(t.type, f, w)
                 case u: {
-                  var x = t,
-                    S = x._payload,
-                    k = x._init
+                  var P = t,
+                    S = P._payload,
+                    k = P._init
                   try {
                     return ye(k(S), f, w)
                   } catch {}
@@ -393,16 +393,16 @@ function Zr() {
               _e.setExtraStackFrame(w)
             } else _e.setExtraStackFrame(null)
           }
-          function qr(t, f, w, x, S) {
+          function xr(t, f, w, P, S) {
             {
               var k = Function.call.bind(se)
               for (var E in t)
                 if (k(t, E)) {
-                  var q = void 0
+                  var x = void 0
                   try {
                     if (typeof t[E] != "function") {
                       var N = Error(
-                        (x || "React class") +
+                        (P || "React class") +
                           ": " +
                           w +
                           " type `" +
@@ -413,24 +413,24 @@ function Zr() {
                       )
                       throw ((N.name = "Invariant Violation"), N)
                     }
-                    q = t[E](f, E, x, w, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED")
+                    x = t[E](f, E, P, w, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED")
                   } catch (T) {
-                    q = T
+                    x = T
                   }
-                  q &&
-                    !(q instanceof Error) &&
+                  x &&
+                    !(x instanceof Error) &&
                     (pe(S),
-                    P(
+                    v(
                       "%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).",
-                      x || "React class",
+                      P || "React class",
                       w,
                       E,
-                      typeof q
+                      typeof x
                     ),
                     pe(null)),
-                    q instanceof Error &&
-                      !(q.message in Ge) &&
-                      ((Ge[q.message] = !0), pe(S), P("Failed %s type: %s", w, q.message), pe(null))
+                    x instanceof Error &&
+                      !(x.message in Ge) &&
+                      ((Ge[x.message] = !0), pe(S), v("Failed %s type: %s", w, x.message), pe(null))
                 }
             }
           }
@@ -458,7 +458,7 @@ function Zr() {
           function Ye(t) {
             if (Sr(t))
               return (
-                P(
+                v(
                   "The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.",
                   br(t)
                 ),
@@ -489,7 +489,7 @@ function Zr() {
             if (typeof t.ref == "string" && oe.current && f && oe.current.stateNode !== f) {
               var w = U(oe.current.type)
               Se[w] ||
-                (P(
+                (v(
                   'Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref',
                   U(oe.current.type),
                   t.ref
@@ -502,7 +502,7 @@ function Zr() {
               var w = function () {
                 Ze ||
                   ((Ze = !0),
-                  P(
+                  v(
                     "%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
                   ))
@@ -515,7 +515,7 @@ function Zr() {
               var w = function () {
                 Je ||
                   ((Je = !0),
-                  P(
+                  v(
                     "%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)",
                     f
                   ))
@@ -523,41 +523,41 @@ function Zr() {
               ;(w.isReactWarning = !0), Object.defineProperty(t, "ref", { get: w, configurable: !0 })
             }
           }
-          var Or = function (t, f, w, x, S, k, E) {
-            var q = { $$typeof: s, type: t, key: f, ref: w, props: E, _owner: k }
+          var Or = function (t, f, w, P, S, k, E) {
+            var x = { $$typeof: s, type: t, key: f, ref: w, props: E, _owner: k }
             return (
-              (q._store = {}),
-              Object.defineProperty(q._store, "validated", {
+              (x._store = {}),
+              Object.defineProperty(x._store, "validated", {
                 configurable: !1,
                 enumerable: !1,
                 writable: !0,
                 value: !1,
               }),
-              Object.defineProperty(q, "_self", { configurable: !1, enumerable: !1, writable: !1, value: x }),
-              Object.defineProperty(q, "_source", { configurable: !1, enumerable: !1, writable: !1, value: S }),
-              Object.freeze && (Object.freeze(q.props), Object.freeze(q)),
-              q
+              Object.defineProperty(x, "_self", { configurable: !1, enumerable: !1, writable: !1, value: P }),
+              Object.defineProperty(x, "_source", { configurable: !1, enumerable: !1, writable: !1, value: S }),
+              Object.freeze && (Object.freeze(x.props), Object.freeze(x)),
+              x
             )
           }
-          function Lr(t, f, w, x, S) {
+          function Lr(t, f, w, P, S) {
             {
               var k,
                 E = {},
-                q = null,
+                x = null,
                 N = null
-              w !== void 0 && (Ye(w), (q = "" + w)),
-                Ar(f) && (Ye(f.key), (q = "" + f.key)),
+              w !== void 0 && (Ye(w), (x = "" + w)),
+                Ar(f) && (Ye(f.key), (x = "" + f.key)),
                 kr(f) && ((N = f.ref), Ir(f, S))
               for (k in f) se.call(f, k) && !jr.hasOwnProperty(k) && (E[k] = f[k])
               if (t && t.defaultProps) {
                 var T = t.defaultProps
                 for (k in T) E[k] === void 0 && (E[k] = T[k])
               }
-              if (q || N) {
+              if (x || N) {
                 var R = typeof t == "function" ? t.displayName || t.name || "Unknown" : t
-                q && Tr(E, R), N && Rr(E, R)
+                x && Tr(E, R), N && Rr(E, R)
               }
-              return Or(t, q, N, S, x, oe.current, E)
+              return Or(t, x, N, S, P, oe.current, E)
             }
           }
           var je = C.ReactCurrentOwner,
@@ -617,13 +617,13 @@ Check the top-level render call using <` +
               var w = Dr(f)
               if ($e[w]) return
               $e[w] = !0
-              var x = ""
-              t && t._owner && t._owner !== je.current && (x = " It was passed a child from " + U(t._owner.type) + "."),
+              var P = ""
+              t && t._owner && t._owner !== je.current && (P = " It was passed a child from " + U(t._owner.type) + "."),
                 ee(t),
-                P(
+                v(
                   'Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.',
                   w,
-                  x
+                  P
                 ),
                 ee(null)
             }
@@ -633,8 +633,8 @@ Check the top-level render call using <` +
               if (typeof t != "object") return
               if (be(t))
                 for (var w = 0; w < t.length; w++) {
-                  var x = t[w]
-                  Ae(x) && er(x, f)
+                  var P = t[w]
+                  Ae(P) && er(P, f)
                 }
               else if (Ae(t)) t._store && (t._store.validated = !0)
               else if (t) {
@@ -653,19 +653,19 @@ Check the top-level render call using <` +
               else if (typeof f == "object" && (f.$$typeof === r || f.$$typeof === i)) w = f.propTypes
               else return
               if (w) {
-                var x = U(f)
-                qr(w, t.props, "prop", x, t)
+                var P = U(f)
+                xr(w, t.props, "prop", P, t)
               } else if (f.PropTypes !== void 0 && !ke) {
                 ke = !0
                 var S = U(f)
-                P(
+                v(
                   "Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?",
                   S || "Unknown"
                 )
               }
               typeof f.getDefaultProps == "function" &&
                 !f.getDefaultProps.isReactClassApproved &&
-                P(
+                v(
                   "getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead."
                 )
             }
@@ -673,31 +673,31 @@ Check the top-level render call using <` +
           function Ur(t) {
             {
               for (var f = Object.keys(t.props), w = 0; w < f.length; w++) {
-                var x = f[w]
-                if (x !== "children" && x !== "key") {
+                var P = f[w]
+                if (P !== "children" && P !== "key") {
                   ee(t),
-                    P(
+                    v(
                       "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.",
-                      x
+                      P
                     ),
                     ee(null)
                   break
                 }
               }
-              t.ref !== null && (ee(t), P("Invalid attribute `ref` supplied to `React.Fragment`."), ee(null))
+              t.ref !== null && (ee(t), v("Invalid attribute `ref` supplied to `React.Fragment`."), ee(null))
             }
           }
           var tr = {}
-          function ar(t, f, w, x, S, k) {
+          function ar(t, f, w, P, S, k) {
             {
               var E = ae(t)
               if (!E) {
-                var q = ""
+                var x = ""
                 ;(t === void 0 || (typeof t == "object" && t !== null && Object.keys(t).length === 0)) &&
-                  (q +=
+                  (x +=
                     " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.")
                 var N = Nr()
-                N ? (q += N) : (q += ze())
+                N ? (x += N) : (x += ze())
                 var T
                 t === null
                   ? (T = "null")
@@ -705,12 +705,12 @@ Check the top-level render call using <` +
                   ? (T = "array")
                   : t !== void 0 && t.$$typeof === s
                   ? ((T = "<" + (U(t.type) || "Unknown") + " />"),
-                    (q = " Did you accidentally export a JSX literal instead of a component?"))
+                    (x = " Did you accidentally export a JSX literal instead of a component?"))
                   : (T = typeof t),
-                  P(
+                  v(
                     "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
                     T,
-                    q
+                    x
                   )
               }
               var R = Lr(t, f, w, S, k)
@@ -718,12 +718,12 @@ Check the top-level render call using <` +
               if (E) {
                 var W = f.children
                 if (W !== void 0)
-                  if (x)
+                  if (P)
                     if (be(W)) {
                       for (var re = 0; re < W.length; re++) rr(W[re], t)
                       Object.freeze && Object.freeze(W)
                     } else
-                      P(
+                      v(
                         "React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead."
                       )
                   else rr(W, t)
@@ -736,7 +736,7 @@ Check the top-level render call using <` +
                   Ie = B.length > 0 ? "{key: someKey, " + B.join(": ..., ") + ": ...}" : "{key: someKey}"
                 if (!tr[Y + Ie]) {
                   var Xr = B.length > 0 ? "{" + B.join(": ..., ") + ": ...}" : "{}"
-                  P(
+                  v(
                     `A props object containing a "key" prop is being spread into JSX:
   let props = %s;
   <%s {...props} />
@@ -1028,7 +1028,7 @@ var fr = class extends Error {
       )
     }
   },
-  Pe = class extends yr {
+  ve = class extends yr {
     constructor(s, l, m, y = "ApiError") {
       super(s, m, y)
       te(this, "status")
@@ -1042,7 +1042,7 @@ var fr = class extends Error {
       this.response = l
     }
   },
-  it = class extends Pe {
+  it = class extends ve {
     constructor(s, l, m, y) {
       super(s, l, y, "DetailedApiError")
       te(this, "error")
@@ -1101,9 +1101,9 @@ function mt(a) {
 function ft({ content: a, status: s }, l) {
   try {
     const m = JSON.parse(a)
-    return "error" in m ? new it(m.message, s, m.error, l) : new Pe(m.message, s, l)
+    return "error" in m ? new it(m.message, s, m.error, l) : new ve(m.message, s, l)
   } catch {}
-  return new Pe(a, s, l)
+  return new ve(a, s, l)
 }
 function yt({ isTimedOut: a, status: s }) {
   return !a && ~~s === 0
@@ -1135,9 +1135,9 @@ function Ct({
 }) {
   async function c(h) {
     const p = await Promise.all(h.map((b) => s.get(b, () => Promise.resolve(cr(b))))),
-      v = p.filter((b) => b.isUp()),
+      q = p.filter((b) => b.isUp()),
       I = p.filter((b) => b.isTimedOut()),
-      C = [...v, ...I]
+      C = [...q, ...I]
     return {
       hosts: C.length > 0 ? C : h,
       getTimeout(b, A) {
@@ -1145,10 +1145,10 @@ function Ct({
       },
     }
   }
-  async function i(h, p, v = !0) {
+  async function i(h, p, q = !0) {
     const I = [],
       C = dt(h, p),
-      P = ht(l, h.headers, p.headers),
+      v = ht(l, h.headers, p.headers),
       b = h.method === "GET" ? { ...h.data, ...p.data } : {},
       A = { ...y, ...h.queryParameters, ...b }
     if ((g.value && (A["x-algolia-agent"] = g.value), p && p.queryParameters))
@@ -1163,11 +1163,11 @@ function Ct({
         const z = { ...d, ...p.timeouts },
           U = {
             data: C,
-            headers: P,
+            headers: v,
             method: h.method,
             url: ut(K, h.path, A),
             connectTimeout: ae(_, z.connect),
-            responseTimeout: ae(_, v ? z.read : z.write),
+            responseTimeout: ae(_, q ? z.read : z.write),
           },
           X = ($) => {
             const ne = { request: U, response: $, host: K, triesLeft: L.length }
@@ -1186,29 +1186,29 @@ function Ct({
         if (gt(D)) return mt(D)
         throw (X(D), ft(D, I))
       },
-      xe = a.filter((L) => L.accept === "readWrite" || (v ? L.accept === "read" : L.accept === "write")),
-      he = await c(xe)
+      Pe = a.filter((L) => L.accept === "readWrite" || (q ? L.accept === "read" : L.accept === "write")),
+      he = await c(Pe)
     return de([...he.hosts].reverse(), he.getTimeout)
   }
   function u(h, p = {}) {
-    const v = h.useReadTransporter || h.method === "GET"
-    if (!v) return i(h, p, v)
+    const q = h.useReadTransporter || h.method === "GET"
+    if (!q) return i(h, p, q)
     const I = () => i(h, p)
     if ((p.cacheable || h.cacheable) !== !0) return I()
-    const P = { request: h, requestOptions: p, transporter: { queryParameters: y, headers: l } }
+    const v = { request: h, requestOptions: p, transporter: { queryParameters: y, headers: l } }
     return n.get(
-      P,
+      v,
       () =>
-        r.get(P, () =>
+        r.get(v, () =>
           r
-            .set(P, I())
+            .set(v, I())
             .then(
-              (b) => Promise.all([r.delete(P), b]),
-              (b) => Promise.all([r.delete(P), Promise.reject(b)])
+              (b) => Promise.all([r.delete(v), b]),
+              (b) => Promise.all([r.delete(v), Promise.reject(b)])
             )
             .then(([b, A]) => A)
         ),
-      { miss: (b) => n.set(P, b) }
+      { miss: (b) => n.set(v, b) }
     )
   }
   return {
@@ -1226,7 +1226,7 @@ function Ct({
   }
 }
 var gr = "5.17.1"
-function Pt(a) {
+function vt(a) {
   return [
     { url: `${a}-dsn.algolia.net`, accept: "read", protocol: "https" },
     { url: `${a}.algolia.net`, accept: "write", protocol: "https" },
@@ -1238,10 +1238,10 @@ function Pt(a) {
     ])
   )
 }
-function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
+function Pt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
   const g = tt(a, s, l),
     d = Ct({
-      hosts: Pt(a),
+      hosts: vt(a),
       ...y,
       algoliaAgent: at({ algoliaAgents: m, client: "Search", version: gr }),
       baseHeaders: { "content-type": "text/plain", ...g.headers(), ...y.baseHeaders },
@@ -1299,13 +1299,13 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         return Z({
           ...p,
           func: () => this.getApiKey({ key: r }, u),
-          validate: (v) => {
+          validate: (q) => {
             for (const I of Object.keys(n)) {
               const C = n[I],
-                P = v[I]
-              if (Array.isArray(C) && Array.isArray(P)) {
-                if (C.length !== P.length || C.some((b, A) => b !== P[A])) return !1
-              } else if (C !== P) return !1
+                v = q[I]
+              if (Array.isArray(C) && Array.isArray(v)) {
+                if (C.length !== v.length || C.some((b, A) => b !== v[A])) return !1
+              } else if (C !== v) return !1
             }
             return !0
           },
@@ -1314,10 +1314,10 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
       return Z({
         ...p,
         func: () =>
-          this.getApiKey({ key: r }, u).catch((v) => {
-            if (v.status !== 404) throw v
+          this.getApiKey({ key: r }, u).catch((q) => {
+            if (q.status !== 404) throw q
           }),
-        validate: (v) => (e === "add" ? v !== void 0 : v === void 0),
+        validate: (q) => (e === "add" ? q !== void 0 : q === void 0),
       })
     },
     browseObjects({ indexName: e, browseParams: r, ...n }, c) {
@@ -1351,8 +1351,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
     async chunkedBatch({ indexName: e, objects: r, action: n = "addObject", waitForTasks: c, batchSize: i = 1e3 }, u) {
       let h = []
       const p = [],
-        v = r.entries()
-      for (const [I, C] of v)
+        q = r.entries()
+      for (const [I, C] of q)
         h.push({ action: n, body: C }),
           (h.length === i || I === r.length - 1) &&
             (p.push(await this.batch({ indexName: e, batchWriteParams: { requests: h } }, u)), (h = []))
@@ -1409,20 +1409,20 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
           c
         )),
         await this.waitForTask({ indexName: u, taskID: h.taskID })
-      const v = await this.operationIndex(
+      const q = await this.operationIndex(
         { indexName: u, operationIndexParams: { operation: "move", destination: e } },
         c
       )
       return (
-        await this.waitForTask({ indexName: u, taskID: v.taskID }),
-        { copyOperationResponse: h, batchResponses: p, moveOperationResponse: v }
+        await this.waitForTask({ indexName: u, taskID: q.taskID }),
+        { copyOperationResponse: h, batchResponses: p, moveOperationResponse: q }
       )
     },
     async indexExists({ indexName: e }) {
       try {
         await this.getSettings({ indexName: e })
       } catch (r) {
-        if (r instanceof Pe && r.status === 404) return !1
+        if (r instanceof ve && r.status === 404) return !1
         throw r
       }
       return !0
@@ -1702,8 +1702,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         r !== void 0 && (p.length = r.toString()),
         n !== void 0 && (p.indexName = n.toString()),
         c !== void 0 && (p.type = c.toString())
-      const v = { method: "GET", path: u, queryParameters: p, headers: h }
-      return d.request(v, i)
+      const q = { method: "GET", path: u, queryParameters: p, headers: h }
+      return d.request(q, i)
     },
     getObject({ indexName: e, objectID: r, attributesToRetrieve: n }, c) {
       if (!e) throw new Error("Parameter `indexName` is required when calling `getObject`.")
@@ -1862,8 +1862,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.createIfNotExists = c.toString())
-      const v = { method: "POST", path: u, queryParameters: p, headers: h, data: n }
-      return d.request(v, i)
+      const q = { method: "POST", path: u, queryParameters: p, headers: h, data: n }
+      return d.request(q, i)
     },
     removeUserId({ userID: e }, r) {
       if (!e) throw new Error("Parameter `userID` is required when calling `removeUserId`.")
@@ -1914,8 +1914,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.forwardToReplicas = c.toString())
-      const v = { method: "PUT", path: u, queryParameters: p, headers: h, data: n }
-      return d.request(v, i)
+      const q = { method: "PUT", path: u, queryParameters: p, headers: h, data: n }
+      return d.request(q, i)
     },
     saveRules({ indexName: e, rules: r, forwardToReplicas: n, clearExistingRules: c }, i) {
       if (!e) throw new Error("Parameter `indexName` is required when calling `saveRules`.")
@@ -1924,8 +1924,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       n !== void 0 && (p.forwardToReplicas = n.toString()), c !== void 0 && (p.clearExistingRules = c.toString())
-      const v = { method: "POST", path: u, queryParameters: p, headers: h, data: r }
-      return d.request(v, i)
+      const q = { method: "POST", path: u, queryParameters: p, headers: h, data: r }
+      return d.request(q, i)
     },
     saveSynonym({ indexName: e, objectID: r, synonymHit: n, forwardToReplicas: c }, i) {
       if (!e) throw new Error("Parameter `indexName` is required when calling `saveSynonym`.")
@@ -1939,8 +1939,8 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       c !== void 0 && (p.forwardToReplicas = c.toString())
-      const v = { method: "PUT", path: u, queryParameters: p, headers: h, data: n }
-      return d.request(v, i)
+      const q = { method: "PUT", path: u, queryParameters: p, headers: h, data: n }
+      return d.request(q, i)
     },
     saveSynonyms({ indexName: e, synonymHit: r, forwardToReplicas: n, replaceExistingSynonyms: c }, i) {
       if (!e) throw new Error("Parameter `indexName` is required when calling `saveSynonyms`.")
@@ -1949,18 +1949,18 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
         h = {},
         p = {}
       n !== void 0 && (p.forwardToReplicas = n.toString()), c !== void 0 && (p.replaceExistingSynonyms = c.toString())
-      const v = { method: "POST", path: u, queryParameters: p, headers: h, data: r }
-      return d.request(v, i)
+      const q = { method: "POST", path: u, queryParameters: p, headers: h, data: r }
+      return d.request(q, i)
     },
     search(e, r) {
       if (
         (e &&
           Array.isArray(e) &&
           (e = {
-            requests: e.map(({ params: p, ...v }) =>
-              v.type === "facet"
-                ? { ...v, ...p, type: "facet" }
-                : { ...v, ...p, facet: void 0, maxFacetHits: void 0, facetQuery: void 0 }
+            requests: e.map(({ params: p, ...q }) =>
+              q.type === "facet"
+                ? { ...q, ...p, type: "facet" }
+                : { ...q, ...p, facet: void 0, maxFacetHits: void 0, facetQuery: void 0 }
             ),
           }),
         !e)
@@ -2100,10 +2100,10 @@ function xt({ appId: a, apiKey: s, authMode: l, algoliaAgents: m, ...y }) {
     },
   }
 }
-function vt(a, s, l) {
+function qt(a, s, l) {
   if (!a || typeof a != "string") throw new Error("`appId` is missing.")
   if (!s || typeof s != "string") throw new Error("`apiKey` is missing.")
-  return xt({
+  return Pt({
     appId: a,
     apiKey: s,
     timeouts: { connect: 1e3, read: 2e3, write: 3e4 },
@@ -2136,8 +2136,8 @@ const ur = (a, s) => {
     TUTORIAL: "Tutorial",
     VIDEO: "Video",
   },
-  qt = Object.values(we),
-  Et = (a = "") => qt.map((s) => ({ indexName: s, query: a })),
+  xt = Object.values(we),
+  Et = (a = "") => xt.map((s) => ({ indexName: s, query: a })),
   bt = (a) =>
     a
       .map((s) =>
@@ -2586,9 +2586,9 @@ const ur = (a, s) => {
       })
     )
   },
-  na = "_defaultModalBodyContainer_h1y68_1",
-  sa = "_defaultModalBodyLeft_h1y68_7",
-  oa = "_defaultModalBodyRight_h1y68_14",
+  na = "_defaultModalBodyContainer_1j6ia_1",
+  sa = "_defaultModalBodyLeft_1j6ia_8",
+  oa = "_defaultModalBodyRight_1j6ia_15",
   Le = { defaultModalBodyContainer: na, defaultModalBodyLeft: sa, defaultModalBodyRight: oa },
   ia = "_certificationCard_vrzug_1",
   ca = "_certificationCardHeader_vrzug_14",
@@ -2669,7 +2669,7 @@ const ur = (a, s) => {
   ga = "_backToAllResultsButtonText_3bx9m_49",
   wa = "_searchGroupHeader_3bx9m_54",
   Ca = "_totalCount_3bx9m_61",
-  Pa = "_showAllButton_3bx9m_66",
+  va = "_showAllButton_3bx9m_66",
   V = {
     modalBodyContainer: ha,
     hideItem: ma,
@@ -2679,19 +2679,19 @@ const ur = (a, s) => {
     backToAllResultsButtonText: ga,
     searchGroupHeader: wa,
     totalCount: Ca,
-    showAllButton: Pa,
+    showAllButton: va,
   },
-  xa = "_categoryButton_11i1q_1",
-  va = "_categoryButtonActive_11i1q_19",
-  qa = "_categoryText_11i1q_24",
+  Pa = "_categoryButton_11i1q_1",
+  qa = "_categoryButtonActive_11i1q_19",
+  xa = "_categoryText_11i1q_24",
   Ea = "_categoryListContainer_11i1q_31",
   ba = "_categoryMenuContainer_11i1q_36",
   Sa = "_categoryMenuItem_11i1q_53",
   ja = "_categoryMenuItemText_11i1q_68",
   G = {
-    categoryButton: xa,
-    categoryButtonActive: va,
-    categoryText: qa,
+    categoryButton: Pa,
+    categoryButtonActive: qa,
+    categoryText: xa,
     categoryListContainer: Ea,
     categoryMenuContainer: ba,
     categoryMenuItem: Sa,
@@ -2755,23 +2755,23 @@ const ur = (a, s) => {
       [r, n] = j.useState(-1),
       c = St(a)
     let i = [[...c], ...a].flatMap((C) => {
-      var P
-      return d != null && d[(P = C == null ? void 0 : C[0]) == null ? void 0 : P.index] ? C : C.slice(0, De)
+      var v
+      return d != null && d[(v = C == null ? void 0 : C[0]) == null ? void 0 : v.index] ? C : C.slice(0, De)
     })
     const u = j.useCallback(
       (C) => {
-        var P
+        var v
         C.key === "ArrowDown"
           ? (C.preventDefault(), n((b) => (b + 1 < i.length ? b + 1 : b)))
           : C.key === "ArrowUp"
           ? (C.preventDefault(), n((b) => (b - 1 < 0 ? 0 : b - 1)))
-          : C.key === "Enter" && r >= 0 && (window.location.href = ((P = i[r]) == null ? void 0 : P.link) ?? "#")
+          : C.key === "Enter" && r >= 0 && (window.location.href = ((v = i[r]) == null ? void 0 : v.link) ?? "#")
       },
       [r, i]
     )
     j.useEffect(() => (window.addEventListener("keydown", u), () => window.removeEventListener("keydown", u)), [u]),
       j.useEffect(() => {
-        const C = a.map((P) => P[0].index)
+        const C = a.map((v) => v[0].index)
         m(["All", ...jt(C, s ?? [])]), g("All"), e({ Suggestions: !0 }), n(-1)
       }, [a, s])
     const h = (C) => {
@@ -2780,9 +2780,9 @@ const ur = (a, s) => {
       p = (C) => {
         g(C), n(-1)
       },
-      v = (C) => {
-        const P = i[r]
-        return P && P.index === C.index && P.name === C.name && P.link === C.link
+      q = (C) => {
+        const v = i[r]
+        return v && v.index === C.index && v.name === C.name && v.link === C.link
       }
     if (!a.length)
       return o.jsx("div", {
@@ -2790,7 +2790,7 @@ const ur = (a, s) => {
         children: o.jsx(O, { variant: "bodyS", children: "No record found." }),
       })
     if (y !== "All") {
-      const C = ((I = a.filter((P) => (P == null ? void 0 : P[0].index) === y)) == null ? void 0 : I.flat()) || []
+      const C = ((I = a.filter((v) => (v == null ? void 0 : v[0].index) === y)) == null ? void 0 : I.flat()) || []
       return (
         (i = [...C]),
         o.jsxs("div", {
@@ -2809,11 +2809,11 @@ const ur = (a, s) => {
                   ],
                 }),
                 o.jsx(Ce, {
-                  children: C.map((P) =>
+                  children: C.map((v) =>
                     o.jsx(
                       Q,
-                      { itemLabel: P.name, itemLink: P.link ?? "", itemActive: v(P), isExternalLink: P.isExternal },
-                      `${P.index}-${P.name}`
+                      { itemLabel: v.name, itemLink: v.link ?? "", itemActive: q(v), isExternalLink: v.isExternal },
+                      `${v.index}-${v.name}`
                     )
                   ),
                 }),
@@ -2834,13 +2834,13 @@ const ur = (a, s) => {
               children: c.map((C) =>
                 o.jsx(
                   Q,
-                  { itemLabel: C.name, itemLink: C.link ?? "", itemActive: v(C), isExternalLink: C.isExternal },
+                  { itemLabel: C.name, itemLink: C.link ?? "", itemActive: q(C), isExternalLink: C.isExternal },
                   `${C.index}-${C.name}`
                 )
               ),
             }),
           }),
-        a.map((C, P) => {
+        a.map((C, v) => {
           let b = ""
           return (
             C.length > De && (b += `(${C.length})`),
@@ -2863,7 +2863,7 @@ const ur = (a, s) => {
                       {
                         itemLabel: A.name,
                         itemLink: A.link ?? "",
-                        itemActive: v(A),
+                        itemActive: q(A),
                         isExternalLink: A.isExternal,
                         className: _ >= De && !(d != null && d[A.index]) ? V.hideItem : "",
                       },
@@ -2872,7 +2872,7 @@ const ur = (a, s) => {
                   ),
                 }),
               },
-              `result-box-${P}`
+              `result-box-${v}`
             )
           )
         }),
@@ -2897,17 +2897,17 @@ const ur = (a, s) => {
           }),
       ],
     }),
-  Ra = "_modalOverlay_1xx83_1",
-  Oa = "_modalOverlayActive_1xx83_19",
-  La = "_modalInner_1xx83_23",
-  Na = "_modalContainer_1xx83_32",
-  Da = "_modalHeader_1xx83_43",
-  Ba = "_searchInput_1xx83_54",
-  Ua = "_clearButton_1xx83_78",
-  Ma = "_modalBody_1xx83_93",
-  Wa = "_modalFooter_1xx83_99",
-  Fa = "_modalFooterShortcuts_1xx83_109",
-  Va = "_modalFooterShortcut_1xx83_109",
+  Ra = "_modalOverlay_hhvgd_1",
+  Oa = "_modalOverlayActive_hhvgd_19",
+  La = "_modalInner_hhvgd_23",
+  Na = "_modalContainer_hhvgd_32",
+  Da = "_modalHeader_hhvgd_42",
+  Ba = "_searchInput_hhvgd_53",
+  Ua = "_clearButton_hhvgd_77",
+  Ma = "_modalBody_hhvgd_92",
+  Wa = "_modalFooter_hhvgd_98",
+  Fa = "_modalFooterShortcuts_hhvgd_108",
+  Va = "_modalFooterShortcut_hhvgd_108",
   M = {
     modalOverlay: Ra,
     modalOverlayActive: Oa,
@@ -3002,13 +3002,15 @@ const ur = (a, s) => {
       [d, e] = j.useState(!0),
       [r, n] = j.useState([]),
       c = j.useRef(""),
-      i = j.useMemo(() => vt(s, l), [s, l])
+      i = j.useMemo(() => qt(s, l), [s, l])
     j.useEffect(() => {
-      g(!0)
+      g(!0), (document.body.style.overflow = "hidden")
     }, []),
       j.useEffect(() => {
         const h = (p) => {
-          p.key === "Escape" && !c.current && (p.preventDefault(), g(!1), setTimeout(() => a(), 250))
+          p.key === "Escape" &&
+            !c.current &&
+            (p.preventDefault(), g(!1), (document.body.style.overflow = ""), setTimeout(() => a(), 250))
         }
         return (
           window.addEventListener("keydown", h),
@@ -3018,13 +3020,13 @@ const ur = (a, s) => {
         )
       }, [a])
     const u = async (h) => {
-      if (((c.current = h), !h || h.length <= 2)) {
+      if (((c.current = h), !h)) {
         e(!0)
         return
       }
       const p = await i.search({ requests: Et(h) }),
-        v = bt((p == null ? void 0 : p.results) ?? [])
-      n(v), e(!1)
+        q = bt((p == null ? void 0 : p.results) ?? [])
+      n(q), e(!1)
     }
     return Kr.createPortal(
       o.jsx("div", {
