@@ -27,8 +27,10 @@ You can find proxy addresses for the L2 sequencer feeds at the following address
   - Andromeda mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
 - Scroll:
   - Scroll mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://scrollscan.com/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
+- zkSync:
+  - zkSync mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zksync.io/address/0x0E6AC8B967393dcD3D36677c126976157F993940)
 
-### Arbitrum
+## Arbitrum
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
@@ -43,9 +45,9 @@ The diagram below shows how these feeds update and how a consumer retrieves the 
 
 If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract continues to send messages to the L2 network through the delayed inbox on L1. This message stays there until the sequencer is back up again. When the sequencer comes back online after downtime, it processes all transactions from the delayed inbox before it accepts new transactions. The message that signals when the sequencer is down will be processed before any new messages with transactions that require the sequencer to be operational.
 
-## Optimism, BASE, Metis, and Scroll
+## Optimism, BASE, Metis, Scroll, and zkSync
 
-On Optimism, BASE, Metis, and Scroll, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
+On Optimism, BASE, Metis, Scroll, and zkSync, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
 
 <ClickToZoom src="/images/data-feed/l2-diagram-optimism-metis.webp" />
 
@@ -69,7 +71,7 @@ On Optimism, BASE, Metis, and Scroll, the sequencer's status is relayed from L1 
 
 1. Consumers can then read from the `AggregatorProxy` contract, which fetches the latest round data from the `OptimismSequencerUptimeFeed` contract.
 
-### Handling outages on Optimism, BASE, Metis, and Scroll
+### Handling outages on Optimism, BASE, Metis, Scroll, and zkSync
 
 If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no L2 transactions are executed**. Instead, messages are enqueued in the `CanonicalTransactionChain` on L1 and only processed in the order they arrived later when the sequencer comes back up. As long as the message from the validator on L1 is already enqueued in the `CTC`, the flag on the sequencer uptime feed on L2 will be guaranteed to be flipped prior to any subsequent transactions. The transaction that flips the flag on the uptime feed will be executed before transactions that were enqueued after it. This is further explained in the diagrams below.
 
