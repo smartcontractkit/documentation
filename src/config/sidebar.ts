@@ -1090,6 +1090,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
         },
         {
+          title: "Send Multiple Messages in a Single Transaction",
+          url: "ccip/tutorials/multiple-messages-single-transaction",
+        },
+        {
           title: "Manual Execution",
           url: "ccip/tutorials/manual-execution",
         },
