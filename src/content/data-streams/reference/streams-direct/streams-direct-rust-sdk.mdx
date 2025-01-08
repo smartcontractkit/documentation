@@ -36,7 +36,6 @@ The [Data Streams SDK for Rust](https://github.com/smartcontractkit/data-streams
 ## Requirements
 
 - Rust 1.70 or later
-- OpenSSL development libraries (for TLS support)
 - Valid Data Streams API credentials
 
 ## Features
@@ -47,7 +46,6 @@ The [Data Streams SDK for Rust](https://github.com/smartcontractkit/data-streams
 - **High Availability**: WebSocket connection management with failover support
 - **Tracing Support**: Optional logging via the [`tracing`](https://crates.io/crates/tracing) crate
 - **Async/Await**: Built on Tokio for efficient async operations
-- **TLS Support**: By default uses `reqwest` (OpenSSL). Optional `InsecureSkipVerify` for certificate checks.
 
 ## Installation
 
@@ -119,11 +117,11 @@ use data_streams_sdk::config::Config;
 use std::env;
 
 let api_key = env::var("API_KEY").expect("API_KEY must be set");
-let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+let user_secret = env::var("USER_SECRET").expect("USER_SECRET must be set");
 
 let config = Config::new(
     api_key,
-    api_secret,
+    user_secret,
     "https://api.testnet-dataengine.chain.link".to_owned(),
     "wss://ws.testnet-dataengine.chain.link".to_owned(),
 )
