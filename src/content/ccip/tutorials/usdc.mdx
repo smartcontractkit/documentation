@@ -52,8 +52,8 @@ The following describes the operational process:
    1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP’s contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
    1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
 1. Offchain:
-   1. Circle attestation service listens to CCTP events on the source blockchain.
-   1. CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
+   1. The Circle attestation service listens to CCTP events on the source blockchain.
+   1. The CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
 1. On the destination blockchain:
    1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
    1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted, the Receiver address, and the Circle attestation.
