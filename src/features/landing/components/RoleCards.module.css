@@ -16,42 +16,40 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   max-width: 1200px;
   margin: 0 auto;
-  align-items: stretch;
+  align-items: start;
 }
 
 .card {
   position: relative;
   border-radius: 12px;
   background: var(--color-background);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 520px;
   border: 1px solid var(--Card-Border, #e4e8ed);
   background-color: var(--color-background, #ffffff);
+  display: flex;
 }
 
-.card:hover,
-.card:focus-within {
+.card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 12px rgba(26, 43, 107, 0.1);
   background: var(--Blue-Blue-50, #eff6ff);
 }
 
-.card:focus-within {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
 .cardInner {
   padding: var(--space-6x);
-  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4x);
+  gap: var(--space-3x);
+  flex: 1;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
 }
 
 .cardHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-4x);
 }
 
@@ -61,6 +59,9 @@
   border-radius: 8px;
   background: var(--color-background-secondary);
   transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card:hover .iconWrapper {
@@ -70,7 +71,7 @@
 .cardIcon {
   width: var(--space-8x);
   height: var(--space-8x);
-  display: block;
+  display: flex;
 }
 
 .cardTitle {
@@ -79,6 +80,8 @@
   color: var(--color-text-heading);
   margin: 0;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
 }
 
 .cardDescription {
@@ -86,19 +89,29 @@
   font-size: var(--font-size-base);
   line-height: 1.6;
   margin: 0;
+  height: 4.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
 }
 
 .linkGroups {
   display: flex;
   flex-direction: column;
   gap: var(--space-6x);
-  margin-top: auto;
+  margin-top: var(--space-6x);
+  overflow-y: auto;
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
 }
 
 .linkGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3x);
+  gap: var(--space-2x);
 }
 
 .linkGroupTitle {
