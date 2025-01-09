@@ -1,4 +1,3 @@
-import React, { memo } from "react"
 import type { RoleConfig } from "@config/roles/types"
 import { RoleCardGeneric } from "./RoleCardGeneric"
 import styles from "./RoleCards.module.css"
