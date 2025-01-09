@@ -1,6 +1,5 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
-import { getEntry } from "astro:content"
 import Hero from "~/components/CCIP/Hero/Hero"
 import {
   Environment,
@@ -13,13 +12,29 @@ import {
 import { getTokenIconUrl } from "~/features/utils"
 import NetworkGrid from "./NetworkGrid"
 import TokenGrid from "../TokenGrid/TokenGrid"
+import { BaseFrontmatter } from "~/content/config"
+
 export type Props = {
   environment: Environment
 }
 const { environment } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
-const { headings } = await entry.render()
+const frontmatter: BaseFrontmatter = {
+  title: "CCIP Directory",
+  section: "ccip" as const,
+  metadata: {
+    description: "View all supported networks and tokens on Chainlink CCIP.",
+  },
+}
+
+const headings = [
+  {
+    depth: 1,
+    slug: "overview",
+    text: frontmatter.title,
+  },
+]
+
 const networks = getAllNetworks({ filter: environment })
 const supportedTokens = getAllSupportedTokens({
   environment: environment,
@@ -40,7 +55,7 @@ const allTokens = tokens.map((token) => {
 const searchLanes = getSearchLanes({ environment })
 ---
 
-<CcipLayout frontmatter={entry.data} {headings} environment={environment}>
+<CcipLayout frontmatter={frontmatter} {headings} environment={environment}>
   <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
   <section class="layout">
     <div>
