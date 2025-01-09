@@ -321,12 +321,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Verify report data",
+          title: "Verify report data (EVM)",
           url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
-          highlightAsCurrent: [
-            "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
-            "data-streams/tutorials/streams-direct/solana-offchain-report-verification",
-          ],
+        },
+        {
+          title: "Verify report data (Solana)",
+          url: "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/streams-direct/solana-offchain-report-verification"],
         },
       ],
     },
