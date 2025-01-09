@@ -15,8 +15,10 @@ import { detectApiReference } from "@components/VersionSelector/utils/versions"
 interface Props {
   frontmatter: BaseFrontmatter
   headings?: MarkdownHeading[]
+  hideRightSidebar?: boolean
+  hideWhatsNext?: boolean
 }
-const { frontmatter, headings } = Astro.props
+const { frontmatter, headings, hideRightSidebar, hideWhatsNext } = Astro.props
 
 const titleHeading: MarkdownHeading = {
   text: frontmatter.title,
@@ -62,11 +64,15 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
         <PageContent {titleHeading}>
           <slot />
         </PageContent>
-        {whatsNext && <WhatsNext content={whatsNext} />}
+        {whatsNext && !hideWhatsNext && <WhatsNext content={whatsNext} />}
       </div>
-      <aside id="grid-right" title="Table of Contents">
-        <RightSidebar {githubEditUrl} headings={initialHeadings} />
-      </aside>
+      {
+        !hideRightSidebar && (
+          <aside id="grid-right" title="Table of Contents">
+            <RightSidebar {githubEditUrl} headings={initialHeadings} />
+          </aside>
+        )
+      }
     </div>
   </main>
 

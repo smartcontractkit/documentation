@@ -1,0 +1,208 @@
+.rolesSection {
+  width: 100%;
+  max-width: var(--doc-content-width);
+  margin: 0 auto;
+  padding: var(--space-6x) var(--space-4x);
+}
+
+.rolesContainer {
+  margin: 0 auto;
+  width: 100%;
+}
+
+.cardGrid {
+  display: grid;
+  gap: var(--space-6x);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+.card {
+  position: relative;
+  border-radius: 12px;
+  background: var(--color-background);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  border: 1px solid var(--Card-Border, #e4e8ed);
+  background-color: var(--color-background, #ffffff);
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(26, 43, 107, 0.1);
+  background: var(--Blue-Blue-50, #eff6ff);
+}
+
+.card:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cardInner {
+  padding: var(--space-6x);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4x);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4x);
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  padding: var(--space-2x);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  transition: transform 0.2s ease;
+}
+
+.card:hover .iconWrapper {
+  transform: scale(1.05);
+}
+
+.cardIcon {
+  width: var(--space-8x);
+  height: var(--space-8x);
+  display: block;
+}
+
+.cardTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-heading);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cardDescription {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.linkGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6x);
+  margin-top: auto;
+}
+
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3x);
+}
+
+.linkGroupTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2x);
+}
+
+.link {
+  color: var(--blue-500);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  line-height: 1.4;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1x) 0;
+  position: relative;
+  font-weight: 500;
+}
+
+.linkText {
+  position: relative;
+}
+
+.linkText::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.link:hover .linkText::after,
+.link:focus .linkText::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.link:hover {
+  color: var(--blue-600);
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .rolesSection {
+    padding: var(--space-4x) var(--space-2x);
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4x);
+  }
+
+  .cardInner {
+    padding: var(--space-4x);
+  }
+
+  .cardTitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* High contrast mode */
+@media (forced-colors: active) {
+  .card {
+    border: 2px solid CanvasText;
+  }
+
+  .link:focus {
+    outline: 2px solid CanvasText;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .iconWrapper,
+  .link,
+  .linkText::after {
+    transition: none;
+  }
+}
