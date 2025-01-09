@@ -19,7 +19,7 @@ export const RoleCardGeneric = ({ role }: RoleCardGenericProps) => {
   }, {} as Record<string, typeof links>)
 
   return (
-    <article className={styles.card} tabIndex={0}>
+    <article className={styles.card} role="region" aria-labelledby={`${role.id}-title`}>
       <div className={styles.cardInner}>
         <header className={styles.cardHeader}>
           <div className={styles.iconWrapper}>
@@ -27,7 +27,9 @@ export const RoleCardGeneric = ({ role }: RoleCardGenericProps) => {
               <img src={roleIconMap[iconType]} alt="" className={styles.cardIcon} aria-hidden="true" loading="lazy" />
             )}
           </div>
-          <h2 className={styles.cardTitle}>{title}</h2>
+          <h2 id={`${role.id}-title`} className={styles.cardTitle}>
+            {title}
+          </h2>
         </header>
 
         <p className={styles.cardDescription}>{description}</p>

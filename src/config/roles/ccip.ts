@@ -29,6 +29,8 @@ export const ccipRoles: ProductRoles = {
         { type: "guide", title: "Transfer Tokens from Contract", url: "/ccip/tutorials/transfer-tokens-from-contract" },
         { type: "guide", title: "Transfer Tokens (EOA)", url: "/ccip/tutorials/transfer-tokens-from-eoa" },
         { type: "guide", title: "Send Arbitrary Data", url: "/ccip/tutorials/send-arbitrary-data" },
+        { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
+        { type: "reference", title: "CCIP Explorer", url: "https://ccip.chain.link" },
       ],
     },
     {
@@ -38,10 +40,6 @@ export const ccipRoles: ProductRoles = {
       iconType: "tokenDev",
       links: [
         { type: "concept", title: "Understanding Cross-Chain Tokens", url: "/ccip/concepts/cross-chain-tokens" },
-        { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
-        { type: "reference", title: "Service Responsibility", url: "/ccip/service-responsibility" },
-        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
-        { type: "reference", title: "Best Practices", url: "/ccip/best-practices" },
         {
           type: "guide",
           title: "Cross-Chain Token (CCT) guides",
@@ -49,6 +47,10 @@ export const ccipRoles: ProductRoles = {
         },
         { type: "guide", title: "Transfer Tokens from Contract", url: "/ccip/tutorials/transfer-tokens-from-contract" },
         { type: "guide", title: "Transfer Tokens (EOA)", url: "/ccip/tutorials/transfer-tokens-from-eoa" },
+        { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
+        { type: "reference", title: "Service Responsibility", url: "/ccip/service-responsibility" },
+        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
+        { type: "reference", title: "Best Practices", url: "/ccip/best-practices" },
       ],
     },
     {
@@ -58,10 +60,6 @@ export const ccipRoles: ProductRoles = {
       iconType: "dappDev",
       links: [
         { type: "concept", title: "Manual Execution", url: "/ccip/concepts/manual-execution" },
-        { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
-        { type: "reference", title: "Service Responsibility", url: "/ccip/service-responsibility" },
-        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
-        { type: "reference", title: "Best Practices", url: "/ccip/best-practices" },
         { type: "guide", title: "Test CCIP Locally", url: "/ccip/tutorials/test-ccip-locally" },
         { type: "guide", title: "Transfer Tokens with Data", url: "/ccip/tutorials/programmable-token-transfers" },
         {
@@ -73,6 +71,11 @@ export const ccipRoles: ProductRoles = {
         { type: "guide", title: "USDC Transfers", url: "/ccip/tutorials/usdc" },
         { type: "guide", title: "Manual Execution", url: "/ccip/tutorials/manual-execution" },
         { type: "guide", title: "Gas Limit Configuration", url: "/ccip/tutorials/ccipreceive-gaslimit" },
+        { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
+        { type: "reference", title: "CCIP Explorer", url: "https://ccip.chain.link" },
+        { type: "reference", title: "Service Responsibility", url: "/ccip/service-responsibility" },
+        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
+        { type: "reference", title: "Best Practices", url: "/ccip/best-practices" },
       ],
     },
     {
@@ -84,6 +87,7 @@ export const ccipRoles: ProductRoles = {
         { type: "guide", title: "JavaScript SDK", url: "/ccip/ccip-javascript-sdk" },
         { type: "guide", title: "Off-chain Guides", url: "/ccip/tutorials/offchain" },
         { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
+        { type: "reference", title: "CCIP Explorer", url: "https://ccip.chain.link" },
         { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
         { type: "reference", title: "Best Practices", url: "/ccip/best-practices" },
       ],
@@ -94,9 +98,10 @@ export const ccipRoles: ProductRoles = {
       description: "API documentation and technical details",
       iconType: "reference",
       links: [
-        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
         { type: "guide", title: "JavaScript SDK", url: "/ccip/ccip-javascript-sdk" },
+        { type: "reference", title: "API Reference", url: "/ccip/api-reference" },
         { type: "reference", title: "CCIP Directory", url: "/ccip/directory" },
+        { type: "reference", title: "CCIP Explorer", url: "https://ccip.chain.link" },
         { type: "reference", title: "Service Limits", url: "/ccip/service-limits" },
         { type: "reference", title: "Billing", url: "/ccip/billing" },
         { type: "reference", title: "Service Responsibility", url: "/ccip/service-responsibility" },
