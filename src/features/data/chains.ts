@@ -541,6 +541,13 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Aptos Mainnet",
+        explorerUrl: "",
+        networkType: "mainnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
+        queryString: "aptos-mainnet",
+      },
+      {
         name: "Aptos Testnet",
         explorerUrl: "",
         networkType: "testnet",
