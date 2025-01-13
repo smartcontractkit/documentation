@@ -14,6 +14,7 @@ const formattedContentTitle = metadata?.title
   ? `${metadata.title} | ${SITE.title}`
   : `${PAGE.titleFallback} | ${SITE.title}`
 const description = metadata?.description ?? SITE.description
+const excerpt = metadata?.excerpt ?? description
 
 // Check that the metadata image property exists, else use OPEN_GRAPH.image.src
 var canonicalImageSrc = OPEN_GRAPH.image.src
@@ -41,6 +42,10 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 <!-- Page Metadata -->
 <link rel="canonical" href={canonicalURL} />
 
+<!-- Primary Meta Tags -->
+<meta name="description" content={description} />
+<meta name="keywords" content={excerpt} />
+
 <!-- OpenGraph Tags -->
 <meta property="og:title" content={formattedContentTitle} />
 <meta property="og:type" content="article" />
@@ -48,7 +53,7 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 <meta property="og:locale" content={SITE.defaultLanguage} />
 <meta property="og:image" content={canonicalImageSrc} />
 <meta property="og:image:alt" content={OPEN_GRAPH.image.alt} />
-<meta name="description" property="og:description" content={description} />
+<meta property="og:description" content={description} />
 <meta property="og:site_name" content={SITE.title} />
 
 <!-- Twitter Tags -->
