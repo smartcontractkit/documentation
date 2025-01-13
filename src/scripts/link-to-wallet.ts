@@ -140,7 +140,7 @@ const switchToChain = async (chainId: string, ethereum: MetaMaskInpageProvider) 
     method: "wallet_switchEthereumChain",
     params: [{ chainId }],
   })
-  console.log(`Succesfully switched to chain ${chainId} in metamask`)
+  console.log(`Successfully switched to chain ${chainId} in metamask`)
 }
 
 /**
@@ -199,7 +199,7 @@ const validateLinkAddress = async (address: string, provider: Web3Provider) => {
     symbol = await linkContract.symbol()
     decimals = await linkContract.decimals()
   } catch (error) {
-    throw new Error(`Error occured while trying to fetch linkContract metadata  ${error}`)
+    throw new Error(`Error occurred while trying to fetch linkContract metadata  ${error}`)
   }
 
   let chainId: keyof typeof linkNameSymbol

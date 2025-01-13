@@ -1,0 +1,1030 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 TokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the TokenPool abstract contract in Chainlink CCIP v1.5.1, providing base functionality for token pools with cross-chain operations."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+The [`TokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) abstract contract provides base functionality for token pools in CCIP, handling cross-chain token transfers with decimal adjustments and rate limiting.
+
+<Aside type="caution">
+**Cross-Chain Token Decimal Precision**
+
+This pool handles tokens with different decimal places across chains. When transferring tokens between chains with different decimal precision:
+
+1. Source Chain: The full amount is locked/burned with its original precision
+2. Destination Chain: The amount is adjusted to match the destination chain's decimal precision
+3. Impact: This adjustment can lead to a small loss of precision when:
+   - Transferring from higher precision to lower precision chains
+   - Transferring back to the original chain
+
+For example:
+
+- Chain A: Token has 6 decimals
+- Chain B: Token has 3 decimals
+- Transfer 1.234567 tokens from A to B
+
+  - B can only represent 1.234 tokens
+  - When sending 1.234 back to A, you'll receive 1.234000 tokens
+  - The "lost" 0.000567 tokens:
+
+    - In a burnMint pool: Are permanently burned on Chain A
+    - In a lockRelease pool: Accumulate in the pool on Chain A
+
+</Aside>
+
+## Errors
+
+### CallerIsNotARampOnRouter
+
+```solidity
+error CallerIsNotARampOnRouter(address caller)
+```
+
+Thrown when caller is not a valid ramp on router.
+
+### ZeroAddressNotAllowed
+
+```solidity
+error ZeroAddressNotAllowed()
+```
+
+Thrown when a zero address is provided.
+
+### SenderNotAllowed
+
+```solidity
+error SenderNotAllowed(address sender)
+```
+
+Thrown when sender is not on allowlist.
+
+### AllowListNotEnabled
+
+```solidity
+error AllowListNotEnabled()
+```
+
+Thrown when trying to use allowlist features while disabled.
+
+### NonExistentChain
+
+```solidity
+error NonExistentChain(uint64 remoteChainSelector)
+```
+
+Thrown when chain selector doesn't exist.
+
+### ChainNotAllowed
+
+```solidity
+error ChainNotAllowed(uint64 remoteChainSelector)
+```
+
+Thrown when chain is not configured.
+
+### CursedByRMN
+
+```solidity
+error CursedByRMN()
+```
+
+Thrown when RMN has cursed the operation.
+
+### ChainAlreadyExists
+
+```solidity
+error ChainAlreadyExists(uint64 chainSelector)
+```
+
+Thrown when adding an existing chain.
+
+### InvalidSourcePoolAddress
+
+```solidity
+error InvalidSourcePoolAddress(bytes sourcePoolAddress)
+```
+
+Thrown when source pool address is invalid.
+
+### InvalidToken
+
+```solidity
+error InvalidToken(address token)
+```
+
+Thrown when token is not supported.
+
+### Unauthorized
+
+```solidity
+error Unauthorized(address caller)
+```
+
+Thrown when caller lacks required permissions.
+
+### PoolAlreadyAdded
+
+```solidity
+error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress)
+```
+
+Thrown when attempting to add an already existing pool.
+
+### InvalidRemotePoolForChain
+
+```solidity
+error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress)
+```
+
+Thrown when remote pool configuration is invalid for the specified chain.
+
+### InvalidRemoteChainDecimals
+
+```solidity
+error InvalidRemoteChainDecimals(bytes sourcePoolData)
+```
+
+Thrown when remote chain decimals data is invalid.
+
+### OverflowDetected
+
+```solidity
+error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount)
+```
+
+Thrown when decimal conversion would result in overflow.
+
+### InvalidDecimalArgs
+
+```solidity
+error InvalidDecimalArgs(uint8 expected, uint8 actual)
+```
+
+Thrown when provided decimal arguments don't match expected values.
+
+## Events
+
+### Locked
+
+```solidity
+event Locked(address indexed sender, uint256 amount)
+```
+
+Emitted when tokens are locked in the pool.
+
+| Parameter | Type    | Description                     |
+| --------- | ------- | ------------------------------- |
+| sender    | address | Address that initiated the lock |
+| amount    | uint256 | Amount of tokens locked         |
+
+### Burned
+
+```solidity
+event Burned(address indexed sender, uint256 amount)
+```
+
+Emitted when tokens are burned.
+
+| Parameter | Type    | Description                     |
+| --------- | ------- | ------------------------------- |
+| sender    | address | Address that initiated the burn |
+| amount    | uint256 | Amount of tokens burned         |
+
+### Released
+
+```solidity
+event Released(address indexed sender, address indexed recipient, uint256 amount)
+```
+
+Emitted when tokens are released from the pool.
+
+| Parameter | Type    | Description                        |
+| --------- | ------- | ---------------------------------- |
+| sender    | address | Address that initiated the release |
+| recipient | address | Address receiving the tokens       |
+| amount    | uint256 | Amount of tokens released          |
+
+### Minted
+
+```solidity
+event Minted(address indexed sender, address indexed recipient, uint256 amount)
+```
+
+Emitted when tokens are minted.
+
+| Parameter | Type    | Description                         |
+| --------- | ------- | ----------------------------------- |
+| sender    | address | Address that initiated the mint     |
+| recipient | address | Address receiving the minted tokens |
+| amount    | uint256 | Amount of tokens minted             |
+
+### ChainAdded
+
+```solidity
+event ChainAdded(
+    uint64 remoteChainSelector,
+    bytes remoteToken,
+    RateLimiter.Config outboundRateLimiterConfig,
+    RateLimiter.Config inboundRateLimiterConfig
+)
+```
+
+Emitted when a new chain is added to the pool.
+
+| Parameter                 | Type               | Description                            |
+| ------------------------- | ------------------ | -------------------------------------- |
+| remoteChainSelector       | uint64             | Selector of the added chain            |
+| remoteToken               | bytes              | Address of token on remote chain       |
+| outboundRateLimiterConfig | RateLimiter.Config | Configuration for outbound rate limits |
+| inboundRateLimiterConfig  | RateLimiter.Config | Configuration for inbound rate limits  |
+
+### ChainConfigured
+
+```solidity
+event ChainConfigured(
+    uint64 remoteChainSelector,
+    RateLimiter.Config outboundRateLimiterConfig,
+    RateLimiter.Config inboundRateLimiterConfig
+)
+```
+
+Emitted when a chain's configuration is updated.
+
+| Parameter                 | Type               | Description                           |
+| ------------------------- | ------------------ | ------------------------------------- |
+| remoteChainSelector       | uint64             | Selector of the configured chain      |
+| outboundRateLimiterConfig | RateLimiter.Config | New outbound rate limit configuration |
+| inboundRateLimiterConfig  | RateLimiter.Config | New inbound rate limit configuration  |
+
+### ChainRemoved
+
+```solidity
+event ChainRemoved(uint64 remoteChainSelector)
+```
+
+Emitted when a chain is removed from the pool.
+
+| Parameter           | Type   | Description                   |
+| ------------------- | ------ | ----------------------------- |
+| remoteChainSelector | uint64 | Selector of the removed chain |
+
+### RemotePoolAdded
+
+```solidity
+event RemotePoolAdded(uint64 indexed remoteChainSelector, bytes remotePoolAddress)
+```
+
+Emitted when a remote pool is added.
+
+| Parameter           | Type   | Description                        |
+| ------------------- | ------ | ---------------------------------- |
+| remoteChainSelector | uint64 | Chain selector for the remote pool |
+| remotePoolAddress   | bytes  | Address of the added remote pool   |
+
+### RemotePoolRemoved
+
+```solidity
+event RemotePoolRemoved(uint64 indexed remoteChainSelector, bytes remotePoolAddress)
+```
+
+Emitted when a remote pool is removed.
+
+| Parameter           | Type   | Description                        |
+| ------------------- | ------ | ---------------------------------- |
+| remoteChainSelector | uint64 | Chain selector for the remote pool |
+| remotePoolAddress   | bytes  | Address of the removed remote pool |
+
+### AllowListAdd
+
+```solidity
+event AllowListAdd(address sender)
+```
+
+Emitted when an address is added to the allowlist.
+
+| Parameter | Type    | Description                |
+| --------- | ------- | -------------------------- |
+| sender    | address | Address added to allowlist |
+
+### AllowListRemove
+
+```solidity
+event AllowListRemove(address sender)
+```
+
+Emitted when an address is removed from the allowlist.
+
+| Parameter | Type    | Description                    |
+| --------- | ------- | ------------------------------ |
+| sender    | address | Address removed from allowlist |
+
+### RouterUpdated
+
+```solidity
+event RouterUpdated(address oldRouter, address newRouter)
+```
+
+Emitted when the router address is updated.
+
+| Parameter | Type    | Description             |
+| --------- | ------- | ----------------------- |
+| oldRouter | address | Previous router address |
+| newRouter | address | New router address      |
+
+### RateLimitAdminSet
+
+```solidity
+event RateLimitAdminSet(address rateLimitAdmin)
+```
+
+Emitted when the rate limit admin is set.
+
+| Parameter      | Type    | Description                  |
+| -------------- | ------- | ---------------------------- |
+| rateLimitAdmin | address | New rate limit admin address |
+
+## Structs
+
+### ChainUpdate
+
+```solidity
+struct ChainUpdate {
+  uint64 remoteChainSelector;
+  bytes[] remotePoolAddresses;
+  bytes remoteTokenAddress;
+  RateLimiter.Config outboundRateLimiterConfig;
+  RateLimiter.Config inboundRateLimiterConfig;
+}
+```
+
+| Field                     | Type               | Description                                        |
+| ------------------------- | ------------------ | -------------------------------------------------- |
+| remoteChainSelector       | uint64             | Remote chain selector                              |
+| remotePoolAddresses       | bytes[]            | Remote pool addresses (ABI encoded for EVM chains) |
+| remoteTokenAddress        | bytes              | Remote token address (ABI encoded for EVM chains)  |
+| outboundRateLimiterConfig | RateLimiter.Config | Rate limits for onRamps                            |
+| inboundRateLimiterConfig  | RateLimiter.Config | Rate limits for offRamps                           |
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(
+    IERC20 token,
+    uint8 localTokenDecimals,
+    address[] memory allowlist,
+    address rmnProxy,
+    address router
+)
+```
+
+Initializes the token pool with the specified parameters.
+
+#### Parameters
+
+| Name               | Type      | Description                                                                                                                                                              |
+| ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| token              | IERC20    | The token managed by this pool                                                                                                                                           |
+| localTokenDecimals | uint8     | The number of decimals for the token on the local chain                                                                                                                  |
+| allowlist          | address[] | List of addresses allowed to be original senders for token transfers. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens |
+| rmnProxy           | address   | Address of the RMN proxy                                                                                                                                                 |
+| router             | address   | Address of the router                                                                                                                                                    |
+
+### Chain Management
+
+```solidity
+function applyChainUpdates(
+    uint64[] calldata remoteChainSelectorsToRemove,
+    ChainUpdate[] calldata chainsToAdd
+) external onlyOwner
+```
+
+Updates supported chains and their configurations.
+
+### Rate Limiting
+
+```solidity
+function setChainRateLimiterConfig(
+    uint64 remoteChainSelector,
+    RateLimiter.Config memory outboundConfig,
+    RateLimiter.Config memory inboundConfig
+) external
+```
+
+Sets rate limiting configuration for a chain.
+
+<Aside type="note">
+  Inbound rate limits should be slightly higher than outbound limits to handle batch processing: - Chains finalize
+  blocks in batches - CCIP commits messages in batches - A 5-10% buffer is recommended
+</Aside>
+
+### Validation
+
+```solidity
+function _validateLockOrBurn(
+    Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) internal
+```
+
+Validates lock/burn operations for:
+
+- Token validity
+- RMN curse status
+- Allowlist status
+- OnRamp validity
+- Rate limits
+
+### Decimal Handling
+
+```solidity
+function _calculateLocalAmount(
+    uint256 remoteAmount,
+    uint8 remoteDecimals
+) internal view returns (uint256)
+```
+
+Calculates local token amounts based on remote amounts and decimals, with overflow protection.
+
+### Token Management
+
+### isSupportedToken
+
+```solidity
+function isSupportedToken(
+    address token
+) public view virtual returns (bool)
+```
+
+Checks if the given token is supported by this pool.
+
+#### Parameters
+
+| Name  | Type    | Description               |
+| ----- | ------- | ------------------------- |
+| token | address | Address of token to check |
+
+#### Return Value
+
+| Type | Description                |
+| ---- | -------------------------- |
+| bool | True if token is supported |
+
+### getToken
+
+```solidity
+function getToken() public view returns (IERC20 token)
+```
+
+Gets the IERC20 token that this pool can lock or burn.
+
+#### Return Value
+
+| Type   | Description                    |
+| ------ | ------------------------------ |
+| IERC20 | The token managed by this pool |
+
+### Router Management
+
+### getRmnProxy
+
+```solidity
+function getRmnProxy() public view returns (address rmnProxy)
+```
+
+Gets the RMN proxy address.
+
+#### Return Value
+
+| Type    | Description          |
+| ------- | -------------------- |
+| address | Address of RMN proxy |
+
+### getRouter
+
+```solidity
+function getRouter() public view returns (address router)
+```
+
+Gets the pool's Router address.
+
+#### Return Value
+
+| Type    | Description               |
+| ------- | ------------------------- |
+| address | The pool's Router address |
+
+### setRouter
+
+```solidity
+function setRouter(
+    address newRouter
+) public onlyOwner
+```
+
+Sets the pool's Router address.
+
+#### Parameters
+
+| Name      | Type    | Description            |
+| --------- | ------- | ---------------------- |
+| newRouter | address | The new Router address |
+
+### Interface Support
+
+### supportsInterface
+
+```solidity
+function supportsInterface(
+    bytes4 interfaceId
+) public pure virtual override returns (bool)
+```
+
+Signals which version of the pool interface is supported.
+
+#### Parameters
+
+| Name        | Type   | Description                   |
+| ----------- | ------ | ----------------------------- |
+| interfaceId | bytes4 | Interface identifier to check |
+
+#### Return Value
+
+| Type | Description                    |
+| ---- | ------------------------------ |
+| bool | True if interface is supported |
+
+### Validation Functions
+
+### \_validateLockOrBurn
+
+```solidity
+function _validateLockOrBurn(
+    Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) internal
+```
+
+Validates lock or burn operations for security and configuration requirements.
+
+<Aside type="caution">
+  This function should always be called before executing a lock or burn operation to prevent exploits.
+</Aside>
+
+#### Parameters
+
+| Name         | Type                | Description                                  |
+| ------------ | ------------------- | -------------------------------------------- |
+| lockOrBurnIn | Pool.LockOrBurnInV1 | Input parameters for the lock/burn operation |
+
+### \_validateReleaseOrMint
+
+```solidity
+function _validateReleaseOrMint(
+    Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) internal
+```
+
+Validates release or mint operations for security and configuration requirements.
+
+<Aside type="caution">
+  This function should always be called before executing a release or mint operation to prevent exploits.
+</Aside>
+
+#### Parameters
+
+| Name            | Type                   | Description                                     |
+| --------------- | ---------------------- | ----------------------------------------------- |
+| releaseOrMintIn | Pool.ReleaseOrMintInV1 | Input parameters for the release/mint operation |
+
+### Token Decimals Functions
+
+### getTokenDecimals
+
+```solidity
+function getTokenDecimals() public view virtual returns (uint8 decimals)
+```
+
+Gets the IERC20 token decimals on the local chain.
+
+#### Return Value
+
+| Type  | Description                            |
+| ----- | -------------------------------------- |
+| uint8 | Number of decimals for the local token |
+
+### \_encodeLocalDecimals
+
+```solidity
+function _encodeLocalDecimals() internal view virtual returns (bytes memory)
+```
+
+Encodes the local token decimals for cross-chain communication.
+
+#### Return Value
+
+| Type  | Description                      |
+| ----- | -------------------------------- |
+| bytes | ABI-encoded local token decimals |
+
+### \_parseRemoteDecimals
+
+```solidity
+function _parseRemoteDecimals(
+    bytes memory sourcePoolData
+) internal view virtual returns (uint8)
+```
+
+Parses the remote chain's token decimals from the source pool data.
+
+#### Parameters
+
+| Name           | Type  | Description                   |
+| -------------- | ----- | ----------------------------- |
+| sourcePoolData | bytes | Encoded data from source pool |
+
+#### Return Value
+
+| Type  | Description                        |
+| ----- | ---------------------------------- |
+| uint8 | Number of decimals on remote chain |
+
+### \_calculateLocalAmount
+
+```solidity
+function _calculateLocalAmount(
+    uint256 remoteAmount,
+    uint8 remoteDecimals
+) internal view virtual returns (uint256)
+```
+
+Calculates the local amount based on remote amount and decimals.
+
+<Aside type="caution">
+  This function includes overflow protection. If a transaction hits the overflow check, the amount likely cannot be
+  represented on this chain.
+</Aside>
+
+#### Parameters
+
+| Name           | Type    | Description                       |
+| -------------- | ------- | --------------------------------- |
+| remoteAmount   | uint256 | Amount on remote chain            |
+| remoteDecimals | uint8   | Decimals of token on remote chain |
+
+#### Return Value
+
+| Type    | Description                     |
+| ------- | ------------------------------- |
+| uint256 | Adjusted amount for local chain |
+
+### Chain Permissions Functions
+
+### getRemotePools
+
+```solidity
+function getRemotePools(
+    uint64 remoteChainSelector
+) public view returns (bytes[] memory)
+```
+
+Gets the pool addresses on the remote chain.
+
+#### Parameters
+
+| Name                | Type   | Description           |
+| ------------------- | ------ | --------------------- |
+| remoteChainSelector | uint64 | Remote chain selector |
+
+#### Return Value
+
+| Type    | Description                    |
+| ------- | ------------------------------ |
+| bytes[] | Array of remote pool addresses |
+
+### isRemotePool
+
+```solidity
+function isRemotePool(
+    uint64 remoteChainSelector,
+    bytes calldata remotePoolAddress
+) public view returns (bool)
+```
+
+Checks if a pool address is configured on the remote chain.
+
+#### Parameters
+
+| Name                | Type   | Description           |
+| ------------------- | ------ | --------------------- |
+| remoteChainSelector | uint64 | Remote chain selector |
+| remotePoolAddress   | bytes  | Address to check      |
+
+#### Return Value
+
+| Type | Description                |
+| ---- | -------------------------- |
+| bool | True if pool is configured |
+
+### getRemoteToken
+
+```solidity
+function getRemoteToken(
+    uint64 remoteChainSelector
+) public view returns (bytes memory)
+```
+
+Gets the token address on the remote chain.
+
+#### Parameters
+
+| Name                | Type   | Description           |
+| ------------------- | ------ | --------------------- |
+| remoteChainSelector | uint64 | Remote chain selector |
+
+#### Return Value
+
+| Type  | Description                  |
+| ----- | ---------------------------- |
+| bytes | Encoded remote token address |
+
+### addRemotePool
+
+```solidity
+function addRemotePool(
+    uint64 remoteChainSelector,
+    bytes calldata remotePoolAddress
+) external onlyOwner
+```
+
+Adds a remote pool for a given chain selector. Useful when a pool is upgraded on the remote chain.
+
+#### Parameters
+
+| Name                | Type   | Description                |
+| ------------------- | ------ | -------------------------- |
+| remoteChainSelector | uint64 | Remote chain selector      |
+| remotePoolAddress   | bytes  | Address of new remote pool |
+
+### removeRemotePool
+
+```solidity
+function removeRemotePool(
+    uint64 remoteChainSelector,
+    bytes calldata remotePoolAddress
+) external onlyOwner
+```
+
+Removes a remote pool address for a given chain selector.
+
+<Aside type="caution">
+  All inflight transactions from the remote pool will be rejected after removal. Ensure no inflight transactions exist
+  before removing.
+</Aside>
+
+#### Parameters
+
+| Name                | Type   | Description               |
+| ------------------- | ------ | ------------------------- |
+| remoteChainSelector | uint64 | Remote chain selector     |
+| remotePoolAddress   | bytes  | Address of pool to remove |
+
+### Chain Support Functions
+
+### isSupportedChain
+
+```solidity
+function isSupportedChain(
+    uint64 remoteChainSelector
+) public view returns (bool)
+```
+
+Checks if a chain is supported.
+
+#### Parameters
+
+| Name                | Type   | Description             |
+| ------------------- | ------ | ----------------------- |
+| remoteChainSelector | uint64 | Chain selector to check |
+
+#### Return Value
+
+| Type | Description                |
+| ---- | -------------------------- |
+| bool | True if chain is supported |
+
+### getSupportedChains
+
+```solidity
+function getSupportedChains() public view returns (uint64[] memory)
+```
+
+Gets list of all supported chains.
+
+#### Return Value
+
+| Type     | Description                        |
+| -------- | ---------------------------------- |
+| uint64[] | Array of supported chain selectors |
+
+### applyChainUpdates
+
+```solidity
+function applyChainUpdates(
+    uint64[] calldata remoteChainSelectorsToRemove,
+    ChainUpdate[] calldata chainsToAdd
+) external virtual onlyOwner
+```
+
+Updates chain permissions and configurations.
+
+#### Parameters
+
+| Name                         | Type          | Description                           |
+| ---------------------------- | ------------- | ------------------------------------- |
+| remoteChainSelectorsToRemove | uint64[]      | Chain selectors to remove             |
+| chainsToAdd                  | ChainUpdate[] | New chains to add with configurations |
+
+### Rate Limiting Functions
+
+### setRateLimitAdmin
+
+```solidity
+function setRateLimitAdmin(
+    address rateLimitAdmin
+) external onlyOwner
+```
+
+Sets the rate limiter admin address.
+
+#### Parameters
+
+| Name           | Type    | Description                    |
+| -------------- | ------- | ------------------------------ |
+| rateLimitAdmin | address | New rate limiter admin address |
+
+### getRateLimitAdmin
+
+```solidity
+function getRateLimitAdmin() external view returns (address)
+```
+
+Gets the rate limiter admin address.
+
+#### Return Value
+
+| Type    | Description                        |
+| ------- | ---------------------------------- |
+| address | Current rate limiter admin address |
+
+### getCurrentOutboundRateLimiterState
+
+```solidity
+function getCurrentOutboundRateLimiterState(
+    uint64 remoteChainSelector
+) external view returns (RateLimiter.TokenBucket memory)
+```
+
+Gets the current outbound token bucket state.
+
+#### Parameters
+
+| Name                | Type   | Description             |
+| ------------------- | ------ | ----------------------- |
+| remoteChainSelector | uint64 | Chain selector to check |
+
+#### Return Value
+
+| Type                    | Description                |
+| ----------------------- | -------------------------- |
+| RateLimiter.TokenBucket | Current token bucket state |
+
+### getCurrentInboundRateLimiterState
+
+```solidity
+function getCurrentInboundRateLimiterState(
+    uint64 remoteChainSelector
+) external view returns (RateLimiter.TokenBucket memory)
+```
+
+Gets the current inbound token bucket state.
+
+#### Parameters
+
+| Name                | Type   | Description             |
+| ------------------- | ------ | ----------------------- |
+| remoteChainSelector | uint64 | Chain selector to check |
+
+#### Return Value
+
+| Type                    | Description                |
+| ----------------------- | -------------------------- |
+| RateLimiter.TokenBucket | Current token bucket state |
+
+### setChainRateLimiterConfig
+
+```solidity
+function setChainRateLimiterConfig(
+    uint64 remoteChainSelector,
+    RateLimiter.Config memory outboundConfig,
+    RateLimiter.Config memory inboundConfig
+) external
+```
+
+Sets the chain rate limiter configuration.
+
+#### Parameters
+
+| Name                | Type               | Description                            |
+| ------------------- | ------------------ | -------------------------------------- |
+| remoteChainSelector | uint64             | Chain selector to configure            |
+| outboundConfig      | RateLimiter.Config | Configuration for outbound rate limits |
+| inboundConfig       | RateLimiter.Config | Configuration for inbound rate limits  |
+
+### Access Control Functions
+
+### \_onlyOnRamp
+
+```solidity
+function _onlyOnRamp(
+    uint64 remoteChainSelector
+) internal view
+```
+
+Validates that msg.sender is a permissioned onRamp for the given chain.
+
+#### Parameters
+
+| Name                | Type   | Description                |
+| ------------------- | ------ | -------------------------- |
+| remoteChainSelector | uint64 | Chain selector to validate |
+
+### \_onlyOffRamp
+
+```solidity
+function _onlyOffRamp(
+    uint64 remoteChainSelector
+) internal view
+```
+
+Validates that msg.sender is a permissioned offRamp for the given chain.
+
+#### Parameters
+
+| Name                | Type   | Description                |
+| ------------------- | ------ | -------------------------- |
+| remoteChainSelector | uint64 | Chain selector to validate |
+
+### Allowlist Functions
+
+### getAllowListEnabled
+
+```solidity
+function getAllowListEnabled() external view returns (bool)
+```
+
+Checks if allowlist functionality is enabled.
+
+#### Return Value
+
+| Type | Description                  |
+| ---- | ---------------------------- |
+| bool | True if allowlist is enabled |
+
+### getAllowList
+
+```solidity
+function getAllowList() external view returns (address[] memory)
+```
+
+Gets all allowed addresses.
+
+#### Return Value
+
+| Type      | Description                |
+| --------- | -------------------------- |
+| address[] | Array of allowed addresses |
+
+### applyAllowListUpdates
+
+```solidity
+function applyAllowListUpdates(
+    address[] calldata removes,
+    address[] calldata adds
+) external onlyOwner
+```
+
+Updates the allowlist by adding and removing addresses.
+
+#### Parameters
+
+| Name    | Type      | Description                        |
+| ------- | --------- | ---------------------------------- |
+| removes | address[] | Addresses to remove from allowlist |
+| adds    | address[] | Addresses to add to allowlist      |

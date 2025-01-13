@@ -7,21 +7,17 @@ title: "Enable your tokens in CCIP (Lock & Mint): Register from an EOA using Fou
 import { Aside, PageTabs } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="selfServeCallout" />
-
 <PageTabs
   pages={[
     {
       name: "Hardhat (Lock & Mint)",
       url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
-      width: "270px",
     },
     {
       name: "Foundry (Lock & Mint)",
       url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
-      width: "270px",
     },
   ]}
 />
@@ -122,7 +118,7 @@ Example `config.json` file:
     "name": "BnM KH",
     "symbol": "BnMkh",
     "decimals": 18,
-    "initialSupply": 0,
+    "maxSupply": 0,
     "withGetCCIPAdmin": false,
     "ccipAdminAddress": "0x0000000000000000000000000000000000000000"
   },
@@ -143,7 +139,7 @@ The `config.json` file contains the following parameters:
 | `name`                  | The name of the token you are going to deploy. Replace `"BnM KH"` with your desired token name.                                                                                                                                                                                                                                                          |
 | `symbol`                | The symbol of the token. Replace `"BnMkh"` with your desired token symbol.                                                                                                                                                                                                                                                                               |
 | `decimals`              | The number of decimals for the token (usually `18` for standard ERC tokens).                                                                                                                                                                                                                                                                             |
-| `initialSupply`         | The initial token supply. Set this to `0` if you prefer to mint tokens later.                                                                                                                                                                                                                                                                            |
+| `maxSupply`             | The maximum supply of tokens (in the smallest unit, based on `decimals`). When `maxSupply` is 0, the supply is unlimited.                                                                                                                                                                                                                                |
 | `withGetCCIPAdmin`      | A boolean to determine whether the token contract has a `getCCIPAdmin()` function. If set to `true`, a CCIP admin is required. When `false`, token admin registration will use the token `owner()` function.                                                                                                                                             |
 | `ccipAdminAddress`      | The address of the CCIP admin, only applicable if `withgetccipadmin` is set to `true`.                                                                                                                                                                                                                                                                   |
 | ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
@@ -167,7 +163,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
 
-The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, initial supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
@@ -178,7 +174,7 @@ The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/reg
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
+   Deployed BurnMintERC677 at: 0x8eF798BA7ABCF9A36e7a39fD11c20691c998738C
    Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Writing deployed token address to file: ./script/output/deployedToken_avalancheFuji.json
    ```
@@ -192,7 +188,7 @@ The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/reg
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
+   Deployed BurnMintERC677 at: 0xa361F87dda703CAd3CAB0e162AC348D986FedD0E
    Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Writing deployed token address to file: ./script/output/deployedToken_arbitrumSepolia.json
    ```
@@ -212,8 +208,7 @@ In this step, you will use the `DeployLockReleaseTokenPool.s.sol` to deploy a lo
    Example output:
 
    ```bash
-   Lock & Release token pool deployed to: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
-   Granted mint and burn roles to token pool: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
+   Lock & Release token pool deployed to: 0xF2AC3AF84C14Cc2Bcfd9a8848421b3421bE39B52
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_avalancheFuji.json
    ```
 
@@ -226,8 +221,8 @@ In this step, you will use the `DeployLockReleaseTokenPool.s.sol` to deploy a lo
    Example output:
 
    ```bash
-   Burn & Mint token pool deployed to: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
-   Granted mint and burn roles to token pool: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
+   Burn & Mint token pool deployed to: 0xD26E6c7e0489D590BD448BdDf8a34a407705BBB0
+   Granted mint and burn roles to token pool: 0xD26E6c7e0489D590BD448BdDf8a34a407705BBB0
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_arbitrumSepolia.json
    ```
 
@@ -248,7 +243,7 @@ The script will claim the admin role using using `getCCIPAdmin()` function if th
    ```bash
    Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
+   Admin claimed successfully for token: 0x8eF798BA7ABCF9A36e7a39fD11c20691c998738C
    ```
 
 1. Claim the Admin role for the token on Arbitrum Sepolia:
@@ -262,7 +257,7 @@ The script will claim the admin role using using `getCCIPAdmin()` function if th
    ```bash
    Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
    Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
+   Admin claimed successfully for token: 0xa361F87dda703CAd3CAB0e162AC348D986FedD0E
    ```
 
 ### Accept Admin Role
@@ -278,7 +273,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
+   Accepted admin role for token: 0x8eF798BA7ABCF9A36e7a39fD11c20691c998738C
    ```
 
 1. Accept the admin role for the token on Arbitrum Sepolia:
@@ -290,7 +285,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
+   Accepted admin role for token: 0xa361F87dda703CAd3CAB0e162AC348D986FedD0E
    ```
 
 ### Set Token Pool
@@ -306,10 +301,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA
-   New pool address: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
+   Setting pool for token: 0x8eF798BA7ABCF9A36e7a39fD11c20691c998738C
+   New pool address: 0xF2AC3AF84C14Cc2Bcfd9a8848421b3421bE39B52
    Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0x52eB4b89A5d81B1d59b580b9165B8BceBa3E7abA to 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
+   Pool set for token 0x8eF798BA7ABCF9A36e7a39fD11c20691c998738C to 0xF2AC3AF84C14Cc2Bcfd9a8848421b3421bE39B52
    ```
 
 1. Link the token to its respective token pool on Arbitrum Sepolia:
@@ -321,10 +316,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0x410399aa04B05Acbda2bFc3462C3192BE21163aB
-   New pool address: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
+   Setting pool for token: 0xa361F87dda703CAd3CAB0e162AC348D986FedD0E
+   New pool address: 0xD26E6c7e0489D590BD448BdDf8a34a407705BBB0
    Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0x410399aa04B05Acbda2bFc3462C3192BE21163aB to 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
+   Pool set for token 0xa361F87dda703CAd3CAB0e162AC348D986FedD0E to 0xD26E6c7e0489D590BD448BdDf8a34a407705BBB0
    ```
 
 ### Configure Token Pools
@@ -333,17 +328,27 @@ In this step, you will use the `ApplyChainUpdates.s.sol` script to initialize th
 
 **Parameters used in pool configuration**:
 
-| Parameter                       | Description                                                                                                                                             | Default   | Required |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | -------- |
-| **`poolAddress`**               | The address of the token pool being configured on the current chain.                                                                                    | N/A       | Yes      |
-| **`remoteChainSelector`**       | The chain selector (identifier) of the remote blockchain to which this pool will be linked.                                                             | N/A       | Yes      |
-| **`allowed`**                   | A boolean indicating whether cross-chain transfers to the remote chain are allowed.                                                                     | `true`    | Yes      |
-| **`remotePoolAddress`**         | The address of the token pool on the remote blockchain, encoded as bytes (`abi.encode(remotePoolAddress)`).                                             | N/A       | Yes      |
-| **`remoteTokenAddress`**        | The address of the token on the remote blockchain, encoded as bytes (`abi.encode(remoteTokenAddress)`).                                                 | N/A       | Yes      |
-| **`outboundRateLimiterConfig`** | Configuration for outbound rate limiting (transfers from current chain to remote chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`. | See below | No       |
-| **`inboundRateLimiterConfig`**  | Configuration for inbound rate limiting (transfers from remote chain to current chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`.  | See below | No       |
+- **Main Parameters**:
 
-**Fields within `outboundRateLimiterConfig` and `inboundRateLimiterConfig`:**
+| Parameter                   | Description                                                                                           | Default     | Required |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- | -------- |
+| **`poolAddress`**           | The address of the token pool being configured on the current chain.                                  | N/A         | Yes      |
+| **`chainSelectorRemovals`** | An array of chain selectors (identifiers) for which configurations should be removed.                 | Empty array | No       |
+| **`chainUpdates`**          | An array of `ChainUpdate` structs, each containing configuration updates for a specific remote chain. | N/A         | Yes      |
+
+- **`ChainUpdate` Struct Parameters:**
+
+Each `ChainUpdate` struct in the `chainUpdates` array includes the following fields:
+
+| Field                           | Description                                                                                                                                             | Required |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **`remoteChainSelector`**       | The chain selector (identifier) of the remote blockchain to which this pool will be linked.                                                             | Yes      |
+| **`remotePoolAddresses`**       | An array of addresses of the token pools on the remote blockchain, each encoded as bytes (`abi.encode(remotePoolAddress)`).                             | Yes      |
+| **`remoteTokenAddress`**        | The address of the token on the remote blockchain, encoded as bytes (`abi.encode(remoteTokenAddress)`).                                                 | Yes      |
+| **`outboundRateLimiterConfig`** | Configuration for outbound rate limiting (transfers from current chain to remote chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`. | No       |
+| **`inboundRateLimiterConfig`**  | Configuration for inbound rate limiting (transfers from remote chain to current chain). This is a struct with fields: `isEnabled`, `capacity`, `rate`.  | No       |
+
+- **Fields within `outboundRateLimiterConfig` and `inboundRateLimiterConfig`:**
 
 | Sub-Parameter   | Description                                                                                                        | Default | Required |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
@@ -360,7 +365,7 @@ In this step, you will use the `ApplyChainUpdates.s.sol` script to initialize th
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0x2734f31DDbB5d317893E9Aa65A387DD9C6147e9d
+   Chain update applied to pool at address: 0xF2AC3AF84C14Cc2Bcfd9a8848421b3421bE39B52
    ```
 
 1. Configure the token pool on Arbitrum Sepolia:
@@ -372,7 +377,7 @@ In this step, you will use the `ApplyChainUpdates.s.sol` script to initialize th
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0x1dc7b609fb12CF512e93a273627e9f35C6f4dd81
+   Chain update applied to pool at address: 0xD26E6c7e0489D590BD448BdDf8a34a407705BBB0
    ```
 
 ### Mint Tokens
@@ -411,10 +416,10 @@ forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $
 Example output:
 
 ```bash
-Estimated fees: 33657800113984549
+Estimated fees: 17821361096366230
 Message ID:
-0x4dcd89820bf3b470fc9cab880292a83e8e5b7dec423dd2cf7bf904f7323a37db
-Check status of the message at https://ccip.chain.link/msg/4dcd89820bf3b470fc9cab880292a83e8e5b7dec423dd2cf7bf904f7323a37db
+0xde63a9446b831a7a5586d39c420d463867860b18634111dea35bb69ec5ca3292
+Check status of the message at https://ccip.chain.link/msg/de63a9446b831a7a5586d39c420d463867860b18634111dea35bb69ec5ca3292
 ```
 
 You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link/) using the message ID provided in the output.

@@ -41,12 +41,16 @@ export const productChainLinks: ProductChainLinks = {
       scroll: "/ccip/directory/mainnet/chain/ethereum-mainnet-scroll-1",
       soneium: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-soneium-1",
       zircuit: "/ccip/directory/mainnet/chain/ethereum-mainnet-zircuit-1",
+      ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
+      bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
+      shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
     },
   },
   "Data Feeds": {
     learnMoreLink: "data-feeds",
     logo: dataFeedsLogo,
     chains: {
+      aptos: "/data-feeds/price-feeds/addresses?network=aptos",
       arbitrum: "/data-feeds/price-feeds/addresses?network=arbitrum",
       avalanche: "/data-feeds/price-feeds/addresses?network=avalanche",
       base: "/data-feeds/price-feeds/addresses?network=base",
@@ -81,6 +85,7 @@ export const productChainLinks: ProductChainLinks = {
       opbnb: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
+      shibarium: "/data-streams/crypto-streams",
     },
   },
   Functions: {
@@ -101,12 +106,12 @@ export const productChainLinks: ProductChainLinks = {
     logo: automationLogo,
     chains: {
       arbitrum: "/chainlink-automation/overview/supported-networks#arbitrum",
-      avalanche: "/chainlink-automation/overview/supported-networks#avalanche-mainnet",
+      avalanche: "/chainlink-automation/overview/supported-networks#avalanche",
       base: "/chainlink-automation/overview/supported-networks#base",
       "bnb-chain": "/chainlink-automation/overview/supported-networks#bnb-chain",
       ethereum: "/chainlink-automation/overview/supported-networks#ethereum",
       fantom: "/chainlink-automation/overview/supported-networks#fantom",
-      "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis-chain-xdai",
+      "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis",
       optimism: "/chainlink-automation/overview/supported-networks#optimism",
       polygon: "/chainlink-automation/overview/supported-networks#polygon",
     },
@@ -154,10 +159,14 @@ export const productChainLinks: ProductChainLinks = {
     wemix: "/resources/link-token-contracts#wemix",
     zksync: "/resources/link-token-contracts#zksync",
     zircuit: "/resources/link-token-contracts#zircuit",
+    ronin: "/resources/link-token-contracts#ronin",
+    bsquared: "/resources/link-token-contracts#bsquared",
+    shibarium: "/resources/link-token-contracts#shibarium",
   },
 }
 
 export const chainNames: Record<string, string> = {
+  aptos: "Aptos",
   arbitrum: "Arbitrum",
   astar: "Astar",
   avalanche: "Avalanche",
@@ -187,4 +196,7 @@ export const chainNames: Record<string, string> = {
   mode: "Mode",
   blast: "Blast",
   zircuit: "Zircuit",
+  ronin: "Ronin",
+  bsquared: "B²",
+  shibarium: "Shibarium",
 }

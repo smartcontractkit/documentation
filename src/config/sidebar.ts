@@ -1,17 +1,21 @@
 import { Sections } from "../content/config"
-import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json"
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json"
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json"
+
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
 type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
-
-const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   dataFeeds: [
@@ -131,6 +135,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
         },
       ],
     },
@@ -271,7 +284,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Streams Direct SDK",
+          title: "Streams Direct",
           url: "data-streams/tutorials/streams-direct/",
           children: [
             {
@@ -285,8 +298,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
             },
             {
-              title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
+              title: "Verify report data",
+              url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+              highlightAsCurrent: [
+                "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+                "data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+              ],
             },
           ],
         },
@@ -334,7 +351,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
             },
             {
-              title: "Onchain report data verification",
+              title: "Onchain report data verification (EVM chains)",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
@@ -998,6 +1015,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Using the CCIP JavaScript SDK",
+          url: "ccip/ccip-javascript-sdk",
+        },
+        {
           title: "Transfer Tokens",
           url: "ccip/tutorials/transfer-tokens-from-contract",
         },
@@ -1017,6 +1038,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
+            {
+              title: "Deploy and Register Using Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
             {
               title: "Register from an EOA (Burn & Mint)",
               url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
@@ -1111,44 +1136,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "API Reference",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "Overview",
+          url: "ccip/api-reference",
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
+          title: "v1.5.1 (Latest)",
+          url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
+          children: ccipV151Contents,
         },
         {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "RegistryModuleOwnerCustom",
-          url: "ccip/api-reference/registry-module-owner-custom",
-        },
-        {
-          title: "TokenAdminRegistry",
-          url: "ccip/api-reference/token-admin-registry",
-        },
-        {
-          title: "TokenPool",
-          url: "ccip/api-reference/token-pool",
-        },
-        {
-          title: "Pool Library",
-          url: "ccip/api-reference/pool",
-        },
-        {
-          title: "BurnMintTokenPool",
-          url: "ccip/api-reference/burn-mint-token-pool",
-        },
-        {
-          title: "LockReleaseTokenPool",
-          url: "ccip/api-reference/lock-release-token-pool",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "v1.5.0",
+          url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
+          children: ccipV150Contents,
         },
       ],
     },
@@ -1300,7 +1301,33 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    { ...chainlinkLocalAPIReferenceTyped },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
   ],
   nodeOperator: [
     {

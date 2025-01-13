@@ -11,8 +11,6 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <Common callout="importPackage" />
 
-<CcipCommon callout="selfServeCallout" />
-
 This tutorial will guide you through the process of testing the procedure of enabling your own tokens in CCIP. We will use the CCT-compatible ERC-20 token with `owner()` function implemented. We will use Lock & Release Pool for transferring this token across different blockchains using Chainlink CCIP.
 
 ## Prerequisites
@@ -54,7 +52,7 @@ Before enabling an ERC20-compatible token in CCIP, it's important to understand 
       - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
     - On the destination blockchain, The token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
 
-If you don't have an existing token: For all blockchains where tokens need to be burned and minted (for example, the source or destination chain in the case of Burn and Mint, or the destination blockchain in the case of Lock and Mint), Chainlink provides a [BurnMintERC677](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) contract that you can use to deploy your token in minutes. This token follows the [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/), allowing you to use it as-is or extend it to meet your specific requirements.
+If you don't have an existing token: For all blockchains where tokens need to be burned and minted (for example, the source or destination chain in the case of Burn and Mint, or the destination blockchain in the case of Lock and Mint), Chainlink provides a [BurnMintERC677](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) contract that you can use to deploy your token in minutes. This token follows the [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/), allowing you to use it as-is or extend it to meet your specific requirements.
 
 ### Understanding the Procedure
 
@@ -136,6 +134,11 @@ contract CCIPv1_5LockReleasePoolFork is Test {
   CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
   MockERC20TokenOwner public mockERC20TokenEthSepolia;
   MockERC20TokenOwner public mockERC20TokenBaseSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolEthSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolBaseSepolia;
+
+  Register.NetworkDetails ethSepoliaNetworkDetails;
+  Register.NetworkDetails baseSepoliaNetworkDetails;
 
   uint256 ethSepoliaFork;
   uint256 baseSepoliaFork;
@@ -197,12 +200,14 @@ contract CCIPv1_5LockReleasePoolFork is Test {
   function test_forkSupportNewCCIPToken() public {
     // Step 3) Deploy LockReleaseTokenPool on Ethereum Sepolia
     vm.selectFork(ethSepoliaFork);
-    Register.NetworkDetails memory ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
     address[] memory allowlist = new address[](0);
+    uint8 localTokenDecimals = 18;
 
     vm.startPrank(alice);
-    LockReleaseTokenPool lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
+    lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
       IERC20(address(mockERC20TokenEthSepolia)),
+      localTokenDecimals,
       allowlist,
       ethSepoliaNetworkDetails.rmnProxyAddress,
       true, // acceptLiquidity
@@ -222,11 +227,12 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     // Step 4) Deploy LockReleaseTokenPool on Base Sepolia
     vm.selectFork(baseSepoliaFork);
-    Register.NetworkDetails memory baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
 
     vm.startPrank(alice);
-    LockReleaseTokenPool lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
+    lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
       IERC20(address(mockERC20TokenBaseSepolia)),
+      localTokenDecimals,
       allowlist,
       baseSepoliaNetworkDetails.rmnProxyAddress,
       true, // acceptLiquidity
@@ -409,15 +415,17 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     vm.startPrank(alice);
     TokenPool.ChainUpdate[] memory chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesEthSepolia = new bytes[](1);
+    remotePoolAddressesEthSepolia[0] = abi.encode(address(lockReleaseTokenPoolBaseSepolia));
     chains[0] = TokenPool.ChainUpdate({
       remoteChainSelector: baseSepoliaNetworkDetails.chainSelector,
-      allowed: true,
-      remotePoolAddress: abi.encode(address(lockReleaseTokenPoolBaseSepolia)),
+      remotePoolAddresses: remotePoolAddressesEthSepolia,
       remoteTokenAddress: abi.encode(address(mockERC20TokenBaseSepolia)),
       outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
       inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
     });
-    lockReleaseTokenPoolEthSepolia.applyChainUpdates(chains);
+    uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+    lockReleaseTokenPoolEthSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
     vm.stopPrank();
   }
 }
@@ -435,15 +443,16 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     vm.startPrank(alice);
     chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesBaseSepolia = new bytes[](1);
+    remotePoolAddressesBaseSepolia[0] = abi.encode(address(lockReleaseTokenPoolEthSepolia));
     chains[0] = TokenPool.ChainUpdate({
       remoteChainSelector: ethSepoliaNetworkDetails.chainSelector,
-      allowed: true,
-      remotePoolAddress: abi.encode(address(lockReleaseTokenPoolEthSepolia)),
+      remotePoolAddresses: remotePoolAddressesBaseSepolia,
       remoteTokenAddress: abi.encode(address(mockERC20TokenEthSepolia)),
       outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
       inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
     });
-    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(chains);
+    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
     vm.stopPrank();
   }
 }
@@ -536,6 +545,11 @@ contract CCIPv1_5LockReleasePoolFork is Test {
   CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
   MockERC20TokenOwner public mockERC20TokenEthSepolia;
   MockERC20TokenOwner public mockERC20TokenBaseSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolEthSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolBaseSepolia;
+
+  Register.NetworkDetails ethSepoliaNetworkDetails;
+  Register.NetworkDetails baseSepoliaNetworkDetails;
 
   uint256 ethSepoliaFork;
   uint256 baseSepoliaFork;
@@ -569,12 +583,14 @@ contract CCIPv1_5LockReleasePoolFork is Test {
   function test_forkSupportNewCCIPToken() public {
     // Step 3) Deploy LockReleaseTokenPool on Ethereum Sepolia
     vm.selectFork(ethSepoliaFork);
-    Register.NetworkDetails memory ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
     address[] memory allowlist = new address[](0);
+    uint8 localTokenDecimals = 18;
 
     vm.startPrank(alice);
-    LockReleaseTokenPool lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
+    lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
       IERC20(address(mockERC20TokenEthSepolia)),
+      localTokenDecimals,
       allowlist,
       ethSepoliaNetworkDetails.rmnProxyAddress,
       true, // acceptLiquidity
@@ -584,11 +600,12 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     // Step 4) Deploy LockReleaseTokenPool on Base Sepolia
     vm.selectFork(baseSepoliaFork);
-    Register.NetworkDetails memory baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
 
     vm.startPrank(alice);
-    LockReleaseTokenPool lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
+    lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
       IERC20(address(mockERC20TokenBaseSepolia)),
+      localTokenDecimals,
       allowlist,
       baseSepoliaNetworkDetails.rmnProxyAddress,
       true, // acceptLiquidity
@@ -681,15 +698,17 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     vm.startPrank(alice);
     TokenPool.ChainUpdate[] memory chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesEthSepolia = new bytes[](1);
+    remotePoolAddressesEthSepolia[0] = abi.encode(address(lockReleaseTokenPoolBaseSepolia));
     chains[0] = TokenPool.ChainUpdate({
       remoteChainSelector: baseSepoliaNetworkDetails.chainSelector,
-      allowed: true,
-      remotePoolAddress: abi.encode(address(lockReleaseTokenPoolBaseSepolia)),
+      remotePoolAddresses: remotePoolAddressesEthSepolia,
       remoteTokenAddress: abi.encode(address(mockERC20TokenBaseSepolia)),
       outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
       inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
     });
-    lockReleaseTokenPoolEthSepolia.applyChainUpdates(chains);
+    uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+    lockReleaseTokenPoolEthSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
     vm.stopPrank();
 
     // Step 14) Configure Token Pool on Base Sepolia
@@ -697,15 +716,16 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
     vm.startPrank(alice);
     chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesBaseSepolia = new bytes[](1);
+    remotePoolAddressesBaseSepolia[0] = abi.encode(address(lockReleaseTokenPoolEthSepolia));
     chains[0] = TokenPool.ChainUpdate({
       remoteChainSelector: ethSepoliaNetworkDetails.chainSelector,
-      allowed: true,
-      remotePoolAddress: abi.encode(address(lockReleaseTokenPoolEthSepolia)),
+      remotePoolAddresses: remotePoolAddressesBaseSepolia,
       remoteTokenAddress: abi.encode(address(mockERC20TokenEthSepolia)),
       outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
       inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
     });
-    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(chains);
+    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
     vm.stopPrank();
 
     // Step 15) Transfer tokens from Ethereum Sepolia to Base Sepolia

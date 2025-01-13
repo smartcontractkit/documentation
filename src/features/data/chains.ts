@@ -64,7 +64,7 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -73,6 +73,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
         queryString: "bnb-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "BNB Chain Testnet",
@@ -348,7 +349,7 @@ export const CHAINS: Chain[] = [
     title: "Scroll Data Feeds",
     img: "/assets/chains/scroll.svg",
     networkStatusUrl: "https://status.scroll.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -358,6 +359,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
         queryString: "scroll-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Scroll Sepolia testnet",
@@ -514,11 +516,43 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Hedera Mainnet",
+        explorerUrl: "https://hashscan.io/mainnet/contract/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-mainnet.json",
+        queryString: "hedera-mainnet",
+      },
+      {
         name: "Hedera Testnet",
         explorerUrl: "https://hashscan.io/testnet/contract/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-testnet.json",
         queryString: "hedera-testnet",
+      },
+    ],
+  },
+  {
+    page: "aptos",
+    label: "Aptos",
+    title: "Aptos Data Feeds",
+    img: "/assets/chains/aptos.svg",
+    networkStatusUrl: "https://explorer.aptoslabs.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Aptos Mainnet",
+        explorerUrl: "",
+        networkType: "mainnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
+        queryString: "aptos-mainnet",
+      },
+      {
+        name: "Aptos Testnet",
+        explorerUrl: "",
+        networkType: "testnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-testnet.json",
+        queryString: "aptos-testnet",
       },
     ],
   },

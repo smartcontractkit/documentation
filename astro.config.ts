@@ -9,6 +9,7 @@ import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
 import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
+import { ccipRedirects } from "./src/config/redirects/ccip"
 
 // https://astro.build/config
 export default defineConfig({
@@ -18,6 +19,7 @@ export default defineConfig({
     "/ccip/supported-networks": "/ccip/directory/mainnet",
     "/getting-started": "/getting-started/conceptual-overview",
     "/resources": "/resources/link-token-contracts",
+    ...ccipRedirects,
   },
   integrations: [
     preact({

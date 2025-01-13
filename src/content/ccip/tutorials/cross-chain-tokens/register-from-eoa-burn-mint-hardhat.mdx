@@ -7,21 +7,17 @@ title: "Enable your tokens in CCIP (Burn & Mint): Register from an EOA using Har
 import { Aside, PageTabs } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="selfServeCallout" />
-
 <PageTabs
   pages={[
     {
       name: "Hardhat (Burn & Mint)",
       url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
-      width: "270px",
     },
     {
       name: "Foundry (Burn & Mint)",
       url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
-      width: "270px",
     },
   ]}
 />
@@ -114,7 +110,7 @@ In this step, you will use the `deployToken.ts` task to deploy tokens on two tes
 | `name`             | The name of the token. This is the full name by which the token will be identified.                                                                                                                       | N/A     | Yes      |
 | `symbol`           | The symbol of the token. This is the shorthand (usually 3-5 letters) representing the token.                                                                                                              | N/A     | Yes      |
 | `decimals`         | The number of decimals the token will use. For instance, `18` decimals means 1 token is represented as `1e18` smallest units.                                                                             | `18`    | No       |
-| `initialsupply`    | The initial supply of tokens to be created upon deployment. Use `0` to start with no initial supply.                                                                                                      | `0`     | No       |
+| `maxsupply`        | The maximum supply of tokens. Use `0` for unlimited supply.                                                                                                                                               | `0`     | No       |
 | `withgetccipadmin` | A flag to determine whether the token contract has a `getCCIPAdmin()` function. If set to `true`, a CCIP admin is required. When `false`, token admin registration will use the token `owner()` function. | `false` | No       |
 | `ccipadminaddress` | The address of the CCIP admin, only applicable if `withgetccipadmin` is set to `true`.                                                                                                                    | N/A     | No       |
 | `verifycontract`   | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                                                                                             | `false` | No       |
@@ -125,105 +121,118 @@ Deploy tokens, use the following commands, substituting the token name and symbo
 1. **Deploy the token on Avalanche Fuji:**
 
    ```bash
-   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --initialsupply 0 --withgetccipadmin false --verifycontract true --network avalancheFuji
+   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --maxsupply 0 --withgetccipadmin false --verifycontract true --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:16:29.359Z info: Deploying BurnMintERC677 contract to avalancheFuji
-   2024-10-08T00:16:29.360Z info: Waiting 2 blocks for transaction 0xa9873913d9d2afc94c8622ad1b6cc9f52c088a514472f729b383287d74f87cae to be confirmed...
-   2024-10-08T00:16:31.920Z info: Token deployed to: 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF
-   2024-10-08T00:16:31.980Z info: Granting mint and burn roles to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:16:35.542Z info: Verifying contract...
-   Successfully submitted source code for contract
-   @chainlink/contracts-ccip/src/v0.8/shared/token/ERC677/BurnMintERC677.sol:BurnMintERC677 at 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF
-   for verification on the block explorer. Waiting for verification result...
+   2024-12-02T20:20:30.258Z info: Deploying BurnMintERC677 contract to avalancheFuji
+   2024-12-02T20:20:30.259Z info: Waiting 2 blocks for transaction 0x6839605601ff18d81fd8a2ec29d86b212eb0879913e6e59e1b839f0ef1be5c06 to be confirmed...
+   2024-12-02T20:20:33.120Z info: Token deployed to: 0x16F6b0f41b9217857551e29F38F99975a2fc9add
+   2024-12-02T20:20:33.226Z info: Granting mint and burn roles to 0x9d087fC03ae39b088326b67fA3C788236645b717
+   2024-12-02T20:20:49.308Z info: Verifying contract...
+   The contract 0x16F6b0f41b9217857551e29F38F99975a2fc9add has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+   https://testnet.snowtrace.io/address/0x16F6b0f41b9217857551e29F38F99975a2fc9add#code
 
-   Successfully verified contract BurnMintERC677 on the block explorer.
-   https://testnet.snowtrace.io/address/0x15A5e7ca5043798F1E1983d048D9600F4752dfcF#code
-
-   2024-10-08T00:17:02.884Z info: Token contract deployed and verified
+   2024-12-02T20:20:50.247Z info: Token contract deployed and verified
    ```
 
 1. **Deploy the token on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --initialsupply 0 --withgetccipadmin false --verifycontract true --network arbitrumSepolia
+   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --maxsupply 0 --withgetccipadmin false --verifycontract true --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:17:18.521Z info: Deploying BurnMintERC677 contract to arbitrumSepolia
-   2024-10-08T00:17:18.523Z info: Waiting 2 blocks for transaction 0x40e659655e4bf7d213da43040b38df6f9f09ae9e2b3ceaa2f4e260f46f4c6861 to be confirmed...
-   2024-10-08T00:17:18.931Z info: Token deployed to: 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
-   2024-10-08T00:17:19.117Z info: Granting mint and burn roles to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:17:21.396Z info: Verifying contract...
-   The contract 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.arbiscan.io/address/0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52#code
+   2024-12-02T20:22:17.498Z info: Deploying BurnMintERC677 contract to arbitrumSepolia
+   2024-12-02T20:22:17.498Z info: Waiting 2 blocks for transaction 0x15787a9f99ff1b3d36f601564630e49b4cf4c9d102d7e4343465fa99ae684645 to be confirmed...
+   2024-12-02T20:22:18.155Z info: Token deployed to: 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30
+   2024-12-02T20:22:18.198Z info: Granting mint and burn roles to 0x9d087fC03ae39b088326b67fA3C788236645b717
+   2024-12-02T20:22:19.398Z info: Verifying contract...
+   The contract 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+   https://sepolia.arbiscan.io/address/0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30#code
 
-   2024-10-08T00:17:21.956Z info: Token contract deployed and verified
+   2024-12-02T20:22:19.952Z info: Token contract deployed and verified
    ```
 
 ### Deploy Token Pools
 
 <CcipCommon callout="gasLimitPool" />
 
-In this step, you will use the `deployTokenPool.ts` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployTokenPool` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
 
-| Parameter        | Description                                                                                                                                 | Default | Required |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress`   | The address of the token for which the pool is being created.                                                                               | N/A     | Yes      |
-| `verifycontract` | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                               | `false` | No       |
-| `network`        | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter            | Description                                                                                                                                 | Default      | Required |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| `tokenaddress`       | The address of the token for which the pool is being created.                                                                               | N/A          | Yes      |
+| `pooltype`           | The type of pool to deploy. For this tutorial, we use `"burnMint"` for a pool that supports burning and minting of tokens.                  | `"burnMint"` | No       |
+| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                         | `18`         | No       |
+| `network`            | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A          | Yes      |
+| `verifycontract`     | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                               | `false`      | No       |
 
-Deploy token pools using the following commands, replacing the token address with the one deployed in the previous step:
+<Aside type="note" title="Token Decimal Handling">
+  If you need to handle tokens with different decimals across blockchains, refer to the [Token Decimal
+  Handling](/ccip/concepts/cross-chain-tokens#token-decimal-handling) section.
+</Aside>
+
+Deploy token pools using the following commands, replacing the token address with the one you deployed in the previous step:
 
 1. **Deploy the burn and mint token pool on Avalanche Fuji:**
 
    ```bash
-   npx hardhat deployTokenPool --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --verifycontract true --network avalancheFuji
+   npx hardhat deployTokenPool \
+     --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:19:32.054Z info: Waiting 2 blocks for transaction 0x62a37f36d09e39e17556021710e596af8804b8b830a7898373dd65cc59b62c98 to be confirmed...
-   2024-10-08T00:19:35.225Z info: Token pool deployed to: 0x02552EAE370aeb997015dA41398F0a53F693d77E
-   2024-10-08T00:19:35.226Z info: Granting mint and burn roles to 0x02552EAE370aeb997015dA41398F0a53F693d77E on token 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF
-   2024-10-08T00:19:52.240Z info: Verifying contract...
+   2024-12-02T20:26:17.039Z info: Waiting 2 blocks for transaction 0x081466b6ef4a32095f726939ecb0f0e7e8bbb7ae88b85f9f0f3d3fdb3aa3a9ad to be confirmed...
+   2024-12-02T20:26:20.917Z info: Token pool deployed to: 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9
+   2024-12-02T20:26:20.918Z info: Granting mint and burn roles to 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9 on token 0x16F6b0f41b9217857551e29F38F99975a2fc9add
+   2024-12-02T20:26:40.032Z info: Verifying contract...
    Successfully submitted source code for contract
-   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x02552EAE370aeb997015dA41398F0a53F693d77E
+   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9
    for verification on the block explorer. Waiting for verification result...
 
    Successfully verified contract BurnMintTokenPool on the block explorer.
-   https://testnet.snowtrace.io/address/0x02552EAE370aeb997015dA41398F0a53F693d77E#code
+   https://testnet.snowtrace.io/address/0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9#code
 
-   2024-10-08T00:20:19.900Z info: Token pool contract deployed and verified
+   2024-12-02T20:26:58.195Z info: Token pool contract deployed and verified
    ```
 
-1. **Deploy the burn and mint token pool on Arbitrum Sepolia:**
+2. **Deploy the burn and mint token pool on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat deployTokenPool --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --verifycontract true --network arbitrumSepolia
+   npx hardhat deployTokenPool \
+     --tokenaddress 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 \
+     --pooltype burnMint \
+     --localtokendecimals 18 \
+     --verifycontract true \
+     --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:20:26.228Z info: Waiting 2 blocks for transaction 0x35b0be621896b9d508035873b754dd0c5fb2dca0c728acf3cdcacfeba368da04 to be confirmed...
-   2024-10-08T00:20:26.625Z info: Token pool deployed to: 0x41833AE7B0BCa169E090C752021070aC947d1821
-   2024-10-08T00:20:26.626Z info: Granting mint and burn roles to 0x41833AE7B0BCa169E090C752021070aC947d1821 on token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52
-   2024-10-08T00:20:29.071Z info: Verifying contract...
+   2024-12-02T20:27:22.065Z info: Waiting 2 blocks for transaction 0x0f65d531ca93a2a678923c14feaf6c36cb7023353e54f28152c01f93d5fd3031 to be confirmed...
+   2024-12-02T20:27:22.734Z info: Token pool deployed to: 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65
+   2024-12-02T20:27:22.734Z info: Granting mint and burn roles to 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65 on token 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30
+   2024-12-02T20:27:25.269Z info: Verifying contract...
    Successfully submitted source code for contract
-   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x41833AE7B0BCa169E090C752021070aC947d1821
+   @chainlink/contracts-ccip/src/v0.8/ccip/pools/BurnMintTokenPool.sol:BurnMintTokenPool at 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65
    for verification on the block explorer. Waiting for verification result...
 
    Successfully verified contract BurnMintTokenPool on the block explorer.
-   https://sepolia.arbiscan.io/address/0x41833AE7B0BCa169E090C752021070aC947d1821#code
+   https://sepolia.arbiscan.io/address/0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65#code
 
-   2024-10-08T00:20:38.456Z info: Token pool contract deployed and verified
+   2024-12-02T20:27:32.830Z info: Token pool contract deployed and verified
    ```
 
 ### Claim Admin
@@ -243,29 +252,25 @@ Claim the admin role by using the following commands, replacing the token addres
 1. **Claim the admin role on Avalanche Fuji:**
 
    ```bash
-   npx hardhat claimAdmin --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --withccipadmin false --network avalancheFuji
+   npx hardhat claimAdmin --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --withccipadmin false --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:21:38.765Z info: Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:21:38.766Z info: Claiming admin of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF via owner() for signer 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:21:45.440Z info: Claimed admin of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF tx: 0xa867bab10d7744e175b1a270653f1a5b3c718427988b6c4fc3d41105b0d86a04
+   2024-12-02T20:41:40.306Z info: Accepted admin role for token 0x16F6b0f41b9217857551e29F38F99975a2fc9add tx: 0xb771c2cdcd87c69a50571cf4b78dce0f3200b59f3252fb5e46146ff2e39c7a69
    ```
 
 1. **Claim the admin role on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat claimAdmin --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --withccipadmin false --network arbitrumSepolia
+   npx hardhat claimAdmin --tokenaddress 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 --withccipadmin false --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:22:22.067Z info: Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:22:22.069Z info: Claiming admin of 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 via owner() for signer 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:22:25.875Z info: Claimed admin of 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 tx: 0x00520e8d17cb30f05cb6bcb268b62966b26b10a7a77d26579745ed50a7b8e86
+   2024-12-02T20:42:00.700Z info: Accepted admin role for token 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 tx: 0xf584810d48cdf79544ed5f80644b35a4ab2357925f2f040f802e1a3447a0b272
    ```
 
 ### Accept Admin Role
@@ -284,25 +289,25 @@ Accept the admin role by using the following commands, replacing the token addre
 1. **Accept the admin role on Avalanche Fuji:**
 
    ```bash
-   npx hardhat acceptAdminRole --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --network avalancheFuji
+   npx hardhat acceptAdminRole --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:23:13.267Z info: Accepted admin role for token 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF tx: 0x42fe550b01056593458d079b54f689f0f78e01b20974e2b3bbdee4d688547664
+   2024-12-02T20:41:40.306Z info: Accepted admin role for token 0x16F6b0f41b9217857551e29F38F99975a2fc9add tx: 0xb771c2cdcd87c69a50571cf4b78dce0f3200b59f3252fb5e46146ff2e39c7a69
    ```
 
 1. **Accept the admin role on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat acceptAdminRole --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --network arbitrumSepolia
+   npx hardhat acceptAdminRole --tokenaddress 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:23:36.511Z info: Accepted admin role for token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 tx: 0x37d31f671ab7f9690add28a915cafb539f62d73718fd967c9c14be1c7955e355
+   2024-12-02T20:42:00.700Z info: Accepted admin role for token 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 tx: 0xf584810d48cdf79544ed5f80644b35a4ab2357925f2f040f802e1a3447a0b272
    ```
 
 ### Set Pool
@@ -322,74 +327,88 @@ Link each token with its respective token pool by using the following commands, 
 1. **Set the pool for Avalanche Fuji:**
 
    ```bash
-   npx hardhat setPool --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --network avalancheFuji
+   npx hardhat setPool --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --pooladdress 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9 --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:25:39.180Z info: Setting pool for token 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x02552EAE370aeb997015dA41398F0a53F693d77E by 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:25:52.555Z info: Pool set for token 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x02552EAE370aeb997015dA41398F0a53F693d77E
+   2024-12-02T20:45:49.006Z info: Setting pool for token 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9 by 0x9d087fC03ae39b088326b67fA3C788236645b717
+   2024-12-02T20:45:54.093Z info: Pool set for token 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9
    ```
 
 1. **Set the pool for Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat setPool --tokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --network arbitrumSepolia
+   npx hardhat setPool --tokenaddress 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 --pooladdress 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65 --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T00:27:02.239Z info: Setting pool for token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 to 0x41833AE7B0BCa169E090C752021070aC947d1821 by 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T00:27:04.782Z info: Pool set for token 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 to 0x41833AE7B0BCa169E090C752021070aC947d1821
+   2024-12-02T20:46:12.139Z info: Setting pool for token 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 to 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65 by 0x9d087fC03ae39b088326b67fA3C788236645b717
+   2024-12-02T20:46:12.785Z info: Pool set for token 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 to 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65
    ```
 
-### Configure Pool
+### Configure Token Pools
 
-In this step, you will use the `applyChainUpdates.ts` task to configure the token pools on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. This involves linking the token pool on one blockchain to a corresponding pool on another blockchain, allowing cross-chain token transfers. You will interact with the `TokenPool` contract, specifically calling the `applyChainUpdates()` function to configure the cross-chain parameters and rate limits.
+In this step, you will use the `applyChainUpdates` task to initialize the token pool configuration on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used:
 
-Below is an explanation of the parameters used during the pool configuration process:
-
-| Parameter                   | Description                                                                                                                                                    | Default | Required |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `pooladdress`               | The address of the token pool being configured.                                                                                                                | N/A     | Yes      |
-| `remotechain`               | The remote blockchain to which this pool will be linked. Examples include `avalancheFuji`, `arbitrumSepolia`,`baseSepolia`, and `sepolia`.                     | N/A     | Yes      |
-| `remotepooladdress`         | The address of the token pool on the remote blockchain.                                                                                                        | N/A     | Yes      |
-| `remotetokenaddress`        | The address of the token on the remote blockchain.                                                                                                             | N/A     | Yes      |
-| `outboundratelimitenabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers.                                                                            | `false` | No       |
-| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers. **Note**: This parameter is applicable if you enable outbound rate limits.          | `0`     | No       |
-| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers. **Note**: This parameter is applicable if you enable outbound rate limits. | `0`     | No       |
-| `inboundratelimitenabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers.                                                                             | `false` | No       |
-| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers. **Note**: This parameter is applicable if you enable inbound rate limits.            | `0`     | No       |
-| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers. **Note**: This parameter is applicable if you enable inbound rate limits.   | `0`     | No       |
+| Parameter                   | Description                                                                                              | Default | Required |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `pooladdress`               | The address of the pool to be configured.                                                                | N/A     | Yes      |
+| `remotechain`               | The remote blockchain network (e.g., `arbitrumSepolia` for Fuji pool, `avalancheFuji` for Sepolia pool). | N/A     | Yes      |
+| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                           | N/A     | Yes      |
+| `remotetokenaddress`        | The address of the token on the remote chain.                                                            | N/A     | Yes      |
+| `outboundratelimitenabled`  | Enables or disables the outbound rate limiter.                                                           | `false` | No       |
+| `outboundratelimitcapacity` | Maximum capacity for the outbound rate limiter (in wei).                                                 | `0`     | No       |
+| `outboundratelimitrate`     | Refill rate for the outbound rate limiter bucket (tokens per second, in wei).                            | `0`     | No       |
+| `inboundratelimitenabled`   | Enables or disables the inbound rate limiter.                                                            | `false` | No       |
+| `inboundratelimitcapacity`  | Maximum capacity for the inbound rate limiter (in wei).                                                  | `0`     | No       |
+| `inboundratelimitrate`      | Refill rate for the inbound rate limiter bucket (tokens per second, in wei).                             | `0`     | No       |
 
 Configure the pools using the following commands, replacing the pool, token, and remote pool addresses with those you deployed in the previous steps:
 
 1. **Configure the pool on Avalanche Fuji:**
 
    ```bash
-   npx hardhat applyChainUpdates --pooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --remotechain arbitrumSepolia --remotetokenaddress 0xf76a43fBe5fe929acc5F8596cf3BB52102f6eC52 --remotepooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --network avalancheFuji
+   npx hardhat applyChainUpdates \
+     --pooladdress 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9 \
+     --remotechain arbitrumSepolia \
+     --remotepooladdresses 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65 \
+     --remotetokenaddress 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30 \
+     --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T01:01:35.559Z info: Applying chain update to pool at address: 0x02552EAE370aeb997015dA41398F0a53F693d77E
-   2024-10-08T01:01:41.178Z info: Chain update applied successfully
+   2024-12-02T20:48:33.304Z info: Applying chain update to pool at address: 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9
+   2024-12-02T20:48:33.304Z info: Remote chain: arbitrumSepolia (3478487238524512106)
+   2024-12-02T20:48:33.304Z info: Remote pool addresses: 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65
+   2024-12-02T20:48:33.304Z info: Remote token address: 0x79b6C325D7f952ddC61Cc51D554cBf4099ca8b30
+   2024-12-02T20:48:40.430Z info: Chain update applied successfully
    ```
 
 1. **Configure the pool on Arbitrum Sepolia:**
 
    ```bash
-   npx hardhat applyChainUpdates --pooladdress 0x41833AE7B0BCa169E090C752021070aC947d1821 --remotechain avalancheFuji --remotetokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --remotepooladdress 0x02552EAE370aeb997015dA41398F0a53F693d77E --network arbitrumSepolia
+   npx hardhat applyChainUpdates \
+     --pooladdress 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65 \
+     --remotechain avalancheFuji \
+     --remotetokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add \
+     --remotepooladdresses 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9 \
+     --network arbitrumSepolia
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T01:02:38.283Z info: Applying chain update to pool at address: 0x41833AE7B0BCa169E090C752021070aC947d1821
-   2024-10-08T01:02:43.476Z info: Chain update applied successfully
+   2024-12-02T20:50:22.850Z info: Applying chain update to pool at address: 0x86F2521dB26AAEdDE5fe11cFA69EE5EfBeBc4E65
+   2024-12-02T20:50:22.850Z info: Remote chain: avalancheFuji (14767482510784806043)
+   2024-12-02T20:50:22.850Z info: Remote pool addresses: 0x1aFafBAd2528747cf464F62e9e57238FDE8f2BA9
+   2024-12-02T20:50:22.850Z info: Remote token address: 0x16F6b0f41b9217857551e29F38F99975a2fc9add
+   2024-12-02T20:50:25.237Z info: Chain update applied successfully
    ```
 
 ### Mint Tokens
@@ -412,15 +431,15 @@ Mint tokens to your EOA using the following command, replacing the token address
 1. **Mint tokens on Avalanche Fuji:**
 
    ```bash
-   npx hardhat mintTokens --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --amount 1000000000000000000000 --network avalancheFuji
+   npx hardhat mintTokens --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --amount 1000000000000000000000 --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2024-10-08T01:03:35.219Z info: Minting 1000000000000000000000 of BnMaem tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   2024-10-08T01:03:40.247Z info: Minted 1000000000000000000000 of BnMaem tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d - transaction hash: 0x27587fb3bae6a002cfee9b83aefe3216a35baac0e611671f774d66d0bd5d427c
-   2024-10-08T01:03:40.374Z info: Current balance of 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d is 1000000000000000000000 BnMae
+   2024-12-02T20:52:58.723Z info: Minting 1000000000000000000000 of BnMaem tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+   2024-12-02T20:53:03.388Z info: Minted 1000000000000000000000 of BnMaem tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717 - transaction hash: 0x72803df594f0ff01cf22437722601fc3a41afc4463d05598ad56fd85eef26671
+   2024-12-02T20:53:03.601Z info: Current balance of 0x9d087fC03ae39b088326b67fA3C788236645b717 is 1000000000000000000000 BnMaem
    ```
 
 ### Transfer Tokens
@@ -445,19 +464,20 @@ Below is an explanation of the parameters used during the token transfer process
 Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in LINK tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
-npx hardhat transferTokens --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --amount 100 --destinationchain arbitrumSepolia --receiveraddress 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d --network avalancheFuji
+npx hardhat transferTokens --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --amount 100 --destinationchain arbitrumSepolia --receiveraddress 0x9d087fC03ae39b088326b67fA3C788236645b717 --network avalancheFuji
 ```
 
 Example output:
 
 ```bash
-2024-10-08T01:04:41.532Z info: Estimated fees: 10188000000000000
-2024-10-08T01:04:41.535Z info: Approving 100 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0xf85E941163a8B35F48bD8814227665d82Fd4dd65
-2024-10-08T01:04:46.430Z info: Approving 10188000000000000 LINK to 0xf85E941163a8B35F48bD8814227665d82Fd4dd65
-2024-10-08T01:04:49.924Z info: Transferring 100 of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d on chain arbitrumSepolia with 10188000000000000 of LINK as fees
-2024-10-08T01:04:53.929Z info: Transaction hash: 0x1cf2c2cfb0f6f7a51d09c445b2c49cec04674bcbae6268a1049ce94dfa222efd
-2024-10-08T01:04:53.995Z info: ✅ Transferred 100 of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d on chain arbitrumSepolia. Transaction hash: 0x1cf2c2cfb0f6f7a51d09c445b2c49cec04674bcbae6268a1049ce94dfa222efd - CCIP message id: 0x635aa40064d2e2d1a4d79e7ad90b77c6e127c3f54b7c7f28bc1d1ed7c3d8f6a1
-2024-10-08T01:04:53.995Z info: Check status of message on https://ccip.chain.link/msg/0x635aa40064d2e2d1a4d79e7ad90b77c6e127c3f54b7c7f28bc1d1ed7c3d8f6a1
+2024-12-02T20:54:39.129Z info: Estimated fees: 19264384915635927
+2024-12-02T20:54:39.132Z info: Approving 100 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+2024-12-02T20:54:50.192Z info: Approving 19264384915635927 LINK to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+2024-12-02T20:55:06.526Z info: Transferring 100 of 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain arbitrumSepolia with 19264384915635927 of LINK as fees
+2024-12-02T20:55:12.517Z info: Transaction hash: 0x5edd3a0144d0cae8c63559285fa5a1985d44c037c72434176aa600cc08cf727e
+2024-12-02T20:55:12.535Z info: Message dispatched. Message id: 0xbafe82be04659a3064e1a1e08a2bc9d156968769ed224e100a49d0a6bc99f3f1
+2024-12-02T20:55:12.535Z info: ✅ Transferred 100 of 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain arbitrumSepolia. Transaction hash: 0x5edd3a0144d0cae8c63559285fa5a1985d44c037c72434176aa600cc08cf727e - CCIP message id: 0xbafe82be04659a3064e1a1e08a2bc9d156968769ed224e100a49d0a6bc99f3f1
+2024-12-02T20:55:12.535Z info: Check status of message on https://ccip.chain.link/msg/0xbafe82be04659a3064e1a1e08a2bc9d156968769ed224e100a49d0a6bc99f3f1
 ```
 
 #### Pay fees in native gas tokens
@@ -465,16 +485,17 @@ Example output:
 Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
-npx hardhat transferTokens --tokenaddress 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF --amount 100 --destinationchain arbitrumSepolia --receiveraddress 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d --fee native --network avalancheFuji
+npx hardhat transferTokens --tokenaddress 0x16F6b0f41b9217857551e29F38F99975a2fc9add --amount 100 --destinationchain arbitrumSepolia --receiveraddress 0x9d087fC03ae39b088326b67fA3C788236645b717 --fee native --network avalancheFuji
 ```
 
 Example output:
 
 ```bash
-2024-10-08T01:05:23.673Z info: Estimated fees: 14586666666666666
-2024-10-08T01:05:23.675Z info: Approving 100 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0xf85E941163a8B35F48bD8814227665d82Fd4dd65
-2024-10-08T01:05:27.159Z info: Transferring 100 of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d on chain arbitrumSepolia with 14586666666666666 of native token as fees
-2024-10-08T01:05:31.862Z info: Transaction hash: 0x323a24d4cfebeaa9c2f031eb721ea16db1baeb50d514310023995998a0675bff
-2024-10-08T01:05:31.920Z info: ✅ Transferred 100 of 0x15A5e7ca5043798F1E1983d048D9600F4752dfcF to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d on chain arbitrumSepolia. Transaction hash: 0x323a24d4cfebeaa9c2f031eb721ea16db1baeb50d514310023995998a0675bff - CCIP message id: 0xb6d03ffedec68f1934fca7e64d8535b55464f70c2bdb108b4ec2a26f788c8092
-2024-10-08T01:05:31.920Z info: Check status of message on https://ccip.chain.link/msg/0xb6d03ffedec68f1934fca7e64d8535b55464f70c2bdb108b4ec2a26f788c8092
+2024-12-02T20:57:28.842Z info: Estimated fees: 10345327607939136
+2024-12-02T20:57:28.844Z info: Approving 100 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+2024-12-02T20:57:34.157Z info: Transferring 100 of 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain arbitrumSepolia with 10345327607939136 of native token as fees
+2024-12-02T20:57:45.269Z info: Transaction hash: 0xa68375fc560f8910b1c6dda8d6765d0bebd02e2de91f763188e529b5eb007ab4
+2024-12-02T20:57:45.288Z info: Message dispatched. Message id: 0xdbf8a93ed33c726d866478ef9c492b5dbba65eb62192a42b63743ce3af86e443
+2024-12-02T20:57:45.288Z info: ✅ Transferred 100 of 0x16F6b0f41b9217857551e29F38F99975a2fc9add to 0x9d087fC03ae39b088326b67fA3C788236645b717 on chain arbitrumSepolia. Transaction hash: 0xa68375fc560f8910b1c6dda8d6765d0bebd02e2de91f763188e529b5eb007ab4 - CCIP message id: 0xdbf8a93ed33c726d866478ef9c492b5dbba65eb62192a42b63743ce3af86e443
+2024-12-02T20:57:45.288Z info: Check status of message on https://ccip.chain.link/msg/0xdbf8a93ed33c726d866478ef9c492b5dbba65eb62192a42b63743ce3af86e443
 ```

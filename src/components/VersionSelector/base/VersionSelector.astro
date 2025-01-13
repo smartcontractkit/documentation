@@ -1,0 +1,94 @@
+---
+import { VersionSelectorClient } from "./VersionSelectorClient"
+import type { VersionSelectorConfig, ProductConfig } from "../types"
+import { validateVersion, sortVersions, getProductVersionConfig, getVersionReleaseDate } from "../utils"
+import type { Collection } from "src/content/config"
+import "../styles/core/tokens.css"
+import "../styles/core/animations.css"
+import styles from "../styles/components/VersionSelector.module.css"
+
+interface Props {
+  product: Collection
+  currentPath: string
+  enableEnhanced?: boolean
+}
+
+const { product, currentPath, enableEnhanced = true } = Astro.props
+
+// Get version config for the product
+const versionConfig = getProductVersionConfig(product)
+if (!versionConfig) {
+  throw new Error(`No version configuration found for product: ${product}`)
+}
+
+// Extract version from path
+const versionMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
+const pathVersion = versionMatch ? versionMatch[1] : versionConfig.LATEST
+
+// Server-side computations
+const validatedVersion = validateVersion(pathVersion, versionConfig.ALL)
+const sortedVersions = sortVersions(versionConfig.ALL)
+const isNotLatest = validatedVersion !== versionConfig.LATEST
+const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? false
+
+// Create product config
+const productConfig: ProductConfig = {
+  name: product,
+  basePath: `/${product}/api-reference`,
+}
+
+// Create client config that matches VersionSelectorConfig
+const clientConfig: VersionSelectorConfig<string> = {
+  versions: {
+    all: sortedVersions,
+    latest: versionConfig.LATEST,
+    deprecated: versionConfig.DEPRECATED,
+    current: validatedVersion,
+  },
+  product: productConfig,
+  styling: {
+    theme: "default",
+  },
+}
+
+// Get release date for the current version
+const releaseDate = getVersionReleaseDate(product, validatedVersion)
+---
+
+<div
+  class:list={[styles.versionSelector, { [styles.versionSelectorEnhanced]: enableEnhanced }]}
+  data-theme={clientConfig.styling?.theme}
+  data-version={validatedVersion}
+  data-latest={clientConfig.versions.latest}
+  data-enhanced={enableEnhanced}
+>
+  {/* Static version display - visible before hydration */}
+  <div class={`${styles.staticVersion} animate-fade-in`} data-client-hidden>
+    <span class={styles.staticLabel}>API Version:</span>
+    <span class={styles.staticVersionText}>{validatedVersion}</span>
+    {isNotLatest && <span class={styles.staticWarning}>Not using latest version ({clientConfig.versions.latest})</span>}
+  </div>
+
+  {/* Interactive component - hydrated based on client directive */}
+  <VersionSelectorClient
+    client:load
+    config={clientConfig}
+    validatedVersion={validatedVersion}
+    isNotLatest={isNotLatest}
+    currentPath={currentPath}
+  />
+</div>
+
+<script>
+  // Add .js class to html element for progressive enhancement
+  document.documentElement.classList.add("js")
+
+  // Feature detection
+  const supportsContainerQueries = CSS.supports("container-type: inline-size")
+  const supportsBackdropFilter =
+    CSS.supports("backdrop-filter: blur()") || CSS.supports("-webkit-backdrop-filter: blur()")
+
+  // Add feature classes
+  if (supportsContainerQueries) document.documentElement.classList.add("supports-container-queries")
+  if (supportsBackdropFilter) document.documentElement.classList.add("supports-backdrop-filter")
+</script>

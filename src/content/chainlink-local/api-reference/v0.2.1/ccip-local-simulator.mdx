@@ -1,0 +1,157 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulator v0.2.1 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulator in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## CCIPLocalSimulator
+
+[`CCIPLocalSimulator`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/ccip/CCIPLocalSimulator.sol) is a contract that provides local simulation capabilities for Cross-Chain Interoperability Protocol (CCIP) operations. It manages token deployments and routing configurations for testing CCIP functionality.
+
+## Variables
+
+### CHAIN_SELECTOR
+
+```solidity
+uint64 constant CHAIN_SELECTOR = 16015286601757825753
+```
+
+The unique identifier for the simulated chain in CCIP operations.
+
+### i_ccipBnM
+
+```solidity
+BurnMintERC677Helper internal immutable i_ccipBnM
+```
+
+The CCIP BnM token contract instance used for cross-chain token transfers.
+
+### i_ccipLnM
+
+```solidity
+BurnMintERC677Helper internal immutable i_ccipLnM
+```
+
+The CCIP LnM token contract instance used for cross-chain token transfers.
+
+### i_linkToken
+
+```solidity
+LinkToken internal immutable i_linkToken
+```
+
+The LINK token contract instance used for paying CCIP fees.
+
+### i_mockRouter
+
+```solidity
+MockCCIPRouter internal immutable i_mockRouter
+```
+
+The mock CCIP router contract instance that simulates cross-chain message routing.
+
+### i_wrappedNative
+
+```solidity
+WETH9 internal immutable i_wrappedNative
+```
+
+The wrapped native token contract instance used for fee payments.
+
+## Functions
+
+### constructor
+
+Initializes the simulator by deploying necessary token contracts and configuring supported tokens.
+
+<Aside type="note">
+  Deploys WETH9, LinkToken, and two BurnMintERC677Helper tokens (CCIP-BnM and CCIP-LnM) and sets up a mock router.
+</Aside>
+
+### configuration
+
+Returns the configuration details for pre-deployed contracts and services needed for local CCIP simulations.
+
+**Returns:**
+
+| Parameter           | Type                   | Description                           |
+| ------------------- | ---------------------- | ------------------------------------- |
+| chainSelector\_     | `uint64`               | The unique CCIP Chain Selector        |
+| sourceRouter\_      | `IRouterClient`        | The source chain Router contract      |
+| destinationRouter\_ | `IRouterClient`        | The destination chain Router contract |
+| wrappedNative\_     | `WETH9`                | The wrapped native token contract     |
+| linkToken\_         | `LinkToken`            | The LINK token contract               |
+| ccipBnM\_           | `BurnMintERC677Helper` | The CCIP-BnM token contract           |
+| ccipLnM\_           | `BurnMintERC677Helper` | The CCIP-LnM token contract           |
+
+### getSupportedTokens
+
+Gets a list of token addresses that are supported for cross-chain transfers by the simulator.
+
+**Parameters:**
+
+| Parameter     | Type     | Description                    |
+| ------------- | -------- | ------------------------------ |
+| chainSelector | `uint64` | The unique CCIP Chain Selector |
+
+**Returns:**
+
+| Parameter | Type               | Description                       |
+| --------- | ------------------ | --------------------------------- |
+| tokens    | `address[] memory` | List of supported token addresses |
+
+<Aside type="note">Returns an empty array if the chain selector is not supported.</Aside>
+
+### isChainSupported
+
+Checks whether the provided chain selector is supported by the simulator.
+
+**Parameters:**
+
+| Parameter     | Type     | Description                    |
+| ------------- | -------- | ------------------------------ |
+| chainSelector | `uint64` | The unique CCIP Chain Selector |
+
+**Returns:**
+
+| Parameter | Type   | Description                             |
+| --------- | ------ | --------------------------------------- |
+| supported | `bool` | True if the chain selector is supported |
+
+### requestLinkFromFaucet
+
+Requests LINK tokens from the faucet for a specified address.
+
+**Parameters:**
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| to        | `address` | The address to receive LINK tokens |
+| amount    | `uint256` | The amount of LINK tokens to send  |
+
+**Returns:**
+
+| Parameter | Type   | Description                         |
+| --------- | ------ | ----------------------------------- |
+| success   | `bool` | True if the transfer was successful |
+
+### supportNewToken
+
+Allows users to add support for new tokens besides CCIP-BnM and CCIP-LnM for cross-chain transfers.
+
+**Parameters:**
+
+| Parameter    | Type      | Description                                         |
+| ------------ | --------- | --------------------------------------------------- |
+| tokenAddress | `address` | The address of the token to add to supported tokens |
+
+<Aside type="tip">
+  Use this function to extend the simulator's capabilities with additional token types for testing purposes.
+</Aside>

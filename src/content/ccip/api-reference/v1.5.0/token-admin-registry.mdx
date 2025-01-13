@@ -1,0 +1,368 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 TokenAdminRegistry Contract API Reference"
+metadata:
+  description: "API documentation for the TokenAdminRegistry contract in Chainlink CCIP v1.5.0, managing token pool configurations and administrator permissions for cross-chain tokens."
+  canonical: "/ccip/api-reference/v1.5.1/token-admin-registry"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+The [`TokenAdminRegistry`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol) contract stores the token pool configuration for all cross-chain tokens. It operates on a self-serve basis, where tokens can be registered without intervention from the CCIP owner.
+
+_This contract is not considered upgradable, as it is a customer-facing contract that will store significant amounts of data._
+
+## Errors
+
+### OnlyRegistryModuleOrOwner
+
+```solidity
+error OnlyRegistryModuleOrOwner(address sender)
+```
+
+### OnlyAdministrator
+
+```solidity
+error OnlyAdministrator(address sender, address token)
+```
+
+### OnlyPendingAdministrator
+
+```solidity
+error OnlyPendingAdministrator(address sender, address token)
+```
+
+### AlreadyRegistered
+
+```solidity
+error AlreadyRegistered(address token)
+```
+
+### ZeroAddress
+
+```solidity
+error ZeroAddress()
+```
+
+### InvalidTokenPoolToken
+
+```solidity
+error InvalidTokenPoolToken(address token)
+```
+
+## Events
+
+### PoolSet
+
+```solidity
+event PoolSet(address token, address previousPool, address newPool)
+```
+
+### AdministratorTransferRequested
+
+```solidity
+event AdministratorTransferRequested(address token, address currentAdmin, address newAdmin)
+```
+
+### AdministratorTransferred
+
+```solidity
+event AdministratorTransferred(address token, address newAdmin)
+```
+
+### RegistryModuleAdded
+
+```solidity
+event RegistryModuleAdded(address module)
+```
+
+### RegistryModuleRemoved
+
+```solidity
+event RegistryModuleRemoved(address module)
+```
+
+## Structs
+
+### TokenConfig
+
+```solidity
+struct TokenConfig {
+  address administrator;
+  address pendingAdministrator;
+  address tokenPool;
+}
+```
+
+| Name                 | Type    | Description                           |
+| -------------------- | ------- | ------------------------------------- |
+| administrator        | address | Current administrator of the token.   |
+| pendingAdministrator | address | Pending administrator for transfer.   |
+| tokenPool            | address | Token pool associated with the token. |
+
+## Constants
+
+### typeAndVersion
+
+```solidity
+string typeAndVersion
+```
+
+_The version of the TokenAdminRegistry contract._
+
+## Mappings
+
+### s_tokenConfig
+
+```solidity
+mapping(address => struct TokenAdminRegistry.TokenConfig) s_tokenConfig
+```
+
+_Stores the configuration for each token._
+
+### s_tokens
+
+```solidity
+struct EnumerableSet.AddressSet s_tokens
+```
+
+_List of all tokens that have been configured._
+
+### s_registryModules
+
+```solidity
+struct EnumerableSet.AddressSet s_registryModules
+```
+
+_List of all registry modules allowed to interact with the contract._
+
+## Functions
+
+### getPools
+
+```solidity
+function getPools(address[] tokens) external view returns (address[])
+```
+
+Returns the pools for the given tokens.
+
+_Will return `address(0)` for tokens that do not have an associated pool._
+
+#### Parameters
+
+| Name   | Type      | Description                        |
+| ------ | --------- | ---------------------------------- |
+| tokens | address[] | Array of token addresses to query. |
+
+#### Return Values
+
+| Name | Type      | Description                             |
+| ---- | --------- | --------------------------------------- |
+| [0]  | address[] | Array of pool addresses for each token. |
+
+### getPool
+
+```solidity
+function getPool(address token) external view returns (address)
+```
+
+Returns the pool for the given token.
+
+#### Parameters
+
+| Name  | Type    | Description                    |
+| ----- | ------- | ------------------------------ |
+| token | address | The token to get the pool for. |
+
+#### Return Values
+
+| Name | Type    | Description                 |
+| ---- | ------- | --------------------------- |
+| [0]  | address | Pool address for the token. |
+
+### getTokenConfig
+
+```solidity
+function getTokenConfig(address token) external view returns (struct TokenAdminRegistry.TokenConfig)
+```
+
+Returns the configuration for a token.
+
+#### Parameters
+
+| Name  | Type    | Description                             |
+| ----- | ------- | --------------------------------------- |
+| token | address | The token to get the configuration for. |
+
+#### Return Values
+
+| Name | Type                                  | Description                  |
+| ---- | ------------------------------------- | ---------------------------- |
+| [0]  | struct TokenAdminRegistry.TokenConfig | Configuration for the token. |
+
+### getAllConfiguredTokens
+
+```solidity
+function getAllConfiguredTokens(uint64 startIndex, uint64 maxCount) external view returns (address[] tokens)
+```
+
+Returns a list of tokens that are configured in the TokenAdminRegistry.
+
+_The function is paginated to avoid RPC timeouts._
+
+#### Parameters
+
+| Name       | Type   | Description                                                                                          |
+| ---------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| startIndex | uint64 | Starting index in the list (use 0 to start from the beginning).                                      |
+| maxCount   | uint64 | Maximum number of tokens to retrieve (use `type(uint64).max` to retrieve all tokens in large lists). |
+
+#### Return Values
+
+| Name   | Type      | Description                              |
+| ------ | --------- | ---------------------------------------- |
+| tokens | address[] | Array of addresses of configured tokens. |
+
+### setPool
+
+```solidity
+function setPool(address localToken, address pool) external
+```
+
+Sets the pool for a token. Setting the pool to `address(0)` will delist the token from CCIP.
+
+#### Parameters
+
+| Name       | Type    | Description                           |
+| ---------- | ------- | ------------------------------------- |
+| localToken | address | The token to associate with the pool. |
+| pool       | address | The pool to associate with the token. |
+
+### transferAdminRole
+
+```solidity
+function transferAdminRole(address localToken, address newAdmin) external
+```
+
+Transfers the administrator role for a token. The new admin must call `acceptAdminRole` to finalize the transfer.
+
+#### Parameters
+
+| Name       | Type    | Description                               |
+| ---------- | ------- | ----------------------------------------- |
+| localToken | address | The token to transfer the admin role for. |
+| newAdmin   | address | The new administrator's address.          |
+
+### acceptAdminRole
+
+```solidity
+function acceptAdminRole(address localToken) external
+```
+
+Accepts the administrator role for a token.
+
+_Only the pending administrator can call this function._
+
+#### Parameters
+
+| Name       | Type    | Description                                           |
+| ---------- | ------- | ----------------------------------------------------- |
+| localToken | address | The token for which the admin role is being accepted. |
+
+### isAdministrator
+
+```solidity
+function isAdministrator(address localToken, address administrator) external view returns (bool)
+```
+
+Returns whether an address is the administrator of the given token.
+
+#### Parameters
+
+| Name          | Type    | Description                               |
+| ------------- | ------- | ----------------------------------------- |
+| localToken    | address | The token to check the administrator for. |
+| administrator | address | The administrator address to check.       |
+
+#### Return Values
+
+| Name | Type | Description                              |
+| ---- | ---- | ---------------------------------------- |
+| [0]  | bool | True if the address is an administrator. |
+
+### proposeAdministrator
+
+```solidity
+function proposeAdministrator(address localToken, address administrator) external
+```
+
+Proposes a new administrator for the token.
+
+_Can only be called by a registry module._
+
+#### Parameters
+
+| Name          | Type    | Description                           |
+| ------------- | ------- | ------------------------------------- |
+| localToken    | address | The token to propose a new admin for. |
+| administrator | address | The new administrator address.        |
+
+### isRegistryModule
+
+```solidity
+function isRegistryModule(address module) public view returns (bool)
+```
+
+Returns whether an address is a valid registry module.
+
+#### Parameters
+
+| Name   | Type    | Description                  |
+| ------ | ------- | ---------------------------- |
+| module | address | The module address to check. |
+
+#### Return Values
+
+| Name | Type | Description                               |
+| ---- | ---- | ----------------------------------------- |
+| [0]  | bool | True if the address is a registry module. |
+
+### addRegistryModule
+
+```solidity
+function addRegistryModule(address module) external
+```
+
+Adds a new registry module to the list of allowed modules.
+
+#### Parameters
+
+| Name   | Type    | Description                       |
+| ------ | ------- | --------------------------------- |
+| module | address | The address of the module to add. |
+
+### removeRegistryModule
+
+```solidity
+function removeRegistryModule(address module) external
+```
+
+Removes a registry module from the list of allowed modules.
+
+#### Parameters
+
+| Name   | Type    | Description                          |
+| ------ | ------- | ------------------------------------ |
+| module | address | The address of the module to remove. |
+
+### onlyTokenAdmin
+
+```solidity
+modifier onlyTokenAdmin(address token)
+```
+
+Modifier that checks if an address is the administrator of the given token.
