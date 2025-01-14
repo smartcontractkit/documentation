@@ -44,6 +44,7 @@ const metadata = z
     image: z.string().optional(),
     linkToWallet: z.boolean().optional(),
     canonical: z.string().optional(),
+    excerpt: z.string().optional(),
   })
   .optional()
 
@@ -56,7 +57,6 @@ const baseFrontmatter = z
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
     metadata,
-    excerpt: z.string().optional(),
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
   })

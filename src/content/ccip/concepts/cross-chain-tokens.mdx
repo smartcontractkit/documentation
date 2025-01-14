@@ -3,6 +3,9 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token (CCT) standard"
 whatsnext: { "CCT Guides": "/ccip/tutorials/cross-chain-tokens" }
+metadata:
+  description: "Chainlink's Cross-Chain Token (CCT) standard enables permissionless listing of tokens in CCIP. Learn how to make your tokens cross-chain compatible or deploy new cross-chain tokens using this self-service standard. Token developers can deploy and configure their own token pools without third-party intervention, streamlining the process of enabling ERC20-compatible tokens for cross-chain operations."
+  excerpt: "create cct create cross chain token create cross-chain token deploy cross chain token enable token for ccip make token cross chain compatible cross chain token tutorial"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -507,7 +510,7 @@ Once the administrator has been proposed and is in a pending state, the final st
 
 The `transferAdminRole` function allows the current token administrator to initiate the transfer of their role to a new administrator. The transfer process is a secure two-step procedure, requiring the new administrator to explicitly accept the role before the transfer is finalized.
 
-1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator’s address.
+1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator's address.
 1. **Set Pending Administrator**: The **TokenAdminRegistry** contract verifies that the caller is the current administrator of the token and sets the new administrator as **pending**. The role will remain in this pending state until it is accepted.
 1. **Accept the Role**: The new administrator must call the `acceptAdminRole()` function to finalize the transfer and assume the administrator role.
 
@@ -525,7 +528,7 @@ The `setPool` function allows the token administrator to assign or update the to
 
 1. **Set Token Pool**: The current administrator calls the `setPool()` function on the **TokenAdminRegistry**, providing the token address and the new pool address.
 1. **Validate Pool**: If the new pool address is not `address(0)`, the contract validates that the provided pool supports the token by calling `isSupportedToken()` on the pool contract.
-1. **Update or Remove Pool**: If validation succeeds, the token’s pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
+1. **Update or Remove Pool**: If validation succeeds, the token's pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
 
 The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
 
