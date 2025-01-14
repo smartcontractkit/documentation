@@ -556,6 +556,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "sonic",
+    label: "Sonic",
+    title: "Sonic Data Feeds",
+    img: "/assets/chains/sonic.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Sonic Mainnet",
+        explorerUrl: "https://sonicscan.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
+        queryString: "sonic-mainnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
