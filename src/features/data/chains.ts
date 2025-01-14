@@ -561,7 +561,7 @@ export const CHAINS: Chain[] = [
     label: "Sonic",
     title: "Sonic Data Feeds",
     img: "/assets/chains/sonic.svg",
-    networkStatusUrl: "https://explorer.aptoslabs.com/",
+    networkStatusUrl: "",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
