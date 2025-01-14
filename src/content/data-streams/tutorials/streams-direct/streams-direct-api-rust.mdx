@@ -1,0 +1,288 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Fetch and decode V3 reports using the Rust SDK"
+whatsnext:
+  {
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/streams-direct/streams-direct-ws-rust",
+    "Learn how to verify your data onchain": "/data-streams/reference/streams-direct/streams-direct-onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+  }
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Go SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Go SDK - V4 reports for RWA streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Rust SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "Rust SDK - V4 reports for RWA streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams/streams-direct) implementation_ and the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk) for Rust to fetch and decode [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet early access.
+
+## Guide
+
+You'll start with the set up of your Rust project. Next, you'll fetch and decode reports for crypto streams and log their attributes to your terminal.
+
+### Set up your Rust project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-data-streams-project && cd my-data-streams-project
+   ```
+
+1. Initialize a new Rust project:
+
+   ```bash
+   cargo init
+   ```
+
+1. Add the Data Streams SDK to your `Cargo.toml`:
+
+   ```toml
+   [dependencies]
+   data-streams-sdk = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/sdk" }
+   data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+   tokio = { version = "1.4", features = ["full"] }
+   hex = "0.4"
+   ```
+
+### Fetch and decode a report with a single stream
+
+1. Replace the contents of `src/main.rs` with the following code:
+
+   ```rust
+   use data_streams_report::feed_id::ID;
+   use data_streams_report::report::{decode_full_report, v3::ReportDataV3};
+   use data_streams_sdk::client::Client;
+   use data_streams_sdk::config::Config;
+   use std::env;
+   use std::error::Error;
+
+   #[tokio::main]
+   async fn main() -> Result<(), Box<dyn Error>> {
+       // Get feed ID from command line arguments
+       let args: Vec<String> = env::args().collect();
+       if args.len() < 2 {
+           eprintln!("Usage: cargo run [FeedID]");
+           std::process::exit(1);
+       }
+       let feed_id_input = &args[1];
+
+       // Get API credentials from environment variables
+       let api_key = env::var("API_KEY").expect("API_KEY must be set");
+       let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+
+       // Initialize the configuration
+       let config = Config::new(
+           api_key,
+           api_secret,
+           "https://api.testnet-dataengine.chain.link".to_string(),
+           "wss://api.testnet-dataengine.chain.link/ws".to_string(),
+       )
+       .build()?;
+
+       // Initialize the client
+       let client = Client::new(config)?;
+
+       // Parse the feed ID
+       let feed_id = ID::from_hex_str(feed_id_input)?;
+
+       // Fetch the latest report
+       let response = client.get_latest_report(feed_id).await?;
+       println!("\nRaw report data: {:?}\n", response.report);
+
+       // Decode the report
+       let full_report = hex::decode(&response.report.full_report[2..])?;
+       let (_report_context, report_blob) = decode_full_report(&full_report)?;
+       let report_data = ReportDataV3::decode(&report_blob)?;
+
+       // Print decoded report details
+       println!("\nDecoded Report for Stream ID {}:", feed_id_input);
+       println!("------------------------------------------");
+       println!("Observations Timestamp: {}", response.report.observations_timestamp);
+       println!("Benchmark Price       : {}", report_data.benchmark_price);
+       println!("Bid                   : {}", report_data.bid);
+       println!("Ask                   : {}", report_data.ask);
+       println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
+       println!("Expires At            : {}", report_data.expires_at);
+       println!("Link Fee              : {}", report_data.link_fee);
+       println!("Native Fee            : {}", report_data.native_fee);
+       println!("------------------------------------------");
+
+       Ok(())
+   }
+   ```
+
+1. Set up your API credentials as environment variables:
+
+   ```bash
+   export API_KEY="<YOUR_API_KEY>"
+   export API_SECRET="<YOUR_API_SECRET>"
+   ```
+
+   Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+1. For this example, you will read from the ETH/USD crypto stream. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Stream Addresses](/data-streams/crypto-streams) page for a complete list of available crypto assets.
+
+   Build and run your application:
+
+   ```bash
+   cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   Raw report data: Report { feed_id: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782, valid_from_timestamp: 1734124400, observations_timestamp: 1734124400, full_report: "0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f56930f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675ca37000000000000000000000000000000000000000000000000000000000675ca3700000000000000000000000000000000000000000000000000000174be1bd8758000000000000000000000000000000000000000000000000000cb326ce8c3ea800000000000000000000000000000000000000000000000000000000675df4f00000000000000000000000000000000000000000000000d3a30bcc15e207c0000000000000000000000000000000000000000000000000d3a1557b5e634060200000000000000000000000000000000000000000000000d3ab99a974ff10f400000000000000000000000000000000000000000000000000000000000000000292bdd75612560e46ed9b0c2437898f81eb0e18b6b902a161b9708e9177175cf3b8ef2b279f230f766fb29306250ee90856516ee349ca42b2d7fb141deb006745000000000000000000000000000000000000000000000000000000000000000221c156e80276827e1bfeb6542ab064dfa958f5be955f516fb62b1c93437472c31cc65fcaba68c9d661701190bc32025a0690af0eefe027ac218fd15c588dd4d5" }
+
+
+   Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
+   ------------------------------------------
+   Observations Timestamp: 1734124400
+   Benchmark Price       : 3904011708000000000000
+   Bid                   : 3903888333211164500000
+   Ask                   : 3904628100124598400000
+   Valid From Timestamp  : 1734124400
+   Expires At            : 1734210800
+   Link Fee              : 3574678975954600
+   Native Fee            : 25614677280600
+   ------------------------------------------
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                         |
+| ------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                                                   |
+| `Observations Timestamp` | `1734124400`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                                |
+| `Benchmark Price`        | `3904011708000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `3,904.0117080000000` USD per ETH.                                                                                                                                             |
+| `Bid`                    | `3903888333211164500000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,903.8883332111645` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices).                                 |
+| `Ask`                    | `3904628100124598400000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,904.6281001245984` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices).                              |
+| `Valid From Timestamp`   | `1734124400`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                             |
+| `Expires At`             | `1734210800`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                    |
+| `Link Fee`               | `3574678975954600`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.003574678975954600` LINK. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `25614677280600`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.0000256146772806000` ETH. **Note:** This example fee is not indicative of actual fees. |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+
+## Explanation
+
+### Initializing the API client and configuration
+
+The API client is initialized in two steps:
+
+1. [`Config::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/config.rs#L131) creates a configuration with your API credentials and endpoints. This function:
+
+   - Validates your API key and secret
+   - Sets up the REST API endpoint for data retrieval
+   - Configures optional settings like TLS verification
+
+2. [`Client::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L131) creates the HTTP client with your configuration. This client:
+   - Handles authentication automatically
+   - Manages HTTP connections
+   - Implements retry logic for failed requests
+
+### Fetching reports
+
+The SDK provides several methods to fetch reports through the REST API:
+
+1. Latest report: [`get_latest_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L165) retrieves the most recent report for a feed:
+
+   - Takes a feed ID as input
+   - Returns a single report with the latest timestamp
+   - Useful for applications that need the most current data
+
+2. Historical report: [`get_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L242) fetches a report at a specific timestamp:
+   - Takes both feed ID and timestamp
+   - Returns the report closest to the requested timestamp
+   - Helpful for historical analysis or verification
+
+Each API request automatically:
+
+- Generates HMAC authentication headers
+- Includes proper timestamps
+- Handles HTTP response status codes
+- Deserializes the JSON response into Rust structures
+
+### Decoding reports
+
+Reports are decoded in three stages:
+
+1. Hex decoding: The `full_report` field comes as a hex string prefixed with "0x":
+
+   ```rust
+   let full_report = hex::decode(&response.report.full_report[2..])?;
+   ```
+
+2. Report separation: [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) splits the binary data:
+
+   - Extracts the report context (metadata)
+   - Isolates the report blob (actual data)
+   - Validates the report format
+
+3. Data extraction: [`ReportDataV3::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v3.rs#L80) parses the report blob into structured data:
+   - Benchmark price (18 decimal places)
+   - Bid and ask prices for [liquidity-weighted pricing](/data-streams/concepts/liquidity-weighted-prices)
+   - Fee information for onchain verification
+   - Timestamp information
+
+### Error handling
+
+The example demonstrates Rust's robust error handling:
+
+1. Type-safe errors:
+
+   - Uses custom error types for different failure scenarios
+   - Implements the `Error` trait for proper error propagation
+   - Provides detailed error messages for debugging
+
+2. Error propagation:
+
+   - Uses the `?` operator for clean error handling
+   - Converts errors between types when needed
+   - Bubbles up errors to the main function
+
+3. Input validation:
+   - Checks command-line arguments
+   - Validates environment variables
+   - Verifies feed ID format
+
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload.
