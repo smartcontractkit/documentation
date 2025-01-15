@@ -71,17 +71,6 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
     }
   }, [chain, poolType, state.sourceContracts.tokenPool, state.destinationContracts.tokenPool])
 
-  // Debug store values
-  console.log("DeployPoolStep Store:", {
-    chain,
-    poolAddress: state.tokenPoolAddress,
-    sourceContract: state.sourceContracts?.tokenPool,
-    destContract: state.destinationContracts?.tokenPool,
-    chainPoolAddress: state.tokenPoolAddress?.[chain],
-    network: state.sourceNetwork,
-    stateKeys: Object.keys(state),
-  })
-
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const contractAddress = chain === "source" ? state.sourceContracts?.tokenPool : state.destinationContracts?.tokenPool
 

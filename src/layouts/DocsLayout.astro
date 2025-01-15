@@ -9,8 +9,8 @@ import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
 import DocsNavigation from "~/components/DocsNavigation"
-import { VersionSelector } from "~/components/CCIP/VersionSelector/VersionSelector"
-import type { CCIPVersion } from "@config/versions/ccip"
+import { VersionSelector } from "@components/VersionSelector"
+import { detectApiReference } from "@components/VersionSelector/utils/versions"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -44,13 +44,8 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 
-// Match any version pattern in CCIP API reference
-const CCIP_API_VERSION_PATTERN = /^\/ccip\/api-reference\/v\d+\.\d+/
-const isCCIPApiReference = CCIP_API_VERSION_PATTERN.test(currentPage)
-
-// Extract and validate CCIP version
-const extractedVersion = isCCIPApiReference ? currentPage.split("/")[3] : null
-const ccipVersion = extractedVersion === "v1.5.0" || extractedVersion === "v1.5.1" ? extractedVersion : null
+// Detect if this is an API reference page and get the product
+const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
@@ -63,11 +58,7 @@ const ccipVersion = extractedVersion === "v1.5.0" || extractedVersion === "v1.5.
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
-        {
-          isCCIPApiReference && ccipVersion && (
-            <VersionSelector currentVersion={ccipVersion as CCIPVersion} currentPath={currentPage} client:load />
-          )
-        }
+        {isApiReference && product && isVersioned && <VersionSelector product={product} currentPath={currentPage} />}
         <PageContent {titleHeading}>
           <slot />
         </PageContent>

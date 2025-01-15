@@ -27,17 +27,6 @@ interface ExtendedLaneState extends Omit<LaneState, "progress" | "sourceContract
 export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
   const state = useStore(laneStore) as ExtendedLaneState
 
-  // Debug store values
-  console.log("DeployTokenStep Store:", {
-    chain,
-    tokenAddress: state.tokenAddress,
-    sourceContract: state.sourceContracts?.token,
-    destContract: state.destinationContracts?.token,
-    chainTokenAddress: state.tokenAddress?.[chain],
-    network: state.sourceNetwork,
-    stateKeys: Object.keys(state),
-  })
-
   const network = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const contractAddress = chain === "source" ? state.sourceContracts?.token : state.destinationContracts?.token
 

@@ -94,10 +94,6 @@ const StepCheckboxBase = <T extends StepId>({ stepId, subStepId, label, onChange
     [label, stepId, subStepId]
   )
 
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[RenderTrack] StepCheckbox-${stepId}-${subStepId} rendered`)
-  }
-
   return (
     <div className="step-checkbox">
       <label>

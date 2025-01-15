@@ -1,0 +1,209 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockOffchainAggregator v0.2.1 API Reference"
+metadata:
+  description: "API documentation for MockOffchainAggregator in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## MockOffchainAggregator
+
+[`MockOffchainAggregator`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/data-feeds/MockOffchainAggregator.sol) simulates a Chainlink Data Feed aggregator for testing purposes. This contract maintains price feed data and allows manual updates of answers and round data.
+
+## Variables
+
+### decimals
+
+```solidity
+uint8 public decimals
+```
+
+The number of decimal places in the answer values.
+
+### getAnswer
+
+```solidity
+mapping(uint256 => int256) public getAnswer
+```
+
+Maps round IDs to their corresponding price answers.
+
+### getTimestamp
+
+```solidity
+mapping(uint256 => uint256) public getTimestamp
+```
+
+Maps round IDs to their update timestamps.
+
+### latestAnswer
+
+```solidity
+int256 public latestAnswer
+```
+
+The most recent price answer.
+
+### latestRound
+
+```solidity
+uint256 public latestRound
+```
+
+The most recent round ID.
+
+### latestTimestamp
+
+```solidity
+uint256 public latestTimestamp
+```
+
+The timestamp of the most recent update.
+
+### maxAnswer
+
+```solidity
+int192 public maxAnswer
+```
+
+The highest answer the system can report. Not exposed from the Proxy contract.
+
+### minAnswer
+
+```solidity
+int192 public minAnswer
+```
+
+The lowest answer the system can report. Not exposed from the Proxy contract.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(uint8 _decimals, int256 _initialAnswer)
+```
+
+Initializes the aggregator with decimal precision and an initial answer.
+
+<Aside type="note">
+  If minAnswer is 1 and maxAnswer is 95780971304118053647396689196894323976171195136475135, then there is no min or max
+  for the feed. Other values indicate actual limits that need to be normalized using the decimals value.
+</Aside>
+
+**Parameters:**
+
+| Parameter       | Type     | Description                             |
+| --------------- | -------- | --------------------------------------- |
+| \_decimals      | `uint8`  | The number of decimal places in answers |
+| \_initialAnswer | `int256` | The initial price answer                |
+
+### getRoundData
+
+```solidity
+function getRoundData(uint80 _roundId) external view returns (
+    uint80 roundId,
+    int256 answer,
+    uint256 startedAt,
+    uint256 updatedAt,
+    uint80 answeredInRound
+)
+```
+
+Retrieves the complete round data for a specific round ID.
+
+**Parameters:**
+
+| Parameter | Type     | Description           |
+| --------- | -------- | --------------------- |
+| \_roundId | `uint80` | The round ID to query |
+
+**Returns:**
+
+| Parameter       | Type      | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| roundId         | `uint80`  | The round ID from the aggregator for this round |
+| answer          | `int256`  | The price answer for this round                 |
+| startedAt       | `uint256` | Timestamp when the round started                |
+| updatedAt       | `uint256` | Timestamp when the round was updated            |
+| answeredInRound | `uint80`  | The round ID in which the answer was computed   |
+
+### latestRoundData
+
+```solidity
+function latestRoundData() external view returns (
+    uint80 roundId,
+    int256 answer,
+    uint256 startedAt,
+    uint256 updatedAt,
+    uint80 answeredInRound
+)
+```
+
+Retrieves the latest round data from the aggregator.
+
+**Returns:**
+
+| Parameter       | Type      | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| roundId         | `uint80`  | The round ID from the aggregator for this round |
+| answer          | `int256`  | The latest price answer                         |
+| startedAt       | `uint256` | Timestamp when the round started                |
+| updatedAt       | `uint256` | Timestamp when the round was updated            |
+| answeredInRound | `uint80`  | The round ID in which the answer was computed   |
+
+### updateAnswer
+
+```solidity
+function updateAnswer(int256 _answer) public
+```
+
+Updates the latest answer and associated round data.
+
+**Parameters:**
+
+| Parameter | Type     | Description          |
+| --------- | -------- | -------------------- |
+| \_answer  | `int256` | The new price answer |
+
+### updateMinAndMaxAnswers
+
+```solidity
+function updateMinAndMaxAnswers(int192 _minAnswer, int192 _maxAnswer) external
+```
+
+Updates the minimum and maximum allowed answer values.
+
+**Parameters:**
+
+| Parameter   | Type     | Description                    |
+| ----------- | -------- | ------------------------------ |
+| \_minAnswer | `int192` | The new minimum allowed answer |
+| \_maxAnswer | `int192` | The new maximum allowed answer |
+
+### updateRoundData
+
+```solidity
+function updateRoundData(
+    uint80 _roundId,
+    int256 _answer,
+    uint256 _timestamp,
+    uint256 _startedAt
+) public
+```
+
+Updates all data for a specific round.
+
+**Parameters:**
+
+| Parameter   | Type      | Description                   |
+| ----------- | --------- | ----------------------------- |
+| \_roundId   | `uint80`  | The round ID to update        |
+| \_answer    | `int256`  | The new price answer          |
+| \_timestamp | `uint256` | The new update timestamp      |
+| \_startedAt | `uint256` | The new round start timestamp |

@@ -1,0 +1,351 @@
+/* Base Variables */
+:root {
+  /* Typography */
+  --sbs-font-base: 1rem;
+  --sbs-font-sm: 0.875rem;
+  --sbs-font-xs: 0.75rem;
+
+  /* Colors */
+  --sbs-bg-code: #0d1117;
+  --sbs-bg-header: #161b22;
+  --sbs-text-primary: #c9d1d9;
+  --sbs-text-secondary: #8b949e;
+  --sbs-border: rgba(255, 255, 255, 0.1);
+
+  /* Highlight Colors - Updated for better contrast */
+  --sbs-highlight: rgba(56, 139, 253, 0.15);
+  --sbs-highlight-border: rgba(56, 139, 253, 0.4);
+  --sbs-highlight-active: rgba(56, 139, 253, 0.25);
+  --sbs-highlight-border-active: rgba(56, 139, 253, 0.8);
+
+  /* Card Highlight Colors - New */
+  --sbs-card-highlight-bg: rgba(56, 139, 253, 0.15);
+  --sbs-card-highlight-text: #1f6feb;
+  --sbs-card-highlight-text-secondary: #0d419d;
+  --sbs-card-highlight-border: rgba(56, 139, 253, 0.4);
+  --sbs-card-highlight-icon: #1f6feb;
+
+  /* Spacing */
+  --sbs-space-xs: 0.5rem;
+  --sbs-space-sm: 0.75rem;
+  --sbs-space-md: 1rem;
+  --sbs-space-lg: 1.5rem;
+
+  /* Transitions */
+  --sbs-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sbs-space-lg);
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  /* Typography */
+  --sbs-font-base: 1rem;
+  --sbs-font-sm: 0.875rem;
+  --sbs-font-xs: 0.75rem;
+
+  /* Colors */
+  --sbs-bg-code: #0d1117;
+  --sbs-bg-header: #161b22;
+  --sbs-text-primary: #c9d1d9;
+  --sbs-text-secondary: #8b949e;
+  --sbs-border: rgba(255, 255, 255, 0.1);
+  --sbs-highlight: rgba(56, 139, 253, 0.15);
+  --sbs-highlight-border: rgba(56, 139, 253, 0.4);
+  --sbs-highlight-active: rgba(56, 139, 253, 0.25);
+  --sbs-highlight-border-active: rgba(56, 139, 253, 0.8);
+
+  /* Spacing */
+  --sbs-space-xs: 0.5rem;
+  --sbs-space-sm: 0.75rem;
+  --sbs-space-md: 1rem;
+  --sbs-space-lg: 1.5rem;
+
+  /* Transitions */
+  --sbs-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: flex-start;
+  }
+}
+
+.codeWrapper {
+  background: var(--sbs-bg-code);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--sbs-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 1024px) {
+  .codeWrapper {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.codeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sbs-space-sm) var(--sbs-space-md);
+  background: var(--sbs-bg-header);
+  border-bottom: 1px solid var(--sbs-border);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--sbs-space-sm);
+}
+
+.title {
+  font-size: var(--sbs-font-sm);
+  font-weight: 600;
+  color: var(--sbs-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.language {
+  font-size: var(--sbs-font-xs);
+  font-weight: 500;
+  color: var(--sbs-text-secondary);
+  padding: 0.25rem 0.75rem;
+  background: rgba(110, 118, 129, 0.4);
+  border-radius: 4px;
+}
+
+.copyButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sbs-space-xs);
+  padding: 0.5rem 1rem;
+  font-size: var(--sbs-font-xs);
+  font-weight: 500;
+  color: var(--sbs-text-primary);
+  background: rgba(110, 118, 129, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--sbs-transition);
+}
+
+.copyButton:hover:not(:disabled) {
+  background: rgba(110, 118, 129, 0.5);
+}
+
+.copyButton:focus-visible {
+  outline: 2px solid var(--sbs-highlight-border);
+  outline-offset: 2px;
+}
+
+.copyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copyButton.success {
+  color: #3fb950;
+  background: rgba(46, 160, 67, 0.15);
+}
+
+.copyButton.error {
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.codeContent {
+  padding: var(--sbs-space-lg);
+  overflow-x: auto;
+  position: relative;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--sbs-font-sm);
+  line-height: 1.6;
+}
+
+/* Hide ALL copy buttons */
+.container :global(.copyCodeButtonWrapper),
+.container :global(.copy-iconbutton),
+.container :global([class*="copyCodeButton"]),
+.container :global([class*="copy-iconbutton"]),
+.container :global([class*="secondary"]) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Code highlighting */
+.codeContent :global(.shiki) {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  width: 100%;
+}
+
+.codeContent :global(.shiki code) {
+  display: block;
+  padding: 0;
+  background: transparent !important;
+  counter-reset: line;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.codeContent :global(.line) {
+  display: block;
+  position: relative;
+  padding: 0 var(--sbs-space-md);
+  min-height: 1.6em;
+  counter-increment: line;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.codeContent :global(.line::before) {
+  content: counter(line);
+  position: absolute;
+  left: -3.5rem;
+  width: 3rem;
+  text-align: right;
+  color: var(--sbs-text-secondary);
+  opacity: 0.5;
+  font-size: var(--sbs-font-xs);
+}
+
+.codeContent :global(.line.highlightableLine) {
+  background: var(--sbs-highlight);
+  border-left: 2px solid var(--sbs-highlight-border);
+  margin-left: -2px;
+  width: calc(100% + 2px);
+}
+
+.codeContent :global(.line.activeHighlight) {
+  background: var(--sbs-highlight-active);
+  border-left: 2px solid var(--sbs-highlight-border-active);
+  margin-left: -2px;
+  width: calc(100% + 2px);
+}
+
+/* Make sure the highlight extends when scrolling horizontally */
+.codeContent :global(.line.highlightableLine),
+.codeContent :global(.line.activeHighlight) {
+  position: relative;
+}
+
+.codeContent :global(.line.highlightableLine::after),
+.codeContent :global(.line.activeHighlight::after) {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: -9999px;
+  bottom: 0;
+  background: inherit;
+  border-left: inherit;
+  z-index: -1;
+}
+
+/* Explanation cards */
+.explanation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sbs-space-md);
+}
+
+.highlightsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sbs-space-md);
+}
+
+.highlightItem {
+  position: relative;
+  padding: var(--sbs-space-md);
+  background: var(--sbs-bg-header);
+  border: 1px solid var(--sbs-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--sbs-transition);
+  overflow: hidden;
+}
+
+.highlightItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--sbs-highlight-border);
+  opacity: 0;
+  transition: var(--sbs-transition);
+}
+
+.highlightItem:hover {
+  transform: translateY(-1px);
+  border-color: var(--sbs-highlight-border);
+  background: var(--sbs-card-highlight-bg);
+}
+
+.highlightItem:hover .highlightLabel {
+  color: var(--sbs-card-highlight-text);
+}
+
+.highlightItem:hover .highlightDescription {
+  color: var(--sbs-card-highlight-text-secondary);
+}
+
+.highlightItem:hover::before {
+  opacity: 1;
+  background: var(--sbs-card-highlight-text);
+}
+
+.highlightItem.active {
+  background: var(--sbs-card-highlight-bg);
+  border-color: var(--sbs-card-highlight-border);
+}
+
+.highlightItem.active .highlightLabel {
+  color: var(--sbs-card-highlight-text);
+}
+
+.highlightItem.active .highlightDescription {
+  color: var(--sbs-card-highlight-text-secondary);
+}
+
+.highlightItem.active::before {
+  opacity: 1;
+  background: var(--sbs-card-highlight-text);
+}
+
+.highlightLabel {
+  font-weight: 600;
+  font-size: var(--sbs-font-sm);
+  color: var(--sbs-text-primary);
+  margin-bottom: var(--sbs-space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--sbs-space-xs);
+  transition: var(--sbs-transition);
+}
+
+.highlightLabel::before {
+  content: "📍";
+  font-size: var(--sbs-font-sm);
+  transition: var(--sbs-transition);
+}
+
+.highlightDescription {
+  font-size: var(--sbs-font-xs);
+  color: var(--sbs-text-secondary);
+  line-height: 1.6;
+  margin-left: 1.5rem;
+  transition: var(--sbs-transition);
+}

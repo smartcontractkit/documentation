@@ -72,10 +72,6 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   const [formattedUpdate, setFormattedUpdate] = useState<string>("")
   const [callData, setCallData] = useState<string>("")
 
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[RenderTrack] ChainUpdateBuilderWrapper-${chain} rendered`)
-  }
-
   // Get current network info
   const currentNetwork = chain === "source" ? state.sourceNetwork : state.destinationNetwork
   const networkInfo = currentNetwork ? { name: currentNetwork.name, logo: currentNetwork.logo } : { name: "loading..." }
@@ -87,17 +83,6 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
   // Get contract addresses and pool type
   const poolAddress = chain === "source" ? state.sourceContracts.tokenPool : state.destinationContracts.tokenPool
   const poolType = chain === "source" ? state.sourceContracts.poolType : state.destinationContracts.poolType
-
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[ConfigTrack] ${chain}-update-builder:`, {
-      currentNetwork: currentNetwork?.name,
-      remoteNetwork: remoteNetwork?.name,
-      poolAddress,
-      poolType,
-      remoteContracts,
-      timestamp: new Date().toISOString(),
-    })
-  }
 
   const isDataReady = isValidNetwork(currentNetwork) && isValidNetwork(remoteNetwork) && Boolean(poolAddress)
 
