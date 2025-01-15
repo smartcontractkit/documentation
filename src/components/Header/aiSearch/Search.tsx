@@ -1,11 +1,10 @@
-import { SearchButton } from "./SearchButton"
-import { SearchModal } from "./SearchModal"
+import { SearchButton } from "chainlink-algolia-search"
+import "chainlink-algolia-search/dist/index.css"
 
-export const Search = () => {
-  return (
-    <>
-      <SearchButton />
-      <SearchModal />
-    </>
-  )
+export const Search = ({
+  algoliaVars: { algoliaAppId, algoliaPublicApiKey },
+}: {
+  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+}) => {
+  return <SearchButton algoliaAppId={algoliaAppId} algoliaPublicApiKey={algoliaPublicApiKey} />
 }

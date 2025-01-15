@@ -3,6 +3,10 @@ import NotificationBanner from "~/features/notifications/components/Notification
 import { NavBar } from "./NavBar"
 
 const path = Astro.url.pathname
+const algoliaVars = {
+  algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_SEARCH_APP_ID || "",
+  algoliaPublicApiKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY || "",
+}
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -12,6 +16,6 @@ const path = Astro.url.pathname
   width="0"
   style="display:none;visibility:hidden"></iframe>
 <!-- End Google Tag Manager (noscript) -->
-<NavBar path={path} client:idle />
+<NavBar path={path} client:idle algoliaVars={algoliaVars} />
 
 <NotificationBanner />
