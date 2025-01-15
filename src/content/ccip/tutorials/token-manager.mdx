@@ -1,0 +1,209 @@
+---
+section: ccip
+date: Last Modified
+title: "Using the Token Manager"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note" title="Talk to a CCIP expert">
+  If you require technical advice or wish to consult on your project's implementation, please contact a CCIP expert. Our
+  dedicated team is ready to support your projects and ensure their success. For expert guidance, visit the [Chainlink
+  CCIP Contact form](https://chain.link/ccip-contact?v=Token%20Manager%20support).
+</Aside>
+
+The Token Manager allows token developers to deploy, configure, and manage Cross-Chain Tokens (CCTs) in a simplified web interface.
+
+The process involves deploying tokens and token pools, registering administrative roles, and configuring token pools to enable secure token transfers using CCIP. The Token Manager guides you through two workflows:
+
+- **Deploy a new token from scratch**: This is the more beginner-friendly workflow that guides you through the entire process step-by-step, starting by creating a token from scratch.
+- **Enable an existing token to go cross-chain**: This is a more advanced workflow for token developers who have already deployed their token and want to add cross-chain capabilities.
+
+If you prefer to manage your deployments and configurations programmatically, refer to the [Cross-Chain Tokens](/ccip/tutorials/cross-chain-tokens) guides available for Remix, Hardhat and Foundry.
+
+You can also use the [CCIP JavaScript SDK](/ccip/ccip-javascript-sdk) to add a fully featured CCIP bridge to your app that can be styled to match your app design.
+
+## Limitations
+
+Currently, the following advanced features are not yet supported in Token Manager:
+
+- **Token pool replacements and upgrades for existing tokens**. This capability will be added in a subsequent update. To learn more about the process of replacing and upgrading existing token pools, review the [CCIP token pool upgradability](/ccip/concepts/cross-chain-tokens#token-pool-upgradability) section.
+- **Deployment of token pools that use the [Lock and Unlock mechanism](/ccip/concepts/cross-chain-tokens#token-handling-mechanisms-and-token-pool-deployment)**. In this use case, tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain.
+- Deployment or enablement of custom token pools is not yet supported.
+- Adding a new network is currently supported if the Token Admin address is the same for each network. This capability will be expanded in a subsequent update to enable multiple Token Admin addresses across different networks.
+
+## Getting started
+
+1. Open the Token Manager, which has separate links for testnet and mainnet. It is highly recommended to test and perform any operations on testnet before mainnet:
+
+   - For testnet, use [https://test.tokenmanager.chain.link](https://test.tokenmanager.chain.link).
+   - For mainnet, use [https://tokenmanager.chain.link/](https://tokenmanager.chain.link/)
+
+1. Connect your wallet using the **Connect wallet** button in the upper right corner.
+
+After your wallet is connected, you'll see the Token Manager homepage.
+
+## Deploy a new token
+
+<Aside type="caution" title="Token status">
+  CCIP allows users to register and manage tokens in a permissionless manner. A "Verified" status of a token indicates
+  only that the Token Creator has signed transactions evidencing their ownership. Users should conduct their own
+  research before engaging with any tokens.
+</Aside>
+
+If you haven't deployed your token to any networks yet, you can start here. This Token Manager Wizard automatically configures all tokens with the Burn & Mint mechanism. (Refer to the [token contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol) and [token pool contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) for the Burn & Mint mechanism.)
+
+1. On the **Details** page, enter the details for the first network you're configuring for your token deployment:
+
+   - Select the network in the **Network** dropdown field.
+   - Fill in the **Name** and **Symbol** fields to give your token its name and ticker symbol. For example, "Your Token" and "YOURS" respectively:
+
+   <ClickToZoom src="/images/ccip/token-manager/new/1-details.png" alt="Naming your new token" />- Click **Continue**.
+
+1. On the **Settings** page, configure your token's supply:
+
+   - Setting a supply cap is optional &mdash; toggle the button to enable it and specify an amount. The supply cap sets a maximum limit for the total number of tokens that can ever be minted for the token you're creating.
+   - Specify an amount of tokens to mint during this initial deployment step.
+   - Click **Continue**.
+
+   <ClickToZoom
+     src="/images/ccip/token-manager/new/2-supply-cap-amount.png"
+     alt="Setting token supply cap and amount to mint"
+   />
+
+1. On the **Networks** page, select the additional blockchain network(s) where you'd like to deploy your new token:
+   <ClickToZoom src="/images/ccip/token-manager/new/3-select-networks.png" alt="Selecting blockchain networks" />
+1. On the **Summary** page, you can review your upcoming deployments and transactions. Each network you've selected appears along with an expandable list of the transactions the Token Manager will guide you through to deploy your token for each network:
+
+   <ClickToZoom
+     src="/images/ccip/token-manager/new/4-summary-upcoming-deployments.png"
+     alt="Summary of upcoming deployments"
+   />
+
+   Make sure that your wallet contains gas tokens for each network where you're deploying your token, in order to pay for the deployment transactions.
+
+   If you selected more than two networks during the previous step, the _Remove_ links are active, allowing you to remove a network before proceeding. If you only have two networks selected, the _Remove_ links are intentionally not active. If you need to add more networks, navigate back to the **Networks** page.
+
+1. The **Deploy** page displays the steps that you need to complete. For each network, the Token Manager guides you through each of these steps in order:
+
+   - Deploy token and pool
+   - Accept admin role
+   - Accept token ownership
+   - Accept pool ownership
+
+   <ClickToZoom src="/images/ccip/token-manager/new/5-deployment-steps.png" alt="Deployment steps" />
+
+   At each step, you are prompted to confirm the corresponding transactions in your wallet. When each step is complete for all the networks you selected, the Token Manager marks them all as **Done**:
+
+   <ClickToZoom src="/images/ccip/token-manager/new/6-all-networks-done.png" alt="Steps complete for all networks" />
+
+   Click **Continue**. The Token Manager displays a message showing that your configuration was successful:
+
+   <ClickToZoom src="/images/ccip/token-manager/new/7-success-message.png" alt="Success message" />
+
+When everything is successfully set up for your token, you can view your new Token Page from the Token Manager Dashboard. It displays information about your CCT, enables configuration changes, and allows expansion to additional networks where you can deploy the token.
+
+After enabling your tokens, you can also use Transporter to perform transfers and import tokens with the contract address. Use [test.transporter.io](https://test.transporter.io) for testnet or [transporter.io](https://transporter.io) for mainnet.
+
+## Add an existing token
+
+If you have existing token(s) that you've already deployed, you can use the Token Manager to create and configure a token pool for the token, and optionally deploy your token on additional networks. Note that tokens deployed to additional networks are automatically configured to use the Burn and Mint mechanism.
+
+1. On the **Details** page, enter the details for your token on each network where it has already been deployed. As you add each token contract address, the Token Manager displays validation checks for the token and the required admin registration functions in the contract.
+
+   Use the _+ Add New Address_ link to add additional token deployments. When you've added all the token deployments that you want to add at this time, select the checkbox to confirm _These are all of the tokens I currently want to enable on CCIP_.
+
+1. On the **Pools** page, you're prompted to select the token pool mechanism that's used to transfer value between networks &mdash; _Burn / Mint_ or _Lock / Release_. Depending on your token contract, you may have more than one option for _Burn / Mint_:
+
+   <ClickToZoom src="/images/ccip/token-manager/existing/2-token-pool-type.png" alt="Selecting token pool types" />
+
+   Before selecting a token pool type, be sure to review [CCIP token handling mechanisms](/ccip/concepts/cross-chain-tokens#token-handling-mechanisms-and-token-pool-deployment).
+
+1. On the **Networks** page, select the additional blockchain networks where you'd like to deploy your new token. For additional networks, Token Manager Wizard workflow automatically configures all tokens with the Burn & Mint mechanism. (Refer to the [token contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol) and [token pool contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) for the Burn & Mint mechanism.)
+1. On the **Summary** page, each network you've selected appears along with an expandable list of the transactions the Token Manager will guide you through to deploy your token for each network.
+
+   If you selected more than two networks during the previous step, the _Remove_ links are active, allowing you to remove a network before proceeding. If you only have two networks selected, the _Remove_ links are intentionally not active. If you need to add more networks, navigate back to the **Networks** page.
+
+1. The **Deploy** page displays the steps that you need to complete.
+
+   For the tokens you're adding, the Token Manager guides you through each of these steps per network:
+
+   - Deploy token pool for existing token
+   - Grant Burn / Mint privileges (**manual step**)
+   - Register admin
+   - Accept admin role of your token pool
+   - Set the token pool address
+   - Accept ownership of the new token pool
+
+   {" "}
+
+   <Aside type="caution" title="Manually granting Burn/Mint privileges">
+     Unlike the other steps where you're simply prompted to confirm transactions in your wallet, the Token Manager
+     prompts you to grant Burn/Mint privileges manually, and then confirm that you've done so before proceeding with
+     further steps. It's crucial to complete this manual step to ensure your CCIP transactions will work properly.
+     Review the [CCT requirements](/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens) to understand
+     the requirements your token must fulfill.
+   </Aside>
+
+   For the other tokens in your network, the Token Manager also guides you through updating existing token pools to incorporate the tokens you're adding.
+
+   At each step, you are prompted to confirm the corresponding transactions in your wallet. When each step is complete for all the networks you selected, the Token Manager displays a message showing that your configuration was successful.
+
+When everything is successfully set up for your token, you can view your new Token Page from the Token Manager Dashboard. It displays information about your CCT, enables configuration changes, and allows expansion to additional networks.
+
+## Token Manager Dashboard
+
+After you connect your wallet, you can see the Token Manager Dashboard:
+
+<ClickToZoom src="/images/ccip/token-manager/settings/dashboard.png" alt="Token dashboard" />
+
+- If you click **List new token**, you enter the Token Manager Wizard which prompts you to deploy a new token or to add an existing token.
+- If the wallet you connected to the dashboard is a Token Admin address, the Token Manager automatically populates your tokens in the dashboard.
+- If you have saved partial progress in the Token Manager Wizard, your token displays in a draft state so you can return and finish deploying it later.
+
+After you have deployed a new token or added an existing one, each token has its own page:
+
+<ClickToZoom src="/images/ccip/token-manager/settings/token-page.png" alt="Token page" />
+
+The token page shows both the configured and unconfigured networks.
+
+- When you select any of the listed unconfigured networks, you can use the Token Manager Wizard to expand your token to those networks, either by deploying a new token or by adding an existing token and deploying a token pool.
+- For configured networks, you can view details for each network-specific token, and you can expand a **Token Details** side panel with more information and admin actions. To expand the **Token Details** panel, click the _View_ link next to the configured network.
+
+When expanded, the **Token Details** side panel provides more details about the inbound and outbound lanes for your token. If the connected wallet is a token admin or has permissions to update the token pool, the **Token Details** side panel also displays an **Actions** menu:
+
+<ClickToZoom
+  src="/images/ccip/token-manager/settings/token-details-actions-menu.png"
+  alt="Token details actions menu"
+/>
+
+If you have the appropriate permissions, you can edit your token's inbound and outbound rate limits, edit the router contract address, and propose a new token administrator.
+
+### Managing token settings
+
+1. Connect your wallet and select your token in the Token Manager home page. A detailed page for your token displays, showing both configured and unconfigured networks.
+1. To access the **Settings** page, select the gear icon next to your token's name:
+
+   <ClickToZoom src="/images/ccip/token-manager/settings/1-gear-icon.png" alt="Token settings icon" />
+
+### Verifying your token
+
+You can request token verification through the Token Manager; when verification is granted, it allows the token to be listed on the CCIP Directory and ensures information is consistent across other CCIP apps, like CCIP Explorer.
+
+<Aside type="caution">
+  CCIP allows users to register and manage tokens in a permissionless manner. A 'Verified' status of a token indicates
+  only that the Token Creator has signed transactions evidencing their ownership. Users should conduct their own
+  research before engaging with any tokens.
+</Aside>
+
+If your token is unverified, an **Unverified** badge displays underneath the token's name at the top of the page. Be sure that all information is correct before your submission, as it requires a manual review process. If you need to make any further changes after submitting your request, you must use the [CCIP Contact Form](https://chain.link/ccip-contact?v=Token%20Manager%20support).
+
+You can send a request for verification from the **Settings** page:
+
+<ClickToZoom src="/images/ccip/token-manager/settings/2-settings-page.png" alt="Token settings page" />
+
+1. The _Token Details_ tab allows you to modify your token's name and ticker symbol with an off-chain transaction. You can also specify an avatar for your token. If you have made any changes in this tab, click **Save Changes**.
+1. The _Project Details_ tab prompts you to fill in your project's name and URL, and a contact email address. This information is kept private. It's optional to fill out, but required if you're requesting token verification.
+1. The _Verification_ tab has a **Verify my token** button that submits a verification request with the information you provided in the previous two tabs.
+
+When your verification request is granted, the Token Manager will display a **Verified** badge on the token page.
