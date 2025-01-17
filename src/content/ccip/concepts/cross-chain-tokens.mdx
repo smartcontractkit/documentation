@@ -162,13 +162,13 @@ Token pools on **v1.5.0** do not support tokens with different decimal places ac
 
 Consider a token developer who deployed their token across two blockchains with different decimal configurations:
 
-- Blockchain A: Pool with 12 decimals
-- Blockchain B: Pool with 6 decimals
+- Blockchain A: Token with 12 decimals
+- Blockchain B: Token with 6 decimals
 
-| Transfer Path | Example                                                                                                       | Impact                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| A → B         | • Send from A: 1.0<br/>• Receive on B: 0.000001 | Loss of: 0.999999 |
-| B → A         | • Send from B: 1.0<br/>• Receive on A: 1,000,000.0 | Gain of: 999,999.0 |
+| Transfer Path  | Example                                                          | Explanation           | Impact                         |
+|----------------|------------------------------------------------------------------|-----------------------|--------------------------------|
+| **A → B**(12 → 6)  | • Send **1.0** from A (= 10^12 base units)<br/>• Receive on B: 1,000,000 | 10^12/10^6= **1,000,000** | **Gain** of 999,999 (1,000,000 -1) |
+| **B → A**(6 → 12) | • Send **1.0** from B(= 10^6 base units)<br/>• Receive on A: 0.000001    | 10^6/10^12= **0.000001**  | **Loss** of 0.999999 (1-0.000001)  |
 
 
 We highly recommend [upgrading to v1.5.1](#upgrading-from-v150) to leverage the native support for token decimal handling. If using v1.5.0, please make sure to [configure a custom v1.5.0 token pool](#custom-token-pools).   
