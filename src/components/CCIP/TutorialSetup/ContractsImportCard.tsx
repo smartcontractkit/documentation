@@ -24,12 +24,7 @@ export const ContractsImportCard = () => {
             <li>
               Open the pre-configured token contract in Remix:
               <div className={styles.codeContainer}>
-                <CodeSampleReact
-                  src="samples/CCIP/cct/TokenDependencies.sol"
-                  showButtonOnly={true}
-                  optimize={true}
-                  runs={1000}
-                />
+                <CodeSampleReact src="samples/CCIP/cct/TokenDependencies.sol" showButtonOnly optimize runs={1000} />
               </div>
             </li>
             <li>Wait a few seconds for Remix to automatically compile all contracts.</li>

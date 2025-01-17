@@ -21,7 +21,7 @@ function DocsPicker({ pathname }: { pathname: string }) {
     >
       <img src={icon} alt="" className={styles.logo} /> {label}
       <div className={styles.caret}>
-        <span></span>
+        <span />
       </div>
       {productMenuOpen && (
         <div className={styles.menu}>
@@ -31,7 +31,7 @@ function DocsPicker({ pathname }: { pathname: string }) {
               .map((item) => (
                 <li className={styles.item} key={item.label}>
                   <a className={clsx(styles.link)} href={item.href}>
-                    <img className={clsx(styles.icon)} src={item.icon}></img>
+                    <img className={clsx(styles.icon)} src={item.icon} />
                     {item.label}
                   </a>
                 </li>

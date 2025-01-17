@@ -92,7 +92,7 @@ export function ProductNavigation({ path }: Props) {
         <img src={icon} alt="" className={styles.logo} />
         <span>{label}</span>
         <div className={styles.caret}>
-          <span></span>
+          <span />
         </div>
       </Trigger>
 

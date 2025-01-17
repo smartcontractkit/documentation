@@ -85,7 +85,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
         <>
           <button
             className={button.secondary}
-            style={"outline-offset: 2px"}
+            style="outline-offset: 2px"
             disabled={currentPage === 1}
             onClick={() => paginate(Number(currentPage) - 1)}
           >
@@ -96,7 +96,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
           </p>
           <button
             className={button.secondary}
-            style={"outline-offset: 2px"}
+            style="outline-offset: 2px"
             disabled={lastAddr >= totalAddr}
             onClick={() => paginate(Number(currentPage) + 1)}
           >
@@ -175,6 +175,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           className={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
           target="_blank"
+          rel="noreferrer"
         >
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
@@ -278,6 +279,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
           className={tableStyles.addressLink}
           href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
           target="_blank"
+          rel="noreferrer"
         >
           {proxy.proxyAddress}
         </a>

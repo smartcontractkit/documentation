@@ -98,7 +98,7 @@ export function ProductNavigation() {
                       <BackArrowIcon />
                     </button>
                     <span className={styles.subProductContentTitle}>Resources</span>
-                    <span></span> {/* Spacer */}
+                    <span /> {/* Spacer */}
                   </div>
                   <div className={styles.subProductContent}>
                     <MegaMenu />

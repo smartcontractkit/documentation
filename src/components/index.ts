@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 // Ignore the exports because Astro's type checking doesn't apply to TypeScript files.
 /**

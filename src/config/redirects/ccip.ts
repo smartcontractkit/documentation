@@ -13,15 +13,18 @@ const API_FILES = [
   "errors",
 ]
 
-export const ccipRedirects = API_FILES.reduce((redirects, file) => {
-  // For each file, create redirects with proper status code
-  redirects[`/ccip/api-reference/${file}`] = {
-    status: 301,
-    destination: `/ccip/api-reference/v1.5.1/${file}`,
-  }
-  redirects[`/ccip/api-reference/${file}/`] = {
-    status: 301,
-    destination: `/ccip/api-reference/v1.5.1/${file}`,
-  }
-  return redirects
-}, {} as Record<string, { status: number; destination: string }>)
+export const ccipRedirects = API_FILES.reduce(
+  (redirects, file) => {
+    // For each file, create redirects with proper status code
+    redirects[`/ccip/api-reference/${file}`] = {
+      status: 301,
+      destination: `/ccip/api-reference/v1.5.1/${file}`,
+    }
+    redirects[`/ccip/api-reference/${file}/`] = {
+      status: 301,
+      destination: `/ccip/api-reference/v1.5.1/${file}`,
+    }
+    return redirects
+  },
+  {} as Record<string, { status: number; destination: string }>
+)

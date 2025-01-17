@@ -662,20 +662,18 @@ export const CostTable = ({ method, network, aside }: Props) => {
                   {state.gasLaneList &&
                     state.gasLaneList.map((gasLane: number, index: number) => (
                       <>
-                        {
-                          <div className="keyhash-radio-container">
-                            <input
-                              type="radio"
-                              name="keyHash"
-                              className="radio-inputs"
-                              id={gasLane.toString()}
-                              value={gasLane}
-                              checked={index === 0 || state.currentGasLane === gasLane}
-                              onChange={handleRadioChange}
-                            />
-                            <label htmlFor={gasLane.toString()}>{gasLane} gwei</label>
-                          </div>
-                        }
+                        <div className="keyhash-radio-container">
+                          <input
+                            type="radio"
+                            name="keyHash"
+                            className="radio-inputs"
+                            id={gasLane.toString()}
+                            value={gasLane}
+                            checked={index === 0 || state.currentGasLane === gasLane}
+                            onChange={handleRadioChange}
+                          />
+                          <label htmlFor={gasLane.toString()}>{gasLane} gwei</label>
+                        </div>
                       </>
                     ))}
                 </td>
@@ -712,7 +710,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
             <p>
               If you use the subscription method, a minimum balance of LINK is required to use VRF. Check your balance
               at
-              <a href="https://vrf.chain.link" target="_blank">
+              <a href="https://vrf.chain.link" target="_blank" rel="noreferrer">
                 {" "}
                 vrf.chain.link
               </a>
@@ -728,6 +726,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
                 method === "vrfSubscription" ? "subscription" : "directFunding"
               )}/supported-networks/#${getsupportedNetworkShortcut()}`}
               target="_blank"
+              rel="noreferrer"
             >
               {" "}
               Supported Networks{" "}

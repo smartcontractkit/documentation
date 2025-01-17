@@ -16,7 +16,6 @@ interface AddEthereumChainParameter {
 }
 
 export const getEthereumChainParameter = (chainId: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chain = referenceChains.find((c: any) => utils.hexValue(c.chainId) === chainId)
   if (!chain || !chain.chainId) {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
@@ -28,8 +27,7 @@ export const getEthereumChainParameter = (chainId: string) => {
     nativeCurrency: chain?.nativeCurrency,
     blockExplorerUrls:
       chain.explorers && chain.explorers.length > 0 && chain.explorers[0].url
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          chain.explorers.map((explorer: any) => explorer.url)
+        ? chain.explorers.map((explorer: any) => explorer.url)
         : [chain.infoURL],
     rpcUrls: chain.rpc,
   }

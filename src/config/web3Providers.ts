@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 import { providers } from "ethers"
 import { SupportedChain } from "."
 

@@ -60,7 +60,7 @@ const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
 const dataFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 
 // Valid roundId must be known. They are NOT incremental.
-let validId = BigInt("18446744073709554177")
+const validId = BigInt("18446744073709554177")
 dataFeed.methods
   .getRoundData(validId)
   .call()

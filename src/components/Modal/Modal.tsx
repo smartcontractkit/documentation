@@ -26,7 +26,7 @@ export function Modal({
         createPortal(
           // For some reason the error says that the element doesn't match even though it does
           // and it also works correctly.
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
           // @ts-ignore
           <FocusTrap>
             {/*
@@ -35,7 +35,7 @@ export function Modal({
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             @ts-ignore */}
             <div>
-              <div className={styles.overlay} onClick={onClose}></div>
+              <div className={styles.overlay} onClick={onClose} />
               <div id={modalId} className={clsx(styles.modal)} tabIndex={0} style={style}>
                 {children}
               </div>

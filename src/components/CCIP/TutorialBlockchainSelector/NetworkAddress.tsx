@@ -46,7 +46,7 @@ export const NetworkAddress = ({ chain, type, required = true }: NetworkAddressP
   return (
     <ReactCopyText
       text={address}
-      code={true}
+      code
       eventName="tutorial_copy_address"
       additionalInfo={{
         chain: chainId,

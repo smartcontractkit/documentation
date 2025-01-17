@@ -163,7 +163,7 @@ function MegaMenu({ cancel }: MegaMenuProps) {
                         <a href={link.href} className="text-100">
                           {link.label}
                         </a>
-                        {index < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
+                        {index < item.links.length - 1 && <span className={styles.verticalDivider} />}
                       </Fragment>
                     ))}
                   </div>
@@ -189,7 +189,7 @@ function MegaMenu({ cancel }: MegaMenuProps) {
           <a href="/chainlink-local">
             <img src="/images/megamenu-featured.jpg" alt="" className={styles.featuredImage} />
           </a>
-          <div className={styles.divider}></div>
+          <div className={styles.divider} />
 
           <h3 className="heading-100">Hardhat CLI for Data Streams</h3>
           <div className={styles.links}>

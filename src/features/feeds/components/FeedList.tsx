@@ -154,8 +154,8 @@ export const FeedList = ({
                   Array.isArray(selectedFeedCategories)
                     ? selectedFeedCategories
                     : selectedFeedCategories
-                    ? [selectedFeedCategories]
-                    : []
+                      ? [selectedFeedCategories]
+                      : []
                 }
                 network={network}
                 showExtraDetails={showExtraDetails}
@@ -279,6 +279,7 @@ export const FeedList = ({
                             className={tableStyles.addressLink}
                             href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b?network=mainnet"
                             target="_blank"
+                            rel="noreferrer"
                           >
                             0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
                           </a>
@@ -369,8 +370,8 @@ export const FeedList = ({
                         Array.isArray(selectedFeedCategories)
                           ? selectedFeedCategories
                           : selectedFeedCategories
-                          ? [selectedFeedCategories]
-                          : []
+                            ? [selectedFeedCategories]
+                            : []
                       }
                       network={network}
                       showExtraDetails={showExtraDetails}
@@ -394,6 +395,7 @@ export const FeedList = ({
                             className={tableStyles.addressLink}
                             href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/transactions?network=testnet"
                             target="_blank"
+                            rel="noreferrer"
                           >
                             0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
                           </a>
