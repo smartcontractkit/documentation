@@ -44,6 +44,7 @@ export const productChainLinks: ProductChainLinks = {
       ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
       bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
       shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
+      sonic: "/ccip/directory/mainnet/chain/sonic-mainnet",
     },
   },
   "Data Feeds": {
