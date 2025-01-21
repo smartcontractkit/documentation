@@ -93,7 +93,9 @@ export const getTokenIconUrl = (token: string) => {
   return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat`
 }
 
-export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
+// This is a webflow asset
+export const fallbackTokenIconUrl =
+  "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/678f76f95f2fbf3fef5e80bb_generic-token.svg"
 
 export const getChainId = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
