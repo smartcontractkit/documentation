@@ -63,9 +63,27 @@ export const getTitle = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.title
 }
 
+/**
+ * Transforms a token name according to the following rules:
+ * 1. Convert to lowercase
+ * 2. Remove all dots (.)
+ * 3. Replace plus signs (+) with %2B
+ * @example
+ * BTC.b → btcb
+ * COMP+USDC → comp%2Busdc
+ * TOKEN.A+B → tokena%2Bb
+ */
+const transformTokenName = (token: string): string => {
+  if (!token) return ""
+  return token
+    .toLowerCase() // Step 1: Convert to lowercase
+    .replace(/\./g, "") // Step 2: Remove all dots
+    .replace(/\+/g, "%2B") // Step 3: Replace plus signs with %2B
+}
+
 export const getTokenIconUrl = (token: string) => {
   if (!token) return
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${token.toLowerCase()}.webp?auto=compress%2Cformat`
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
