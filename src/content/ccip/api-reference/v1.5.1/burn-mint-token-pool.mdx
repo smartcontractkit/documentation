@@ -11,66 +11,102 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <CcipCommon callout="importCCIPPackage151" />
 
-The [`BurnMintTokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) contract extends BurnMintTokenPoolAbstract to implement burn/mint functionality for third-party tokens using the `burn(amount)` signature.
+## BurnMintTokenPool
 
-<Aside type="caution">
-  Pool whitelisting mode is set in the constructor and cannot be modified later. It either accepts any address as
-  originalSender, or only accepts whitelisted originalSender. The only way to change whitelisting mode is to deploy a
-  new pool. If that is expected, please make sure the token's burner/minter roles are adjustable.
+A specialized token pool implementation that handles the minting and burning of third-party tokens using the standard `burn(amount)` function.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol)
+
+**Inherits:**
+
+- [BurnMintTokenPoolAbstract](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract)
+- [ITypeAndVersion](/ccip/api-reference/v1.5.1/i-type-and-version)
+
+<Aside>
+Key characteristics of this token pool:
+
+- Manages minting and burning operations for third-party tokens
+- Implements configurable whitelisting for transaction originators:
+  - Can accept transactions from any address
+  - Can restrict to only whitelisted addresses
+- Whitelisting configuration is permanent after deployment
+- Requires adjustable burner/minter roles in the token contract if pool redeployment is anticipated
+- Uses the standard `burn(amount)` function for token burning operations
+
 </Aside>
 
+## State Variables
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "BurnMintTokenPool 1.5.1";
+```
+
+<Aside>
+  A constant identifier that specifies the contract type and version number for interface detection and version
+  management.
+</Aside>
+
+**Returns**
+
+| Type     | Description                                       |
+| -------- | ------------------------------------------------- |
+| `string` | The contract identifier "BurnMintTokenPool 1.5.1" |
+
 ## Functions
+
+### \_burn
+
+Internal function that executes the token burning operation using the standard burn interface.
+
+```solidity
+function _burn(uint256 amount) internal virtual override;
+```
+
+<Aside>
+
+Implements the abstract burn function from BurnMintTokenPoolAbstract:
+
+- Calls the token's `burn(amount)` function directly
+- Requires the pool to have sufficient burning permissions
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                  |
+| -------- | --------- | ---------------------------- |
+| `amount` | `uint256` | The number of tokens to burn |
 
 ### constructor
 
 ```solidity
 constructor(
-    IBurnMintERC20 token,
-    uint8 localTokenDecimals,
-    address[] memory allowlist,
-    address rmnProxy,
-    address router
-) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router)
+  IBurnMintERC20 token,
+  uint8 localTokenDecimals,
+  address[] memory allowlist,
+  address rmnProxy,
+  address router
+) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router);
 ```
 
-Initializes the token pool with the specified parameters.
+<Aside>
+Initializes the token pool with its configuration parameters:
 
-#### Parameters
+- Sets up the token contract reference
+- Configures decimal precision for local tokens
+- Establishes the initial whitelist of authorized addresses
+- Links to the RMN proxy and router contracts
 
-| Name               | Type           | Description                                                                                                                                                              |
-| ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| token              | IBurnMintERC20 | The token managed by this pool                                                                                                                                           |
-| localTokenDecimals | uint8          | The number of decimals for the token on the local chain                                                                                                                  |
-| allowlist          | address[]      | List of addresses allowed to be original senders for token transfers. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens |
-| rmnProxy           | address        | Address of the RMN proxy                                                                                                                                                 |
-| router             | address        | Address of the router                                                                                                                                                    |
+</Aside>
 
-### \_burn
+**Parameters**
 
-```solidity
-function _burn(
-    uint256 amount
-) internal virtual override
-```
-
-Burns the specified amount of tokens using the `burn(amount)` signature.
-
-#### Parameters
-
-| Name   | Type    | Description              |
-| ------ | ------- | ------------------------ |
-| amount | uint256 | Amount of tokens to burn |
-
-### typeAndVersion
-
-```solidity
-string public constant override typeAndVersion = "BurnMintTokenPool 1.5.1"
-```
-
-Returns the type and version of the contract.
-
-#### Return Value
-
-| Type   | Description                          |
-| ------ | ------------------------------------ |
-| string | The string "BurnMintTokenPool 1.5.1" |
+| Name                 | Type             | Description                                          |
+| -------------------- | ---------------- | ---------------------------------------------------- |
+| `token`              | `IBurnMintERC20` | The third-party token contract to manage             |
+| `localTokenDecimals` | `uint8`          | The decimal precision for the local token            |
+| `allowlist`          | `address[]`      | Initial list of addresses authorized to use the pool |
+| `rmnProxy`           | `address`        | Address of the RMN proxy contract                    |
+| `router`             | `address`        | Address of the router contract                       |
