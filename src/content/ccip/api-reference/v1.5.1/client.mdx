@@ -11,33 +11,17 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <CcipCommon callout="importCCIPPackage151" />
 
-CCIP senders and receivers use the CCIP [`Client`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/libraries/Client.sol) library to build CCIP messages.
+## Client
 
-```solidity
-import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
-```
+A library that provides core data structures and utilities for building and handling cross-chain messages in CCIP.
 
-## Types and Constants
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/libraries/Client.sol)
 
-### EVMTokenAmount
-
-Use this solidity struct to specify the token address and amount.
-
-```solidity
-struct EVMTokenAmount {
-  address token;
-  uint256 amount;
-}
-```
-
-| Name   | Type    | Description                       |
-| ------ | ------- | --------------------------------- |
-| token  | address | token address on the local chain. |
-| amount | uint256 | Amount of tokens.                 |
+## Structs
 
 ### Any2EVMMessage
 
-CCIP receivers use this solidity struct to parse the received CCIP message.
+Structure representing a message received from any chain to an EVM chain.
 
 ```solidity
 struct Any2EVMMessage {
@@ -49,17 +33,30 @@ struct Any2EVMMessage {
 }
 ```
 
-| Name                | Type             | Description                                                                          |
-| ------------------- | ---------------- | ------------------------------------------------------------------------------------ |
-| messageId           | bytes32          | CCIP messageId, generated on the source chain.                                       |
-| sourceChainSelector | uint64           | Source chain selector.                                                               |
-| sender              | bytes            | Sender address. `abi.decode(sender, (address))` if the source chain is an EVM chain. |
-| data                | bytes            | Payload sent within the CCIP message.                                                |
-| destTokenAmounts    | EVMTokenAmount[] | Tokens and their amounts in their destination chain representation.                  |
+<Aside>
+
+Contains all necessary information about an incoming cross-chain message:
+
+- Message identification and source chain details
+- Sender information (can be decoded if from an EVM chain)
+- Custom message payload
+- Token transfer details in destination chain format
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type                                  | Description                                       |
+| --------------------- | ------------------------------------- | ------------------------------------------------- |
+| `messageId`           | `bytes32`                             | Message ID corresponding to ccipSend on source    |
+| `sourceChainSelector` | `uint64`                              | Identifier of the source chain                    |
+| `sender`              | `bytes`                               | Sender address (use abi.decode if from EVM chain) |
+| `data`                | `bytes`                               | Custom payload from the original message          |
+| `destTokenAmounts`    | [`EVMTokenAmount[]`](#evmtokenamount) | Token amounts in destination chain representation |
 
 ### EVM2AnyMessage
 
-CCIP senders use this solidity struct to build a CCIP message.
+Structure for sending a message from an EVM chain to any supported chain.
 
 ```solidity
 struct EVM2AnyMessage {
@@ -71,84 +68,160 @@ struct EVM2AnyMessage {
 }
 ```
 
-| Name         | Type             | Description                                                    |
-| ------------ | ---------------- | -------------------------------------------------------------- |
-| receiver     | bytes            | abi.encode(receiver address) for destination EVM chains.       |
-| data         | bytes            | Data payload.                                                  |
-| tokenAmounts | EVMTokenAmount[] | Token transfers.                                               |
-| feeToken     | address          | Address of feeToken. address(0) means you will send msg.value. |
-| extraArgs    | bytes            | Populate this with \_argsToBytes(EVMExtraArgsV2).              |
+<Aside>
 
-### EVMExtraArgs
+Defines the format for outgoing cross-chain messages:
 
-#### EVMExtraArgsV1
+- Default gas limit is 200k if extraArgs is empty
+- Fee token can be set to address(0) to use native tokens (msg.value)
+- Extra arguments should be encoded using \_argsToBytes([`EVMExtraArgsV2`](#evmextraargsv2))
+
+</Aside>
+
+**Properties**
+
+| Name           | Type                                  | Description                                         |
+| -------------- | ------------------------------------- | --------------------------------------------------- |
+| `receiver`     | `bytes`                               | Encoded receiver address for destination EVM chains |
+| `data`         | `bytes`                               | Custom payload to send                              |
+| `tokenAmounts` | [`EVMTokenAmount[]`](#evmtokenamount) | Tokens and amounts to transfer                      |
+| `feeToken`     | `address`                             | Token used for fees (address(0) for native tokens)  |
+| `extraArgs`    | `bytes`                               | Additional arguments encoded with \_argsToBytes     |
+
+### EVMExtraArgsV1
+
+Structure for V1 extra arguments in cross-chain messages.
 
 ```solidity
-bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
-
 struct EVMExtraArgsV1 {
   uint256 gasLimit;
 }
 ```
 
-#### EVMExtraArgsV2
+<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+
+**Properties**
+
+| Name       | Type      | Description                                  |
+| ---------- | --------- | -------------------------------------------- |
+| `gasLimit` | `uint256` | Gas limit for execution on destination chain |
+
+### EVMExtraArgsV2
+
+Structure for V2 extra arguments in cross-chain messages.
 
 ```solidity
-bytes4 public constant EVM_EXTRA_ARGS_V2_TAG = 0x181dcf10;
-
 struct EVMExtraArgsV2 {
   uint256 gasLimit;
   bool allowOutOfOrderExecution;
 }
 ```
 
-| Name                     | Type    | Description                                                                                                                                                                                                                                                                           |
-| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| gasLimit                 | uint256 | specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. Read [Setting gasLimit](/ccip/best-practices#setting-gaslimit) for more details.                                                               |
-| allowOutOfOrderExecution | bool    | if true, it indicates that the message can be executed in any order relative to other messages from the same sender. This value's default varies by chain. On some chains, a particular value is enforced, meaning if the expected value is not set, the message request will revert. |
+<Aside>
+
+Enhanced version of extra arguments adding execution order control:
+
+- Includes configurable gas limit
+- Allows specifying out-of-order execution preference
+- Default value for allowOutOfOrderExecution varies by chain
+- Some chains enforce specific values and will revert if not set correctly
+
+</Aside>
+
+**Properties**
+
+| Name                       | Type      | Description                                   |
+| -------------------------- | --------- | --------------------------------------------- |
+| `gasLimit`                 | `uint256` | Gas limit for execution on destination chain  |
+| `allowOutOfOrderExecution` | `bool`    | Whether messages can be executed in any order |
+
+### EVMTokenAmount
+
+Structure representing token amounts in CCIP messages.
+
+```solidity
+struct EVMTokenAmount {
+  address token;
+  uint256 amount;
+}
+```
+
+<Aside>
+
+Core structure for token transfers used by the Risk Management Network (RMN):
+
+- Changes to this struct require RMN maintainer notification
+- Represents token amounts in their chain-specific format
+
+</Aside>
+
+**Properties**
+
+| Name     | Type      | Description                      |
+| -------- | --------- | -------------------------------- |
+| `token`  | `address` | Token address on the local chain |
+| `amount` | `uint256` | Amount of tokens to transfer     |
+
+## State Variables
+
+### EVM_EXTRA_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
+```
+
+<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+
+### EVM_EXTRA_ARGS_V2_TAG
+
+```solidity
+bytes4 public constant EVM_EXTRA_ARGS_V2_TAG = 0x181dcf10;
+```
+
+<Aside>The identifier tag for V2 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV2"))).</Aside>
 
 ## Functions
 
-### \_argsToBytes
+### \_argsToBytes (V1)
 
-#### \_argsToBytes (v1)
-
-<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
+Encodes EVMExtraArgsV1 into bytes for message transmission.
 
 ```solidity
-function _argsToBytes(struct Client.EVMExtraArgsV1 extraArgs) internal pure returns (bytes bts)
+function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-It is used to convert the arguments to bytes.
+<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
 
-##### Parameters
+**Parameters**
 
-| Name      | Type                                     | Description      |
-| --------- | ---------------------------------------- | ---------------- |
-| extraArgs | [Client.EVMExtraArgsV1](#evmextraargsv1) | Extra arguments. |
+| Name        | Type                                | Description                      |
+| ----------- | ----------------------------------- | -------------------------------- |
+| `extraArgs` | [`EVMExtraArgsV1`](#evmextraargsv1) | The V1 extra arguments to encode |
 
-##### Return Values
+**Returns**
 
-| Name | Type  | Description                         |
-| ---- | ----- | ----------------------------------- |
-| bts  | bytes | Encoded extra arguments in _bytes_. |
+| Type    | Description                          |
+| ------- | ------------------------------------ |
+| `bytes` | The encoded extra arguments with tag |
 
-#### \_argsToBytes (v2)
+### \_argsToBytes (V2)
+
+Encodes EVMExtraArgsV2 into bytes for message transmission.
 
 ```solidity
-function _argsToBytes(struct Client.EVMExtraArgsV2 extraArgs) internal pure returns (bytes bts)
+function _argsToBytes(EVMExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-It is used to convert the arguments to bytes.
+<Aside>Serializes V2 extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
 
-##### Parameters
+**Parameters**
 
-| Name      | Type                                     | Description      |
-| --------- | ---------------------------------------- | ---------------- |
-| extraArgs | [Client.EVMExtraArgsV2](#evmextraargsv2) | Extra arguments. |
+| Name        | Type                                | Description                      |
+| ----------- | ----------------------------------- | -------------------------------- |
+| `extraArgs` | [`EVMExtraArgsV2`](#evmextraargsv2) | The V2 extra arguments to encode |
 
-##### Return Values
+**Returns**
 
-| Name | Type  | Description                         |
-| ---- | ----- | ----------------------------------- |
-| bts  | bytes | Encoded extra arguments in _bytes_. |
+| Type    | Description                          |
+| ------- | ------------------------------------ |
+| `bytes` | The encoded extra arguments with tag |

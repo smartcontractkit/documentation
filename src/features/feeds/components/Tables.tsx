@@ -444,6 +444,20 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Sonic",
+    logoUrl: "/assets/chains/sonic.svg",
+    mainnet: {
+      label: "Sonic Mainnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://sonicscan.org/address/%s",
+    },
+    testnet: {
+      label: "Sonic Blaze Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://testnet.sonicscan.org/address/%s",
+    },
+  },
+  {
     network: "Solana",
     logoUrl: "/assets/chains/solana.svg",
     networkStatus: "https://status.solana.com/",
@@ -849,7 +863,13 @@ export const MainnetTable = ({
         )
       }
 
-      return !chain.docs.porType && chain.contractType !== "verifier"
+      return (
+        !chain.docs.porType &&
+        chain.contractType !== "verifier" &&
+        chain.docs.productType !== "Proof of Reserve" &&
+        chain.docs.productType !== "NAVLink" &&
+        chain.docs.productType !== "SmartAUM"
+      )
     })
     .filter((chain) => {
       if (isSmartData)
@@ -947,11 +967,15 @@ export const TestnetTable = ({
       }
       if (isSmartData) return !!chain.docs.porType
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
+
       return (
         !chain.feedId &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
-        chain.docs.productSubType !== "Realized Volatility"
+        chain.docs.productSubType !== "Realized Volatility" &&
+        chain.docs.productType !== "Proof of Reserve" &&
+        chain.docs.productType !== "NAVLink" &&
+        chain.docs.productType !== "SmartAUM"
       )
     })
 
