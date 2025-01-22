@@ -58,6 +58,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BSQUARED_TESTNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/b2_testnet"),
   SHIBARIUM_MAINNET: () => new providers.JsonRpcProvider("https://www.shibrpc.com"),
   SHIBARIUM_PUPPYNET: () => new providers.JsonRpcProvider("https://puppynet.shibrpc.com"),
+  BOB_MAINNET: () => new providers.JsonRpcProvider("https://rpc.gobob.xyz"),
+  BOB_SEPOLIA: () => new providers.JsonRpcProvider("https://bob-sepolia.rpc.gobob.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

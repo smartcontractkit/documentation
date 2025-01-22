@@ -223,6 +223,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SHIBARIUM_MAINNET"
     case "shibarium-testnet-puppynet":
       return "SHIBARIUM_PUPPYNET"
+    case "bitcoin-mainnet-bob-1":
+      return "BOB_MAINNET"
+    case "bitcoin-testnet-sepolia-bob-1":
+      return "BOB_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }

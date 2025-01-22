@@ -44,6 +44,7 @@ export const productChainLinks: ProductChainLinks = {
       ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
       bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
       shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
+      bob: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bob-1",
     },
   },
   "Data Feeds": {
@@ -201,4 +202,5 @@ export const chainNames: Record<string, string> = {
   ronin: "Ronin",
   bsquared: "B²",
   shibarium: "Shibarium",
+  bob: "Bob",
 }

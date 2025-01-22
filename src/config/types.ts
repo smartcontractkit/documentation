@@ -25,6 +25,7 @@ export type SupportedTechnology =
   | "ZIRCUIT"
   | "MANTLE"
   | "RONIN"
+  | "BOB"
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
@@ -80,6 +81,8 @@ export type SupportedChain =
   | "BSQUARED_TESTNET"
   | "SHIBARIUM_MAINNET"
   | "SHIBARIUM_PUPPYNET"
+  | "BOB_MAINNET"
+  | "BOB_SEPOLIA"
 
 export type Chains = Record<
   SupportedTechnology,
