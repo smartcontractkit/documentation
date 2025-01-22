@@ -227,6 +227,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONIC_MAINNET"
     case "sonic-testnet-blaze":
       return "SONIC_BLAZE"
+    case "bitcoin-mainnet-bob-1":
+      return "BOB_MAINNET"
+    case "bitcoin-testnet-sepolia-bob-1":
+      return "BOB_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -334,6 +338,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "sonic-mainnet"
     case "SONIC_BLAZE":
       return "sonic-testnet-blaze"
+    case "BOB_MAINNET":
+      return "bitcoin-mainnet-bob-1"
+    case "BOB_SEPOLIA":
+      return "bitcoin-testnet-sepolia-bob-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
