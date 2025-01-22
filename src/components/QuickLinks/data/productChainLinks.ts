@@ -44,6 +44,7 @@ export const productChainLinks: ProductChainLinks = {
       ronin: "/ccip/directory/mainnet/chain/ronin-mainnet",
       bsquared: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bsquared-1",
       shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
+      sonic: "/ccip/directory/mainnet/chain/sonic-mainnet",
       bob: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bob-1",
     },
   },
@@ -86,6 +87,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
+      sonic: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
       shibarium: "/data-streams/crypto-streams",
     },
@@ -164,6 +166,8 @@ export const productChainLinks: ProductChainLinks = {
     ronin: "/resources/link-token-contracts#ronin",
     bsquared: "/resources/link-token-contracts#bsquared",
     shibarium: "/resources/link-token-contracts#shibarium",
+    sonic: "/resources/link-token-contracts#sonic",
+    bob: "/resources/link-token-contracts#bob",
   },
 }
 
