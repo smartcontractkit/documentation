@@ -46,6 +46,7 @@ export const productChainLinks: ProductChainLinks = {
       shibarium: "/ccip/directory/mainnet/chain/shibarium-mainnet",
       sonic: "/ccip/directory/mainnet/chain/sonic-mainnet",
       bob: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bob-1",
+      world: "/ccip/directory/mainnet/chain/ethereum-mainnet-worldchain-1",
     },
   },
   "Data Feeds": {
@@ -168,6 +169,7 @@ export const productChainLinks: ProductChainLinks = {
     shibarium: "/resources/link-token-contracts#shibarium",
     sonic: "/resources/link-token-contracts#sonic",
     bob: "/resources/link-token-contracts#bob",
+    world: "/resources/link-token-contracts#world",
   },
 }
 
@@ -207,4 +209,5 @@ export const chainNames: Record<string, string> = {
   bsquared: "B²",
   shibarium: "Shibarium",
   bob: "Bob",
+  world: "World",
 }
