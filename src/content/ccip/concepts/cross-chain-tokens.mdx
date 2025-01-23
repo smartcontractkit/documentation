@@ -3,10 +3,19 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token (CCT) standard"
 whatsnext: { "CCT Guides": "/ccip/tutorials/cross-chain-tokens" }
+metadata:
+  description: "Chainlink's Cross-Chain Token (CCT) standard enables permissionless listing of tokens in CCIP. Learn how to make your tokens cross-chain compatible or deploy new cross-chain tokens using this self-service standard. Token developers can deploy and configure their own token pools without third-party intervention, streamlining the process of enabling ERC20-compatible tokens for cross-chain operations."
+  excerpt: "create cct create cross chain token create cross-chain token deploy cross chain token enable token for ccip make token cross chain compatible cross chain token tutorial"
 ---
 
 import { Aside, ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Launch or upgrade your CCT in just a few clicks">
+  Did you know about the [Token Manager](https://tokenmanager.chain.link/)? This newly released app gives you the
+  ability to launch new tokens or upgrade existing tokens into CCTs, no code required. Read more in the
+  [docs](/ccip/tutorials/token-manager).
+</Aside>
 
 The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling an [ERC20-compatible](#requirements-for-cross-chain-tokens) token in CCIP.
 
@@ -146,6 +155,25 @@ On the **destination blockchain**, the CCIP OffRamp contract performs three key 
 - If the combined execution requires more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure. However, it is highly recommended to design your token pool to stay within the **90,000 gas** limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
 
 #### Token Decimal Handling
+
+**v1.5.0**
+
+Token pools on **v1.5.0** do not support tokens with different decimal places across blockchains. When transferring a token between blockchains with differing decimal places, the token loses precision resulting in different amounts of tokens between the source and destination blockchain.  
+
+Consider a token developer who deployed their token across two blockchains with different decimal configurations:
+
+- Blockchain A: Token with 12 decimals
+- Blockchain B: Token with 6 decimals
+
+| Transfer Path  | Example                                                          | Explanation           | Impact                         |
+|----------------|------------------------------------------------------------------|-----------------------|--------------------------------|
+| **A → B**(12 → 6)  | • Send **1.0** from A (= 10^12 base units)<br/>• Receive on B: 1,000,000 | 10^12/10^6= **1,000,000** | **Gain** of 999,999 (1,000,000 -1) |
+| **B → A**(6 → 12) | • Send **1.0** from B(= 10^6 base units)<br/>• Receive on A: 0.000001    | 10^6/10^12= **0.000001**  | **Loss** of 0.999999 (1-0.000001)  |
+
+
+We highly recommend [upgrading to v1.5.1](#upgrading-from-v150) to leverage the native support for token decimal handling. If using v1.5.0, please make sure to [configure a custom v1.5.0 token pool](#custom-token-pools).   
+
+**v1.5.1**
 
 Starting from **v1.5.1**, token pools support tokens with different decimal places across blockchains. This feature can impact the total number of tokens in circulation because tokens locked/burned on the source chain might result in a smaller number of tokens minted/released on the destination chain due to decimal rounding.
 
@@ -507,7 +535,7 @@ Once the administrator has been proposed and is in a pending state, the final st
 
 The `transferAdminRole` function allows the current token administrator to initiate the transfer of their role to a new administrator. The transfer process is a secure two-step procedure, requiring the new administrator to explicitly accept the role before the transfer is finalized.
 
-1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator’s address.
+1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator's address.
 1. **Set Pending Administrator**: The **TokenAdminRegistry** contract verifies that the caller is the current administrator of the token and sets the new administrator as **pending**. The role will remain in this pending state until it is accepted.
 1. **Accept the Role**: The new administrator must call the `acceptAdminRole()` function to finalize the transfer and assume the administrator role.
 
@@ -525,7 +553,7 @@ The `setPool` function allows the token administrator to assign or update the to
 
 1. **Set Token Pool**: The current administrator calls the `setPool()` function on the **TokenAdminRegistry**, providing the token address and the new pool address.
 1. **Validate Pool**: If the new pool address is not `address(0)`, the contract validates that the provided pool supports the token by calling `isSupportedToken()` on the pool contract.
-1. **Update or Remove Pool**: If validation succeeds, the token’s pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
+1. **Update or Remove Pool**: If validation succeeds, the token's pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
 
 The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
 
