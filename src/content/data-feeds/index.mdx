@@ -7,8 +7,8 @@ whatsnext:
   {
     "Follow the Data Feeds Getting Started guide to learn the basics": "/data-feeds/getting-started",
     "Read the API reference for using Data Feeds": "/data-feeds/api-reference",
-    "Find Rate Price Feed Addresses": "/data-feeds/price-feeds/addresses",
-    "Find Rate Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Find SmartData Addresses": "/data-feeds/smartdata/addresses",
     "Find Rate and Volatility Feed Addresses": "/data-feeds/rates-feeds/addresses",
     "Learn how to use Data Feeds on L2 networks": "/data-feeds/l2-sequencer-feeds",
   }
@@ -25,7 +25,7 @@ import button from "@chainlink/design-system/button.module.css"
   Data Feeds with your applications.
 </Aside>
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
 If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
@@ -34,7 +34,7 @@ If you already started a project and need to integrate Chainlink, you can [add C
 Data feeds provide many different types of data for your applications.
 
 - [Price Feeds](#price-feeds)
-- [Proof of Reserve Feeds](#proof-of-reserve-feeds)
+- [SmartData Feeds](#smartdata-feeds)
 - [Rate and Volatility Feeds](#rate-and-volatility-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
@@ -50,13 +50,13 @@ To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) 
 
 See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
 
-### Proof of Reserve Feeds
+### SmartData Feeds
 
-Proof of Reserves feeds provide the status of reserves for stablecoins, wrapped assets, and real world assets. Proof of Reserve Feeds operate similarly to Price Feeds, but provide answers in units of measurement such as ounces (oz) or number of tokens.
+Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
 
-To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/data-feeds/proof-of-reserve) documentation.
+To learn more about SmartData Feeds, see the [SmartData](/data-feeds/smartdata) documentation.
 
-See the [Proof of Reserve Contract Addresses](/data-feeds/proof-of-reserve/addresses) page for a list of available networks and addresses.
+See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
 
 ### Rate and Volatility Feeds
 
@@ -70,7 +70,7 @@ See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/address
 
 L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
 
-To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
+To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
 
 ## Components of a data feed
 
@@ -131,6 +131,8 @@ Configure your application to detect when the reported answer is close to reachi
 Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
+
+When the node detects that the heartbeat is reached, it initiates the latest round. Depending on congestion and network conditions, there may be a slight delay for the latest round to get onchain.
 
 During periods of low volatility, the heartbeat triggers updates to the latest answer. Some heartbeats are configured to last several hours, so your application should check the timestamp and verify that the latest answer is recent enough for your application.
 

@@ -3,7 +3,7 @@ section: dataStreams
 title: "Data Streams Architecture"
 whatsnext:
   {
-    "Find the list of available stream IDs.": "/data-streams/stream-ids",
+    "Find the list of available Stream IDs.": "/data-streams/crypto-streams",
     "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
   }
 ---
@@ -52,6 +52,8 @@ One example of how to use Data Streams with Automation is in a decentralized exc
 This is one example of how you can combine Data Streams and Automation, but the systems are highly configurable. You can write your own log triggers or [custom logic triggers](/chainlink-automation/guides/register-upkeep) to initiate Automation upkeeps for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
 
 Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Data Streams using the Streams Trade implementation.
+
+**Note**: Before implementing Streams Trade, ensure that Chainlink Automation is available on your desired network by checking the [Automation Supported Networks page](/chainlink-automation/overview/supported-networks).
 
 ## Streams Direct Architecture
 
@@ -105,6 +107,6 @@ Automatic failover handles availability and traffic routing in the following sce
 
 - **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user and ensures uninterrupted service. During automatic failover, WebSockets experience a reconnect. Failed REST requests must be retried.
 
-- **Manual Trafic Steering:** If you want to bypass the load balancer and target a specific site, you can use the origin headers to direct your requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
+- **Manual Traffic Steering:** If you want to bypass the load balancer and target a specific site, you can use the origin headers to direct your requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
 
-- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each feed and discards duplicate reports before merging the report stream locally.
+- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each stream and discards duplicate reports before merging the report stream locally.

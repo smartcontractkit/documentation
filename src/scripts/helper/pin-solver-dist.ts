@@ -6,6 +6,12 @@ interface Dependencies {
   [key: string]: string
 }
 
+interface PinningStats {
+  totalFiles: number
+  packagesUpdated: { [key: string]: number }
+  filesProcessed: string[]
+}
+
 /**
  * Retrieves the versions of specified packages from a package.json file.
  * @param filePath - The path to the package.json file.
@@ -37,50 +43,88 @@ const getFileHash = (content: string): string => {
 }
 
 /**
- * Pins the versions of dependencies in Solidity files based on the provided glob pattern.
- * @param globPattern - The glob pattern used to find Solidity files.
+ * Pins the versions of dependencies in Solidity files based on the provided glob patterns.
+ * @param globPatterns - Array of glob patterns used to find Solidity files.
  * @param versions - The object containing the dependencies and their corresponding versions.
  * @throws {Error} - If there are errors during the version pinning process.
  */
-const pinVersionsInSolidityFiles = (globPattern: string, versions: Dependencies) => {
-  glob(globPattern, (err, files) => {
-    if (err) {
-      console.error("Error finding Solidity files:", err)
-      throw err
-    }
-
-    const errorMap: { [file: string]: Error } = {}
-
-    files.forEach((file) => {
-      try {
-        const originalContent = fs.readFileSync(file, "utf8")
-        let content = originalContent
-
-        Object.entries(versions).forEach(([packageName, version]) => {
-          const regex = new RegExp(`(import.*${packageName})(/)(?!@${version.replace(".", "\\.")})(.*?\\.sol)`, "g")
-          content = content.replace(regex, `$1@${version}/$3`)
-        })
-
-        if (getFileHash(originalContent) !== getFileHash(content)) {
-          fs.writeFileSync(file, content, "utf8")
-        }
-      } catch (fileError) {
-        errorMap[file] = fileError
-      }
-    })
-
-    if (Object.keys(errorMap).length > 0) {
-      console.error("There were errors during the processing of files:")
-      Object.entries(errorMap).forEach(([file, error]) => {
-        console.error(`${file}: ${error.message}`)
+const pinVersionsInSolidityFiles = (globPatterns: string[], versions: Dependencies) => {
+  const processFiles = (pattern: string): Promise<string[]> => {
+    return new Promise((resolve, reject) => {
+      glob(pattern, (err, files) => {
+        if (err) reject(err)
+        else resolve(files)
       })
-      throw new Error("Errors occurred during the version pinning process.")
-    }
+    })
+  }
 
-    console.log(`Version pinning complete for ${files.length} files.`)
-  })
+  Promise.all(globPatterns.map(processFiles))
+    .then((fileArrays) => {
+      const allFiles = fileArrays.flat()
+      const errorMap: { [file: string]: Error } = {}
+      const stats: PinningStats = {
+        totalFiles: allFiles.length,
+        packagesUpdated: {},
+        filesProcessed: [],
+      }
+
+      allFiles.forEach((file) => {
+        try {
+          const originalContent = fs.readFileSync(file, "utf8")
+          let content = originalContent
+
+          Object.entries(versions).forEach(([packageName, version]) => {
+            const regex = new RegExp(`(import.*${packageName})(/)(?!@${version.replace(".", "\\.")})(.*?\\.sol)`, "g")
+            const newContent = content.replace(regex, `$1@${version}/$3`)
+
+            if (newContent !== content) {
+              if (!stats.packagesUpdated[packageName]) {
+                stats.packagesUpdated[packageName] = 0
+              }
+              stats.packagesUpdated[packageName]++
+            }
+            content = newContent
+          })
+
+          if (getFileHash(originalContent) !== getFileHash(content)) {
+            fs.writeFileSync(file, content, "utf8")
+            stats.filesProcessed.push(file)
+          }
+        } catch (fileError) {
+          errorMap[file] = fileError
+        }
+      })
+
+      if (Object.keys(errorMap).length > 0) {
+        console.error("There were errors during the processing of files:")
+        Object.entries(errorMap).forEach(([file, error]) => {
+          console.error(`${file}: ${error.message}`)
+        })
+        throw new Error("Errors occurred during the version pinning process.")
+      }
+
+      // Print summary
+      console.log("\n=== Version Pinning Summary ===")
+      console.log(`Total files scanned: ${stats.totalFiles}`)
+      console.log(`Files updated: ${stats.filesProcessed.length}`)
+      console.log("\nUpdates by package:")
+      Object.entries(stats.packagesUpdated).forEach(([pkg, count]) => {
+        console.log(`- ${pkg}: ${count} imports updated`)
+      })
+      if (stats.filesProcessed.length > 0) {
+        console.log("\nUpdated files:")
+        stats.filesProcessed.forEach((file) => {
+          console.log(`- ${file}`)
+        })
+      }
+      console.log("\nVersion pinning complete! ✨")
+    })
+    .catch((err) => {
+      console.error("Error processing files:", err)
+      throw err
+    })
 }
 
 const packages = ["@chainlink/contracts", "@chainlink/contracts-ccip", "@chainlink/local"]
 const versions = getPackageVersions("package.json", packages)
-pinVersionsInSolidityFiles("dist/samples/**/*.sol", versions)
+pinVersionsInSolidityFiles(["dist/samples/**/*.sol", ".vercel/output/static/samples/**/*.sol"], versions)

@@ -13,6 +13,7 @@ const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/content${currentPage.replace(/\/$/, "")}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const products = frontmatter.products.map((p) => productsInfo[p])
+const githubSourceCodeUrl = frontmatter.githubSourceCodeUrl
 ---
 
 <aside class="panel">
@@ -43,7 +44,15 @@ const products = frontmatter.products.map((p) => productsInfo[p])
       </ul>
     </div>
   </div>
-  <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
+  {
+    frontmatter.githubSourceCodeUrl && (
+      <a href={githubSourceCodeUrl} class="primary button">
+        <img src="/assets/github.svg" />
+        Open Github
+      </a>
+    )
+  }
+  <a href={githubEditUrl} class="secondary button">Edit this page</a>
   <TableOfContents client:visible initialHeadings={headings} />
 </aside>
 

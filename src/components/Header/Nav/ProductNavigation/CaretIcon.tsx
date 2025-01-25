@@ -5,7 +5,7 @@ type Props = {
 }
 
 export const CaretIcon = ({ style }: Props) => (
-  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={style}>
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style={style}>
     <path
       fillRule="evenodd"
       clipRule="evenodd"

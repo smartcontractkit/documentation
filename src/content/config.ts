@@ -43,6 +43,8 @@ const metadata = z
     description: z.string().optional(),
     image: z.string().optional(),
     linkToWallet: z.boolean().optional(),
+    canonical: z.string().optional(),
+    excerpt: z.string().optional(),
   })
   .optional()
 
@@ -55,7 +57,6 @@ const baseFrontmatter = z
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
     metadata,
-    excerpt: z.string().optional(),
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
   })
@@ -65,6 +66,7 @@ const quickstartsFrontmatter = z
   .object({
     title: z.string(),
     description: z.string(),
+    githubSourceCodeUrl: z.string().optional(),
     image: z.string(),
     products: z.array(productEnum),
     time: z.string(),
@@ -109,3 +111,5 @@ export const collections = {
   ccip: ccipCollection,
   "chainlink-local": baseCollection,
 }
+
+export type Collection = keyof typeof collections

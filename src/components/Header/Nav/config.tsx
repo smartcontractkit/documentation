@@ -10,7 +10,7 @@ export type Page = {
   children?: Page[]
 }
 
-export type Item = { label: string; icon?: string; href: string; children?: Page[] }
+export type Item = { label: string; icon?: string; href: string; children?: Page[]; divider?: boolean }
 
 export type SubProductItem = {
   label: string

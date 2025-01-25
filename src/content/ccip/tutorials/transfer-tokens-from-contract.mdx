@@ -1,0 +1,249 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer Tokens"
+whatsnext:
+  {
+    "Learn how to transfer tokens and send data in a single CCIP transaction": "/ccip/tutorials/programmable-token-transfers",
+    "See example cross-chain dApps and tools": "/ccip/examples",
+    "CCIP Directory": "/ccip/directory",
+    "Learn CCIP best practices": "/ccip/best-practices",
+  }
+---
+
+import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+In this tutorial, you will use Chainlink CCIP to transfer tokens from a smart contract to an account on a different blockchain. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or AVAX on Avalanche.
+
+<Aside type="note" title="Node Operator Rewards">
+  CCIP rewards the oracle node and Risk Management node operators in LINK.
+</Aside>
+
+<Aside type="caution" title="Transferring tokens">
+  This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
+  they are locked or burned on the source chain and then unlocked or minted on the destination chain. Read the [Token
+  Pools](/ccip/architecture#token-pools) section to understand the various mechanisms that are used to transfer value
+  across chains.
+</Aside>
+
+## Before you begin
+
+1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
+
+1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
+1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
+1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide to fund your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
+
+## Tutorial
+
+<CcipCommon callout="useSimulator" />
+
+In this tutorial, you will transfer [CCIP-BnM](/ccip/test-tokens#tokens) tokens from a contract on Avalanche Fuji to an account on Ethereum Sepolia. First, you will pay [CCIP fees in LINK](#transfer-tokens-and-pay-in-link), then you will pay [CCIP fees in native gas](#transfer-tokens-and-pay-in-native). The destination account can be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or a smart contract. Moreover, the example shows how to transfer CCIP-BnM tokens, but you can re-use the same example to transfer other tokens as long as they are supported for your [lane](/ccip/concepts#lane).
+
+<CodeSample src="samples/CCIP/TokenTransferor.sol" />
+
+### Deploy your contracts
+
+To use this contract:
+
+1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/TokenTransferor.sol).
+
+1. Compile your contract.
+1. Deploy and fund your sender contract on _Avalanche Fuji_:
+
+   1. Open MetaMask and select the _Avalanche Fuji_ network.
+   1. In Remix IDE, click _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_:
+
+      - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>,
+      - The LINK contract address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
+
+   1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
+      Note your contract address.
+   1. Open MetaMask and fund your contract with CCIP-BnM tokens. You can transfer <CopyText text="0.002" code/> _CCIP-BnM_ to your contract.
+
+1. Enable your contract to transfer tokens to _Ethereum Sepolia_:
+   1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions for your smart contract deployed on _Avalanche Fuji_.
+   1. Call the `allowlistDestinationChain` function with <CopyText text="16015286601757825753" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
+
+### Transfer tokens and pay in LINK
+
+You will transfer _0.001 CCIP-BnM_. The CCIP fees for using CCIP will be paid in LINK. Read this [explanation](#transferring-tokens-and-pay-in-link) for a detailed description of the code example.
+
+1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with LINK tokens. You can transfer <CopyText text="70" code/> _LINK_ to your contract. **Note**: The LINK tokens are used to pay for CCIP fees.
+
+    **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+    from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
+
+1.  Transfer CCIP-BnM from _Avalanche Fuji_:
+
+    1. Open MetaMask and select the network _Avalanche Fuji_.
+    1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions for your smart contract deployed on _Avalanche Fuji_.
+
+    1. Fill in the arguments of the _**transferTokensPayLINK**_ function:
+
+       <br />
+
+       | Argument                   | Value and Description                                                                                                                                                                                                                                                   |
+       | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+       | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [CCIP Directory](/ccip/directory).                                                |
+       | \_receiver                 | Your account address on _Ethereum Sepolia_. <br /> The destination account address. It could be a smart contract or an EOA.                                                                                                                                             |
+       | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [CCIP Directory](/ccip/directory). |
+       | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                    |
+
+    1. Click the **transact** button and confirm the transaction on MetaMask.
+    1. Once the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x62ca604240fc30133646ff94dcedac5375c5e42b109f3339c85e4fa29541d42b) of a transaction on _Avalanche Fuji_.
+
+       <CcipCommon callout="gasSpike" />
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-tokens-pay-link-tx-details.webp"
+            alt="Chainlink CCIP Explorer transaction details"
+          />
+
+1.  The CCIP transaction is completed once the status is marked as "Success". The data field is empty because you are only transferring tokens.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-tokens-pay-link-tx-details-success.webp"
+            alt="Chainlink CCIP Explorer transaction details success"
+          />
+
+1.  Check the receiver account on the destination chain:
+
+    1. Note the destination transaction hash from the CCIP explorer. `0x083fc1a79ffcfd617426fd71dff87ca16db2e4333e62a28cdd13d4bec0926bcb` in this example.
+    1. Open the block explorer for your destination chain. For _Ethereum Sepolia_, open [etherscan](https://sepolia.etherscan.io).
+    1. Search the [transaction hash](https://sepolia.etherscan.io/tx/0x083fc1a79ffcfd617426fd71dff87ca16db2e4333e62a28cdd13d4bec0926bcb).
+
+       <br />
+
+       <ClickToZoom
+         src="/images/ccip/tutorials/send-tokens-pay-link-sepolia-tokens-received.webp"
+         alt="Chainlink CCIP Sepolia tokens received"
+       />
+
+    1. Notice in the _Tokens Transferred_ section that CCIP-BnM tokens have been transferred to your account (0.001 CCIP-BnM).
+
+### Transfer tokens and pay in native
+
+You will transfer _0.001 CCIP-BnM_. The CCIP fees for using CCIP will be paid in Avalanche Fuji's native AVAX. Read this [explanation](#transferring-tokens-and-pay-in-native) for a detailed description of the code example.
+
+1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with native gas tokens. You can transfer <CopyText text="0.2" code/> _AVAX_ to your contract. **Note**: The native gas tokens are used to pay for CCIP fees.
+
+1.  Transfer CCIP-BnM from _Avalanche Fuji_:
+
+    1. Open MetaMask and select the network _Avalanche Fuji_.
+    1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
+
+    1. Fill in the arguments of the _**transferTokensPayNative**_ function:
+
+       <br />
+
+       | Argument                   | Value and Description                                                                                                                                                                                                                                                    |
+       | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+       | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [CCIP Directory](/ccip/directory).                                                 |
+       | \_receiver                 | Your account address on _Ethereum Sepolia_. <br /> The destination account address. It could be a smart contract or an EOA.                                                                                                                                              |
+       | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [CCIP Directory](/ccip/directory).. |
+       | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                     |
+
+    1. Click the **transact** button and confirm the transaction on MetaMask.
+    1. Once the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x186e5767d65dffe685c24d5ee881201e2b39fd684220a68943b0b861178ddf64) of a transaction on _Avalanche Fuji_.
+
+       <CcipCommon callout="gasSpike" />
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-tokens-tx-details.webp"
+            alt="Chainlink CCIP Explorer transaction details"
+          />
+
+1.  The CCIP transaction is completed once the status is marked as "Success". The data field is empty because you only transfer tokens. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-send-tokens-tx-details-success.webp"
+            alt="Chainlink CCIP Explorer transaction details success"
+          />
+
+1.  Check the receiver account on the destination chain:
+
+    1. Note the destination transaction hash from the CCIP explorer. `0xf403d828fa377d657af67f12e99ff435974299c27ba2d57c53494d29bbbfc938` in this example.
+    1. Open the block explorer for your destination chain. For _Ethereum Sepolia_, open [etherscan](https://sepolia.etherscan.io).
+    1. Search the [transaction hash](https://sepolia.etherscan.io/tx/0xf403d828fa377d657af67f12e99ff435974299c27ba2d57c53494d29bbbfc938).
+
+       <br />
+
+       <ClickToZoom
+         src="/images/ccip/tutorials/sepolia-tokens-received.webp"
+         alt="Chainlink CCIP Sepolia tokens received"
+       />
+
+    1. Notice in the _Tokens Transferred_ section that CCIP-BnM tokens have been transferred to your account (0.001 CCIP-BnM).
+
+## Explanation
+
+<CcipCommon callout="importCCIPPackage" />
+
+The smart contract featured in this tutorial is designed to interact with CCIP to transfer a supported token to an account on a destination chain. The contract code contains supporting comments clarifying the functions, events, and underlying logic. This section further explains initializing the contract and transferring tokens.
+
+### Initializing of the contract
+
+When you deploy the contract, you define the router address and LINK contract address of the blockchain where you deploy the contract. The contract uses the router address to interact with the router to estimate the CCIP fees and the transmission of CCIP messages.
+
+### Transferring tokens and pay in LINK
+
+The `transferTokensPayLINK` function undertakes six primary operations:
+
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
+
+   - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
+   - The `data` is empty because you only transfer tokens.
+   - The `tokenAmounts` is an array, with each element comprising a [`EVMTokenAmount` struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) that contains the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayLINK` function.
+   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
+   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
+
+     {" "}
+
+     <CcipCommon callout="senderContractCallout" />
+
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
+1. Ensures your contract balance in LINK is enough to cover the fees.
+1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
+1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend).
+
+**Note**: As a security measure, the `transferTokensPayLINK` function is protected by the `onlyAllowlistedChain` to ensure the contract owner has allowlisted a destination chain.
+
+### Transferring tokens and pay in native
+
+The `transferTokensPayNative` function undertakes five primary operations:
+
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
+
+   - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
+   - The `data` is empty because you only transfer tokens.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
+   - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
+   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
+
+     {" "}
+
+     <CcipCommon callout="senderContractCallout" />
+
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
+1. Ensures your contract balance in native gas is enough to cover the fees.
+1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
+
+**Note**: As a security measure, the `transferTokensPayNative` function is protected by the `onlyAllowlistedChain`, ensuring the contract owner has allowlisted a destination chain.

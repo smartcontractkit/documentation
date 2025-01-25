@@ -1,0 +1,356 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 LockReleaseTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the LockReleaseTokenPool contract in Chainlink CCIP v1.5.1, implementing lock/release functionality for tokens on their native chain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## LockReleaseTokenPool
+
+A specialized token pool for managing native tokens through a lock and release mechanism, with support for liquidity management.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol)
+
+**Inherits:**
+
+- [TokenPool](/ccip/api-reference/v1.5.1/token-pool)
+- [ITypeAndVersion](/ccip/api-reference/v1.5.1/i-type-and-version)
+
+<Aside>
+
+A token pool designed for native chain tokens with the following features:
+
+- Manages one token per pool instance
+- Implements lock and release mechanisms for cross-chain transfers
+- Provides liquidity management functions for proper balance tracking
+- Supports liquidity provider operations
+- Facilitates pool upgrades through liquidity transfer mechanisms
+
+</Aside>
+
+## Events
+
+### LiquidityTransferred
+
+```solidity
+event LiquidityTransferred(address indexed from, uint256 amount);
+```
+
+<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description                         |
+| -------- | --------- | ------- | ----------------------------------- |
+| `from`   | `address` | Yes     | The source pool address             |
+| `amount` | `uint256` | No      | The amount of liquidity transferred |
+
+## Errors
+
+### InsufficientLiquidity
+
+```solidity
+error InsufficientLiquidity();
+```
+
+<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+
+### LiquidityNotAccepted
+
+```solidity
+error LiquidityNotAccepted();
+```
+
+<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
+
+## State Variables
+
+### i_acceptLiquidity
+
+```solidity
+bool internal immutable i_acceptLiquidity;
+```
+
+<Aside>
+  Immutable flag indicating whether the pool accepts external liquidity. This setting cannot be changed after
+  deployment.
+</Aside>
+
+### s_rebalancer
+
+```solidity
+address internal s_rebalancer;
+```
+
+<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "LockReleaseTokenPool 1.5.1";
+```
+
+<Aside>A constant identifier specifying the contract type and version number.</Aside>
+
+## Functions
+
+### canAcceptLiquidity
+
+Determines whether the pool can accept external liquidity.
+
+```solidity
+function canAcceptLiquidity() external view returns (bool);
+```
+
+<Aside>
+
+Returns the immutable configuration indicating if the pool accepts external liquidity. External liquidity might not be required when:
+
+- There is one canonical token on the chain
+- CCIP handles mint/burn operations on other chains
+- The invariant `balanceOf(pool) on home chain >= sum(totalSupply(mint/burn "wrapped" token) on all remote chains)` is maintained
+
+</Aside>
+
+**Returns**
+
+| Type   | Description                                 |
+| ------ | ------------------------------------------- |
+| `bool` | True if the pool accepts external liquidity |
+
+### constructor
+
+```solidity
+constructor(
+  IERC20 token,
+  uint8 localTokenDecimals,
+  address[] memory allowlist,
+  address rmnProxy,
+  bool acceptLiquidity,
+  address router
+) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router);
+```
+
+<Aside>
+
+Initializes the token pool with its configuration parameters:
+
+- Sets up the token contract reference
+- Configures decimal precision for local tokens
+- Establishes the initial whitelist
+- Links to the RMN proxy and router
+- Sets the liquidity acceptance policy
+
+</Aside>
+
+**Parameters**
+
+| Name                 | Type        | Description                                 |
+| -------------------- | ----------- | ------------------------------------------- |
+| `token`              | `IERC20`    | The token contract to manage                |
+| `localTokenDecimals` | `uint8`     | The decimal precision for the local token   |
+| `allowlist`          | `address[]` | Initial list of authorized addresses        |
+| `rmnProxy`           | `address`   | Address of the RMN proxy contract           |
+| `acceptLiquidity`    | `bool`      | Whether the pool accepts external liquidity |
+| `router`             | `address`   | Address of the router contract              |
+
+### getRebalancer
+
+Returns the current rebalancer address.
+
+```solidity
+function getRebalancer() external view returns (address);
+```
+
+<Aside>
+  Provides the address of the current liquidity manager (rebalancer). Can return address(0) if none is configured.
+</Aside>
+
+**Returns**
+
+| Type      | Description                           |
+| --------- | ------------------------------------- |
+| `address` | The current liquidity manager address |
+
+### lockOrBurn
+
+Locks tokens in the pool for cross-chain transfer.
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) external virtual override returns (Pool.LockOrBurnOutV1 memory);
+```
+
+<Aside>
+
+Processes token locking with security validation:
+
+- Performs essential security checks through `_validateLockOrBurn`
+- Emits a `Locked` event upon successful locking
+- Returns destination token information
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type                                                                    | Description                             |
+| -------------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/v1.5.1/pool#lockorburninv1) | Input parameters for the lock operation |
+
+**Returns**
+
+| Type                                                                      | Description                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) | Contains destination token address and pool data |
+
+### provideLiquidity
+
+Adds external liquidity to the pool.
+
+```solidity
+function provideLiquidity(uint256 amount) external;
+```
+
+<Aside>
+
+Allows the rebalancer to add liquidity to the pool:
+
+- Requires prior token approval
+- Only callable by the authorized rebalancer
+- Only works if the pool accepts liquidity
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                        |
+| -------- | --------- | ---------------------------------- |
+| `amount` | `uint256` | The amount of liquidity to provide |
+
+### releaseOrMint
+
+Releases tokens from the pool to a recipient.
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) external virtual override returns (Pool.ReleaseOrMintOutV1 memory);
+```
+
+<Aside>
+
+Processes token release with security validation:
+
+- Performs essential security checks through `_validateReleaseOrMint`
+- Calculates correct local token amounts using decimal adjustments
+- Transfers tokens to the specified receiver
+- Emits a `Released` event
+
+</Aside>
+
+**Parameters**
+
+| Name              | Type                                                                          | Description                                |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/v1.5.1/pool#releaseormintinv1) | Input parameters for the release operation |
+
+**Returns**
+
+| Type                                                                            | Description                                        |
+| ------------------------------------------------------------------------------- | -------------------------------------------------- |
+| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) | Contains the final amount released in local tokens |
+
+### setRebalancer
+
+Updates the rebalancer address.
+
+```solidity
+function setRebalancer(address rebalancer) external onlyOwner;
+```
+
+<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                       |
+| ------------ | --------- | --------------------------------- |
+| `rebalancer` | `address` | The new rebalancer address to set |
+
+### supportsInterface
+
+Checks interface support using ERC165.
+
+```solidity
+function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool);
+```
+
+<Aside>Implements ERC165 interface detection, adding support for ILiquidityContainer.</Aside>
+
+**Parameters**
+
+| Name          | Type     | Description                       |
+| ------------- | -------- | --------------------------------- |
+| `interfaceId` | `bytes4` | The interface identifier to check |
+
+**Returns**
+
+| Type   | Description                        |
+| ------ | ---------------------------------- |
+| `bool` | True if the interface is supported |
+
+### transferLiquidity
+
+Transfers liquidity from an older pool version.
+
+```solidity
+function transferLiquidity(address from, uint256 amount) external onlyOwner;
+```
+
+<Aside>
+
+Facilitates pool upgrades by transferring liquidity from an older pool version:
+
+- Requires this pool to be set as rebalancer in the source pool
+- Can be used in conjunction with TokenAdminRegistry updates
+- Supports both atomic and gradual migration strategies
+- Enables smooth transition of liquidity and transactions
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                         |
+| -------- | --------- | ----------------------------------- |
+| `from`   | `address` | The address of the source pool      |
+| `amount` | `uint256` | The amount of liquidity to transfer |
+
+### withdrawLiquidity
+
+Removes liquidity from the pool.
+
+```solidity
+function withdrawLiquidity(uint256 amount) external;
+```
+
+<Aside>
+
+Allows the rebalancer to withdraw liquidity:
+
+- Only callable by the authorized rebalancer
+- Requires sufficient pool balance
+- Transfers tokens directly to the caller
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                         |
+| -------- | --------- | ----------------------------------- |
+| `amount` | `uint256` | The amount of liquidity to withdraw |

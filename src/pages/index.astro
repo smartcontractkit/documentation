@@ -2,28 +2,45 @@
 import ProductTabs from "../features/landing/sections/ProductTabs.astro"
 import LandingLayout from "../layouts/LandingLayout.astro"
 import HeroCTA from "../features/landing/sections/HeroCTA.astro"
+import BaseLayout from "~/layouts/BaseLayout.astro"
+
+import * as CONFIG from "../config"
+
+const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 ---
 
-<LandingLayout>
-  <HeroCTA />
-  <div class="home-wrapper" id="article">
-    <ProductTabs />
-  </div>
-</LandingLayout>
+<BaseLayout title={formattedContentTitle}>
+  <main>
+    <div class="heroContainer">
+      <div class="hero">
+        <h1>Chainlink Developer Docs</h1>
+        <h2>What are you building?</h2>
+        <ProductTabs />
+      </div>
+    </div>
+    <div class="recommended">
+      <h4>Recommended reading</h4>
+      <h2>We think you'd love to explore</h2>
+      <div>
+        <a href="/getting-started/conceptual-overview">General</a>
+        <a href="/resources/link-token-contracts">Link Token Contracts</a>
+        <a href="/ccip/getting-started">Getting Started with CCIP</a>
+        <a href="/ccip/directory">CCIP Directory</a>
+        <a href="/data-feeds/price-feeds/addresses">Data Feed Addresses</a>
+        <a href="/data-feeds/smartdata/addresses">SmartData Feed Addresses</a>
+        <a href="/data-streams/getting-started-hardhat">Getting Started with Data Streams</a>
+        <a href="/data-streams/crypto-streams">Data Streams Addresses</a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
 
 <style>
-  .home-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-12x);
-  }
-
   body {
-    background-color: #f5f7fd;
+    background-color: white;
     z-index: 10;
   }
   body:after {
-    background-image: url("/images/homepage-shape.svg");
     background-repeat: no-repeat;
     position: absolute;
     width: calc(100% + 275px);
@@ -35,5 +52,142 @@ import HeroCTA from "../features/landing/sections/HeroCTA.astro"
     bottom: auto;
     left: -275px;
     overflow: hidden;
+  }
+
+  .heroContainer {
+    padding-top: var(--space-16x);
+  }
+
+  .hero {
+    margin: 0 auto;
+    padding-left: var(--space-6x);
+    padding-right: var(--space-6x);
+  }
+
+  .hero h1 {
+    font-weight: 600;
+    font-size: var(--space-10x);
+    line-height: 44px;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.96px;
+    margin-bottom: var(--space-16x);
+    color: var(--gray-900);
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+  }
+
+  .hero h2,
+  .recommended h2 {
+    color: var(--gray-900);
+  }
+  .hero h2 {
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 28px;
+    margin-bottom: 16px;
+  }
+
+  .recommended h2 {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 36px;
+    margin-bottom: 40px;
+  }
+
+  .recommended {
+    max-width: var(--max-width);
+    padding-left: var(--space-6x);
+    padding-right: var(--space-6x);
+  }
+
+  .recommended h4 {
+    font-family: var(--font-family-text);
+    color: var(--gray-600);
+    font-size: var(--space-3x);
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 16px;
+  }
+
+  .recommended div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4x);
+    margin-top: var(--space-8x);
+  }
+
+  .recommended a {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-4x) var(--space-5x);
+    box-shadow: 0px 0px var(--space-5x) var(--space-3x) #0c162c0a;
+    border-radius: var(--space-1x);
+    transition: all 0.2s ease-in-out;
+    color: var(--gray-900);
+  }
+
+  .recommended a:hover {
+    background-color: var(--blue-100);
+  }
+
+  @media (min-width: 50em) {
+    .hero {
+      max-width: var(--fullwidth-max-width);
+    }
+
+    .heroContainer {
+      padding-top: var(--space-24x);
+    }
+
+    .hero h1 {
+      font-weight: 600;
+      font-size: 48px;
+      line-height: 52px;
+    }
+    .recommended h2 {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 32px;
+    }
+
+    .hero h2 {
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .recommended {
+      margin: var(--space-16x) auto;
+      max-width: var(--fullwidth-max-width);
+    }
+
+    .heroContainer {
+      background: linear-gradient(180deg, #f1f5fe 0%, white 100%);
+    }
+
+    .recommended h2 {
+      font-size: var(--space-12x);
+      line-height: 52px;
+    }
+
+    .recommended h4 {
+      font-size: var(--space-4x);
+      line-height: var(--space-6x);
+      margin-bottom: var(--space-2x);
+    }
+  }
+  @media (min-width: 72em) {
+    .hero {
+      max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
+
+    .recommended {
+      max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
   }
 </style>

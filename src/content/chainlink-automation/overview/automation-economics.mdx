@@ -7,19 +7,53 @@ whatsnext: { "Automation Architecture": "/chainlink-automation/concepts/automati
 "Supported Networks for Automation": "/chainlink-automation/overview/supported-networks" }
 ---
 
+import { TabsContent } from "@components/Tabs"
+import { Aside } from "@components"
+
 ## Cost of using Chainlink Automation
 
-Chainlink Automation only requires an execution fee for transactions onchain. This fee includes the transaction cost, a node operator percentage fee (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The percentage fee compensates the Automation Network for monitoring and performing your upkeep. The Automation percentage fee varies by chain and is listed on our [Supported Networks](/chainlink-automation/overview/supported-networks) page.
+Chainlink Automation requires only an execution fee for transactions onchain. This fee includes the transaction cost, a node operator percentage fee, and a small fixed gas overhead accounting for gas between the network and the registry.
+The percentage fee compensates the Automation Network for monitoring and performing your upkeep. The Automation percentage fee varies by chain and is listed on our [Supported Networks](/chainlink-automation/overview/supported-networks) page.
 
-**Formula for Registry v2.1**
+The fee calculation for upkeeps that are configured for LINK payments (or other non-native payments as applicable) have a conversion from native tokens to LINK (or other non-native payments as applicable).
+This conversion is not performed in the fee calculation for upkeeps that are configured for native token payments. Otherwise, the fee formula is the same for both payment types:
 
-Fee<sub>LINK</sub> = [tx.gasPrice<sub>Native WEI</sub> * (gasUsed + gasOverhead) * (1 + premium%)]/[LINK/Native<sub>Rate in WEI</sub>]
+{/* prettier-ignore */}
+<TabsContent sharedStore="paymentMethod" client:visible>
+<Fragment slot="tab.1">LINK</Fragment>
+<Fragment slot="tab.2">Native tokens</Fragment>
+<Fragment slot="panel.1">
+**Formula for Registry v2.3**
+
+Fee<sub>LINK</sub> = [tx.gasPrice<sub>Native WEI</sub> \* gasUsed \* (1 + premium%) + (gasOverhead \* tx.gasPrice<sub>Native WEI</sub>)]/[LINK/Native<sub>Rate in WEI</sub>]
+
+</Fragment>
+<Fragment slot="panel.2">
+**Formula for Registry v2.3**
+
+Fee<sub>Native</sub> = tx.gasPrice<sub>Native WEI</sub> \* gasUsed \* (1 + premium%) + (gasOverhead \* tx.gasPrice<sub>Native WEI</sub>)
+
+</Fragment>
+</TabsContent>
 
 There is no registration fee or other fees for any offchain computation.
 
+<Aside type="note" title="Additional fees for specific cases">
+  On Automation v2.3 and earlier, there is an additional flat per-transaction fee of 0.01 LINK in the following cases:
+
+    - For mainnet transactions on Optimism and Base to account for L1 transaction costs, which ensures that node operators are fairly compensated
+    - For testnet transactions on all supported networks to account for node infrastructure costs
+
+</Aside>
+
 ### Fee calculation example
 
-An upkeep transaction was [performed](https://polygonscan.com/tx/0x19309782e15952c90dcadcc02cbf34f331daaeee369d3e3acca43bade02af105) on _Polygon mainnet_. It used _110,051_ gas at a gas price of _182,723,799,380 wei_. The node operator percentage on Polygon was _70%_ at the time of this transaction, and this fee [varies by network](/chainlink-automation/overview/supported-networks). The LINK/MATIC exchange rate for this transaction was _7,308,290,731,273,610,000 wei_. The upkeep's LINK balance was reduced by a fee of _0.008077 LINK_. The preceding information and calculation can be found in the table below:
+An upkeep transaction was [performed](https://polygonscan.com/tx/0x19309782e15952c90dcadcc02cbf34f331daaeee369d3e3acca43bade02af105) on _Polygon mainnet_. It used _110,051_ gas at a gas price of _182,723,799,380 wei_.
+The node operator percentage on Polygon was _70%_ at the time of this transaction, and this fee [varies by network](/chainlink-automation/overview/supported-networks).
+
+The tables below show how the fees are calculated for upkeeps configured for LINK payments:
+
+The LINK/MATIC exchange rate for this transaction was _7,308,290,731,273,610,000 wei_. The upkeep's LINK balance was reduced by a fee of _0.008077 LINK_. The preceding information and calculation can be found in the table below:
 
 | Variable                          | Description                                                                                                                       | Value                     |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |

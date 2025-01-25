@@ -24,7 +24,8 @@ export const evmProducts = [
   {
     title: "CCIP",
     description: "Global standard for building secure cross-chain applications.",
-    learnMorelink: "ccip",
+    docsLandingLink: "/ccip",
+    learnMoreLink: "https://dev.chain.link/products/ccip",
     image: ccipLogo,
     shape: ccipShape,
     chains: [
@@ -42,12 +43,14 @@ export const evmProducts = [
       { id: "gnosis-chain", title: "Gnosis Chain" },
       { id: "mode", title: "Mode" },
       { id: "metis", title: "Metis" },
+      { id: "zksync", title: "ZKsync" },
     ],
   },
   {
     title: "Data Feeds",
     description: "Decentralized and high-quality data for DeFi, sports, weather, and more.",
-    learnMorelink: "data-feeds",
+    docsLandingLink: "/data-feeds",
+    learnMoreLink: "https://dev.chain.link/products/data?sub-product=Data+Feeds",
     image: dataFeedsLogo,
     shape: dataFeedShape,
     chains: [
@@ -64,6 +67,7 @@ export const evmProducts = [
       { id: "scroll", title: "Scroll" },
       { id: "linea", title: "Linea" },
       { id: "zksync", title: "zkSync" },
+      { id: "soneium", title: "Soneium" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
@@ -72,7 +76,8 @@ export const evmProducts = [
   {
     title: "Data Streams",
     description: "Secure and reliable high-frequency market data for ultra-fast derivatives products.",
-    learnMorelink: "data-streams",
+    docsLandingLink: "/data-streams",
+    learnMoreLink: "https://dev.chain.link/products/data?sub-product=Data+Streams",
     image: dataStreamsLogo,
     shape: dataStreamsShape,
     links: [
@@ -90,8 +95,9 @@ export const evmProducts = [
   },
   {
     title: "Functions",
-    description: "Serverless developer platform that can fetch data from any API and run custom compute.",
-    learnMorelink: "chainlink-functions",
+    description: "Serverless platform that fetches data from any API & runs custom compute.",
+    docsLandingLink: "/chainlink-functions",
+    learnMoreLink: "https://dev.chain.link/products/functions",
     image: functionsLogo,
     shape: functionsShape,
     chains: [
@@ -106,7 +112,8 @@ export const evmProducts = [
   {
     title: "Automation",
     description: "Reliable, high-performance, decentralized automation for smart contracts.",
-    learnMorelink: "chainlink-automation",
+    docsLandingLink: "/chainlink-automation",
+    learnMoreLink: "https://dev.chain.link/products/automation",
     image: automationLogo,
     shape: automationShape,
     chains: [
@@ -121,10 +128,11 @@ export const evmProducts = [
   {
     title: "VRF",
     description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFTs.",
-    learnMorelink: "vrf",
+    docsLandingLink: "/vrf",
+    learnMoreLink: "https://dev.chain.link/products/vrf",
     image: vrfLogo,
     shape: vrfShape,
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
 ] as ProductCardProps[]

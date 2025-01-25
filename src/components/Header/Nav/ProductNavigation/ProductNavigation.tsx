@@ -9,11 +9,14 @@ type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
   productsNav: ProductsNav
   subProductsNav?: SubProductsNav
+  showMegaMenu: () => void
+  isMegamenuOpen: boolean
+  exitMegamenu: () => void
 }
 
 export const ProductNavigation = (props: Props) => (
   <>
     <Desktop {...props} />
-    <Mobile {...props} />
+    <Mobile />
   </>
 )

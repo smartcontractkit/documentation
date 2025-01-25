@@ -56,17 +56,33 @@ const parseBaseUrl = (data: string): string => {
 }
 
 const processSiteMap = (baseUrl: string): string => {
-  const siteMap = `${cwd()}/dist/sitemap-0.xml`
+  const siteMap = `${cwd()}/.vercel/output/static/sitemap-0.xml`
   const linksFile = `${tempDir}/sitemap-urls.txt`
 
   const data = readFileSync(siteMap, { encoding: "utf8" })
   const regex = /<loc>(?<link>.*?)<\/loc>/gm
   const links: string[] = []
 
+  // Use the appropriate ignore file based on mode
+  const ignoredPatternsFile =
+    mode === "external"
+      ? `${cwd()}/src/scripts/link-check/ignoredfiles-external.txt`
+      : `${cwd()}/src/scripts/link-check/ignoredfiles-internal.txt`
+
+  const ignoredPatterns = readFileSync(ignoredPatternsFile, "utf8")
+    .split("\n")
+    .filter((line) => line && !line.startsWith("#"))
+    .map((pattern) => new RegExp(pattern))
+
   for (const loc of data.matchAll(regex)) {
     const link = loc.groups?.link
     if (link) {
-      links.push(link.replace("https://docs.chain.link", baseUrl))
+      const normalizedLink = link.replace("https://docs.chain.link", baseUrl)
+      // Only add the link if it doesn't match any of the ignored patterns
+      const shouldInclude = !ignoredPatterns.some((pattern) => pattern.test(normalizedLink))
+      if (shouldInclude) {
+        links.push(normalizedLink)
+      }
     }
   }
 
@@ -91,7 +107,7 @@ try {
   exit(1)
 }
 
-server = spawn("npm", ["run", "preview"], {
+server = spawn("npm", ["run", "dev"], {
   stdio: ["ignore", "pipe", "pipe"],
 })
 
@@ -121,7 +137,7 @@ server.stdout.on("data", (data) => {
             "--input-file",
             linksFile,
             "--skip-file",
-            `${cwd()}/src/scripts/link-check/ignoredfiles.txt`,
+            `${cwd()}/src/scripts/link-check/ignoredfiles-internal.txt`,
             "--hosts",
             baseUrl,
           ]

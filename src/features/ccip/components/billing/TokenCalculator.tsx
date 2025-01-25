@@ -35,9 +35,17 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
       const { tokens, token, sourceBlockchain, destinationBlockchain } = params
       const tokenData = tokens[token]
       if (!sourceBlockchain) {
+        if (!tokenData) {
+          return { blockchains: [] }
+        }
         return { blockchains: Object.keys(tokenData) as SupportedChain[] }
       } else if (sourceBlockchain && !destinationBlockchain) {
-        return { blockchains: Object.keys(tokenData[sourceBlockchain]) as SupportedChain[] }
+        const sourceData = tokenData[sourceBlockchain]
+        if (sourceData) {
+          return { blockchains: Object.keys(sourceData) as SupportedChain[] }
+        } else {
+          return { blockchains: [] }
+        }
       }
     },
     fees: (params: FetchParams) => {
@@ -317,16 +325,16 @@ const NetworkFeeCalculator = () => {
             </th>
           </tr>
           <tr>
-            <th style={cellStyle}>(Wrapped) Gas Token</th>
             <th style={cellStyle}>LINK</th>
+            <th style={cellStyle}>Others</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td style={cellStyle}>{fees ? fees.token : ""}</td>
             <td style={cellStyle}>{fees ? fees.mechanism : ""}</td>
-            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
             <td style={cellStyle}>{fees ? fees.fee.linkFee : ""}</td>
+            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
           </tr>
         </tbody>
       </table>

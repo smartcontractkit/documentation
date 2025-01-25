@@ -1,9 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner"
 
 export const NotificationData: BannerContent = {
-  description: "CCIP is now live for all developers.",
+  description: "The CCIP Token Manager is now live.",
   type: "info",
-  linkText: "See what's new.",
-  linkUrl:
-    "https://blog.chain.link/ccip-general-availability/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ccip-ga",
+  linkText: "Try it now.",
+  linkUrl: "https://tokenmanager.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ga",
 }

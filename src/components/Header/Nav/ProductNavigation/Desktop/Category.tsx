@@ -15,7 +15,7 @@ type CategoryProps = {
 const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(({ label, icon, href, className }, forwardedRef) => (
   <NavigationMenu.Link asChild>
     <a className={clsx(styles.link, className)} href={href} ref={forwardedRef}>
-      {icon && <img height={24} width={24} src={`/assets/icons/${icon}-navbar-icon.svg`} />}
+      {icon && <img height={20} width={20} src={`/assets/icons/${icon}-navbar-icon.svg`} />}
       {label}
     </a>
   </NavigationMenu.Link>

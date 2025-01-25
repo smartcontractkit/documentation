@@ -1,0 +1,74 @@
+---
+import changelogData from "../../public/changelog.json"
+import { chainNames } from "./QuickLinks/data/productChainLinks"
+import { marked } from "marked"
+
+export type Props = {
+  topic: string
+  subTopic?: string
+}
+
+export interface ChangelogEntry {
+  category: string
+  changes?: string[]
+  date: string
+  description: string
+  relatedNetworks?: RelatedNetwork[]
+  relatedTokens?: string[]
+  title: string
+  topic: string
+  subTopic?: string
+  urls?: string[]
+}
+
+type RelatedNetwork = keyof typeof chainNames
+
+function isValidNetwork(entry: any): entry is ChangelogEntry {
+  if (entry.relatedNetworks) {
+    if (!Array.isArray(entry.relatedNetworks)) {
+      throw new Error(
+        `Invalid type for field "relatedNetworks" in entry "${
+          entry.title
+        }": expected array, received ${typeof entry.relatedNetworks}`
+      )
+    }
+    for (const network of entry.relatedNetworks) {
+      if (!(network in chainNames)) {
+        throw new Error(
+          `Invalid relatedNetwork "${network}" in entry "${entry.title}". Must be one of: ${Object.keys(
+            chainNames
+          ).join(", ")}`
+        )
+      }
+    }
+  }
+  return true
+}
+
+let changelog: ChangelogEntry[] = []
+
+if (Array.isArray(changelogData)) {
+  changelog = changelogData.filter(isValidNetwork)
+} else {
+  console.error("Changelog data is not an array.")
+}
+
+const { topic, subTopic } = Astro.props as Props
+
+const entries = changelog.filter(
+  (entry) => (entry.topic === topic && !subTopic) || (subTopic && entry.subTopic === subTopic)
+)
+---
+
+{
+  entries.map((entry) => (
+    <section>
+      <h2 id={entry.date + "-" + entry.title.toLowerCase().replace(/ /g, "-")}>
+        <a href={`#${entry.date}-${entry.title.toLowerCase().replace(/ /g, "-")}`}>
+          {entry.date} - {entry.title}
+        </a>
+      </h2>
+      <article set:html={marked.parse(entry.description)} />
+    </section>
+  ))
+}

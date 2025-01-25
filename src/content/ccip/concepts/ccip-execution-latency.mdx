@@ -1,0 +1,148 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Execution Latency"
+---
+
+import { Aside } from "@components"
+
+## CCIP transaction lifecycle
+
+As depicted in the [CCIP detailed architecture](/ccip/architecture#detailed-architecture) section, the CCIP transaction lifecycle involves multiple stages from the source blockchain to the destination blockchain:
+
+**Source blockchain:**
+
+    1. A sender contract or externally owned account (EOA) sends a CCIP message.
+    1. The transaction is included in a block and processed by “network participants” (validators in PoS and miners in PoW blockchains).
+    1. The Committing Decentralized Oracle Network (DON) waits for the block containing the transaction to achieve finality.
+
+**Destination blockchain:**
+
+    1. After finality is reached on the source blockchain, the Committing DON relays the Merkle root of a batch of finalized messages to the CommitStore contract on the destination chain.
+    1. The Risk Management Network verifies and blesses the committed Merkle root on the destination chain, confirming the integrity of the Merkle root and the messages it authenticates.
+    1. The Executing DON executes the message on the destination chain. If the execution cost on the destination chain is within an acceptable range, the message is executed promptly after being blessed by the Risk Management Network. If the execution cost increases, such as due to a gas price spike, the Executing DON adjusts the gas price incrementally to achieve eventual execution, potentially introducing additional latency (Smart Execution).
+
+The combined latencies of each step in the transaction lifecycle on both the source and destination blockchains impact the total end-to-end execution time for a CCIP transaction. Because different blockchains have unique optimizations for their consensus mechanisms, block sizes, and block times, some blockchains are faster at processing transactions than others. However, various factors can lead to variation in transaction times, including when transferring between the same pair of blockchains:
+
+    - **Finality:** Finality is the assurance that past transactions included onchain are extremely difficult or impossible to revert. Finality varies across different blockchains. Some blockchains offer instant finality, while others require multiple block confirmations.
+    - **Network Congestion:** Network congestion occurs when the volume of transactions exceeds the capacity of the blockchain network, leading to delays in transaction processing. Multiple factors can contribute to network congestion, such as high transaction volumes, increased adoption of blockchain technologies, and events like token launches.
+    - **Gas Price:** Network participants often prioritize transactions with higher gas prices. If a low gas price is set for a transaction, it can take longer to process than one with a higher gas price, especially during network congestion.
+
+Waiting for finality on the source blockchain is crucial when transacting across multiple networks, as it helps ensure that actions taken on the destination blockchain are based on transactions on the source blockchain that are extremely difficult or impossible to revert. Because the time to achieve finality varies across blockchains and significantly impacts the total CCIP execution latency, the following sections will focus on explaining the different types of finality and how CCIP approaches source chain security on each supported blockchain.
+
+## Finality
+
+Different blockchains employ various consensus mechanisms, leading to different types of finality. This affects users, as even once a transaction is onchain, they must often wait for it to be considered finalized (a time period that varies by blockchain). Finality with blockchains can primarily be categorized into two main types: **probabilistic** finality and **deterministic** finality:
+
+    - **Probabilistic finality** is mainly used by Proof-of-Work blockchains and is not the main subject of this article.
+    - **Deterministic finality** is widely used in most smart contract enabled blockchains that Chainlink CCIP is integrated with today.
+
+### Types of Deterministic Finality
+
+#### Finality on L1 PoA/PoS Chains
+
+Typically, Proof of Authority / Proof of Stake (PoA/PoS) chains use a deterministic model to determine when a block/transaction is considered final. The consensus protocol utilized in such a system is usually designed to be Byzantine Fault Tolerant (BFT). This means that under the assumption that some subset (usually between 51% - 67%) of the participating nodes/stake are honest, and there are no errors in the protocol’s implementation, the system works as expected and finality assurances are upheld.
+
+**Examples:**
+
+    - **Ethereum's PoS:** Ethereum PoS achieves Byzantine Fault Tolerance (BFT) through economic constraints. Ethereum PoS manages finality using "checkpoint" blocks. The first block in each epoch is designated as a checkpoint. Validators vote on pairs of checkpoints. When two-thirds of the total staked ETH validators agree on the validity of the pair, the earlier of the two checkpoints becomes finalized. To revert a finalized block, an attacker would have to burn at least one-third of the total staked ether, making such an attack extremely costly and difficult to achieve.
+
+    - **Comet BFT (Cosmos Hub Network):** Comet BFT is a Byzantine Fault Tolerant (BFT) consensus algorithm designed to provide instant finality. It achieves BFT by ensuring that consensus can be reached as long as more than two-thirds of validators are honest. Once these validators confirm a block, it is immediately considered final and irreversible.
+
+    - **Avalanche:** Avalanche uses a random sampling of validators who repeatedly vote on transactions. This process continues until enough validators agree, achieving sub-second finality.
+
+    - **BNB Chain:** BNB Chain uses a combination of Proof of Staked Authority (PoSA) and Byzantine Fault Tolerance (BFT) algorithms to finalize transactions. If two-thirds or more of the validators vote as expected, it takes an average of 2.5 blocks to finalize a transaction.
+
+#### Finality on L2s
+
+Layer 2 blockchains, or L2s, are implementations of blockchain systems built on top of existing blockchains (known as Layer 1, or L1) to improve scalability and reduce transaction costs. While they operate independently, L2s are designed to inherit the security of the underlying Layer 1 blockchain: L2s post periodic checkpoints to the underlying blockchain they are built on top of, settling their state and providing stronger finality guarantees than what is provided by their native model.
+
+**Optimistic Rollups:**
+
+Most of the popular optimistic rollups that exist today are run through a centralized sequencer. The sequencer is responsible for ordering incoming transactions, including them in blocks, batching them together and posting them as a bundle to the underlying blockchain they settle on. These bundles serve as commitments and once posted provide more certainty on the finalized state of the rollup. Given that the sequencer is centralized, users are faced with the choice to trust that it won’t change the order of the transactions or wait until these commitments are posted to the underlying L1 blockchain.
+
+The optimistic model means that the commitment is valid by default when it is posted to the Layer 1 (L1) blockchain. This is why optimistic rollups typically provide a challenge period, during which a commitment can be challenged if it turns out to be fraudulent. If a challenge is successful, the commitment is replaced and the rollup state is updated to the correct one.
+
+**The typical lifecycle of an optimistic rollup transaction is:**
+
+    1. Transaction is included in an L2 block by the sequencer.
+    1. Transaction is included in a batch that is committed to the L1.
+    1. Challenge period during which a batch can be challenged if it’s invalid - usually lasts a week or more.
+    1. Transaction is finalized on the L1 - at this point it is considered irreversible.
+
+In the popular optimistic rollup implementations that exist (e.g. Optimism, Arbitrum, etc.), a commitment can only be challenged if it contains an invalid state root. If the commitment is a valid continuation of the L2, it cannot be challenged. Therefore, seeing a commitment and verifying that it is valid is sufficient certainty for most users to assume finality on this type of L2s, as long as they trust the finality guarantees of the underlying L1. Importantly, this guarantee is supported by waiting for the commitment to the L1 to be finalized according to the L1’s finality model.
+
+**ZK Rollups:**
+
+Similarly to optimistic rollups, most popular ZK rollups that exist today are run through a centralized sequencer. The ZK rollup sequencer is also responsible for ordering incoming transactions, including them in blocks, batching them together and posting them as a bundle to the underlying L1 blockchain they settle on. However, in the case of ZK rollups, they also post a validity proof with each batch that is automatically verified onchain on the underlying L1. This validity proof removes the need for a challenge period like on optimistic rollups.
+
+**The typical lifecycle of a ZK rollup transaction is:**
+
+    1. Transaction is included in an L2 block by the sequencer.
+    1. Transaction is included in a batch that is committed to the L1.
+    1. Validity proof is posted on the L1 that proves the commitment from step 2.
+    1. Transaction is finalized on the L1.
+    1. Transaction is considered irreversible. In many cases this happens after a considerable rollup-specific "safety delay" (12-24 hours) from the previous step, which is expected to be reduced as the technology matures.
+
+### How CCIP Determines Finality
+
+The end-to-end transaction times of CCIP messages depend largely on the time-to-finality of the source blockchain. Different blockchains have varying finality types, leading to different times to reach finality. This section explains how CCIP determines finality for different blockchains.
+
+#### Finality Tag
+
+Blockchains with deterministic finality often use a finality tag to indicate when a block is considered final. The finality tag delineates which blocks are finalized, offering a standardized way to determine transaction finality.
+
+    - After The Merge, Ethereum shifted to an epoch-based process in PoS, where finality is achieved when two-thirds of validators agree on block finalization over two epochs (64 slots, approximately 12.8 minutes). The Ethereum team introduced the finality tag to provide a default block parameter in specific [JSON-RPC calls](https://ethereum.org/en/developers/docs/apis/json-rpc/), delineating finalized blocks without ambiguity. The finality tag is supported by various Ethereum clients, including Geth.
+    - Other blockchains have adopted similar finality tags to indicate finalized blocks.
+
+#### Block Depth
+
+In some cases, CCIP relies on block depth to determine when a transaction can be considered final. The block depth refers to the number of successive blocks added after the one containing a given transaction. CCIP uses a sufficient number of blocks to consider the transaction most likely safe from reorgs. There are three cases where CCIP would use block depth:
+
+    - Blockchains with probabilistic finality.
+    - Blockchains with deterministic finality but without a finality tag: In some cases, blockchains have deterministic finality but do not provide a finality tag.
+    - Blockchains with deterministic finality but slow finality times: In some cases, deterministic finality can take a significant amount of time to reach, leading to a poor user experience.
+
+<Aside type="note" title="Risks of Utilizing Block Depths for Finality">
+  Utilizing block depth carries inherent risks, as absolute certainty of irreversibility cannot be guaranteed. Users
+  should be aware of these risks, including the potential for chain reorgs, when relying on CCIP or any other
+  cross-chain bridges for blockchains where block depth is used to determine finality.
+</Aside>
+
+### Finality by blockchain
+
+This section provides an overview of the finality methods CCIP uses to determine finality for each currently supported blockchain. The table below lists each blockchain and its finality method—whether it uses a finality tag or block depth (with the number of blocks specified for block depth)—and the estimated time required to achieve finality.
+
+<Aside type="note" title="Understanding Estimated Finality Times">
+  The estimated finality times presented in the table below are averages calculated over several transactions. These
+  times can vary significantly due to network conditions and other factors. For instance, in rollup chains, finality
+  depends on when transactions are committed by the sequencer on Layer 1 (L1) and finalized there.
+</Aside>
+
+| Source Blockchain | Finality Method                           | Estimated Time for Finality |
+| ----------------- | ----------------------------------------- | --------------------------- |
+| Arbitrum          | Finality tag                              | 17 minutes                  |
+| Astar             | Finality tag                              | 35 seconds                  |
+| Avalanche         | Finality tag                              | < 1 second                  |
+| Base              | Finality tag                              | 18 minutes                  |
+| Blast             | Finality tag                              | 20 minutes                  |
+| BNB               | Finality tag                              | 5 seconds                   |
+| Bob               | Finality tag                              | 2 hours                     |
+| B²                | Finality tag                              | 20 minutes                  |
+| Celo              | Finality tag                              | < 1 second                  |
+| Ethereum          | Finality tag                              | 15 minutes                  |
+| Gnosis            | Finality tag                              | 3 minutes                   |
+| Kroma             | Finality tag                              | 25 minutes                  |
+| Linea             | [Block depth](#block-depth) (600 blocks)  | 20 minutes                  |
+| Mantle            | Finality tag                              | 28 minutes                  |
+| Metis             | Finality tag                              | 2 hours                     |
+| Mode              | Finality tag                              | 37 minutes                  |
+| Optimism          | Finality tag                              | 20 minutes                  |
+| Polygon           | Finality tag                              | 2 minutes                   |
+| Ronin             | Finality tag                              | 10 seconds                  |
+| Scroll            | Finality tag                              | 1 hour                      |
+| Sonic             | [Block depth](#block-depth) (10 blocks)   | 7 seconds                   |
+| Shibarium         | Finality tag                              | 1 minute                    |
+| Wemix             | Finality tag                              | < 1 second                  |
+| Zircuit           | Finality tag                              | 21 minutes                  |
+| ZKsync            | [Block depth](#block-depth) (1200 blocks) | 20 minutes                  |

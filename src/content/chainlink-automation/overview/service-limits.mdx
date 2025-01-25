@@ -1,0 +1,26 @@
+---
+section: automation
+date: Last Modified
+title: "Chainlink Automation Service Limits"
+isMdx: true
+whatsnext: { "Register Log Trigger Upkeeps": "/chainlink-automation/guides/log-trigger/" }
+---
+
+## Maximum logs processed for log trigger upkeeps
+
+Chainlink Automation nodes look back over a limited range of the latest blocks on any particular chain. During this process, the nodes process a limited number of logs per block per upkeep, using a minimum dequeue method to ensure that the latest logs are processed first. After this, the nodes may process additional remaining logs on a best effort basis, but this is not guaranteed. If you need all the remaining logs to be processed, configure a manual trigger as backup.
+
+Expect the following numbers of logs to be processed:
+
+| Chain     | Logs per block per upkeep                  |
+| --------- | ------------------------------------------ |
+| Ethereum  | 20                                         |
+| BSC (BNB) | 4                                          |
+| Polygon   | 4                                          |
+| Avalanche | 4                                          |
+| Gnosis    | 1                                          |
+| Optimism  | 4                                          |
+| BASE      | 4                                          |
+| Arbitrum  | 1 log every 2 blocks, or 2 logs per second |
+
+Note: Log triggers are not supported on Fantom.

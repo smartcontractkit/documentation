@@ -1,0 +1,777 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCT - owner() token with Lock and Release Pool in forked environments"
+isIndex: false
+---
+
+import { Aside, ClickToZoom } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Common callout="importPackage" />
+
+This tutorial will guide you through the process of testing the procedure of enabling your own tokens in CCIP. We will use the CCT-compatible ERC-20 token with `owner()` function implemented. We will use Lock & Release Pool for transferring this token across different blockchains using Chainlink CCIP.
+
+## Prerequisites
+
+<Aside type="note" title="Prerequisites">
+  Familiarize yourself with the [CCT standard](/ccip/concepts/cross-chain-tokens) and [CCIP
+  architecture](/ccip/architecture) before proceeding with this guide.
+</Aside>
+
+Before we start with this guide, let's recap parts of the CCT standard that we will need for it.
+
+### Requirements for Cross-Chain Tokens
+
+Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
+
+- **Recommended Permissionless Token Administrator address registration methods**: A token can utilize either of these supported function signatures to register permissionlessly:
+
+  - `owner()`: This function returns the token contract owner's address.
+  - `getCCIPAdmin()`: This function returns the token administrator's address and is recommended for new tokens, as it allows for abstraction of the CCIP Token Administrator role from other common roles, like `owner()`.
+
+    <Aside type="note">
+      In the event that these functions are not available, registration can be performed by submitting a form
+      [here](https://chain.link/ccip-contact).
+    </Aside>
+
+- **Requirements for CCIP token transfers**: The token's smart contract must meet minimum requirements to integrate with CCIP.
+
+  - **Burn & Mint Requirements**:
+    - The token smart contract must have the following functions:
+      - `mint(address account, uint256 amount)`: This function is used to mint the `amount` of tokens to a given `account` on the destination blockchain.
+      - `burn(uint256 amount)`: This function is used to burn the `amount` of tokens on the source blockchain.
+      - `decimals()`: Returns the token's number of decimals.
+      - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+      - `burnFrom(address account, uint256 amount)`: This function burns a specified number of tokens from the provided account on the source blockchain. **Note**: This is an optional function. We generally recommend using the `burn` function, but if you use a tokenPool that calls `burnFrom`, your token contract will need to implement this function.
+    - On the source and destination blockchains, the token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+  - **Lock & Mint Requirements**:
+    - The token smart contract must have the following functions:
+      - `decimals()`: Returns the token's number of decimals.
+      - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+    - On the destination blockchain, The token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+
+If you don't have an existing token: For all blockchains where tokens need to be burned and minted (for example, the source or destination chain in the case of Burn and Mint, or the destination blockchain in the case of Lock and Mint), Chainlink provides a [BurnMintERC677](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) contract that you can use to deploy your token in minutes. This token follows the [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/), allowing you to use it as-is or extend it to meet your specific requirements.
+
+### Understanding the Procedure
+
+It is also important first to understand the overall procedure for enabling your tokens in CCIP. This procedure involves deploying tokens and token pools, registering administrative roles, and configuring token pools to enable secure token transfers using CCIP. The steps in the diagram below highlight the flow of actions needed to enable a token for cross-chain transfers. Whether you're working with an Externally Owned Account (EOA) or a **Smart Account** (such as one using a multisig scheme), the overall logic remains the same. You'll follow the same process to enable cross-chain token transfers, configure pools, and register administrative roles.
+
+The diagram below outlines the entire process:
+
+<ClickToZoom
+  src="/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  alt="Process for enabling a token in CCIP."
+  style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+/>
+
+## Before You Begin
+
+1.  **Install Foundry**:
+    If you haven't already, follow the instructions in the [Foundry documentation](https://book.getfoundry.sh/getting-started/installation) to install Foundry.
+
+1.  **Create new Foundry project**: Create a new Foundry project by running the following command:
+
+    ```bash
+    forge init
+    ```
+
+1.  **Set up your environment**: Create a `.env` file, and fill in the required values:
+
+    Example `.env` file:
+
+    ```bash
+    ETHEREUM_SEPOLIA_RPC_URL=<ethereum_sepolia_rpc_url>
+    BASE_SEPOLIA_RPC_URL=<base_sepolia_rpc_url>
+    ```
+
+## Create the `owner()` ERC-20 token
+
+Inside the `test` folder create the new Solidity file and name it `CCIPv1_5LockReleasePoolFork.t.sol`. We will use only this file through out the rest of this guide.
+
+Create the CCT-compatible ERC-20 token with `owner()` function.
+
+```solidity
+// test/CCIPv1_5LockReleasePoolFork.t.sol
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import { ERC20, IERC20 } from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/ERC20.sol";
+import { OwnerIsCreator } from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
+
+contract MockERC20TokenOwner is ERC20, OwnerIsCreator {
+  constructor() ERC20("MockERC20Token", "MTK") {}
+
+  function mint(address account, uint256 amount) public onlyOwner {
+    _mint(account, amount);
+  }
+}
+```
+
+## Test the CCT enabling procedure
+
+Expand the existing `CCIPv1_5LockReleasePoolFork.t.sol` file to create and set up our basic test.
+
+```solidity
+// test/CCIPv1_5LockReleasePoolFork.t.sol
+
+import { Test, Vm } from "forge-std/Test.sol";
+import { CCIPLocalSimulatorFork, Register } from "../../../src/ccip/CCIPLocalSimulatorFork.sol";
+import { LockReleaseTokenPool, TokenPool } from "@chainlink/contracts-ccip/src/v0.8/ccip/pools/LockReleaseTokenPool.sol";
+import { RegistryModuleOwnerCustom } from "@chainlink/contracts-ccip/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
+import { TokenAdminRegistry } from "@chainlink/contracts-ccip/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
+import { RateLimiter } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/RateLimiter.sol";
+import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
+import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+
+/**
+ * The token code part from previous section goes here...
+ */
+
+contract CCIPv1_5LockReleasePoolFork is Test {
+  CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
+  MockERC20TokenOwner public mockERC20TokenEthSepolia;
+  MockERC20TokenOwner public mockERC20TokenBaseSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolEthSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolBaseSepolia;
+
+  Register.NetworkDetails ethSepoliaNetworkDetails;
+  Register.NetworkDetails baseSepoliaNetworkDetails;
+
+  uint256 ethSepoliaFork;
+  uint256 baseSepoliaFork;
+
+  address alice;
+
+  function setUp() public {
+    alice = makeAddr("alice");
+
+    string memory ETHEREUM_SEPOLIA_RPC_URL = vm.envString("ETHEREUM_SEPOLIA_RPC_URL");
+    string memory BASE_SEPOLIA_RPC_URL = vm.envString("BASE_SEPOLIA_RPC_URL");
+    ethSepoliaFork = vm.createSelectFork(ETHEREUM_SEPOLIA_RPC_URL);
+    baseSepoliaFork = vm.createFork(BASE_SEPOLIA_RPC_URL);
+
+    ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+    vm.makePersistent(address(ccipLocalSimulatorFork));
+  }
+}
+```
+
+#### Step 1) Deploy token on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function setUp() public {
+    // Code from previous section goes here...
+
+    // Step 1) Deploy token on Ethereum Sepolia
+    vm.startPrank(alice);
+    mockERC20TokenEthSepolia = new MockERC20TokenOwner();
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 2) Deploy token on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function setUp() public {
+    // Code from previous section goes here...
+
+    // Step 2) Deploy token on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    mockERC20TokenBaseSepolia = new MockERC20TokenOwner();
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 3) Deploy LockReleaseTokenPool on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  // Code from previous section goes here...
+
+  function test_forkSupportNewCCIPToken() public {
+    // Step 3) Deploy LockReleaseTokenPool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+    ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    address[] memory allowlist = new address[](0);
+    uint8 localTokenDecimals = 18;
+
+    vm.startPrank(alice);
+    lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
+      IERC20(address(mockERC20TokenEthSepolia)),
+      localTokenDecimals,
+      allowlist,
+      ethSepoliaNetworkDetails.rmnProxyAddress,
+      true, // acceptLiquidity
+      ethSepoliaNetworkDetails.routerAddress
+    );
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 4) Deploy LockReleaseTokenPool on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 4) Deploy LockReleaseTokenPool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+    baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+
+    vm.startPrank(alice);
+    lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
+      IERC20(address(mockERC20TokenBaseSepolia)),
+      localTokenDecimals,
+      allowlist,
+      baseSepoliaNetworkDetails.rmnProxyAddress,
+      true, // acceptLiquidity
+      baseSepoliaNetworkDetails.routerAddress
+    );
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 5) Set the LiquidityManager address and Add liquidity to the pool on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 5) Set the LiquidityManager address and Add liquidity to the pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+    uint256 amountToMint = 1_000_000;
+    uint128 liquidityAmount = 100_000;
+
+    vm.startPrank(alice);
+    mockERC20TokenEthSepolia.mint(address(alice), amountToMint);
+    mockERC20TokenEthSepolia.approve(address(lockReleaseTokenPoolEthSepolia), liquidityAmount);
+    lockReleaseTokenPoolEthSepolia.setRebalancer(address(alice));
+    lockReleaseTokenPoolEthSepolia.provideLiquidity(liquidityAmount);
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 6) Set the LiquidityManager address and Add liquidity to the pool on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 6) Set the LiquidityManager address and Add liquidity to the pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    mockERC20TokenBaseSepolia.mint(address(alice), amountToMint);
+    mockERC20TokenBaseSepolia.approve(address(lockReleaseTokenPoolBaseSepolia), liquidityAmount);
+    lockReleaseTokenPoolBaseSepolia.setRebalancer(address(alice));
+    lockReleaseTokenPoolBaseSepolia.provideLiquidity(liquidityAmount);
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 7) Claim Admin role on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 7) Claim Admin role on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    RegistryModuleOwnerCustom registryModuleOwnerCustomEthSepolia = RegistryModuleOwnerCustom(
+      ethSepoliaNetworkDetails.registryModuleOwnerCustomAddress
+    );
+
+    vm.startPrank(alice);
+    registryModuleOwnerCustomEthSepolia.registerAdminViaOwner(address(mockERC20TokenEthSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 8) Claim Admin role on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 8) Claim Admin role on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    RegistryModuleOwnerCustom registryModuleOwnerCustomBaseSepolia = RegistryModuleOwnerCustom(
+      baseSepoliaNetworkDetails.registryModuleOwnerCustomAddress
+    );
+
+    vm.startPrank(alice);
+    registryModuleOwnerCustomBaseSepolia.registerAdminViaOwner(address(mockERC20TokenBaseSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 9) Accept Admin role on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 9) Accept Admin role on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    TokenAdminRegistry tokenAdminRegistryEthSepolia = TokenAdminRegistry(
+      ethSepoliaNetworkDetails.tokenAdminRegistryAddress
+    );
+
+    vm.startPrank(alice);
+    tokenAdminRegistryEthSepolia.acceptAdminRole(address(mockERC20TokenEthSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 10) Accept Admin role on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 10) Accept Admin role on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    TokenAdminRegistry tokenAdminRegistryBaseSepolia = TokenAdminRegistry(
+      baseSepoliaNetworkDetails.tokenAdminRegistryAddress
+    );
+
+    vm.startPrank(alice);
+    tokenAdminRegistryBaseSepolia.acceptAdminRole(address(mockERC20TokenBaseSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 11) Link token to pool on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 11) Link token to pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    vm.startPrank(alice);
+    tokenAdminRegistryEthSepolia.setPool(address(mockERC20TokenEthSepolia), address(lockReleaseTokenPoolEthSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 12) Link token to pool on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 12) Link token to pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    tokenAdminRegistryBaseSepolia.setPool(address(mockERC20TokenBaseSepolia), address(lockReleaseTokenPoolBaseSepolia));
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 13) Configure Token Pool on Ethereum Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 13) Configure Token Pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    vm.startPrank(alice);
+    TokenPool.ChainUpdate[] memory chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesEthSepolia = new bytes[](1);
+    remotePoolAddressesEthSepolia[0] = abi.encode(address(lockReleaseTokenPoolBaseSepolia));
+    chains[0] = TokenPool.ChainUpdate({
+      remoteChainSelector: baseSepoliaNetworkDetails.chainSelector,
+      remotePoolAddresses: remotePoolAddressesEthSepolia,
+      remoteTokenAddress: abi.encode(address(mockERC20TokenBaseSepolia)),
+      outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
+      inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
+    });
+    uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+    lockReleaseTokenPoolEthSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 14) Configure Token Pool on Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 14) Configure Token Pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesBaseSepolia = new bytes[](1);
+    remotePoolAddressesBaseSepolia[0] = abi.encode(address(lockReleaseTokenPoolEthSepolia));
+    chains[0] = TokenPool.ChainUpdate({
+      remoteChainSelector: ethSepoliaNetworkDetails.chainSelector,
+      remotePoolAddresses: remotePoolAddressesBaseSepolia,
+      remoteTokenAddress: abi.encode(address(mockERC20TokenEthSepolia)),
+      outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
+      inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
+    });
+    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
+    vm.stopPrank();
+  }
+}
+```
+
+#### Step 15) Mint tokens on Ethereum Sepolia and transfer them to Base Sepolia
+
+```solidity
+contract CCIPv1_5LockReleasePoolFork is Test {
+  function test_forkSupportNewCCIPToken() public {
+    // Code from previous section goes here...
+
+    // Step 15) Transfer tokens from Ethereum Sepolia to Base Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    address linkEthSepoliaAddress = ethSepoliaNetworkDetails.linkAddress;
+    address routerEthSepoliaAddress = ethSepoliaNetworkDetails.routerAddress;
+    ccipLocalSimulatorFork.requestLinkFromFaucet(address(alice), 20 ether);
+
+    uint256 amountToSend = 100;
+    Client.EVMTokenAmount[] memory tokenToSendDetails = new Client.EVMTokenAmount[](1);
+    Client.EVMTokenAmount memory tokenAmount = Client.EVMTokenAmount({
+      token: address(mockERC20TokenEthSepolia),
+      amount: amountToSend
+    });
+    tokenToSendDetails[0] = tokenAmount;
+
+    vm.startPrank(alice);
+
+    mockERC20TokenEthSepolia.approve(routerEthSepoliaAddress, amountToSend);
+    IERC20(linkEthSepoliaAddress).approve(routerEthSepoliaAddress, 20 ether);
+
+    uint256 balanceOfAliceBeforeEthSepolia = mockERC20TokenEthSepolia.balanceOf(alice);
+
+    uint64 destinationChainSelector = baseSepoliaNetworkDetails.chainSelector;
+    IRouterClient routerEthSepolia = IRouterClient(routerEthSepoliaAddress);
+    routerEthSepolia.ccipSend(
+      destinationChainSelector,
+      Client.EVM2AnyMessage({
+        receiver: abi.encode(address(alice)),
+        data: "",
+        tokenAmounts: tokenToSendDetails,
+        extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({ gasLimit: 0 })),
+        feeToken: linkEthSepoliaAddress
+      })
+    );
+
+    uint256 balanceOfAliceAfterEthSepolia = mockERC20TokenEthSepolia.balanceOf(alice);
+    vm.stopPrank();
+
+    assertEq(balanceOfAliceAfterEthSepolia, balanceOfAliceBeforeEthSepolia - amountToSend);
+
+    ccipLocalSimulatorFork.switchChainAndRouteMessage(baseSepoliaFork);
+
+    uint256 balanceOfAliceAfterBaseSepolia = mockERC20TokenBaseSepolia.balanceOf(alice);
+    assertEq(balanceOfAliceAfterBaseSepolia, balanceOfAliceBeforeEthSepolia + amountToSend);
+  }
+}
+```
+
+## Final code - full example
+
+```solidity
+// test/CCIPv1_5LockReleasePoolFork.t.sol
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import { Test, Vm } from "forge-std/Test.sol";
+import { CCIPLocalSimulatorFork, Register } from "../../../src/ccip/CCIPLocalSimulatorFork.sol";
+import { LockReleaseTokenPool, TokenPool } from "@chainlink/contracts-ccip/src/v0.8/ccip/pools/LockReleaseTokenPool.sol";
+import { RegistryModuleOwnerCustom } from "@chainlink/contracts-ccip/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
+import { TokenAdminRegistry } from "@chainlink/contracts-ccip/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
+import { RateLimiter } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/RateLimiter.sol";
+import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
+import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+
+import { ERC20, IERC20 } from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/ERC20.sol";
+import { OwnerIsCreator } from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
+
+contract MockERC20TokenOwner is ERC20, OwnerIsCreator {
+  constructor() ERC20("MockERC20Token", "MTK") {}
+
+  function mint(address account, uint256 amount) public onlyOwner {
+    _mint(account, amount);
+  }
+}
+
+contract CCIPv1_5LockReleasePoolFork is Test {
+  CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
+  MockERC20TokenOwner public mockERC20TokenEthSepolia;
+  MockERC20TokenOwner public mockERC20TokenBaseSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolEthSepolia;
+  LockReleaseTokenPool public lockReleaseTokenPoolBaseSepolia;
+
+  Register.NetworkDetails ethSepoliaNetworkDetails;
+  Register.NetworkDetails baseSepoliaNetworkDetails;
+
+  uint256 ethSepoliaFork;
+  uint256 baseSepoliaFork;
+
+  address alice;
+
+  function setUp() public {
+    alice = makeAddr("alice");
+
+    string memory ETHEREUM_SEPOLIA_RPC_URL = vm.envString("ETHEREUM_SEPOLIA_RPC_URL");
+    string memory BASE_SEPOLIA_RPC_URL = vm.envString("BASE_SEPOLIA_RPC_URL");
+    ethSepoliaFork = vm.createSelectFork(ETHEREUM_SEPOLIA_RPC_URL);
+    baseSepoliaFork = vm.createFork(BASE_SEPOLIA_RPC_URL);
+
+    ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+    vm.makePersistent(address(ccipLocalSimulatorFork));
+
+    // Step 1) Deploy token on Ethereum Sepolia
+    vm.startPrank(alice);
+    mockERC20TokenEthSepolia = new MockERC20TokenOwner();
+    vm.stopPrank();
+
+    // Step 2) Deploy token on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    mockERC20TokenBaseSepolia = new MockERC20TokenOwner();
+    vm.stopPrank();
+  }
+
+  function test_forkSupportNewCCIPToken() public {
+    // Step 3) Deploy LockReleaseTokenPool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+    ethSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+    address[] memory allowlist = new address[](0);
+    uint8 localTokenDecimals = 18;
+
+    vm.startPrank(alice);
+    lockReleaseTokenPoolEthSepolia = new LockReleaseTokenPool(
+      IERC20(address(mockERC20TokenEthSepolia)),
+      localTokenDecimals,
+      allowlist,
+      ethSepoliaNetworkDetails.rmnProxyAddress,
+      true, // acceptLiquidity
+      ethSepoliaNetworkDetails.routerAddress
+    );
+    vm.stopPrank();
+
+    // Step 4) Deploy LockReleaseTokenPool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+    baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+
+    vm.startPrank(alice);
+    lockReleaseTokenPoolBaseSepolia = new LockReleaseTokenPool(
+      IERC20(address(mockERC20TokenBaseSepolia)),
+      localTokenDecimals,
+      allowlist,
+      baseSepoliaNetworkDetails.rmnProxyAddress,
+      true, // acceptLiquidity
+      baseSepoliaNetworkDetails.routerAddress
+    );
+    vm.stopPrank();
+
+    // Step 5) Set the LiquidityManager address and Add liquidity to the pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+    uint256 amountToMint = 1_000_000;
+    uint128 liquidityAmount = 100_000;
+
+    vm.startPrank(alice);
+    mockERC20TokenEthSepolia.mint(address(alice), amountToMint);
+    mockERC20TokenEthSepolia.approve(address(lockReleaseTokenPoolEthSepolia), liquidityAmount);
+    lockReleaseTokenPoolEthSepolia.setRebalancer(address(alice));
+    lockReleaseTokenPoolEthSepolia.provideLiquidity(liquidityAmount);
+    vm.stopPrank();
+
+    // Step 6) Set the LiquidityManager address and Add liquidity to the pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    mockERC20TokenBaseSepolia.mint(address(alice), amountToMint);
+    mockERC20TokenBaseSepolia.approve(address(lockReleaseTokenPoolBaseSepolia), liquidityAmount);
+    lockReleaseTokenPoolBaseSepolia.setRebalancer(address(alice));
+    lockReleaseTokenPoolBaseSepolia.provideLiquidity(liquidityAmount);
+    vm.stopPrank();
+
+    // Step 7) Claim Admin role on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    RegistryModuleOwnerCustom registryModuleOwnerCustomEthSepolia = RegistryModuleOwnerCustom(
+      ethSepoliaNetworkDetails.registryModuleOwnerCustomAddress
+    );
+
+    vm.startPrank(alice);
+    registryModuleOwnerCustomEthSepolia.registerAdminViaOwner(address(mockERC20TokenEthSepolia));
+    vm.stopPrank();
+
+    // Step 8) Claim Admin role on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    RegistryModuleOwnerCustom registryModuleOwnerCustomBaseSepolia = RegistryModuleOwnerCustom(
+      baseSepoliaNetworkDetails.registryModuleOwnerCustomAddress
+    );
+
+    vm.startPrank(alice);
+    registryModuleOwnerCustomBaseSepolia.registerAdminViaOwner(address(mockERC20TokenBaseSepolia));
+    vm.stopPrank();
+
+    // Step 9) Accept Admin role on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    TokenAdminRegistry tokenAdminRegistryEthSepolia = TokenAdminRegistry(
+      ethSepoliaNetworkDetails.tokenAdminRegistryAddress
+    );
+
+    vm.startPrank(alice);
+    tokenAdminRegistryEthSepolia.acceptAdminRole(address(mockERC20TokenEthSepolia));
+    vm.stopPrank();
+
+    // Step 10) Accept Admin role on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    TokenAdminRegistry tokenAdminRegistryBaseSepolia = TokenAdminRegistry(
+      baseSepoliaNetworkDetails.tokenAdminRegistryAddress
+    );
+
+    vm.startPrank(alice);
+    tokenAdminRegistryBaseSepolia.acceptAdminRole(address(mockERC20TokenBaseSepolia));
+    vm.stopPrank();
+
+    // Step 11) Link token to pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    vm.startPrank(alice);
+    tokenAdminRegistryEthSepolia.setPool(address(mockERC20TokenEthSepolia), address(lockReleaseTokenPoolEthSepolia));
+    vm.stopPrank();
+
+    // Step 12) Link token to pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    tokenAdminRegistryBaseSepolia.setPool(address(mockERC20TokenBaseSepolia), address(lockReleaseTokenPoolBaseSepolia));
+    vm.stopPrank();
+
+    // Step 13) Configure Token Pool on Ethereum Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    vm.startPrank(alice);
+    TokenPool.ChainUpdate[] memory chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesEthSepolia = new bytes[](1);
+    remotePoolAddressesEthSepolia[0] = abi.encode(address(lockReleaseTokenPoolBaseSepolia));
+    chains[0] = TokenPool.ChainUpdate({
+      remoteChainSelector: baseSepoliaNetworkDetails.chainSelector,
+      remotePoolAddresses: remotePoolAddressesEthSepolia,
+      remoteTokenAddress: abi.encode(address(mockERC20TokenBaseSepolia)),
+      outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
+      inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
+    });
+    uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+    lockReleaseTokenPoolEthSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
+    vm.stopPrank();
+
+    // Step 14) Configure Token Pool on Base Sepolia
+    vm.selectFork(baseSepoliaFork);
+
+    vm.startPrank(alice);
+    chains = new TokenPool.ChainUpdate[](1);
+    bytes[] memory remotePoolAddressesBaseSepolia = new bytes[](1);
+    remotePoolAddressesBaseSepolia[0] = abi.encode(address(lockReleaseTokenPoolEthSepolia));
+    chains[0] = TokenPool.ChainUpdate({
+      remoteChainSelector: ethSepoliaNetworkDetails.chainSelector,
+      remotePoolAddresses: remotePoolAddressesBaseSepolia,
+      remoteTokenAddress: abi.encode(address(mockERC20TokenEthSepolia)),
+      outboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 }),
+      inboundRateLimiterConfig: RateLimiter.Config({ isEnabled: true, capacity: liquidityAmount, rate: 167 })
+    });
+    lockReleaseTokenPoolBaseSepolia.applyChainUpdates(remoteChainSelectorsToRemove, chains);
+    vm.stopPrank();
+
+    // Step 15) Transfer tokens from Ethereum Sepolia to Base Sepolia
+    vm.selectFork(ethSepoliaFork);
+
+    address linkEthSepoliaAddress = ethSepoliaNetworkDetails.linkAddress;
+    address routerEthSepoliaAddress = ethSepoliaNetworkDetails.routerAddress;
+    ccipLocalSimulatorFork.requestLinkFromFaucet(address(alice), 20 ether);
+
+    uint256 amountToSend = 100;
+    Client.EVMTokenAmount[] memory tokenToSendDetails = new Client.EVMTokenAmount[](1);
+    Client.EVMTokenAmount memory tokenAmount = Client.EVMTokenAmount({
+      token: address(mockERC20TokenEthSepolia),
+      amount: amountToSend
+    });
+    tokenToSendDetails[0] = tokenAmount;
+
+    vm.startPrank(alice);
+
+    mockERC20TokenEthSepolia.approve(routerEthSepoliaAddress, amountToSend);
+    IERC20(linkEthSepoliaAddress).approve(routerEthSepoliaAddress, 20 ether);
+
+    uint256 balanceOfAliceBeforeEthSepolia = mockERC20TokenEthSepolia.balanceOf(alice);
+
+    uint64 destinationChainSelector = baseSepoliaNetworkDetails.chainSelector;
+    IRouterClient routerEthSepolia = IRouterClient(routerEthSepoliaAddress);
+    routerEthSepolia.ccipSend(
+      destinationChainSelector,
+      Client.EVM2AnyMessage({
+        receiver: abi.encode(address(alice)),
+        data: "",
+        tokenAmounts: tokenToSendDetails,
+        extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({ gasLimit: 0 })),
+        feeToken: linkEthSepoliaAddress
+      })
+    );
+
+    uint256 balanceOfAliceAfterEthSepolia = mockERC20TokenEthSepolia.balanceOf(alice);
+    vm.stopPrank();
+
+    assertEq(balanceOfAliceAfterEthSepolia, balanceOfAliceBeforeEthSepolia - amountToSend);
+
+    ccipLocalSimulatorFork.switchChainAndRouteMessage(baseSepoliaFork);
+
+    uint256 balanceOfAliceAfterBaseSepolia = mockERC20TokenBaseSepolia.balanceOf(alice);
+    assertEq(balanceOfAliceAfterBaseSepolia, balanceOfAliceBeforeEthSepolia + amountToSend);
+  }
+}
+```

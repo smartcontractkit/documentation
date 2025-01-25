@@ -1,0 +1,53 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "LinkToken v0.2.2 API Reference"
+metadata:
+  description: "API documentation for LinkToken in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## LinkToken
+
+A contract that implements the ChainLink Token (LINK) using the ERC677 standard with a fixed total supply and standard token details.
+
+[`LinkToken`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/shared/LinkToken.sol)
+
+## Functions
+
+### constructor
+
+Initializes a new LINK token with standard token details.
+
+```solidity
+constructor()
+```
+
+<Aside>
+
+Constructor to initialize the LinkToken contract with a fixed total supply, name, and symbol.
+
+Calls the ERC677 constructor with the name and symbol, and then mints the total supply to the contract deployer.
+
+</Aside>
+
+### \_onCreate
+
+Internal hook that handles the initial token supply minting.
+
+```solidity
+function _onCreate() internal virtual
+```
+
+<Aside>
+
+Hook that is called when this contract is created.
+
+Useful to override constructor behaviour in child contracts (e.g., LINK bridge tokens).
+The default implementation mints 10^27 tokens to the contract deployer.
+
+</Aside>

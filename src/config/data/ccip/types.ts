@@ -5,7 +5,10 @@ export type RateLimiterConfig = {
 }
 
 export type SupportedTokenConfig = {
-  rateLimiterConfig: RateLimiterConfig
+  rateLimiterConfig?: {
+    in?: RateLimiterConfig
+    out?: RateLimiterConfig
+  }
 }
 export type SupportedTokensConfig = {
   [token: string]: SupportedTokenConfig
@@ -13,21 +16,30 @@ export type SupportedTokensConfig = {
 
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
-  rateLimiterConfig: RateLimiterConfig
-  onRamp: string
+  rateLimiterConfig?: RateLimiterConfig
+  rmnPermeable: boolean
+  onRamp: {
+    address: string
+    version: string
+    enforceOutOfOrder?: boolean
+  }
+  offRamp: {
+    address: string
+    version: string
+  }
 }
 
 export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
-export type PoolType = "lockRelease" | "burnMint" | "usdc"
+export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
 
 type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
   poolAddress?: string
-  poolType?: PoolType
+  poolType: PoolType
   name?: string
   symbol: string
   decimals: number
@@ -36,7 +48,22 @@ type PoolInfo = {
 export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
-  router: string
+  router: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
+    address: string
+    version: string
+  }
 }
 
 export type ChainsConfig = {
@@ -95,6 +122,11 @@ export enum Environment {
   Testnet = "testnet",
 }
 
+export enum LaneFilter {
+  Inbound = "inbound",
+  Outbound = "outbound",
+}
+
 export enum Version {
   V1_2_0 = "1.2.0",
 }
@@ -107,4 +139,33 @@ export interface CCIPSendErrorEntry {
   }>
   errorSelector?: string
   description: string
+}
+
+export enum LaneStatus {
+  OPERATIONAL = "OPERATIONAL",
+  MAINTENANCE = "MAINTENANCE",
+  DEGRADED = "DEGRADED",
+  CURSED = "CURSED",
+}
+
+export interface Network {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  totalLanes: number
+  totalTokens: number
+  key: string
+  tokenAdminRegistry?: string
+  explorerUrl: string
+  registryModule?: string
+  router?: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  routerExplorerUrl: string
 }

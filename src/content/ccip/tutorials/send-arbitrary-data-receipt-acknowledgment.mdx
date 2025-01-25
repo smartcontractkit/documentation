@@ -5,7 +5,7 @@ title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A"
 whatsnext:
   {
     "See example cross-chain dApps and tools": "/ccip/examples",
-    "See the list of supported networks": "/ccip/supported-networks",
+    "CCIP Directory": "/ccip/directory",
     "Learn about CCIP Architecture and Billing": "/ccip/architecture",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
@@ -50,7 +50,7 @@ Deploy the `MessageTracker.sol` contract on _Avalanche Fuji_ and enable it to se
 
    1. Open MetaMask and select the _Avalanche Fuji_ network.
    1. On the **Deploy & Run Transactions** tab in Remix, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
-   1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/ccip/supported-networks) page. The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_:
+   1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_:
 
       - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>
       - The LINK token address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>
@@ -59,14 +59,17 @@ Deploy the `MessageTracker.sol` contract on _Avalanche Fuji_ and enable it to se
 
    1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy your contract address.
 
-   1. Open MetaMask and send <CopyText text="0.5" code/> LINK to the contract address you copied. Your contract will pay CCIP fees in LINK.
+   1. Open MetaMask and send <CopyText text="70" code/> LINK to the contract address you copied. Your contract will pay CCIP fees in LINK.
+
+      **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+      from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1. Allow the _Ethereum Sepolia_ chain selector for both destination and source chains.
 
    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
    1. Call the `allowlistDestinationChain` function with <CopyText text="16015286601757825753" code/> as the destination chain selector for _Ethereum Sepolia_ and <CopyText text="true" code /> as allowed.
    1. Call the `allowlistSourceChain` function with <CopyText text="16015286601757825753" code/> as the source chain selector for _Ethereum Sepolia_ and <CopyText text="true" code /> as allowed.
-      You can find each network's chain selector on the [supported networks page](/ccip/supported-networks).
+      You can find each network's chain selector on the [CCIP Directory](/ccip/directory).
 
 ### Deploy the acknowledger (receiver) contract
 
@@ -85,7 +88,7 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
     1. Open MetaMask and select the _Ethereum Sepolia_ network.
 
     1. On the **Deploy & Run Transactions** tab in Remix, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
-    1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/ccip/supported-networks) page. The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Ethereum Sepolia_:
+    1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Ethereum Sepolia_:
 
        - The Router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>.
        - The LINK token address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
@@ -94,17 +97,20 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
 
     1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy this contract address.
 
-    1. Open MetaMask and send <CopyText text="0.5" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+    1. Open MetaMask and send <CopyText text="70" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+
+       **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+       from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Allow the _Avalanche Fuji_ chain selector for both destination and source chains. You must also enable your acknowledger contract to receive CCIP messages from the message tracker you deployed on _Avalanche Fuji_.
 
     1. On the **Deploy & Run Transactions** tab in Remix, expand the _acknowledger_ contract in the **Deployed Contracts** section. Expand the `allowlistDestinationChain`, `allowlistSender`, and `allowlistSourceChain` functions and fill in the following arguments:
 
-       | Function                  | Description                                                                                                                                             | Value (_Avalanche Fuji_)                                                   |
-       | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-       | allowlistDestinationChain | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="14767482510784806043" code/>, <CopyText text="true" code/> |
-       | allowlistSender           | The address of the message tracker contract deployed on _Avalanche Fuji_                                                                                | Your deployed contract address, <CopyText text="true" code/>               |
-       | allowlistSourceChain      | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="14767482510784806043" code/>, <CopyText text="true" code/> |
+       | Function                  | Description                                                                                                                         | Value (_Avalanche Fuji_)                                                   |
+       | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+       | allowlistDestinationChain | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="14767482510784806043" code/>, <CopyText text="true" code/> |
+       | allowlistSender           | The address of the message tracker contract deployed on _Avalanche Fuji_                                                            | Your deployed contract address, <CopyText text="true" code/>               |
+       | allowlistSourceChain      | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="14767482510784806043" code/>, <CopyText text="true" code/> |
 
     1. Open MetaMask and select the _Ethereum Sepolia_ network.
     1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
@@ -116,7 +122,9 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
     1. Open MetaMask and select the _Avalanche Fuji_ network.
     1. Click **transact** to call the function. MetaMask prompts you to confirm the transaction.
 
-At this point, you have one _message tracker_ (sender) contract on _Avalanche Fuji_ and one _acknowledger_ (receiver) contract on _Ethereum Sepolia_. You sent `0.5` LINK to the _message tracker_ contract and `0.5` LINK to the _acknowledger_ contract to pay the CCIP fees.
+At this point, you have one _message tracker_ (sender) contract on _Avalanche Fuji_ and one _acknowledger_ (receiver) contract on _Ethereum Sepolia_. You sent `70` LINK to the _message tracker_ contract and `70` LINK to the _acknowledger_ contract to pay the CCIP fees.
+
+**Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia.
 
 ### Send data and track the message status
 
@@ -128,18 +136,15 @@ At this point, you have one _message tracker_ (sender) contract on _Avalanche Fu
    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
    1. Expand the **sendMessagePayLINK** function and fill in the following arguments:
 
-      | Argument                 | Description                                                                                                                                             | Value (_Ethereum Sepolia_)                    |
-      | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-      | destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="16015286601757825753" code/>  |
-      | receiver                 | The destination smart contract address                                                                                                                  | Your deployed _acknowledger_ contract address |
-      | text                     | Any `string`                                                                                                                                            | <CopyText text="Hello World!" code/>          |
+      | Argument                 | Description                                                                                                                         | Value (_Ethereum Sepolia_)                    |
+      | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+      | destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="16015286601757825753" code/>  |
+      | receiver                 | The destination smart contract address                                                                                              | Your deployed _acknowledger_ contract address |
+      | text                     | Any `string`                                                                                                                        | <CopyText text="Hello World!" code/>          |
 
    1. Click **transact** to call the function. MetaMask prompts you to confirm the transaction.
 
-      <Aside type="note">
-        During gas price spikes, your transaction might fail, requiring more than _0.5 LINK_ to proceed. If your
-        transaction fails, fund your contract with more _LINK_ tokens and try again.
-      </Aside>
+      <CcipCommon callout="gasSpike" />
 
    1. Upon transaction success, expand the last transaction in the Remix log and copy the transaction hash. In this example, it is `0x1f88abc33a4ab426a5466e01d9e5fe8a2b96d6a6e5cedb643a674489c74126b4`.
 
@@ -273,6 +278,8 @@ The smart contracts featured in this tutorial are designed to interact with CCIP
 Refer to the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data#explanation) tutorial for more explanation about [initializing the contracts](/ccip/tutorials/send-arbitrary-data#initializing-of-the-contract), [sending data, paying in LINK](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link), and [receiving data](/ccip/tutorials/send-arbitrary-data#receiving-data).
 
 Here, we will further explain the acknowledgment of receipt mechanism.
+
+<CcipCommon callout="senderContractCallout" />
 
 ### Message acknowledgment of receipt mechanism
 

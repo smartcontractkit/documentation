@@ -13,7 +13,7 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
   ({ item: { label, icon, href, subProducts }, onProductClick }, forwardedRef) => {
     const itemComponent = (
       <>
-        {icon && <img height={24} width={24} src={icon} />}
+        {icon && <img height={20} width={20} src={icon} />}
         <span style={{ flex: 1, textAlign: "start" }} className="text-300">
           {label}
         </span>

@@ -1,0 +1,45 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schemas"
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema",
+    },
+    {
+      name: "Real World Asset (RWA) Report Schema (v4)",
+      url: "/data-streams/reference/report-schema-v4",
+    },
+  ]}
+  headerTitle="Available Report Schemas"
+  headerDescription="Choose the schema version you want to explore."
+/>
+
+Real World Asset (RWA) streams adhere to the report schema outlined below.
+
+## Schema Fields
+
+| Field                   | Type      | Description                                                                                                                  |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | The unique identifier for the stream                                                                                         |
+| `validFromTimestamp`    | `uint32`  | The earliest timestamp during which the price is valid                                                                       |
+| `observationsTimestamp` | `uint32`  | The latest timestamp during which the price is valid                                                                         |
+| `nativeFee`             | `uint192` | The cost to verify this report onchain when paying with the blockchain's native token                                        |
+| `linkFee`               | `uint192` | The cost to verify this report onchain when paying with LINK                                                                 |
+| `expiresAt`             | `uint32`  | The expiration date of this report                                                                                           |
+| `price`                 | `int192`  | The DON's consensus median price for this report carried to 18 decimal places                                                |
+| `marketStatus`          | `uint32`  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
+
+**Notes**:
+
+- Future RWA streams may use different report schemas.
+- [Bid and Ask](/data-streams/concepts/liquidity-weighted-prices) values are not available for the first iteration of the RWA report schema (v4).

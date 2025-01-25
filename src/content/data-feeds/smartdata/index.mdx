@@ -1,0 +1,96 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "SmartData"
+isIndex: true
+whatsnext:
+  {
+    "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds",
+    "Learn how to get Historical Price Data": "/data-feeds/historical-data",
+    "Find contract addresses for SmartData feeds": "/data-feeds/smartdata/addresses",
+    "Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+---
+
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
+
+You can read these feeds the same way that you read other Data Feeds. Specify the [SmartData feed address](/data-feeds/smartdata/addresses) that you want to read instead of specifying a price feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds) page to learn more.
+
+## SmartData Product Types
+
+- [Proof of Reserve Feeds](/data-feeds/smartdata#proof-of-reserve-feeds)
+- [NAVLink Feeds](/data-feeds/smartdata#navlink-feeds)
+- [SmartAUM Feeds](/data-feeds/smartdata#smartaum-feeds)
+
+### Proof of Reserve Feeds
+
+Proof of Reserves feeds provide the status of reserves for stablecoins, wrapped assets, and real world assets. Proof of Reserve Feeds operate similarly to Price Feeds, but provide answers in units of measurement such as ounces (oz) or number of tokens.
+
+To find a list of available Proof of Reserve Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
+
+#### Types of Proof of Reserve Feeds
+
+Reserves are available for both offchain assets and cross-chain assets. This categorization describes the data reporting variations of Proof of Reserve feeds and helps highlight some of the inherent market risks surrounding the data quality of these feeds.
+
+##### Offchain reserves
+
+Offchain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
+
+<ClickToZoom src="/images/data-feed/off-chain-reserves.webp" />
+
+Offchain reserves provide their data using the following methods:
+
+- Third-party: An auditor, accounting firm, or other third party audits and verifies reserves. This is done by combining both fiat and investment assets into a numeric value that is reported against the token.
+- Custodian: Reserves data are pulled directly from the bank or custodian. The custodian has direct access to the bank or vault holding the assets. Generally, this works when the underlying asset pulled requires no additional valuation and is simply reported onchain.
+- ⚠️ Self-reported: Reserve data is read from an API that the token issuer hosts. Reserve data reported by an asset issuer's self-hosted API carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
+
+##### Cross-chain reserves
+
+Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+
+<ClickToZoom src="/images/data-feed/cross-chain-reserves.webp" />
+
+Cross-chain reserves provide their data using the following methods:
+
+- Wallet address manager: The project uses the [IPoRAddressList](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/PoRAddressList.sol) wallet address manager contract and self-reports which addresses they own. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
+- Wallet address: The project reports which addresses they own through a self-hosted API. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
+
+### NAVLink Feeds
+
+Chainlink NAVLink Feeds provide real-time, tamper-proof data on the Net Asset Value (NAV) of tokenized assets, funds, or portfolios. NAV is an essential metric in the financial industry for assessing the value of mutual funds, ETFs, and other investment vehicles. It is calculated by subtracting total liabilities from the total assets held within the vehicle.
+
+By making NAV data available onchain, developers can build decentralized applications that require accurate and up-to-date valuation metrics. These applications include asset management platforms, DeFi protocols, and investment strategies that rely on NAV for operations such as rebalancing, minting, or redemption.
+
+To find a list of available SmartNav Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
+
+### SmartAUM Feeds
+
+Chainlink SmartAUM Feeds provide current data on the total market value of assets managed by an entity on behalf of clients. Assets Under Management (AUM) is a crucial indicator used in financial analyses and decision-making processes.
+
+By bringing AUM data onchain, decentralized applications can access information for activities such as risk assessment, performance benchmarking, and investment strategy development.
+
+To find a list of available Assets Under Management Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
+
+## Using SmartData
+
+Read answers from SmartData feeds the same way that you read other Data Feeds. Specify the [SmartData feed address](/data-feeds/smartdata/addresses) that you want to read instead of specifying a Price feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds) page to learn more.
+
+Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
+
+Example for reading a Proof of Reserve feed:
+
+<CodeSample src="samples/DataFeeds/ReserveConsumerV3.sol" />
+
+<Aside title="Disclaimer" type="caution">
+  <p>
+    Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used
+    by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve
+    feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any
+    other loss caused by your use of the feeds used by your smart contracts.
+    <a href="/data-feeds/selecting-data-feeds#risk-mitigation">
+      Learn more about making responsible data quality decisions.
+    </a>
+  </p>
+</Aside>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
@@ -27,7 +27,7 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
     error WrongSenderForSourceChain(uint64 sourceChainSelector); // Used when the sender contract is not the correct one
     error OnlySelf(); // Used when a function is called outside of the contract itself
     error WrongReceivedToken(address usdcToken, address receivedToken); // Used if the received token is different than usdc token
-    error CallToStakerFailed(); // Used when the call to the stake function of the staker contract is not succesful
+    error CallToStakerFailed(); // Used when the call to the stake function of the staker contract is not successful
     error NoReturnDataExpected(); // Used if the call to the stake function of the staker contract returns data. This is not expected
     error MessageNotFailed(bytes32 messageId); // Used if you try to retry a message that has no failed
 
