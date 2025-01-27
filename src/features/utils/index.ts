@@ -257,6 +257,12 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CORN_MAINNET"
     case "ethereum-testnet-sepolia-corn-1":
       return "CORN_TESTNET"
+    case "ethereum-mainnet-polygon-zkevm-1":
+      return "POLYGON_ZKEVM_MAINNET"
+    case "ethereum-testnet-sepolia-polygon-zkevm-1":
+      return "POLYGON_ZKEVM_CARDONA"
+    case "bitcoin-testnet-botanix":
+      return "BOTANIX_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -394,6 +400,12 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "corn-mainnet"
     case "CORN_TESTNET":
       return "ethereum-testnet-sepolia-corn-1"
+    case "POLYGON_ZKEVM_MAINNET":
+      return "ethereum-mainnet-polygon-zkevm-1"
+    case "POLYGON_ZKEVM_CARDONA":
+      return "ethereum-testnet-sepolia-polygon-zkevm-1"
+    case "BOTANIX_TESTNET":
+      return "bitcoin-testnet-botanix"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

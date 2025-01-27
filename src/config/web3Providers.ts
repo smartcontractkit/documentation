@@ -75,6 +75,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   HASHKEY_TESTNET: () => new providers.JsonRpcProvider("https://hashkeychain-testnet.alt.technology"),
   CORN_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.corn-rpc.com"),
   CORN_TESTNET: () => new providers.JsonRpcProvider("https://testnet.corn-rpc.com"),
+  BOTANIX_TESTNET: () => new providers.JsonRpcProvider("https://node.botanixlabs.dev"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
