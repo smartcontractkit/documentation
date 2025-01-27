@@ -22,7 +22,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
       <img src={icon} alt="" className={styles.logo} />
       <span>{label}</span>
       <div className={styles.caret}>
-        <span></span>
+        <span />
       </div>
       {productMenuOpen && (
         <div className={styles.menu}>
@@ -35,7 +35,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
                     className={clsx(styles.link, { [styles.active]: isMatchedPath(pathname, item.href) })}
                     href={item.href}
                   >
-                    <img className={clsx(styles.icon)} src={item.icon}></img>
+                    <img className={clsx(styles.icon)} src={item.icon} />
                     {item.label}
                   </a>
                 </li>
@@ -47,7 +47,7 @@ function DocsPickerDesktop({ pathname }: { pathname: string }) {
               .map((item) => (
                 <li className={clsx(styles.item)} key={item.label}>
                   <a className={clsx(styles.link)} href={item.href}>
-                    <img className={clsx(styles.icon)} src={item.icon}></img>
+                    <img className={clsx(styles.icon)} src={item.icon} />
                     {item.label}
                   </a>
                 </li>

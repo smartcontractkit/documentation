@@ -40,12 +40,12 @@ function MegaMenu() {
       <div className={styles.resourcesMenuContentFeatured}>
         <h2>Featured</h2>
         <img src="/images/quick-start.png" alt="" className={styles.featuredImage} />
-        <div className={styles.divider}></div>
+        <div className={styles.divider} />
 
         <h3>Blockchain 101</h3>
         <div className={styles.links}>
           <a href="">Docs</a>
-          <span className={styles.verticalDivider}></span>
+          <span className={styles.verticalDivider} />
           <a href="">SDK</a>
         </div>
       </div>
@@ -82,7 +82,7 @@ function MegaMenuItem({
               <a href={link.href} className="text-100">
                 {link.label}
               </a>
-              {index < links.length - 1 && <span className={styles.verticalDivider}></span>}
+              {index < links.length - 1 && <span className={styles.verticalDivider} />}
             </Fragment>
           ))}
         </div>

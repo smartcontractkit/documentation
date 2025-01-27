@@ -40,7 +40,7 @@ export const tokenPoolDisplay = (poolType?: PoolType) => {
     feeTokenOnly: "Fee Token Only",
   }
 
-  return poolType ? poolTypeMapping[poolType] ?? "Unsupported" : "Unsupported"
+  return poolType ? (poolTypeMapping[poolType] ?? "Unsupported") : "Unsupported"
 }
 
 export const calculateNetworkFeesForTokenMechanismDirect = (

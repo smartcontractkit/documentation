@@ -52,6 +52,7 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
             target="_blank"
             href={bannerContent.linkUrl}
             style={{ color: bannerTypes[bannerContent.type].textColour, textDecoration: "underline" }}
+            rel="noreferrer"
           >
             {bannerContent.linkText}
           </a>

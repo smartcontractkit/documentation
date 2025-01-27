@@ -1,5 +1,5 @@
 import { defineConfig } from "astro/config"
-import vercel from "@astrojs/vercel/serverless"
+import vercel from "@astrojs/vercel"
 import preact from "@astrojs/preact"
 import react from "@astrojs/react"
 import mdx from "@astrojs/mdx"
@@ -46,7 +46,7 @@ export default defineConfig({
     syntaxHighlight: "prism",
     smartypants: false,
   },
-  output: "hybrid",
+  output: "static",
   adapter: vercel(),
   vite: {
     plugins: [yaml()],

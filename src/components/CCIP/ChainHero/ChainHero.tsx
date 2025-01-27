@@ -278,7 +278,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )
               })}
               {!nativeTokenHasAddress() && nativeCurrency && (
-                <div key={"native-token"} className="ccip-chain-hero__feeTokens__item">
+                <div key="native-token" className="ccip-chain-hero__feeTokens__item">
                   <object
                     data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
                     type="image/png"

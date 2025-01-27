@@ -1,9 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config()
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const fs = require("fs")
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const algoliasearch = require("algoliasearch")
 
 if (!process.env.ALGOLIA_APP_ID) throw Error("ALGOLIA_APP_ID secret is missing")

@@ -88,7 +88,7 @@ export const NewsletterSignupForm = () => {
               href="https://twitter.com/chainlink"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/twitter.svg" loading="lazy" width="24" height="24" alt="Twitter" />
             </a>
@@ -96,7 +96,7 @@ export const NewsletterSignupForm = () => {
               href="https://www.youtube.com/channel/UCnjkrlqaWEBSnKZQ71gdyFA"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/youtube.svg" loading="lazy" width="24" height="24" alt="YouTube" />
             </a>
@@ -104,7 +104,7 @@ export const NewsletterSignupForm = () => {
               href="https://stackoverflow.com/questions/tagged/chainlink"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/stackoverflow.svg" loading="lazy" width="24" height="24" alt="Stack Overflow" />
             </a>
@@ -112,7 +112,7 @@ export const NewsletterSignupForm = () => {
               href="https://ethereum.stackexchange.com/questions/tagged/chainlink"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img
                 src="/images/stackexchange.svg"
@@ -126,7 +126,7 @@ export const NewsletterSignupForm = () => {
               href="https://discord.gg/aSK4zew"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/discord.svg" loading="lazy" width="24" height="24" alt="Discord" />
             </a>
@@ -134,7 +134,7 @@ export const NewsletterSignupForm = () => {
               href="https://t.me/chainlinkofficial"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/telegram.svg" loading="lazy" width="24" height="24" alt="Telegram" />
             </a>
@@ -142,7 +142,7 @@ export const NewsletterSignupForm = () => {
               href="https://blog.chain.link/chainlink-chinese-communities/"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/wechat.svg" loading="lazy" width="24" height="24" alt="WeChat" />
             </a>
@@ -150,7 +150,7 @@ export const NewsletterSignupForm = () => {
               href="https://www.reddit.com/r/Chainlink/"
               className="subscribe-form-success-social w-inline-block"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <img src="/images/reddit.svg" loading="lazy" width="24" height="24" alt="Reddit" />
             </a>

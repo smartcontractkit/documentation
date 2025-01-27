@@ -6,8 +6,8 @@ interface StepCheckboxProps<T extends StepId> {
   subStepId: T extends "sourceChain"
     ? "token-deployed" | "admin-claimed" | "admin-accepted" | "pool-deployed" | "pool-registered"
     : T extends "destinationChain"
-    ? "dest-token-deployed" | "admin-claimed" | "admin-accepted" | "dest-pool-deployed" | "dest-pool-registered"
-    : string
+      ? "dest-token-deployed" | "admin-claimed" | "admin-accepted" | "dest-pool-deployed" | "dest-pool-registered"
+      : string
   label?: string
   onChange?: (checked: boolean) => void
 }

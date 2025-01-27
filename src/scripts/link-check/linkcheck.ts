@@ -21,7 +21,7 @@ const displayLogFile = () => {
 
 // eslint-disable-next-line prefer-const
 let server: ChildProcessByStdio<null, Readable, Readable>
-// eslint-disable-next-line prefer-const
+
 let siteMapChecker: ChildProcessByStdio<null, Readable, Readable>
 
 const cleanup = () => {

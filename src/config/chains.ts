@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Chains, SupportedChain, SupportedTechnology } from "."
 import { rawChainToTechnology, rawChains } from "./data"
 

@@ -77,7 +77,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   }
   return (
     <>
-      {openSearchMenu && <div className="ccip-hero__search-overlay"></div>}
+      {openSearchMenu && <div className="ccip-hero__search-overlay" />}
       <div
         className={clsx("ccip-hero__search", {
           active: isActive,
