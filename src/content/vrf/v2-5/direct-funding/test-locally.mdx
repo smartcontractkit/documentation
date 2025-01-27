@@ -1,0 +1,501 @@
+---
+section: vrf
+title: "Local testing using a Mock contract"
+metadata:
+  description: "Example contract for generating random words using the VRF v2 direct funding method on your local blockchain using a mock contract."
+---
+
+import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+import ContentCommon from "@features/common/ContentCommon.astro"
+import { CodeSample, CopyText, ClickToZoom, Aside } from "@components"
+import { linkEth } from "@features/data"
+import { LatestPrice } from "@features/feeds"
+import button from "@chainlink/design-system/button.module.css"
+
+<VrfCommon callout="directFunding" />
+
+This guide explains how to test Chainlink VRF v2.5 on a [Remix IDE](https://remix-ide.readthedocs.io/en/latest/run.html#environment) sandbox blockchain environment. **Note**: You can reuse the same logic on another development environment, such as Hardhat. For example, read the Hardhat Starter Kit [RandomNumberDirectFundingConsumer unit tests](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/test/unit/RandomNumberDirectFundingConsumer.spec.js).
+
+<Aside type="caution" title="Test on public testnets thoroughly">
+  Even though local testing has several benefits, testing with a VRF mock covers the bare minimum of use cases. Make
+  sure to test your consumer contract throughly on public testnets.
+</Aside>
+
+## Benefits of local testing
+
+<ContentCommon section="localTestingBenefits" />
+
+## Testing logic
+
+Complete the following tasks to test your VRF v2.5 consumer locally:
+
+1. Deploy the [VRFCoordinatorV2_5Mock](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol). This contract is a mock of the [VRFCoordinatorV2_5](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFCoordinatorV2_5.sol) contract.
+1. Deploy the [MockV3Aggregator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/tests/MockV3Aggregator.sol) contract.
+1. Deploy the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/token/ERC677/LinkToken.sol) contract.
+1. Deploy the [VRFV2PlusWrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol) contract.
+1. Call the VRFV2PlusWrapper [setConfig function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapper.sol#L235) to set wrapper specific parameters.
+1. Fund the VRFV2PlusWrapper subscription.
+1. Call the [addConsumer function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol#L12) to add the wrapper contract to your subscription. (VRFCoordinatorV2_5Mock inherits this function from the IVRFSubscriptionV2Plus interface.)
+1. Deploy your VRF consumer contract.
+1. Fund your consumer contract with LINK tokens.
+1. Request random words from your consumer contract.
+1. Call the VRFCoordinatorV2_5Mock [fulfillRandomWords function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol#L102) to fulfill your consumer contract request.
+
+### Preview the code (optional)
+
+You can preview the code for the contracts you will deploy in this tutorial, or skip this step and proceed to [setting up your test environment](#prerequisites).
+
+_DirectFundingConsumerV2_5_ is the consuming contract that requests and directly pays the VRF service for random values:
+
+<CodeSample src="samples/VRF/mock/v2-5/DirectFundingConsumerV2_5.sol" />
+
+The other contracts are simply imported from their source in the `chainlink/contracts` npm package:
+
+- The _MockV3Aggregator_ contract allows you to simulate an oracle price feed without interacting with the existing Chainlink network.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/MockV3Aggregator.sol" />
+- Deploying _LinkToken_ in your test environment allows you to mock transferring LINK to test contracts.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/LinkToken.sol" />
+- As the VRF v2.5 direct funding [end-to-end diagram](/vrf/v2-5/overview/direct-funding#request-and-receive-data) explains, the _VRFV2PlusWrapper_ acts as a wrapper for the coordinator contract.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/VRFV2PlusWrapper.sol" />
+- This contract mocks the VRF V2.5 Coordinator contract.
+  {" "}
+  <CodeSample src="samples/VRF/mock/v2-5/VRFCoordinatorV2_5Mock.sol" />
+
+## Prerequisites
+
+This guide will require you to finetune the gas limit when fulfilling requests. When writing, manually setting up the gas limits on Remix IDE is not supported, so you will use Remix IDE in conjunction with [MetaMask](https://metamask.io/).
+
+Hardhat lets you run an Ethereum blockchain locally for testing. Use the [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit) to quickly fire up a personal Ethereum blockchain.
+
+1. Install the Hardhat Starter Kit and its dependencies:
+
+   ```
+   git clone https://github.com/smartcontractkit/hardhat-starter-kit/
+   cd hardhat-starter-kit && npm install
+   ```
+
+1. At the root directory of `hardhat-starter-kit`, start an Ethereum blockchain locally:
+
+   ```
+   npx hardhat node
+   ```
+
+   The output includes the RPC server and the addresses and private keys for 20 test accounts. The first one is shown below. First, make sure to note the RPC server. In this example, the RPC server is `http://127.0.0.1:8545/`:
+
+   ```
+   Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+
+   Accounts
+   ========
+
+   WARNING: These accounts, and their private keys, are publicly known.
+   Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+
+   Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+   Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+   ...
+
+   WARNING: These accounts, and their private keys, are publicly known.
+   Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+   ```
+
+   After the test account information, you will see output indicating that the Ethereum blockchain is running locally:
+
+   ```
+   eth_blockNumber (14)
+   eth_chainId (6)
+   eth_blockNumber (2)
+   eth_getBalance (3)
+   eth_getBlockByNumber
+   eth_blockNumber
+   net_version (2)
+   eth_chainId
+   ```
+
+1. Follow the MetaMask [official guide](https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC#h_01G63GGJ83DGDRCS2ZWXM37CV5) to add a custom network manually.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/metamask-local-settings.png" />
+
+1. Import the first Hardhat test account into MetaMask.
+
+   1. In the terminal window where you're running the local Ethereum blockchain, scroll up in the output to the test account information. Copy the private key for the first account:
+
+      ```
+      Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+
+      Accounts
+      ========
+
+      WARNING: These accounts, and their private keys, are publicly known.
+      Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+
+      Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+      Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+      ...
+      ```
+
+   1. Follow the MetaMask [official guide](https://support.metamask.io/hc/en-us/articles/360015489331-How-to-import-an-account) to import an account using a private key.
+
+   1. Your MetaMask is connected to the Hardhat test account, and you should have access to the newly imported account.
+
+      <ClickToZoom src="/images/vrf/v2-5/mock/metamask-imported-account.png" />{" "}
+
+## Testing
+
+### Open the contracts in Remix IDE
+
+For this tutorial, there are five contracts to open within the same Remix workspace. The fastest way to do this is to clone the documentation repo locally, and then in Remix, upload the specific subdirectory of sample code used for both local testing tutorials (`public/samples/VRF/mock/v2-5`). (Alternatively, you can open one of the contracts in Remix, and then add the other four contracts manually within the same directory. All the code is shown in the optional [code preview](#preview-the-code-optional).)
+
+1. Clone the documentation repo:
+
+   ```sh
+   git clone https://github.com/smartcontractkit/documentation.git
+   ```
+
+1. [Open Remix](https://remix.ethereum.org/).
+1. On the _FILE EXPLORER_ tab, create a new Remix workspace for this tutorial, or use the default workspace.
+1. Click the **Upload folder** button, navigate to where you cloned the `documentation` repo, and then select the `public/samples/VRF/mock/v2-5` subdirectory.
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-upload-folder.png" />
+1. Remix prompts you to confirm that you would like to upload 6 files from `v2-5`. Click **Upload**.
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-folder-upload-confirmation.png" />
+1. Your Remix file explorer should show the `v2-5` directory containing all the contracts you need for this tutorial. The _VRFv2_5Consumer.sol_ file is not used in this tutorial, so you can delete it from your Remix workspace:
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-subdirectory-delete-sub.png" />
+1. Your Remix file explorer shows only the five contracts you need for this tutorial:
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-subdirectory-df.png" />
+1. Click the name of each file to open the code in your Remix file explorer. Remix flags some errors that we resolve in the next section.
+
+### Compile the contracts
+
+In this section, you will make a few adjustments to compile all of the contracts. Remix indicates that each contract is compiled successfully with a green checkmark icon on the _SOLIDITY COMPILER_ tab. Otherwise, it shows a yellow "warning" icon or a red "error" icon.
+
+1. In Remix, within the _FILE EXPLORER_ tab, select the _DirectFundingConsumerV2_5_ contract.
+1. Navigate to the _SOLIDITY COMPILER_ tab and select version `0.8.19`:
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-compiler-select-0-8-19.png" />
+1. Compile _DirectFundingConsumerV2_5.sol_: click the blue **Compile DirectFundingConsumerV2_5.sol** button or use your keyboard shortcut for "save" (Ctrl+S or Command+S).
+1. In the _FILE EXPLORER_ tab, select the _VRFCoordinatorV2_5Mock.sol_ contract.
+1. In the _Solidity Compiler_ tab, you will see a warning indicating that the contract size is too large to deploy. Expand the _Advanced Configurations_ section and check the _Enable optimization_ box, using the default `200` runs:
+   <ClickToZoom src="/images/vrf/v2-5/mock/enable-optimization.png" />
+1. Compile the _VRFCoordinatorV2_5Mock_ contract.
+1. In the _FILE EXPLORER_ tab, select the _MockV3Aggregator.sol_ contract, and then compile it using your "save" keyboard shortcut.
+1. Select _LinkToken.sol_ and compile it using your "save" keyboard shortcut.
+1. Compiling _VRFV2PlusWrapper.sol_ currently requires a workaround to resolve its Solidity version mismatch with `Ownable` using `0.8.20`:
+   1. In the _FILE EXPLORER_ tab, navigate to `OVM_GasPriceOracle.sol`. The full path is `@chainlink/contracts/src/v0.8/vendor/@eth-optimism/contracts/v0.8.9/contracts/L2/predeploys/OVM_GasPriceOracle.sol`:
+      <ClickToZoom src="/images/vrf/v2-5/mock/remix-ovm-gaspriceoracle.png" />
+   1. At the top of this file, change the import statement to:
+      ```
+      import {Ownable} from "@openzeppelin/contracts@4.9.6/access/Ownable.sol";
+      ```
+   1. _VRFV2PlusWrapper.sol_ successfully compiles when this dependency uses an earlier version of `Ownable.sol`.
+
+### Select the correct Remix IDE environment
+
+Under _DEPLOY & RUN TRANSACTIONS_:
+
+1. Set the Environment to _Injected Provider - MetaMask_:
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/injected-metamask.png" />
+
+1. On MetaMask, connect your Hardhat test account to the Remix IDE.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/metamask-connect-imported-account.png" />
+
+1. Click Connect. The Remix IDE environment should be set to the correct environment, and the account should be the Hardhat test account.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-imported-account-connected.png" />
+
+### Deploy VRFCoordinatorV2_5Mock
+
+1. Open _VRFCoordinatorV2_5Mock.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFCoordinatorV2_5Mock_.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-coordinator-mock-selected.png" />
+
+1. Under _DEPLOY_, fill in the `_BASEFEE`, `_GASPRICELINK` and `_WEIPERUNITLINK`. These variables are used in the _VRFCoordinatorV2_5Mock_ contract to represent the base fee, the gas price (in LINK tokens), and the current LINK/ETH price for the VRF requests.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-deployment-parameters.png" />
+
+   You can set:
+
+   - `_BASEFEE` to <CopyText text="100000000000000000" code/>
+   - `_GASPRICELINK` to <CopyText text="1000000000" code/>
+   - `_WEIPERUNITLINK` to the current LINK/ETH price. Click the "Latest Price" button to view it:
+     {" "}
+     <LatestPrice client:idle feedAddress={linkEth.link.eth.sepolia.address} supportedChain="ETHEREUM_SEPOLIA" />
+
+1. Click _transact_ to deploy the _VRFCoordinatorV2Mock_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+1. Once deployed, you should see the _VRFCoordinatorV2Mock_ contract under _Deployed Contracts_.
+
+1. Note the address of the deployed contract.
+
+#### Create a subscription
+
+1. In the _Deployed Contracts_ section, expand your deployed _VRFCoordinatorV2Mock_ contract.
+1. Click the orange **createSubscription** button and confirm the transaction in MetaMask.
+1. The output or logs for this function may not show the resulting subscription ID in Remix. Click the blue **getActiveSubscriptionIds** button and fill in `0` for `startIndex` and `1` for `maxCount`. This will display the subscription ID for the subscription you just created:
+   <ClickToZoom src="/images/vrf/v2-5/mock/remix-get-active-sub-ids.png" />
+
+### Deploy MockV3Aggregator
+
+The _MockV3Aggregator_ contract is designed for testing purposes, allowing you to simulate an oracle price feed without interacting with the existing Chainlink network.
+
+1. Open _MockV3Aggregator.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _MockV3Aggregator_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deployaggregatormock.jpg" />
+
+1. Under _DEPLOY_, fill in `_DECIMALS` and `_INITIALANSWER`. These variables are used in the _MockV3Aggregator_ contract to represent the number of decimals the aggregator's answer should have and the most recent price feed answer. You can set: `_DECIMALS=18` and `_INITIALANSWER=3000000000000000` (We are considering that `1 LINK = 0.003 native gas tokens`).
+
+1. Click _transact_ to deploy the _MockV3Aggregator_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+1. Once deployed, you should see the _MockV3Aggregator_ contract under _Deployed Contracts_.
+
+1. Note the address of the deployed contract.
+
+### Deploy LinkToken
+
+The Chainlink VRF v2.5 direct funding method requires your consumer contract to pay for VRF requests in LINK. Therefore, you have to deploy the _LinkToken_ contract to your local blockchain.
+
+1. Open _LinkToken.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _LinkToken_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deploylink.jpg" />
+
+1. Under _DEPLOY_, click _transact_ to deploy the _LinkToken_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+1. Once deployed, you should see the _LinkToken_ contract under _Deployed Contracts_.
+
+1. Note the address of the deployed contract.
+
+### Deploy VRFV2PlusWrapper
+
+As the VRF v2.5 direct funding [end-to-end diagram](/vrf/v2-5/overview/direct-funding#request-and-receive-data) explains, the _VRFV2PlusWrapper_ acts as a wrapper for the coordinator contract.
+
+Unlike in VRF v2, the v2.5 wrapper contract requires an existing subscription ID for deployment, so you'll need to create a subscription first. If you missed it, [create a subscription](#create-a-subscription) and then return to this section.
+
+1. Open _VRFV2PlusWrapper.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFV2PlusWrapper_.
+
+1. Under _DEPLOY_, fill in the following parameters:
+
+   - `_LINK` with the _LinkToken_ contract address
+   - `_LINKETHFEED` with the _MockV3Aggregator_ contract address
+   - `_COORDINATOR` with the _VRFCoordinatorV2_5Mock_ contract address
+   - `_SUBID` with the subscription ID
+
+     {" "}
+
+     <ClickToZoom src="/images/vrf/v2-5/mock/wrapper-deployment-params.png" />
+
+1. Click _transact_ to deploy the _VRFV2PlusWrapper_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+1. Once deployed, you should see the _VRFV2PlusWrapper_ contract under _Deployed Contracts_.
+
+1. Note the address of the deployed contract.
+
+1. Add your newly deployed wrapper contract as a consumer to the subscription:
+   1. In the _Deployed Contracts_ section, expand your deployed _VRFCoordinatorV2Mock_ contract.
+   1. Click the **addConsumer** button and provide your subscription ID and the address of the wrapper contract you just deployed.
+   1. Click _transact_ and confirm the transaction in MetaMask.
+
+### Configure the VRFV2PlusWrapper
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFV2PlusWrapper_ contract.
+
+1. Click `setConfig` and fill in the following parameters. You can find the wrapper addresses for all supported networks on the [Supported Networks](/vrf/v2-5/supported-networks) page with links to the block explorer. In the block explorer, select **Contract** and **Read Contract**, then expand the `getConfig` function and click **Query**. For Sepolia, the config values are found [here](https://sepolia.etherscan.io/address/0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1#readContract#F7) in Sepolia Etherscan and are also listed below:
+
+   - `_wrapperGasOverhead` with `13400`
+   - `_coordinatorGasOverheadNative` with `90000`
+   - `_coordinatorGasOverheadLink` with `112000`
+   - `_coordinatorGasOverheadPerWord` with `435`
+   - `_coordinatorNativePremiumPercentage` with `24`
+   - `_coordinatorLinkPremiumPercentage` with `20`
+   - `_keyHash` with `0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae`
+   - `_maxNumWords` with `10`
+   - `stalenessSeconds` with `172800`
+   - `fallbackWeiPerUnitLink` with `5347462396894712`
+   - `fulfillmentFlatFeeNativePPM` with `0`
+   - `fulfillmentFlatFeeLinkDiscountPPM` with `0`
+     **Note** on these variables:
+
+   1. `_wrapperGasOverhead`: This variable reflects the gas overhead of the wrapper's fulfillRandomWords function. The cost for this gas is passed to the user.
+
+   1. Coordinator gas overhead: These variables reflect the gas overhead of the coordinator's `fulfillRandomWords` function. The cost for this gas is billed to the _VRFV2PlusWrapper_ subscription and must, therefore, be included in the VRF v2.5 direct funding requests pricing.
+
+      - `_coordinatorGasOverheadLink`: Coordinator gas overhead when paying for VRF requests with LINK.
+      - `_coordinatorGasOverheadNative`: Coordinator gas overhead when paying for VRF requests with native tokens (in this case, Sepolia ETH).
+      - `_coordinatorGasOverheadPerWord`: Additional coordinator gas overhead amount per random value ("word") requested from VRF.
+
+   1. Premium percentage: These variables are the premium ratio in percentage. For example, a value of 0 indicates no premium. A value of 15 indicates a 15 percent premium.
+
+      - `_coordinatorLinkPremiumPercentage`: Premium percentage when paying with LINK.
+      - `_coordinatorNativePremiumPercentage`: Premium percentage when paying with native tokens.
+
+   1. `_keyHash`: The gas lane key hash value is the maximum gas price you are willing to pay for a request in wei.
+
+   1. `_maxNumWords`: This variable is the maximum number of words requested in a VRF v2.5 direct funding request.
+
+   1. `stalenessSeconds`: The time threshold past which the price feed is considered stale, and we must use the `fallbackWeiPerUnitLink` value instead.
+
+   1. `fallbackWeiPerUnitLink`: The conversion value used if the price feed is stale.
+
+   1. Fulfillment flat fees: Additional flat fees applied on top of the premium percentage. Currently, these parameters are both set to zero for both LINK payments and native token payments, respectively:
+      - `fulfillmentFlatFeeLinkDiscountPPM`
+      - `fulfillmentFlatFeeNativePPM`
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/wrapper-set-config.png" />
+
+1. Click _transact_.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+### Fund the VRFV2PlusWrapper subscription
+
+When deployed, the _VRFV2PlusWrapper_ contract creates a new subscription and adds itself to the newly created subscription.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2_5Mock_ contract.
+
+1. Click `fundSubscription` to fund the _VRFV2PlusWrapper_ subscription. Fill in your subscription ID for `_subid`, and set the `_amount` to `10000000000000000000` (10 LINK).
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+### Deploy the VRF consumer contract
+
+_DirectFundingConsumerV2_5_ is the consuming contract that requests and directly pays the VRF service for random values.
+
+1. In the file explorer, open _DirectFundingConsumerV2_5.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _DirectFundingConsumerV2_5_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deploydfconsumer.jpg" />
+
+1. Under _DEPLOY_, fill in `_WRAPPERADDRESS_` with the deployed _VRFV2PlusWrapper_ address.
+
+1. Click _transact_ to deploy the _DirectFundingConsumerV2_5_ contract.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+1. Once deployed, you should see the _DirectFundingConsumerV2_5_ contract under _Deployed Contracts_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deployeddfconsumer.jpg" />
+
+1. Note the address of the deployed contract.
+
+### Fund your VRF consumer contract
+
+Use the _LinkToken_ contract to transfer LINK to your consumer contract:
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _LinkToken_ contract.
+
+1. Click _transfer_ and fill in the `_to` with your consumer contract address and `_value` with LINK tokens amount. For this example, you can set the `_value` to `10000000000000000000` (10 LINK).
+
+   <ClickToZoom src="/images/vrf/mock/v2-linktransfer.jpg" />
+
+1. Click _transact_.
+
+1. A MetaMask popup will open. Click _Confirm_.
+
+### Request random words
+
+Request three random words:
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _DirectFundingConsumerV2_5_ contract.
+
+1. In `requestRandomWords`, fill in `_callbackGasLimit` with `300000`, `_requestConfirmations` with `3` and `_numWords` with `3`.
+
+   <ClickToZoom src="/images/vrf/mock/v2-requestrandomwordsdf.jpg" />
+
+1. Click _transact_.
+
+1. A MetaMask popup will open.
+
+   <Aside type="note" title="Set your gas limit in MetaMask">
+
+   Remix IDE doesn't set the right gas limit, so you must [edit the
+   gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
+
+   For this example to work, set the gas limit to _400,000_ in MetaMask.
+
+   First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
+
+   Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
+
+   </Aside>
+
+1. Click _Confirm_.
+
+1. In the Remix IDE console, read your transaction logs to find the VRF request ID. In this example, the request ID is _1_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-requestrandomwordslogsdf.jpg" />
+
+1. Note your request ID.
+
+### Fulfill the VRF request
+
+Because you are testing on a local blockchain environment, you must fulfill the VRF request yourself.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2_5Mock_ contract.
+
+1. Click `fulfillRandomWords` and fill in `_requestId` with your VRF request ID and `_consumer` with the _VRFV2Wrapper_ contract address.
+
+   <ClickToZoom src="/images/vrf/mock/v2-fulfillrandomwordsdf.jpg" />
+
+1. Click `transact`.
+
+1. A MetaMask popup will open.
+
+   <Aside type="note" title="Set your gas limit in MetaMask">
+
+   Remix IDE doesn't set the right gas limit, so you must [edit the
+   gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
+
+   For this example to work, set the gas limit to _1,000,000_ in MetaMask.
+
+   First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
+
+   Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _1000000_ and select **Save**. Finally, confirm the transaction.
+
+   </Aside>
+
+1. Click _Confirm_.
+
+1. In the Remix IDE console, read your transaction logs to find the random words.
+
+   <ClickToZoom src="/images/vrf/mock/v2-requestfulfilledlogsdf.jpg" />
+
+### Check the results
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _DirectFundingConsumerV2_5_ contract.
+
+1. Click `lastRequestId` to display the last request ID. In this example, the output is _1_.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deployedconsumerrequestiddf.jpg" />
+
+1. Click `getRequestStatus` with `_requestId` equal to `1`:
+
+   <ClickToZoom src="/images/vrf/mock/v2-deployedconsumerrequeststatusdf.jpg" />
+
+1. You will get the amount paid, the status, and the random words.
+
+   <ClickToZoom src="/images/vrf/mock/v2-deployedconsumerrequeststatusresultsdf.jpg" />
+
+## Next steps
+
+This guide demonstrated how to test a VRF v2.5 consumer contract on your local blockchain. We made the guide on Remix IDE for learning purposes, but you can reuse the same [testing logic](#testing-logic) in other development environments. For example, you can test entirely with the Hardhat Starter Kit [RandomNumberDirectFundingConsumer unit tests](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/test/unit/RandomNumberDirectFundingConsumer.spec.js).
