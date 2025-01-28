@@ -1,10 +1,39 @@
 ---
 import DocsLayout from "~/layouts/DocsLayout.astro"
-import { getEntry } from "astro:content"
-const entry = await getEntry("ccip", "index")
-const { Content, headings } = await entry.render()
+import { RoleCardsGeneric } from "~/features/landing/components/RoleCardsGeneric"
+import { PRODUCT_CONFIGS } from "~/config/roles/getRolesByProduct"
+import type { BaseFrontmatter } from "~/content/config"
+
+// Define frontmatter that was previously in index.mdx
+const frontmatter: BaseFrontmatter = {
+  title: "Chainlink CCIP Documentation",
+  section: "ccip" as const,
+  metadata: {
+    description:
+      "Learn how to build cross-chain applications with Chainlink CCIP. Transfer tokens and/or data between blockchain networks securely and reliably.",
+  },
+  isIndex: true,
+}
+
+// Create headings array starting with the main title
+const titleHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const headings = [titleHeading]
+
+const productRoles = PRODUCT_CONFIGS.ccip
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
-  <Content />
+<DocsLayout frontmatter={frontmatter} {headings} hideRightSidebar={true} hideWhatsNext={true}>
+  {productRoles && <RoleCardsGeneric roles={productRoles.roles} />}
 </DocsLayout>
+
+<style>
+  :global(#grid-main) {
+    max-width: var(--doc-content-width);
+    margin: 0 auto;
+  }
+</style>

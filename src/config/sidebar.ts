@@ -990,6 +990,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip",
         },
         {
+          title: "About CCIP",
+          url: "ccip/about",
+        },
+        {
           title: "Getting Started",
           url: "ccip/getting-started",
         },
