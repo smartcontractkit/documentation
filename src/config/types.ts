@@ -33,6 +33,7 @@ export type SupportedTechnology =
   | "INK"
   | "HASHKEY"
   | "CORN"
+  | "BOTANIX"
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
@@ -105,6 +106,7 @@ export type SupportedChain =
   | "HASHKEY_TESTNET"
   | "CORN_MAINNET"
   | "CORN_TESTNET"
+  | "BOTANIX_TESTNET"
 
 export type Chains = Record<
   SupportedTechnology,
