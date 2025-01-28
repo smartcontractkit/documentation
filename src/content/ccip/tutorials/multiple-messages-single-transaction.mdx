@@ -1,0 +1,227 @@
+---
+section: ccip
+date: Last Modified
+title: "Send Multiple Messages in a Single Transaction"
+whatsnext:
+  {
+    "See example cross-chain dApps and tools": "/ccip/examples",
+    "See the list of supported networks": "/ccip/supported-networks",
+    "Learn about CCIP Architecture and Billing": "/ccip/architecture",
+    "Learn CCIP best practices": "/ccip/best-practices",
+  }
+---
+
+import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial will teach you how to send multiple messages to different chains within a single transaction using Chainlink CCIP. You will learn how to send messages immediately without storing them in the contract's state, and how to register messages first and dispatch them later, which can be useful for scenarios like scheduled or automated message sending.
+
+**Note**: For simplicity, this tutorial demonstrates this pattern for sending arbitrary data. However, you are not limited to this application. You can apply the same pattern to programmable token transfers.
+
+## Before you begin
+
+- This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data) tutorial.
+- Your account must have some testnet LINK and AVAX tokens on _Avalanche Fuji_. Both are available on the [Chainlink Faucet](https://faucets.chain.link/fuji).
+- Learn how to [Fund a contract with LINK](/resources/fund-your-contract).
+
+## Tutorial
+
+<CcipCommon callout="useSimulator" />
+
+### Deploy the _message dispatcher_ (sender) contract
+
+Deploy the `MessageDispatcher` contract on the source blockchain (e.g., Avalanche Fuji) from which you want to send messages.
+
+1. [Open the MessageDispatcher.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/MessageDispatcher.sol) in Remix.
+
+   <CodeSample src="samples/CCIP/MessageDispatcher.sol" showButtonOnly={true} />
+
+   Note: The contract code is also available in the [Examine the code](/ccip/tutorials/multiple-messages-single-transaction#messagedispatchersol) section.
+
+1. Compile the contract.
+
+1. Deploy the contract on _Avalanche Fuji_:
+
+   1. Open MetaMask and select the _Avalanche Fuji_ network.
+   1. On the **Deploy & Run Transactions** tab in Remix, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
+   1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/ccip/supported-networks) page. The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_:
+
+      - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>
+      - The LINK token address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>
+
+   1. Click **transact** to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract on _Avalanche Fuji_.
+
+   1. After you confirm the transaction, the contract address will appear on the **Deployed Contracts** list. Copy your contract address.
+
+   1. Open MetaMask and send <CopyText text="0.5" code/> LINK to the contract address you copied. Your contract will pay CCIP fees in LINK.
+
+1. Allow the _Arbitrum Sepolia_ and _Ethereum Sepolia_ chains as destination chains for the _message dispatcher_ contract:
+
+   1. On the **Deploy & Run Transactions** tab in Remix, expand the _message dispatcher_ contract in the **Deployed Contracts** section.
+   1. Call the `allowlistDestinationChain` function with <CopyText text="3478487238524512106" code/> as the destination chain selector for _Arbitrum Sepolia_ and <CopyText text="true" code /> as allowed.
+   1. Once the transaction is confirmed, call the `allowlistDestinationChain` function with <CopyText text="16015286601757825753" code/> as the destination chain selector for _Ethereum Sepolia_ and <CopyText text="true" code /> as allowed.
+
+   Note: You can find each network's chain selector on the [supported networks page](/ccip/supported-networks).
+
+### Deploy the Messenger (receiver) contract
+
+#### Deploy the Messenger contract on Arbitrum Sepolia
+
+Deploy the `Messenger` contract on _Arbitrum Sepolia_ and enable it to receive CCIP messages from _Avalanche Fuji_. You must also enable your contract to receive CCIP messages from the _message dispatcher_ contract.
+
+1.  [Open the Messenger.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Messenger.sol) contract in Remix.
+
+    <CodeSample src="samples/CCIP/Messenger.sol" showButtonOnly={true} />
+
+    Note: The contract code is also available in the [Examine the code](/ccip/tutorials/multiple-messages-single-transaction#messengersol) section.
+
+1.  Compile the contract.
+
+1.  Deploy the contract on _Arbitrum Sepolia_:
+
+    1. Open MetaMask and select the _Arbitrum Sepolia_ network.
+
+    1. On the **Deploy & Run Transactions** tab in Remix, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
+    1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/ccip/supported-networks) page. The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Arbitrum Sepolia_:
+
+       - The Router address is <CopyText text="0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165" code/>.
+       - The LINK token address is <CopyText text="0xb1D4538B4571d411F07960EF2838Ce337FE1E80E" code/>.
+
+    1. Click **transact** to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Arbitrum Sepolia_.
+
+    1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy this contract address.
+
+1.  Allow the _Avalanche Fuji_ chain selector for the source chain. You must also enable your receiver contract to receive CCIP messages from the message dispatcher you deployed on _Avalanche Fuji_.
+
+    1. On the **Deploy & Run Transactions** tab in Remix, expand the _messenger_ contract in the **Deployed Contracts** section. Expand the `allowlistSourceChain` and `allowlistSender` functions and fill in the following arguments:
+
+       | Function             | Description                                                                                                                                             | Value (_Avalanche Fuji_)                                                   |
+       | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+       | allowlistSourceChain | CCIP Chain identifier of the source blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="14767482510784806043" code/>, <CopyText text="true" code/> |
+       | allowlistSender      | The address of the message dispatcher contract deployed on _Avalanche Fuji_                                                                             | Your deployed contract address, <CopyText text="true" code/>               |
+
+    1. Open MetaMask and select the _Arbitrum Sepolia_ network.
+    1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
+
+#### Deploy the Messenger contract on Ethereum Sepolia
+
+Repeat the [steps above](/ccip/tutorials/multiple-messages-single-transaction#deploy-the-messenger-contract-on-arbitrum-sepolia) to deploy the `Messenger.sol` contract on _Ethereum Sepolia_. When you deploy the _messenger_ contract on _Ethereum Sepolia_, you must use the _Ethereum Sepolia_ router address and LINK token address:
+
+- Router address: <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>.
+- LINK token address: <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
+
+**Note**: Once your _messenger_ contract is deployed on _Ethereum Sepolia_, remember to allow the _Avalanche Fuji_ chain selector for the source chain and the _message dispatcher_ contract as a sender.
+
+At this point:
+
+- You have one _message dispatcher_ (sender) contract on _Avalanche Fuji_, one _messenger_ (receiver) contract on _Arbitrum Sepolia_, and one _messenger_ (receiver) contract on _Ethereum Sepolia_.
+- You sent `0.5` LINK to the _message dispatcher_ contract to pay the CCIP fees.
+- You allowed _Arbitrum Sepolia_ and _Ethereum Sepolia_ as destination chains for the _message dispatcher_ contract.
+- You allowed _Avalanche Fuji_ as a source chain for both your _messenger_ contracts and allowed the _message dispatcher_ contract as a sender.
+
+**Note**: This setup allows you to send messages from the _message dispatcher_ contract to _messenger_ (receiver) contracts deployed on Arbitrum Sepolia and Ethereum Sepolia. You can extend this setup to send messages to as many _messenger_ (receiver) contracts as you want on any supported chains.
+
+### Send multiple messages directly
+
+The `dispatchMessagesDirect` function allows you to send directly multiple messages to a single chain or different chains in a single transaction. In this example, you will send two messages to your _messenger_ contract on _Arbitrum Sepolia_ and one to your _messenger_ contract on _Ethereum Sepolia_.
+
+1. On the **Deploy & Run Transactions** tab in Remix, expand the _message dispatcher_ contract in the **Deployed Contracts** section. Fill in the `dispatchMessagesDirect` function argument with the following tuple array:
+
+   ```solidity
+   [
+       [3478487238524512106, "<your_messenger_contract_address_on_Arbitrum_Sepolia>", "Hello Arbitrum Sepolia ! This is Message 1"],
+       [3478487238524512106, "<your_messenger_contract_address_on_Arbitrum_Sepolia>", "Hello Arbitrum Sepolia ! This is Message 2"],
+       [16015286601757825753, "<your_messenger_contract_address_on_Ethereum_Sepolia>", "Hello Ethereum Sepolia ! This is Message 3"]
+   ]
+   ```
+
+   Where each tuple contains the following elements:
+
+   - The chain selector for the destination chain
+   - The address of the messenger (receiver) contract
+   - The message to be sent
+
+1. Open MetaMask and select the _Avalanche Fuji_ network.
+1. Click **transact** to call the `dispatchMessagesDirect` function. MetaMask prompts you to confirm the transaction.
+1. Upon transaction success, expand the last transaction in the Remix log and copy the transaction hash. In this example, it is `0x5096b8cbd179d4370444c51b582345002885d92f4ff24395bf3dc68876f977c4`.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/multiple-messages-single-transaction/remix-txn-hash.webp"
+     alt="Remix Transaction Hash"
+   />
+
+1. Open the [CCIP Explorer](https://ccip.chain.link/) and use the transaction hash that you copied to search for your cross-chain transaction.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/multiple-messages-single-transaction/ccip-explorer-msg-status-1.webp"
+     alt="Chainlink CCIP Explorer - Transaction status"
+   />
+
+   After the transaction is finalized on the source chain, it will take a few minutes for CCIP to deliver the data to _Arbitrum Sepolia_ and _Ethereum Sepolia_, and call the `ccipReceive` function on your _messenger_ contracts.
+
+1. Wait for each CCIP message to be marked with a "Success" status on the [CCIP Explorer](https://ccip.chain.link/).
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/multiple-messages-single-transaction/ccip-explorer-msg-status-2.webp"
+     alt="Chainlink CCIP Explorer - Transaction status success"
+   />
+
+### Register and dispatch messages later
+
+The `MessageDispatcher` contract also allows you to register messages in the contract's state and dispatch them later.
+
+In this example, you will register two messages in the _message dispatcher_ contract before dispatching them.
+
+1. Open MetaMask and select the _Avalanche Fuji_ network.
+1. In the **Deploy & Run Transactions** tab of Remix, locate the `MessageDispatcher` contract within the **Deployed Contracts** section. To register messages for dispatch, invoke the `registerMessage` function separately for each message you want to send. For each call, provide the following parameters:
+
+   - The chain selector for the destination chain
+   - The address of the messenger (receiver) contract
+   - The message to be sent
+
+   Each set of parameters is provided as a tuple consisting of a chain selector, a receiver address, and the message text. For example:
+
+   - Call `registerMessage` with the following tuple for _Arbitrum Sepolia_:
+
+     ```
+     [3478487238524512106,"<your_messenger_contract_address_on_Arbitrum_Sepolia>","Hello Arbitrum Sepolia! This is Message 1"]
+     ```
+
+     Replace `<your_messenger_contract_address_on_Arbitrum_Sepolia>` with the address of your _messenger_ contract on \_Arbitrum Sepolia
+
+   - Call `registerMessage` again with the following tuple for _Ethereum Sepolia_:
+
+     ```
+     [16015286601757825753,"<your_messenger_contract_address_on_Ethereum_Sepolia>","Hello Ethereum Sepolia! This is Message 2"]
+     ```
+
+     Replace `<your_messenger_contract_address_on_Ethereum_Sepolia>` with the address of your _messenger_ contract on \_Ethereum Sepolia
+
+1. When you are ready to send the registered messages, call the `dispatchMessages` function in the **Deployed Contracts** section of Remix. This will send all registered messages in a single transaction.
+
+1. Retrieve the transaction hash and monitor the status of the messages on the [CCIP Explorer](https://ccip.chain.link/).
+
+## Explanation
+
+### Two methods for dispatching multiple messages in a single transaction
+
+- Immediate dispatch (`dispatchMessagesDirect`): This method is ideal for users who want to send multiple messages within the same transaction quickly, and without storing them in the contract's state.
+
+- Registered dispatch (`registerMessage` and `dispatchMessages`): This method is suitable for use cases where messages need to be stored and sent later, possibly triggered by an external event or at a specific time (e.g., using [Chainlink Automation](/chainlink-automation)). It is useful for scheduling and automating message sending.
+
+### Security and integrity
+
+Contracts use allowlists to process only messages from and to allowed sources.
+
+- The `sendMessage` function is protected by the `onlyAllowlistedDestinationChain` modifier, which ensures the contract owner has allowlisted a destination chain.
+- The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
+
+## Examine the code
+
+### MessageDispatcher.sol
+
+<CodeSample src="samples/CCIP/MessageDispatcher.sol" />
+
+### Messenger.sol
+
+<CodeSample src="samples/CCIP/Messenger.sol" />
