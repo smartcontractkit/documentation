@@ -94,6 +94,7 @@ export const productChainLinks: ProductChainLinks = {
       base: "/data-streams/crypto-streams",
       soneium: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
+      scroll: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
       sonic: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
