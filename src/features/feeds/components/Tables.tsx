@@ -421,6 +421,20 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Scroll",
+    logoUrl: "/assets/chains/scroll.svg",
+    mainnet: {
+      label: "Scroll Mainnet",
+      verifierProxy: "0x37e550C9b35DB56F9c943126F1c2642fcbDF7B51",
+      explorerUrl: "https://scrollscan.com/address/%s",
+    },
+    testnet: {
+      label: "Scroll Sepolia Testnet",
+      verifierProxy: "0xE17A7C6A7c2eF0Cb859578aa1605f8Bc2434A365",
+      explorerUrl: "https://sepolia.scrollscan.com/address/%s",
+    },
+  },
+  {
     network: "Shibarium",
     logoUrl: "/assets/chains/shibarium.svg",
     mainnet: {
