@@ -15,7 +15,7 @@ import {
   LaneConfig,
 } from "~/config/data/ccip"
 import { useState } from "react"
-import { SupportedChain } from "~/config"
+import { ExplorerInfo, SupportedChain } from "~/config"
 import LaneDrawer from "../Drawer/LaneDrawer"
 import TableSearchInput from "../Tables/TableSearchInput"
 import Tabs from "../Tables/Tabs"
@@ -46,7 +46,7 @@ function TokenDrawer({
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
-    explorerUrl: string
+    explorer: ExplorerInfo
   }
   destinationLanes: {
     [sourceChain: string]: SupportedTokenConfig
@@ -128,7 +128,7 @@ function TokenDrawer({
         network={{
           name: network.name,
           logo: network.logo,
-          explorerUrl: network.explorerUrl,
+          explorer: network.explorer,
         }}
       />
       <div className="ccip-table__drawer-container">
@@ -231,7 +231,7 @@ function TokenDrawer({
                                   key: destinationChain,
                                 }}
                                 inOutbound={inOutbound}
-                                explorerUrl={network.explorerUrl}
+                                explorer={network.explorer}
                               />
                             ))
                           }}

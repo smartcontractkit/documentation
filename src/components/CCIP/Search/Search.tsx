@@ -6,6 +6,7 @@ import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip"
 import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
+import { ExplorerInfo } from "~/config/types"
 
 interface SearchProps {
   chains: {
@@ -30,7 +31,7 @@ interface SearchProps {
       name: string
       logo: string
       key: string
-      explorerUrl: string
+      explorer: ExplorerInfo
     }
     lane: LaneConfig
   }[]
@@ -71,9 +72,18 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
 
   useClickOutside(searchRef, () => setOpenSearchMenu(false))
 
-  const generateExplorerUrl = (lane) => {
+  const generateExplorerUrl = (lane): ExplorerInfo => {
     const directory = directoryToSupportedChain(lane.sourceNetwork.key)
-    return getExplorer(directory) || ""
+    const explorer = getExplorer(directory)
+
+    if (!explorer) {
+      // Provide an empty object if no explorer is found
+      return {
+        baseUrl: "",
+      }
+    }
+
+    return explorer
   }
   return (
     <>
@@ -178,7 +188,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                                 ...lane.destinationNetwork,
                               }}
                               inOutbound={LaneFilter.Outbound}
-                              explorerUrl={generateExplorerUrl(lane)}
+                              explorer={generateExplorerUrl(lane)}
                             />
                           ))
                         }
