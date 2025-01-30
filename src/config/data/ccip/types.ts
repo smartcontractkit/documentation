@@ -1,3 +1,5 @@
+import { ExplorerInfo } from "~/config/types"
+
 export type RateLimiterConfig = {
   capacity: string
   isEnabled: boolean
@@ -157,7 +159,7 @@ export interface Network {
   totalTokens: number
   key: string
   tokenAdminRegistry?: string
-  explorerUrl: string
+  explorer: ExplorerInfo
   registryModule?: string
   router?: {
     address: string

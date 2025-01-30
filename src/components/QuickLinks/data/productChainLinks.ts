@@ -54,6 +54,7 @@ export const productChainLinks: ProductChainLinks = {
       bitlayer: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bitlayer-1",
       hashkey: "/ccip/directory/mainnet/chain/ethereum-mainnet-hashkey-1",
       botanix: "/ccip/directory/testnet/chain/bitcoin-testnet-botanix",
+      sei: "/ccip/directory/mainnet/chain/sei-mainnet",
     },
   },
   "Data Feeds": {
@@ -94,6 +95,7 @@ export const productChainLinks: ProductChainLinks = {
       base: "/data-streams/crypto-streams",
       soneium: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
+      scroll: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
       sonic: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
@@ -183,6 +185,7 @@ export const productChainLinks: ProductChainLinks = {
     bitlayer: "/resources/link-token-contracts#bitlayer",
     hashkey: "/resources/link-token-contracts#hashkey",
     botanix: "/resources/link-token-contracts#botanix",
+    sei: "/resources/link-token-contracts#sei",
   },
 }
 
@@ -222,11 +225,12 @@ export const chainNames: Record<string, string> = {
   bsquared: "B²",
   shibarium: "Shibarium",
   bob: "Bob",
-  worldchain: "World",
-  xlayer: "Xlayer",
+  worldchain: "World Chain",
+  xlayer: "X Layer",
   ink: "Ink",
   corn: "Corn",
   bitlayer: "Bitlayer",
-  hashkey: "Hashkey",
+  hashkey: "HashKey Chain",
   botanix: "Botanix",
+  sei: "Sei Network",
 }

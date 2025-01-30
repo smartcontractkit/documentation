@@ -17,6 +17,7 @@ import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/
 import TableSearchInput from "../Tables/TableSearchInput"
 import RateTooltip from "../Tooltip/RateTooltip"
 import { Tooltip } from "~/features/common/Tooltip"
+import { ExplorerInfo } from "~/config/types"
 
 function LaneDrawer({
   lane,
@@ -24,12 +25,12 @@ function LaneDrawer({
   destinationNetwork,
   environment,
   inOutbound,
-  explorerUrl,
+  explorer,
 }: {
   lane: LaneConfig
   sourceNetwork: { name: string; logo: string; key: string }
   destinationNetwork: { name: string; logo: string; key: string }
-  explorerUrl: string
+  explorer: ExplorerInfo
   environment: Environment
   inOutbound: LaneFilter
 }) {
@@ -54,7 +55,7 @@ function LaneDrawer({
         onRamp={lane.onRamp.address}
         offRamp={lane.offRamp.address}
         enforceOutOfOrder={lane.onRamp.enforceOutOfOrder}
-        explorerUrl={explorerUrl || ""}
+        explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         rmnPermeable={lane.rmnPermeable}
         inOutbound={inOutbound}
@@ -157,7 +158,7 @@ function LaneDrawer({
                           <Address
                             address={data[sourceNetwork.key].tokenAddress}
                             endLength={6}
-                            contractUrl={getExplorerAddressUrl(explorerUrl)(data[sourceNetwork.key].tokenAddress)}
+                            contractUrl={getExplorerAddressUrl(explorer)(data[sourceNetwork.key].tokenAddress)}
                           />
                         </td>
                         <td>{data[sourceNetwork.key].decimals}</td>

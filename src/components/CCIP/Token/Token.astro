@@ -88,7 +88,8 @@ const searchLanes = getSearchLanes({ environment })
             const directory = directoryToSupportedChain(key || "")
             const title = getTitle(directory) || ""
             const networkLogo = getChainIcon(directory) || ""
-            const explorerUrl = getExplorer(directory)
+            const explorer = getExplorer(directory)
+            if (!explorer) throw new Error(`Explorer not found for ${key}`)
             return {
               name: title,
               key: key,
@@ -101,7 +102,7 @@ const searchLanes = getSearchLanes({ environment })
               tokenAddress: data[key].tokenAddress || "",
               tokenPoolType: data[key].poolType,
               tokenPoolAddress: data[key].poolAddress || "",
-              explorerUrl: explorerUrl || "",
+              explorer: explorer,
             }
           })
           .sort((a, b) => a.name.localeCompare(b.name))}
