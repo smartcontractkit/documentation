@@ -182,7 +182,7 @@ export const productChainLinks: ProductChainLinks = {
     sonic: "/resources/link-token-contracts#sonic",
     bob: "/resources/link-token-contracts#bob",
     worldchain: "/resources/link-token-contracts#world",
-    xlayer: "/resources/link-token-contracts#xlayer",
+    xlayer: "/resources/link-token-contracts#x-layer",
     ink: "/resources/link-token-contracts#ink",
     corn: "/resources/link-token-contracts#corn",
     bitlayer: "/resources/link-token-contracts#bitlayer",
