@@ -6,6 +6,7 @@ import { directoryToSupportedChain, getChainIcon, getTitle } from "~/features/ut
 import { useState } from "react"
 import "./ChainTokenGrid.css"
 import SeeMore from "../SeeMore/SeeMore"
+import { ExplorerInfo } from "~/config/types"
 
 interface ChainTokenGridProps {
   tokens: {
@@ -25,7 +26,7 @@ interface ChainTokenGridProps {
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
-    explorerUrl: string
+    explorer: ExplorerInfo
   }
   environment: Environment
 }
@@ -66,7 +67,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       tokenAddress: data[key].tokenAddress,
                       tokenPoolType: data[key].poolType,
                       tokenPoolAddress: data[key].poolAddress || "",
-                      explorerUrl: network.explorerUrl,
+                      explorer: network.explorer,
                     }
                   })
                   .find((n) => n.key === network.key)
