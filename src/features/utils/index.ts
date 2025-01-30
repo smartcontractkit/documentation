@@ -1,4 +1,4 @@
-import { chains, chainToTechnology, SupportedChain, SupportedTechnology, web3Providers } from "@config"
+import { chains, chainToTechnology, ExplorerInfo, SupportedChain, SupportedTechnology, web3Providers } from "@config"
 import { utils } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json"
 
@@ -53,8 +53,15 @@ export const getNativeCurrency = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.nativeCurrency
 }
 
-export const getExplorerAddressUrl = (explorerUrl: string) => (contractAddress: string) => {
-  return `${explorerUrl}/address/${contractAddress}`
+export const getExplorerAddressUrl = (explorer: ExplorerInfo) => (contractAddress: string) => {
+  const url = `${explorer.baseUrl}/address/${contractAddress}`
+  if (!explorer.queryParameters) return url
+
+  const queryString = Object.entries(explorer.queryParameters)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&")
+
+  return queryString ? `${url}?${queryString}` : url
 }
 
 export const getTitle = (supportedChain: SupportedChain) => {

@@ -112,14 +112,14 @@ export type SupportedChain =
   | "SEI_MAINNET"
   | "SEI_TESTNET"
 
-type ExplorerInfo = {
+export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {
     [key: string]: string
   }
 }
 
-type ChainInfo = {
+export type ChainInfo = {
   chainId: number
   title: string
   explorer: ExplorerInfo

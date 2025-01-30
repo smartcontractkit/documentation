@@ -2,6 +2,7 @@ import { TutorialStep } from "../TutorialSetup/TutorialStep"
 import { Callout } from "../TutorialSetup/Callout"
 import type { Network } from "@config/data/ccip/types"
 import styles from "./ContractVerificationStep.module.css"
+import { getExplorerAddressUrl } from "~/features/utils"
 
 interface ContractVerificationStepProps {
   stepId: string
@@ -17,7 +18,7 @@ export const ContractVerificationStep = ({
   contractType,
 }: ContractVerificationStepProps) => {
   const explorerContractUrl =
-    contractAddress && network?.explorerUrl ? `${network.explorerUrl}/address/${contractAddress}#code` : undefined
+    contractAddress && network?.explorer ? getExplorerAddressUrl(network.explorer)(contractAddress) : undefined
 
   return (
     <TutorialStep id={stepId} title="Verify Contract (Optional)">
@@ -37,17 +38,17 @@ export const ContractVerificationStep = ({
         <li>
           <span className={styles.stepTitle}>Access the Blockchain Explorer</span>
           <div className={styles.stepContent}>
-            {network?.explorerUrl ? (
+            {network?.explorer ? (
               <div className={styles.explorerSection}>
                 <div className={styles.explorerUrl}>
                   <span>Blockchain Explorer:</span>
                   <a
-                    href={network.explorerUrl}
+                    href={getExplorerAddressUrl(network.explorer)("")}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.explorerLink}
                   >
-                    {network.explorerUrl} <span className={styles.externalIcon}>↗</span>
+                    {getExplorerAddressUrl(network.explorer)("")} <span className={styles.externalIcon}>↗</span>
                   </a>
                 </div>
               </div>
@@ -109,7 +110,7 @@ export const ContractVerificationStep = ({
               <li>You should now see your contract's source code in the "Code" tab</li>
             </ol>
 
-            {!network?.explorerUrl ? (
+            {!network?.explorer ? (
               <div className={styles.placeholderMessage}>
                 Contract verification link will be available once you select a network.
               </div>
