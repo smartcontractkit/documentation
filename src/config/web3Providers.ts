@@ -76,6 +76,8 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   CORN_MAINNET: () => new providers.JsonRpcProvider("https://mainnet.corn-rpc.com"),
   CORN_TESTNET: () => new providers.JsonRpcProvider("https://testnet.corn-rpc.com"),
   BOTANIX_TESTNET: () => new providers.JsonRpcProvider("https://node.botanixlabs.dev"),
+  SEI_MAINNET: () => new providers.JsonRpcProvider("https://evm-rpc.sei-apis.com"),
+  SEI_TESTNET: () => new providers.JsonRpcProvider("https://evm-rpc-testnet.sei-apis.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
