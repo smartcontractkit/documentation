@@ -574,6 +574,67 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "mantle",
+    label: "Mantle",
+    title: "Mantle Data Feeds",
+    img: "/assets/chains/mantle.svg",
+    networkStatusUrl: "https://0xmantle.instatus.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Mantle Mainnet",
+        explorerUrl: "https://mantlescan.xyz/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-mantle-1.json",
+        queryString: "mantle-mainnet",
+      },
+    ],
+  },
+  {
+    page: "xlayer",
+    label: "X Layer",
+    title: "X Layer Data Feeds",
+    img: "/assets/chains/xlayer.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "X Layer Mainnet",
+        explorerUrl: "https://www.oklink.com/xlayer/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
+        queryString: "xlayer-mainnet",
+      },
+      {
+        name: "X Layer Sepolia Testnet",
+        explorerUrl: "https://www.oklink.com/xlayer-test/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-xlayer-1.json",
+        queryString: "xlayer-testnet",
+      },
+    ],
+  },
+  {
+    page: "ronin",
+    label: "Ronin",
+    title: "Ronin Data Feeds",
+    img: "/assets/chains/ronin.svg",
+    networkStatusUrl: "https://app.roninchain.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Ronin Mainnet",
+        explorerUrl: "https://app.roninchain.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
+        queryString: "ronin-mainnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.

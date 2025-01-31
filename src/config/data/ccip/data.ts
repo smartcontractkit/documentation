@@ -12,7 +12,7 @@ import {
   LaneConfig,
   Network,
 } from "."
-import { SupportedChain } from "@config/types"
+import { ExplorerInfo, SupportedChain } from "@config/types"
 import {
   directoryToSupportedChain,
   getChainIcon,
@@ -393,7 +393,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     key: string
     chainSelector: string
     tokenAdminRegistry?: string
-    explorerUrl: string
+    explorer: ExplorerInfo
     registryModule?: string
     router?: {
       address: string
@@ -425,10 +425,10 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     const logo = getChainIcon(directory)
     if (!logo) throw Error(`Logo not found for ${directory}`)
     const token = getTokensOfChain({ chain, filter })
-    const explorerUrl = getExplorer(directory)
+    const explorer = getExplorer(directory)
     const router = chains[chain].router
-    if (!explorerUrl) throw Error(`Explorer url not found for ${directory}`)
-    const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router.address)
+    if (!explorer) throw Error(`Explorer not found for ${directory}`)
+    const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
     allChains.push({
       name: title,
       logo,
@@ -436,7 +436,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       totalTokens: token.length,
       chain,
       key: chain,
-      explorerUrl,
+      explorer,
       tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
       registryModule: chains[chain]?.registryModule?.address,
       router,
@@ -476,7 +476,7 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
       return {
         name: network.name,
         logo: network.logo,
-        explorerUrl: network.explorerUrl,
+        explorer: network.explorer,
         ...chainDetails,
       }
     }
@@ -630,7 +630,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       name: string
       logo: string
       key: string
-      explorerUrl: string
+      explorer: ExplorerInfo
     }
     lane: LaneConfig
   }[] = []
@@ -646,7 +646,8 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       const destinationChainLogo = getChainIcon(destinationChainDirectory)
 
       const lane = lanes[sourceChain][destinationChain]
-      const explorerUrl = getExplorer(destinationChainDirectory) || ""
+      const explorer = getExplorer(destinationChainDirectory)
+      if (!explorer) throw Error(`Explorer not found for ${destinationChainDirectory}`)
       allLanes.push({
         sourceNetwork: {
           name: sourceChainTitle || "",
@@ -657,7 +658,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
           name: destinationChainTitle || "",
           logo: destinationChainLogo || "",
           key: destinationChain,
-          explorerUrl,
+          explorer,
         },
         lane,
       })
