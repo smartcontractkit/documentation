@@ -1,0 +1,363 @@
+/* Base container */
+.tutorialProgress {
+  position: sticky;
+  top: 0;
+  height: fit-content;
+  padding: var(--doc-padding) 0;
+  min-width: calc(315px - var(--space-16x));
+  isolation: isolate;
+}
+
+/* Override any parent title tooltips */
+.tutorialProgress::before,
+.tutorialProgress::after {
+  display: none !important;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4x);
+  pointer-events: none;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4x);
+  padding-bottom: var(--space-2x);
+  border-bottom: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+/* Progress Steps */
+.progressSteps {
+  margin-bottom: 24px;
+}
+
+.steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
+}
+
+.stepContainer {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid var(--color-border-primary);
+  margin-left: 15px;
+  padding-left: 15px;
+  transition: all 0.3s ease;
+}
+
+.stepContainer.completed {
+  border-left-color: #16a34a;
+}
+
+.stepContainer.in-progress {
+  border-left-color: #ea580c;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.step:hover {
+  transform: translateX(4px);
+  background: var(--color-background-secondary);
+}
+
+.stepIndicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.completed .stepIndicator {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.in-progress .stepIndicator {
+  background: #fef3c7;
+  border-color: #eab308;
+  color: #b45309;
+}
+
+.stepTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.step.in-progress .stepTitle {
+  color: #ea580c;
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.expanded .chevron {
+  transform: rotate(-135deg);
+}
+
+.stepDetails {
+  margin-left: 40px;
+  padding: 8px 0;
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.substep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.03);
+  margin: 4px 0;
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+}
+
+.substep:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.substep:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(55, 91, 210, 0.4);
+}
+
+.substep.completed {
+  background: rgba(22, 163, 74, 0.1);
+  padding-right: 32px;
+  position: relative;
+}
+
+.substep.completed::after {
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.substepTitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.substep.completed .substepTitle {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+/* Chain section styles */
+.chainBlock {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.chainHeader {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chainIdentity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chainLogo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.chainLogo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chainLogo:not([src]),
+.chainLogo[src=""],
+.chainLogo[src="undefined"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.chainName {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1.1em;
+  pointer-events: none;
+}
+
+.chainConfigs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Status styles */
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.statusLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.statusValue {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.statusValueWithAddress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  max-width: 140px;
+}
+
+.statusCheck {
+  color: #4caf50;
+  font-weight: bold;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.statusPending {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  pointer-events: none;
+}
+
+/* Value container with tooltip */
+.valueContainer {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  position: relative;
+  cursor: help;
+  background: rgba(255, 255, 255, 0.1);
+  isolation: isolate;
+}
+
+.valueContainer:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Tooltip styles */
+.valueContainer[data-tooltip] {
+  position: relative;
+}
+
+.valueContainer[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 0.85em;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.valueContainer[data-tooltip]::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.valueContainer[data-tooltip]:hover::before,
+.valueContainer[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}

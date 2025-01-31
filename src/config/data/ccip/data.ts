@@ -10,7 +10,17 @@ import {
   TokenMechanism,
   NetworkFees,
   LaneConfig,
+  Network,
 } from "."
+import { ExplorerInfo, SupportedChain } from "@config/types"
+import {
+  directoryToSupportedChain,
+  getChainIcon,
+  getExplorer,
+  getExplorerAddressUrl,
+  getTitle,
+  supportedChainToChainInRdd,
+} from "@features/utils"
 
 // For mainnet
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
@@ -23,32 +33,42 @@ import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
 
-// errors
-
-import erc20CCIPSendErrors from "@config/data/ccip/errors/erc20.json"
-import routerCCIPSendErrors from "@config/data/ccip/errors/router.json"
-import onrampCCIPSendErrors from "@config/data/ccip/errors/onramp.json"
-import ratelimiterCCIPSendErrors from "@config/data/ccip/errors/ratelimiter.json"
-import priceregistryCCIPSendErrors from "@config/data/ccip/errors/priceregistry.json"
-
-import { SupportedChain } from "@config/types"
-import {
-  directoryToSupportedChain,
-  getChainIcon,
-  getExplorer,
-  getExplorerAddressUrl,
-  getTitle,
-  supportedChainToChainInRdd,
-} from "@features/utils"
+// Import errors by version
+// eslint-disable-next-line camelcase
+import * as errors_v1_5_0 from "./errors/v1_5_0"
+// eslint-disable-next-line camelcase
+import * as errors_v1_5_1 from "./errors/v1_5_1"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
 
-export const erc20Errors: CCIPSendErrorEntry[] = erc20CCIPSendErrors
-export const routerErrors: CCIPSendErrorEntry[] = routerCCIPSendErrors
-export const onrampErrors: CCIPSendErrorEntry[] = onrampCCIPSendErrors
-export const ratelimiterErrors: CCIPSendErrorEntry[] = ratelimiterCCIPSendErrors
-export const priceRegistryErrors: CCIPSendErrorEntry[] = priceregistryCCIPSendErrors
+// Type for v1.5.0 errors
+type ErrorTypesV150 = {
+  erc20CCIPSendErrors: CCIPSendErrorEntry[]
+  routerCCIPSendErrors: CCIPSendErrorEntry[]
+  onrampCCIPSendErrors: CCIPSendErrorEntry[]
+  ratelimiterCCIPSendErrors: CCIPSendErrorEntry[]
+  priceregistryCCIPSendErrors: CCIPSendErrorEntry[]
+}
+
+// Type for v1.5.1 errors
+type ErrorTypesV151 = ErrorTypesV150 & {
+  poolCCIPSendErrors: CCIPSendErrorEntry[]
+  burnMintERC20CCIPSendErrors: CCIPSendErrorEntry[]
+}
+
+type VersionedErrors = {
+  v1_5_0: ErrorTypesV150
+  v1_5_1: ErrorTypesV151
+}
+
+// Export errors by version with type safety
+export const errors: VersionedErrors = {
+  // eslint-disable-next-line camelcase
+  v1_5_0: errors_v1_5_0 as ErrorTypesV150,
+  // eslint-disable-next-line camelcase
+  v1_5_1: errors_v1_5_1 as ErrorTypesV151,
+}
 
 export const networkFees: NetworkFees = {
   tokenTransfers: {
@@ -357,7 +377,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
   })
 }
 
-export const getAllNetworks = ({ filter }: { filter: Environment }) => {
+export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
     testnetVersion: Version.V1_2_0,
@@ -373,7 +393,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
     key: string
     chainSelector: string
     tokenAdminRegistry?: string
-    explorerUrl: string
+    explorer: ExplorerInfo
     registryModule?: string
     router?: {
       address: string
@@ -405,10 +425,10 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
     const logo = getChainIcon(directory)
     if (!logo) throw Error(`Logo not found for ${directory}`)
     const token = getTokensOfChain({ chain, filter })
-    const explorerUrl = getExplorer(directory)
+    const explorer = getExplorer(directory)
     const router = chains[chain].router
-    if (!explorerUrl) throw Error(`Explorer url not found for ${directory}`)
-    const routerExplorerUrl = getExplorerAddressUrl(explorerUrl)(router.address)
+    if (!explorer) throw Error(`Explorer not found for ${directory}`)
+    const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
     allChains.push({
       name: title,
       logo,
@@ -416,7 +436,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }) => {
       totalTokens: token.length,
       chain,
       key: chain,
-      explorerUrl,
+      explorer,
       tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
       registryModule: chains[chain]?.registryModule?.address,
       router,
@@ -456,7 +476,7 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
       return {
         name: network.name,
         logo: network.logo,
-        explorerUrl: network.explorerUrl,
+        explorer: network.explorer,
         ...chainDetails,
       }
     }
@@ -610,7 +630,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       name: string
       logo: string
       key: string
-      explorerUrl: string
+      explorer: ExplorerInfo
     }
     lane: LaneConfig
   }[] = []
@@ -626,7 +646,8 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       const destinationChainLogo = getChainIcon(destinationChainDirectory)
 
       const lane = lanes[sourceChain][destinationChain]
-      const explorerUrl = getExplorer(destinationChainDirectory) || ""
+      const explorer = getExplorer(destinationChainDirectory)
+      if (!explorer) throw Error(`Explorer not found for ${destinationChainDirectory}`)
       allLanes.push({
         sourceNetwork: {
           name: sourceChainTitle || "",
@@ -637,7 +658,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
           name: destinationChainTitle || "",
           logo: destinationChainLogo || "",
           key: destinationChain,
-          explorerUrl,
+          explorer,
         },
         lane,
       })

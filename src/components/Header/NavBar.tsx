@@ -5,7 +5,15 @@ import { getNavigationProps } from "./getNavigationProps"
 import { useNavBar } from "./useNavBar/useNavBar"
 import styles from "./scroll.module.css"
 
-export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
+export const NavBar = ({
+  path,
+  showSearch = true,
+  algoliaVars,
+}: {
+  path: string
+  showSearch?: boolean
+  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+}) => {
   const navRef = React.useRef(null)
 
   const { setNavBarInfo } = useNavBar()
@@ -47,7 +55,7 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
       <Nav
         {...getNavigationProps()}
         path={path}
-        searchTrigger={showSearch ? <Search /> : undefined}
+        searchTrigger={showSearch ? <Search algoliaVars={algoliaVars} /> : undefined}
         onHideChange={onHideChange}
         doubleNavbar={doubleNavbar()}
       />

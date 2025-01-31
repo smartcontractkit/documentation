@@ -4,7 +4,7 @@ date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
 ---
 
-When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+When constructing a [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
 - Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, which requires a manual re-execution with an increased gas limit. For more details about this scenario, read the [Manual Execution](/ccip/tutorials/manual-execution) guide.
 - Conversely, an excessively high gas limit leads to higher fees.
@@ -60,7 +60,7 @@ This code shows how gas consumption for the `_ccipReceive` function can fluctuat
 
 ## Gas estimation in a local environment
 
-To facilitate testing within a local environment, you will use the [MockCCIPRouter](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract. This contract serves as a mock implementation of the CCIP Router contract, enabling the local testing of CCIP Sender and Receiver contracts.
+To facilitate testing within a local environment, you will use the [MockCCIPRouter](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract. This contract serves as a mock implementation of the CCIP Router contract, enabling the local testing of CCIP Sender and Receiver contracts.
 A notable feature of the `MockCCIPRouter` contract is its ability to emit a `MsgExecuted` event:
 
 ```solidity
@@ -264,7 +264,7 @@ Now that you've locally estimated the gas usage of the `ccipReceive` function us
 
 To estimate the gas usage of the `ccipReceive` function within your own Foundry project, follow these steps:
 
-1. Create a testing file in the `test` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
+1. Create a testing file in the `test` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
 
    ```solidity
    import { MockCCIPRouter } from "@chainlink/contracts-ccip/src/v0.8/ccip/test/mocks/MockRouter.sol";
@@ -286,7 +286,7 @@ To estimate the gas usage of the `ccipReceive` function within your own Foundry 
 
 To estimate the gas usage of the `ccipReceive` function within your own Hardhat project, follow these steps:
 
-1. Create a Solidity file in the `contracts` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
+1. Create a Solidity file in the `contracts` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
 
    ```solidity
    import { MockCCIPRouter } from "@chainlink/contracts-ccip/src/v0.8/ccip/test/mocks/MockRouter.sol";

@@ -1,0 +1,290 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulator v0.2.2 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulator in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## CCIPLocalSimulator
+
+A contract that simulates local CCIP (Cross-Chain Interoperability Protocol) operations for testing and development purposes.
+
+[`CCIPLocalSimulator`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/ccip/CCIPLocalSimulator.sol)
+
+## Errors
+
+### CCIPLocalSimulator\_\_MsgSenderIsNotTokenOwner
+
+```solidity
+error CCIPLocalSimulator__MsgSenderIsNotTokenOwner()
+```
+
+Thrown when a caller attempts to add a token but is not the token owner or CCIP admin.
+
+## Variables
+
+### CHAIN_SELECTOR
+
+```solidity
+uint64 constant CHAIN_SELECTOR = 16015286601757825753
+```
+
+<Aside>
+
+The unique CCIP Chain Selector constant.
+
+</Aside>
+
+### i_ccipBnM
+
+```solidity
+BurnMintERC677Helper internal immutable i_ccipBnM
+```
+
+<Aside>
+
+The BurnMintERC677Helper instance for CCIP-BnM token.
+
+</Aside>
+
+### i_ccipLnM
+
+```solidity
+BurnMintERC677Helper internal immutable i_ccipLnM
+```
+
+<Aside>
+
+The BurnMintERC677Helper instance for CCIP-LnM token.
+
+</Aside>
+
+### i_linkToken
+
+```solidity
+LinkToken internal immutable i_linkToken
+```
+
+<Aside>
+
+The LINK token instance.
+
+</Aside>
+
+### i_mockRouter
+
+```solidity
+MockCCIPRouter internal immutable i_mockRouter
+```
+
+<Aside>
+
+The mock CCIP router instance.
+
+</Aside>
+
+### i_wrappedNative
+
+```solidity
+WETH9 internal immutable i_wrappedNative
+```
+
+<Aside>
+
+The wrapped native token instance.
+
+</Aside>
+
+### s_supportedTokens
+
+```solidity
+address[] internal s_supportedTokens
+```
+
+<Aside>
+
+The list of supported token addresses.
+
+</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract by deploying and configuring all required token instances.
+
+```solidity
+constructor()
+```
+
+<Aside>
+
+Constructor to initialize the contract and pre-deployed token instances.
+
+</Aside>
+
+### configuration
+
+Retrieves the complete configuration for local CCIP simulations.
+
+```solidity
+function configuration()
+    public
+    view
+    returns (
+        uint64 chainSelector_,
+        IRouterClient sourceRouter_,
+        IRouterClient destinationRouter_,
+        WETH9 wrappedNative_,
+        LinkToken linkToken_,
+        BurnMintERC677Helper ccipBnM_,
+        BurnMintERC677Helper ccipLnM_
+    )
+```
+
+<Aside>
+
+Returns configuration details for pre-deployed contracts and services needed for local CCIP simulations.
+
+</Aside>
+
+#### Returns
+
+| Parameter           | Type                 | Description                                              |
+| ------------------- | -------------------- | -------------------------------------------------------- |
+| chainSelector\_     | uint64               | The unique CCIP Chain Selector                           |
+| sourceRouter\_      | IRouterClient        | The source chain Router contract                         |
+| destinationRouter\_ | IRouterClient        | The destination chain Router contract                    |
+| wrappedNative\_     | WETH9                | The wrapped native token which can be used for CCIP fees |
+| linkToken\_         | LinkToken            | The LINK token                                           |
+| ccipBnM\_           | BurnMintERC677Helper | The ccipBnM token                                        |
+| ccipLnM\_           | BurnMintERC677Helper | The ccipLnM token                                        |
+
+### getSupportedTokens
+
+Retrieves the list of tokens supported for cross-chain transfers.
+
+```solidity
+function getSupportedTokens(uint64 chainSelector) external view returns (address[] memory tokens)
+```
+
+<Aside>
+
+Gets a list of token addresses that are supported for cross-chain transfers by the simulator.
+
+</Aside>
+
+#### Parameters
+
+| Parameter     | Type   | Description                    |
+| ------------- | ------ | ------------------------------ |
+| chainSelector | uint64 | The unique CCIP Chain Selector |
+
+#### Returns
+
+| Parameter | Type      | Description                                                                                     |
+| --------- | --------- | ----------------------------------------------------------------------------------------------- |
+| tokens    | address[] | Returns a list of token addresses that are supported for cross-chain transfers by the simulator |
+
+### isChainSupported
+
+Verifies if a given chain selector is supported by the simulator.
+
+```solidity
+function isChainSupported(uint64 chainSelector) public pure returns (bool supported)
+```
+
+<Aside>
+
+Checks whether the provided `chainSelector` is supported by the simulator.
+
+</Aside>
+
+#### Parameters
+
+| Parameter     | Type   | Description                    |
+| ------------- | ------ | ------------------------------ |
+| chainSelector | uint64 | The unique CCIP Chain Selector |
+
+#### Returns
+
+| Parameter | Type | Description                                                   |
+| --------- | ---- | ------------------------------------------------------------- |
+| supported | bool | Returns true if `chainSelector` is supported by the simulator |
+
+### requestLinkFromFaucet
+
+Transfers LINK tokens from the faucet to a specified recipient address.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>
+
+Requests LINK tokens from the faucet. The provided amount of tokens are transferred to provided destination address.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type    | Description                                     |
+| --------- | ------- | ----------------------------------------------- |
+| to        | address | The address to which LINK tokens are to be sent |
+| amount    | uint256 | The amount of LINK tokens to send               |
+
+#### Returns
+
+| Parameter | Type | Description                                                            |
+| --------- | ---- | ---------------------------------------------------------------------- |
+| success   | bool | Returns true if the transfer of tokens was successful, otherwise false |
+
+### supportNewTokenViaGetCCIPAdmin
+
+Adds support for a new token using CCIP admin verification.
+
+```solidity
+function supportNewTokenViaGetCCIPAdmin(address tokenAddress) external
+```
+
+<Aside>
+
+Allows user to support any new token, besides CCIP BnM and CCIP LnM, for cross-chain transfers.
+Reverts if token does not implement getCCIPAdmin() function.
+Reverts if the caller is not the token CCIPAdmin.
+
+</Aside>
+
+#### Parameters
+
+| Parameter    | Type    | Description                                                     |
+| ------------ | ------- | --------------------------------------------------------------- |
+| tokenAddress | address | The address of the token to add to the list of supported tokens |
+
+### supportNewTokenViaOwner
+
+Adds support for a new token using owner verification.
+
+```solidity
+function supportNewTokenViaOwner(address tokenAddress) external
+```
+
+<Aside>
+
+Allows user to support any new token, besides CCIP BnM and CCIP LnM, for cross-chain transfers.
+Reverts if token does not implement owner() function.
+Reverts if the caller is not the token owner.
+
+</Aside>
+
+#### Parameters
+
+| Parameter    | Type    | Description                                                     |
+| ------------ | ------- | --------------------------------------------------------------- |
+| tokenAddress | address | The address of the token to add to the list of supported tokens |

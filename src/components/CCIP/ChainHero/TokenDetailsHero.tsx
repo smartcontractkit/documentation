@@ -2,12 +2,13 @@ import Address from "~/components/AddressReact"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
 import { PoolType, tokenPoolDisplay } from "~/config/data/ccip"
 import "./ChainHero.css"
+import { ExplorerInfo } from "~/config/types"
 
 interface TokenDetailsHeroProps {
   network: {
     name: string
     logo: string
-    explorerUrl: string
+    explorer: ExplorerInfo
   }
   token: {
     id: string
@@ -55,7 +56,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token.address)} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorer)(token.address)} />
             </div>
           </div>
           <div className="ccip-chain-hero__details__item">
@@ -65,7 +66,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorerUrl)(token.poolAddress)} />
+              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorer)(token.poolAddress)} />
             </div>
           </div>
         </div>

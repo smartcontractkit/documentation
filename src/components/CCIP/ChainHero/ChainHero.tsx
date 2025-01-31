@@ -12,6 +12,7 @@ import {
   fallbackTokenIconUrl,
 } from "~/features/utils"
 import { Tooltip } from "~/features/common/Tooltip"
+import { ExplorerInfo } from "~/config/types"
 
 interface ChainHeroProps {
   chains: {
@@ -36,7 +37,7 @@ interface ChainHeroProps {
       name: string
       logo: string
       key: string
-      explorerUrl: string
+      explorer: ExplorerInfo
     }
     lane: LaneConfig
   }[]
@@ -52,7 +53,7 @@ interface ChainHeroProps {
       name: string
       address: string
     }
-    explorerUrl: string
+    explorer: ExplorerInfo
     routerExplorerUrl: string
     chainSelector: string
     feeTokens?: string[]
@@ -83,8 +84,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       version: Version.V1_2_0,
       tokenId: feeToken,
     })
-    const explorerUrl = network.explorerUrl
-    const address = getExplorerAddressUrl(explorerUrl)(token[network.chain].tokenAddress)
+    const explorer = network.explorer
+    const address = getExplorerAddressUrl(explorer)(token[network.chain].tokenAddress)
 
     return {
       logo,
@@ -192,7 +193,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network.armProxy ? (
                   <Address
                     endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.armProxy.address)}
+                    contractUrl={getExplorerAddressUrl(network.explorer)(network.armProxy.address)}
                   />
                 ) : (
                   "n/a"
@@ -219,7 +220,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network.tokenAdminRegistry ? (
                   <Address
                     endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAdminRegistry)}
+                    contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAdminRegistry)}
                   />
                 ) : (
                   "n/a"
@@ -246,7 +247,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network.registryModule ? (
                   <Address
                     endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.registryModule)}
+                    contractUrl={getExplorerAddressUrl(network.explorer)(network.registryModule)}
                   />
                 ) : (
                   "n/a"

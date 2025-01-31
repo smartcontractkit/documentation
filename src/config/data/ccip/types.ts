@@ -1,3 +1,5 @@
+import { ExplorerInfo } from "~/config/types"
+
 export type RateLimiterConfig = {
   capacity: string
   isEnabled: boolean
@@ -146,4 +148,26 @@ export enum LaneStatus {
   MAINTENANCE = "MAINTENANCE",
   DEGRADED = "DEGRADED",
   CURSED = "CURSED",
+}
+
+export interface Network {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  totalLanes: number
+  totalTokens: number
+  key: string
+  tokenAdminRegistry?: string
+  explorer: ExplorerInfo
+  registryModule?: string
+  router?: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  routerExplorerUrl: string
 }

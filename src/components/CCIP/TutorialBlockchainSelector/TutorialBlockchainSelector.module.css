@@ -1,0 +1,379 @@
+.blockchainSelector {
+  --section-spacing: 24px;
+  padding: 24px;
+  background: var(--color-background);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-spacing);
+  border: 1px solid var(--color-border);
+  transition: background-color 0.3s ease;
+}
+
+/* Environment Section */
+.environmentSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.environmentToggle {
+  margin: 0 auto;
+  background: var(--color-background-secondary);
+  padding: 4px;
+  border-radius: 12px;
+  display: flex;
+  gap: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.environmentToggle:target {
+  background-color: rgba(55, 91, 210, 0.1);
+  border-radius: 8px;
+  outline: 2px solid rgba(55, 91, 210, 0.2);
+}
+
+.toggleButton {
+  padding: 10px 20px;
+  border: none;
+  background: rgba(var(--color-background-rgb), 0.6);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.toggleIcon {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.active .toggleIcon {
+  opacity: 1;
+}
+
+.toggleButton.active {
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.15), 0 2px 4px rgba(var(--color-accent-rgb), 0.1);
+  transform: translateY(-1px);
+  background: linear-gradient(to bottom, var(--color-background), rgba(var(--color-accent-rgb), 0.03));
+}
+
+.toggleButton.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(var(--color-accent-rgb), 0.15),
+    rgba(var(--color-accent-rgb), 0.05)
+  );
+  border-radius: inherit;
+}
+
+.toggleButton.active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.2);
+}
+
+/* Make inactive state clearer but still accessible */
+.toggleButton:not(.active) {
+  opacity: 0.8;
+  background: transparent;
+}
+
+.toggleButton:not(.active):hover {
+  background: rgba(var(--color-background-rgb), 0.8);
+}
+
+/* Chain Selection */
+.chainSection {
+  padding-top: var(--section-spacing);
+  border-top: 1px solid var(--color-border);
+}
+
+.chainSelectors {
+  display: grid;
+  grid-template-columns: minmax(250px, 2fr) auto minmax(250px, 2fr);
+  gap: 32px;
+  align-items: center;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+  transition: background-color 0.3s ease;
+}
+
+.chainSelectors:target {
+  background-color: rgba(55, 91, 210, 0.1);
+  border-radius: 8px;
+  outline: 2px solid rgba(55, 91, 210, 0.2);
+}
+
+.chainSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chainLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.selectWrapper {
+  position: relative;
+  height: 48px;
+}
+
+.chainLogo {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.select {
+  width: 100%;
+  height: 100%;
+  padding: 0 16px 0 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+.select:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* Arrow styling */
+.arrowContainer {
+  --touch-target-size: 44px;
+  --animation-timing: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+  margin-inline: auto;
+  padding-block: 0;
+  padding-inline: 1rem;
+  position: relative;
+
+  /* Make it purely decorative */
+  pointer-events: none;
+  user-select: none;
+}
+
+.arrow {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  transition: opacity 0.3s var(--animation-timing);
+}
+
+.arrowGroup {
+  transform-origin: center;
+}
+
+/* Subtle animation */
+@media (prefers-reduced-motion: no-preference) {
+  .arrowPath {
+    opacity: 0.7;
+    animation: subtlePulse 3s var(--animation-timing) infinite;
+  }
+
+  .arrowLine {
+    opacity: 0.5;
+    animation: subtlePulse 3s var(--animation-timing) infinite;
+  }
+
+  .arrowPath:first-child {
+    animation-delay: 0s;
+  }
+
+  .arrowPath:last-child {
+    animation-delay: 1.5s;
+  }
+
+  @keyframes subtlePulse {
+    0%,
+    100% {
+      opacity: 0.7;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 0.9;
+      transform: translateX(1px);
+    }
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .arrowContainer {
+  transform: scaleX(-1);
+}
+
+/* Vertical writing modes */
+[writing-mode="vertical-rl"] .arrowContainer {
+  transform: rotate(90deg);
+}
+
+/* Interactive States */
+.arrowContainer:hover .arrow,
+.arrowContainer.focused .arrow {
+  color: var(--color-primary);
+}
+
+.arrowContainer:hover .arrowGroup,
+.arrowContainer.focused .arrowGroup {
+  transform: scale(1.05);
+}
+
+.arrowContainer:active .arrowGroup {
+  transform: scale(0.95);
+}
+
+/* Focus States */
+.arrowContainer:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced Animations */
+@media (prefers-reduced-motion: no-preference) {
+  .arrowPath {
+    opacity: 0.8;
+    animation: bidirectionalFlow 3s var(--animation-timing) infinite;
+  }
+
+  .arrowLine {
+    opacity: 0.6;
+    animation: fadeInOut 3s var(--animation-timing) infinite;
+  }
+
+  .arrowPath:first-child {
+    animation-delay: 0s;
+  }
+
+  .arrowPath:last-child {
+    animation-delay: 1.5s;
+  }
+
+  @keyframes bidirectionalFlow {
+    0%,
+    100% {
+      opacity: 0.8;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+
+  @keyframes fadeInOut {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+/* Perfect Touch Optimization */
+@media (hover: none) {
+  .arrowContainer {
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .arrowContainer:active .arrow {
+    transform: scale(0.95);
+  }
+}
+
+@media (max-width: 1200px) {
+  .chainSelectors {
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chainSelectors {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+
+  .arrowContainer {
+    transform: rotate(90deg);
+  }
+}
+
+.chainSelect.active {
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.12), 0 2px 4px rgba(var(--color-accent-rgb), 0.08);
+  transform: translateY(-1px);
+}
+
+.chainSelect.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(var(--color-accent-rgb), 0.15),
+    rgba(var(--color-accent-rgb), 0.05)
+  );
+  border-radius: inherit;
+}

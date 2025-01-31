@@ -1,0 +1,186 @@
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-background-secondary),
+    rgba(var(--color-background-secondary-rgb), 0.8)
+  );
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.trigger.active {
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.placeholder {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.chainLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.arrow {
+  margin-left: auto;
+  color: var(--color-accent);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.active .arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  background: var(--color-background-secondary);
+  border: 1px solid rgba(var(--color-border-rgb), 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08);
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  animation: dropdownAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10000;
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.option {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(var(--color-border-rgb), 0.06);
+  position: relative;
+  min-height: 44px;
+}
+
+.option:hover,
+.option.focused {
+  background: rgba(var(--color-accent-rgb), 0.15);
+  color: var(--color-accent);
+  font-weight: 600;
+  padding-left: 20px;
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15), inset 4px 0 0 var(--color-accent);
+}
+
+.option:hover::before,
+.option.focused::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--color-accent);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.option:hover::after,
+.option.focused::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.08));
+  pointer-events: none;
+}
+
+.option:hover .chainLogo,
+.option.focused .chainLogo {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.3), 0 0 0 2px var(--color-accent);
+}
+
+.option.selected {
+  background: rgba(var(--color-accent-rgb), 0.08);
+  color: var(--color-accent);
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option,
+  .option .chainLogo {
+    transition: none;
+  }
+
+  .option:hover,
+  .option.focused {
+    transform: none;
+  }
+}
+
+.option:last-child {
+  border-bottom: none;
+}
+
+.dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.dropdown::before {
+  content: "Use arrow keys or Page Up/Down to navigate";
+  display: block;
+  padding: 8px 16px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dropdownBackdrop {
+  display: none;
+}

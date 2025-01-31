@@ -1,7 +1,8 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsVerifierProxyTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables"
 import feedList from "./FeedList.module.css"
+import tableStyles from "./Tables.module.css"
 import { clsx } from "~/lib"
 import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
@@ -128,8 +129,8 @@ export const FeedList = ({
 
     return (
       <>
-        <SectionWrapper title="Verifier Proxy Addresses" depth={2}>
-          <StreamsVerifierProxyTable />
+        <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+          <StreamsNetworkAddressesTable />
         </SectionWrapper>
 
         <SectionWrapper title={streamsMainnetSectionTitle} depth={2}>
@@ -253,125 +254,175 @@ export const FeedList = ({
         })
         .map((network: ChainNetwork) => {
           return (
-            <SectionWrapper title={network.name} depth={3} key={network.name}>
-              {network.networkType === "mainnet" ? (
-                <>
-                  {!isStreams && chain.l2SequencerFeed && (
-                    <p>
-                      {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
-                      status of the sequencer when running applications on L2 networks. See the{" "}
-                      <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-                    </p>
-                  )}
-                  <div className={feedList.tableFilters}>
-                    {!isStreams && !isSmartData && (
-                      <details class={feedList.filterDropdown_details}>
-                        <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                          Data Feed Categories
-                        </summary>
-                        <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                          <ul>
-                            {dataFeedCategory.map((category) => (
-                              <li>
-                                <button onClick={() => handleCategorySelection(category.key)}>
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedFeedCategories?.includes(category.key)}
-                                    readonly
-                                    style="cursor:pointer;"
-                                  />
-                                  <span> {category.name}</span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </nav>
-                      </details>
+            <>
+              <SectionWrapper title={network.name} depth={3} key={network.name}>
+                {network.networkType === "mainnet" ? (
+                  <>
+                    {!isStreams && chain.l2SequencerFeed && (
+                      <p>
+                        {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                        status of the sequencer when running applications on L2 networks. See the{" "}
+                        <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                      </p>
                     )}
-                    {isSmartData && (
-                      <details class={feedList.filterDropdown_details}>
-                        <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                          SmartData Type
-                        </summary>
-                        <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                          <ul>
-                            {smartDataTypes.map((category) => (
-                              <li>
-                                <button onClick={() => handleCategorySelection(category.key)}>
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedFeedCategories?.includes(category.key)}
-                                    readonly
-                                    style="cursor:pointer;"
-                                  />
-                                  <span> {category.name}</span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </nav>
-                      </details>
+                    {network.name === "Aptos Mainnet" && (
+                      <>
+                        <p>
+                          Chainlink Data Feeds on Aptos provides data through a single price feed contract that handles
+                          multiple data feeds. You interact with this contract by passing the specific feed ID(s) for
+                          the data you need. For more details, refer to the{" "}
+                          <a href="/data-feeds/aptos/">Using Data Feeds on Aptos</a> guide.
+                        </p>
+                        <p>
+                          Price feed contract on Aptos Mainnet:{" "}
+                          <a
+                            className={tableStyles.addressLink}
+                            href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b?network=mainnet"
+                            target="_blank"
+                          >
+                            0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
+                          </a>
+                          <button
+                            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                            style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                            data-clipboard-text="0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b"
+                          >
+                            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                          </button>
+                        </p>
+                      </>
                     )}
-                    <form class={feedList.filterDropdown_search}>
-                      <input
-                        id="search"
-                        class={feedList.filterDropdown_searchInput}
-                        placeholder="Search"
-                        onInput={(event) => {
-                          setSearchValue((event.target as HTMLInputElement).value)
-                          setCurrentPage("1")
-                        }}
-                      />
-                    </form>
+                    <div className={feedList.tableFilters}>
+                      {!isStreams && !isSmartData && (
+                        <details class={feedList.filterDropdown_details}>
+                          <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                            Data Feed Categories
+                          </summary>
+                          <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                            <ul>
+                              {dataFeedCategory.map((category) => (
+                                <li>
+                                  <button onClick={() => handleCategorySelection(category.key)}>
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFeedCategories?.includes(category.key)}
+                                      readonly
+                                      style="cursor:pointer;"
+                                    />
+                                    <span> {category.name}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </nav>
+                        </details>
+                      )}
+                      {isSmartData && (
+                        <details class={feedList.filterDropdown_details}>
+                          <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                            SmartData Type
+                          </summary>
+                          <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                            <ul>
+                              {smartDataTypes.map((category) => (
+                                <li>
+                                  <button onClick={() => handleCategorySelection(category.key)}>
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFeedCategories?.includes(category.key)}
+                                      readonly
+                                      style="cursor:pointer;"
+                                    />
+                                    <span> {category.name}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </nav>
+                        </details>
+                      )}
+                      <form class={feedList.filterDropdown_search}>
+                        <input
+                          id="search"
+                          class={feedList.filterDropdown_searchInput}
+                          placeholder="Search"
+                          onInput={(event) => {
+                            setSearchValue((event.target as HTMLInputElement).value)
+                            setCurrentPage("1")
+                          }}
+                        />
+                      </form>
+                      {!isStreams && (
+                        <label class={feedList.detailsLabel}>
+                          <input
+                            type="checkbox"
+                            style="width:15px;height:15px;display:inline;"
+                            checked={showExtraDetails}
+                            onChange={() => setShowExtraDetails((old) => !old)}
+                          />
+                          Show more details
+                        </label>
+                      )}
+                    </div>
+                    <MainnetTable
+                      selectedFeedCategories={
+                        Array.isArray(selectedFeedCategories)
+                          ? selectedFeedCategories
+                          : selectedFeedCategories
+                          ? [selectedFeedCategories]
+                          : []
+                      }
+                      network={network}
+                      showExtraDetails={showExtraDetails}
+                      dataFeedType={dataFeedType}
+                      ecosystem={ecosystem}
+                      lastAddr={lastAddr}
+                      firstAddr={firstAddr}
+                      addrPerPage={addrPerPage}
+                      currentPage={Number(currentPage)}
+                      paginate={paginate}
+                      searchValue={typeof searchValue === "string" ? searchValue : ""}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {network.name === "Aptos Testnet" && (
+                      <>
+                        <p>
+                          Price feed contract on Aptos Testnet:{" "}
+                          <a
+                            className={tableStyles.addressLink}
+                            href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/transactions?network=testnet"
+                            target="_blank"
+                          >
+                            0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
+                          </a>
+                          <button
+                            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                            style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                            data-clipboard-text="0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
+                          >
+                            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                          </button>
+                        </p>
+                      </>
+                    )}
                     {!isStreams && (
-                      <label class={feedList.detailsLabel}>
+                      <label>
                         <input
                           type="checkbox"
                           style="width:15px;height:15px;display:inline;"
                           checked={showExtraDetails}
                           onChange={() => setShowExtraDetails((old) => !old)}
-                        />
+                        />{" "}
                         Show more details
                       </label>
                     )}
-                  </div>
-                  <MainnetTable
-                    selectedFeedCategories={
-                      Array.isArray(selectedFeedCategories)
-                        ? selectedFeedCategories
-                        : selectedFeedCategories
-                        ? [selectedFeedCategories]
-                        : []
-                    }
-                    network={network}
-                    showExtraDetails={showExtraDetails}
-                    dataFeedType={dataFeedType}
-                    ecosystem={ecosystem}
-                    lastAddr={lastAddr}
-                    firstAddr={firstAddr}
-                    addrPerPage={addrPerPage}
-                    currentPage={Number(currentPage)}
-                    paginate={paginate}
-                    searchValue={typeof searchValue === "string" ? searchValue : ""}
-                  />
-                </>
-              ) : (
-                <>
-                  {!isStreams && (
-                    <label>
-                      <input
-                        type="checkbox"
-                        style="width:15px;height:15px;display:inline;"
-                        checked={showExtraDetails}
-                        onChange={() => setShowExtraDetails((old) => !old)}
-                      />{" "}
-                      Show more details
-                    </label>
-                  )}
-                  <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
-                </>
-              )}
-            </SectionWrapper>
+                    <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+                  </>
+                )}
+              </SectionWrapper>
+            </>
           )
         })}
       {isDeprecating && netCount === 0 && (

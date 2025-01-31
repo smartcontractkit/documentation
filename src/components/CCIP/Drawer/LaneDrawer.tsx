@@ -8,7 +8,7 @@ import {
   LaneFilter,
   Version,
   displayCapacity,
-  tokenPoolDisplay,
+  determineTokenMechanism,
 } from "~/config/data/ccip"
 
 import { useState } from "react"
@@ -17,6 +17,7 @@ import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/
 import TableSearchInput from "../Tables/TableSearchInput"
 import RateTooltip from "../Tooltip/RateTooltip"
 import { Tooltip } from "~/features/common/Tooltip"
+import { ExplorerInfo } from "~/config/types"
 
 function LaneDrawer({
   lane,
@@ -24,12 +25,12 @@ function LaneDrawer({
   destinationNetwork,
   environment,
   inOutbound,
-  explorerUrl,
+  explorer,
 }: {
   lane: LaneConfig
   sourceNetwork: { name: string; logo: string; key: string }
   destinationNetwork: { name: string; logo: string; key: string }
-  explorerUrl: string
+  explorer: ExplorerInfo
   environment: Environment
   inOutbound: LaneFilter
 }) {
@@ -54,7 +55,7 @@ function LaneDrawer({
         onRamp={lane.onRamp.address}
         offRamp={lane.offRamp.address}
         enforceOutOfOrder={lane.onRamp.enforceOutOfOrder}
-        explorerUrl={explorerUrl || ""}
+        explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         rmnPermeable={lane.rmnPermeable}
         inOutbound={inOutbound}
@@ -76,7 +77,21 @@ function LaneDrawer({
                 <th>Ticker</th>
                 <th>Token address (Source)</th>
                 <th>Decimals</th>
-                <th>Mechanism</th>
+                <th>
+                  Mechanism
+                  <Tooltip
+                    label=""
+                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </th>
                 <th>
                   Rate limit capacity
                   <Tooltip
@@ -143,12 +158,22 @@ function LaneDrawer({
                           <Address
                             address={data[sourceNetwork.key].tokenAddress}
                             endLength={6}
-                            contractUrl={getExplorerAddressUrl(explorerUrl)(data[sourceNetwork.key].tokenAddress)}
+                            contractUrl={getExplorerAddressUrl(explorer)(data[sourceNetwork.key].tokenAddress)}
                           />
                         </td>
                         <td>{data[sourceNetwork.key].decimals}</td>
+                        <td>
+                          {inOutbound === LaneFilter.Outbound
+                            ? determineTokenMechanism(
+                                data[sourceNetwork.key].poolType,
+                                data[destinationNetwork.key].poolType
+                              )
+                            : determineTokenMechanism(
+                                data[destinationNetwork.key].poolType,
+                                data[sourceNetwork.key].poolType
+                              )}
+                        </td>
 
-                        <td>{tokenPoolDisplay(data[sourceNetwork.key].poolType)}</td>
                         <td>
                           {lane.supportedTokens &&
                             displayCapacity(
