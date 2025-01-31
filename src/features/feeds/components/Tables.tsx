@@ -451,6 +451,11 @@ const StreamsNetworksData = [
   {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
+    mainnet: {
+      label: "Soneium Mainnet",
+      verifierProxy: "0x8760535A80Ac5908096B57A094266866f4aA1A8c",
+      explorerUrl: "https://soneium.blockscout.com/address/%s",
+    },
     testnet: {
       label: "Soneium Minato Testnet",
       verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
