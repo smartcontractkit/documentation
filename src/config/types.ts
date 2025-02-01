@@ -37,6 +37,7 @@ export type SupportedTechnology =
   | "SEI"
   | "CORE"
   | "MONAD"
+  | "TREASURE"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -115,6 +116,8 @@ export type SupportedChain =
   | "SEI_TESTNET"
   | "CORE_TESTNET"
   | "MONAD_TESTNET"
+  | "TREASURE_MAINNET"
+  | "TREASURE_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
