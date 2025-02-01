@@ -103,6 +103,8 @@ export const productChainLinks: ProductChainLinks = {
       sonic: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
       shibarium: "/data-streams/crypto-streams",
+      mantle: "/data-streams/crypto-streams",
+      zksync: "/data-streams/crypto-streams",
     },
   },
   Functions: {

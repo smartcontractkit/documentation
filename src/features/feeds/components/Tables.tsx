@@ -391,6 +391,21 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Mantle",
+    logoUrl: "/assets/chains/mantle.svg",
+    networkStatus: "https://0xmantle.instatus.com",
+    mainnet: {
+      label: "Mantle Mainnet",
+      verifierProxy: "0x223752Eb475098e79d10937480DF93864D7EfB83",
+      explorerUrl: "https://mantlescan.xyz/address/%s",
+    },
+    testnet: {
+      label: "Mantle Sepolia Testnet",
+      verifierProxy: "0xdc458847982C496E1a5E25D005A332D5a838302B",
+      explorerUrl: "https://sepolia.mantlescan.xyz/address/%s",
+    },
+  },
+  {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
     networkStatus: "https://opbnb-status.bnbchain.org/",
@@ -492,6 +507,21 @@ const StreamsNetworksData = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "ZKSync",
+    logoUrl: "/assets/chains/zksync.svg",
+    networkStatus: "https://uptime.com/statuspage/zkSync",
+    mainnet: {
+      label: "ZKSync Era Mainnet",
+      verifierProxy: "0xcA64d9D1a9AE4C10E94D0D45af9E878fc64dc207",
+      explorerUrl: "https://explorer.zksync.io/address/%s",
+    },
+    testnet: {
+      label: "ZKSync Sepolia Testnet",
+      verifierProxy: "0xDf37875775d1E777bB413f27de093A62CFF4264b",
+      explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
     },
   },
 ]
