@@ -274,6 +274,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SEI_MAINNET"
     case "sei-testnet-atlantic":
       return "SEI_TESTNET"
+    case "monad-testnet":
+      return "MONAD_TESTNET"
+    case "core-testnet":
+      return "CORE_TESTNET"
+    case "treasure-mainnet":
+      return "TREASURE_MAINNET"
+    case "treasure-testnet-topaz":
+      return "TREASURE_TOPAZ"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -417,10 +425,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-polygon-zkevm-1"
     case "BOTANIX_TESTNET":
       return "bitcoin-testnet-botanix"
-    case "SEI_MAINNET":
-      return "sei-mainnet"
-    case "SEI_TESTNET":
-      return "sei-testnet-atlantic"
+    case "CORE_TESTNET":
+      return "core-testnet"
+    case "MONAD_TESTNET":
+      return "monad-testnet"
+    case "TREASURE_MAINNET":
+      return "treasure-mainnet"
+    case "TREASURE_TOPAZ":
+      return "treasure-testnet-topaz"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
