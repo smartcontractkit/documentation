@@ -281,7 +281,7 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "treasure-mainnet":
       return "TREASURE_MAINNET"
     case "treasure-testnet-topaz":
-      return "TREASURE_TESTNET"
+      return "TREASURE_TOPAZ"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -431,7 +431,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "monad-testnet"
     case "TREASURE_MAINNET":
       return "treasure-mainnet"
-    case "TREASURE_TESTNET":
+    case "TREASURE_TOPAZ":
       return "treasure-testnet-topaz"
     default:
       throw Error(`Chain not found ${supportedChain}`)

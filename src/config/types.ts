@@ -117,7 +117,7 @@ export type SupportedChain =
   | "CORE_TESTNET"
   | "MONAD_TESTNET"
   | "TREASURE_MAINNET"
-  | "TREASURE_TESTNET"
+  | "TREASURE_TOPAZ"
 
 export type ExplorerInfo = {
   baseUrl: string

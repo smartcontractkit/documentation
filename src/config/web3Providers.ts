@@ -81,7 +81,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   CORE_TESTNET: () => new providers.JsonRpcProvider("https://rpc.test2.btcs.network/"),
   MONAD_TESTNET: () => new providers.JsonRpcProvider("https://monad.xyz"),
   TREASURE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.treasure.lol"),
-  TREASURE_TESTNET: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
+  TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
