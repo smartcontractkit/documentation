@@ -240,4 +240,7 @@ export const chainNames: Record<string, string> = {
   hashkey: "HashKey Chain",
   botanix: "Botanix",
   sei: "Sei Network",
+  core: "Core",
+  monad: "Monad",
+  treasure: "Treasure",
 }
