@@ -24,10 +24,11 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
 
   const [selectedChain, setSelectedChain] = useQueryString(
-    "network",
-    ecosystem === "deprecating" ? chains[0].page : initialNetwork
+    isStreams ? "" : "network",
+    isStreams ? "" : ecosystem === "deprecating" ? chains[0].page : initialNetwork
   )
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
@@ -51,12 +52,16 @@ export const FeedList = ({
     { key: "NAVLink", name: "NAVLink" },
     { key: "SmartAUM", name: "SmartAUM" },
   ]
-  const chain = chains.filter((chain) => chain.page === selectedChain)[0]
+  const [streamsChain] = useState(initialNetwork)
+  const activeChain = isStreams ? streamsChain : selectedChain
+  const chain = chains.filter((chain) => chain.page === activeChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
 
   function handleNetworkSelect(chain: Chain) {
-    setSelectedChain(chain.page)
+    if (!isStreams) {
+      setSelectedChain(chain.page)
+    }
     setSearchValue("")
     setSelectedFeedCategories([])
     setCurrentPage("1")
@@ -104,7 +109,6 @@ export const FeedList = ({
   }
 
   useOutsideAlerter(wrapperRef)
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
