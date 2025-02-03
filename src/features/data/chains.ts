@@ -642,6 +642,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "botanix",
+    label: "Botanix",
+    title: "Botanix Data Feeds",
+    img: "/assets/chains/botanix.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Botanix Testnet",
+        explorerUrl: "https://testnet.botanixscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-testnet-botanix.json",
+        queryString: "ronin-testnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
