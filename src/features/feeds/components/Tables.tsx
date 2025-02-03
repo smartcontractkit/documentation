@@ -391,6 +391,15 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Botanix",
+    logoUrl: "/assets/chains/botanix.svg",
+    testnet: {
+      label: "Botanix Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://testnet.botanixscan.io/address/%s",
+    },
+  },
+  {
     network: "Mantle",
     logoUrl: "/assets/chains/mantle.svg",
     networkStatus: "https://0xmantle.instatus.com",
