@@ -35,6 +35,9 @@ export type SupportedTechnology =
   | "CORN"
   | "BOTANIX"
   | "SEI"
+  | "CORE"
+  | "MONAD"
+  | "TREASURE"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -111,6 +114,10 @@ export type SupportedChain =
   | "BOTANIX_TESTNET"
   | "SEI_MAINNET"
   | "SEI_TESTNET"
+  | "CORE_TESTNET"
+  | "MONAD_TESTNET"
+  | "TREASURE_MAINNET"
+  | "TREASURE_TOPAZ"
 
 export type ExplorerInfo = {
   baseUrl: string
