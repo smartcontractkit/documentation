@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from "@features/chainlink-automation"
+import { AutomationConfig, AutomationConfig2_3, chainlinkAutomationConfig, automationAddresses } from "@features/chainlink-automation"
 import { SupportedChain, SupportedTechnology } from "@config"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
 import { FunctionComponent } from "preact"
@@ -95,7 +95,7 @@ export const AutomationConfigList = () => {
               updateTOC={false}
               key={supportedChain}
             >
-              {title === "Fantom mainnet" || title === "Fantom testnet" ? (
+              {title === "Fantom" || title === "Fantom Testnet" ? (
                 <>
                   <TemporaryNote title="New Fantom upkeeps not supported">
                     Creating new Fantom upkeeps is no longer supported. Existing Fantom upkeeps are still supported.
