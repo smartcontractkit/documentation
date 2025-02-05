@@ -151,13 +151,13 @@ const docsSections = [
         href: "/vrf",
         icon: vrfLogo.src,
         subProducts: getSubProducts(sidebar.vrf),
-        divider: true,
       },
       {
         label: "Automation",
         href: "/chainlink-automation",
         icon: automationLogo.src,
         subProducts: getSubProducts(sidebar.automation),
+        divider: true,
       },
       {
         label: "Chainlink Local",

@@ -5,7 +5,7 @@ import styles from "./docsNavigationDesktop.module.css"
 import QuickLinksModal from "../../Header/Nav/QuickLinksModal"
 import { useState } from "react"
 
-function DocsNavigationDesktop({ pathname }: { pathname: string }) {
+function DocsNavigationDesktop({ pathname, children }: { pathname: string; children?: React.ReactNode }) {
   const { $navBarInfo } = useNavBar()
   const [isModalOpen, setIsModalOpen] = useState(false)
   return (
@@ -16,7 +16,10 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
         })}
       >
         <div className={styles.container}>
-          <DocsPickerDesktop pathname={pathname} />
+          <div className={styles.left}>
+            <DocsPickerDesktop pathname={pathname} />
+            {children}
+          </div>
           <div className={styles.links}>
             <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)}>
               <img height={20} width={20} src="/assets/icons/quick-links.svg" />

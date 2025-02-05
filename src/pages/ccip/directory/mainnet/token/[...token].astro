@@ -1,0 +1,30 @@
+---
+import Token from "~/components/CCIP/Token/Token.astro"
+import { Environment, getAllSupportedTokens, Version } from "~/config/data/ccip"
+import { getTokenIconUrl } from "~/features/utils"
+
+export async function getStaticPaths() {
+  const supportedTokens = getAllSupportedTokens({
+    environment: Environment.Mainnet,
+    version: Version.V1_2_0,
+  })
+
+  const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+  const pages = tokens.map((token) => ({ token }))
+
+  return pages.map(({ token }) => {
+    return {
+      params: { token },
+      props: {
+        token: tokens.find((t) => t === token),
+        logo: getTokenIconUrl(token),
+        environment: Environment.Mainnet,
+      },
+    }
+  })
+}
+
+const { token, logo, environment } = Astro.props
+---
+
+<Token token={token} logo={logo} environment={environment} />

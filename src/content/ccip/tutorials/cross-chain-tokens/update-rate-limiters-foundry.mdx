@@ -1,0 +1,462 @@
+---
+section: ccip
+date: Last Modified
+title: "Set Token Pool rate limits using Foundry"
+---
+
+import { Aside, PageTabs, CopyText } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Hardhat",
+      url: "/ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+    {
+      name: "Foundry",
+      url: "/ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+  ]}
+/>
+
+This tutorial will guide you through the process of updating the rate limiter settings for outbound and inbound transfers in your deployed token pools using [Foundry](https://book.getfoundry.sh/). You will first review existing rate limiter settings and then update them.
+
+## Prerequisites
+
+- **Tokens and pools deployed**: Ensure that you have tokens and token pools already deployed on both networks you plan to use. If not, refer to one of the following tutorials:
+
+  - [Register from an EOA (Burn & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
+  - [Register from an EOA (Lock & Mint)](/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
+
+- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/v1.5.1/token-pool#setchainratelimiterconfig) function for your token pools.
+
+## Before You Begin
+
+1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
+    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+
+    ```bash
+    nvm use 18
+    ```
+
+    Verify that the correct version of Node.js is installed:
+
+    ```bash
+    node -v
+    ```
+
+    Example output:
+
+    ```bash
+    $ node -v
+    v18.7.0
+    ```
+
+1.  **Install Foundry**:
+    If you haven't already, follow the instructions in the [Foundry documentation](https://book.getfoundry.sh/getting-started/installation) to install Foundry.
+
+1.  **Clone the repository and navigate to the project directory**:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/smart-contract-examples.git
+    cd smart-contract-examples/ccip/cct/foundry
+    ```
+
+1.  **Set up your environment**: Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Example `.env` file:
+
+    ```bash
+    PRIVATE_KEY=<your_private_key>
+    RPC_URL_FUJI=<your_rpc_url_fuji>
+    RPC_URL_ARBITRUM_SEPOLIA=<your_rpc_url_arbitrum_sepolia>
+    ```
+
+    Variables to configure:
+
+    - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet, **must** begin with `0x`. If you
+      use MetaMask, you can follow this
+      [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/)
+      to export your private key. **Note**: This key is required for signing transactions like token transfers.
+
+    - <CopyText text="RPC_URL_FUJI" code />: The RPC URL for the Fuji testnet. You can get this from the
+      [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/) website.
+
+    - <CopyText text="RPC_URL_ARBITRUM_SEPOLIA" code />: The RPC URL for the Arbitrum Sepolia testnet. You can get this
+      from the [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/) website.
+
+1.  **Load the environment variables** into the terminal session where you will run the commands:
+
+    ```bash
+    source .env
+    ```
+
+1.  **Install dependencies**:
+
+    ```bash
+    forge install && npm install
+    ```
+
+1.  **Compile the contracts**:
+
+    ```bash
+    forge build
+    ```
+
+1.  **Fund your EOA with native gas tokens**:  
+    Make sure your EOA has enough native gas tokens on Avalanche Fuji to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+
+## Tutorial
+
+<Aside type="note" title="Explore the Code">
+  All Foundry scripts used in this tutorial are located in the `script/` directory of the repository. Each script is
+  thoroughly commented and directly linked to a key step in the tutorial, making the code self-explanatory. Read the
+  code and comments to gain a deeper understanding of the process or explore the implementation details.
+</Aside>
+
+### Review current rate limiter settings
+
+Use the `GetCurrentRateLimits` script to fetch the current rate limiter states for a specific chain from a token pool. This script provides detailed information about both inbound and outbound rate limits, including:
+
+- Whether rate limiting is enabled
+- The maximum capacity (bucket size)
+- The refill rate (tokens per second)
+- Current token amount in the bucket
+- Last update timestamp
+
+```bash
+forge script ./script/GetCurrentRateLimits.s.sol:GetCurrentRateLimits \
+  --rpc-url <YOUR_RPC_URL> \
+  --sig "run(address,uint256)" -- \
+  <POOL_ADDRESS> <REMOTE_CHAIN_ID>
+```
+
+1. **Check the current configuration for Avalanche Fuji**: Replace `<YOUR_RPC_URL>` with `$RPC_URL_FUJI`, `<POOL_ADDRESS>` with your token pool address on Avalanche Fuji, and `<REMOTE_CHAIN_ID>` with the Arbitrum Sepolia chain ID (`421614`).
+
+   Example:
+
+   ```bash
+   forge script ./script/GetCurrentRateLimits.s.sol:GetCurrentRateLimits \
+     --rpc-url $RPC_URL_FUJI \
+     --sig "run(address,uint256)" -- \
+     0x50b9a80719A2348D3a2d91f16c5B14487233ce7D 421614
+   ```
+
+   Expected output:
+
+   ```bash
+   == Logs ==
+
+   Rate Limiter States for Chain Selector: 3478487238524512106
+     Pool Address: 0x50b9a80719A2348D3a2d91f16c5B14487233ce7D
+
+   Outbound Rate Limiter:
+       Tokens: 0
+       Last Updated: 1733192240
+       Enabled: false
+       Capacity: 0
+       Rate: 0
+
+   Inbound Rate Limiter:
+       Tokens: 0
+       Last Updated: 1733192240
+       Enabled: false
+       Capacity: 0
+       Rate: 0
+   ```
+
+1. **Check the current configuration for Arbitrum Sepolia**: Replace `<YOUR_RPC_URL>` with `$RPC_URL_ARBITRUM_SEPOLIA`, `<POOL_ADDRESS>` with your token pool address on Arbitrum Sepolia, and `<REMOTE_CHAIN_ID>` with the Avalanche Fuji chain ID (`43113`).
+
+   Example:
+
+   ```bash
+   forge script ./script/GetCurrentRateLimits.s.sol:GetCurrentRateLimits \
+     --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+     --sig "run(address,uint256)" -- \
+     0x263699bc60C44477e5AcDfB1726BA5E89De9134B 43113
+   ```
+
+   Expected output:
+
+   ```bash
+   == Logs ==
+
+   Rate Limiter States for Chain Selector: 14767482510784806043
+     Pool Address: 0x263699bc60C44477e5AcDfB1726BA5E89De9134B
+
+   Outbound Rate Limiter:
+       Tokens: 0
+       Last Updated: 1733192273
+       Enabled: false
+       Capacity: 0
+       Rate: 0
+
+   Inbound Rate Limiter:
+       Tokens: 0
+       Last Updated: 1733192273
+       Enabled: false
+       Capacity: 0
+       Rate: 0
+   ```
+
+In these examples:
+
+- The rate limiter settings are currently disabled for both outbound and inbound transfers
+- The capacities and rates are set to 0.
+
+This means there are currently no restrictions on token transfers. In the next section, you will learn how to enable and configure these rate limiters to control token flow between chains.
+
+### Update rate limiter settings
+
+Use the `UpdateRateLimiters` script to update the rate limiter configurations for an existing chain connection in your token pool. This script interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.1/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
+
+The `UpdateRateLimiters` task allows you to:
+
+- Enable or disable rate limiting for outbound or inbound transfers or both.
+- Set the capacity and rate for the rate limiters, controlling the flow of tokens.
+- Target a specific remote chain, updating rate limits for that chain only.
+
+Below is an explanation of the parameters used during the rate limiter update process:
+
+| Parameter                   | Description                                                                                                                                            | Required |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| `poolAddress`               | The address of the token pool being configured.                                                                                                        | Yes      |
+| `remoteChainId`             | The ID of the remote blockchain to which this pool is linked.                                                                                          | Yes      |
+| `rateLimiterToUpdate`       | Specifies which rate limiters to update: `0` for outbound, `1` for inbound, or `2` for both.                                                           | Yes      |
+| `outboundRateLimitEnabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers (`true` or `false`).                                                | Yes      |
+| `outboundRateLimitCapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled.          | Yes      |
+| `outboundRateLimitRate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled. | Yes      |
+| `inboundRateLimitEnabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers (`true` or `false`).                                                 | Yes      |
+| `inboundRateLimitCapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.            | Yes      |
+| `inboundRateLimitRate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.   | Yes      |
+| `network`                   | The blockchain network where the local token pool is deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.      | Yes      |
+
+**Command syntax**:
+
+```bash
+forge script ./script/UpdateRateLimiters.s.sol:UpdateRateLimiters \
+  --rpc-url <RPC_URL_NETWORK> \
+  -vvv --broadcast \
+  --sig "run(address,uint256,uint8,bool,uint128,uint128,bool,uint128,uint128)" -- \
+  <POOL_ADDRESS> \
+  <REMOTE_CHAIN_ID> \
+  <RATE_LIMITER_TO_UPDATE> \
+  <OUTBOUND_RATE_LIMIT_ENABLED> \
+  <OUTBOUND_RATE_LIMIT_CAPACITY> \
+  <OUTBOUND_RATE_LIMIT_RATE> \
+  <INBOUND_RATE_LIMIT_ENABLED> \
+  <INBOUND_RATE_LIMIT_CAPACITY> \
+  <INBOUND_RATE_LIMIT_RATE>
+```
+
+**Notes**:
+
+- Updating only the **outbound** rate limiter: Set the `inboundRateLimitEnabled` value to `false` and the `inboundRateLimitCapacity` and `inboundRateLimitRate` values will be ignored when running the script.
+- Updating only the **inbound** rate limiter: Set the `outboundRateLimitEnabled` value to `false` and the `outboundRateLimitCapacity` and `outboundRateLimitRate` values will be ignored when running the script.
+
+**Example command**:
+
+Suppose you want to enable inbound and outbound rate limits for your token pool on Avalanche Fuji to control the number of tokens received or sent from/to Arbitrum Sepolia. We will use an existing token pool that interacts with an ERC20 token with 18 decimals:
+
+- **Token Pool on Avalance Fuji**:
+
+| Property         | Outbound Rate Limiter                                                               | Inbound Rate Limiter                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Enabled**      | `true`                                                                              | `true`                                                                               |
+| **Capacity**     | `10000000000000000000` wei (equivalent to 10 tokens, based on 18 decimals)          | `20000000000000000000` wei (equivalent to 20 tokens, based on 18 decimals)           |
+| **Rate**         | `100000000000000000` wei (equivalent to 0.1 token per second, based on 18 decimals) | `100000000000000000` wei (equivalent to 0.1 tokens per second, based on 18 decimals) |
+| _Replenish Time_ | 100 seconds<br/>`Capacity / Rate = 10 / 0.1 = 100` seconds                          | 200 seconds<br/>`Capacity / Rate = 20 / 0.1 = 200` seconds                           |
+
+- **Token Pool on Arbitrum Sepolia**: Rate limits are the same as the Avalanche Fuji pool, but the inbound and outbound settings are swapped.
+
+| Property         | Outbound Rate Limiter                                                               | Inbound Rate Limiter                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Enabled**      | `true`                                                                              | `true`                                                                               |
+| **Capacity**     | `20000000000000000000` wei (equivalent to 20 tokens, based on 18 decimals)          | `10000000000000000000` wei (equivalent to 10 tokens, based on 18 decimals)           |
+| **Rate**         | `100000000000000000` wei (equivalent to 0.1 token per second, based on 18 decimals) | `100000000000000000` wei (equivalent to 0.1 tokens per second, based on 18 decimals) |
+| _Replenish Time_ | 200 seconds<br/>`Capacity / Rate = 20 / 0.1 = 200` seconds                          | 100 seconds<br/>`Capacity / Rate = 10 / 0.1 = 100` seconds                           |
+
+1. **Update rate limiter settings for the token pool on Avalanche Fuji**: Replace `<POOL_ADDRESS>` with your token pool address.
+
+   ```bash
+    forge script ./script/UpdateRateLimiters.s.sol:UpdateRateLimiters \
+    --rpc-url $RPC_URL_FUJI \
+    -vvv --broadcast \
+    --sig "run(address,uint256,uint8,bool,uint128,uint128,bool,uint128,uint128)" -- \
+    <POOL_ADDRESS> \
+    421614 \
+    2 \
+    true \
+    10000000000000000000 \
+    100000000000000000 \
+    true \
+    20000000000000000000 \
+    100000000000000000
+   ```
+
+1. **Update rate limiter settings for the token pool on Arbitrum Sepolia**: Replace `<POOL_ADDRESS>` with your token pool address.
+
+   ```bash
+    forge script ./script/UpdateRateLimiters.s.sol:UpdateRateLimiters \
+    --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+    -vvv --broadcast \
+    --sig "run(address,uint256,uint8,bool,uint128,uint128,bool,uint128,uint128)" -- \
+    <POOL_ADDRESS> \
+    43113 \
+    2 \
+    true \
+    10000000000000000000 \
+    100000000000000000 \
+    true \
+    20000000000000000000 \
+    100000000000000000
+   ```
+
+### Verify the new rate limiter settings
+
+After applying the new rate limiter settings, verify that they have been updated correctly.
+
+Use the `GetPoolConfig` script again:
+
+1. **Verify the updated rate limiter settings for the token pool on Avalanche Fuji**:
+
+   ```bash
+   forge script ./script/GetCurrentRateLimits.s.sol:GetCurrentRateLimits \
+     --rpc-url $RPC_URL_FUJI \
+     --sig "run(address,uint256)" -- \
+     0x50b9a80719A2348D3a2d91f16c5B14487233ce7D 421614
+   ```
+
+   Expected output:
+
+   ```bash
+   == Logs ==
+
+   Rate Limiter States for Chain Selector: 3478487238524512106
+     Pool Address: 0x50b9a80719A2348D3a2d91f16c5B14487233ce7D
+
+   Outbound Rate Limiter:
+       Tokens: 10000000000000000000
+       Last Updated: 1733192606
+       Enabled: true
+       Capacity: 10000000000000000000
+       Rate: 100000000000000000
+
+   Inbound Rate Limiter:
+       Tokens: 20000000000000000000
+       Last Updated: 1733192606
+       Enabled: true
+       Capacity: 20000000000000000000
+       Rate: 100000000000000000
+   ```
+
+1. **Verify the updated rate limiter settings for the token pool on Arbitrum Sepolia**:
+
+   ```bash
+   forge script ./script/GetCurrentRateLimits.s.sol:GetCurrentRateLimits \
+     --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+     --sig "run(address,uint256)" -- \
+     0x263699bc60C44477e5AcDfB1726BA5E89De9134B 43113
+   ```
+
+   Expected output:
+
+   ```bash
+   == Logs ==
+
+   Rate Limiter States for Chain Selector: 14767482510784806043
+     Pool Address: 0x263699bc60C44477e5AcDfB1726BA5E89De9134B
+
+   Outbound Rate Limiter:
+       Tokens: 10000000000000000000
+       Last Updated: 1733192666
+       Enabled: true
+       Capacity: 10000000000000000000
+       Rate: 100000000000000000
+
+   Inbound Rate Limiter:
+       Tokens: 17900000000000000000
+       Last Updated: 1733192666
+       Enabled: true
+       Capacity: 20000000000000000000
+       Rate: 100000000000000000
+   ```
+
+### Test the rate limiter settings
+
+To verify the rate limiter settings, initiate a cross-chain transfer between the token pools on Avalanche Fuji and Arbitrum Sepolia. The rate limiter configuration will control the flow of tokens between these pools.
+
+**Note**: Ensure that your externally owned account (EOA) has a sufficient balance of ERC20 tokens on Avalanche Fuji to complete the transfer.
+
+In the example below, we use a token pool at address `0x50b9a80719A2348D3a2d91f16c5B14487233ce7D` on Avalanche Fuji, which has burn and mint privileges for the token at address `0x1778AE066B8Dc0950B35eDBD60b4bd05613ab11b`. We will transfer this token from Avalanche Fuji to Arbitrum Sepolia. For your own test, substitute these addresses with the token pool and token addresses that you have deployed.
+
+1. In your `script/output/` directory, make sure the `deployedToken_avalancheFuji.json` and `deployedTokenPool_avalancheFuji.json` files contain the correct token and token pool addresses.
+
+1. **Test Capacity**: Because the outbound capacity set is `10000000000000000000` , let's transfer `10000000000000000001` tokens from Avalanche Fuji to Arbitrum Sepolia. This transfer should fail because the capacity is less than the number of tokens being transferred.
+
+   - In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000001`.
+
+   - Run the following command:
+
+   ```bash
+   forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+   ```
+
+   Expected output:
+
+   ```bash
+   == Logs ==
+     Estimated fees: 9153265274835072
+   Error:
+   script failed: TokenMaxCapacityExceeded(10000000000000000000 [1e19], 10000000000000000001 [1e19], 0x1778AE066B8Dc0950B35eDBD60b4bd05613ab11b)
+   ```
+
+   Notice in the logs that the transfer failed because the capacity was exceeded: `TokenMaxCapacityExceeded`.
+
+1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Arbitrum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
+
+   1. In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000000`.
+
+   1. **First transfer** (Successful):
+
+      Command:
+
+      ```bash
+      forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+      ```
+
+      Expected output:
+
+      ```bash
+      == Logs ==
+        Estimated fees: 9185580343068880
+        Message ID:
+        0x71d63182f042692935d9f4223f298fe6b470235068f8ecf1801c8afab35ed8f5
+        Check status of the message at https://ccip.chain.link/msg/71d63182f042692935d9f4223f298fe6b470235068f8ecf1801c8afab35ed8f5
+      ```
+
+   1. **Second transfer** (Failed):
+
+      Command:
+
+      ```bash
+      forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIVATE_KEY --broadcast
+      ```
+
+      Expected output:
+
+      ```bash
+      == Logs ==
+        Estimated fees: 31873063830249036
+      Error:
+      script failed: TokenRateLimitReached(91, 900000000000000000 [9e17], 0x1778AE066B8Dc0950B35eDBD60b4bd05613ab11b)
+      ```
+
+      Notice in the logs that the transfer failed because the rate limit was exceeded: `TokenRateLimitReached`.

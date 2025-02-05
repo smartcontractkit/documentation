@@ -1,0 +1,340 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Verify report data - Offchain integration (Solana)"
+whatsnext:
+  {
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Learn how to verify reports on Solana onchain": "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+  }
+---
+
+import { CodeSample, CopyText, ClickToZoom, PageTabs, Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "EVM Chains (Solidity)",
+      url: "/data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+      icon: "/images/tutorial-icons/solidity_logo.svg",
+    },
+    {
+      name: "Solana (Rust) - Onchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+    {
+      name: "Solana (Rust) - Offchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+  ]}
+/>
+
+<DataStreams section="dsNotes" />
+
+To verify a Data Streams report, you must confirm the report integrity signed by the Decentralized Oracle Network (DON).
+
+You have two options to verify Data Streams reports on Solana:
+
+1. **Onchain integration**: Verify reports directly within your Solana program using [Cross-Program Invocation (CPI)](https://solana.com/docs/core/cpi) to the verifier program. Learn more about this method in the [onchain verification guide](/data-streams/tutorials/streams-direct/solana-onchain-report-verification).
+
+1. **Offchain integration**: Verify reports client-side using an SDK. You'll learn how to implement this method in this guide.
+
+Both methods use the same underlying verification logic and security guarantees, differing only in where the verification occurs.
+
+## Offchain integration
+
+The offchain integration allows you to verify the authenticity of Data Streams reports from your client-side application. While this method requires sending a transaction to the verifier program, the verification logic and processing of results happens in your client application rather than in a Solana program.
+
+In this guide, you'll learn how to:
+
+- Set up an Anchor project
+- Configure the necessary dependencies
+- Create a command-line tool to verify reports
+- Process and display the verified report data
+
+<DataStreams section="asideDisclaimer" />
+
+### Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Rust](https://www.rust-lang.org/learn) programming
+- Understanding of [Solana](https://solana.com/docs) concepts:
+  - [RPC Clients](https://solana.com/docs/rpc) and network interaction
+  - [Transactions](https://solana.com/docs/core/transactions) and signing
+  - [Keypairs](https://solana.com/docs/intro/wallets#keypair) and account management
+- An allowlisted account in the Data Streams Access Controller ([contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to get started with Early Access)
+
+### Requirements
+
+To complete this guide, you'll need:
+
+- **Rust and Cargo**: Install the latest version using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
+
+- **Solana CLI tools**: Install the latest version following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
+
+- **Anchor Framework**: Follow the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code/> to verify your installation.
+
+- **Devnet SOL**: You'll need devnet SOL for transaction fees. Use the [Solana CLI](https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started) or the [Solana Faucet](https://faucet.solana.com/) to get devnet SOL. Check your balance with <CopyText text="solana balance" code/>.
+
+- **Allowlisted Account**: Your account must be allowlisted in the Data Streams Access Controller.
+
+> **Note**: While this guide uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana project setup. The verifier SDK and client libraries are written in Rust, but you can integrate them into your preferred Rust project structure.
+
+### Implementation guide
+
+#### 1. Create a new Anchor project
+
+1. Create a new Anchor project:
+
+   ```bash
+   anchor init example_verify
+   cd example_verify
+   ```
+
+1. Create a binary target for the verification tool:
+   ```bash
+   mkdir -p programs/example_verify/src/bin
+   touch programs/example_verify/src/bin/main.rs
+   ```
+
+#### 2. Configure your project's dependencies
+
+Update your program's manifest file (`programs/example_verify/Cargo.toml`):
+
+```toml
+[package]
+name = "example_verify"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[[bin]]
+name = "example_verify"
+path = "src/bin/main.rs"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git" }
+sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain"}
+
+solana-program = "1.18.26"
+solana-sdk = "1.18.26"
+solana-client = "1.18.26"
+hex = "0.4.3"
+borsh = "0.10.3"
+```
+
+#### 3. Implement the verification library
+
+Create `programs/example_verify/src/lib.rs` with the verification function:
+
+```rust
+use data_streams_report::report::v3::ReportDataV3;
+use sdk_off_chain::VerificationClient;
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::{
+    commitment_config::CommitmentConfig,
+    pubkey::Pubkey,
+    signature::read_keypair_file,
+    signer::Signer,
+};
+use std::{ path::PathBuf, str::FromStr };
+
+pub fn default_keypair_path() -> String {
+    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".to_string()));
+    path.push(".config/solana/id.json");
+    path.to_str().unwrap().to_string()
+}
+
+pub fn verify_report(
+    signed_report: &[u8],
+    program_id: &str,
+    access_controller: &str
+) -> Result<ReportDataV3, Box<dyn std::error::Error>> {
+    // Initialize RPC client with confirmed commitment level
+    let rpc_client = RpcClient::new_with_commitment(
+        "https://api.devnet.solana.com",
+        CommitmentConfig::confirmed()
+    );
+
+    // Load the keypair that will pay for and sign verification transactions
+    let payer = read_keypair_file(default_keypair_path())?;
+    println!("Using keypair: {}", payer.pubkey());
+
+    // Convert to Pubkey
+    let program_pubkey = Pubkey::from_str(program_id)?;
+    let access_controller_pubkey = Pubkey::from_str(access_controller)?;
+    println!("Program ID: {}", program_pubkey);
+    println!("Access Controller: {}", access_controller_pubkey);
+
+    // Create a verification client instance
+    let client = VerificationClient::new(
+        program_pubkey,
+        access_controller_pubkey,
+        rpc_client,
+        payer
+    );
+
+    // Verify the report
+    println!("Verifying report of {} bytes...", signed_report.len());
+    let result = client.verify(signed_report.to_vec()).map_err(|e| {
+        println!("Verification error: {:?}", e);
+        e
+    })?;
+
+    // Decode the returned data into a ReportDataV3 struct
+    let return_data = result.return_data.ok_or("No return data")?;
+    let report = ReportDataV3::decode(&return_data)?;
+    Ok(report)
+}
+```
+
+> This example uses the [V3 schema](/data-streams/reference/report-schema) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V4 schema](/data-streams/reference/report-schema-v4) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+
+#### 4. Create the command-line interface
+
+Create `programs/example_verify/src/bin/main.rs`:
+
+```rust
+use example_verify::verify_report;
+use std::env;
+use std::str::FromStr;
+use hex;
+use solana_sdk::pubkey::Pubkey;
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 4 {
+        eprintln!(
+            "Usage: {} <program-id> <access-controller> <hex-encoded-signed-report>",
+            args[0]
+        );
+        std::process::exit(1);
+    }
+
+    let program_id_str = &args[1];
+    let access_controller_str = &args[2];
+    let hex_report = &args[3];
+
+    // Validate program_id and access_controller
+    if Pubkey::from_str(program_id_str).is_err() {
+        eprintln!("Invalid program ID provided");
+        std::process::exit(1);
+    }
+    if Pubkey::from_str(access_controller_str).is_err() {
+        eprintln!("Invalid access controller address provided");
+        std::process::exit(1);
+    }
+
+    // Decode the hex string for the signed report
+    let signed_report = match hex::decode(hex_report) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            eprintln!("Failed to decode hex string: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    // Perform verification off-chain
+    match verify_report(&signed_report, program_id_str, access_controller_str) {
+        Ok(report) => {
+            println!("\nVerified Report Data:");
+            println!("Feed ID: {}", report.feed_id);
+            println!("Valid from timestamp: {}", report.valid_from_timestamp);
+            println!("Observations timestamp: {}", report.observations_timestamp);
+            println!("Native fee: {}", report.native_fee);
+            println!("Link fee: {}", report.link_fee);
+            println!("Expires at: {}", report.expires_at);
+            println!("Benchmark price: {}", report.benchmark_price);
+            println!("Bid: {}", report.bid);
+            println!("Ask: {}", report.ask);
+        }
+        Err(e) => {
+            eprintln!("Verification failed: {}", e);
+            std::process::exit(1);
+        }
+    }
+}
+```
+
+#### 5. Build and run the verifier
+
+1. Build the project:
+
+   ```bash
+   cargo build
+   ```
+
+1. Make sure you are connected to Devnet with <CopyText text="solana config set --url https://api.devnet.solana.com" code/>.
+
+1. Run the verifier with your report:
+
+   ```bash
+   cargo run -- <program-id> <access-controller> <hex-encoded-signed-report>
+   ```
+
+   Replace the placeholders with:
+
+   - `<program-id>`: The Verifier Program ID (find it on the [Stream Addresses](/data-streams/crypto-streams) page)
+   - `<access-controller>`: The Access Controller Account (find it on the [Stream Addresses](/data-streams/crypto-streams) page)
+   - `<hex-encoded-signed-report>`: Your hex-encoded signed report (without the '0x' prefix)
+
+   Example:
+
+   ```bash
+   cargo run -- Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c 2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb 0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f56930f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675ca37000000000000000000000000000000000000000000000000000000000675ca3700000000000000000000000000000000000000000000000000000174be1bd8758000000000000000000000000000000000000000000000000000cb326ce8c3ea800000000000000000000000000000000000000000000000000000000675df4f00000000000000000000000000000000000000000000000d3a30bcc15e207c0000000000000000000000000000000000000000000000000d3a1557b5e634060200000000000000000000000000000000000000000000000d3ab99a974ff10f400000000000000000000000000000000000000000000000000000000000000000292bdd75612560e46ed9b0c2437898f81eb0e18b6b902a161b9708e9177175cf3b8ef2b279f230f766fb29306250ee90856516ee349ca42b2d7fb141deb006745000000000000000000000000000000000000000000000000000000000000000221c156e80276827e1bfeb6542ab064dfa958f5be955f516fb62b1c93437472c31cc65fcaba68c9d661701190bc32025a0690af0eefe027ac218fd15c588dd4d5
+   ```
+
+   Expect the output to be similar to the following:
+
+   ```bash
+   Using keypair: <YOUR_PUBLIC_KEY>
+   Program ID: Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c
+   Access Controller: 2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb
+   Verifying report of 736 bytes...
+   FeedId: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+   Valid from timestamp: 1734124400
+   Observations timestamp: 1734124400
+   Native fee: 25614677280600
+   Link fee: 3574678975954600
+   Expires at: 1734210800
+   Price: 3904011708000000000000
+   Bid: 3903888333211164500000
+   Ask: 3904628100124598400000
+   ```
+
+### Best practices
+
+When implementing verification in production:
+
+1. **Error Handling**:
+
+   - Implement robust error handling for network issues
+   - Add proper logging and monitoring
+   - Handle report expiration gracefully
+
+1. **Security**:
+
+   - Securely manage keypairs and never expose them
+   - Validate all input parameters
+   - Implement rate limiting for verification requests
+
+1. **Performance**:
+
+   - Cache verified reports when appropriate
+   - Implement retry mechanisms with backoff
+   - Use connection pooling for RPC clients

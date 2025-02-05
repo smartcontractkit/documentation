@@ -1,0 +1,115 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.2 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in JavaScript, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## CCIPLocalSimulatorFork
+
+A JavaScript module that provides utilities for simulating CCIP (Cross-Chain Interoperability Protocol) message routing in a local or forked environment.
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/scripts/CCIPLocalSimulatorFork.js)
+
+## Types
+
+### Evm2EvmMessage
+
+Represents a cross-chain message in the EVM-to-EVM communication protocol. Contains all necessary information for message routing and token transfers across chains.
+
+| Property            | Type                                     | Description                                    |
+| ------------------- | ---------------------------------------- | ---------------------------------------------- |
+| sourceChainSelector | `bigint`                                 | The identifier of the source chain             |
+| sender              | `string`                                 | The address that sent the message              |
+| receiver            | `string`                                 | The address that will receive the message      |
+| sequenceNumber      | `bigint`                                 | The sequence number of the message             |
+| gasLimit            | `bigint`                                 | The gas limit for executing the message        |
+| strict              | `boolean`                                | Whether the message requires strict execution  |
+| nonce               | `bigint`                                 | The nonce of the message                       |
+| feeToken            | `string`                                 | The token used to pay fees                     |
+| feeTokenAmount      | `bigint`                                 | The amount of fee token to be paid             |
+| data                | `string`                                 | The message payload data                       |
+| tokenAmounts        | `Array<{token: string, amount: bigint}>` | Array of tokens and amounts being transferred  |
+| sourceTokenData     | `Array<string>`                          | Array of token-specific data from source chain |
+| messageId           | `string`                                 | The unique identifier of the message           |
+
+## Functions
+
+### getEvm2EvmMessage
+
+Extracts and parses a CCIP message from a transaction receipt by looking for the CCIPSendRequested event.
+
+```javascript
+function getEvm2EvmMessage(receipt) => Evm2EvmMessage | null
+```
+
+#### Parameters
+
+| Parameter | Type     | Description                                      |
+| --------- | -------- | ------------------------------------------------ |
+| receipt   | `object` | The transaction receipt from the `ccipSend` call |
+
+#### Returns
+
+| Type                   | Description                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `Evm2EvmMessage\|null` | The parsed EVM-to-EVM message if found in the receipt logs, or null if no relevant event found |
+
+### requestLinkFromTheFaucet
+
+Requests LINK tokens from a faucet contract for testing purposes.
+
+```javascript
+async function requestLinkFromTheFaucet(linkAddress, to, amount) => Promise<string>
+```
+
+#### Parameters
+
+| Parameter   | Type     | Description                                             |
+| ----------- | -------- | ------------------------------------------------------- |
+| linkAddress | `string` | The address of the LINK contract on the current network |
+| to          | `string` | The address to send LINK to                             |
+| amount      | `bigint` | The amount of LINK to request                           |
+
+#### Returns
+
+| Type              | Description                                                    |
+| ----------------- | -------------------------------------------------------------- |
+| `Promise<string>` | Promise resolving to the transaction hash of the fund transfer |
+
+### routeMessage
+
+Routes a cross-chain message on the destination network by finding the appropriate off-ramp and executing the message.
+
+```javascript
+async function routeMessage(routerAddress, evm2EvmMessage) => Promise<void>
+```
+
+#### Parameters
+
+| Parameter      | Type             | Description                       |
+| -------------- | ---------------- | --------------------------------- |
+| routerAddress  | `string`         | Address of the destination Router |
+| evm2EvmMessage | `Evm2EvmMessage` | Sent cross-chain message          |
+
+#### Returns
+
+| Type            | Description                                                  |
+| --------------- | ------------------------------------------------------------ |
+| `Promise<void>` | Resolves with no value if the message is successfully routed |
+
+<Aside type="caution">
+
+**Possible Errors**
+
+- Throws if no off-ramp matches the message's source chain selector
+- Throws if calling `router.getOffRamps()` fails
+- Throws if no matching off-ramp contract is found for routing
+
+</Aside>

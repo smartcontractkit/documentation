@@ -1,0 +1,161 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry } from "astro:content"
+import {
+  getAllNetworks,
+  getAllSupportedTokens,
+  getAllTokenLanes,
+  getChainsOfToken,
+  getSearchLanes,
+  getTokenData,
+  Version,
+  Environment,
+} from "~/config/data/ccip"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import Table from "~/components/CCIP/Tables/TokenChainsTable"
+import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
+import Drawer from "~/components/CCIP/Drawer/Drawer"
+
+const { token, logo, environment } = Astro.props as { token: string; logo: string; environment: Environment }
+
+const entry = await getEntry("ccip", "index")
+const { headings } = await entry.render()
+const networks = getAllNetworks({ filter: environment })
+
+const supportedTokens = getAllSupportedTokens({
+  environment: environment,
+  version: Version.V1_2_0,
+})
+
+const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+
+const chainsOfToken = getChainsOfToken({ token, filter: environment })
+const firstSupportedChain = chainsOfToken[0]
+
+const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token) || ""
+  return {
+    id: token,
+    logo,
+    totalNetworks: chainsOfToken.length,
+  }
+})
+
+const data = getTokenData({
+  environment: environment,
+  version: Version.V1_2_0,
+  tokenId: token,
+})
+
+const tokenLanes = getAllTokenLanes({
+  environment: environment,
+  version: Version.V1_2_0,
+  token: token,
+})
+
+const searchLanes = getSearchLanes({ environment })
+---
+
+<CcipLayout
+  frontmatter={{
+    title: `CCIP Supported Tokens - ${token}`,
+    section: "ccip",
+  }}
+  {headings}
+  environment={environment}
+>
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    client:load
+    lanes={searchLanes}
+    token={{
+      id: token,
+      name: data[firstSupportedChain]?.name || "",
+      logo: logo || "",
+      symbol: data[firstSupportedChain].symbol,
+    }}
+    environment={environment}
+  />
+
+  <section class="layout">
+    <div>
+      <Table
+        client:load
+        environment={environment}
+        networks={Object.keys(tokenLanes)
+          .map((key) => {
+            const directory = directoryToSupportedChain(key || "")
+            const title = getTitle(directory) || ""
+            const networkLogo = getChainIcon(directory) || ""
+            const explorer = getExplorer(directory)
+            if (!explorer) throw new Error(`Explorer not found for ${key}`)
+            return {
+              name: title,
+              key: key,
+              logo: networkLogo,
+              tokenId: token,
+              tokenLogo: logo || "",
+              tokenName: data[key].name || "",
+              tokenSymbol: data[key].symbol,
+              tokenDecimals: data[key].decimals || 0,
+              tokenAddress: data[key].tokenAddress || "",
+              tokenPoolType: data[key].poolType,
+              tokenPoolAddress: data[key].poolAddress || "",
+              explorer: explorer,
+            }
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))}
+        lanes={tokenLanes}
+        token={{
+          id: token,
+          name: data[firstSupportedChain]?.name || "",
+          logo: logo || "",
+          symbol: data[firstSupportedChain]?.symbol,
+        }}
+      />
+    </div>
+  </section>
+</CcipLayout>
+
+<style scoped="false">
+  .layout {
+    --doc-padding: var(--space-6x);
+    margin: var(--space-8x) auto;
+    padding: var(--doc-padding);
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+    line-height: var(--space-10x);
+    padding-bottom: var(--space-4x);
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--space-6x);
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .networks__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8x);
+  }
+
+  .tokens__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8x);
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
+  }
+</style>

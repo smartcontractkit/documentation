@@ -1,6 +1,6 @@
 import { ChainMetadata } from "./api"
 
-type ChainTags = ("default" | "proofOfReserve" | "rates" | "streams")[]
+type ChainTags = ("default" | "smartData" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -18,6 +18,7 @@ export interface Chain {
   networks: ChainNetwork[]
   label: string
   tags?: ChainTags
+  l2SequencerFeed?: boolean
   supportedFeatures: ("vrfSubscription" | "vrfDirectFunding" | "feeds")[]
 }
 
@@ -36,7 +37,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "rates"],
+    tags: ["default", "smartData", "rates"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -45,7 +46,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Sepolia Testnet",
@@ -63,7 +64,7 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -72,6 +73,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
         queryString: "bnb-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "BNB Chain Testnet",
@@ -89,7 +91,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -98,7 +100,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
         queryString: "polygon-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Amoy Testnet",
@@ -106,7 +108,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
         queryString: "polygon-amoy",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
     ],
   },
@@ -133,7 +135,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve", "rates", "streams"],
+    tags: ["default", "smartData", "rates", "streams"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -142,7 +144,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
-        tags: ["proofOfReserve", "streams"],
+        tags: ["smartData", "streams"],
       },
       {
         name: "Avalanche Testnet",
@@ -150,7 +152,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["proofOfReserve", "rates", "streams"],
+        tags: ["smartData", "rates", "streams"],
       },
     ],
     label: "Avalanche",
@@ -186,8 +188,9 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "streams", "proofOfReserve"],
+    tags: ["default", "rates", "streams", "smartData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -195,7 +198,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
-        tags: ["streams", "proofOfReserve"],
+        tags: ["streams", "smartData"],
       },
       {
         name: "Arbitrum Sepolia",
@@ -215,6 +218,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://status.optimism.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Optimism Mainnet",
@@ -276,6 +280,7 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://andromeda-explorer.metis.io/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Metis Mainnet",
@@ -292,8 +297,9 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Base Mainnet",
@@ -301,7 +307,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "Base Sepolia testnet",
@@ -343,8 +349,9 @@ export const CHAINS: Chain[] = [
     title: "Scroll Data Feeds",
     img: "/assets/chains/scroll.svg",
     networkStatusUrl: "https://status.scroll.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
+    l2SequencerFeed: true,
     networks: [
       {
         name: "Scroll Mainnet",
@@ -352,6 +359,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
         queryString: "scroll-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Scroll Sepolia testnet",
@@ -435,16 +443,23 @@ export const CHAINS: Chain[] = [
     label: "Soneium",
     title: "Soneium Data Feeds",
     img: "/assets/chains/soneium.svg",
-    networkStatusUrl: "https://explorer-testnet.soneium.org",
+    networkStatusUrl: "https://soneium.blockscout.com",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Soneium Mainnet",
+        explorerUrl: "https://soneium.blockscout.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-soneium-mainnet.json",
+        queryString: "soneium-mainnet",
+      },
+      {
         name: "Soneium Minato Testnet",
-        explorerUrl: "https://explorer-testnet.soneium.org/address/%s",
+        explorerUrl: "https://soneium-minato.blockscout.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-soneium-1.json",
-        queryString: "polygon-zkevm-testnet",
+        queryString: "soneium-minato-testnet",
       },
     ],
   },
@@ -498,6 +513,153 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "hedera",
+    label: "Hedera",
+    title: "Hedera Data Feeds",
+    img: "/assets/chains/hedera.svg",
+    networkStatusUrl: "https://status.hedera.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Hedera Mainnet",
+        explorerUrl: "https://hashscan.io/mainnet/contract/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-mainnet.json",
+        queryString: "hedera-mainnet",
+      },
+      {
+        name: "Hedera Testnet",
+        explorerUrl: "https://hashscan.io/testnet/contract/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-testnet.json",
+        queryString: "hedera-testnet",
+      },
+    ],
+  },
+  {
+    page: "aptos",
+    label: "Aptos",
+    title: "Aptos Data Feeds",
+    img: "/assets/chains/aptos.svg",
+    networkStatusUrl: "https://explorer.aptoslabs.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Aptos Mainnet",
+        explorerUrl: "",
+        networkType: "mainnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
+        queryString: "aptos-mainnet",
+      },
+      {
+        name: "Aptos Testnet",
+        explorerUrl: "",
+        networkType: "testnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-aptos-testnet.json",
+        queryString: "aptos-testnet",
+      },
+    ],
+  },
+  {
+    page: "sonic",
+    label: "Sonic",
+    title: "Sonic Data Feeds",
+    img: "/assets/chains/sonic.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Sonic Mainnet",
+        explorerUrl: "https://sonicscan.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
+        queryString: "sonic-mainnet",
+      },
+    ],
+  },
+  {
+    page: "mantle",
+    label: "Mantle",
+    title: "Mantle Data Feeds",
+    img: "/assets/chains/mantle.svg",
+    networkStatusUrl: "https://0xmantle.instatus.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Mantle Mainnet",
+        explorerUrl: "https://mantlescan.xyz/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-mantle-1.json",
+        queryString: "mantle-mainnet",
+      },
+    ],
+  },
+  {
+    page: "xlayer",
+    label: "X Layer",
+    title: "X Layer Data Feeds",
+    img: "/assets/chains/xlayer.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "X Layer Mainnet",
+        explorerUrl: "https://www.oklink.com/xlayer/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
+        queryString: "xlayer-mainnet",
+      },
+      {
+        name: "X Layer Sepolia Testnet",
+        explorerUrl: "https://www.oklink.com/xlayer-test/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-xlayer-1.json",
+        queryString: "xlayer-testnet",
+      },
+    ],
+  },
+  {
+    page: "ronin",
+    label: "Ronin",
+    title: "Ronin Data Feeds",
+    img: "/assets/chains/ronin.svg",
+    networkStatusUrl: "https://app.roninchain.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Ronin Mainnet",
+        explorerUrl: "https://app.roninchain.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
+        queryString: "ronin-mainnet",
+      },
+    ],
+  },
+  {
+    page: "botanix",
+    label: "Botanix",
+    title: "Botanix Data Feeds",
+    img: "/assets/chains/botanix.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Botanix Testnet",
+        explorerUrl: "https://testnet.botanixscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-testnet-botanix.json",
+        queryString: "ronin-testnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
@@ -507,7 +669,7 @@ export const ALL_CHAINS: Chain[] = [
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -516,13 +678,13 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
       },
       {
         name: "BNB Chain Mainnet",
         explorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
         queryString: "bnb-mainnet",
       },
@@ -530,7 +692,7 @@ export const ALL_CHAINS: Chain[] = [
         name: "Polygon Mainnet",
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
         queryString: "polygon-mainnet",
       },
@@ -545,7 +707,7 @@ export const ALL_CHAINS: Chain[] = [
         name: "Avalanche Mainnet",
         explorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
+        tags: ["smartData"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
       },

@@ -53,7 +53,7 @@ contract MultiWordConsumer is ChainlinkClient, ConfirmedOwner {
     }
 
     /**
-     * @notice Request mutiple parameters from the oracle in a single transaction
+     * @notice Request multiple parameters from the oracle in a single transaction
      */
     function requestMultipleParameters() public {
         Chainlink.Request memory req = _buildChainlinkRequest(

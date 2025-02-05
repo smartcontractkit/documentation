@@ -6,9 +6,9 @@ whatsnext:
   {
     "Learn how to manually execute a failed CCIP transaction": "/ccip/tutorials/manual-execution",
     "Learn how to handle errors gracefully when making CCIP transactions": "/ccip/tutorials/programmable-token-transfers-defensive",
-    "Transfer Tokens Between EOAs": "/ccip/tutorials/cross-chain-tokens-from-eoa",
+    "Transfer Tokens Between EOAs": "/ccip/tutorials/transfer-tokens-from-eoa",
     "See example cross-chain dApps and tools": "/ccip/examples",
-    "See the list of supported networks": "/ccip/supported-networks",
+    "CCIP Directory": "/ccip/directory",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
 ---
@@ -33,10 +33,10 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary d
 
 1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
-1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/supported-networks/v1_2_0/testnet#avalanche-fuji-ethereum-sepolia).
+1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
 1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
-1. Follow the previous tutorial: [_Transfer tokens_](/ccip/tutorials/cross-chain-tokens).
+1. Follow the previous tutorial: [_Transfer tokens_](/ccip/tutorials/transfer-tokens-from-contract).
 
 ## Tutorial
 
@@ -57,7 +57,7 @@ To use this contract:
 
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
-   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_:
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_:
       - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>,
       - The LINK contract address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
@@ -65,18 +65,18 @@ To use this contract:
    1. Open MetaMask and fund your contract with CCIP-BnM tokens. You can transfer <CopyText text="0.002" code/> _CCIP-BnM_ to your contract.
    1. Enable your contract to send CCIP messages to _Ethereum Sepolia_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Avalanche Fuji_.
-      1. Call the `allowlistDestinationChain`, setting the destination chain selector to <CopyText text="16015286601757825753" code/> and setting `allowed` to <CopyText text="true" code/>. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. Call the `allowlistDestinationChain`, setting the destination chain selector to <CopyText text="16015286601757825753" code/> and setting `allowed` to <CopyText text="true" code/>. Each chain selector is found on the [CCIP Directory](/ccip/directory).
 
 1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
-   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
       Note your contract address.
    1. Enable your contract to receive CCIP messages from _Avalanche Fuji_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Ethereum Sepolia_.
-      1. Call the `allowlistSourceChain` with <CopyText text="14767482510784806043" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. Call the `allowlistSourceChain` with <CopyText text="14767482510784806043" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
    1. Enable your contract to receive CCIP messages from the contract that you deployed on _Avalanche Fuji_:
       1. In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Ethereum Sepolia_.
       1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Avalanche Fuji_, and <CopyText text="true" code/> as allowed.
@@ -102,13 +102,13 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
         <br />
 
-        | Argument                   | Value and Description                                                                                                                                                                                                                                                                     |
-        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [supported networks page](/ccip/supported-networks).                                                |
-        | \_receiver                 | Your receiver contract address on _Ethereum Sepolia_. <br /> The destination contract address.                                                                                                                                                                                            |
-        | \_text                     | <CopyText text="Hello World!" code/><br />Any `string`                                                                                                                                                                                                                                    |
-        | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [supported networks page](/ccip/supported-networks). |
-        | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                                      |
+        | Argument                   | Value and Description                                                                                                                                                                                                                                                   |
+        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [CCIP Directory](/ccip/directory).                                                |
+        | \_receiver                 | Your receiver contract address on _Ethereum Sepolia_. <br /> The destination contract address.                                                                                                                                                                          |
+        | \_text                     | <CopyText text="Hello World!" code/><br />Any `string`                                                                                                                                                                                                                  |
+        | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [CCIP Directory](/ccip/directory). |
+        | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                    |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
     1.  After the transaction is successful, record the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0xd3a0fade0e143fb39964c764bd4803e40062ba8c88e129f44ee795e33ade464b) of a transaction on _Avalanche Fuji_.
@@ -165,13 +165,13 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
         <br />
 
-        | Argument                   | Value and Description                                                                                                                                                                                                                                                                     |
-        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [supported networks page](/ccip/supported-networks).                                                |
-        | \_receiver                 | Your receiver contract address at _Ethereum Sepolia_. <br /> The destination contract address.                                                                                                                                                                                            |
-        | \_text                     | <CopyText text="Hello World!" code/><br />Any `string`                                                                                                                                                                                                                                    |
-        | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [supported networks page](/ccip/supported-networks). |
-        | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                                      |
+        | Argument                   | Value and Description                                                                                                                                                                                                                                                   |
+        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [CCIP Directory](/ccip/directory).                                                |
+        | \_receiver                 | Your receiver contract address at _Ethereum Sepolia_. <br /> The destination contract address.                                                                                                                                                                          |
+        | \_text                     | <CopyText text="Hello World!" code/><br />Any `string`                                                                                                                                                                                                                  |
+        | \_token                    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/><br /> The _CCIP-BnM_ contract address at the source chain (_Avalanche Fuji_ in this example). You can find all the addresses for each supported blockchain on the [CCIP Directory](/ccip/directory). |
+        | \_amount                   | <CopyText text="1000000000000000" code/> <br /> The token amount (_0.001 CCIP-BnM_).                                                                                                                                                                                    |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
     1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x8101fef78288981813915e77f8e5746bdba69711bdb7bc1706944a67ac70854b) of a transaction on _Avalanche Fuji_.
@@ -227,21 +227,21 @@ Defining the router address is useful for the following:
 
 - Sender part:
 
-  - Calls the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee) to estimate the CCIP fees.
-  - Calls the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend) to send CCIP messages.
+  - Calls the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee) to estimate the CCIP fees.
+  - Calls the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend) to send CCIP messages.
 
 - Receiver part:
-  - The contract inherits from [CCIPReceiver](/ccip/api-reference/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
+  - The contract inherits from [CCIPReceiver](/ccip/api-reference/v1.5.1/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
 
 ### Transferring tokens and data and pay in LINK
 
 The `sendMessagePayLINK` function undertakes six primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayLINK` function.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayLINK` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
@@ -249,11 +249,11 @@ The `sendMessagePayLINK` function undertakes six primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in LINK is enough to cover the fees.
 1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend).
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend).
 
 **Note**: As a security measure, the `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
@@ -261,11 +261,11 @@ The `sendMessagePayLINK` function undertakes six primary operations:
 
 The `sendMessagePayNative` function undertakes five primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayNative` function.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayNative` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
@@ -273,16 +273,16 @@ The `sendMessagePayNative` function undertakes five primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in native gas is enough to cover the fees.
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
 **Note**: As a security measure, the `sendMessagePayNative` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
 ### Receiving messages
 
-On the destination blockchain, the router invokes the `_ccipReceive` [function](/ccip/api-reference/ccip-receiver#_ccipreceive) which expects a `Any2EVMMessage` [struct](/ccip/api-reference/client#any2evmmessage) that contains:
+On the destination blockchain, the router invokes the `_ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#_ccipreceive) which expects a `Any2EVMMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage) that contains:
 
 - The CCIP `messageId`.
 - The `sourceChainSelector`.
@@ -292,5 +292,5 @@ On the destination blockchain, the router invokes the `_ccipReceive` [function](
 
 **Note**: Three important security measures are applied:
 
-- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/ccip-receiver#onlyrouter) for more information.
+- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/v1.5.1/ccip-receiver#onlyrouter) for more information.
 - The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender is accepted.

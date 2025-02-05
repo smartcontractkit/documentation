@@ -14,7 +14,7 @@ import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-/// @title - A simple messenger contract for sending/receving string data across chains.
+/// @title - A simple messenger contract for sending/receiving string data across chains.
 contract Messenger is CCIPReceiver, OwnerIsCreator {
     using SafeERC20 for IERC20;
 
@@ -260,7 +260,10 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
                 data: abi.encode(_text), // ABI-encoded string
                 tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
                 extraArgs: Client._argsToBytes(
-                    // Additional arguments, setting gas limit
+                    // Additional arguments, setting gas limit and allowing out-of-order execution.
+                    // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
+                    // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
+                    // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/best-practices#using-extraargs
                     Client.EVMExtraArgsV2({
                         gasLimit: 200_000, // Gas limit for the callback on the destination chain
                         allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender

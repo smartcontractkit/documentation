@@ -1,0 +1,111 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry } from "astro:content"
+import Hero from "~/components/CCIP/Hero/Hero"
+import {
+  Environment,
+  getAllNetworks,
+  getAllSupportedTokens,
+  getChainsOfToken,
+  getSearchLanes,
+  Version,
+} from "~/config/data/ccip"
+import { getTokenIconUrl } from "~/features/utils"
+import NetworkGrid from "./NetworkGrid"
+import TokenGrid from "../TokenGrid/TokenGrid"
+export type Props = {
+  environment: Environment
+}
+const { environment } = Astro.props as Props
+
+const entry = await getEntry("ccip", "index")
+const { headings } = await entry.render()
+const networks = getAllNetworks({ filter: environment })
+const supportedTokens = getAllSupportedTokens({
+  environment: environment,
+  version: Version.V1_2_0,
+})
+
+const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+
+const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token) || ""
+  return {
+    id: token,
+    logo,
+    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+  }
+})
+
+const searchLanes = getSearchLanes({ environment })
+---
+
+<CcipLayout frontmatter={entry.data} {headings} environment={environment}>
+  <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
+  <section class="layout">
+    <div>
+      <div class="ccip-heading">
+        <h2>Networks {environment} <span>({networks.length})</span></h2>
+      </div>
+      <NetworkGrid networks={networks} environment={environment} client:load />
+    </div>
+    <div>
+      <div class="ccip-heading">
+        <h2>Tokens <span>({allTokens.length})</span></h2>
+        <a class="button secondary" href="/ccip/tutorials/token-manager#verifying-your-token">Add my token</a>
+      </div>
+      <TokenGrid tokens={allTokens} environment={environment} client:load />
+    </div>
+  </section>
+</CcipLayout>
+
+<style>
+  .layout {
+    --gutter: var(--space-10x);
+    --doc-padding: var(--space-6x);
+    margin: var(--space-8x) auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gutter);
+    padding: var(--doc-padding);
+  }
+
+  .ccip-heading {
+    display: flex;
+    padding-bottom: var(--space-4x);
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--space-6x);
+    justify-content: space-between;
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+    line-height: var(--space-10x);
+    margin-bottom: 0px;
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      --doc-padding: var(--space-10x);
+      display: grid;
+      padding-top: var(--doc-padding);
+      padding-bottom: var(--doc-padding);
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-24x);
+    }
+  }
+</style>
