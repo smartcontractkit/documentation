@@ -1,6 +1,5 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
-import { getEntry } from "astro:content"
 import {
   getAllNetworks,
   getAllSupportedTokens,
@@ -14,12 +13,25 @@ import {
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
-import Drawer from "~/components/CCIP/Drawer/Drawer"
 
 const { token, logo, environment } = Astro.props as { token: string; logo: string; environment: Environment }
 
-const entry = await getEntry("ccip", "index")
-const { headings } = await entry.render()
+const frontmatter = {
+  title: `CCIP Supported Tokens - ${token}`,
+  section: "ccip" as const,
+  metadata: {
+    description: `View supported blockchains and configurations for ${token} token on Chainlink CCIP.`,
+  },
+}
+
+const headings = [
+  {
+    depth: 1,
+    slug: "overview",
+    text: frontmatter.title,
+  },
+]
+
 const networks = getAllNetworks({ filter: environment })
 
 const supportedTokens = getAllSupportedTokens({
@@ -56,14 +68,7 @@ const tokenLanes = getAllTokenLanes({
 const searchLanes = getSearchLanes({ environment })
 ---
 
-<CcipLayout
-  frontmatter={{
-    title: `CCIP Supported Tokens - ${token}`,
-    section: "ccip",
-  }}
-  {headings}
-  environment={environment}
->
+<CcipLayout frontmatter={frontmatter} {headings} environment={environment}>
   <ChainHero
     chains={networks}
     tokens={allTokens}
