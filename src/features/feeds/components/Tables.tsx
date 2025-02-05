@@ -304,7 +304,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             <dt>
               <span className="label">Asset name:</span>
             </dt>
-            <dd>{proxy.docs.assetName}</dd>
+            <dd>{proxy.assetName}</dd>
           </div>
           {proxy.docs.porType && (
             <div className={tableStyles.definitionGroup}>
@@ -784,12 +784,12 @@ const StreamsTr = ({ proxy, isMainnet }) => (
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
           )}
-          {proxy.docs.assetName && (
+          {proxy.assetName && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
-              <dd>{proxy.docs.assetName}</dd>
+              <dd>{proxy.assetName}</dd>
             </div>
           )}
           {proxy.docs.assetClass ? (
