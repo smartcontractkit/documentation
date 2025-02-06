@@ -67,5 +67,25 @@ export type ChainlinkAutomationConfig = {
   stalenessSeconds: number
   registrar: string
   transcoder: string
+  latestVersion: string
+}
+
+export type ChainlinkAutomationConfig_2_3 = {
+  gasFeePPBLink: number | "Not Applicable"
+  gasFeePPBNative: number | "Not Applicable"
+  maxCheckDataSize: number | "Not Applicable"
+  checkGasLimit: number
+  gasCeilingMultiplier: number
+  minSpendLink: { type: "BigNumber"; hex: string } | "Not Applicable"
+  minSpendNative: { type: "BigNumber"; hex: string } | "Not Applicable"
+  maxPerformGas: number
+  maxPerformDataSize: number | "Not Applicable"
+  fallbackGasPrice: { type: "BigNumber"; hex: string }
+  fallbackLinkPrice: { type: "BigNumber"; hex: string }
+  fallbackNativePrice: { type: "BigNumber"; hex: string }
+  stalenessSeconds: number
+  registrar: string
+  latestVersion: string
 }
 export type ChainlinkAutomationConfigs = Partial<Record<SupportedChain, ChainlinkAutomationConfig>>
+export type ChainlinkAutomationConfigs_2_3 = Partial<Record<SupportedChain, ChainlinkAutomationConfig_2_3>>
