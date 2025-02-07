@@ -139,7 +139,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
+        {feedCategories[proxy.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
@@ -182,21 +182,21 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       {!isTestnet && (
         <div>
           <dl className={tableStyles.listContainer}>
-            {proxy.docs.assetName && (
+            {proxy.assetName && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset name:</span>
                 </dt>
-                <dd>{proxy.docs.assetName}</dd>
+                <dd>{proxy.assetName}</dd>
               </div>
             )}
-            {proxy.docs.feedType && (
+            {proxy.feedType && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset type:</span>
                 </dt>
                 <dd>
-                  {proxy.docs.feedType}
+                  {proxy.feedType}
                   {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
@@ -304,7 +304,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             <dt>
               <span className="label">Asset name:</span>
             </dt>
-            <dd>{proxy.docs.assetName}</dd>
+            <dd>{proxy.assetName}</dd>
           </div>
           {proxy.docs.porType && (
             <div className={tableStyles.definitionGroup}>
@@ -391,6 +391,30 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Botanix",
+    logoUrl: "/assets/chains/botanix.svg",
+    testnet: {
+      label: "Botanix Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://testnet.botanixscan.io/address/%s",
+    },
+  },
+  {
+    network: "Mantle",
+    logoUrl: "/assets/chains/mantle.svg",
+    networkStatus: "https://0xmantle.instatus.com",
+    mainnet: {
+      label: "Mantle Mainnet",
+      verifierProxy: "0x223752Eb475098e79d10937480DF93864D7EfB83",
+      explorerUrl: "https://mantlescan.xyz/address/%s",
+    },
+    testnet: {
+      label: "Mantle Sepolia Testnet",
+      verifierProxy: "0xdc458847982C496E1a5E25D005A332D5a838302B",
+      explorerUrl: "https://sepolia.mantlescan.xyz/address/%s",
+    },
+  },
+  {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
     networkStatus: "https://opbnb-status.bnbchain.org/",
@@ -451,6 +475,11 @@ const StreamsNetworksData = [
   {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
+    mainnet: {
+      label: "Soneium Mainnet",
+      verifierProxy: "0x8760535A80Ac5908096B57A094266866f4aA1A8c",
+      explorerUrl: "https://soneium.blockscout.com/address/%s",
+    },
     testnet: {
       label: "Soneium Minato Testnet",
       verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
@@ -487,6 +516,21 @@ const StreamsNetworksData = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "ZKSync",
+    logoUrl: "/assets/chains/zksync.svg",
+    networkStatus: "https://uptime.com/statuspage/zkSync",
+    mainnet: {
+      label: "ZKSync Era Mainnet",
+      verifierProxy: "0xcA64d9D1a9AE4C10E94D0D45af9E878fc64dc207",
+      explorerUrl: "https://explorer.zksync.io/address/%s",
+    },
+    testnet: {
+      label: "ZKSync Sepolia Testnet",
+      verifierProxy: "0xDf37875775d1E777bB413f27de093A62CFF4264b",
+      explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
     },
   },
 ]
@@ -740,12 +784,12 @@ const StreamsTr = ({ proxy, isMainnet }) => (
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
           )}
-          {proxy.docs.assetName && (
+          {proxy.assetName && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
-              <dd>{proxy.docs.assetName}</dd>
+              <dd>{proxy.assetName}</dd>
             </div>
           )}
           {proxy.docs.assetClass ? (
@@ -862,11 +906,11 @@ export const MainnetTable = ({
       if (isDeprecating) return !!chain.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+        return chain.contractType === "verifier" && chain.feedType === "Crypto"
       }
 
       if (dataFeedType === "streamsRwa") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        return chain.contractType === "verifier" && chain.feedType === "Forex"
       }
 
       if (isSmartData) {
@@ -973,10 +1017,10 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+          return chain.contractType === "verifier" && chain.feedType === "Crypto"
         }
         if (dataFeedType === "streamsRwa") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+          return chain.contractType === "verifier" && chain.feedType === "Forex"
         }
       }
       if (isSmartData) return !!chain.docs.porType

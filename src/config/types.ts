@@ -34,6 +34,11 @@ export type SupportedTechnology =
   | "HASHKEY"
   | "CORN"
   | "BOTANIX"
+  | "SEI"
+  | "CORE"
+  | "MONAD"
+  | "TREASURE"
+
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
@@ -107,26 +112,36 @@ export type SupportedChain =
   | "CORN_MAINNET"
   | "CORN_TESTNET"
   | "BOTANIX_TESTNET"
+  | "SEI_MAINNET"
+  | "SEI_TESTNET"
+  | "CORE_TESTNET"
+  | "MONAD_TESTNET"
+  | "TREASURE_MAINNET"
+  | "TREASURE_TOPAZ"
+
+export type ExplorerInfo = {
+  baseUrl: string
+  queryParameters?: {
+    [key: string]: string
+  }
+}
+
+export type ChainInfo = {
+  chainId: number
+  title: string
+  explorer: ExplorerInfo
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+  }
+}
 
 export type Chains = Record<
   SupportedTechnology,
   {
     title: string
     icon: string
-    chains: Partial<
-      Record<
-        SupportedChain,
-        {
-          chainId: number
-          title: string
-          explorer: string
-          nativeCurrency: {
-            name: string
-            symbol: string
-            decimals: number
-          }
-        }
-      >
-    >
+    chains: Partial<Record<SupportedChain, ChainInfo>>
   }
 >

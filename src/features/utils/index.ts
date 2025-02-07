@@ -1,4 +1,4 @@
-import { chains, chainToTechnology, SupportedChain, SupportedTechnology, web3Providers } from "@config"
+import { chains, chainToTechnology, ExplorerInfo, SupportedChain, SupportedTechnology, web3Providers } from "@config"
 import { utils } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json"
 
@@ -53,8 +53,15 @@ export const getNativeCurrency = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.nativeCurrency
 }
 
-export const getExplorerAddressUrl = (explorerUrl: string) => (contractAddress: string) => {
-  return `${explorerUrl}/address/${contractAddress}`
+export const getExplorerAddressUrl = (explorer: ExplorerInfo) => (contractAddress: string) => {
+  const url = `${explorer.baseUrl}/address/${contractAddress}`
+  if (!explorer.queryParameters) return url
+
+  const queryString = Object.entries(explorer.queryParameters)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&")
+
+  return queryString ? `${url}?${queryString}` : url
 }
 
 export const getTitle = (supportedChain: SupportedChain) => {
@@ -263,6 +270,18 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "POLYGON_ZKEVM_CARDONA"
     case "bitcoin-testnet-botanix":
       return "BOTANIX_TESTNET"
+    case "sei-mainnet":
+      return "SEI_MAINNET"
+    case "sei-testnet-atlantic":
+      return "SEI_TESTNET"
+    case "monad-testnet":
+      return "MONAD_TESTNET"
+    case "core-testnet":
+      return "CORE_TESTNET"
+    case "treasure-mainnet":
+      return "TREASURE_MAINNET"
+    case "treasure-testnet-topaz":
+      return "TREASURE_TOPAZ"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -406,6 +425,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-polygon-zkevm-1"
     case "BOTANIX_TESTNET":
       return "bitcoin-testnet-botanix"
+    case "CORE_TESTNET":
+      return "core-testnet"
+    case "MONAD_TESTNET":
+      return "monad-testnet"
+    case "TREASURE_MAINNET":
+      return "treasure-mainnet"
+    case "TREASURE_TOPAZ":
+      return "treasure-testnet-topaz"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
