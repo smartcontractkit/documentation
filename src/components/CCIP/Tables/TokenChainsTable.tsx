@@ -2,6 +2,7 @@ import Address from "~/components/AddressReact"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore"
 import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip"
+import { ExplorerInfo } from "~/config/types"
 import TableSearchInput from "./TableSearchInput"
 import { useState } from "react"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
@@ -20,7 +21,7 @@ interface TableProps {
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
-    explorerUrl: string
+    explorer: ExplorerInfo
   }[]
   token: {
     id: string
@@ -107,7 +108,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                   <td>{network.tokenDecimals}</td>
                   <td data-clipboard-type="token">
                     <Address
-                      contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenAddress)}
+                      contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAddress)}
                       address={network.tokenAddress}
                       endLength={6}
                     />
@@ -115,7 +116,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                   <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                   <td data-clipboard-type="token-pool">
                     <Address
-                      contractUrl={getExplorerAddressUrl(network.explorerUrl)(network.tokenPoolAddress)}
+                      contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenPoolAddress)}
                       address={network.tokenPoolAddress}
                       endLength={6}
                     />

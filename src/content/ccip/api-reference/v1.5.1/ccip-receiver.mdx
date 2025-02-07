@@ -6,110 +6,183 @@ metadata:
   description: "API documentation for the CCIPReceiver contract in Chainlink CCIP v1.5.1, the base contract for applications receiving cross-chain messages."
 ---
 
+import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <CcipCommon callout="importCCIPPackage151" />
 
-CCIP receiver contracts inherit from [`CCIPReceiver`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/applications/CCIPReceiver.sol).
+## CCIPReceiver
 
-```solidity
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-...
+An abstract base contract that provides core functionality for CCIP-enabled applications to receive cross-chain messages.
 
-constructor(address _router) CCIPReceiver(router) {
- }
-```
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/applications/CCIPReceiver.sol)
+
+<Aside>
+Base contract for CCIP applications that can receive messages, providing:
+
+- Secure message reception through router validation
+- Interface detection support (ERC165)
+- Customizable message handling through virtual functions
+
+</Aside>
 
 ## Errors
 
 ### InvalidRouter
 
 ```solidity
-error InvalidRouter(address router)
+error InvalidRouter(address router);
 ```
 
-## Functions
+<Aside>
 
-### constructor
+Thrown when:
+
+- A zero address is provided during contract initialization
+- A function restricted to the router is called by an unauthorized address
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                |
+| -------- | --------- | -------------------------- |
+| `router` | `address` | The invalid router address |
+
+## State Variables
+
+### i_ccipRouter
 
 ```solidity
-constructor(address router) internal
+address internal immutable i_ccipRouter;
 ```
 
-#### Parameters
+<Aside>
+  The immutable address of the CCIP router contract that is authorized to deliver messages to this receiver.
+</Aside>
 
-| Name   | Type    | Description         |
-| ------ | ------- | ------------------- |
-| router | address | The router address. |
-
-### supportsInterface
-
-```solidity
-function supportsInterface(bytes4 interfaceId) public pure returns (bool)
-```
-
-[IERC165](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/vendor/openzeppelin-solidity/v5.0.2/contracts/utils/introspection/IERC165.sol) supports an interfaceId. This allows CCIP to check if `ccipReceive` is available before calling it.
-
-- If this returns false or reverts, only tokens are transferred to the receiver.
-- If this returns true, tokens are transferred and ccipReceive is called atomically.
-- If the receiver address does not have code associated with it at execution time (EXTCODESIZE returns 0), only tokens will be transferred.
-
-#### Parameters
-
-| Name        | Type   | Description              |
-| ----------- | ------ | ------------------------ |
-| interfaceId | bytes4 | The interfaceId to check |
-
-#### Return Values
-
-| Name | Type | Description                          |
-| ---- | ---- | ------------------------------------ |
-| [0]  | bool | true if the interfaceId is supported |
-
-### ccipReceive
-
-```solidity
-function ccipReceive(Client.Any2EVMMessage calldata message) external
-```
-
-#### Parameters
-
-| Name    | Type                                                                             | Description    |
-| ------- | -------------------------------------------------------------------------------- | -------------- |
-| message | struct [Client.Any2EVMMessage](/ccip/api-reference/v1.5.1/client#any2evmmessage) | Any2EVMMessage |
-
-### \_ccipReceive
-
-```solidity
-function _ccipReceive(Client.Any2EVMMessage memory message) internal virtual
-```
-
-Override this function in your implementation.
-
-#### Parameters
-
-| Name    | Type                                                                             | Description    |
-| ------- | -------------------------------------------------------------------------------- | -------------- |
-| message | struct [Client.Any2EVMMessage](/ccip/api-reference/v1.5.1/client#any2evmmessage) | Any2EVMMessage |
-
-### getRouter
-
-```solidity
-function getRouter() public view returns (address)
-```
-
-This function returns the current Router address.
-
-#### Return Values
-
-| Name | Type    | Description      |
-| ---- | ------- | ---------------- |
-| [0]  | address | i_router address |
+## Modifiers
 
 ### onlyRouter
 
 ```solidity
-modifier onlyRouter()
+modifier onlyRouter();
 ```
 
-_Only calls from the set router are accepted._
+<Aside>
+  Ensures that only the designated CCIP router can call the modified function. Reverts with `InvalidRouter` if called by
+  any other address.
+</Aside>
+
+## Functions
+
+### ccipReceive
+
+Processes incoming CCIP messages from the router.
+
+```solidity
+function ccipReceive(Client.Any2EVMMessage calldata message) external virtual override onlyRouter;
+```
+
+<Aside>
+
+Called by the Router to deliver a message with the following characteristics:
+
+- Only accepts calls from the authorized router
+- If this function reverts, any associated token transfers also revert
+- Failed messages enter a FAILED state and become available for manual execution
+
+</Aside>
+
+**Parameters**
+
+| Name      | Type                                                                        | Description      |
+| --------- | --------------------------------------------------------------------------- | ---------------- |
+| `message` | [`Client.Any2EVMMessage`](/ccip/api-reference/v1.5.1/client#any2evmmessage) | The CCIP message |
+
+### constructor
+
+```solidity
+constructor(address router);
+```
+
+<Aside>
+
+Initializes the CCIPReceiver contract with a router address:
+
+- Validates that the router address is not zero
+- Stores the router address immutably
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                      |
+| -------- | --------- | -------------------------------- |
+| `router` | `address` | The CCIP router contract address |
+
+### getRouter
+
+Returns the address of the current CCIP router.
+
+```solidity
+function getRouter() public view virtual returns (address);
+```
+
+<Aside>Provides access to the immutable router address used for message validation.</Aside>
+
+**Returns**
+
+| Type      | Description                     |
+| --------- | ------------------------------- |
+| `address` | The current CCIP router address |
+
+### supportsInterface
+
+Determines whether the contract implements specific interfaces.
+
+```solidity
+function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool);
+```
+
+<Aside>
+
+Implements ERC165 interface detection with CCIP-specific behavior:
+
+- Returns true for IAny2EVMMessageReceiver and IERC165 interfaces
+- Used by CCIP to check if ccipReceive is available
+- If returns false or reverts: only tokens are transferred
+- If returns true: tokens are transferred and ccipReceive is called atomically
+- If contract has no code (EXTCODESIZE = 0): only tokens are transferred
+
+</Aside>
+
+**Parameters**
+
+| Name          | Type     | Description                       |
+| ------------- | -------- | --------------------------------- |
+| `interfaceId` | `bytes4` | The interface identifier to check |
+
+**Returns**
+
+| Type   | Description                        |
+| ------ | ---------------------------------- |
+| `bool` | True if the interface is supported |
+
+### \_ccipReceive
+
+Internal function to be implemented by derived contracts for custom message handling.
+
+```solidity
+function _ccipReceive(Client.Any2EVMMessage memory message) internal virtual;
+```
+
+<Aside>
+  Virtual function that must be overridden in implementing contracts to define custom message handling logic.
+</Aside>
+
+**Parameters**
+
+| Name      | Type                                                                        | Description                 |
+| --------- | --------------------------------------------------------------------------- | --------------------------- |
+| `message` | [`Client.Any2EVMMessage`](/ccip/api-reference/v1.5.1/client#any2evmmessage) | The message to be processed |

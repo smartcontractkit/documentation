@@ -1,0 +1,51 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 Ownable2StepMsgSender Contract API Reference"
+metadata:
+  description: "API documentation for the Ownable2StepMsgSender contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## Ownable2StepMsgSender
+
+A contract that facilitates two-step ownership transfer, providing enhanced security for ownership management. This contract extends `Ownable2Step` and automatically sets the deploying address (`msg.sender`) as the initial owner with no pending owner.
+
+**Inherits:**
+
+- [`Ownable2Step`](/ccip/api-reference/v1.5.1/ownable-2-step) - Provides secure two-step ownership transfer functionality
+
+<Aside type="note">
+The two-step ownership transfer process enhances security by:
+1. Requiring the current owner to initiate the transfer (step 1)
+2. Requiring the new owner to accept ownership (step 2)
+
+This prevents accidental transfers to incorrect or inaccessible addresses.
+
+</Aside>
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/shared/access/Ownable2StepMsgSender.sol)
+
+## Functions
+
+### constructor
+
+Initializes the contract with the deploying address as the owner and no pending owner.
+
+```solidity
+constructor() Ownable2Step(msg.sender, address(0));
+```
+
+<Aside>
+
+The constructor:
+
+- Sets `msg.sender` as the initial owner
+- Sets `address(0)` as the initial pending owner (indicating no pending transfer)
+- Inherits from Ownable2Step with these initial values
+
+</Aside>
