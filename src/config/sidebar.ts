@@ -1,7 +1,9 @@
 import { Sections } from "../content/config"
-import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
 import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
 import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json"
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json"
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json"
 
 export type SectionContent = {
   title: string
@@ -14,8 +16,6 @@ type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
-
-const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   dataFeeds: [
@@ -235,11 +235,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
-          url: "data-streams/getting-started",
-          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
-        },
-        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -254,58 +249,85 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Stream Addresses",
+      section: "Streams & Report Schemas",
       contents: [
         {
-          title: "Crypto streams",
+          title: "Cryptocurrency Streams",
           url: "data-streams/crypto-streams",
+          children: [
+            {
+              title: "Report Schema v3",
+              url: "data-streams/reference/report-schema",
+            },
+          ],
         },
         {
-          title: "RWA streams",
+          title: "Real World Asset (RWA) Streams",
           url: "data-streams/rwa-streams",
+          children: [
+            {
+              title: "Report Schema v4",
+              url: "data-streams/reference/report-schema-v4",
+            },
+          ],
         },
         {
-          title: "Market hours",
+          title: "Market Hours",
           url: "data-streams/market-hours",
         },
       ],
     },
     {
-      section: "Guides",
+      section: "Streams Trade",
       contents: [
         {
-          title: "Streams Trade",
-          url: "data-streams/tutorials/streams-trade/",
-          children: [
-            {
-              title: "Handle StreamsLookup errors",
-              url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-            },
+          title: "Overview",
+          url: "data-streams/streams-trade",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/getting-started",
+          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
+        },
+        {
+          title: "Handle StreamsLookup errors",
+          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+        },
+      ],
+    },
+    {
+      section: "Streams Direct",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-direct",
+        },
+        {
+          title: "Fetch and decode reports",
+          url: "data-streams/tutorials/streams-direct/streams-direct-api-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-api-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
           ],
         },
         {
-          title: "Streams Direct",
-          url: "data-streams/tutorials/streams-direct/",
-          children: [
-            {
-              title: "Fetch and decode reports",
-              url: "data-streams/tutorials/streams-direct/streams-direct-api",
-              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-api-rwa"],
-            },
-            {
-              title: "Stream and decode reports (WebSocket)",
-              url: "data-streams/tutorials/streams-direct/streams-direct-ws",
-              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
-            },
-            {
-              title: "Verify report data",
-              url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
-              highlightAsCurrent: [
-                "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
-                "data-streams/tutorials/streams-direct/solana-offchain-report-verification",
-              ],
-            },
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/streams-direct/streams-direct-ws-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-rust",
           ],
+        },
+        {
+          title: "Verify report data (EVM)",
+          url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+        },
+        {
+          title: "Verify report data (Solana)",
+          url: "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/streams-direct/solana-offchain-report-verification"],
         },
       ],
     },
@@ -326,16 +348,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Reference",
       contents: [
         {
-          title: "Report Schemas",
-          url: "data-streams/reference/report-schema",
-          highlightAsCurrent: ["data-streams/reference/report-schema-v4"],
-        },
-        {
-          title: "Streams Trade Interface",
+          title: "Streams Trade",
           url: "data-streams/reference/streams-trade-interface",
         },
         {
-          title: "Streams Direct Interface",
+          title: "Streams Direct",
           url: "data-streams/reference/streams-direct",
           children: [
             {
@@ -347,11 +364,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
             },
             {
-              title: "SDK Reference",
+              title: "SDK References",
               url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
+              highlightAsCurrent: ["data-streams/reference/streams-direct/streams-direct-rust-sdk"],
             },
             {
-              title: "Onchain report data verification (EVM chains)",
+              title: "Onchain report verification (EVM chains)",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
@@ -1031,6 +1049,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "Using the Token Manager",
+          url: "ccip/tutorials/token-manager",
+        },
+        {
           title: "Cross-Chain Token (CCT) standard",
           url: "ccip/tutorials/cross-chain-tokens",
           children: [
@@ -1297,7 +1319,33 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    { ...chainlinkLocalAPIReferenceTyped },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
   ],
   nodeOperator: [
     {

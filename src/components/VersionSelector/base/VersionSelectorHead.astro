@@ -1,0 +1,142 @@
+---
+import type { Collection } from "src/content/config"
+import {
+  validateVersion,
+  sortVersions,
+  buildVersionUrl,
+  getProductVersionConfig,
+  getVersionReleaseDate,
+} from "../utils"
+import { PAGE_AVAILABILITY } from "@config/versions/page-availability"
+
+interface Props {
+  product: Collection
+  currentPath: string
+}
+
+const { product, currentPath } = Astro.props
+
+// Get version config for the product
+const versionConfig = getProductVersionConfig(product)
+if (!versionConfig) {
+  throw new Error(`No version configuration found for product: ${product}`)
+}
+
+// Extract version from path
+const versionMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
+const pathVersion = versionMatch ? versionMatch[1] : versionConfig.LATEST
+
+// Server-side computations
+const validatedVersion = validateVersion(pathVersion, versionConfig.ALL)
+const sortedVersions = sortVersions(versionConfig.ALL)
+const isNotLatest = validatedVersion !== versionConfig.LATEST
+const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? false
+
+// Extract page path to check availability
+const pageMatch = currentPath.match(new RegExp(`/${product}/api-reference/v[^/]+/(.+?)/?$`))
+const pagePath = pageMatch ? pageMatch[1] : null
+const productAvailability = PAGE_AVAILABILITY[product]
+
+// Function to check if a version is available for this page
+const isVersionAvailable = (version: string): boolean => {
+  let isAvailable = true
+
+  if (pagePath && productAvailability) {
+    const pageConfig = productAvailability[pagePath]
+
+    if (pageConfig) {
+      if (pageConfig.onlyAvailableIn) {
+        isAvailable = pageConfig.onlyAvailableIn.includes(version)
+      } else if (pageConfig.notAvailableIn) {
+        isAvailable = !pageConfig.notAvailableIn.includes(version)
+      }
+    }
+  }
+
+  return isAvailable
+}
+
+// Get release date for the current version
+const releaseDate = getVersionReleaseDate(product, validatedVersion)
+
+// Create product config for URLs
+const productConfig = {
+  name: product,
+  basePath: `/${product}/api-reference`,
+}
+
+// Generate changelog URL (points to API reference index)
+const changelogUrl = `/${product}/api-reference`
+
+// Filter versions based on availability
+const availableVersions = sortedVersions.filter((version) => isVersionAvailable(version))
+
+// SEO: Generate structured data
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  version: validatedVersion,
+  datePublished: releaseDate,
+  dateModified: releaseDate,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": currentPath,
+  },
+  isPartOf: {
+    "@type": "APIReference",
+    name: product,
+    versionList: availableVersions.map((version) => ({
+      "@type": "SoftwareVersion",
+      version: version,
+      url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
+      releaseDate: getVersionReleaseDate(product, version),
+      status: version === versionConfig.LATEST ? "Latest" : isDeprecated ? "Deprecated" : "Stable",
+    })),
+  },
+}
+
+// SEO: Version alternates with metadata (only for available versions)
+const versions = availableVersions.map((version) => ({
+  url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
+  version,
+  isLatest: version === versionConfig.LATEST,
+  isDeprecated: versionConfig.DEPRECATED?.includes(version) ?? false,
+}))
+---
+
+{/* SEO: Structured data */}
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+
+{/* SEO: Version metadata */}
+<meta name="version" content={validatedVersion} />
+<meta name="version-status" content={isNotLatest ? "outdated" : "latest"} />
+{isDeprecated && <meta name="robots" content="noindex,follow" />}
+
+{/* SEO: Version alternates - only for available versions */}
+{
+  versions.map(({ url, version, isLatest, isDeprecated }) => (
+    <link
+      rel={isLatest ? "canonical" : "alternate"}
+      href={url}
+      hreflang="x-default"
+      title={`Version ${version}${isLatest ? " (Latest)" : ""}${isDeprecated ? " (Deprecated)" : ""}`}
+      data-version={version}
+    />
+  ))
+}
+
+{/* SEO: Version changelog metadata */}
+{
+  releaseDate && (
+    <>
+      <meta name="version-changelog" content={changelogUrl} />
+      <meta name="version-release-date" content={releaseDate} />
+      <link
+        rel="alternate"
+        type="text/html"
+        href={changelogUrl}
+        title={`API Reference for ${product} ${validatedVersion}`}
+      />
+    </>
+  )
+}

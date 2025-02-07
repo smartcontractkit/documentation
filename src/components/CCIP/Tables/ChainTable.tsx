@@ -8,7 +8,7 @@ import { drawerContentStore } from "../Drawer/drawerStore"
 import LaneDrawer from "../Drawer/LaneDrawer"
 import { Environment, Version } from "~/config/data/ccip/types"
 import { getLane, LaneFilter } from "~/config/data/ccip"
-import { SupportedChain } from "~/config"
+import { ExplorerInfo, SupportedChain } from "~/config"
 import { clsx } from "~/lib"
 import SeeMore from "../SeeMore/SeeMore"
 import { getOperationalState } from "~/config/data/ccip/data"
@@ -30,12 +30,12 @@ interface TableProps {
     key: string
     directory: SupportedChain
   }[]
-  explorerUrl: string
+  explorer: ExplorerInfo
 }
 
 const BEFORE_SEE_MORE = 12 // Number of networks to show before the "See more" button, 7 rows
 
-function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TableProps) {
+function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps) {
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [search, setSearch] = useState("")
   const [seeMore, setSeeMore] = useState(lanes.length <= BEFORE_SEE_MORE)
@@ -115,7 +115,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                               key: network.key,
                             }}
                             inOutbound={inOutbound}
-                            explorerUrl={explorerUrl}
+                            explorer={explorer}
                           />
                         ))
                       }}
@@ -128,7 +128,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
                     <Address
                       address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(explorerUrl)(
+                      contractUrl={getExplorerAddressUrl(explorer)(
                         (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
                       )}
                     />

@@ -1,0 +1,66 @@
+---
+import { CollectionEntry, getCollection } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { VERSIONS, type Collection } from "@config/versions"
+import type { BaseFrontmatter } from "~/content/config"
+
+// Props type that ensures entry.data has the correct frontmatter type
+type Props<T extends Collection = Collection> = {
+  entry: CollectionEntry<T> & {
+    data: BaseFrontmatter
+  }
+}
+
+// Generate paths for all versions and their docs
+export async function getStaticPaths() {
+  // Helper to convert version to filesystem slug
+  const versionToSlug = (version: string) => version.replace(/\./g, "")
+
+  const paths: { params: { product: Collection; slug: string }; props: Props }[] = []
+
+  // Generate paths for each product that has versioned docs
+  for (const [product, versions] of Object.entries(VERSIONS)) {
+    // Get all API reference docs for this product
+    const entries = await getCollection(product as Collection, (entry) => {
+      return entry.slug.startsWith("api-reference/")
+    })
+
+    // Add version index pages (e.g., /product/api-reference/v1.5.1)
+    versions.ALL.forEach((version) => {
+      // Find the version's index page using the filesystem-safe version
+      const versionEntry = entries.find((entry) => entry.slug === `api-reference/${versionToSlug(version)}`)
+
+      if (versionEntry) {
+        paths.push({
+          params: { product: product as Collection, slug: version },
+          props: { entry: versionEntry as Props["entry"] },
+        })
+
+        // Add all API doc pages for this version
+        entries.forEach((entry) => {
+          if (
+            entry.slug.startsWith(`api-reference/${versionToSlug(version)}/`) &&
+            entry.slug !== `api-reference/${versionToSlug(version)}`
+          ) {
+            const docSlug = entry.slug.replace("api-reference/", "").replace(versionToSlug(version), version)
+
+            paths.push({
+              params: { product: product as Collection, slug: docSlug },
+              props: { entry: entry as Props["entry"] },
+            })
+          }
+        })
+      }
+    })
+  }
+
+  return paths
+}
+
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+---
+
+<DocsLayout frontmatter={entry.data} {headings}>
+  <Content />
+</DocsLayout>

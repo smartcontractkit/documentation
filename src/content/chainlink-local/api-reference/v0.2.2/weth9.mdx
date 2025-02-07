@@ -1,0 +1,263 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "WETH9 v0.2.2 API Reference"
+metadata:
+  description: "API documentation for WETH9 in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## WETH9
+
+A contract that implements Wrapped Ether (WETH), allowing users to wrap and unwrap ETH to use it as an ERC20-compatible token.
+
+[`WETH9`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/shared/WETH9.sol)
+
+## Variables
+
+### allowance
+
+```solidity
+mapping(address => mapping(address => uint256)) public allowance
+```
+
+<Aside>
+
+Tracks the amount of tokens that an owner has allowed a spender to use.
+
+</Aside>
+
+### balanceOf
+
+```solidity
+mapping(address => uint256) public balanceOf
+```
+
+<Aside>
+
+Tracks the WETH balance of each address.
+
+</Aside>
+
+### decimals
+
+```solidity
+uint8 public decimals
+```
+
+<Aside>
+
+The number of decimal places used by the token (18).
+
+</Aside>
+
+### name
+
+```solidity
+string public name
+```
+
+<Aside>
+
+The name of the token ("Wrapped Ether").
+
+</Aside>
+
+### symbol
+
+```solidity
+string public symbol
+```
+
+<Aside>
+
+The symbol of the token ("WETH").
+
+</Aside>
+
+## Events
+
+### Approval
+
+```solidity
+event Approval(address indexed src, address indexed guy, uint256 wad)
+```
+
+Emitted when an approval is set.
+
+#### Parameters
+
+| Parameter | Type    | Description                   |
+| --------- | ------- | ----------------------------- |
+| src       | address | The owner of the tokens       |
+| guy       | address | The approved spender          |
+| wad       | uint256 | The amount of tokens approved |
+
+### Deposit
+
+```solidity
+event Deposit(address indexed dst, uint256 wad)
+```
+
+Emitted when ETH is wrapped to WETH.
+
+#### Parameters
+
+| Parameter | Type    | Description               |
+| --------- | ------- | ------------------------- |
+| dst       | address | The recipient of the WETH |
+| wad       | uint256 | The amount of ETH wrapped |
+
+### Transfer
+
+```solidity
+event Transfer(address indexed src, address indexed dst, uint256 wad)
+```
+
+Emitted when tokens are transferred.
+
+#### Parameters
+
+| Parameter | Type    | Description                      |
+| --------- | ------- | -------------------------------- |
+| src       | address | The sender of the tokens         |
+| dst       | address | The recipient of the tokens      |
+| wad       | uint256 | The amount of tokens transferred |
+
+### Withdrawal
+
+```solidity
+event Withdrawal(address indexed src, uint256 wad)
+```
+
+Emitted when WETH is unwrapped back to ETH.
+
+#### Parameters
+
+| Parameter | Type    | Description                  |
+| --------- | ------- | ---------------------------- |
+| src       | address | The address unwrapping WETH  |
+| wad       | uint256 | The amount of WETH unwrapped |
+
+## Functions
+
+### approve
+
+Approves a spender to transfer tokens on behalf of the owner.
+
+```solidity
+function approve(address guy, uint256 wad) public returns (bool)
+```
+
+#### Parameters
+
+| Parameter | Type    | Description                     |
+| --------- | ------- | ------------------------------- |
+| guy       | address | The address to approve          |
+| wad       | uint256 | The amount of tokens to approve |
+
+#### Returns
+
+| Parameter | Type | Description         |
+| --------- | ---- | ------------------- |
+| (unnamed) | bool | Always returns true |
+
+### deposit
+
+Wraps ETH to WETH by sending ETH to the contract.
+
+```solidity
+function deposit() external payable
+```
+
+### totalSupply
+
+Returns the total amount of WETH in circulation.
+
+```solidity
+function totalSupply() public view returns (uint256)
+```
+
+#### Returns
+
+| Parameter | Type    | Description                                       |
+| --------- | ------- | ------------------------------------------------- |
+| (unnamed) | uint256 | The total supply of WETH (contract's ETH balance) |
+
+### transfer
+
+Transfers tokens to a specified address.
+
+```solidity
+function transfer(address dst, uint256 wad) public returns (bool)
+```
+
+#### Parameters
+
+| Parameter | Type    | Description                      |
+| --------- | ------- | -------------------------------- |
+| dst       | address | The recipient address            |
+| wad       | uint256 | The amount of tokens to transfer |
+
+#### Returns
+
+| Parameter | Type | Description         |
+| --------- | ---- | ------------------- |
+| (unnamed) | bool | Always returns true |
+
+### transferFrom
+
+Transfers tokens from one address to another.
+
+```solidity
+function transferFrom(address src, address dst, uint256 wad) public returns (bool)
+```
+
+#### Parameters
+
+| Parameter | Type    | Description                      |
+| --------- | ------- | -------------------------------- |
+| src       | address | The source address               |
+| dst       | address | The destination address          |
+| wad       | uint256 | The amount of tokens to transfer |
+
+#### Returns
+
+| Parameter | Type | Description         |
+| --------- | ---- | ------------------- |
+| (unnamed) | bool | Always returns true |
+
+<Aside type="caution">
+
+**Possible Reverts**
+
+- Reverts if the source address has insufficient balance
+- Reverts if the sender has insufficient allowance (unless allowance is maximum uint128 or sender is the source)
+
+</Aside>
+
+### withdraw
+
+Unwraps WETH back to ETH.
+
+```solidity
+function withdraw(uint256 wad) external
+```
+
+#### Parameters
+
+| Parameter | Type    | Description                  |
+| --------- | ------- | ---------------------------- |
+| wad       | uint256 | The amount of WETH to unwrap |
+
+<Aside type="caution">
+
+**Possible Reverts**
+
+- Reverts if the sender has insufficient WETH balance
+
+</Aside>

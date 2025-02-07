@@ -1,0 +1,310 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CCIP Chains API",
+    "description": "API for retrieving CCIP chain information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.2.0",
+    "contact": {
+      "name": "File issues",
+      "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://docs.chain.link/api/ccip/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:4321/api/ccip/v1",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "chains",
+      "description": "Chain information endpoints"
+    }
+  ],
+  "paths": {
+    "/chains": {
+      "get": {
+        "tags": ["chains"],
+        "summary": "Retrieve CCIP chain information",
+        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) chains",
+        "operationId": "getChains",
+        "parameters": [
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "chainId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by chain ID (e.g., \"1\" for Ethereum, or \"1,56\" for Ethereum and BSC)",
+            "example": "1,56"
+          },
+          {
+            "name": "selector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by CCIP chain selector. Multiple selectors can be specified using comma-separated values",
+            "example": "5009297550715157269,13264668187771770619"
+          },
+          {
+            "name": "internalId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by internal chain identifier. Multiple IDs can be specified using comma-separated values (e.g., \"ethereum-mainnet,bsc-mainnet\")",
+            "example": "ethereum-mainnet,bsc-mainnet"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with chain data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainApiResponse"
+                },
+                "example": {
+                  "metadata": {
+                    "environment": "mainnet",
+                    "timestamp": "2024-03-14T12:00:00Z",
+                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                    "ignoredChainCount": 0,
+                    "validChainCount": 1
+                  },
+                  "data": {
+                    "evm": {
+                      "1": {
+                        "chainId": 1,
+                        "displayName": "Ethereum",
+                        "selector": "5009297550715157269",
+                        "internalId": "ethereum-mainnet",
+                        "feeTokens": ["LINK", "WETH", "ETH"],
+                        "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                        "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                        "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                        "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6"
+                      }
+                    }
+                  },
+                  "ignored": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChainMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "ignoredChainCount", "validChainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "ignoredChainCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of chains ignored due to configuration issues"
+          },
+          "validChainCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of valid chains in the response"
+          }
+        }
+      },
+      "ChainDetails": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "displayName",
+          "selector",
+          "internalId",
+          "feeTokens",
+          "router",
+          "rmn",
+          "registryModule",
+          "tokenAdminRegistry"
+        ],
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "Numeric identifier of the chain"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector"
+          },
+          "internalId": {
+            "type": "string",
+            "description": "Internal identifier for the chain"
+          },
+          "feeTokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of supported fee tokens"
+          },
+          "router": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "CCIP Router contract address"
+          },
+          "rmn": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Risk Management Network contract address"
+          },
+          "registryModule": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Registry Module contract address"
+          },
+          "tokenAdminRegistry": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Token Admin Registry contract address"
+          }
+        }
+      },
+      "ChainConfigError": {
+        "type": "object",
+        "required": ["chainId", "networkId", "reason", "missingFields"],
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "Chain ID of the failed configuration"
+          },
+          "networkId": {
+            "type": "string",
+            "description": "Network identifier of the failed configuration"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for the configuration failure"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of missing required fields"
+          }
+        }
+      },
+      "ChainApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data", "ignored"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/ChainMetadata"
+          },
+          "data": {
+            "type": "object",
+            "required": ["evm"],
+            "properties": {
+              "evm": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Map of chain details keyed by the specified output key"
+              }
+            }
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChainConfigError"
+            },
+            "description": "List of chains that could not be configured"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error type identifier"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          }
+        }
+      }
+    }
+  }
+}
