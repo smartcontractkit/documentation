@@ -1,13 +1,15 @@
 import type { APIRoute } from "astro"
 import { successHeaders } from "../utils"
 
+export const prerender = false
+
 export const GET: APIRoute = async () => {
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CCIP Chains API Documentation</title>
+    <title>CCIP Chains API</title>
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
     <style>
         body {
