@@ -81,7 +81,7 @@ function LaneDrawer({
                   Mechanism
                   <Tooltip
                     label=""
-                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                    tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
                     labelStyle={{
                       marginRight: "5px",
                     }}

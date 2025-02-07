@@ -139,7 +139,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
+        {feedCategories[proxy.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
@@ -182,21 +182,21 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       {!isTestnet && (
         <div>
           <dl className={tableStyles.listContainer}>
-            {proxy.docs.assetName && (
+            {proxy.assetName && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset name:</span>
                 </dt>
-                <dd>{proxy.docs.assetName}</dd>
+                <dd>{proxy.assetName}</dd>
               </div>
             )}
-            {proxy.docs.feedType && (
+            {proxy.feedType && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset type:</span>
                 </dt>
                 <dd>
-                  {proxy.docs.feedType}
+                  {proxy.feedType}
                   {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
@@ -304,7 +304,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             <dt>
               <span className="label">Asset name:</span>
             </dt>
-            <dd>{proxy.docs.assetName}</dd>
+            <dd>{proxy.assetName}</dd>
           </div>
           {proxy.docs.porType && (
             <div className={tableStyles.definitionGroup}>
@@ -784,12 +784,12 @@ const StreamsTr = ({ proxy, isMainnet }) => (
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
           )}
-          {proxy.docs.assetName && (
+          {proxy.assetName && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
-              <dd>{proxy.docs.assetName}</dd>
+              <dd>{proxy.assetName}</dd>
             </div>
           )}
           {proxy.docs.assetClass ? (
@@ -906,11 +906,11 @@ export const MainnetTable = ({
       if (isDeprecating) return !!chain.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+        return chain.contractType === "verifier" && chain.feedType === "Crypto"
       }
 
       if (dataFeedType === "streamsRwa") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        return chain.contractType === "verifier" && chain.feedType === "Forex"
       }
 
       if (isSmartData) {
@@ -1017,10 +1017,10 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+          return chain.contractType === "verifier" && chain.feedType === "Crypto"
         }
         if (dataFeedType === "streamsRwa") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+          return chain.contractType === "verifier" && chain.feedType === "Forex"
         }
       }
       if (isSmartData) return !!chain.docs.porType

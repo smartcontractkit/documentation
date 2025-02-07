@@ -78,6 +78,10 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BOTANIX_TESTNET: () => new providers.JsonRpcProvider("https://node.botanixlabs.dev"),
   SEI_MAINNET: () => new providers.JsonRpcProvider("https://evm-rpc.sei-apis.com"),
   SEI_TESTNET: () => new providers.JsonRpcProvider("https://evm-rpc-testnet.sei-apis.com"),
+  CORE_TESTNET: () => new providers.JsonRpcProvider("https://rpc.test2.btcs.network/"),
+  MONAD_TESTNET: () => new providers.JsonRpcProvider("https://monad.xyz"),
+  TREASURE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.treasure.lol"),
+  TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
