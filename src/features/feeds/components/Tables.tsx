@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { useState } from "preact/hooks"
 import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
@@ -118,23 +119,27 @@ const handleClick = (e, additionalInfo) => {
   window.dataLayer.push(dataLayerEvent)
 }
 
-const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
-  <thead>
-    <tr>
-      <th className={tableStyles.heading}>Pair</th>
-      <th aria-hidden={!showExtraDetails}>Deviation</th>
-      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-      <th aria-hidden={!showExtraDetails}>Dec</th>
-      <th>Address and info</th>
-    </tr>
-  </thead>
-)
+const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
+  const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+
+  return (
+    <thead>
+      <tr>
+        <th className={tableStyles.heading}>Pair</th>
+        <th aria-hidden={!showExtraDetails}>Deviation</th>
+        <th aria-hidden={!showExtraDetails}>Heartbeat</th>
+        <th aria-hidden={!showExtraDetails}>Dec</th>
+        <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
+      </tr>
+    </thead>
+  )
+}
 
 const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
+        {feedCategories[proxy.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
@@ -177,21 +182,21 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       {!isTestnet && (
         <div>
           <dl className={tableStyles.listContainer}>
-            {proxy.docs.assetName && (
+            {proxy.assetName && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset name:</span>
                 </dt>
-                <dd>{proxy.docs.assetName}</dd>
+                <dd>{proxy.assetName}</dd>
               </div>
             )}
-            {proxy.docs.feedType && (
+            {proxy.feedType && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Asset type:</span>
                 </dt>
                 <dd>
-                  {proxy.docs.feedType}
+                  {proxy.feedType}
                   {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
@@ -299,7 +304,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
             <dt>
               <span className="label">Asset name:</span>
             </dt>
-            <dd>{proxy.docs.assetName}</dd>
+            <dd>{proxy.assetName}</dd>
           </div>
           {proxy.docs.porType && (
             <div className={tableStyles.definitionGroup}>
@@ -386,6 +391,30 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Botanix",
+    logoUrl: "/assets/chains/botanix.svg",
+    testnet: {
+      label: "Botanix Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://testnet.botanixscan.io/address/%s",
+    },
+  },
+  {
+    network: "Mantle",
+    logoUrl: "/assets/chains/mantle.svg",
+    networkStatus: "https://0xmantle.instatus.com",
+    mainnet: {
+      label: "Mantle Mainnet",
+      verifierProxy: "0x223752Eb475098e79d10937480DF93864D7EfB83",
+      explorerUrl: "https://mantlescan.xyz/address/%s",
+    },
+    testnet: {
+      label: "Mantle Sepolia Testnet",
+      verifierProxy: "0xdc458847982C496E1a5E25D005A332D5a838302B",
+      explorerUrl: "https://sepolia.mantlescan.xyz/address/%s",
+    },
+  },
+  {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
     networkStatus: "https://opbnb-status.bnbchain.org/",
@@ -401,8 +430,56 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Optimism",
+    logoUrl: "/assets/chains/optimism.svg",
+    networkStatus: "https://status.optimism.io/",
+    mainnet: {
+      label: "Optimism Mainnet",
+      verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
+      explorerUrl: "https://optimistic.etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Optimism Testnet",
+      verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
+      explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "Scroll",
+    logoUrl: "/assets/chains/scroll.svg",
+    mainnet: {
+      label: "Scroll Mainnet",
+      verifierProxy: "0x37e550C9b35DB56F9c943126F1c2642fcbDF7B51",
+      explorerUrl: "https://scrollscan.com/address/%s",
+    },
+    testnet: {
+      label: "Scroll Sepolia Testnet",
+      verifierProxy: "0xE17A7C6A7c2eF0Cb859578aa1605f8Bc2434A365",
+      explorerUrl: "https://sepolia.scrollscan.com/address/%s",
+    },
+  },
+  {
+    network: "Shibarium",
+    logoUrl: "/assets/chains/shibarium.svg",
+    mainnet: {
+      label: "Shibarium Mainnet",
+      verifierProxy: "0xBE9f07f73de2412A9d0Ed64C42De7d9A10C9F28C",
+      explorerUrl: "https://www.shibariumscan.io/address/%s",
+    },
+    testnet: {
+      label: "Shibarium Puppynet",
+      verifierProxy: "0xc44eb6c00A0F89D044279cD91Bdfd5f62f752Da3",
+      explorerUrl: "https://puppyscan.shib.io/address/%s",
+    },
+  },
+  {
     network: "Soneium",
     logoUrl: "/assets/chains/soneium.svg",
+    mainnet: {
+      label: "Soneium Mainnet",
+      verifierProxy: "0x8760535A80Ac5908096B57A094266866f4aA1A8c",
+      explorerUrl: "https://soneium.blockscout.com/address/%s",
+    },
     testnet: {
       label: "Soneium Minato Testnet",
       verifierProxy: "0x26603bAC5CE09DAE5604700B384658AcA13AD6ae",
@@ -410,120 +487,235 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Sonic",
+    logoUrl: "/assets/chains/sonic.svg",
+    mainnet: {
+      label: "Sonic Mainnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://sonicscan.org/address/%s",
+    },
+    testnet: {
+      label: "Sonic Blaze Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://testnet.sonicscan.org/address/%s",
+    },
+  },
+  {
     network: "Solana",
     logoUrl: "/assets/chains/solana.svg",
-    contactUs: true,
-    message: "to talk to an expert about integrating Chainlink Data Streams on Solana.",
+    networkStatus: "https://status.solana.com/",
+    isSolana: true,
+    mainnet: {
+      label: "Solana Mainnet",
+      verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
+      accessController: "7mSn5MoBjyRLKoJShgkep8J17ueGG8rYioVAiSg5YWMF",
+      explorerUrl: "https://explorer.solana.com/address/%s",
+    },
+    testnet: {
+      label: "Solana Devnet",
+      verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
+      accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
+      explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "ZKSync",
+    logoUrl: "/assets/chains/zksync.svg",
+    networkStatus: "https://uptime.com/statuspage/zkSync",
+    mainnet: {
+      label: "ZKSync Era Mainnet",
+      verifierProxy: "0xcA64d9D1a9AE4C10E94D0D45af9E878fc64dc207",
+      explorerUrl: "https://explorer.zksync.io/address/%s",
+    },
+    testnet: {
+      label: "ZKSync Sepolia Testnet",
+      verifierProxy: "0xDf37875775d1E777bB413f27de093A62CFF4264b",
+      explorerUrl: "https://sepolia.explorer.zksync.io/address/%s",
+    },
   },
 ]
 
-export const StreamsVerifierProxyTable = () => {
+type NetworkDetails = {
+  verifierProxy?: string
+  verifierProgramId?: string
+  accessController?: string
+  explorerUrl: string
+  label: string
+}
+
+type NetworkData = {
+  network: string
+  logoUrl: string
+  networkStatus?: string
+  mainnet?: NetworkDetails
+  testnet?: NetworkDetails
+  message?: string
+  isSolana?: boolean
+}
+
+export const StreamsNetworkAddressesTable = () => {
+  const [activeNetwork, setActiveNetwork] = useState<string | null>(null)
+
+  const toggleNetwork = (network: string) => {
+    setActiveNetwork(activeNetwork === network ? null : network)
+  }
+
   return (
-    <table className={clsx(feedList.verifierProxyTable, tableStyles.table)}>
-      <thead>
-        <tr>
-          <th>Network</th>
-          <th>Verifier proxy address</th>
-        </tr>
-      </thead>
-      <tbody>
-        {StreamsNetworksData.map((network) => (
-          <tr key={network.network}>
-            <td className={tableStyles.pairCol} style={{ textAlign: "center" }}>
-              <img src={network.logoUrl} alt={`${network.network} logo`} width={24} height={24} />
-              <div className={tableStyles.assetPair}>{network.network}</div>
-            </td>
-            <td style={{ width: "80%" }}>
-              {network.contactUs ? (
-                <div className={tableStyles.contactUsMessage}>
-                  <a href="https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs">
-                    Contact us
-                  </a>{" "}
-                  {network.message}
-                </div>
-              ) : (
-                <>
-                  {network.mainnet && (
-                    <div className={tableStyles.assetAddress}>
-                      <span style={{ fontSize: "0.9em" }}>{network.mainnet.label}: </span>
-                      <a
-                        style={{ fontSize: "0.9em" }}
-                        className={tableStyles.addressLink}
-                        href={network.mainnet.explorerUrl.replace("%s", network.mainnet.verifierProxy)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {network.mainnet.verifierProxy}
-                      </a>
-                      <button
-                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                        data-clipboard-text={network.mainnet.verifierProxy}
-                        onClick={(e) =>
-                          handleClick(e, {
-                            product: "STREAMS",
-                            action: "verifierProxyAddress_copied",
-                            extraInfo1: "Mainnet",
-                            extraInfo2: network.mainnet.label,
-                          })
-                        }
-                      >
-                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                      </button>
-                    </div>
-                  )}
+    <div className={tableStyles.networksContainer}>
+      {StreamsNetworksData.map((network: NetworkData) => (
+        <div key={network.network} className={tableStyles.networkCard}>
+          <button
+            className={clsx(tableStyles.networkHeader, activeNetwork === network.network && tableStyles.active)}
+            onClick={() => toggleNetwork(network.network)}
+          >
+            <div className={tableStyles.networkInfo}>
+              <img src={network.logoUrl} alt={`${network.network} logo`} width={32} height={32} />
+              <span>{network.network}</span>
+            </div>
+            <span className={tableStyles.expandIcon}>{activeNetwork === network.network ? "−" : "+"}</span>
+          </button>
 
-                  {network.testnet && (
-                    <div className={tableStyles.assetAddress}>
-                      <span style={{ fontSize: "0.9em" }}>{network.testnet.label}: </span>
-                      <a
-                        style={{ fontSize: "0.9em" }}
-                        className={tableStyles.addressLink}
-                        href={network.testnet.explorerUrl.replace("%s", network.testnet.verifierProxy)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {network.testnet.verifierProxy}
-                      </a>
-                      <button
-                        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                        data-clipboard-text={network.testnet.verifierProxy}
-                        onClick={(e) =>
-                          handleClick(e, {
-                            product: "STREAMS",
-                            action: "verifierProxyAddress_copied",
-                            extraInfo1: "Testnet",
-                            extraInfo2: network.testnet.label,
-                          })
-                        }
-                      >
-                        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-                      </button>
-                    </div>
-                  )}
+          {activeNetwork === network.network && (
+            <div className={tableStyles.networkDetails}>
+              <>
+                {network.mainnet && (
+                  <div className={tableStyles.networkEnvironment}>
+                    <h4>{network.mainnet.label}</h4>
+                    {network.isSolana ? (
+                      <>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Verifier Program ID:</span>
+                          <CopyableAddress
+                            address={network?.mainnet?.verifierProgramId}
+                            explorerUrl={network?.mainnet?.explorerUrl}
+                            network={network}
+                            environment="Mainnet"
+                            type="verifierProgramId"
+                          />
+                        </div>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Access Controller Account:</span>
+                          <CopyableAddress
+                            address={network?.mainnet?.accessController}
+                            explorerUrl={network?.mainnet?.explorerUrl}
+                            network={network}
+                            environment="Mainnet"
+                            type="accessController"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className={tableStyles.evmAddress}>
+                        <span>Verifier Proxy Address:</span>
+                        <CopyableAddress
+                          address={network.mainnet.verifierProxy}
+                          explorerUrl={network.mainnet.explorerUrl}
+                          network={network}
+                          environment="Mainnet"
+                          type="verifierProxy"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                  {network.networkStatus && (
-                    <div className={tableStyles.assetAddress}>
-                      <span
-                        style={{
-                          fontSize: "0.9em",
-                          paddingTop: "1em",
-                          display: "block",
-                        }}
-                      >
-                        Track the status of this network at{" "}
-                        <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
-                          {network.networkStatus}
-                        </a>
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+                {network.testnet && (
+                  <div className={tableStyles.networkEnvironment}>
+                    <h4>{network.testnet.label}</h4>
+                    {network.isSolana ? (
+                      <>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Verifier Program ID:</span>
+                          <CopyableAddress
+                            address={network?.testnet?.verifierProgramId}
+                            explorerUrl={network?.testnet?.explorerUrl}
+                            network={network}
+                            environment="Testnet"
+                            type="verifierProgramId"
+                          />
+                        </div>
+                        <div className={tableStyles.solanaAddress}>
+                          <span>Access Controller Account:</span>
+                          <CopyableAddress
+                            address={network?.testnet?.accessController}
+                            explorerUrl={network?.testnet?.explorerUrl}
+                            network={network}
+                            environment="Testnet"
+                            type="accessController"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className={tableStyles.evmAddress}>
+                        <span>Verifier Proxy Address:</span>
+                        <CopyableAddress
+                          address={network.testnet.verifierProxy}
+                          explorerUrl={network.testnet.explorerUrl}
+                          network={network}
+                          environment="Testnet"
+                          type="verifierProxy"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {network.networkStatus && (
+                  <div className={tableStyles.networkStatus}>
+                    <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
+                      View Network Status →
+                    </a>
+                  </div>
+                )}
+              </>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const CopyableAddress = ({
+  address,
+  explorerUrl,
+  network,
+  environment,
+  type,
+}: {
+  address?: string
+  explorerUrl: string
+  network: NetworkData
+  environment: string
+  type: string
+}) => {
+  if (!address) return null
+
+  return (
+    <div className={tableStyles.addressContainer}>
+      <a
+        className={tableStyles.addressLink}
+        href={explorerUrl.replace("%s", address)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {address}
+      </a>
+      <button
+        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+        data-clipboard-text={address}
+        onClick={(e) =>
+          handleClick(e, {
+            product: "STREAMS",
+            action: "verifierProxyAddress_copied",
+            extraInfo1: environment,
+            extraInfo2: network.network,
+          })
+        }
+      >
+        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+      </button>
+    </div>
   )
 }
 
@@ -592,12 +784,12 @@ const StreamsTr = ({ proxy, isMainnet }) => (
               <dd>{proxy.docs.clicProductName}</dd>
             </div>
           )}
-          {proxy.docs.assetName && (
+          {proxy.assetName && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Asset name:</span>
               </dt>
-              <dd>{proxy.docs.assetName}</dd>
+              <dd>{proxy.assetName}</dd>
             </div>
           )}
           {proxy.docs.assetClass ? (
@@ -714,11 +906,11 @@ export const MainnetTable = ({
       if (isDeprecating) return !!chain.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+        return chain.contractType === "verifier" && chain.feedType === "Crypto"
       }
 
       if (dataFeedType === "streamsRwa") {
-        return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+        return chain.contractType === "verifier" && chain.feedType === "Forex"
       }
 
       if (isSmartData) {
@@ -729,7 +921,13 @@ export const MainnetTable = ({
         )
       }
 
-      return !chain.docs.porType && chain.contractType !== "verifier"
+      return (
+        !chain.docs.porType &&
+        chain.contractType !== "verifier" &&
+        chain.docs.productType !== "Proof of Reserve" &&
+        chain.docs.productType !== "NAVLink" &&
+        chain.docs.productType !== "SmartAUM"
+      )
     })
     .filter((chain) => {
       if (isSmartData)
@@ -774,7 +972,7 @@ export const MainnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
@@ -819,19 +1017,23 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Crypto"
+          return chain.contractType === "verifier" && chain.feedType === "Crypto"
         }
         if (dataFeedType === "streamsRwa") {
-          return chain.contractType === "verifier" && chain.docs.feedType === "Forex"
+          return chain.contractType === "verifier" && chain.feedType === "Forex"
         }
       }
       if (isSmartData) return !!chain.docs.porType
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
+
       return (
         !chain.feedId &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
-        chain.docs.productSubType !== "Realized Volatility"
+        chain.docs.productSubType !== "Realized Volatility" &&
+        chain.docs.productType !== "Proof of Reserve" &&
+        chain.docs.productType !== "NAVLink" &&
+        chain.docs.productType !== "SmartAUM"
       )
     })
 
@@ -840,8 +1042,8 @@ export const TestnetTable = ({
       <table className={tableStyles.table}>
         {isStreams && <StreamsTHead />}
         {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
-        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>

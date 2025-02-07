@@ -1,15 +1,18 @@
 import config from "./selectors.yml"
 
-interface Selector {
+export interface Selector {
   selector: string
   name: string
 }
 
-interface Config {
+export interface SelectorsConfig {
   selectors: Record<number, Selector>
 }
 
-const selectorsConfig = config as Config
+/**
+ * The selectors configuration from the static YAML file.
+ */
+export const selectorsConfig = config as SelectorsConfig
 
 /**
  * Retrieves the selector configuration for the given chainId from the static YAML file.

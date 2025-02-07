@@ -1,0 +1,248 @@
+{
+  "info": {
+    "name": "CCIP Chains API",
+    "description": "Collection for testing the Cross-Chain Interoperability Protocol (CCIP) Chains API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Success Cases",
+      "item": [
+        {
+          "name": "Get All Chains (Mainnet)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet",
+                  "description": "Network environment (mainnet/testnet)"
+                }
+              ]
+            },
+            "description": "Retrieve all available CCIP chains for mainnet environment"
+          }
+        },
+        {
+          "name": "Get All Chains (Testnet)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=testnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "testnet",
+                  "description": "Network environment (mainnet/testnet)"
+                }
+              ]
+            },
+            "description": "Retrieve all available CCIP chains for testnet environment"
+          }
+        },
+        {
+          "name": "Get Chain by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&chainId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "chainId",
+                  "value": "1",
+                  "description": "Chain ID (e.g., 1 for Ethereum)"
+                }
+              ]
+            },
+            "description": "Retrieve chain information by its chain ID"
+          }
+        },
+        {
+          "name": "Get Chains by Selector",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&selector=5009297550715157269",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "selector",
+                  "value": "5009297550715157269",
+                  "description": "CCIP chain selector"
+                }
+              ]
+            },
+            "description": "Retrieve chain information by its CCIP selector"
+          }
+        },
+        {
+          "name": "Get Chain by Internal ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&internalId=ethereum-mainnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "internalId",
+                  "value": "ethereum-mainnet",
+                  "description": "Internal chain identifier"
+                }
+              ]
+            },
+            "description": "Retrieve chain information by its internal identifier"
+          }
+        },
+        {
+          "name": "Get Chains with Selector Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&outputKey=selector",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "selector",
+                  "description": "Organize response by selector"
+                }
+              ]
+            },
+            "description": "Retrieve chains with response organized by selector"
+          }
+        },
+        {
+          "name": "Get Chains with Internal ID Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&outputKey=internalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "internalId",
+                  "description": "Organize response by internal ID"
+                }
+              ]
+            },
+            "description": "Retrieve chains with response organized by internal ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Invalid Environment",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=invalid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "invalid",
+                  "description": "Invalid environment value"
+                }
+              ]
+            },
+            "description": "Test error handling for invalid environment"
+          }
+        },
+        {
+          "name": "Multiple Filters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&chainId=1&selector=5009297550715157269",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "chainId",
+                  "value": "1"
+                },
+                {
+                  "key": "selector",
+                  "value": "5009297550715157269",
+                  "description": "Multiple filters are not allowed"
+                }
+              ]
+            },
+            "description": "Test error handling for multiple filters"
+          }
+        },
+        {
+          "name": "Invalid Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&outputKey=invalid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "invalid",
+                  "description": "Invalid output key value"
+                }
+              ]
+            },
+            "description": "Test error handling for invalid output key"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://docs.chain.link",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "AggregatorV3Interface v0.2.2 API Reference"
+metadata:
+  description: "API documentation for AggregatorV3Interface in Solidity, version v0.2.2."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage022" />
+
+## AggregatorV3Interface
+
+An interface for accessing detailed price feed data and metadata from an aggregator contract, providing enhanced functionality for retrieving round data and contract information.
+
+[`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-local/blob/cd3bfb8c42716cfb791174314eba2c0d178551b9/src/data-feeds/interfaces/AggregatorV3Interface.sol)
+
+## Functions
+
+### decimals
+
+Retrieves the number of decimal places used by the aggregator.
+
+```solidity
+function decimals() external view returns (uint8)
+```
+
+<Aside>
+
+Gets the number of decimals used by the aggregator.
+
+</Aside>
+
+#### Returns
+
+| Parameter | Type  | Description            |
+| --------- | ----- | ---------------------- |
+| (unnamed) | uint8 | The number of decimals |
+
+### description
+
+Retrieves the description of the aggregator.
+
+```solidity
+function description() external view returns (string memory)
+```
+
+<Aside>
+
+Gets the description of the aggregator.
+
+</Aside>
+
+#### Returns
+
+| Parameter | Type   | Description                       |
+| --------- | ------ | --------------------------------- |
+| (unnamed) | string | The description of the aggregator |
+
+### getRoundData
+
+Retrieves the complete round data for a specific round ID.
+
+```solidity
+function getRoundData(uint80 _roundId) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
+```
+
+<Aside>
+
+Gets the round data for a specific round ID.
+
+This function should raise "No data present" if no data is available for the given round ID.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| \_roundId | uint80 | The round ID to get the data for |
+
+#### Returns
+
+| Parameter       | Type    | Description                                   |
+| --------------- | ------- | --------------------------------------------- |
+| roundId         | uint80  | The round ID                                  |
+| answer          | int256  | The answer for the round                      |
+| startedAt       | uint256 | The timestamp when the round started          |
+| updatedAt       | uint256 | The timestamp when the round was updated      |
+| answeredInRound | uint80  | The round ID in which the answer was computed |
+
+### latestRoundData
+
+Retrieves the complete round data for the most recent round.
+
+```solidity
+function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
+```
+
+<Aside>
+
+Gets the latest round data.
+
+This function should raise "No data present" if no data is available.
+
+</Aside>
+
+#### Returns
+
+| Parameter       | Type    | Description                                          |
+| --------------- | ------- | ---------------------------------------------------- |
+| roundId         | uint80  | The latest round ID                                  |
+| answer          | int256  | The latest answer                                    |
+| startedAt       | uint256 | The timestamp when the latest round started          |
+| updatedAt       | uint256 | The timestamp when the latest round was updated      |
+| answeredInRound | uint80  | The round ID in which the latest answer was computed |
+
+### version
+
+Retrieves the version number of the aggregator.
+
+```solidity
+function version() external view returns (uint256)
+```
+
+<Aside>
+
+Gets the version of the aggregator.
+
+</Aside>
+
+#### Returns
+
+| Parameter | Type    | Description                   |
+| --------- | ------- | ----------------------------- |
+| (unnamed) | uint256 | The version of the aggregator |

@@ -1,0 +1,132 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 IRouterClient API Reference"
+metadata:
+  description: "API documentation for the IRouterClient interface in Chainlink CCIP v1.5.1, used for sending cross-chain messages through CCIP."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## IRouterClient
+
+The IRouterClient interface provides the core functionality for sending cross-chain messages through CCIP (Chainlink Cross-Chain Interoperability Protocol).
+
+[Git Source](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ccip/interfaces/IRouterClient.sol)
+
+## Errors
+
+### InsufficientFeeTokenAmount
+
+Thrown when the provided fee token amount is insufficient for the message delivery.
+
+```solidity
+error InsufficientFeeTokenAmount();
+```
+
+### InvalidMsgValue
+
+Thrown when the provided msg.value is invalid for the operation.
+
+```solidity
+error InvalidMsgValue();
+```
+
+### UnsupportedDestinationChain
+
+Thrown when attempting to send a message to an unsupported destination chain.
+
+```solidity
+error UnsupportedDestinationChain(uint64 destChainSelector);
+```
+
+## Functions
+
+### ccipSend
+
+Sends a message to the destination chain through CCIP.
+
+```solidity
+function ccipSend(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage calldata message
+) external payable returns (bytes32);
+```
+
+<Aside>
+
+Request a message to be sent to the destination chain.
+
+- Note: If msg.value is larger than the required fee (from getFee), the overpayment is accepted with no refund
+- The function will revert with an appropriate reason if the message is invalid
+
+</Aside>
+
+**Parameters**
+
+| Name                       | Type                                                                        | Description                                               |
+| -------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`                                                                    | The destination chain ID                                  |
+| `message`                  | [`Client.EVM2AnyMessage`](/ccip/api-reference/v1.5.1/client#evm2anymessage) | The cross-chain CCIP message including data and/or tokens |
+
+**Returns**
+
+| Name        | Type      | Description    |
+| ----------- | --------- | -------------- |
+| `messageId` | `bytes32` | The message ID |
+
+### getFee
+
+Gets the fee required for sending a CCIP message to the destination chain.
+
+```solidity
+function getFee(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage memory message
+) external view returns (uint256 fee);
+```
+
+<Aside>
+Calculates the execution fee for message delivery to the destination chain. The fee is denominated in the feeToken specified in the message.
+
+The function will revert with an appropriate reason if the message is invalid.
+
+</Aside>
+
+**Parameters**
+
+| Name                       | Type                                                                        | Description                                               |
+| -------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`                                                                    | The destination chainSelector                             |
+| `message`                  | [`Client.EVM2AnyMessage`](/ccip/api-reference/v1.5.1/client#evm2anymessage) | The cross-chain CCIP message including data and/or tokens |
+
+**Returns**
+
+| Name  | Type      | Description                                                                                                                |
+| ----- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `fee` | `uint256` | Returns execution fee for the message delivery to destination chain, denominated in the feeToken specified in the message. |
+
+### isChainSupported
+
+Checks if the given chain ID is supported for sending/receiving.
+
+```solidity
+function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
+```
+
+<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+
+**Parameters**
+
+| Name                | Type     | Description         |
+| ------------------- | -------- | ------------------- |
+| `destChainSelector` | `uint64` | The chain to check. |
+
+**Returns**
+
+| Name        | Type   | Description                               |
+| ----------- | ------ | ----------------------------------------- |
+| `supported` | `bool` | is true if it is supported, false if not. |

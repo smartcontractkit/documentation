@@ -1,0 +1,56 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 BurnMintTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the BurnMintTokenPool contract in Chainlink CCIP v1.5.0, implementing burn/mint functionality for third-party tokens using burn(amount)."
+  canonical: "/ccip/api-reference/v1.5.1/burn-mint-token-pool"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+## BurnMintTokenPool
+
+[`BurnMintTokenPool`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol) is a concrete implementation that inherits from [`BurnMintTokenPoolAbstract`](/ccip/api-reference/v1.5.0/burn-mint-token-pool-abstract). It is designed to mint and burn a 3rd-party token, using the `burn(amount)` function for burning tokens. Pool whitelisting mode is set during the contract's deployment and cannot be modified later.
+
+## Variables
+
+### typeAndVersion
+
+```solidity
+string typeAndVersion
+```
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(contract IBurnMintERC20 token, address[] allowlist, address rmnProxy, address router) public
+```
+
+#### Parameters
+
+| Name      | Type           | Description                                                           |
+| --------- | -------------- | --------------------------------------------------------------------- |
+| token     | IBurnMintERC20 | The token that will be burned and minted.                             |
+| allowlist | address[]      | List of addresses allowed to be original senders for token transfers. |
+| rmnProxy  | address        | The RMN proxy address.                                                |
+| router    | address        | The router address.                                                   |
+
+### \_burn
+
+```solidity
+function _burn(uint256 amount) internal virtual
+```
+
+Contains the specific burn call for a pool using the token's burn(amount) function.
+
+#### Parameters
+
+| Name   | Type    | Description                   |
+| ------ | ------- | ----------------------------- |
+| amount | uint256 | The amount of tokens to burn. |

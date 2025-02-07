@@ -1,0 +1,588 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 TokenAdminRegistry Contract API Reference"
+metadata:
+  description: "API documentation for the TokenAdminRegistry contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## TokenAdminRegistry
+
+A contract that manages token pool configurations and administrator access for CCIP-enabled tokens.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol)
+
+**Inherits:**
+
+- [ITypeAndVersion](/ccip/api-reference/v1.5.1/i-type-and-version)
+
+<Aside>
+
+This contract provides self-service token registration and administration:
+
+- Manages token pool configurations
+- Handles administrator permissions through [`proposeAdministrator`](#proposeadministrator) and [`acceptAdminRole`](#acceptadminrole)
+- Supports registry modules for flexible registration via [`addRegistryModule`](#addregistrymodule)
+- Implements secure admin role transfers using [`transferAdminRole`](#transferadminrole)
+- Not upgradeable due to significant data storage
+
+Note: This contract is designed as a customer-facing interface and stores substantial data, making it non-upgradeable by design.
+
+</Aside>
+
+## Functions
+
+### acceptAdminRole
+
+Accepts the administrator role for a token.
+
+```solidity
+function acceptAdminRole(address localToken) external;
+```
+
+<Aside>
+
+Second step of the two-step administrator transfer process:
+
+- Only callable by the pending administrator
+- Clears the pending administrator after acceptance
+- Emits AdministratorTransferred event
+
+</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                                |
+| ------------ | --------- | ------------------------------------------ |
+| `localToken` | `address` | The token to accept the administrator role |
+
+### addRegistryModule
+
+Adds a new registry module to the allowed modules list.
+
+```solidity
+function addRegistryModule(address module) external onlyOwner;
+```
+
+<Aside>
+
+Registry module management:
+
+- Only callable by contract owner
+- Emits RegistryModuleAdded event if module is added
+- No effect if module is already registered
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description             |
+| -------- | --------- | ----------------------- |
+| `module` | `address` | The module to authorize |
+
+### getAllConfiguredTokens
+
+Returns a paginated list of configured tokens.
+
+```solidity
+function getAllConfiguredTokens(uint64 startIndex, uint64 maxCount) external view returns (address[] memory tokens);
+```
+
+<Aside>
+
+Pagination features:
+
+- Supports partial list retrieval to prevent RPC timeouts
+- Maintains consistent ordering
+- Returns empty array if startIndex is beyond list length
+- Automatically adjusts count if it exceeds available tokens
+
+</Aside>
+
+**Parameters**
+
+| Name         | Type     | Description                                               |
+| ------------ | -------- | --------------------------------------------------------- |
+| `startIndex` | `uint64` | Starting position in the list (0 for beginning)           |
+| `maxCount`   | `uint64` | Maximum tokens to retrieve (use type(uint64).max for all) |
+
+**Returns**
+
+| Type        | Description                        |
+| ----------- | ---------------------------------- |
+| `address[]` | List of configured token addresses |
+
+### getPool
+
+Returns the pool address for a specific token.
+
+```solidity
+function getPool(address token) external view returns (address);
+```
+
+<Aside>
+
+Returns address(0) if:
+
+- Token is not configured
+- Token is delisted from CCIP
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description        |
+| ------- | --------- | ------------------ |
+| `token` | `address` | The token to query |
+
+**Returns**
+
+| Type      | Description              |
+| --------- | ------------------------ |
+| `address` | The token's pool address |
+
+### getPools
+
+Returns pool addresses for multiple tokens.
+
+```solidity
+function getPools(address[] calldata tokens) external view returns (address[] memory);
+```
+
+<Aside>
+
+Batch query functionality:
+
+- Returns address(0) for unconfigured tokens
+- Maintains order corresponding to input array
+- Useful for efficient multi-token queries
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type        | Description     |
+| -------- | ----------- | --------------- |
+| `tokens` | `address[]` | Tokens to query |
+
+**Returns**
+
+| Type        | Description                           |
+| ----------- | ------------------------------------- |
+| `address[]` | Array of corresponding pool addresses |
+
+### getTokenConfig
+
+Returns the complete configuration for a token.
+
+```solidity
+function getTokenConfig(address token) external view returns (TokenConfig memory);
+```
+
+<Aside>
+
+Returns all token configuration data:
+
+- Current administrator
+- Pending administrator (if any)
+- Token pool address
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description    |
+| ------- | --------- | -------------- |
+| `token` | `address` | Token to query |
+
+**Returns**
+
+| Type          | Description                  |
+| ------------- | ---------------------------- |
+| `TokenConfig` | Complete token configuration |
+
+### isAdministrator
+
+Checks if an address is the administrator for a token.
+
+```solidity
+function isAdministrator(address localToken, address administrator) external view returns (bool);
+```
+
+<Aside>
+
+Permission verification helper:
+
+- Returns true only for current administrator
+- Does not consider pending administrators
+
+</Aside>
+
+**Parameters**
+
+| Name            | Type      | Description       |
+| --------------- | --------- | ----------------- |
+| `localToken`    | `address` | Token to check    |
+| `administrator` | `address` | Address to verify |
+
+**Returns**
+
+| Type   | Description                              |
+| ------ | ---------------------------------------- |
+| `bool` | True if address is current administrator |
+
+### isRegistryModule
+
+Checks if an address is an authorized registry module.
+
+```solidity
+function isRegistryModule(address module) public view returns (bool);
+```
+
+<Aside>
+
+Module verification helper:
+
+- Returns true for authorized modules
+- Used for permission checks in proposeAdministrator
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description       |
+| -------- | --------- | ----------------- |
+| `module` | `address` | Address to verify |
+
+**Returns**
+
+| Type   | Description                          |
+| ------ | ------------------------------------ |
+| `bool` | True if address is authorized module |
+
+### proposeAdministrator
+
+Proposes an initial administrator for a token.
+
+```solidity
+function proposeAdministrator(address localToken, address administrator) external;
+```
+
+<Aside>
+
+Initial administrator setup:
+
+- Only callable by registry modules (see [`isRegistryModule`](#isregistrymodule)) or owner
+- Cannot override existing administrator (reverts with [`AlreadyRegistered`](#alreadyregistered))
+- Initiates two-step transfer process requiring [`acceptAdminRole`](#acceptadminrole)
+- Adds token to configured tokens list
+- Emits [`AdministratorTransferRequested`](#administratortransferrequested) event
+
+</Aside>
+
+**Parameters**
+
+| Name            | Type      | Description                    |
+| --------------- | --------- | ------------------------------ |
+| `localToken`    | `address` | Token to configure             |
+| `administrator` | `address` | Proposed administrator address |
+
+### removeRegistryModule
+
+Removes a registry module from the allowed modules list.
+
+```solidity
+function removeRegistryModule(address module) external onlyOwner;
+```
+
+<Aside>
+
+Registry module management:
+
+- Only callable by contract owner
+- Emits RegistryModuleRemoved event if module is removed
+- No effect if module is not registered
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description          |
+| -------- | --------- | -------------------- |
+| `module` | `address` | The module to remove |
+
+### setPool
+
+Sets or updates the pool for a token.
+
+```solidity
+function setPool(address localToken, address pool) external onlyTokenAdmin(localToken);
+```
+
+<Aside>
+
+Pool configuration management:
+
+- Only callable by token administrator (reverts with [`OnlyAdministrator`](#onlyadministrator))
+- Can delist token by setting address(0)
+- Validates pool supports token (reverts with [`InvalidTokenPoolToken`](#invalidtokenpooltoken))
+- Emits [`PoolSet`](#poolset) event on changes
+
+</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                       |
+| ------------ | --------- | --------------------------------- |
+| `localToken` | `address` | Token to configure                |
+| `pool`       | `address` | New pool address (or 0 to delist) |
+
+### transferAdminRole
+
+Initiates transfer of administrator role.
+
+```solidity
+function transferAdminRole(address localToken, address newAdmin) external onlyTokenAdmin(localToken);
+```
+
+<Aside>
+
+First step of two-step administrator transfer:
+
+- Only callable by current administrator (reverts with [`OnlyAdministrator`](#onlyadministrator))
+- Can cancel pending transfer with address(0)
+- Requires [`acceptAdminRole`](#acceptadminrole) call to complete
+- Emits [`AdministratorTransferRequested`](#administratortransferrequested) event
+
+</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                                              |
+| ------------ | --------- | -------------------------------------------------------- |
+| `localToken` | `address` | The token contract whose admin role is being transferred |
+| `newAdmin`   | `address` | The proposed new administrator address (or 0 to cancel)  |
+
+## Events
+
+### AdministratorTransferRequested
+
+```solidity
+event AdministratorTransferRequested(address indexed token, address indexed currentAdmin, address indexed newAdmin);
+```
+
+<Aside>
+  Emitted when an administrator transfer is initiated via [`transferAdminRole`](#transferadminrole) or canceled.
+</Aside>
+
+**Parameters**
+
+| Name           | Type      | Indexed | Description                                              |
+| -------------- | --------- | ------- | -------------------------------------------------------- |
+| `token`        | `address` | Yes     | The token contract whose admin role is being transferred |
+| `currentAdmin` | `address` | Yes     | The current administrator address                        |
+| `newAdmin`     | `address` | Yes     | The proposed new administrator address                   |
+
+### AdministratorTransferred
+
+```solidity
+event AdministratorTransferred(address indexed token, address indexed newAdmin);
+```
+
+<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+
+**Parameters**
+
+| Name       | Type      | Indexed | Description                                              |
+| ---------- | --------- | ------- | -------------------------------------------------------- |
+| `token`    | `address` | Yes     | The token contract whose admin role has been transferred |
+| `newAdmin` | `address` | Yes     | The new administrator address                            |
+
+### PoolSet
+
+```solidity
+event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
+```
+
+<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+
+**Parameters**
+
+| Name           | Type      | Indexed | Description                        |
+| -------------- | --------- | ------- | ---------------------------------- |
+| `token`        | `address` | Yes     | The token address being configured |
+| `previousPool` | `address` | Yes     | The previous pool address          |
+| `newPool`      | `address` | Yes     | The new pool address               |
+
+### RegistryModuleAdded
+
+```solidity
+event RegistryModuleAdded(address module);
+```
+
+<Aside>Emitted when a new registry module is authorized.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description                                |
+| -------- | --------- | ------- | ------------------------------------------ |
+| `module` | `address` | No      | The address of the newly authorized module |
+
+### RegistryModuleRemoved
+
+```solidity
+event RegistryModuleRemoved(address indexed module);
+```
+
+<Aside>Emitted when a registry module is deauthorized.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description                       |
+| -------- | --------- | ------- | --------------------------------- |
+| `module` | `address` | Yes     | The address of the removed module |
+
+## Errors
+
+### AddressZero
+
+```solidity
+error ZeroAddress();
+```
+
+<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+
+### AlreadyRegistered
+
+```solidity
+error AlreadyRegistered(address token);
+```
+
+<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                                         |
+| ------- | --------- | --------------------------------------------------- |
+| `token` | `address` | The token address that already has an administrator |
+
+### InvalidTokenPoolToken
+
+```solidity
+error InvalidTokenPoolToken(address token);
+```
+
+<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                                         |
+| ------- | --------- | --------------------------------------------------- |
+| `token` | `address` | The token address that is not supported by the pool |
+
+### OnlyAdministrator
+
+```solidity
+error OnlyAdministrator(address sender, address token);
+```
+
+<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                       |
+| -------- | --------- | --------------------------------- |
+| `sender` | `address` | The unauthorized caller's address |
+| `token`  | `address` | The token address being accessed  |
+
+### OnlyPendingAdministrator
+
+```solidity
+error OnlyPendingAdministrator(address sender, address token);
+```
+
+<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                       |
+| -------- | --------- | --------------------------------- |
+| `sender` | `address` | The unauthorized caller's address |
+| `token`  | `address` | The token address being accessed  |
+
+### OnlyRegistryModuleOrOwner
+
+```solidity
+error OnlyRegistryModuleOrOwner(address sender);
+```
+
+<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                       |
+| -------- | --------- | --------------------------------- |
+| `sender` | `address` | The unauthorized caller's address |
+
+## Structs
+
+### TokenConfig
+
+Configuration data structure for each token.
+
+```solidity
+struct TokenConfig {
+  address administrator;
+  address pendingAdministrator;
+  address tokenPool;
+}
+```
+
+<Aside>
+
+Token configuration fields:
+
+- `administrator`: Current token administrator
+- `pendingAdministrator`: Address pending administrator role transfer
+- `tokenPool`: Associated token pool address (0 if delisted)
+
+</Aside>
+
+## State Variables
+
+### s_registryModules
+
+```solidity
+EnumerableSet.AddressSet internal s_registryModules;
+```
+
+<Aside>Set of authorized registry modules that can register administrators.</Aside>
+
+### s_tokenConfig
+
+```solidity
+mapping(address token => TokenConfig) internal s_tokenConfig;
+```
+
+<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+
+### s_tokens
+
+```solidity
+EnumerableSet.AddressSet internal s_tokens;
+```
+
+<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "TokenAdminRegistry 1.5.0";
+```
+
+<Aside>Contract identifier that specifies the implementation version.</Aside>

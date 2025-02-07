@@ -4,6 +4,7 @@ import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils"
 import CopyValue from "../CopyValue/CopyValue"
 import { LaneFilter } from "~/config/data/ccip"
+import { ExplorerInfo } from "~/config/types"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -18,7 +19,7 @@ interface LaneDetailsHeroProps {
   offRamp: string
   destinationAddress: string
   enforceOutOfOrder?: boolean
-  explorerUrl: string
+  explorer: ExplorerInfo
   rmnPermeable: boolean
   inOutbound: LaneFilter
 }
@@ -30,7 +31,7 @@ function LaneDetailsHero({
   offRamp,
   destinationAddress,
   enforceOutOfOrder,
-  explorerUrl,
+  explorer,
   rmnPermeable,
   inOutbound,
 }: LaneDetailsHeroProps) {
@@ -63,7 +64,7 @@ function LaneDetailsHero({
               <AddressComponent
                 address={offRamp}
                 endLength={6}
-                contractUrl={getExplorerAddressUrl(explorerUrl)(offRamp)}
+                contractUrl={getExplorerAddressUrl(explorer)(offRamp)}
               />
             </div>
           </>
@@ -71,11 +72,7 @@ function LaneDetailsHero({
           <>
             <div className="lane-details-hero__details__label">OnRamp address</div>
             <div data-clipboard-type="onramp">
-              <AddressComponent
-                address={onRamp}
-                endLength={6}
-                contractUrl={getExplorerAddressUrl(explorerUrl)(onRamp)}
-              />
+              <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
             </div>
           </>
         )}

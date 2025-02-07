@@ -1,0 +1,167 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 Pool Library API Reference"
+metadata:
+  description: "API documentation for the Pool library in Chainlink CCIP v1.5.1, providing token pool functions for cross-chain operations."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## Pool
+
+A library that provides core data structures and constants for token pool operations in cross-chain transfers.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/libraries/Pool.sol)
+
+<Aside>
+
+This library defines the fundamental structures and constants used in token pool operations:
+
+- Standardizes cross-chain token transfer data structures
+- Provides version identification and compatibility checks
+- Defines size constraints for return data
+- Facilitates secure token locking, burning, releasing, and minting operations through [`TokenPool`](/ccip/api-reference/v1.5.1/token-pool)
+
+</Aside>
+
+## Structs
+
+### LockOrBurnInV1
+
+Input parameters for locking or burning tokens in cross-chain transfers.
+
+```solidity
+struct LockOrBurnInV1 {
+  bytes receiver;
+  uint64 remoteChainSelector;
+  address originalSender;
+  uint256 amount;
+  address localToken;
+}
+```
+
+<Aside>
+
+Defines the parameters required for initiating a token lock or burn operation:
+
+- `receiver`: The destination chain recipient address (ABI encoded)
+- `remoteChainSelector`: The destination chain identifier
+- `originalSender`: The transaction initiator on the source chain
+- `amount`: Token quantity in source token decimals
+- `localToken`: The token contract address on the source chain
+
+The result of this operation is returned in [`LockOrBurnOutV1`](#lockorburnoutv1).
+
+</Aside>
+
+### LockOrBurnOutV1
+
+Output data from a lock or burn operation.
+
+```solidity
+struct LockOrBurnOutV1 {
+  bytes destTokenAddress;
+  bytes destPoolData;
+}
+```
+
+<Aside>
+
+Contains the results of a token lock or burn operation initiated by [`LockOrBurnInV1`](#lockorburninv1):
+
+- `destTokenAddress`: The token address on the destination chain (ABI encoded for EVM chains). **Note**: This value is UNTRUSTED as pool owners can return arbitrary values
+- `destPoolData`: Optional data for the destination chain, limited by [`CCIP_LOCK_OR_BURN_V1_RET_BYTES`](#ccip_lock_or_burn_v1_ret_bytes) unless configured otherwise in TokenTransferFeeConfig.destBytesOverhead
+
+</Aside>
+
+### ReleaseOrMintInV1
+
+Input parameters for releasing or minting tokens in cross-chain transfers.
+
+```solidity
+struct ReleaseOrMintInV1 {
+  bytes originalSender;
+  uint64 remoteChainSelector;
+  address receiver;
+  uint256 amount;
+  address localToken;
+  bytes sourcePoolAddress;
+  bytes sourcePoolData;
+  bytes offchainTokenData;
+}
+```
+
+<Aside>
+
+Defines the parameters required for token release or mint operations:
+
+- `originalSender`: The transaction initiator on the source chain (ABI encoded)
+- `remoteChainSelector`: The source chain identifier
+- `receiver`: The recipient address on the destination chain
+- `amount`: Token quantity in source token decimals
+- `localToken`: The token contract address on the destination chain
+- `sourcePoolAddress`: The source pool contract address (ABI encoded for EVM chains). **WARNING**: Must be validated against expected pool address for the given `remoteChainSelector`
+- `sourcePoolData`: Processing data from the source pool
+- `offchainTokenData`: Additional processing data. **WARNING**: This is untrusted data
+
+The result of this operation is returned in [`ReleaseOrMintOutV1`](#releaseormintoutv1).
+
+</Aside>
+
+### ReleaseOrMintOutV1
+
+Output data from a release or mint operation.
+
+```solidity
+struct ReleaseOrMintOutV1 {
+  uint256 destinationAmount;
+}
+```
+
+<Aside>
+
+Contains the result of a token release or mint operation initiated by [`ReleaseOrMintInV1`](#releaseormintinv1):
+
+- `destinationAmount`: The quantity of tokens released or minted on the destination chain, denominated in the local token's decimals
+- Expected to match [`ReleaseOrMintInV1`](#releaseormintinv1).amount when source and destination chains use the same decimal precision
+
+</Aside>
+
+## State Variables
+
+### CCIP_POOL_V1
+
+```solidity
+bytes4 public constant CCIP_POOL_V1 = 0xaff2afbf;
+```
+
+<Aside>
+  A tag that signals support for the pool v1 standard, computed as `bytes4(keccak256("CCIP_POOL_V1"))`. Used for version
+  compatibility checks.
+</Aside>
+
+### CCIP_POOL_V1_RET_BYTES
+
+```solidity
+uint16 public constant CCIP_POOL_V1_RET_BYTES = 32;
+```
+
+<Aside>
+  The fixed number of bytes in the return data for a pool v1 `releaseOrMint`call. This value matches the size of the
+  [`ReleaseOrMintOutV1`](#releaseormintoutv1) struct.
+</Aside>
+
+### CCIP_LOCK_OR_BURN_V1_RET_BYTES
+
+```solidity
+uint32 public constant CCIP_LOCK_OR_BURN_V1_RET_BYTES = 32;
+```
+
+<Aside>
+  The default maximum number of bytes in the return data for a pool v1 `lockOrBurn` call. This limit can be adjusted
+  through TokenTransferFeeConfig.destBytesOverhead if additional data capacity is needed.
+</Aside>

@@ -1,0 +1,106 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register v0.2.1 API Reference"
+metadata:
+  description: "API documentation for Register in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## Register
+
+[`Register`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/ccip/Register.sol) maintains a registry of CCIP network configurations for different blockchain networks. This contract provides pre-configured settings for various test networks and allows custom network configurations.
+
+## Structs
+
+### NetworkDetails
+
+```solidity
+struct NetworkDetails {
+  uint64 chainSelector;
+  address routerAddress;
+  address linkAddress;
+  address wrappedNativeAddress;
+  address ccipBnMAddress;
+  address ccipLnMAddress;
+}
+```
+
+Configuration details for a CCIP-enabled network:
+
+• chainSelector - Unique identifier for the blockchain network in CCIP
+• routerAddress - Address of the CCIP Router contract
+• linkAddress - Address of the LINK token contract
+• wrappedNativeAddress - Address of the wrapped native token
+• ccipBnMAddress - Address of the CCIP BnM token
+• ccipLnMAddress - Address of the CCIP LnM token
+
+## Variables
+
+### s_networkDetails
+
+```solidity
+mapping(uint256 chainId => NetworkDetails) internal s_networkDetails
+```
+
+Stores network configurations indexed by chain ID. Contains pre-configured settings for test networks including Sepolia, Mumbai, Fuji, and others.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+Initializes the contract with pre-configured network details for various test networks including:
+
+- Ethereum Sepolia (11155111)
+- Optimism Sepolia (11155420)
+- Polygon Mumbai (80001)
+- Avalanche Fuji (43113)
+- BNB Chain Testnet (97)
+- Arbitrum Sepolia (421614)
+- Base Sepolia (84532)
+- Wemix Testnet (1112)
+- Kroma Sepolia (2358)
+- Gnosis Chiado (10200)
+
+### getNetworkDetails
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (NetworkDetails memory)
+```
+
+Retrieves the CCIP configuration for a specific blockchain network.
+
+**Parameters:**
+
+| Parameter | Type      | Description                          |
+| --------- | --------- | ------------------------------------ |
+| chainId   | `uint256` | The blockchain network ID to look up |
+
+**Returns:**
+
+| Type             | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| `NetworkDetails` | The network configuration details for the chain |
+
+### setNetworkDetails
+
+```solidity
+function setNetworkDetails(uint256 chainId, NetworkDetails memory networkDetails) external
+```
+
+Updates or adds CCIP configuration for a blockchain network.
+
+**Parameters:**
+
+| Parameter      | Type             | Description                            |
+| -------------- | ---------------- | -------------------------------------- |
+| chainId        | `uint256`        | The blockchain network ID to configure |
+| networkDetails | `NetworkDetails` | The network configuration to set       |

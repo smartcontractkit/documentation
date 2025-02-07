@@ -1,0 +1,108 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 CCIPReceiver API Reference"
+metadata:
+  description: "API documentation for the CCIPReceiver contract in Chainlink CCIP v1.5.0, the base contract for applications receiving cross-chain messages."
+  canonical: "/ccip/api-reference/v1.5.1/ccip-receiver"
+---
+
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+CCIP receiver contracts inherit from [`CCIPReceiver`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/applications/CCIPReceiver.sol).
+
+```solidity
+import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+...
+
+constructor(address _router) is CCIPReceiver(router) {
+ }
+```
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(address router) internal
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) public pure returns (bool)
+```
+
+IERC165 supports an interfaceId
+
+#### Parameters
+
+| Name        | Type   | Description              |
+| ----------- | ------ | ------------------------ |
+| interfaceId | bytes4 | The interfaceId to check |
+
+#### Return Values
+
+| Name | Type | Description                          |
+| ---- | ---- | ------------------------------------ |
+| [0]  | bool | true if the interfaceId is supported |
+
+### ccipReceive
+
+```solidity
+function ccipReceive(struct Client.Any2EVMMessage message) external  override onlyRouter
+```
+
+Only the Router can call this function to deliver a message.
+If this reverts, any token transfers also revert. The message
+will move to a FAILED state and become available for manual execution.
+
+#### Parameters
+
+| Name    | Type                                                                             | Description  |
+| ------- | -------------------------------------------------------------------------------- | ------------ |
+| message | struct [Client.Any2EVMMessage](/ccip/api-reference/v1.5.0/client#any2evmmessage) | CCIP Message |
+
+### \_ccipReceive
+
+```solidity
+function _ccipReceive(struct Client.Any2EVMMessage message) internal virtual
+```
+
+Override this function in your implementation.
+
+#### Parameters
+
+| Name    | Type                                                                             | Description    |
+| ------- | -------------------------------------------------------------------------------- | -------------- |
+| message | struct [Client.Any2EVMMessage](/ccip/api-reference/v1.5.0/client#any2evmmessage) | Any2EVMMessage |
+
+### getRouter
+
+```solidity
+function getRouter() public view returns (address)
+```
+
+This function returns the current Router address.
+
+#### Return Values
+
+| Name | Type    | Description      |
+| ---- | ------- | ---------------- |
+| [0]  | address | i_router address |
+
+### InvalidRouter
+
+```solidity
+error InvalidRouter(address router)
+```
+
+### onlyRouter
+
+```solidity
+modifier onlyRouter()
+```
+
+_Only calls from the set router are accepted._

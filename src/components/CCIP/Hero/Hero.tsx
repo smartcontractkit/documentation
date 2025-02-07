@@ -1,6 +1,7 @@
 import { Environment, LaneConfig } from "~/config/data/ccip"
 import Search from "../Search/Search"
 import "./Hero.css"
+import { ExplorerInfo } from "~/config/types"
 
 interface HeroProps {
   chains: {
@@ -25,7 +26,7 @@ interface HeroProps {
       name: string
       logo: string
       key: string
-      explorerUrl: string
+      explorer: ExplorerInfo
     }
     lane: LaneConfig
   }[]
