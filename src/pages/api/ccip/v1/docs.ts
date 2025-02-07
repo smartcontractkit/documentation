@@ -57,21 +57,22 @@ export const GET: APIRoute = async () => {
 </head>
 <body>
     <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js" crossorigin></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js" crossorigin></script>
     <script>
-        window.onload = () => {
-            window.ui = SwaggerUIBundle({
+        window.addEventListener('load', function() {
+            const ui = SwaggerUIBundle({
                 url: '/api/ccip/v1/openapi.json',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
                     SwaggerUIBundle.presets.apis,
-                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                    SwaggerUIStandalonePreset
                 ],
                 plugins: [
                     SwaggerUIBundle.plugins.DownloadUrl
                 ],
-                layout: "BaseLayout",
+                layout: "StandaloneLayout",
                 defaultModelsExpandDepth: 3,
                 defaultModelExpandDepth: 3,
                 displayRequestDuration: true,
@@ -82,18 +83,11 @@ export const GET: APIRoute = async () => {
                 syntaxHighlight: {
                     activated: true,
                     theme: "monokai"
-                },
-                requestInterceptor: (req) => {
-                    req.headers = {
-                        ...req.headers,
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-                    };
-                    return req;
                 }
             });
-        };
+
+            window.ui = ui;
+        });
     </script>
 </body>
 </html>
