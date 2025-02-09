@@ -55,6 +55,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/ccip/directory/mainnet/chain/ethereum-mainnet-hashkey-1",
       botanix: "/ccip/directory/testnet/chain/bitcoin-testnet-botanix",
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
+      monad: "/ccip/directory/testnet/chain/monad-testnet",
     },
   },
   "Data Feeds": {
@@ -193,6 +194,7 @@ export const productChainLinks: ProductChainLinks = {
     hashkey: "/resources/link-token-contracts#hashkey",
     botanix: "/resources/link-token-contracts#botanix",
     sei: "/resources/link-token-contracts#sei",
+    monad: "/resources/link-token-contracts#monad",
   },
 }
 
