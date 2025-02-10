@@ -282,6 +282,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TREASURE_MAINNET"
     case "treasure-testnet-topaz":
       return "TREASURE_TOPAZ"
+    case "ethereum-testnet-sepolia-unichain-1":
+      return "UNICHAIN_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -433,6 +435,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "treasure-mainnet"
     case "TREASURE_TOPAZ":
       return "treasure-testnet-topaz"
+    case "UNICHAIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-unichain-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

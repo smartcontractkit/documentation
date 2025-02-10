@@ -660,6 +660,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "unichain",
+    label: "Unichain",
+    title: "Unichain Data Feeds",
+    img: "/assets/chains/unichain.svg",
+    networkStatusUrl: "https://status.unichain.org/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Unichain Sepolia",
+        explorerUrl: "https://sepolia.uniscan.xyz/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-unichain-1.json",
+        queryString: "unichain-sepolia",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
