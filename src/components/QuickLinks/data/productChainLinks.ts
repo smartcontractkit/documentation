@@ -101,6 +101,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
+      ethereum: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
