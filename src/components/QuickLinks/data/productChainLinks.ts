@@ -56,6 +56,7 @@ export const productChainLinks: ProductChainLinks = {
       botanix: "/ccip/directory/testnet/chain/bitcoin-testnet-botanix",
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
       monad: "/ccip/directory/testnet/chain/monad-testnet",
+      treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
     },
   },
   "Data Feeds": {
@@ -199,6 +200,7 @@ export const productChainLinks: ProductChainLinks = {
     botanix: "/resources/link-token-contracts#botanix",
     sei: "/resources/link-token-contracts#sei",
     monad: "/resources/link-token-contracts#monad",
+    treasure: "/resources/link-token-contracts#treasure",
     unichain: "/resources/link-token-contracts#unichain",
   },
 }
