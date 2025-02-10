@@ -400,6 +400,20 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Ethereum",
+    logoUrl: "/assets/chains/ethereum.svg",
+    mainnet: {
+      label: "Ethereum Mainnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Sepolia Testnet",
+      verifierProxy: "0x4e9935be37302B9C97Ff4ae6868F1b566ade26d2",
+      explorerUrl: "https://sepolia.etherscan.io/address/%s",
+    },
+  },
+  {
     network: "Mantle",
     logoUrl: "/assets/chains/mantle.svg",
     networkStatus: "https://0xmantle.instatus.com",
