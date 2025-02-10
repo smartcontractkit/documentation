@@ -278,10 +278,24 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MONAD_TESTNET"
     case "core-testnet":
       return "CORE_TESTNET"
+    case "core-mainnet":
+      return "CORE_MAINNET"
     case "treasure-mainnet":
       return "TREASURE_MAINNET"
     case "treasure-testnet-topaz":
       return "TREASURE_TOPAZ"
+    case "ethereum-testnet-sepolia-lens-1":
+      return "LENS_SEPOLIA"
+    case "berachain-mainnet":
+      return "BERACHAIN_MAINNET"
+    case "hyperliquid-testnet":
+      return "HYPERLIQUID_TESTNET"
+    case "bitcoin-testnet-merlin":
+      return "MERLIN_TESTNET"
+    case "ethereum-testnet-holesky-fraxtal-1":
+      return "FRAXTAL_TESTNET"
+    case "hedera-testnet":
+      return "HEDERA_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -427,12 +441,26 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "bitcoin-testnet-botanix"
     case "CORE_TESTNET":
       return "core-testnet"
+    case "CORE_MAINNET":
+      return "core-mainnet"
     case "MONAD_TESTNET":
       return "monad-testnet"
     case "TREASURE_MAINNET":
       return "treasure-mainnet"
     case "TREASURE_TOPAZ":
       return "treasure-testnet-topaz"
+    case "LENS_SEPOLIA":
+      return "ethereum-testnet-sepolia-lens-1"
+    case "BERACHAIN_MAINNET":
+      return "berachain-mainnet"
+    case "HYPERLIQUID_TESTNET":
+      return "hyperliquid-testnet"
+    case "MERLIN_TESTNET":
+      return "bitcoin-testnet-merlin"
+    case "FRAXTAL_TESTNET":
+      return "ethereum-testnet-holesky-fraxtal-1"
+    case "HEDERA_TESTNET":
+      return "hedera-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

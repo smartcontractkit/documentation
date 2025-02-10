@@ -247,4 +247,11 @@ export const chainNames: Record<string, string> = {
   core: "Core",
   monad: "Monad",
   treasure: "Treasure",
+  lens: "Lens",
+  berachain: "Berachain",
+  unichain: "Unichain",
+  hyperliquid: "Hyperliquid",
+  merlin: "Merlin",
+  fraxtal: "Fraxtal",
+  hedera: "Hedera",
 }

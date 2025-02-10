@@ -79,9 +79,16 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   SEI_MAINNET: () => new providers.JsonRpcProvider("https://evm-rpc.sei-apis.com"),
   SEI_TESTNET: () => new providers.JsonRpcProvider("https://evm-rpc-testnet.sei-apis.com"),
   CORE_TESTNET: () => new providers.JsonRpcProvider("https://rpc.test2.btcs.network/"),
+  CORE_MAINNET: () => new providers.JsonRpcProvider("https://scan.coredao.org"),
   MONAD_TESTNET: () => new providers.JsonRpcProvider("https://monad.xyz"),
   TREASURE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.treasure.lol"),
   TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
+  LENS_SEPOLIA: () => new providers.JsonRpcProvider("https://block-explorer.testnet.lens.dev"),
+  BERACHAIN_MAINNET: () => new providers.JsonRpcProvider("https://berascan.com"),
+  HYPERLIQUID_TESTNET: () => new providers.JsonRpcProvider("https://app.hyperliquid-testnet.xyz/explorer"),
+  MERLIN_TESTNET: () => new providers.JsonRpcProvider("https://testnet-scan.merlinchain.io/"),
+  FRAXTAL_TESTNET: () => new providers.JsonRpcProvider("https://holesky.fraxscan.com"),
+  HEDERA_TESTNET: () => new providers.JsonRpcProvider("https://hederaexplorer.io"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
