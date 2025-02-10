@@ -414,10 +414,10 @@ const StreamsNetworksData = [
     },
   },
   {
-    network: "Hashkey",
+    network: "HashKey Chain",
     logoUrl: "/assets/chains/hashkey.svg",
     mainnet: {
-      label: "Hashkey Mainnet",
+      label: "HashKey Chain Mainnet",
       verifierProxy: "0x3278e7a582B94d82487d4B99b31A511CbAe2Cd54",
       explorerUrl: "https://hashkey.blockscout.com/address/%s",
     },
