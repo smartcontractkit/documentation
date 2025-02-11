@@ -83,13 +83,17 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MONAD_TESTNET: () => new providers.JsonRpcProvider("https://monad.xyz"),
   TREASURE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.treasure.lol"),
   TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
-  LENS_SEPOLIA: () => new providers.JsonRpcProvider("https://block-explorer.testnet.lens.dev"),
-  BERACHAIN_MAINNET: () => new providers.JsonRpcProvider("https://berascan.com"),
-  HYPERLIQUID_TESTNET: () => new providers.JsonRpcProvider("https://app.hyperliquid-testnet.xyz/explorer"),
-  MERLIN_TESTNET: () => new providers.JsonRpcProvider("https://testnet-scan.merlinchain.io/"),
-  FRAXTAL_TESTNET: () => new providers.JsonRpcProvider("https://holesky.fraxscan.com"),
-  HEDERA_TESTNET: () => new providers.JsonRpcProvider("https://hederaexplorer.io"),
+  LENS_SEPOLIA: () => new providers.JsonRpcProvider("https://rpc.testnet.lens.dev"),
+  BERACHAIN_MAINNET: () => new providers.JsonRpcProvider("https://rpc.berachain.com"),
+  BERACHAIN_TESTNET: () => new providers.JsonRpcProvider("https://bartio.rpc.berachain.com"),
+  HYPERLIQUID_TESTNET: () => new providers.JsonRpcProvider("https://api.hyperliquid-testnet.xyz/evm"),
+  MERLIN_TESTNET: () => new providers.JsonRpcProvider("hhttps://testnet-rpc.merlinchain.io/"),
+  MERLIN_MAINNET: () => new providers.JsonRpcProvider("https://rpc.merlinchain.io"),
+  FRAXTAL_TESTNET: () => new providers.JsonRpcProvider("https://rpc.testnet.frax.com"),
+  FRAXTAL_MAINNET: () => new providers.JsonRpcProvider("https://rpc.frax.com"),
+  HEDERA_TESTNET: () => new providers.JsonRpcProvider("https://testnet.hashio.io/api"),
   UNICHAIN_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.unichain.org"),
+  UNICHAIN_MAINNET: () => new providers.JsonRpcProvider("hhttps://mainnet.unichain.org/"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
