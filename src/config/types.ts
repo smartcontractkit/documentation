@@ -38,6 +38,7 @@ export type SupportedTechnology =
   | "CORE"
   | "MONAD"
   | "TREASURE"
+  | "UNICHAIN"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -118,6 +119,7 @@ export type SupportedChain =
   | "MONAD_TESTNET"
   | "TREASURE_MAINNET"
   | "TREASURE_TOPAZ"
+  | "UNICHAIN_SEPOLIA"
 
 export type ExplorerInfo = {
   baseUrl: string
