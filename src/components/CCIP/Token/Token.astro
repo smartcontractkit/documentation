@@ -1,6 +1,6 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
-import { getEntry } from "astro:content"
+import { getEntry, render } from "astro:content"
 import {
   getAllNetworks,
   getAllSupportedTokens,
@@ -16,14 +16,25 @@ import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
-const { token, logo, environment } = Astro.props as { token: string; logo: string; environment: Environment }
+interface Props {
+  token: string
+  logo: string
+  environment: Environment
+}
+
+const { token, logo, environment } = Astro.props as Props
 
 const entry = await getEntry("ccip", "index")
-const { headings } = await entry.render()
+if (!entry) {
+  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+}
+
+const { headings } = await render(entry)
+
 const networks = getAllNetworks({ filter: environment })
 
 const supportedTokens = getAllSupportedTokens({
-  environment: environment,
+  environment,
   version: Version.V1_2_0,
 })
 
@@ -32,25 +43,25 @@ const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, un
 const chainsOfToken = getChainsOfToken({ token, filter: environment })
 const firstSupportedChain = chainsOfToken[0]
 
-const allTokens = tokens.map((token) => {
-  const logo = getTokenIconUrl(token) || ""
+const allTokens = tokens.map((tokenId) => {
+  const logoPath = getTokenIconUrl(tokenId) || ""
   return {
-    id: token,
-    logo,
+    id: tokenId,
+    logo: logoPath,
     totalNetworks: chainsOfToken.length,
   }
 })
 
 const data = getTokenData({
-  environment: environment,
+  environment,
   version: Version.V1_2_0,
   tokenId: token,
 })
 
 const tokenLanes = getAllTokenLanes({
-  environment: environment,
+  environment,
   version: Version.V1_2_0,
-  token: token,
+  token,
 })
 
 const searchLanes = getSearchLanes({ environment })
@@ -73,7 +84,7 @@ const searchLanes = getSearchLanes({ environment })
       id: token,
       name: data[firstSupportedChain]?.name || "",
       logo: logo || "",
-      symbol: data[firstSupportedChain].symbol,
+      symbol: data[firstSupportedChain]?.symbol ?? "",
     }}
     environment={environment}
   />
@@ -90,18 +101,19 @@ const searchLanes = getSearchLanes({ environment })
             const networkLogo = getChainIcon(directory) || ""
             const explorer = getExplorer(directory)
             if (!explorer) throw new Error(`Explorer not found for ${key}`)
+
             return {
               name: title,
               key: key,
               logo: networkLogo,
               tokenId: token,
               tokenLogo: logo || "",
-              tokenName: data[key].name || "",
-              tokenSymbol: data[key].symbol,
-              tokenDecimals: data[key].decimals || 0,
-              tokenAddress: data[key].tokenAddress || "",
-              tokenPoolType: data[key].poolType,
-              tokenPoolAddress: data[key].poolAddress || "",
+              tokenName: data[key]?.name || "",
+              tokenSymbol: data[key]?.symbol ?? "",
+              tokenDecimals: data[key]?.decimals ?? 0,
+              tokenAddress: data[key]?.tokenAddress ?? "",
+              tokenPoolType: data[key]?.poolType,
+              tokenPoolAddress: data[key]?.poolAddress ?? "",
               explorer: explorer,
             }
           })
@@ -111,7 +123,7 @@ const searchLanes = getSearchLanes({ environment })
           id: token,
           name: data[firstSupportedChain]?.name || "",
           logo: logo || "",
-          symbol: data[firstSupportedChain]?.symbol,
+          symbol: data[firstSupportedChain]?.symbol ?? "",
         }}
       />
     </div>
