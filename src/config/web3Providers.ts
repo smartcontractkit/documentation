@@ -89,6 +89,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MERLIN_TESTNET: () => new providers.JsonRpcProvider("https://testnet-scan.merlinchain.io/"),
   FRAXTAL_TESTNET: () => new providers.JsonRpcProvider("https://holesky.fraxscan.com"),
   HEDERA_TESTNET: () => new providers.JsonRpcProvider("https://hederaexplorer.io"),
+  UNICHAIN_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.unichain.org"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

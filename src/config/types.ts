@@ -45,6 +45,7 @@ export type SupportedTechnology =
   | "MERLIN"
   | "FRAXTAL"
   | "HEDERA"
+  | "UNICHAIN"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -132,6 +133,7 @@ export type SupportedChain =
   | "FRAXTAL_TESTNET"
   | "HEDERA_TESTNET"
   | "CORE_MAINNET"
+  | "UNICHAIN_SEPOLIA"
 
 export type ExplorerInfo = {
   baseUrl: string

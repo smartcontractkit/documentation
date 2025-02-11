@@ -296,6 +296,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "FRAXTAL_TESTNET"
     case "hedera-testnet":
       return "HEDERA_TESTNET"
+    case "ethereum-testnet-sepolia-unichain-1":
+      return "UNICHAIN_SEPOLIA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -461,6 +463,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-holesky-fraxtal-1"
     case "HEDERA_TESTNET":
       return "hedera-testnet"
+    case "UNICHAIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-unichain-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
