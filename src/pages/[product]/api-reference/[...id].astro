@@ -1,0 +1,102 @@
+---
+import { getCollection, render } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { VERSIONS, type Collection } from "@config/versions"
+import type { BaseFrontmatter } from "~/content.config.mts"
+
+/**
+ * This represents one returned entry from getCollection().
+ */
+interface MyEntry {
+  id: string // e.g. "api-reference/v151/burn-token-pool.mdx"
+  collection: Collection // e.g. "ccip", "vrf", etc.
+  data: BaseFrontmatter // your custom frontmatter
+  body?: string
+}
+
+/**
+ * Each route in getStaticPaths() needs a `params` object
+ * that matches the segments in [...id].astro => `{ product, id }`
+ */
+interface MyRoute {
+  params: { product: Collection; id: string }
+  props: { entry: MyEntry }
+}
+
+export async function getStaticPaths(): Promise<MyRoute[]> {
+  const paths: MyRoute[] = []
+
+  for (const [product, versions] of Object.entries(VERSIONS)) {
+    // 1. Load all MDX entries for that product
+    const allEntries = await getCollection(product as Collection)
+
+    // 2. Filter "api-reference/" only
+    const apiEntries = allEntries.filter((e: MyEntry) => e.id.startsWith("api-reference/"))
+
+    for (const version of versions.ALL) {
+      // Convert "v1.5.1" => "v151"
+      const folderVersion = version.replace(/\./g, "")
+      const indexPath = `api-reference/${folderVersion}/index`
+
+      // Match "api-reference/v151/index" or "...index.mdx"
+      const versionEntry = apiEntries.find((ent: MyEntry) => ent.id === indexPath || ent.id === `${indexPath}.mdx`)
+
+      if (versionEntry) {
+        // We still want the *route* to be /v1.5.1, so the param is the dotted version
+        paths.push({
+          params: { product: product as Collection, id: version },
+          props: {
+            entry: {
+              id: (versionEntry as MyEntry).id,
+              collection: product as Collection,
+              data: (versionEntry as MyEntry).data,
+            },
+          },
+        })
+
+        // Additional docs in "api-reference/v151/"
+        const versionDocs = apiEntries.filter(
+          (doc: MyEntry) =>
+            doc.id.startsWith(`api-reference/${folderVersion}/`) &&
+            doc.id !== `api-reference/${folderVersion}/index` &&
+            doc.id !== `api-reference/${folderVersion}/index.mdx`
+        )
+
+        for (const docEntry of versionDocs) {
+          let docSlug = (docEntry as MyEntry).id.replace("api-reference/", "").replace(/\.(md|mdx)$/, "")
+          docSlug = docSlug.replace(folderVersion, version)
+
+          paths.push({
+            params: { product: product as Collection, id: docSlug },
+            props: {
+              entry: {
+                id: (docEntry as MyEntry).id,
+                collection: product as Collection,
+                data: (docEntry as MyEntry).data,
+              },
+            },
+          })
+        }
+      }
+    }
+  }
+
+  return paths
+}
+
+// Define the Props for this page
+interface Props {
+  entry: MyEntry
+}
+
+// Unpack Astro.props (has `entry`)
+const props = Astro.props as Props
+const { entry } = props
+
+// Use the new `render(...)` from astro:content
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={entry.data} {headings}>
+  <Content />
+</DocsLayout>
