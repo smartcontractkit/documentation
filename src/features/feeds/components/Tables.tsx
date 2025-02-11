@@ -400,6 +400,38 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Ethereum",
+    logoUrl: "/assets/chains/ethereum.svg",
+    mainnet: {
+      label: "Ethereum Mainnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Sepolia Testnet",
+      verifierProxy: "0x4e9935be37302B9C97Ff4ae6868F1b566ade26d2",
+      explorerUrl: "https://sepolia.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "HashKey Chain",
+    logoUrl: "/assets/chains/hashkey.svg",
+    mainnet: {
+      label: "HashKey Chain Mainnet",
+      verifierProxy: "0x3278e7a582B94d82487d4B99b31A511CbAe2Cd54",
+      explorerUrl: "https://hashkey.blockscout.com/address/%s",
+    },
+  },
+  {
+    network: "Ink",
+    logoUrl: "/assets/chains/ink.svg",
+    mainnet: {
+      label: "Ink Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://explorer.inkonchain.com/address/%s",
+    },
+  },
+  {
     network: "Mantle",
     logoUrl: "/assets/chains/mantle.svg",
     networkStatus: "https://0xmantle.instatus.com",
@@ -442,6 +474,20 @@ const StreamsNetworksData = [
       label: "Optimism Testnet",
       verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
       explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "Ronin",
+    logoUrl: "/assets/chains/ronin.svg",
+    mainnet: {
+      label: "Ronin Mainnet",
+      verifierProxy: "0x499Ce6718a50e154B0C69905eEE8D307e5B003cc",
+      explorerUrl: "https://app.roninchain.com/address/%s",
+    },
+    testnet: {
+      label: "Ronin Saigon Testnet",
+      verifierProxy: "0xE02A72Be64DA496797821f1c4BB500851C286C6c",
+      explorerUrl: "https://saigon-app.roninchain.com/address/%s",
     },
   },
   {
