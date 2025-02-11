@@ -56,6 +56,7 @@ export const productChainLinks: ProductChainLinks = {
       botanix: "/ccip/directory/testnet/chain/bitcoin-testnet-botanix",
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
       monad: "/ccip/directory/testnet/chain/monad-testnet",
+      treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
     },
   },
   "Data Feeds": {
@@ -87,6 +88,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-feeds/price-feeds/addresses?network=soneium",
       sonic: "/data-feeds/price-feeds/addresses?network=sonic",
       starknet: "/data-feeds/price-feeds/addresses?network=starknet",
+      unichain: "/data-feeds/price-feeds/addresses?network=unichain",
       xlayer: "/data-feeds/price-feeds/addresses?network=xlayer",
       zksync: "/data-feeds/price-feeds/addresses?network=zksync",
     },
@@ -99,9 +101,13 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
+      ethereum: "/data-streams/crypto-streams",
+      hashkey: "/data-streams/crypto-streams",
+      ink: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
+      ronin: "/data-streams/crypto-streams",
       scroll: "/data-streams/crypto-streams",
       shibarium: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
@@ -117,6 +123,7 @@ export const productChainLinks: ProductChainLinks = {
       arbitrum: "/chainlink-functions/supported-networks#arbitrum",
       avalanche: "/chainlink-functions/supported-networks#avalanche",
       base: "/chainlink-functions/supported-networks#base",
+      celo: "/chainlink-functions/supported-networks#celo",
       ethereum: "/chainlink-functions/supported-networks#ethereum",
       optimism: "/chainlink-functions/supported-networks#optimism",
       polygon: "/chainlink-functions/supported-networks#polygon",
@@ -136,6 +143,8 @@ export const productChainLinks: ProductChainLinks = {
       "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis",
       optimism: "/chainlink-automation/overview/supported-networks#optimism",
       polygon: "/chainlink-automation/overview/supported-networks#polygon",
+      polygonzkevm: "/chainlink-automation/overview/supported-networks#polygon-zkevm",
+      scroll: "/chainlink-automation/overview/supported-networks#scroll",
     },
   },
   VRF: {
@@ -195,6 +204,8 @@ export const productChainLinks: ProductChainLinks = {
     botanix: "/resources/link-token-contracts#botanix",
     sei: "/resources/link-token-contracts#sei",
     monad: "/resources/link-token-contracts#monad",
+    treasure: "/resources/link-token-contracts#treasure",
+    unichain: "/resources/link-token-contracts#unichain",
   },
 }
 
@@ -245,4 +256,5 @@ export const chainNames: Record<string, string> = {
   core: "Core",
   monad: "Monad",
   treasure: "Treasure",
+  unichain: "Unichain",
 }
