@@ -262,5 +262,4 @@ export const chainNames: Record<string, string> = {
   hyperliquid: "Hyperliquid",
   merlin: "Merlin",
   fraxtal: "Fraxtal",
-  unichain: "Unichain",
 }
