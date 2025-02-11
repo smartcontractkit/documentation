@@ -7,31 +7,9 @@
  */
 
 import fs from "fs/promises"
-import path from "path"
-import fetch, { RequestInit } from "node-fetch"
-import yaml from "js-yaml"
+import fetch from "node-fetch"
 import prettier from "prettier"
-
-/** The source URL for the official chain selectors YAML file */
-const SELECTORS_URL = "https://raw.githubusercontent.com/smartcontractkit/chain-selectors/refs/heads/main/selectors.yml"
-
-/** The local destination path where the processed selectors file will be saved */
-const destinationPath = path.join(__dirname, "../../config/data/ccip/selector.yml")
-
-/**
- * Interface representing the structure of the selectors YAML file.
- * Each chain has a numeric ID as key and contains a selector and name.
- */
-interface SelectorsYaml {
-  selectors: {
-    [key: number]: {
-      /** The chain's selector value, can be number or string */
-      selector: number | string
-      /** Human-readable name of the chain */
-      name: string
-    }
-  }
-}
+import { SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH, SELECTORS_SOURCE_URL } from "@config/data/ccip/paths"
 
 /**
  * Downloads content from a URL with timeout handling.
@@ -42,73 +20,21 @@ interface SelectorsYaml {
  * @returns Promise resolving to the downloaded content as string
  */
 async function downloadFile(url: string, timeout = 10000): Promise<string> {
-  const options: RequestInit = {
-    timeout,
-  }
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-  const response = await fetch(url, options)
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
-  }
-
-  return response.text()
-}
-
-/**
- * Processes the YAML content by converting all numeric selectors to strings.
- * This prevents potential precision issues with large numbers in different environments.
- * Preserves all comments and original structure of the YAML file.
- *
- * @param content - The raw YAML content to process
- * @throws {Error} If YAML parsing or processing fails
- * @returns Promise resolving to the processed YAML content as string
- */
-async function processSelectorsYaml(content: string): Promise<string> {
   try {
-    // First, parse the YAML to process the selectors
-    const data = yaml.load(content) as SelectorsYaml
+    const response = await fetch(url, {
+      signal: controller.signal,
+    })
 
-    // Create a map of chainId to string selector for replacements
-    const replacements = new Map<number, string>()
-    for (const [chainId, chainData] of Object.entries(data.selectors)) {
-      if (typeof chainData.selector === "number") {
-        replacements.set(Number(chainId), chainData.selector.toString())
-      }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
     }
 
-    // Process the content line by line to preserve comments and structure
-    const lines = content.split("\n")
-    const processedLines = lines.map((line) => {
-      // Skip comment lines and non-selector lines
-      if (line.trim().startsWith("#") || !line.includes("selector:")) {
-        return line
-      }
-
-      // Extract chainId from the line above (if it exists)
-      const match = line.match(/\s+selector:\s*(\d+)/)
-      if (match) {
-        const selectorValue = match[1]
-        // Find the corresponding chainId and replacement
-        for (const [chainId, replacement] of replacements) {
-          if (data.selectors[chainId]?.selector.toString() === selectorValue) {
-            return line.replace(selectorValue, `"${replacement}"`)
-          }
-        }
-      }
-      return line
-    })
-
-    const processedContent = processedLines.join("\n")
-
-    // Format using project's Prettier config
-    const prettierConfig = await prettier.resolveConfig(process.cwd())
-    return prettier.format(processedContent, {
-      ...prettierConfig,
-      parser: "yaml",
-    })
-  } catch (error) {
-    throw new Error(`Failed to process YAML: ${error.message}`)
+    return await response.text()
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
@@ -119,14 +45,13 @@ async function processSelectorsYaml(content: string): Promise<string> {
  * @param filePath - Path to the file to backup
  * @returns Promise that resolves when backup is complete
  */
-async function backupExistingFile(filePath: string): Promise<void> {
+async function backupExistingFile(filePath: string, backupPath: string): Promise<void> {
   try {
     const exists = await fs
       .access(filePath)
       .then(() => true)
       .catch(() => false)
     if (exists) {
-      const backupPath = `${filePath}.backup`
       await fs.copyFile(filePath, backupPath)
       console.log(`Created backup at ${backupPath}`)
     }
@@ -149,19 +74,26 @@ async function main() {
     console.log("Starting selectors update process...")
 
     // Create backup of existing file
-    await backupExistingFile(destinationPath)
+    await backupExistingFile(SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH)
 
     // Download the file
     console.log("Downloading selectors.yml...")
-    const content = await downloadFile(SELECTORS_URL)
+    const content = await downloadFile(SELECTORS_SOURCE_URL)
 
-    // Process the content
+    // Process the content using regex to convert selectors to strings
     console.log("Processing selectors...")
-    const processedContent = await processSelectorsYaml(content)
+    const processedContent = content.replace(/selector:\s*([0-9]+)/g, 'selector: "$1"')
+
+    // Format using project's Prettier config
+    const prettierConfig = await prettier.resolveConfig(process.cwd())
+    const formattedContent = prettier.format(processedContent, {
+      ...prettierConfig,
+      parser: "yaml",
+    })
 
     // Write the processed content
-    console.log(`Writing to ${destinationPath}...`)
-    await fs.writeFile(destinationPath, processedContent, "utf8")
+    console.log(`Writing to ${SELECTOR_CONFIG_PATH}...`)
+    await fs.writeFile(SELECTOR_CONFIG_PATH, formattedContent, "utf8")
 
     console.log("Successfully updated selectors.yml")
     process.exit(0)
