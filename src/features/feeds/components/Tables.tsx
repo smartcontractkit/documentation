@@ -391,6 +391,36 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Berachain",
+    logoUrl: "/assets/chains/berachain.svg",
+    networkStatus: "https://status.berachain.com/",
+    mainnet: {
+      label: "Berachain Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://berascan.com/address/%s",
+    },
+    testnet: {
+      label: "Berachain bArtio Testnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://bartio.beratrail.io/address/%s",
+    },
+  },
+  {
+    network: "Blast",
+    logoUrl: "/assets/chains/blast.svg",
+    networkStatus: "https://status.blast.io/",
+    mainnet: {
+      label: "Blast Mainnet",
+      verifierProxy: "0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e",
+      explorerUrl: "https://blastscan.io/address/%s",
+    },
+    testnet: {
+      label: "Blast Sepolia Testnet",
+      verifierProxy: "0x141f4278A5D71070Dc09CA276b72809b80F20eF0",
+      explorerUrl: "https://sepolia.blastscan.io/address/%s",
+    },
+  },
+  {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
     testnet: {
