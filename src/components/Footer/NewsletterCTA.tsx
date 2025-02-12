@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 
 import "./NewsletterCTA.css"
-import { NewsletterSignupForm } from "./NewsletterSignupForm"
+import { NewsletterSignupForm } from "./NewsletterSignupForm.tsx"
 
 export type NewsletterCTAProps = {
   title?: string

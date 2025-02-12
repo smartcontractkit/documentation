@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
-import { getWeb3Provider } from "@features/utils"
+import { getWeb3Provider } from "@features/utils/index.ts"
 import button from "@chainlink/design-system/button.module.css"
 
 export const EnsManualLookupForm = () => {

@@ -1,2 +1,2 @@
-export * from "./AutomationConfig"
-export * from "./AutomationConfigList"
+export * from "./AutomationConfig.tsx"
+export * from "./AutomationConfigList.tsx"

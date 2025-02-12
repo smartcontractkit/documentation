@@ -1,8 +1,8 @@
 import React, { useState } from "react"
-import { NavBar as Nav } from "./Nav"
-import { Search } from "./aiSearch/Search"
-import { getNavigationProps } from "./getNavigationProps"
-import { useNavBar } from "./useNavBar/useNavBar"
+import { NavBar as Nav } from "./Nav/index.ts"
+import { Search } from "./aiSearch/Search.tsx"
+import { getNavigationProps } from "./getNavigationProps.ts"
+import { useNavBar } from "./useNavBar/useNavBar.ts"
 import styles from "./scroll.module.css"
 
 export const NavBar = ({

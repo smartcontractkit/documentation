@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { getVersionLabel, buildVersionUrl } from "../utils"
-import { PAGE_AVAILABILITY } from "@config/versions/page-availability"
+import { getVersionLabel, buildVersionUrl } from "../utils/versions.ts"
+import { PAGE_AVAILABILITY } from "@config/versions/page-availability.ts"
 import styles from "../styles/components/VersionSelector.module.css"
 import { Collection } from "../types/index.ts"
 

@@ -1,4 +1,4 @@
-import { clsx } from "../lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 import "./ReactCopyText.css"
 
 interface ReactCopyTextProps {

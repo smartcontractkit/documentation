@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react"
-import { ProductsNav, SubProductsNav } from "./config"
+import { ProductsNav, SubProductsNav } from "./config.tsx"
 import styles from "./navBar.module.css"
-import { clsx } from "./utils"
-import { useScrollDirection } from "./useScrollDirection"
-import { useScrollPosition } from "./useScrollPosition"
-import { ProductNavigation } from "./ProductNavigation/ProductNavigation"
-import { useHideHeader } from "./useHideHeader"
-import ProductChainTable from "../../QuickLinks/sections/ProductChainTable"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { useScrollDirection } from "./useScrollDirection.tsx"
+import { useScrollPosition } from "./useScrollPosition.tsx"
+import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
+import { useHideHeader } from "./useHideHeader.tsx"
+import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
 
 declare const Weglot: any
 
