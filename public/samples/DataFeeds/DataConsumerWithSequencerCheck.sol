@@ -19,7 +19,7 @@ contract DataConsumerWithSequencerCheck {
     error GracePeriodNotOver();
 
     /**
-     * Network: Optimism mainnet
+     * Network: OP Mainnet
      * Data Feed: BTC/USD
      * Data Feed address: 0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
      * Uptime Feed address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
