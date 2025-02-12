@@ -260,9 +260,9 @@ export const chainNames: Record<string, string> = {
   monad: "Monad",
   treasure: "Treasure",
   lens: "Lens",
-  berachain: "Berachain",
   unichain: "Unichain",
   hyperliquid: "Hyperliquid",
   merlin: "Merlin",
   fraxtal: "Fraxtal",
+  zeta: "Zeta",
 }
