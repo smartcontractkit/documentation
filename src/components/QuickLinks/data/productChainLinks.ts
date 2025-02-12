@@ -57,6 +57,10 @@ export const productChainLinks: ProductChainLinks = {
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
       monad: "/ccip/directory/testnet/chain/monad-testnet",
       treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
+      merlin: "/ccip/directory/testnet/chain/bitcoin-testnet-merlin",
+      fraxtal: "/ccip/directory/testnet/chain/ethereum-testnet-holesky-fraxtal-1",
+      lens: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-lens-1",
+      unichain: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-unichain-1",
     },
   },
   "Data Feeds": {
@@ -208,6 +212,9 @@ export const productChainLinks: ProductChainLinks = {
     monad: "/resources/link-token-contracts#monad",
     treasure: "/resources/link-token-contracts#treasure",
     unichain: "/resources/link-token-contracts#unichain",
+    merlin: "/resources/link-token-contracts#merlin",
+    fraxtal: "/resources/link-token-contracts#fraxtal",
+    lens: "/resources/link-token-contracts#lens",
   },
 }
 
