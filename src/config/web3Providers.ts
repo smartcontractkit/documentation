@@ -82,6 +82,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MONAD_TESTNET: () => new providers.JsonRpcProvider("https://monad.xyz"),
   TREASURE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.treasure.lol"),
   TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
+  UNICHAIN_SEPOLIA: () => new providers.JsonRpcProvider("https://sepolia.unichain.org"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
