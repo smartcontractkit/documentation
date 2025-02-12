@@ -1,5 +1,5 @@
 import semver from "semver"
-import type { ProductConfig } from "../types"
+import type { ProductConfig } from "../types/index.ts"
 import type { Collection } from "src/content/config"
 import { VERSIONS } from "@config/versions"
 

@@ -6,13 +6,13 @@ import {
   Version,
   CCIPSendErrorEntry,
   SupportedTokenConfig,
-  determineTokenMechanism,
   TokenMechanism,
   NetworkFees,
   LaneConfig,
   Network,
-} from "."
-import { ExplorerInfo, SupportedChain } from "@config/types"
+} from "./types.ts"
+import { determineTokenMechanism } from "./utils.ts"
+import { ExplorerInfo, SupportedChain } from "@config/types.ts"
 import {
   directoryToSupportedChain,
   getChainIcon,
@@ -20,24 +20,23 @@ import {
   getExplorerAddressUrl,
   getTitle,
   supportedChainToChainInRdd,
-} from "@features/utils"
+} from "@features/utils/index.ts"
 
 // For mainnet
-import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json"
-import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json"
-import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json"
+import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" assert { type: "json" }
+import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json" assert { type: "json" }
+import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json" assert { type: "json" }
 
 // For testnet
-
-import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json"
-import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json"
-import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json"
+import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json" assert { type: "json" }
+import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json" assert { type: "json" }
+import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" assert { type: "json" }
 
 // Import errors by version
 // eslint-disable-next-line camelcase
-import * as errors_v1_5_0 from "./errors/v1_5_0"
+import * as errors_v1_5_0 from "./errors/v1_5_0/index.ts"
 // eslint-disable-next-line camelcase
-import * as errors_v1_5_1 from "./errors/v1_5_1"
+import * as errors_v1_5_1 from "./errors/v1_5_1/index.ts"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]

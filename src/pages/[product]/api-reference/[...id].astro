@@ -1,57 +1,60 @@
 ---
+// [product]/api-reference/[...id].astro
+
 import { getCollection, render } from "astro:content"
 import DocsLayout from "~/layouts/DocsLayout.astro"
 import { VERSIONS, type Collection } from "@config/versions"
-import type { BaseFrontmatter } from "~/content.config.mts"
+import type { BaseFrontmatter } from "~/content.config.ts"
 
 interface MyEntry {
-  id: string // e.g. "api-reference/v151/burn-token-pool.mdx"
+  id: string
   collection: Collection
   data: BaseFrontmatter
   body?: string
 }
 
-/**
- * Each route in getStaticPaths() needs a `params` object
- * that matches the segments in [...id].astro => `{ product, id }`
- */
 interface MyRoute {
   params: { product: Collection; id: string }
   props: { entry: MyEntry }
 }
 
 export async function getStaticPaths(): Promise<MyRoute[]> {
+  console.log("=> getStaticPaths() for [product]/api-reference/[...id].astro called!")
+
+  const versionToNoDots = (version: string) => version.replace(/\./g, "")
+
   const paths: MyRoute[] = []
 
   for (const [product, versions] of Object.entries(VERSIONS)) {
-    // 1. Load all MDX entries for that product
     const allEntries = await getCollection(product as Collection)
 
-    // 2. Filter "api-reference/" only
+    // Filter only "api-reference/"
     const apiEntries = allEntries.filter((e: MyEntry) => e.id.startsWith("api-reference/"))
 
     for (const version of versions.ALL) {
-      // Convert "v1.5.1" => "v151"
-      const folderVersion = version.replace(/\./g, "")
-      const indexPath = `api-reference/${folderVersion}/index`
+      // 1) Convert "v1.5.1" => "v151" to match Astro's actual ID
+      const folderVersion = versionToNoDots(version)
 
-      // Match "api-reference/v151/index" or "...index.mdx"
-      const versionEntry = apiEntries.find((ent: MyEntry) => ent.id === indexPath || ent.id === `${indexPath}.mdx`)
+      // 2) Find "api-reference/v151/index" or "...index.mdx"
+      const indexPath = `api-reference/${folderVersion}/index`
+      const versionEntry = apiEntries.find(
+        (ent: MyEntry) => ent.id === indexPath || ent.id === `${indexPath}.mdx`
+      ) as MyEntry
 
       if (versionEntry) {
-        // We still want the *route* to be /v1.5.1, so the param is the dotted version
+        // 3) Add a route for the version's "index" page at /ccip/api-reference/v1.5.1
         paths.push({
-          params: { product: product as Collection, id: version },
+          params: { product: product as Collection, id: version }, // show the dotted version in the URL
           props: {
             entry: {
-              id: (versionEntry as MyEntry).id,
+              id: versionEntry.id,
               collection: product as Collection,
-              data: (versionEntry as MyEntry).data,
+              data: versionEntry.data,
             },
           },
         })
 
-        // Additional docs in "api-reference/v151/"
+        // 4) Additional docs in "api-reference/v151/"
         const versionDocs = apiEntries.filter(
           (doc: MyEntry) =>
             doc.id.startsWith(`api-reference/${folderVersion}/`) &&
@@ -59,22 +62,26 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
             doc.id !== `api-reference/${folderVersion}/index.mdx`
         )
 
-        for (const docEntry of versionDocs) {
-          let docSlug = (docEntry as MyEntry).id.replace("api-reference/", "").replace(/\.(md|mdx)$/, "")
+        for (const docEntry of versionDocs as MyEntry[]) {
+          // e.g. "api-reference/v151/burn-token-pool.mdx" => "v151/burn-token-pool"
+          let docSlug = docEntry.id.replace("api-reference/", "").replace(/\.(md|mdx)$/, "")
+
+          // 5) Replace the no-dot folder name => dotted version for the final route
+          // e.g. "v151/burn-token-pool" => "v1.5.1/burn-token-pool"
           docSlug = docSlug.replace(folderVersion, version)
 
           paths.push({
             params: { product: product as Collection, id: docSlug },
             props: {
               entry: {
-                id: (docEntry as MyEntry).id,
+                id: docEntry.id,
                 collection: product as Collection,
-                data: (docEntry as MyEntry).data,
+                data: docEntry.data,
               },
             },
           })
 
-          console.log(`(PRODUCT=${product}) -> /${product}/api-reference/${docSlug}`)
+          console.log(`(PRODUCT=${product}) => /${product}/api-reference/${docSlug}`)
         }
       }
     }
@@ -83,6 +90,7 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
   return paths
 }
 
+// normal page code
 interface Props {
   entry: MyEntry
 }

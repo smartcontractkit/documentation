@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
-import type { DeployedContracts } from "@stores/lanes"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { laneStore } from "~/stores/lanes/index.ts"
+import type { DeployedContracts } from "~/stores/lanes/index.ts"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 import { utils } from "ethers"
 
 type AddressFields = Extract<keyof DeployedContracts, "token" | "tokenPool" | "tokenPools">

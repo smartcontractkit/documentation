@@ -1,8 +1,8 @@
-import { TutorialStep } from "../TutorialSetup/TutorialStep"
-import { Callout } from "../TutorialSetup/Callout"
-import type { Network } from "@config/data/ccip/types"
+import { TutorialStep } from "../TutorialSetup/TutorialStep.tsx"
+import { Callout } from "../TutorialSetup/Callout.tsx"
+import type { Network } from "~/config/data/ccip/types.ts"
 import styles from "./ContractVerificationStep.module.css"
-import { getExplorerAddressUrl } from "~/features/utils"
+import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 
 interface ContractVerificationStepProps {
   stepId: string

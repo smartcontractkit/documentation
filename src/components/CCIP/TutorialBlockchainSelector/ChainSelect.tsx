@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import styles from "./ChainSelect.module.css"
-import type { Network } from "@config/data/ccip/types"
+import type { Network } from "~/config/data/ccip/types.ts"
 
 interface ChainSelectProps {
   value: string

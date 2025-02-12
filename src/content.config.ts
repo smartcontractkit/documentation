@@ -183,6 +183,14 @@ const gettingStartedCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const anyApiCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/any-api",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** --------------------------
  *  Combine them all in `collections` export
  * -------------------------- */
@@ -200,6 +208,7 @@ export const collections = {
   quickstarts: quickstartsCollection,
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
+  "any-api": anyApiCollection,
 }
 
 export type Collection = keyof typeof collections

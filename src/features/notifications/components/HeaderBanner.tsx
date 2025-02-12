@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react"
 import headerbanner from "@chainlink/design-system/headerbanner.module.css"
 import headerbannerCustom from "./headerBanner.module.css"
-import { clsx } from "~/lib"
-import { CloseIcon } from "./CloseIcon"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { CloseIcon } from "./CloseIcon.tsx"
 
 type BannerType = "info" | "success" | "warning" | "danger"
 export type BannerContent = {

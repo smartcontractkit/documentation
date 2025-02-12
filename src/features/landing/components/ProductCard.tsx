@@ -1,6 +1,4 @@
 /** @jsxImportSource preact */
-import { clsx } from "~/lib"
-
 import productCard from "./ProductCard.module.css"
 import { ImageMetadata } from "astro"
 

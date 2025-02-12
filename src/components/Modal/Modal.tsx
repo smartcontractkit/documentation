@@ -2,8 +2,8 @@ import React from "react"
 import styles from "./Modal.module.css"
 import FocusTrap from "focus-trap-react"
 import { createPortal } from "react-dom"
-import { useKeyPress } from "~/hooks/useKeyPress"
-import { clsx } from "~/lib"
+import { useKeyPress } from "~/hooks/useKeyPress.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export function Modal({
   children,

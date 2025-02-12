@@ -1,8 +1,8 @@
 import { useStore } from "@nanostores/react"
 import "./Drawer.css"
-import { drawerContentStore } from "./drawerStore"
+import { drawerContentStore } from "./drawerStore.ts"
 import { useRef, useEffect, useState } from "react"
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 function Drawer() {
   const drawerRef = useRef<HTMLDivElement>(null)
