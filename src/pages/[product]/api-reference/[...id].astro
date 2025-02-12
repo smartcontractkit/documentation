@@ -4,13 +4,10 @@ import DocsLayout from "~/layouts/DocsLayout.astro"
 import { VERSIONS, type Collection } from "@config/versions"
 import type { BaseFrontmatter } from "~/content.config.mts"
 
-/**
- * This represents one returned entry from getCollection().
- */
 interface MyEntry {
   id: string // e.g. "api-reference/v151/burn-token-pool.mdx"
-  collection: Collection // e.g. "ccip", "vrf", etc.
-  data: BaseFrontmatter // your custom frontmatter
+  collection: Collection
+  data: BaseFrontmatter
   body?: string
 }
 
@@ -76,6 +73,8 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
               },
             },
           })
+
+          console.log(`(PRODUCT=${product}) -> /${product}/api-reference/${docSlug}`)
         }
       }
     }
@@ -84,16 +83,13 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
   return paths
 }
 
-// Define the Props for this page
 interface Props {
   entry: MyEntry
 }
 
-// Unpack Astro.props (has `entry`)
 const props = Astro.props as Props
 const { entry } = props
 
-// Use the new `render(...)` from astro:content
 const { Content, headings } = await render(entry)
 ---
 

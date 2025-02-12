@@ -52,4 +52,7 @@ export default defineConfig({
   vite: {
     plugins: [yaml()],
   },
+  legacy: {
+    collections: false,
+  },
 })
