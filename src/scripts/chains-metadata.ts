@@ -1,5 +1,5 @@
-import linkNameSymbol from "./reference/linkNameSymbol.json"
-import currentChainsMetadata from "./reference/chains.json"
+import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
+import currentChainsMetadata from "./reference/chains.json" assert { type: "json" }
 import fetch from "node-fetch"
 import { isEqual } from "lodash"
 import { writeFile } from "fs/promises"

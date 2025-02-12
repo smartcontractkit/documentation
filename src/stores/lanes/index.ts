@@ -1,6 +1,6 @@
 import { atom, computed } from "nanostores"
-import { Environment } from "@config/data/ccip"
-import type { Network } from "@config/data/ccip/types"
+import { Environment } from "@config/data/ccip/index.ts"
+import type { Network } from "@config/data/ccip/types.ts"
 import { utils } from "ethers"
 
 export type DeployedContracts = {

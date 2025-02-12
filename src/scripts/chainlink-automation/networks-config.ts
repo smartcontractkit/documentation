@@ -1,7 +1,10 @@
-import { automationAddresses, chainlinkAutomationConfig as currentConfig } from "@features/chainlink-automation/data"
-import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types"
-import { SupportedChain } from "@config"
-import { getWeb3Provider } from "@features/utils"
+import {
+  automationAddresses,
+  chainlinkAutomationConfig as currentConfig,
+} from "@features/chainlink-automation/data/index.ts"
+import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types/index.ts"
+import { SupportedChain } from "@config/index.ts"
+import { getWeb3Provider } from "@features/utils/index.ts"
 // eslint-disable-next-line camelcase
 import { KeeperRegistry, keeperRegistry1_3, keeperRegistry2_0 } from "@abi"
 import { ContractInterface, ethers } from "ethers"

@@ -1,6 +1,13 @@
-import { chains, chainToTechnology, ExplorerInfo, SupportedChain, SupportedTechnology, web3Providers } from "@config"
+import {
+  chains,
+  chainToTechnology,
+  ExplorerInfo,
+  SupportedChain,
+  SupportedTechnology,
+  web3Providers,
+} from "@config/index.ts"
 import { utils } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json"
+import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string

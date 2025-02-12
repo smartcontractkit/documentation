@@ -1,21 +1,13 @@
 ---
-// [product]/api-reference/[...id].astro
-
 import { getCollection, render } from "astro:content"
+import type { CollectionEntry } from "astro:content"
 import DocsLayout from "~/layouts/DocsLayout.astro"
 import { VERSIONS, type Collection } from "@config/versions"
 import type { BaseFrontmatter } from "~/content.config.ts"
 
-interface MyEntry {
-  id: string
-  collection: Collection
-  data: BaseFrontmatter
-  body?: string
-}
-
 interface MyRoute {
   params: { product: Collection; id: string }
-  props: { entry: MyEntry }
+  props: { entry: CollectionEntry<Collection> }
 }
 
 export async function getStaticPaths(): Promise<MyRoute[]> {
@@ -29,7 +21,7 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
     const allEntries = await getCollection(product as Collection)
 
     // Filter only "api-reference/"
-    const apiEntries = allEntries.filter((e: MyEntry) => e.id.startsWith("api-reference/"))
+    const apiEntries = allEntries.filter((e) => e.id.startsWith("api-reference/"))
 
     for (const version of versions.ALL) {
       // 1) Convert "v1.5.1" => "v151" to match Astro's actual ID
@@ -37,32 +29,24 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
 
       // 2) Find "api-reference/v151/index" or "...index.mdx"
       const indexPath = `api-reference/${folderVersion}/index`
-      const versionEntry = apiEntries.find(
-        (ent: MyEntry) => ent.id === indexPath || ent.id === `${indexPath}.mdx`
-      ) as MyEntry
+      const versionEntry = apiEntries.find((ent) => ent.id === indexPath || ent.id === `${indexPath}.mdx`)
 
       if (versionEntry) {
         // 3) Add a route for the version's "index" page at /ccip/api-reference/v1.5.1
         paths.push({
-          params: { product: product as Collection, id: version }, // show the dotted version in the URL
-          props: {
-            entry: {
-              id: versionEntry.id,
-              collection: product as Collection,
-              data: versionEntry.data,
-            },
-          },
+          params: { product: product as Collection, id: version },
+          props: { entry: versionEntry },
         })
 
         // 4) Additional docs in "api-reference/v151/"
         const versionDocs = apiEntries.filter(
-          (doc: MyEntry) =>
+          (doc) =>
             doc.id.startsWith(`api-reference/${folderVersion}/`) &&
             doc.id !== `api-reference/${folderVersion}/index` &&
             doc.id !== `api-reference/${folderVersion}/index.mdx`
         )
 
-        for (const docEntry of versionDocs as MyEntry[]) {
+        for (const docEntry of versionDocs) {
           // e.g. "api-reference/v151/burn-token-pool.mdx" => "v151/burn-token-pool"
           let docSlug = docEntry.id.replace("api-reference/", "").replace(/\.(md|mdx)$/, "")
 
@@ -72,13 +56,7 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
 
           paths.push({
             params: { product: product as Collection, id: docSlug },
-            props: {
-              entry: {
-                id: docEntry.id,
-                collection: product as Collection,
-                data: docEntry.data,
-              },
-            },
+            props: { entry: docEntry },
           })
 
           console.log(`(PRODUCT=${product}) => /${product}/api-reference/${docSlug}`)
@@ -92,15 +70,38 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
 
 // normal page code
 interface Props {
-  entry: MyEntry
+  entry: CollectionEntry<Collection>
 }
 
 const props = Astro.props as Props
 const { entry } = props
 
+const sectionMap = {
+  "data-feeds": "dataFeeds",
+  "chainlink-automation": "automation",
+  "chainlink-functions": "chainlinkFunctions",
+  "chainlink-nodes": "nodeOperator",
+  "data-streams": "dataStreams",
+  "chainlink-local": "chainlinkLocal",
+  ccip: "ccip",
+  vrf: "vrf",
+} as const
+
+type SectionType =
+  | "global"
+  | "ccip"
+  | "automation"
+  | "chainlinkFunctions"
+  | "nodeOperator"
+  | "dataFeeds"
+  | "dataStreams"
+  | "legacy"
+  | "vrf"
+  | "chainlinkLocal"
+const section = (sectionMap[entry.collection] || "global") as SectionType
 const { Content, headings } = await render(entry)
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
+<DocsLayout frontmatter={{ ...entry.data, section }} {headings}>
   <Content />
 </DocsLayout>

@@ -10,7 +10,7 @@ import automationShape from "../../../assets/product-logos/automation-shape.svg"
 import dataFeedShape from "../../../assets/product-logos/data-feeds-shape.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import dataStreamsShape from "../../../assets/product-logos/data-streams-shape.svg"
-import { ProductCardProps } from "../components/ProductCard"
+import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
   { id: "ethereum", title: "Ethereum" },

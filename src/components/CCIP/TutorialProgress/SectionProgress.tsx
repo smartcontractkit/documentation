@@ -1,5 +1,5 @@
 import styles from "./SectionProgress.module.css"
-import { navigateToStep, type StepId } from "@stores/lanes"
+import { navigateToStep, type StepId } from "@stores/lanes/index.ts"
 import { useMemo } from "react"
 
 interface SectionProgressProps {

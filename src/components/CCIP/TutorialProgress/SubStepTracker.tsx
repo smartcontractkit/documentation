@@ -1,4 +1,4 @@
-import { SubStep } from "./types"
+import { SubStep } from "./types.ts"
 
 interface SubStepTrackerProps {
   steps: SubStep[]

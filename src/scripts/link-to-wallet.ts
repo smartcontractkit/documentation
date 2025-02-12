@@ -2,9 +2,9 @@ import { MetaMaskInpageProvider } from "@metamask/providers"
 import detectEthereumProvider from "@metamask/detect-provider"
 import { BigNumberish, ethers } from "ethers"
 import { Web3Provider } from "@ethersproject/providers"
-import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json"
-import chains from "./reference/chains.json"
-import linkNameSymbol from "./reference/linkNameSymbol.json"
+import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" assert { type: "json" }
+import chains from "./reference/chains.json" assert { type: "json" }
+import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
 // disable unnecessary warnings

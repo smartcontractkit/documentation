@@ -1,9 +1,7 @@
-import ApolloClientPackage from "@apollo/client"
+import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client"
 import { setContext } from "@apollo/client/link/context"
 import dotenv from "dotenv"
 dotenv.config()
-
-const { ApolloClient, InMemoryCache, HttpLink } = ApolloClientPackage
 
 if (!process.env.GRAPHQL_SERVER_URL) {
   throw new Error("Environment variable GRAPHQL_SERVER_URL is not set")
