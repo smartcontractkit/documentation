@@ -393,6 +393,7 @@ const StreamsNetworksData = [
   {
     network: "Berachain",
     logoUrl: "/assets/chains/berachain.svg",
+    networkStatus: "https://status.berachain.com/",
     mainnet: {
       label: "Berachain Mainnet",
       verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
@@ -407,6 +408,7 @@ const StreamsNetworksData = [
   {
     network: "Blast",
     logoUrl: "/assets/chains/blast.svg",
+    networkStatus: "https://status.blast.io/",
     mainnet: {
       label: "Blast Mainnet",
       verifierProxy: "0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e",
