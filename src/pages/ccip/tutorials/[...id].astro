@@ -10,13 +10,13 @@ type Props = {
 export async function getStaticPaths() {
   const entries = await getCollection("ccip", (entry) => entry.id.startsWith("tutorials/"))
 
-  const paths: { params: { slug: string }; props: Props }[] = []
+  const paths: { params: { id: string }; props: Props }[] = []
 
   for (const entry of entries) {
-    const tutorialSlug = entry.id.replace(/^tutorials\//, "").replace(/\.(md|mdx)$/, "")
+    const tutorialId = entry.id.replace(/^tutorials\//, "").replace(/\.(md|mdx)$/, "")
 
     paths.push({
-      params: { slug: tutorialSlug },
+      params: { id: tutorialId },
       props: { entry },
     })
   }
@@ -29,7 +29,7 @@ const { entry } = Astro.props as Props
 const { Content, headings } = await render(entry)
 
 // Only use TutorialLayout for specific interactive tutorials
-const Layout = entry.id === "tutorials/cross-chain-tokens/register-from-eoa-remix.mdx" ? TutorialLayout : DocsLayout
+const Layout = entry.id === "tutorials/cross-chain-tokens/register-from-eoa-remix" ? TutorialLayout : DocsLayout
 ---
 
 <Layout frontmatter={entry.data} headings={headings}>
