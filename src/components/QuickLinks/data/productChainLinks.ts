@@ -228,7 +228,7 @@ export const chainNames: Record<string, string> = {
   moonbeam: "Moonbeam",
   moonriver: "Moonriver",
   opbnb: "opBNB",
-  optimism: "OP Mainnet",
+  optimism: "OP",
   polygonzkevm: "Polygon zkEVM",
   polygon: "Polygon",
   scroll: "Scroll",
