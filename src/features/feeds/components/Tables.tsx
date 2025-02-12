@@ -455,10 +455,16 @@ const StreamsNetworksData = [
   {
     network: "Ink",
     logoUrl: "/assets/chains/ink.svg",
+    networkStatus: "https://status.inkonchain.com/",
     mainnet: {
       label: "Ink Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://explorer.inkonchain.com/address/%s",
+    },
+    testnet: {
+      label: "Ink Sepolia Testnet",
+      verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
+      explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
     },
   },
   {
@@ -474,6 +480,15 @@ const StreamsNetworksData = [
       label: "Mantle Sepolia Testnet",
       verifierProxy: "0xdc458847982C496E1a5E25D005A332D5a838302B",
       explorerUrl: "https://sepolia.mantlescan.xyz/address/%s",
+    },
+  },
+  {
+    network: "Monad",
+    logoUrl: "/assets/chains/monad.svg",
+    testnet: {
+      label: "Monad Testnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
     },
   },
   {
@@ -592,6 +607,20 @@ const StreamsNetworksData = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "World Chain",
+    logoUrl: "/assets/chains/worldchain.svg",
+    mainnet: {
+      label: "World Chain Mainnet",
+      verifierProxy: "0x65eaE24251C5707D5aCBF7461A49fe87CB1bE4c7",
+      explorerUrl: "https://worldscan.org/address/%s",
+    },
+    testnet: {
+      label: "World Chain Sepolia Testnet",
+      verifierProxy: "0x2482A390bE58b3cBB6Df72dB2e950Db20256e55E",
+      explorerUrl: "https://sepolia.worldscan.org/address/%s",
     },
   },
   {
