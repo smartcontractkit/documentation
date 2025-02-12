@@ -14,7 +14,7 @@ function TokenCard({ id, logo, link, onClick }: TokenCardProps) {
       <a href={link}>
         <div className="token-card__container">
           {/* We cannot use the normal Image/onError syntax as a fallback as the element is server rendered 
-          and the onerror does not seem to work correctly. Using Picutre will also not work. */}
+          and the onerror does not seem to work correctly. Using Picture will also not work. */}
           <object data={logo} type="image/png">
             <img src={fallbackTokenIconUrl} alt="" />
           </object>
