@@ -10,6 +10,7 @@ import sitemap from "@astrojs/sitemap"
 import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
+import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 
 // https://astro.build/config
 export default defineConfig({
@@ -22,6 +23,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],
     }),

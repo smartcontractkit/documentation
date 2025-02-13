@@ -1,4 +1,6 @@
-import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client"
+import { ApolloClient } from "@apollo/client/core"
+import { InMemoryCache } from "@apollo/client/cache"
+import { HttpLink } from "@apollo/client/link/http"
 import { setContext } from "@apollo/client/link/context"
 import dotenv from "dotenv"
 dotenv.config()
