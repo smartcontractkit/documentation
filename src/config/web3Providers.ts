@@ -85,7 +85,7 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   TREASURE_TOPAZ: () => new providers.JsonRpcProvider("https://rpc.topaz.treasure.lol"),
   LENS_SEPOLIA: () => new providers.JsonRpcProvider("https://rpc.testnet.lens.dev"),
   BERACHAIN_MAINNET: () => new providers.JsonRpcProvider("https://rpc.berachain.com"),
-  BERACHAIN_TESTNET: () => new providers.JsonRpcProvider("https://bartio.rpc.berachain.com"),
+  BERACHAIN_BARTIO: () => new providers.JsonRpcProvider("https://bartio.rpc.berachain.com"),
   HYPERLIQUID_TESTNET: () => new providers.JsonRpcProvider("https://api.hyperliquid-testnet.xyz/evm"),
   MERLIN_TESTNET: () => new providers.JsonRpcProvider("hhttps://testnet-rpc.merlinchain.io/"),
   MERLIN_MAINNET: () => new providers.JsonRpcProvider("https://rpc.merlinchain.io"),
