@@ -1,4 +1,5 @@
 declare module "*.astro" {
-  const content: any
+  import { AstroComponentFactory } from "astro/runtime/server/index.js"
+  const content: AstroComponentFactory
   export default content
 }

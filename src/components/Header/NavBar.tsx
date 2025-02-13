@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { NavBar as Nav } from "./Nav/index.ts"
 import { Search } from "./aiSearch/Search.tsx"
 import { getNavigationProps } from "./getNavigationProps.ts"

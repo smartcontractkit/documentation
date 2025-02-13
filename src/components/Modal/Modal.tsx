@@ -15,7 +15,7 @@ export function Modal({
   children: React.ReactNode
   isOpen: boolean
   onClose: () => void
-  style?: Record<string, any>
+  style?: React.CSSProperties
   modalId?: string
 }) {
   useKeyPress("Escape", { onDown: onClose })

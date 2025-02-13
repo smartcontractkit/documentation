@@ -42,7 +42,12 @@ export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
   return fetch(url).then((res) => res.json())
 }
 
-export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | any> => {
+type ChainNetwork = Chain["networks"][0]
+type NetworkWithMetadata = ChainNetwork & { metadata?: ChainMetadata[] }
+
+export const getChainMetadata = async (
+  chain: Chain
+): Promise<Omit<Chain, "networks"> & { networks: (NetworkWithMetadata | undefined)[] }> => {
   const requests = chain.networks.map((network) =>
     network?.rddUrl
       ? getFeedsMetadata(network?.rddUrl).then((metadata) => ({

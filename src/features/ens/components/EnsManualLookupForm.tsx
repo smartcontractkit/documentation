@@ -16,9 +16,9 @@ export const EnsManualLookupForm = () => {
   const [asset2, setAsset2] = useState("USD")
   const [isLoading, setIsLoading] = useState(false)
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: SubmitEvent) {
     e.preventDefault()
-    const formData = new FormData(e.target)
+    const formData = new FormData(e.target as HTMLFormElement)
 
     const selectedEnsString = formData.get("asset-1") + "-" + formData.get("asset-2") + ".data.eth"
 
@@ -50,7 +50,7 @@ export const EnsManualLookupForm = () => {
             class={styles.input}
             type="text"
             value={asset1}
-            onChange={(e: any) => setAsset1(e.target.value)}
+            onChange={(e: Event) => setAsset1((e.target as HTMLInputElement).value)}
           />
           <span style={{ margin: "0 var(--space-2x)" }}>/</span>
           <input
@@ -58,7 +58,7 @@ export const EnsManualLookupForm = () => {
             class={styles.input}
             type="text"
             value={asset2}
-            onChange={(e: any) => setAsset2(e.target.value)}
+            onChange={(e: Event) => setAsset2((e.target as HTMLInputElement).value)}
           />
         </div>
         <div>

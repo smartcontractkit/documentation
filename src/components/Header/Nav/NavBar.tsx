@@ -8,7 +8,25 @@ import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
 import { useHideHeader } from "./useHideHeader.tsx"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
 
-declare const Weglot: any
+interface WeglotType {
+  initialize(config: {
+    api_key: string
+    switchers: Array<{
+      button_style: {
+        full_name: boolean
+        with_name: boolean
+        is_dropdown: boolean
+        with_flags: boolean
+      }
+      location: {
+        target: string
+        sibling: null
+      }
+    }>
+  }): void
+}
+
+declare const Weglot: WeglotType
 
 export type SearchTrigger = React.ReactNode
 
