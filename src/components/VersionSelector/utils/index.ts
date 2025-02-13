@@ -1,1 +1,1 @@
-export * from "./versions"
+export * from "./versions.ts"

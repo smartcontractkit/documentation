@@ -1,4 +1,4 @@
-import { ChainMetadata } from "./api"
+import { ChainMetadata } from "./api/index.ts"
 
 type ChainTags = ("default" | "smartData" | "rates" | "streams")[]
 export interface ChainNetwork {

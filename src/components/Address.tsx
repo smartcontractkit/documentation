@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { clsx } from "../lib" // Ensure that the `clsx` function is correctly imported or implemented.
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export type Props = {
   contractUrl: string

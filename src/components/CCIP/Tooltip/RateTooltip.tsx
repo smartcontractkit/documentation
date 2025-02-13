@@ -1,5 +1,5 @@
-import { Tooltip } from "~/features/common/Tooltip"
-import { LaneFilter, SupportedTokenConfig, displayRate } from "~/config/data/ccip"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { LaneFilter, SupportedTokenConfig, displayRate } from "~/config/data/ccip/index.ts"
 
 function RateTooltip({
   destinationLane,

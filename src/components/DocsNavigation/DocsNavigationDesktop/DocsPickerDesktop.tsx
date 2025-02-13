@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
-import { getNavigationProps } from "../../Header/getNavigationProps"
+import { isMatchedPath } from "../../Header/Nav/isMatchedPath.ts"
+import { getNavigationProps } from "../../Header/getNavigationProps.ts"
 import styles from "./docsPickerDesktop.module.css"
-import { clsx } from "../../Header/Nav/utils"
+import { clsx } from "../../Header/Nav/utils.ts"
 import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
 function DocsPickerDesktop({ pathname }: { pathname: string }) {

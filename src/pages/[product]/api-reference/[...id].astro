@@ -1,0 +1,110 @@
+---
+import { getCollection, render } from "astro:content"
+import type { CollectionEntry } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { VERSIONS, type Collection } from "@config/versions"
+
+interface MyRoute {
+  params: { product: Collection; id: string }
+  props: { entry: CollectionEntry<Collection> }
+}
+
+export async function getStaticPaths(): Promise<MyRoute[]> {
+  const paths: MyRoute[] = []
+
+  // Convert version with dots to filesystem version (e.g., v1.5.1 -> v151)
+  const toFileVersion = (version: string) => version.replace(/\./g, "")
+
+  for (const [product, versions] of Object.entries(VERSIONS)) {
+    const allEntries = await getCollection(product as Collection)
+
+    // Filter only "api-reference/"
+    const apiEntries = allEntries.filter((e) => e.id.startsWith("api-reference/"))
+
+    for (const version of versions.ALL) {
+      const fileVersion = toFileVersion(version)
+
+      // First, add a route for the base version URL (e.g., /ccip/api-reference/v1.5.1)
+      const versionIndexEntry = apiEntries.find(
+        (e) =>
+          e.id === `api-reference/${fileVersion}/index.mdx` ||
+          e.id === `api-reference/${fileVersion}/index.md` ||
+          e.id === `api-reference/${fileVersion}`
+      )
+
+      if (versionIndexEntry) {
+        // Add the version index route
+        paths.push({
+          params: {
+            product: product as Collection,
+            id: version,
+          },
+          props: { entry: versionIndexEntry },
+        })
+
+        // Get all other docs for this version
+        const versionDocs = apiEntries.filter(
+          (doc) =>
+            doc.id.startsWith(`api-reference/${fileVersion}/`) &&
+            !doc.id.endsWith("/index.mdx") &&
+            !doc.id.endsWith("/index.md") &&
+            doc.id !== `api-reference/${fileVersion}`
+        )
+
+        for (const doc of versionDocs) {
+          // Extract the doc name without version prefix and extension
+          const docName = doc.id.replace(`api-reference/${fileVersion}/`, "").replace(/\.(md|mdx)$/, "")
+
+          // Add route for the doc
+          paths.push({
+            params: {
+              product: product as Collection,
+              id: `${version}/${docName}`,
+            },
+            props: { entry: doc },
+          })
+        }
+      }
+    }
+  }
+
+  return paths
+}
+
+// normal page code
+interface Props {
+  entry: CollectionEntry<Collection>
+}
+
+const props = Astro.props as Props
+const { entry } = props
+
+const sectionMap = {
+  "data-feeds": "dataFeeds",
+  "chainlink-automation": "automation",
+  "chainlink-functions": "chainlinkFunctions",
+  "chainlink-nodes": "nodeOperator",
+  "data-streams": "dataStreams",
+  "chainlink-local": "chainlinkLocal",
+  ccip: "ccip",
+  vrf: "vrf",
+} as const
+
+type SectionType =
+  | "global"
+  | "ccip"
+  | "automation"
+  | "chainlinkFunctions"
+  | "nodeOperator"
+  | "dataFeeds"
+  | "dataStreams"
+  | "legacy"
+  | "vrf"
+  | "chainlinkLocal"
+const section = (sectionMap[entry.collection] || "global") as SectionType
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={{ ...entry.data, section }} {headings}>
+  <Content />
+</DocsLayout>

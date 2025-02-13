@@ -1,4 +1,4 @@
-import type { Collection } from "src/content/config"
+import type { Collection } from "~/content.config.ts"
 
 // Base type for version configuration
 export interface VersionConfig {

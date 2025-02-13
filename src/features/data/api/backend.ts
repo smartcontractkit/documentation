@@ -1,6 +1,6 @@
 import EleventyFetch from "@11ty/eleventy-fetch"
-import { ChainMetadata } from "."
-import { Chain } from "../chains"
+import { ChainMetadata } from "./index.ts"
+import { Chain } from "../chains.ts"
 
 export const getServerSideChainMetadata = async (chains: Chain[]): Promise<Record<string, ChainMetadata>> => {
   const cache = {}
@@ -10,7 +10,7 @@ export const getServerSideChainMetadata = async (chains: Chain[]): Promise<Recor
       nw?.rddUrl
         ? EleventyFetch(nw?.rddUrl, {
             duration: "1d", // save for 1 day
-            type: "json", // we’ll parse JSON for you
+            type: "json", // we'll parse JSON for you
           }).then((metadata) => ({
             ...nw,
             metadata: metadata.filter(

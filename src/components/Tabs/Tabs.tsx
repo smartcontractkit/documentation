@@ -1,10 +1,10 @@
 /** @jsxImportSource preact */
 import type { ComponentChild } from "preact"
 import { useRef } from "preact/hooks"
-import { useTabState } from "./useTabState"
+import { useTabState } from "./useTabState.ts"
 import styles from "./Tabs.module.css"
 import button from "@chainlink/design-system/button.module.css"
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 const tabSlotKey = "tab." as const
 const panelSlotKey = "panel." as const
 

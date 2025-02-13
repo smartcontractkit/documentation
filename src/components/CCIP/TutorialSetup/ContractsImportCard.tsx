@@ -1,9 +1,8 @@
-import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox"
-import { CodeSampleReact } from "@components/CodeSample/CodeSampleReact"
+import { CodeSampleReact } from "@components/CodeSample/CodeSampleReact.tsx"
 import styles from "./ContractsImportCard.module.css"
-import { TutorialCard } from "./TutorialCard"
-import { SetupSection } from "./SetupSection"
-import type { StepId, SubStepId } from "@stores/lanes"
+import { TutorialCard } from "./TutorialCard.tsx"
+import { SetupSection } from "./SetupSection.tsx"
+import type { StepId, SubStepId } from "@stores/lanes/index.ts"
 
 export const ContractsImportCard = () => {
   // Generate unique ID for navigation

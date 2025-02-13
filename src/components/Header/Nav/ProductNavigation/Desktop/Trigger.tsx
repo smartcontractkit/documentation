@@ -1,4 +1,4 @@
-import { CaretIcon } from "../CaretIcon"
+import { CaretIcon } from "../CaretIcon.tsx"
 import styles from "./trigger.module.css"
 
 type Props = {

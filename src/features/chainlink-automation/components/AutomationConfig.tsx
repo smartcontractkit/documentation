@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { ethers, BigNumber } from "ethers"
-import { ChainlinkAutomationConfig } from "@features/chainlink-automation"
+import { ChainlinkAutomationConfig } from "@features/chainlink-automation/types/index.ts"
 import { Address } from "@components"
 
 export const AutomationConfig = ({

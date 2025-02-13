@@ -1,6 +1,6 @@
 import { atom, computed } from "nanostores"
-import { Environment } from "@config/data/ccip"
-import type { Network } from "@config/data/ccip/types"
+import { Environment } from "@config/data/ccip/index.ts"
+import type { Network } from "@config/data/ccip/types.ts"
 import { utils } from "ethers"
 
 export type DeployedContracts = {
@@ -586,9 +586,6 @@ export const checkProgress = (stepId: StepId, subStepId: string) => {
 }
 
 export const navigateToStep = (stepId: StepId) => {
-  const store = getStoreForStep(stepId)
-  const currentState = store.get()
-
   // Update lane store to reflect the current step
   const currentLaneState = laneStore.get()
   laneStore.set({

@@ -1,4 +1,4 @@
-import { EIP1139Provider, isEIP1139Provider } from "./EIP1139Interface"
+import { EIP1139Provider, isEIP1139Provider } from "./EIP1139Interface.ts"
 
 interface MetamaskExternalProvider extends EIP1139Provider {
   isMetaMask: true

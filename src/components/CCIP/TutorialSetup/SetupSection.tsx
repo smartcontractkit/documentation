@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import styles from "./SetupSection.module.css"
-import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
-import type { StepId, SubStepId } from "@stores/lanes"
+import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
+import type { StepId, SubStepId } from "@stores/lanes/index.ts"
 
 interface SetupSectionProps {
   title: string

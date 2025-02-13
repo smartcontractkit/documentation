@@ -1,12 +1,12 @@
 ---
-import * as CONFIG from "~/config"
-import type { BaseFrontmatter } from "~/content/config"
+import { SITE } from "~/config/site"
+import type { BaseFrontmatter } from "~/content.config.ts"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
 import DocsNavigation from "~/components/DocsNavigation"
 import Segments from "~/components/Segment/Segments"
-import { Environment } from "~/config/data/ccip"
+import { Environment } from "~/config/data/ccip/types"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
 interface Props {
@@ -27,7 +27,7 @@ const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+const formattedContentTitle = `${frontmatter.title} | ${SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 
@@ -73,7 +73,7 @@ frontmatter.metadata.description =
   <script>
     import "~/scripts"
     if (window["includeLinkToWalletScript"]) {
-      import("~/scripts/link-to-wallet")
+      import("~/scripts/link-to-wallet.ts")
     }
   </script>
 </BaseLayout>

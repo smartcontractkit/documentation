@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { Cube } from "./Cube"
+import { Cube } from "./Cube.tsx"
 import hexagonStyles from "./Hexagon.module.css"
 export const Hexagon = () => (
   <div id={hexagonStyles.outerWrapper}>

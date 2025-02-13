@@ -1,7 +1,7 @@
-import { Environment, LaneConfig } from "~/config/data/ccip"
-import Search from "../Search/Search"
+import { Environment, LaneConfig } from "~/config/data/ccip/index.ts"
+import Search from "../Search/Search.tsx"
 import "./Hero.css"
-import { ExplorerInfo } from "~/config/types"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface HeroProps {
   chains: {

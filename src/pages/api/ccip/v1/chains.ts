@@ -13,10 +13,10 @@ import {
   structuredLog,
   APIErrorType,
   createErrorResponse,
-} from "../utils"
+} from "../utils.ts"
 
-import type { ChainDetails, ChainApiResponse } from "../types"
-import { ChainDataService } from "../../services/chain-data"
+import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
+import { ChainDataService } from "../../services/chain-data.ts"
 
 export const prerender = false
 

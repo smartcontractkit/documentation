@@ -1,1 +1,1 @@
-export * from "./DonId"
+export * from "./DonId.tsx"

@@ -1,5 +1,5 @@
 // This is a copy of the Preact Address component. This was required in the CCIP pages.
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export type Props = {
   contractUrl?: string
