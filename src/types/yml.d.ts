@@ -1,9 +1,9 @@
 declare module "*.yml" {
-  const content: Record<string, unknown>
+  const content: any
   export default content
 }
 
 declare module "*.yaml" {
-  const content: Record<string, unknown>
+  const content: any
   export default content
 }
