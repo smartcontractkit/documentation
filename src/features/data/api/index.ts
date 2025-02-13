@@ -1,4 +1,4 @@
-import { Chain } from "../chains"
+import { Chain } from "../chains.ts"
 
 interface Docs {
   assetName?: string

@@ -1,5 +1,5 @@
 import React from "react"
-import { useRemixUrl } from "src/hooks/useRemixUrl"
+import { useRemixUrl } from "src/hooks/useRemixUrl.ts"
 
 interface CodeSampleReactProps {
   src: string

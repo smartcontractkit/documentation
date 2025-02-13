@@ -1,4 +1,4 @@
-import { evmProducts } from "~/features/landing/data"
+import { evmProducts } from "~/features/landing/data/index.ts"
 import styles from "./megaMenu.module.css"
 import resourcesLogo from "../../../../../assets/product-logos/data-resources-logo.svg"
 import { Fragment } from "react/jsx-runtime"

@@ -1,6 +1,13 @@
-import { chains, chainToTechnology, ExplorerInfo, SupportedChain, SupportedTechnology, web3Providers } from "@config"
+import {
+  chains,
+  chainToTechnology,
+  ExplorerInfo,
+  SupportedChain,
+  SupportedTechnology,
+  web3Providers,
+} from "@config/index.ts"
 import { utils } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json"
+import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -127,7 +134,9 @@ export const normalizeConfig = <T>(config: Partial<Record<SupportedChain, T>>) =
         title: chains[technology].title,
         chains: {},
       }
-    normalizedConfig[technology]!.chains[chain] = config[chain]
+    if (normalizedConfig[technology]) {
+      normalizedConfig[technology].chains[chain] = config[chain]
+    }
   }
   return normalizedConfig
 }

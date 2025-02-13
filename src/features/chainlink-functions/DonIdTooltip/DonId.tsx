@@ -1,4 +1,4 @@
-import { Tooltip } from "@features/common/Tooltip"
+import { Tooltip } from "@features/common/Tooltip/Tooltip.tsx"
 
 export const DonId = () => {
   return (

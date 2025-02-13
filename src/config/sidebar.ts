@@ -1,9 +1,9 @@
-import { Sections } from "../content/config"
-import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
-import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
-import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json"
-import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json"
-import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json"
+import { Sections } from "../content.config.ts"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json" assert { type: "json" }
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json" assert { type: "json" }
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" assert { type: "json" }
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" assert { type: "json" }
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" assert { type: "json" }
 
 export type SectionContent = {
   title: string

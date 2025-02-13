@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
-import { getAllNetworks } from "@config/data/ccip"
+import { laneStore } from "~/stores/lanes/index.ts"
+import { getAllNetworks } from "~/config/data/ccip/index.ts"
 
 interface ChainValueProps {
   type: "source" | "destination"

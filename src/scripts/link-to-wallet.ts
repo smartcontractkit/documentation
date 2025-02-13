@@ -1,10 +1,10 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import detectEthereumProvider from "@metamask/detect-provider"
 import { BigNumberish, ethers } from "ethers"
-import { Web3Provider } from "@ethersproject/providers"
-import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json"
-import chains from "./reference/chains.json"
-import linkNameSymbol from "./reference/linkNameSymbol.json"
+import { Web3Provider, ExternalProvider } from "@ethersproject/providers"
+import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" assert { type: "json" }
+import chains from "./reference/chains.json" assert { type: "json" }
+import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
 // disable unnecessary warnings
@@ -154,7 +154,20 @@ const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvide
   }
   validateEthereumApi(ethereum)
 
-  const chain = chains.find((c: any) => toHex(c.chainId) === chainId)
+  interface Chain {
+    chainId: number
+    name: string
+    nativeCurrency?: {
+      name: string
+      symbol: string
+      decimals: number
+    }
+    explorers?: Array<{ url: string }>
+    infoURL: string
+    rpc: string[]
+  }
+
+  const chain = chains.find((c: Chain) => toHex(c.chainId) === chainId)
   if (!chain || !chain.chainId) {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
@@ -165,7 +178,7 @@ const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvide
     nativeCurrency: chain?.nativeCurrency,
     blockExplorerUrls:
       chain.explorers && chain.explorers.length > 0 && chain.explorers[0].url
-        ? chain.explorers.map((explorer: any) => explorer.url)
+        ? chain.explorers.map((explorer: { url: string }) => explorer.url)
         : [chain.infoURL],
     rpcUrls: chain.rpc,
   }
@@ -229,7 +242,7 @@ const handleWalletTokenManagement = async () => {
     // Support only Metamask extension for now.
     if (!ethereum || !ethereum.isMetaMask) throw Error()
 
-    const provider = new ethers.providers.Web3Provider(ethereum as any, "any")
+    const provider = new ethers.providers.Web3Provider(ethereum as ExternalProvider, "any")
 
     let detectedChainId: string | number | null = (await ethereum.request({
       method: "eth_chainId",
@@ -248,8 +261,11 @@ const handleWalletTokenManagement = async () => {
     // variable chainFromSwitch used to diffenrentiate when user switch the chain
     // directly from wallet
     let chainFromSwitch: string
-    window.addEventListener(initChainChangeEventName, (evt: any) => {
-      chainFromSwitch = toHex(parseInt(evt.detail?.chainId))
+    interface ChainChangeEvent extends CustomEvent {
+      detail: { chainId: string | number }
+    }
+    window.addEventListener(initChainChangeEventName, (evt: ChainChangeEvent) => {
+      chainFromSwitch = toHex(parseInt(evt.detail?.chainId.toString()))
       if (!isChainIdFormatValid(chainFromSwitch)) {
         console.error(`Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`)
       }

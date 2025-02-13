@@ -1,6 +1,6 @@
 import styles from "./megaMenu.module.css"
 import { Fragment } from "react/jsx-runtime"
-import { megaMenuSections } from "../Desktop/MegaMenu"
+import { megaMenuSections } from "../Desktop/MegaMenu.tsx"
 import { useState } from "react"
 
 function MegaMenu() {

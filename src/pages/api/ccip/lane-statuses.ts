@@ -1,15 +1,21 @@
 import type { APIRoute } from "astro"
-import { client } from "@graphql/graphqlClient"
+import { client } from "@graphql/graphqlClient.ts"
 import {
   LaneStatusesFilteredDocument,
   LaneStatusesFilteredQuery,
   LaneStatusesFilteredQueryVariables,
-} from "@graphql/generated"
-import { commonHeaders, getEnvironmentAndConfig, resolveChainOrThrow, checkIfChainIsCursed, withTimeout } from "./utils"
-import { SupportedChain } from "@config"
-import { getProviderForChain } from "@config/web3Providers"
-import { Environment, getSelectorConfig, LaneStatus } from "@config/data/ccip"
-import { getChainId } from "@features/utils"
+} from "@graphql/generated.ts"
+import {
+  commonHeaders,
+  getEnvironmentAndConfig,
+  resolveChainOrThrow,
+  checkIfChainIsCursed,
+  withTimeout,
+} from "./utils.ts"
+import { SupportedChain } from "@config/index.ts"
+import { getProviderForChain } from "@config/web3Providers.ts"
+import { Environment, getSelectorConfig, LaneStatus } from "@config/data/ccip/index.ts"
+import { getChainId } from "@features/utils/index.ts"
 
 export const prerender = false
 const timeoutCurseCheck = 10000

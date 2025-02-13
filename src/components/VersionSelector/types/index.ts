@@ -1,4 +1,4 @@
-import type { Collection } from "src/content/config"
+import type { Collection } from "~/content.config.ts"
 
 export interface ProductConfig {
   name: Collection

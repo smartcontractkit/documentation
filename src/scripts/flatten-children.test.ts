@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals"
-import { flattenChildren } from "./flatten-children"
+import { flattenChildren } from "./flatten-children.ts"
 
 describe("flattenChildren", () => {
   test("works", () => {

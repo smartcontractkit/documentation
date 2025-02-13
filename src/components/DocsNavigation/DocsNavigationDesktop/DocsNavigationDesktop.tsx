@@ -1,8 +1,8 @@
-import { clsx } from "~/lib"
-import { useNavBar } from "../../Header/useNavBar/useNavBar"
-import DocsPickerDesktop from "./DocsPickerDesktop"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { useNavBar } from "../../Header/useNavBar/useNavBar.ts"
+import DocsPickerDesktop from "./DocsPickerDesktop.tsx"
 import styles from "./docsNavigationDesktop.module.css"
-import QuickLinksModal from "../../Header/Nav/QuickLinksModal"
+import QuickLinksModal from "../../Header/Nav/QuickLinksModal.tsx"
 import { useState } from "react"
 
 function DocsNavigationDesktop({ pathname, children }: { pathname: string; children?: React.ReactNode }) {

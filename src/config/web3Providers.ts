@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 import { providers } from "ethers"
-import { SupportedChain } from "."
+import { SupportedChain } from "./types.ts"
 
 export const chainToProvider: Record<SupportedChain, () => providers.Provider> = {
   ETHEREUM_MAINNET: () => new providers.InfuraProvider("homestead", "fe6db57057904042b7fed23ff54c643d"),

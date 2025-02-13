@@ -1,15 +1,15 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
-import { clsx } from "~/lib"
-import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
-import { useGetChainMetadata } from "./useGetChainMetadata"
-import { ChainMetadata } from "../../data/api"
-import useQueryString from "~/hooks/useQueryString"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains.ts"
+import { useGetChainMetadata } from "./useGetChainMetadata.ts"
+import { ChainMetadata } from "~/features/data/api/index.ts"
+import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
-import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 
 export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({

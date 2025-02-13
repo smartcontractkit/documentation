@@ -1,18 +1,19 @@
-import { Environment, getTokenData, LaneConfig, Version } from "~/config/data/ccip"
-import Address from "~/components/AddressReact"
-import Breadcrumb from "../Breadcrumb/Breadcrumb"
-import Search from "../Search/Search"
+import { Environment, LaneConfig, Version } from "~/config/data/ccip/types.ts"
+import { getTokenData } from "~/config/data/ccip/data.ts"
+import Address from "~/components/AddressReact.tsx"
+import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
+import Search from "../Search/Search.tsx"
 import "./ChainHero.css"
-import CopyValue from "../CopyValue/CopyValue"
+import CopyValue from "../CopyValue/CopyValue.tsx"
 import {
   getExplorerAddressUrl,
   getTokenIconUrl,
   getNativeCurrency,
   directoryToSupportedChain,
   fallbackTokenIconUrl,
-} from "~/features/utils"
-import { Tooltip } from "~/features/common/Tooltip"
-import { ExplorerInfo } from "~/config/types"
+} from "~/features/utils/index.ts"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface ChainHeroProps {
   chains: {

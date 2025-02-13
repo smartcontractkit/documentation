@@ -4,8 +4,8 @@ import styles from "./networkDropdown.module.css"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import { ethers, Contract, utils } from "ethers"
-import { burnMintAbi } from "@features/abi"
-import { SupportedChain } from "@config"
+import { burnMintAbi } from "@features/abi/index.ts"
+import { SupportedChain } from "@config/index.ts"
 import {
   getAllChains,
   getBnMParams,
@@ -15,15 +15,15 @@ import {
   isBnM,
   isBnMOrLnM,
   Version,
-} from "@config/data/ccip"
-import { Toast } from "./Toast"
+} from "@config/data/ccip/index.ts"
+import { Toast } from "./Toast.tsx"
 import {
   directoryToSupportedChain,
   getTitle,
   getChainIcon,
   getEthereumChainParameter,
   getChainId,
-} from "@features/utils"
+} from "@features/utils/index.ts"
 
 enum LoadingState {
   "START",

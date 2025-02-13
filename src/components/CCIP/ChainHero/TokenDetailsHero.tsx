@@ -1,8 +1,9 @@
-import Address from "~/components/AddressReact"
-import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
-import { PoolType, tokenPoolDisplay } from "~/config/data/ccip"
+import Address from "~/components/AddressReact.tsx"
+import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { PoolType } from "~/config/data/ccip/types.ts"
+import { tokenPoolDisplay } from "~/config/data/ccip/utils.ts"
 import "./ChainHero.css"
-import { ExplorerInfo } from "~/config/types"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface TokenDetailsHeroProps {
   network: {

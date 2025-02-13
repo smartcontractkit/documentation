@@ -5,7 +5,7 @@ type Props = {
   isAtTopOfPage: boolean
   isAtBottomOfPage: boolean
   isMenuOpen: boolean
-  onHideChange: any
+  onHideChange?: (hidden: boolean) => void
 }
 
 export const useHideHeader = ({

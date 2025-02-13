@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from "astro:content"
+import QuickstartLayout from "~/layouts/QuickstartLayout.astro"
+
+export async function getStaticPaths() {
+  const quickstartsEntries = await getCollection("quickstarts")
+
+  return quickstartsEntries.map((entry) => {
+    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+
+    return {
+      params: { id: routeId },
+      props: { entry },
+    }
+  })
+}
+
+interface Props {
+  entry: Awaited<ReturnType<typeof getCollection<"quickstarts">>>[number]
+}
+
+const { entry } = Astro.props
+
+const { Content, headings } = await render(entry)
+---
+
+<QuickstartLayout frontmatter={entry.data} {headings}>
+  <Content />
+</QuickstartLayout>

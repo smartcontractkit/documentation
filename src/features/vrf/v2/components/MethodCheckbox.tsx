@@ -1,10 +1,10 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import "./methodCheckbox.css"
-import { CHAINS } from "~/features/data/chains"
-import { CostTable } from "./CostTable"
-import { Dropdown } from "./Dropdown"
-import useQueryString from "~/hooks/useQueryString"
+import { CHAINS } from "~/features/data/chains.ts"
+import { CostTable } from "./CostTable.tsx"
+import { Dropdown } from "./Dropdown.tsx"
+import useQueryString from "~/hooks/useQueryString.ts"
 
 interface Props {
   aside?: HTMLElement | undefined
