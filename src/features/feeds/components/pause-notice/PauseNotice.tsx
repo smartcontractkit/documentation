@@ -42,8 +42,8 @@ export const PauseNotice = ({
           method: "GET",
         }
       )
-      const fecthedProofOfReserveData = await res.json()
-      setRipCord(fecthedProofOfReserveData.ripcord ?? false)
+      const fetchedProofOfReserveData = await res.json()
+      setRipCord(fetchedProofOfReserveData.ripcord ?? false)
     }
     fetchRipCord().catch((error) => {
       console.error(error)
