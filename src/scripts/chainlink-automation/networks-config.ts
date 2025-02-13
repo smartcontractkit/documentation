@@ -9,9 +9,11 @@ import { getWeb3Provider } from "@features/utils/index.ts"
 import { KeeperRegistry, keeperRegistry1_3, keeperRegistry2_0 } from "@abi"
 import { ContractInterface, ethers } from "ethers"
 import { normalize } from "path"
-import { isEqual } from "lodash"
+import lodash from "lodash"
 import { writeFile } from "fs/promises"
 import { format } from "prettier"
+
+const { isEqual } = lodash
 
 const configToBePath = normalize("./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json")
 
