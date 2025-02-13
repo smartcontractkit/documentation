@@ -1,10 +1,12 @@
 import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
 import currentChainsMetadata from "./reference/chains.json" assert { type: "json" }
 import fetch from "node-fetch"
-import { isEqual } from "lodash"
+import lodash from "lodash"
 import { writeFile } from "fs/promises"
 import { normalize } from "path"
 import { format } from "prettier"
+
+const { isEqual } = lodash
 
 // Configuration constants
 const CONFIG = {
