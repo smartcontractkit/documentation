@@ -391,6 +391,36 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Berachain",
+    logoUrl: "/assets/chains/berachain.svg",
+    networkStatus: "https://status.berachain.com/",
+    mainnet: {
+      label: "Berachain Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://berascan.com/address/%s",
+    },
+    testnet: {
+      label: "Berachain bArtio Testnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://bartio.beratrail.io/address/%s",
+    },
+  },
+  {
+    network: "Blast",
+    logoUrl: "/assets/chains/blast.svg",
+    networkStatus: "https://status.blast.io/",
+    mainnet: {
+      label: "Blast Mainnet",
+      verifierProxy: "0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e",
+      explorerUrl: "https://blastscan.io/address/%s",
+    },
+    testnet: {
+      label: "Blast Sepolia Testnet",
+      verifierProxy: "0x141f4278A5D71070Dc09CA276b72809b80F20eF0",
+      explorerUrl: "https://sepolia.blastscan.io/address/%s",
+    },
+  },
+  {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
     testnet: {
@@ -425,10 +455,16 @@ const StreamsNetworksData = [
   {
     network: "Ink",
     logoUrl: "/assets/chains/ink.svg",
+    networkStatus: "https://status.inkonchain.com/",
     mainnet: {
       label: "Ink Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://explorer.inkonchain.com/address/%s",
+    },
+    testnet: {
+      label: "Ink Sepolia Testnet",
+      verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
+      explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
     },
   },
   {
@@ -447,6 +483,15 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Monad",
+    logoUrl: "/assets/chains/monad.svg",
+    testnet: {
+      label: "Monad Testnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+    },
+  },
+  {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
     networkStatus: "https://opbnb-status.bnbchain.org/",
@@ -462,16 +507,16 @@ const StreamsNetworksData = [
     },
   },
   {
-    network: "Optimism",
+    network: "OP",
     logoUrl: "/assets/chains/optimism.svg",
     networkStatus: "https://status.optimism.io/",
     mainnet: {
-      label: "Optimism Mainnet",
+      label: "OP Mainnet",
       verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
       explorerUrl: "https://optimistic.etherscan.io/address/%s",
     },
     testnet: {
-      label: "Optimism Testnet",
+      label: "OP Sepolia",
       verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
       explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
     },
@@ -562,6 +607,20 @@ const StreamsNetworksData = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "World Chain",
+    logoUrl: "/assets/chains/worldchain.svg",
+    mainnet: {
+      label: "World Chain Mainnet",
+      verifierProxy: "0x65eaE24251C5707D5aCBF7461A49fe87CB1bE4c7",
+      explorerUrl: "https://worldscan.org/address/%s",
+    },
+    testnet: {
+      label: "World Chain Sepolia Testnet",
+      verifierProxy: "0x2482A390bE58b3cBB6Df72dB2e950Db20256e55E",
+      explorerUrl: "https://sepolia.worldscan.org/address/%s",
     },
   },
   {
