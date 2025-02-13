@@ -38,6 +38,13 @@ export type SupportedTechnology =
   | "CORE"
   | "MONAD"
   | "TREASURE"
+  | "LENS"
+  | "BERACHAIN"
+  | "UNICHAIN"
+  | "HYPERLIQUID"
+  | "MERLIN"
+  | "FRAXTAL"
+  | "HEDERA"
   | "UNICHAIN"
 
 export type SupportedChain =
@@ -116,10 +123,21 @@ export type SupportedChain =
   | "SEI_MAINNET"
   | "SEI_TESTNET"
   | "CORE_TESTNET"
+  | "CORE_MAINNET"
   | "MONAD_TESTNET"
   | "TREASURE_MAINNET"
   | "TREASURE_TOPAZ"
+  | "LENS_SEPOLIA"
+  | "BERACHAIN_MAINNET"
+  | "BERACHAIN_BARTIO"
+  | "HYPERLIQUID_TESTNET"
+  | "MERLIN_TESTNET"
+  | "MERLIN_MAINNET"
+  | "FRAXTAL_TESTNET"
+  | "FRAXTAL_MAINNET"
+  | "HEDERA_TESTNET"
   | "UNICHAIN_SEPOLIA"
+  | "UNICHAIN_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string
