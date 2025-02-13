@@ -586,9 +586,6 @@ export const checkProgress = (stepId: StepId, subStepId: string) => {
 }
 
 export const navigateToStep = (stepId: StepId) => {
-  const store = getStoreForStep(stepId)
-  const currentState = store.get()
-
   // Update lane store to reflect the current step
   const currentLaneState = laneStore.get()
   laneStore.set({

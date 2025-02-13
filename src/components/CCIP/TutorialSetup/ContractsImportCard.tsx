@@ -1,4 +1,3 @@
-import { StepCheckbox } from "@components/CCIP/TutorialProgress/StepCheckbox.tsx"
 import { CodeSampleReact } from "@components/CodeSample/CodeSampleReact.tsx"
 import styles from "./ContractsImportCard.module.css"
 import { TutorialCard } from "./TutorialCard.tsx"

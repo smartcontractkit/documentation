@@ -1,3 +1,6 @@
 interface Window {
-  dataLayer: any[]
+  dataLayer: Array<{
+    event: string
+    [key: string]: any
+  }>
 }

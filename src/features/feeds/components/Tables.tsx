@@ -699,7 +699,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -709,7 +708,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -721,7 +719,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.mainnet.explorerUrl}
                           network={network}
                           environment="Mainnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -740,7 +737,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -750,7 +746,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -762,7 +757,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.testnet.explorerUrl}
                           network={network}
                           environment="Testnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -790,13 +784,11 @@ const CopyableAddress = ({
   explorerUrl,
   network,
   environment,
-  type,
 }: {
   address?: string
   explorerUrl: string
   network: NetworkData
   environment: string
-  type: string
 }) => {
   if (!address) return null
 

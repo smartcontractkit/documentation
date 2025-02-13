@@ -511,12 +511,10 @@ export const getAllNetworkLanes = async ({
   chain,
   environment,
   version,
-  site,
 }: {
   chain: string
   environment: Environment
   version: Version
-  site: string
 }) => {
   const { lanesReferenceData } = loadReferenceData({
     environment,
