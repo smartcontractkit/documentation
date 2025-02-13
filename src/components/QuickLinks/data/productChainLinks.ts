@@ -61,6 +61,7 @@ export const productChainLinks: ProductChainLinks = {
       fraxtal: "/ccip/directory/testnet/chain/ethereum-testnet-holesky-fraxtal-1",
       lens: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-lens-1",
       unichain: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-unichain-1",
+      berachain: "/ccip/directory/testnet/chain/berachain-testnet-bartio",
     },
   },
   "Data Feeds": {
@@ -215,6 +216,7 @@ export const productChainLinks: ProductChainLinks = {
     merlin: "/resources/link-token-contracts#merlin",
     fraxtal: "/resources/link-token-contracts#fraxtal",
     lens: "/resources/link-token-contracts#lens",
+    berachain: "/resources/link-token-contracts#berachain",
   },
 }
 
