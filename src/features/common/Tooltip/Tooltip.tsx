@@ -1,4 +1,4 @@
-import { Tooltip as ChainlinkToolTip } from "@chainlink/components/src/Tooltip/Tooltip"
+import { Tooltip as ChainlinkToolTip } from "@chainlink/components/src/Tooltip/Tooltip.tsx"
 
 export const Tooltip = ({
   label,

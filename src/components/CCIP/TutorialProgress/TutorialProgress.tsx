@@ -1,10 +1,10 @@
 import { useStore } from "@nanostores/react"
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { laneStore, progressStore, TUTORIAL_STEPS, type StepId, type LaneState } from "@stores/lanes"
+import { laneStore, progressStore, TUTORIAL_STEPS, type StepId, type LaneState } from "@stores/lanes/index.ts"
 import styles from "./TutorialProgress.module.css"
-import { ChainSelectorDisplay } from "./ChainSelectorDisplay"
-import { ContractAddressDisplay } from "./ContractAddressDisplay"
-import { SectionProgress } from "./SectionProgress"
+import { ChainSelectorDisplay } from "./ChainSelectorDisplay.tsx"
+import { ContractAddressDisplay } from "./ContractAddressDisplay.tsx"
+import { SectionProgress } from "./SectionProgress.tsx"
 
 // Helper function to determine current step
 const determineCurrentStep = (state: Omit<LaneState, "progress">): number => {

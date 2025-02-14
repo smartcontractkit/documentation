@@ -1,12 +1,12 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import feedList from "./FeedList.module.css"
-import { clsx } from "../../../lib"
-import { ChainNetwork } from "~/features/data/chains"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { ChainNetwork } from "~/features/data/chains.ts"
 import tableStyles from "./Tables.module.css"
 import button from "@chainlink/design-system/button.module.css"
-import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds, FeedDataItem } from "~/features/data"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
+import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
@@ -15,7 +15,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure."
     >
-      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" alt="Low Market Risk" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" aria-label="Low Market Risk" target="_blank">
         🟢
       </a>
     </span>
@@ -25,7 +25,11 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk."
     >
-      <a href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds" alt="Medium Market Risk" target="_blank">
+      <a
+        href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds"
+        aria-label="Medium Market Risk"
+        target="_blank"
+      >
         🟡
       </a>
     </span>
@@ -35,7 +39,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks."
     >
-      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" alt="High Market Risk" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" aria-label="High Market Risk" target="_blank">
         🔴
       </a>
     </span>
@@ -45,7 +49,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use."
     >
-      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" alt="New Token" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" aria-label="New Token" target="_blank">
         🟠
       </a>
     </span>
@@ -55,7 +59,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case."
     >
-      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" aria-label="Custom" target="_blank">
         🔵
       </a>
     </span>
@@ -65,7 +69,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more."
     >
-      <a href="/data-feeds/deprecating-feeds" alt="Deprecating" target="_blank">
+      <a href="/data-feeds/deprecating-feeds" aria-label="Deprecating" target="_blank">
         ⭕
       </a>
     </span>
@@ -695,7 +699,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -705,7 +708,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -717,7 +719,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.mainnet.explorerUrl}
                           network={network}
                           environment="Mainnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -736,7 +737,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -746,7 +746,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -758,7 +757,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.testnet.explorerUrl}
                           network={network}
                           environment="Testnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -786,13 +784,11 @@ const CopyableAddress = ({
   explorerUrl,
   network,
   environment,
-  type,
 }: {
   address?: string
   explorerUrl: string
   network: NetworkData
   environment: string
-  type: string
 }) => {
   if (!address) return null
 

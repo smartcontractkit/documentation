@@ -1,7 +1,7 @@
 import React from "react"
-import { ProductItem, SubProducts, SubProductItem } from "../../config"
-import { clsx } from "../../utils"
-import { CaretRightIcon } from "./CaretRightIcon"
+import { ProductItem, SubProducts, SubProductItem } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
+import { CaretRightIcon } from "./CaretRightIcon.tsx"
 import styles from "./category.module.css"
 
 type ListItemProps = {

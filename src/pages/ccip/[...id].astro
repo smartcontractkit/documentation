@@ -1,0 +1,33 @@
+---
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { getCollection, render } from "astro:content"
+
+export async function getStaticPaths() {
+  let ccipEntries = await getCollection("ccip")
+
+  // Remove anything that starts with "directory/"
+  ccipEntries = ccipEntries.filter((entry) => {
+    return !entry.id.startsWith("directory/") && !entry.id.startsWith("api-reference/")
+  })
+
+  return ccipEntries.map((entry) => {
+    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+    return {
+      params: { id: routeId },
+      props: { entry },
+    }
+  })
+}
+
+interface Props {
+  entry: Awaited<ReturnType<typeof getCollection<"ccip">>>[number]
+}
+
+const { entry } = Astro.props
+
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={entry.data} {headings}>
+  <Content />
+</DocsLayout>

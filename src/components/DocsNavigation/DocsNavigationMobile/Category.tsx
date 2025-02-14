@@ -1,8 +1,8 @@
 import React from "react"
-import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config"
-import { clsx } from "~/lib"
+import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 import styles from "./category.module.css"
-import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
+import { isMatchedPath } from "../../Header/Nav/isMatchedPath.ts"
 
 type ListItemProps = {
   item: ProductItem

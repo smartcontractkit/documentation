@@ -1,5 +1,5 @@
 import { BigNumber } from "ethers"
-import { SupportedChain } from "@config"
+import { SupportedChain } from "@config/index.ts"
 
 type StateStructOutput = [number, BigNumber, BigNumber, BigNumber] & {
   nonce: number

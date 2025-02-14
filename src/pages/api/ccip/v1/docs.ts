@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro"
-import { successHeaders } from "../utils"
+import { successHeaders } from "../utils.ts"
 
 export const prerender = false
 

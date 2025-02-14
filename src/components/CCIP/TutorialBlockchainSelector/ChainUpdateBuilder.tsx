@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { ethers } from "ethers"
-import { laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lanes"
+import { laneStore, type RateLimiterConfig, updateRateLimits } from "~/stores/lanes/index.ts"
 import { useStore } from "@nanostores/react"
 import styles from "./ChainUpdateBuilder.module.css"
-import { ErrorBoundary } from "@components/ErrorBoundary"
-import { Callout } from "../TutorialSetup/Callout"
+import { ErrorBoundary } from "~/components/ErrorBoundary.tsx"
+import { Callout } from "../TutorialSetup/Callout.tsx"
 
 interface ChainUpdateBuilderProps {
   chain: "source" | "destination"

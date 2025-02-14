@@ -3,8 +3,8 @@ import type { FunctionalComponent } from "preact"
 import { useRef, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./stickyHeader.module.css"
-import TableOfContents from "~/components/TableOfContents/TableOfContents"
-import { clsx } from "~/lib"
+import TableOfContents from "~/components/TableOfContents/TableOfContents.tsx"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 const StickyHeader: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]

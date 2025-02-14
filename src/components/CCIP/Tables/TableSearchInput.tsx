@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 import "./TableSearchInput.css"
-import { useClickOutside } from "~/hooks/useClickOutside"
+import { useClickOutside } from "~/hooks/useClickOutside.tsx"
 
 interface TableSearchInputProps {
   search: string

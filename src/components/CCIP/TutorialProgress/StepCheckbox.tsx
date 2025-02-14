@@ -1,4 +1,4 @@
-import { updateStepProgress, type StepId, TUTORIAL_STEPS, subscribeToStepProgress } from "@stores/lanes"
+import { updateStepProgress, type StepId, TUTORIAL_STEPS, subscribeToStepProgress } from "@stores/lanes/index.ts"
 import { useCallback, memo, useMemo, useEffect, useRef } from "react"
 
 interface StepCheckboxProps<T extends StepId> {

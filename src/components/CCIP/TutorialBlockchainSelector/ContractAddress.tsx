@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react"
 import { utils } from "ethers"
-import { setSourceContract, setDestinationContract } from "@stores/lanes"
-import type { DeployedContracts } from "@stores/lanes"
+import { setSourceContract, setDestinationContract } from "~/stores/lanes/index.ts"
+import type { DeployedContracts } from "~/stores/lanes/index.ts"
 import "./ContractAddress.css"
 
 interface ContractAddressProps {
