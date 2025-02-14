@@ -167,18 +167,23 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
       stdio: ["pipe", "pipe", "pipe"],
     } as SpawnOptions)
 
-    // Write stdout to log file
+    // Write stdout to log file and capture output
     const logStream = createWriteStream(LOG_FILE, { flags: "a" })
+    let outputData = ""
     if (checker.stdout) {
       checker.stdout.on("data", (data) => {
-        logStream.write(data)
+        const text = data.toString()
+        outputData += text
+        logStream.write(text)
       })
     }
 
-    // Write stderr to console and log
+    // Write stderr to console and capture output
     if (checker.stderr) {
       checker.stderr.on("data", (data) => {
-        process.stderr.write(data.toString())
+        const text = data.toString()
+        outputData += text
+        process.stderr.write(text)
       })
     }
 
@@ -186,10 +191,19 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
     checker.on("exit", (code) => {
       logStream.end()
 
-      // if exit code is 1 (warnings only), treat as success (0).
+      // If exit code is 1 (warnings only), inspect the output.
+      // Warnings are blockers except for mime type warnings.
       if (code === 1) {
-        console.log("Link checker reported warnings only. Treating as success.")
-        code = 0
+        const lines = outputData.split("\n")
+        // Assuming warnings are indicated by lines containing "=>"
+        const warningLines = lines.filter((line) => line.includes("=>"))
+        // Filter out warnings that mention "no mime type"
+        const nonMimeWarnings = warningLines.filter((line) => !line.toLowerCase().includes("no mime type"))
+
+        if (nonMimeWarnings.length === 0) {
+          console.log("Only mime type warnings encountered. Treating as success.")
+          code = 0
+        }
       }
 
       resolve(code ?? 1) // if code is null, treat as error
