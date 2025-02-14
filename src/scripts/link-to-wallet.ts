@@ -1,6 +1,6 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import detectEthereumProvider from "@metamask/detect-provider"
-import { BigNumberish, BrowserProvider, ethers, toQuantity } from "ethers"
+import { BrowserProvider, ethers, toQuantity } from "ethers"
 import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" assert { type: "json" }
 import chains from "./reference/chains.json" assert { type: "json" }
 import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
@@ -234,13 +234,39 @@ const validateLinkAddress = async (address: string, provider: BrowserProvider) =
   }
 
   const linkContract = new ethers.Contract(address, LinkToken, provider)
-  let name: string, symbol: string, decimals: BigNumberish
-  try {
-    name = await linkContract.name()
-    symbol = await linkContract.symbol()
-    decimals = await linkContract.decimals()
-  } catch (error) {
-    throw new Error(`Error occurred while trying to fetch linkContract metadata  ${error}`)
+  let name = ""
+  let symbol = ""
+  let decimals = 0
+  let retries = 3
+
+  while (retries > 0) {
+    try {
+      const initialNetwork = await provider.getNetwork()
+      const initialChainId = initialNetwork.chainId
+
+      // Fetch contract metadata
+      ;[name, symbol, decimals] = await Promise.all([
+        linkContract.name(),
+        linkContract.symbol(),
+        linkContract.decimals(),
+      ])
+
+      // Verify network hasn't changed
+      const currentNetwork = await provider.getNetwork()
+      if (currentNetwork.chainId !== initialChainId) {
+        throw new Error(`Network changed during operation: ${initialChainId} => ${currentNetwork.chainId}`)
+      }
+
+      break // If we get here, all operations succeeded
+    } catch (error) {
+      retries--
+      if (retries === 0) {
+        throw new Error(`Error occurred while trying to fetch linkContract metadata: ${error}`)
+      }
+      // Wait before retry
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
   }
 
   const network = await provider.getNetwork()
@@ -297,12 +323,32 @@ const handleChainSwitch = async (targetChainId: string, ethereum: MetaMaskInpage
 
   try {
     await switchToChain(targetChainId, ethereum)
+    // Wait for network change to settle
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Verify we're on the correct network
+    const newChainId = (await ethereum.request({ method: "eth_chainId" })) as string
+    const formattedNewChainId = toHex(parseInt(newChainId))
+    if (formattedNewChainId !== targetChainId) {
+      throw new Error(`Network switch verification failed. Expected ${targetChainId}, got ${formattedNewChainId}`)
+    }
+
     return true
   } catch (switchError) {
     if ((switchError as ProviderRpcError)?.code === 4902) {
       try {
         await addChainToWallet(targetChainId, ethereum)
         await switchToChain(targetChainId, ethereum)
+        // Wait for network change to settle
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+
+        // Verify we're on the correct network
+        const newChainId = (await ethereum.request({ method: "eth_chainId" })) as string
+        const formattedNewChainId = toHex(parseInt(newChainId))
+        if (formattedNewChainId !== targetChainId) {
+          throw new Error(`Network switch verification failed. Expected ${targetChainId}, got ${formattedNewChainId}`)
+        }
+
         return true
       } catch (error) {
         handleWalletError(error, `Failed to add chain ${targetChainId}`)
@@ -424,7 +470,9 @@ const handleWalletTokenManagement = async () => {
 
             const switchSuccess = await handleChainSwitch(chainId, ethereum)
             if (switchSuccess) {
-              const addSuccess = await validateAndAddToken(address, provider, ethereum, parameters)
+              // Get a fresh provider after network change
+              const updatedProvider = new BrowserProvider(ethereum)
+              const addSuccess = await validateAndAddToken(address, updatedProvider, ethereum, parameters)
               if (addSuccess) {
                 window.location.reload()
               }
