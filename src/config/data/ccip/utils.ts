@@ -3,7 +3,7 @@ import { chainToTechnology } from "~/config/chains.ts"
 import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
 import { networkFees } from "./data.ts"
 import { BigNumber as BigNumberJs } from "bignumber.js"
-import { utils } from "ethers"
+import { commify } from "~/utils/index.js"
 
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
@@ -163,7 +163,7 @@ export const displayCapacity = (decimals = 18, token: string, rateLimiterConfig?
 
   const capacity = String(rateLimiterConfig?.capacity || 0)
   const numberWithoutDecimals = normalizeNumber(new BigNumberJs(capacity), decimals).toString()
-  return `${utils.commify(numberWithoutDecimals)} ${token}`
+  return `${commify(numberWithoutDecimals)} ${token}`
 }
 
 export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
@@ -174,7 +174,7 @@ export const displayRate = (capacity: string, rate: string, symbol: string, deci
   const displayTime = `${formatTime(totalRefillTime)}`
 
   return {
-    rateSecond: `${utils.commify(rateNormalized)} ${symbol}/second`,
-    maxThroughput: `Refills from 0 to ${utils.commify(capacityNormalized)} ${symbol} in ${displayTime}`,
+    rateSecond: `${commify(rateNormalized)} ${symbol}/second`,
+    maxThroughput: `Refills from 0 to ${commify(capacityNormalized)} ${symbol} in ${displayTime}`,
   }
 }

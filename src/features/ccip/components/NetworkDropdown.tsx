@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks"
 import styles from "./networkDropdown.module.css"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
-import { ethers, Contract, utils } from "ethers"
+import { Contract, BrowserProvider, toQuantity } from "ethers"
 import { burnMintAbi } from "@features/abi/index.ts"
 import { SupportedChain } from "@config/index.ts"
 import {
@@ -65,7 +65,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     const supportedChain = supportedChains.find((supportedChain) => {
       const chainId = getChainId(supportedChain)
       if (!chainId) throw Error(`No chainId found for supported chain ${supportedChain}`)
-      return utils.hexValue(chainId) === chainHexId
+      return toQuantity(chainId) === chainHexId
     })
 
     return supportedChain
@@ -119,7 +119,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
   const handleNetworkChange = async (chain: SupportedChain) => {
     const chainId = getChainId(chain)
     if (!chainId) throw Error(`chainId not found for ${chain}`)
-    const chainHexId = utils.hexValue(chainId)
+    const chainHexId = toQuantity(chainId)
     if (!window.ethereum.isConnected) return
     setIsNetworkChangePending(true)
     try {
@@ -203,8 +203,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     const params = getBnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipBNMContractAddress } = params.options
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner()
+    const provider = new BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
     const mintTokensContract = new Contract(ccipBNMContractAddress, burnMintAbi, signer)
     try {
       const res = await mintTokensContract.drip(userAddress)
@@ -251,8 +251,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     const params = getLnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipLNMContractAddress } = params.options
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner()
+    const provider = new BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
     const mintTokensContract = new Contract(ccipLNMContractAddress, burnMintAbi, signer)
     try {
       const res = await mintTokensContract.drip(userAddress)

@@ -25,7 +25,7 @@ const AddressComponent = ({
   const handleClick = (e) => {
     e.preventDefault()
 
-    if (eventName !== undefined) {
+    if (eventName !== undefined && typeof window !== "undefined" && window.dataLayer) {
       const dataLayerEvent = {
         event: eventName,
         ...additionalInfo,

@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react"
 import { laneStore, TUTORIAL_STEPS, type RateLimits } from "~/stores/lanes/index.ts"
-import { utils } from "ethers"
+import { AbiCoder } from "ethers"
 import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 import styles from "./PoolConfigVerification.module.css"
 import { TutorialCard, TutorialStep } from "../TutorialSetup/index.ts"
@@ -121,7 +121,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                   <div className={styles.resultTitle}>Expected Result:</div>
                   <div className={styles.resultContent}>
                     {remoteContracts.token
-                      ? utils.defaultAbiCoder.encode(["address"], [remoteContracts.token])
+                      ? AbiCoder.defaultAbiCoder().encode(["address"], [remoteContracts.token])
                       : "Waiting for remote token address..."}
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                   <div className={styles.resultTitle}>Expected Result:</div>
                   <div className={styles.resultContent}>
                     {remoteContracts.tokenPool
-                      ? [utils.defaultAbiCoder.encode(["address"], [remoteContracts.tokenPool])]
+                      ? [AbiCoder.defaultAbiCoder().encode(["address"], [remoteContracts.tokenPool])]
                       : "Waiting for remote pool address..."}
                   </div>
                 </div>

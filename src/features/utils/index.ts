@@ -6,7 +6,7 @@ import {
   SupportedTechnology,
   web3Providers,
 } from "@config/index.ts"
-import { utils } from "ethers"
+import { toQuantity } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
 
 interface AddEthereumChainParameter {
@@ -24,7 +24,7 @@ interface AddEthereumChainParameter {
 
 export const getEthereumChainParameter = (chainId: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chain = referenceChains.find((c: any) => utils.hexValue(c.chainId) === chainId)
+  const chain = referenceChains.find((c: any) => toQuantity(c.chainId) === chainId)
   if (!chain || !chain.chainId) {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
