@@ -15,8 +15,8 @@ const getSidebarSections = (section?: Sections) => {
   if (!section) {
     return []
   } else if (section === "global") {
-    return Object.keys(SIDEBAR).flatMap((parentSection) => {
-      return SIDEBAR[parentSection].map((entry: any) => ({ ...entry, parentSection }))
+    return Object.entries(SIDEBAR).flatMap(([parentSection, entries]) => {
+      return entries?.map((entry) => ({ ...entry, parentSection })) ?? []
     })
   }
   return SIDEBAR[section] ?? []

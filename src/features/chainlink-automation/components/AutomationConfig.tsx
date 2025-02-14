@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { formatEther } from "ethers"
 import { ChainlinkAutomationConfig } from "@features/chainlink-automation/types/index.ts"
-import { Address } from "@components"
+import Address from "@components/Address.tsx"
 
 export const AutomationConfig = ({
   config,
@@ -84,7 +84,7 @@ export const AutomationConfig = ({
           </tr>
           <tr>
             <td>Minimum Upkeep Spend (LINK)</td>
-            {!minUpkeepSpend ? <td /> : <td>{formatEther(minUpkeepSpend.toString())}</td>}
+            {!minUpkeepSpend ? <td /> : <td>{formatEther(minUpkeepSpend.hex)}</td>}
           </tr>
         </tbody>
       </table>

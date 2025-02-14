@@ -1,6 +1,9 @@
 ---
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
+import { getNavigationProps } from "./getNavigationProps.ts"
 import { NavBar } from "./NavBar"
+
+const { productsNav, subProductsNav } = getNavigationProps()
 
 const path = Astro.url.pathname
 const algoliaVars = {
@@ -16,6 +19,6 @@ const algoliaVars = {
   width="0"
   style="display:none;visibility:hidden"></iframe>
 <!-- End Google Tag Manager (noscript) -->
-<NavBar path={path} client:idle algoliaVars={algoliaVars} />
+<NavBar path={path} productsNav={productsNav} subProductsNav={subProductsNav} algoliaVars={algoliaVars} />
 
 <NotificationBanner />
