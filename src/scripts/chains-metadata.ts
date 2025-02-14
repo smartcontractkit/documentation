@@ -20,14 +20,20 @@ const CONFIG = {
 
 // Custom error types for better error handling
 class ChainMetadataError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message)
     this.name = "ChainMetadataError"
   }
 }
 
 class ValidationError extends ChainMetadataError {
-  constructor(message: string, public readonly invalidData?: unknown) {
+  constructor(
+    message: string,
+    public readonly invalidData?: unknown
+  ) {
     super(message)
     this.name = "ValidationError"
   }
@@ -413,17 +419,14 @@ async function handleSpecificChains(chainIds: number[]): Promise<void> {
 
     if (changedChains.length > 0) {
       const updatedChains = mergeChainMetadata(currentChainsMetadata, validatedChains)
-      await writeFile(
-        normalize(CONFIG.CURRENT_CHAINS_PATH),
-        format(JSON.stringify(updatedChains), {
-          parser: "json",
-          semi: true,
-          trailingComma: "es5",
-          singleQuote: true,
-          printWidth: 120,
-        }),
-        { flag: "w" }
-      )
+      const formattedJson = await format(JSON.stringify(updatedChains), {
+        parser: "json",
+        semi: true,
+        trailingComma: "es5",
+        singleQuote: true,
+        printWidth: 120,
+      })
+      await writeFile(normalize(CONFIG.CURRENT_CHAINS_PATH), formattedJson, { flag: "w" })
       console.log(`\nSuccessfully updated ${changedChains.length} chain(s)`)
     } else {
       console.log(`\nNo updates needed - all chains are up to date`)
@@ -444,17 +447,14 @@ async function handleFullComparison(): Promise<void> {
       : { isEqual: false, toBeChainsMetadata }
 
     if (!result.isEqual && result.toBeChainsMetadata) {
-      await writeFile(
-        normalize(CONFIG.CHAINS_TO_BE_PATH),
-        format(JSON.stringify(result.toBeChainsMetadata), {
-          parser: "json",
-          semi: true,
-          trailingComma: "es5",
-          singleQuote: true,
-          printWidth: 120,
-        }),
-        { flag: "w" }
-      )
+      const formattedJson = await format(JSON.stringify(result.toBeChainsMetadata), {
+        parser: "json",
+        semi: true,
+        trailingComma: "es5",
+        singleQuote: true,
+        printWidth: 120,
+      })
+      await writeFile(normalize(CONFIG.CHAINS_TO_BE_PATH), formattedJson, { flag: "w" })
     }
   } catch (error) {
     throw new ChainMetadataError("Failed to handle full comparison", error)

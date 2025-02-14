@@ -101,7 +101,7 @@ compareConfigs().then(async (res) => {
   if (!res.isEqual) {
     await writeFile(
       configToBePath,
-      format(JSON.stringify(res.toBeConfig), {
+      await format(JSON.stringify(res.toBeConfig), {
         parser: "json",
         semi: true,
         trailingComma: "es5",
