@@ -230,7 +230,7 @@ const validateLinkAddress = async (address: string, provider: BrowserProvider) =
   if (symbol !== linkAttributes.symbol) {
     throw new Error(`Error linkContract symbol. '${symbol}' !== '${linkAttributes.symbol}'`)
   }
-  if (linkToken.decimals !== decimals) {
+  if (linkToken.decimals !== Number(decimals)) {
     throw new Error(`Error linkContract decimals. '${linkToken.decimals}' !== '${decimals}'`)
   }
 }
