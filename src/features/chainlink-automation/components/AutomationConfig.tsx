@@ -84,7 +84,7 @@ export const AutomationConfig = ({
           </tr>
           <tr>
             <td>Minimum Upkeep Spend (LINK)</td>
-            {!minUpkeepSpend ? <td /> : <td>{formatEther(BigInt(minUpkeepSpend.toString()))}</td>}
+            {!minUpkeepSpend ? <td /> : <td>{formatEther(minUpkeepSpend.toString())}</td>}
           </tr>
         </tbody>
       </table>
