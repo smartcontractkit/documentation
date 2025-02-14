@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
-import { getAllNetworks } from "@config/data/ccip"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { laneStore } from "~/stores/lanes/index.ts"
+import { getAllNetworks } from "~/config/data/ccip/index.ts"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 
 type ContractType = "registryModule" | "tokenAdminRegistry" | "router" | "armProxy" | "chainSelector"
 

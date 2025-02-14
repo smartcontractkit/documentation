@@ -6,10 +6,10 @@ import {
   createMetadata,
   CCIPError,
   handleApiError,
-} from "../pages/api/ccip/utils"
-import type { Environment } from "@config/data/ccip/types"
-import { ChainDataService } from "../pages/api/services/chain-data"
-import { mockSelectorConfig, mockReferenceData } from "../__mocks__/chainMock"
+} from "../pages/api/ccip/utils.ts"
+import type { Environment } from "@config/data/ccip/types.ts"
+import { ChainDataService } from "../pages/api/services/chain-data.ts"
+import { mockSelectorConfig, mockReferenceData } from "../__mocks__/chainMock.ts"
 
 // Mock the Environment enum
 jest.mock("@config/data/ccip/types", () => ({

@@ -1,11 +1,13 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, TUTORIAL_STEPS, type RateLimits } from "@stores/lanes"
+import { laneStore, TUTORIAL_STEPS, type RateLimits } from "~/stores/lanes/index.ts"
 import { utils } from "ethers"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 import styles from "./PoolConfigVerification.module.css"
-import { TutorialCard, TutorialStep, NetworkCheck, SolidityParam } from "../TutorialSetup"
-import { Callout } from "../TutorialSetup/Callout"
-import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
+import { TutorialCard, TutorialStep } from "../TutorialSetup/index.ts"
+import { NetworkCheck } from "../TutorialSetup/NetworkCheck.tsx"
+import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
+import { Callout } from "../TutorialSetup/Callout.tsx"
+import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 
 type ChainType = "source" | "destination"
 

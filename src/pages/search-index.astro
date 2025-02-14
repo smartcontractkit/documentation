@@ -3,33 +3,34 @@ import { splitTextByHeadings } from "../scripts/split-text-by-headings"
 import { MarkdownInstance } from "astro"
 import fs from "node:fs"
 
-// import .astro files
-const pages = await Astro.glob("./**/*.astro")
+const pagesGlob = import.meta.glob("./**/*.astro", { eager: true })
+const pages = Object.values(pagesGlob)
 
-// import .md files
-//const posts = [...(await Astro.glob("./**/*.md")).filter((post) => !post.frontmatter.draft)]
-const postsMdx = [...(await Astro.glob("../content/**/*.mdx")).filter((post) => !post.frontmatter.draft)]
+const postsMdxGlob = import.meta.glob<MarkdownInstance<Record<string, any>>>("../content/**/*.mdx", { eager: true })
+const postsMdx = Object.values(postsMdxGlob).filter((post) => !post.frontmatter.draft)
+
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
-  var content = fs.readFileSync(url, "utf-8")
+  const content = fs.readFileSync(url, "utf-8")
   const splittedContent = splitTextByHeadings(content)
-  const chunks = splittedContent.map((chunk) => {
-    return { ...post, rawContent: () => chunk }
-  })
+  const chunks = splittedContent.map((chunk) => ({
+    ...post,
+    rawContent: () => chunk,
+  }))
+
   return chunks
 })
 
-const markDownFiles = [...postsMdxWithContent].flat()
-
-//const allContent = [...pages, ...postsMdx]
+const markDownFiles = postsMdxWithContent.flat()
 
 const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<Record<string, any>>[]) => {
   return Promise.all(
     instances.map(async (instance) => {
       const { title, section, metadata } = instance.frontmatter
       const headings = await instance.getHeadings()
-      const content = !!instance.rawContent ? await instance.rawContent() : undefined
+      const content = instance.rawContent ? await instance.rawContent() : undefined
       const href = instance.url?.replace("src/content", "").replace(".mdx", "")
+
       return {
         title,
         headings,
@@ -45,8 +46,7 @@ const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<R
 const index = await transformMarkdownInstancesToIndexes(markDownFiles)
 
 const stringifiedJson = JSON.stringify({ index }, null, 2)
-
 fs.writeFileSync(`${process.cwd()}/public/search-index.json`, stringifiedJson)
 ---
 
-<meta http-equiv="refresh" content={`0; url=/`} />
+<meta http-equiv="refresh" content="0; url=/" />

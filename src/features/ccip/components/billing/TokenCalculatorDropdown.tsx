@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { useState, useRef, useEffect } from "preact/hooks"
+import type { JSX } from "preact"
 
 export const TokenCalculatorDropdown = <OptionType,>({
   options,

@@ -1,4 +1,4 @@
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export type Props = {
   value?: string

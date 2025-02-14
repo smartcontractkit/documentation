@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useState, useEffect } from "preact/hooks"
 import { useStore } from "@nanostores/preact"
-import { tabStore } from "./store"
+import { tabStore } from "./store.ts"
 
 export function useTabState(initialCurr: string, storeKey?: string): [string, (curr: string) => void] {
   const $tabStore = useStore(tabStore)

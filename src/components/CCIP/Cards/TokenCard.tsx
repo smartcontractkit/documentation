@@ -1,4 +1,4 @@
-import { fallbackTokenIconUrl } from "~/features/utils"
+import { fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import "./TokenCard.css"
 
 interface TokenCardProps {

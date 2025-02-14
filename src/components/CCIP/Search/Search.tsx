@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react"
 import "./Search.css"
-import { clsx } from "~/lib"
-import { useClickOutside } from "~/hooks/useClickOutside"
-import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip"
-import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils"
-import { drawerContentStore } from "../Drawer/drawerStore"
-import LaneDrawer from "../Drawer/LaneDrawer"
-import { ExplorerInfo } from "~/config/types"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { useClickOutside } from "~/hooks/useClickOutside.tsx"
+import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts"
+import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import LaneDrawer from "../Drawer/LaneDrawer.tsx"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface SearchProps {
   chains: {
@@ -46,7 +46,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [networksResults, setNetworksResults] = useState<SearchProps["chains"]>([])
   const [tokensResults, setTokensResults] = useState<SearchProps["tokens"]>([])
   const [lanesResults, setLanesResults] = useState<SearchProps["lanes"]>([])
-  const searchRef = useRef<HTMLInputElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (search) {

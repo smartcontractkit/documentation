@@ -1,12 +1,12 @@
-import Address from "~/components/AddressReact"
+import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore"
-import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip"
-import { ExplorerInfo } from "~/config/types"
-import TableSearchInput from "./TableSearchInput"
+import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
+import { ExplorerInfo } from "~/config/types.ts"
+import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
-import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
-import TokenDrawer from "../Drawer/TokenDrawer"
+import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import TokenDrawer from "../Drawer/TokenDrawer.tsx"
 
 interface TableProps {
   networks: {

@@ -1,13 +1,14 @@
 import { useStore } from "@nanostores/react"
 import "./Drawer.css"
-import { drawerContentStore } from "./drawerStore"
+import { drawerContentStore } from "./drawerStore.ts"
 import { useRef, useEffect, useState } from "react"
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import type { ReactNode } from "react"
 
 function Drawer() {
   const drawerRef = useRef<HTMLDivElement>(null)
   const drawerContentRef = useRef<HTMLDivElement>(null)
-  const $drawerContent = useStore(drawerContentStore)
+  const $drawerContent = useStore(drawerContentStore) as (() => ReactNode) | ReactNode | null
   const [isOpened, setIsOpened] = useState(false)
 
   // exit when press esc

@@ -24,9 +24,12 @@ const config: CodegenConfig = {
   documents: "src/graphql/queries/**/*.gql",
   generates: {
     "src/graphql/generated.ts": {
-      plugins: ["typescript", "typescript-operations", "typescript-graphql-request"],
+      plugins: ["typescript", "typescript-operations", "typescript-react-apollo"],
       config: {
         avoidOptionals: true,
+        gqlImport: "graphql-tag#gql",
+        documentMode: "documentNode",
+        dedupeFragments: true,
       },
     },
   },

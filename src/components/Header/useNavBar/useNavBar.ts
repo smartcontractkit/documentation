@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react"
-import { navBarInfo, NavBarInfo } from "./navBarStore"
+import { navBarInfo, NavBarInfo } from "./navBarStore.ts"
 
 export const useNavBar = () => ({
   $navBarInfo: useStore(navBarInfo),

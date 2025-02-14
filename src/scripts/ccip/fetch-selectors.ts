@@ -9,7 +9,7 @@
 import fs from "fs/promises"
 import fetch from "node-fetch"
 import prettier from "prettier"
-import { SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH, SELECTORS_SOURCE_URL } from "@config/data/ccip/paths"
+import { SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH, SELECTORS_SOURCE_URL } from "~/config/data/ccip/paths.js"
 
 /**
  * Downloads content from a URL with timeout handling.

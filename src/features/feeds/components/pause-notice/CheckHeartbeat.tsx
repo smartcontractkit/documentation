@@ -2,10 +2,10 @@
 import { useCallback, useEffect, useState } from "preact/hooks"
 import { aggregatorV3InterfaceABI } from "@abi"
 import { Contract } from "ethers"
-import { ROUND_DATA_RESPONSE } from "@features/feeds"
-import { PauseNotice } from "./PauseNotice"
-import { SupportedChain } from "@config"
-import { getWeb3Provider } from "~/features/utils"
+import { ROUND_DATA_RESPONSE } from "@features/feeds/types/index.ts"
+import { PauseNotice } from "./PauseNotice.tsx"
+import { SupportedChain } from "@config/index.ts"
+import { getWeb3Provider } from "~/features/utils/index.ts"
 
 export const CheckHeartbeat = ({
   feedAddress,

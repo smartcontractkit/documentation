@@ -1,16 +1,16 @@
-import { CCIPArmABI, CCIPRouterABI } from "@features/abi"
+import { CCIPArmABI, CCIPRouterABI } from "@features/abi/index.ts"
 import { ethers } from "ethers"
-import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/data/ccip"
-import { SupportedChain } from "@config"
-import { directoryToSupportedChain } from "@features/utils"
+import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/data/ccip/index.ts"
+import { SupportedChain } from "@config/index.ts"
+import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
-import { SelectorsConfig, selectorsConfig } from "../../../config/data/ccip/selectors"
+import { SelectorsConfig, selectorsConfig } from "../../../config/data/ccip/selectors.ts"
 
 export const prerender = false
 
 // Re-export types from CCIP config
 export type { ChainsConfig, Version, Environment }
-export type { SelectorsConfig } from "../../../config/data/ccip/selectors"
+export type { SelectorsConfig } from "../../../config/data/ccip/selectors.ts"
 
 /**
  * Common HTTP headers used across all API responses

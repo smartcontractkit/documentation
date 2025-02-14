@@ -28,7 +28,7 @@ const SideBySideCode: React.FC<SideBySideCodeProps> = ({
   const [copyError, setCopyError] = useState<string | null>(null)
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null)
   const codeContentRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<number>()
+  const timeoutRef = useRef<number | undefined>(undefined)
 
   // Get language display name
   const languageDisplay = typeof language === "string" ? language : language?.name || "plaintext"

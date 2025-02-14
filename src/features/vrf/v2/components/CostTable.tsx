@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
+import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains.ts"
 import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
