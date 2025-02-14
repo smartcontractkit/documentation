@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { ethers, BigNumber } from "ethers"
+import { formatEther } from "ethers"
 import { ChainlinkAutomationConfig } from "@features/chainlink-automation/types/index.ts"
 import { Address } from "@components"
 
@@ -84,7 +84,7 @@ export const AutomationConfig = ({
           </tr>
           <tr>
             <td>Minimum Upkeep Spend (LINK)</td>
-            {!minUpkeepSpend ? <td /> : <td>{ethers.utils.formatEther(BigNumber.from(minUpkeepSpend))}</td>}
+            {!minUpkeepSpend ? <td /> : <td>{formatEther(BigInt(minUpkeepSpend.toString()))}</td>}
           </tr>
         </tbody>
       </table>

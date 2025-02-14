@@ -1,7 +1,7 @@
 import { atom, computed } from "nanostores"
 import { Environment } from "@config/data/ccip/index.ts"
 import type { Network } from "@config/data/ccip/types.ts"
-import { utils } from "ethers"
+import { isAddress } from "ethers"
 
 export type DeployedContracts = {
   token?: string
@@ -149,7 +149,7 @@ const conditions = [
     stepId: "sourceChain" as StepId,
     subStepId: "token-deployed",
     check: (state: LaneState) => {
-      const hasToken = !!state.sourceContracts.token && utils.isAddress(state.sourceContracts.token)
+      const hasToken = !!state.sourceContracts.token && isAddress(state.sourceContracts.token)
       return hasToken
     },
     dependencies: ["setup"] as StepId[],
@@ -158,7 +158,7 @@ const conditions = [
     stepId: "sourceChain" as StepId,
     subStepId: "pool-deployed",
     check: (state: LaneState) => {
-      const hasPool = !!state.sourceContracts.tokenPool && utils.isAddress(state.sourceContracts.tokenPool)
+      const hasPool = !!state.sourceContracts.tokenPool && isAddress(state.sourceContracts.tokenPool)
       return hasPool
     },
     dependencies: ["sourceChain"] as StepId[],
@@ -179,7 +179,7 @@ const conditions = [
     stepId: "destinationChain" as StepId,
     subStepId: "dest-pool-deployed",
     check: (state: LaneState) => {
-      const hasPool = !!state.destinationContracts.tokenPool && utils.isAddress(state.destinationContracts.tokenPool)
+      const hasPool = !!state.destinationContracts.tokenPool && isAddress(state.destinationContracts.tokenPool)
       return hasPool
     },
     dependencies: ["destinationChain"] as StepId[],
@@ -400,7 +400,7 @@ function updateProgressForStep(stepId: StepId, updates: Record<string, boolean>)
 
 // Utility function to handle contract progress updates
 const updateContractProgress = (type: keyof DeployedContracts, chain: "source" | "destination", value: string) => {
-  const isValidAddress = Boolean(value) && utils.isAddress(value)
+  const isValidAddress = Boolean(value) && isAddress(value)
 
   if (type === "token") {
     updateProgressForStep(chain === "source" ? "sourceChain" : "destinationChain", {

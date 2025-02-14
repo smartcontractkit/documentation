@@ -1,11 +1,11 @@
-import { BigNumber } from "ethers"
+import { BigNumberish } from "ethers"
 
 export interface ROUND_DATA_RESPONSE {
-  roundId: BigNumber
-  answer: BigNumber
-  startedAt: BigNumber
-  updatedAt: BigNumber
-  answeredInRound: BigNumber
+  roundId: BigNumberish
+  answer: BigNumberish
+  startedAt: BigNumberish
+  updatedAt: BigNumberish
+  answeredInRound: BigNumberish
 }
 
 enum NetworkType {

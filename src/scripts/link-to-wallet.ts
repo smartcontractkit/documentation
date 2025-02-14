@@ -1,14 +1,10 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import detectEthereumProvider from "@metamask/detect-provider"
-import { BigNumberish, ethers } from "ethers"
-import { Web3Provider, ExternalProvider } from "@ethersproject/providers"
+import { BigNumberish, BrowserProvider, ethers, toQuantity } from "ethers"
 import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" assert { type: "json" }
 import chains from "./reference/chains.json" assert { type: "json" }
 import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
-
-// disable unnecessary warnings
-ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR)
 
 const chainlinkLogo = "https://docs.chain.link/images/logo.png"
 
@@ -29,7 +25,7 @@ const initChainChangeEventName = "InitChainChange"
 /**
  * Converts a number to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
  */
-const toHex = ethers.utils.hexValue
+const toHex = toQuantity
 
 /**
  * Check that the format of ethereum address is valid
@@ -199,7 +195,7 @@ const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvide
  * @param address
  * @param provider
  */
-const validateLinkAddress = async (address: string, provider: Web3Provider) => {
+const validateLinkAddress = async (address: string, provider: BrowserProvider) => {
   if (!isAddressFormatValid(address)) {
     throw new Error(`Something went wrong. format of address '${address}' not correct`)
   }
@@ -216,10 +212,12 @@ const validateLinkAddress = async (address: string, provider: Web3Provider) => {
   }
 
   let chainId: keyof typeof linkNameSymbol
-  if (Object.keys(linkNameSymbol).includes(provider.network.chainId.toString())) {
-    chainId = provider.network.chainId.toString() as keyof typeof linkNameSymbol
+  const network = await provider.getNetwork()
+  const chainIdStr = network.chainId.toString()
+  if (Object.keys(linkNameSymbol).includes(chainIdStr)) {
+    chainId = chainIdStr as keyof typeof linkNameSymbol
   } else {
-    throw new Error(`Error chain ${provider.network.chainId} not found in reference data`)
+    throw new Error(`Error chain ${chainIdStr} not found in reference data`)
   }
 
   const linkAttributes = linkNameSymbol[chainId]
@@ -242,7 +240,7 @@ const handleWalletTokenManagement = async () => {
     // Support only Metamask extension for now.
     if (!ethereum || !ethereum.isMetaMask) throw Error()
 
-    const provider = new ethers.providers.Web3Provider(ethereum as ExternalProvider, "any")
+    const provider = new BrowserProvider(ethereum)
 
     let detectedChainId: string | number | null = (await ethereum.request({
       method: "eth_chainId",

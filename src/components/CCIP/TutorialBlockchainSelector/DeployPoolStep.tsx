@@ -12,7 +12,7 @@ import { ContractVerificationStep } from "./ContractVerificationStep.tsx"
 import { Callout } from "../TutorialSetup/Callout.tsx"
 import type { LaneState, DeployedContracts } from "~/stores/lanes/index.ts"
 import styles from "./DeployPoolStep.module.css"
-import { utils } from "ethers"
+import { isAddress } from "ethers"
 
 interface DeployPoolStepProps {
   chain: "source" | "destination"
@@ -40,7 +40,7 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
     const currentContracts = chain === "source" ? state.sourceContracts : state.destinationContracts
 
     // Only update pool type when we have a valid address
-    if (currentContracts.tokenPool && utils.isAddress(currentContracts.tokenPool)) {
+    if (currentContracts.tokenPool && isAddress(currentContracts.tokenPool)) {
       const current = laneStore.get()
 
       // Debug log before update
