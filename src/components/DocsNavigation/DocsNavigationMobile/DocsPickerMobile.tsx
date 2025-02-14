@@ -21,14 +21,14 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-const { productsNav, subProductsNav } = getNavigationProps()
-
 export function ProductNavigation({ path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
+
+  const { productsNav, subProductsNav } = getNavigationProps()
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 

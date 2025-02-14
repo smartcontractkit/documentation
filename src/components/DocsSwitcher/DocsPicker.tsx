@@ -4,10 +4,10 @@ import { getNavigationProps } from "../Header/getNavigationProps.ts"
 import styles from "./docsPicker.module.css"
 import { clsx } from "../Header/Nav/utils.ts"
 
-const { subProductsNav } = getNavigationProps()
-
 function DocsPicker({ pathname }: { pathname: string }) {
   const [productMenuOpen, setProductMenuOpen] = useState(false)
+
+  const { subProductsNav } = getNavigationProps()
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
 

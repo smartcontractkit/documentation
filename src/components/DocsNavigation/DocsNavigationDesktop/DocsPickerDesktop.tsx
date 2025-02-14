@@ -5,10 +5,10 @@ import styles from "./docsPickerDesktop.module.css"
 import { clsx } from "../../Header/Nav/utils.ts"
 import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
-const { subProductsNav } = getNavigationProps()
-
 function DocsPickerDesktop({ pathname }: { pathname: string }) {
   const [productMenuOpen, setProductMenuOpen] = useState(false)
+  const { subProductsNav } = getNavigationProps()
+
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
 
   const label = subProductTrigger?.label || "Resources"
