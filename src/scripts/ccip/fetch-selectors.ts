@@ -86,7 +86,7 @@ async function main() {
 
     // Format using project's Prettier config
     const prettierConfig = await prettier.resolveConfig(process.cwd())
-    const formattedContent = prettier.format(processedContent, {
+    const formattedContent = await prettier.format(processedContent, {
       ...prettierConfig,
       parser: "yaml",
     })
