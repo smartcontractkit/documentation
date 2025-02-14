@@ -71,11 +71,17 @@ export const GET: APIRoute = async ({ request }) => {
     }
     // Check if the source chain is cursed
     const sourceProvider = getProviderForChain(sourceChain)
-    const isSourceChainCursed = await withTimeout(
-      checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
-      timeoutCurseCheck,
-      `Timeout while checking if source chain ${sourceChain} is cursed`
-    )
+    let isSourceChainCursed = false
+    try {
+      isSourceChainCursed = await withTimeout(
+        checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
+        timeoutCurseCheck,
+        `Timeout while checking if source chain ${sourceChain} is cursed`
+      )
+    } catch (error) {
+      console.error(`Error checking if source chain ${sourceChain} is cursed: ${error}`)
+      // Continue execution instead of returning 500
+    }
 
     const statuses: Record<string, LaneStatus> = {}
     const failedCurseChecks: string[] = []
