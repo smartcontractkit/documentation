@@ -9,7 +9,7 @@ import path from "path"
 export const CCIP_CONFIG_DIR = path.join("src", "config", "data", "ccip")
 
 /** Path for the chain selectors configuration file */
-export const SELECTOR_CONFIG_PATH = path.join(CCIP_CONFIG_DIR, "selector.yml")
+export const SELECTOR_CONFIG_PATH = path.join(CCIP_CONFIG_DIR, "selectors.yml")
 
 /** Path for the backup file when updating selectors */
 export const SELECTOR_BACKUP_PATH = `${SELECTOR_CONFIG_PATH}.backup`
