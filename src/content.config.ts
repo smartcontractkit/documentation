@@ -1,5 +1,6 @@
 import { z, defineCollection } from "astro:content"
 import { glob } from "astro/loaders"
+import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
   CCIP = "ccip",
@@ -23,18 +24,7 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
 
-const sectionEnum = z.enum([
-  "global",
-  "ccip",
-  "automation",
-  "chainlinkFunctions",
-  "nodeOperator",
-  "dataFeeds",
-  "dataStreams",
-  "legacy",
-  "vrf",
-  "chainlinkLocal",
-])
+const sectionEnum = z.enum(sectionValues)
 export type Sections = z.infer<typeof sectionEnum>
 
 /** metadata object */

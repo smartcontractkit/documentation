@@ -7,7 +7,7 @@ import { SupportedChain } from "@config/index.ts"
 import { getWeb3Provider } from "@features/utils/index.ts"
 // eslint-disable-next-line camelcase
 import { KeeperRegistry, keeperRegistry1_3, keeperRegistry2_0 } from "@abi"
-import { ContractInterface, ethers } from "ethers"
+import { InterfaceAbi, ethers, Interface, Provider } from "ethers"
 import { normalize } from "path"
 import lodash from "lodash"
 import { writeFile } from "fs/promises"
@@ -26,8 +26,8 @@ const getRegistryAbi = (supportedChain: SupportedChain) => {
 }
 
 const getChainlinkAutomationConfig = async (
-  provider: ethers.providers.Provider,
-  abi: ContractInterface,
+  provider: Provider,
+  abi: InterfaceAbi | Interface,
   registryAddress: string
 ) => {
   const registry = new ethers.Contract(registryAddress, abi, provider)
@@ -66,7 +66,7 @@ const getChainlinkAutomationConfigs = async () => {
   const configs: ChainlinkAutomationConfigs = {}
   for (const key in automationAddresses) {
     const supportedChain = key as SupportedChain
-    const abi = getRegistryAbi(supportedChain) as ContractInterface
+    const abi = getRegistryAbi(supportedChain)
     const registryAddress = automationAddresses[key].registryAddress
     const provider = getWeb3Provider(supportedChain)
     if (!registryAddress) {

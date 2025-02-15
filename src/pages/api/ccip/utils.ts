@@ -1,5 +1,5 @@
 import { CCIPArmABI, CCIPRouterABI } from "@features/abi/index.ts"
-import { ethers } from "ethers"
+import { JsonRpcProvider, Contract } from "ethers"
 import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
@@ -76,7 +76,7 @@ export type FilterType = {
  * Arguments required for ARM proxy contract interactions
  */
 export type ArmProxyArgs = {
-  provider: ethers.providers.JsonRpcProvider
+  provider: JsonRpcProvider
   routerAddress: string
 }
 
@@ -87,9 +87,9 @@ export type ArmProxyArgs = {
  * @returns Promise resolving to the ARM contract instance
  */
 export const getArmContract = async ({ provider, routerAddress }: ArmProxyArgs) => {
-  const routerContract = new ethers.Contract(routerAddress, CCIPRouterABI, provider)
+  const routerContract = new Contract(routerAddress, CCIPRouterABI, provider)
   const armProxyAddress: string = await routerContract.getArmProxy()
-  return new ethers.Contract(armProxyAddress, CCIPArmABI, provider)
+  return new Contract(armProxyAddress, CCIPArmABI, provider)
 }
 
 /**
@@ -171,7 +171,7 @@ export const resolveChainOrThrow = (networkId: string): SupportedChain => {
  * @returns Promise resolving to the curse status
  */
 export const checkIfChainIsCursed = async (
-  provider: ethers.providers.JsonRpcProvider,
+  provider: JsonRpcProvider,
   chain: SupportedChain,
   routerAddress: string
 ): Promise<boolean> => {

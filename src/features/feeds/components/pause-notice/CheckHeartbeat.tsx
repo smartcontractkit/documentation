@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useCallback, useEffect, useState } from "preact/hooks"
 import { aggregatorV3InterfaceABI } from "@abi"
-import { Contract } from "ethers"
+import { Contract, BigNumberish } from "ethers"
 import { ROUND_DATA_RESPONSE } from "@features/feeds/types/index.ts"
 import { PauseNotice } from "./PauseNotice.tsx"
 import { SupportedChain } from "@config/index.ts"
@@ -20,7 +20,7 @@ export const CheckHeartbeat = ({
   list?: boolean
   currencyName: string
 }) => {
-  const [latestUpdateTimestamp, setLatestUpdateTimestamp] = useState<number | undefined>(undefined)
+  const [latestUpdateTimestamp, setLatestUpdateTimestamp] = useState<BigNumberish | undefined>(undefined)
   const getLatestTimestamp = useCallback(async () => {
     const rpcProvider = getWeb3Provider(supportedChain)
     if (!rpcProvider) {
@@ -32,7 +32,7 @@ export const CheckHeartbeat = ({
     if (!roundData.updatedAt) {
       return
     }
-    const updatedTimestamp = roundData.updatedAt.toNumber()
+    const updatedTimestamp = roundData.updatedAt
     setLatestUpdateTimestamp(updatedTimestamp)
   }, [feedAddress])
 
@@ -53,7 +53,7 @@ export const CheckHeartbeat = ({
   return latestUpdateTimestamp ? (
     <div>
       <PauseNotice
-        value={latestUpdateTimestamp}
+        value={Number(latestUpdateTimestamp)}
         list={list}
         type="alert"
         feedName={feedName}
