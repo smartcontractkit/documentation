@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 
-import { InfuraProvider, JsonRpcProvider, Provider } from "ethers"
+import { InfuraProvider, JsonRpcProvider, Provider, Network } from "ethers"
 import { SupportedChain } from "./types.ts"
+import { getChainId } from "~/features/utils/index.ts"
 
 export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ETHEREUM_MAINNET: () => new InfuraProvider("homestead", "fe6db57057904042b7fed23ff54c643d"),
@@ -110,8 +111,27 @@ export const getRpcUrlForChain = (chain: SupportedChain): string => {
 
 export const getProviderForChain = (chain: SupportedChain): JsonRpcProvider => {
   const rpcUrl = getRpcUrlForChain(chain)
+  const chainId = getChainId(chain)
+
   if (!rpcUrl) {
-    throw new Error(`No RPC URL found for chain ${chain}`)
+    throw new Error(`No RPC URL found for chain ${chain} - ${chainId}`)
   }
-  return new JsonRpcProvider(rpcUrl)
+
+  if (!chainId) {
+    throw new Error(`No chain ID found for chain ${chain}`)
+  }
+
+  // Create a Network instance for static configuration
+  const network = Network.from({
+    chainId,
+    name: chain.toLowerCase(),
+  })
+
+  // Create provider with static network to prevent auto-detection
+  const provider = new JsonRpcProvider(rpcUrl, network, {
+    staticNetwork: network,
+    polling: false,
+  })
+
+  return provider
 }
