@@ -11,6 +11,8 @@ import {
   resolveChainOrThrow,
   checkIfChainIsCursed,
   withTimeout,
+  structuredLog,
+  LogLevel,
 } from "./utils.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getProviderForChain } from "@config/web3Providers.ts"
@@ -199,7 +201,18 @@ export const GET: APIRoute = async ({ request }) => {
         let status = LaneStatus.OPERATIONAL
 
         if (node.successRate === 0) {
-          status = environment === Environment.Testnet ? LaneStatus.MAINTENANCE : LaneStatus.DEGRADED
+          const newStatus = environment === Environment.Testnet ? LaneStatus.MAINTENANCE : LaneStatus.DEGRADED
+          status = newStatus
+          structuredLog(LogLevel.WARN, {
+            message: `Lane status changed due to zero success rate`,
+            requestId: request.headers.get("x-request-id") || "unknown",
+            lane: {
+              source: sourceChainAtlas,
+              destination: node.destNetworkName || "unknown",
+              status: newStatus,
+              successRate: node.successRate,
+            },
+          })
         }
 
         if (node.destNetworkName) {
