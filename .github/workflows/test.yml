@@ -35,13 +35,6 @@ jobs:
         run: |
           echo "Cache miss, installing dependencies..."
           npm ci --prefer-offline --no-audit
-        
-      - name: Cache Validation
-        run: |
-          echo "Validating node_modules..."
-          # Check if key packages exist to validate cache
-          test -d "node_modules/typescript" && echo "TypeScript found" || exit 1
-          test -d "node_modules/astro" && echo "Astro found" || exit 1
 
   # Job 1: Check Solidity Compilation and Solhint
   solidity:
@@ -56,30 +49,50 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
+      # Restore node_modules from setup job
       - name: Restore node_modules
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          
-      - name: Cache Solidity Artifacts
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      # Cache Solidity compilation artifacts
+      - name: Restore compilation caches
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
-            artifacts
-            cache
-          key: ${{ runner.os }}-solidity-${{ hashFiles('**/contracts/**/*.sol') }}
+            .test/artifacts
+            .test/cache
+            ~/.cache/hardhat
+          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-solidity-
-      
+            ${{ runner.os }}-solidity-compile-
+           
       - name: Check Solidity Compilation
-        run: npm run sol:compile
-      
+        run: |
+          echo "Running Solidity compilation with cache..."
+          npm run sol:compile
+
       - name: Check Solidity Solhint
-        run: npm run lint-solc
+        run: |
+          echo "Running Solhint..."
+          npm run lint-solc
+
+      # Save compilation artifacts including typechain-types
+      - name: Save compilation artifacts
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: |
+            .test/artifacts
+            .test/cache
+            ~/.cache/hardhat
+            typechain-types
+          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
 
   # Job 2: Check ESLint
   eslint:
@@ -94,20 +107,27 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
+      # Restore node_modules from setup job
       - name: Restore node_modules
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
       
       - name: Check ESLint
-        run: npm run lint
+        run: |
+          echo "Running ESLint with cache..."
+          npm run lint -- --cache --cache-strategy content
         
       - name: Check Formatting
-        run: npm run format:check
+        run: |
+          echo "Running Prettier with cache..."
+          npm run format:check -- --cache
 
   # Job 3: Check Internal Links
   linkcheck-internal:
@@ -122,21 +142,24 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
+      # Restore node_modules from setup job
       - name: Restore node_modules
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
       
       - name: Check Internal Links
         run: npm run linkcheck-internal
 
   # Job 4: Check Types
   typecheck:
-    needs: [setup, eslint]
+    needs: [setup, solidity]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -147,34 +170,41 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
+      # Restore node_modules from setup job
       - name: Restore node_modules
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
 
-      - name: Cache TypeScript
+      # Restore compilation artifacts including typechain-types
+      - name: Restore compilation artifacts
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
-            .astro
-            node_modules/.cache/typescript
-          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/*.ts', '**/*.tsx') }}
+            typechain-types
+          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-typescript-
+            ${{ runner.os }}-solidity-compile-
 
       - name: Generate Astro types
-        run: npx astro sync
+        run: |
+          echo "Generating Astro types..."
+          npx astro sync
       
       - name: Check Types
-        run: npm run typecheck
+        run: |
+          echo "Running type check..."
+          npm run typecheck
 
   # Job 5: Run Jest Tests
   jest:
-    needs: [setup, eslint]
+    needs: [setup, solidity]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -190,23 +220,27 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
+      # Restore node_modules from setup job
       - name: Restore node_modules
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
 
-      - name: Cache Jest
+      # Restore only typechain-types for tests
+      - name: Restore TypeChain types
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
-            node_modules/.cache/jest
-          key: ${{ runner.os }}-jest-${{ matrix.node-version }}-${{ hashFiles('**/*.test.ts', '**/*.test.tsx') }}
+            typechain-types
+          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-jest-${{ matrix.node-version }}-
+            ${{ runner.os }}-solidity-compile-
       
       - name: Run Jest Tests
         run: npm test
