@@ -47,6 +47,27 @@ jobs:
       - name: Check ESLint
         run: npm run lint
 
+  # Job: Check Formatting
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      
+      - name: Cache NPM dependencies
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Check Formatting
+        run: npm run format:check
+
   # Job 3: Check Internal Links
   linkcheck-internal:
     runs-on: ubuntu-latest
