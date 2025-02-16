@@ -63,15 +63,17 @@ jobs:
 
       # Cache Solidity compilation artifacts
       - name: Restore compilation caches
+        id: cache-solidity
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             .test/artifacts
             .test/cache
             ~/.cache/hardhat
-          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
+            typechain-types
+          key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
           restore-keys: |
-            ${{ runner.os }}-solidity-compile-
+            ${{ runner.os }}-solidity-
            
       - name: Check Solidity Compilation
         run: |
@@ -83,8 +85,9 @@ jobs:
           echo "Running Solhint..."
           npm run lint-solc
 
-      # Save compilation artifacts including typechain-types
+      # Save compilation artifacts
       - name: Save compilation artifacts
+        if: always()
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
@@ -92,7 +95,7 @@ jobs:
             .test/cache
             ~/.cache/hardhat
             typechain-types
-          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
+          key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
 
   # Job 2: Check ESLint
   eslint:
@@ -182,15 +185,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-modules-
 
-      # Restore compilation artifacts including typechain-types
-      - name: Restore compilation artifacts
+      # Restore TypeChain types from solidity job
+      - name: Restore TypeChain types
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             typechain-types
-          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
+          key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
           restore-keys: |
-            ${{ runner.os }}-solidity-compile-
+            ${{ runner.os }}-solidity-
 
       - name: Generate Astro types
         run: |
@@ -238,12 +241,12 @@ jobs:
         with:
           path: |
             typechain-types
-          key: ${{ runner.os }}-solidity-compile-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*', '**/package.json') }}
+          key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
           restore-keys: |
-            ${{ runner.os }}-solidity-compile-
+            ${{ runner.os }}-solidity-
       
       - name: Run Jest Tests
-        run: npm test
+        run: npm test -- --coverage
       
       - name: Upload Test Coverage
         if: always()
