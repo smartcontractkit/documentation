@@ -1,6 +1,11 @@
 name: Test
 on: [push, pull_request]
 
+# Cancel any in-progress job or run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Job 1: Check Solidity Compilation and Solhint
   solidity:
@@ -9,13 +14,21 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
       
-      - name: Cache NPM dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache Solidity Artifacts
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          path: |
+            artifacts
+            cache
+          key: ${{ runner.os }}-solidity-${{ hashFiles('**/contracts/**/*.sol') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-solidity-
       
       - name: Install Dependencies
         run: npm ci
@@ -26,95 +39,8 @@ jobs:
       - name: Check Solidity Solhint
         run: npm run lint-solc
 
-  # Job 2: Check ESLint
-  eslint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      
-      - name: Cache NPM dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install Dependencies
-        run: npm ci
-      
-      - name: Check ESLint
-        run: npm run lint
-
-  # Job: Check Formatting
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      
-      - name: Cache NPM dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install Dependencies
-        run: npm ci
-      
-      - name: Check Formatting
-        run: npm run format:check
-
-  # Job 3: Check Internal Links
-  linkcheck-internal:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      
-      - name: Cache NPM dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install Dependencies
-        run: npm ci
-      
-      - name: Check Internal Links
-        run: npm run linkcheck-internal
-
-  # Job 4: Check Types
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      
-      - name: Cache NPM dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Generate Astro types
-        run: npx astro sync
-      
-      - name: Check Types
-        run: npm run typecheck
-
-  # Job 5: Run Jest Tests
-  jest:
+  # Job 2: Check ESLint and Formatting
+  lint-and-format:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -129,6 +55,95 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       
+      - name: Check ESLint
+        run: npm run lint
+        
+      - name: Check Formatting
+        run: npm run format:check
+
+  # Job 3: Check Internal Links
+  linkcheck-internal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Check Internal Links
+        run: npm run linkcheck-internal
+
+  # Job 4: Check Types
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: [lint-and-format]  # Run after linting to catch basic errors first
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Cache TypeScript
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: |
+            .astro
+            node_modules/.cache/typescript
+          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-typescript-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Astro types
+        run: npx astro sync
+      
+      - name: Check Types
+        run: npm run typecheck
+
+  # Job 5: Run Jest Tests
+  jest:
+    runs-on: ubuntu-latest
+    needs: [lint-and-format]  # Run after linting to catch basic errors first
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]  # Test against LTS and current
+      fail-fast: false  # Continue with other versions if one fails
+    
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Cache Jest
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: |
+            node_modules/.cache/jest
+          key: ${{ runner.os }}-jest-${{ matrix.node-version }}-${{ hashFiles('**/*.test.ts', '**/*.test.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ matrix.node-version }}-
+      
+      - name: Install Dependencies
+        run: npm ci
+      
       - name: Run Jest Tests
         run: npm test
       
@@ -136,6 +151,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: coverage-report
+          name: coverage-report-node-${{ matrix.node-version }}
           path: coverage/
           retention-days: 30
