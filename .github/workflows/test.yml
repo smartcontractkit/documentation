@@ -87,7 +87,8 @@ jobs:
 
       # Save compilation artifacts
       - name: Save compilation artifacts
-        if: always()
+        if: always()  # Save cache even if compilation fails to prevent cache poisoning
+        id: cache-solidity-save
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
@@ -96,6 +97,7 @@ jobs:
             ~/.cache/hardhat
             typechain-types
           key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
+          lookup-only: false
 
   # Job 2: Check ESLint
   eslint:
@@ -187,13 +189,19 @@ jobs:
 
       # Restore TypeChain types from solidity job
       - name: Restore TypeChain types
+        id: cache-typechain
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
-          path: |
-            typechain-types
+          path: typechain-types
           key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
-          restore-keys: |
-            ${{ runner.os }}-solidity-
+          lookup-only: true  # Only lookup, don't try to save cache
+
+      # Fail fast if TypeChain types are missing
+      - name: Check TypeChain types
+        if: steps.cache-typechain.outputs.cache-hit != 'true'
+        run: |
+          echo "Error: TypeChain types not found in cache. Ensure solidity job completed successfully."
+          exit 1
 
       - name: Generate Astro types
         run: |
@@ -237,14 +245,20 @@ jobs:
 
       # Restore only typechain-types for tests
       - name: Restore TypeChain types
+        id: cache-typechain
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
-          path: |
-            typechain-types
+          path: typechain-types
           key: ${{ runner.os }}-solidity-${{ hashFiles('**/public/samples/**/*.sol', '**/hardhat.config.*') }}
-          restore-keys: |
-            ${{ runner.os }}-solidity-
-      
+          lookup-only: true  # Only lookup, don't try to save cache
+
+      # Fail fast if TypeChain types are missing
+      - name: Check TypeChain types
+        if: steps.cache-typechain.outputs.cache-hit != 'true'
+        run: |
+          echo "Error: TypeChain types not found in cache. Ensure solidity job completed successfully."
+          exit 1
+
       - name: Run Jest Tests
         run: npm test -- --coverage
       
