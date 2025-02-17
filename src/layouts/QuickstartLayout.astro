@@ -3,7 +3,7 @@ import Quickstart from "../components/Quickstart/Quickstart.astro"
 import QuickstartOverview from "../components/Quickstart/QuickstartOverview.astro"
 import QuickstartPanel from "../components/Quickstart/QuickstartPanel.astro"
 import * as CONFIG from "../config"
-import { QuickstartsFrontmatter } from "~/content/config"
+import { QuickstartsFrontmatter } from "~/content.config.ts"
 import { MarkdownHeading } from "astro"
 import BaseLayout from "./BaseLayout.astro"
 
@@ -44,7 +44,8 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
   <style>
     main {
-      background: linear-gradient(180deg, rgba(245, 247, 253, 0.75) 0%, rgba(245, 247, 253, 0) 20%),
+      background:
+        linear-gradient(180deg, rgba(245, 247, 253, 0.75) 0%, rgba(245, 247, 253, 0) 20%),
         url("/images/quickstarts/cube.svg") top left no-repeat;
       background-size: 100%;
       margin-bottom: 0;
@@ -81,6 +82,7 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
         grid-template-areas: "top main_content" "bottom main_content";
         grid-template-columns: 2fr 1fr;
         gap: 2em;
+        margin-left: var(--space-2x);
       }
 
       #right-bg {
@@ -100,6 +102,11 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
       #grid-main {
         grid-area: bottom;
+      }
+    }
+    @media (min-width: 72em) {
+      .layout {
+        margin-left: var(--space-8x);
       }
     }
   </style>

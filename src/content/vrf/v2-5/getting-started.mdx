@@ -1,0 +1,388 @@
+---
+section: vrf
+date: Last Modified
+title: "Getting Started with Chainlink VRF V2.5"
+whatsnext:
+  {
+    "Security Considerations": "/vrf/v2-5/security",
+    "Best Practices": "/vrf/v2-5/best-practices",
+    "Supported Networks": "/vrf/v2-5/supported-networks",
+  }
+metadata:
+  title: "Getting Started with Chainlink VRF V2.5"
+  description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
+  excerpt: "Using Chainlink VRF"
+  image: "/files/2a242f1-link.png"
+---
+
+import { Aside, CodeSample, ClickToZoom } from "@components"
+
+<Aside type="note" title="Requirements">
+  This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart
+  contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract) before
+  you begin.
+</Aside>
+
+In this guide, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
+
+## How is randomness generated on blockchains? What is Chainlink VRF?
+
+Randomness is very difficult to generate on blockchains. This is because every node on the blockchain must come to the same conclusion and form a consensus. Even though random numbers are versatile and useful in a variety of blockchain applications, they cannot be generated natively in smart contracts. The solution to this issue is [**Chainlink VRF**](/vrf), also known as Chainlink Verifiable Random Function.
+
+## What is the Request and Receive cycle?
+
+The [Data Feeds Getting Started](/data-feeds/getting-started) guide explains how to consume Chainlink Data Feeds, which consist of reference data posted onchain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
+
+Randomness, on the other hand, cannot be reference data. If the result of randomness is stored onchain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](/architecture-overview/architecture-request-model)**.
+
+## What is the payment process for generating a random number?
+
+VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF requests, so that funding of all your application requests are managed in a single location.
+To learn more about VRF requests funding, see [Subscription limits](/vrf/v2-5/overview/subscription#subscription-limits).
+
+## How can I use Chainlink VRF?
+
+In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application has a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
+
+After the contract requests randomness from Chainlink VRF, the result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
+
+When rolling the dice, it uses an `address` variable to track which address is assigned to each house.
+
+The contract has the following functions:
+
+- `rollDice`: This submits a randomness request to Chainlink VRF
+- `fulfillRandomWords`: The function that the Oracle uses to send the result back
+- `house`: To see the assigned house of an address
+
+**Note**: to jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/VRFD20.sol) in Remix.
+
+### Create and fund a subscription
+
+Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
+For this example, create a new subscription on the Sepolia testnet as explained [here](/vrf/v2-5/subscription/create-manage).
+
+Your subscription has two balances - one for LINK and one for the native token you're using (in this case, Sepolia ETH). You can choose to pay for VRF requests using either balance.
+
+### Importing contracts
+
+Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use:
+
+- [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol) that must be imported and extended from the contract that you create.
+- [`VRFV2PlusClient`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol) to format your requests to VRF.
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract VRFD20 is VRFConsumerBaseV2Plus {
+
+}
+```
+
+### Contract variables
+
+This example is adapted for [Sepolia testnet](/vrf/v2-5/supported-networks#sepolia-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2-5/supported-networks).
+
+{/* prettier-ignore */}
+```solidity
+uint256 s_subscriptionId;
+address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+bytes32 s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+uint32 callbackGasLimit = 40000;
+uint16 requestConfirmations = 3;
+uint32 numWords =  1;
+```
+
+- `uint256 s_subscriptionId`: The subscription ID that this contract uses for funding requests. Initialized in the `constructor`.
+- `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
+- `bytes32 s_keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the offchain VRF job that runs in response to requests.
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` value on the coordinator contract. For Sepolia, the `minimumRequestBlockConfirmations` value is 3. You can check this and the other configuration values on the coordinator contract by querying [the `s_config` value in the Sepolia Etherscan block explorer](https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B#readContract#F12).
+- `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. In this example, each transaction requests one random value.
+
+To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
+
+{/* prettier-ignore */}
+```solidity
+mapping(uint256 => address) private s_rollers;
+mapping(address => uint256) private s_results;
+```
+
+- `s_rollers` stores a mapping between the `requestID` (returned when a request is made), and the address of the roller. This is so the contract can keep track of who to assign the result to when it comes back.
+- `s_results` stores the roller and the result of the dice roll.
+
+### Initializing the contract
+
+The subscription ID must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2Plus` properly, you must also pass the VRF coordinator address into its constructor.
+The address that creates the smart contract is the owner of the contract.
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract VRFD20 is VRFConsumerBaseV2Plus {
+    // variables
+    // ...
+
+    // constructor
+    constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        s_subscriptionId = subscriptionId;
+    }
+    ...
+}
+```
+
+### `rollDice` function
+
+The `rollDice` function will complete the following tasks:
+
+1. Check if the roller has already rolled since each roller can only ever be assigned to a single house.
+1. Request randomness by calling the VRF coordinator.
+1. Store the `requestId` and roller address.
+1. Emit an event to signal that the dice is rolling.
+
+You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rolled but the result is not yet returned. Also add a `DiceRolled` event to the contract.
+
+Only the owner of the contract can execute the `rollDice` function.
+
+This `rollDice` function is configured so that you pay for VRF requests using LINK by default. If you want to pay for your VRF request with Sepolia ETH instead, set `nativePayment` to `true`.
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract VRFD20 is VRFConsumerBaseV2Plus {
+    // variables
+    uint256 private constant ROLL_IN_PROGRESS = 42;
+    // ...
+
+    // events
+    event DiceRolled(uint256 indexed requestId, address indexed roller);
+    // ...
+
+    // ...
+    // { constructor }
+    // ...
+
+    // rollDice function
+    function rollDice(address roller) public onlyOwner returns (uint256 requestId) {
+        require(s_results[roller] == 0, "Already rolled");
+        // Will revert if subscription is not set and funded.
+
+       requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
+        );
+
+        s_rollers[requestId] = roller;
+        s_results[roller] = ROLL_IN_PROGRESS;
+        emit DiceRolled(requestId, roller);
+    }
+}
+```
+
+### `fulfillRandomWords` function
+
+`fulfillRandomWords` is a special function defined within the `VRFConsumerBaseV2Plus` contract that our contract extends from. The coordinator sends the result of our generated `randomWords` back to `fulfillRandomWords`. You will implement some functionality here to deal with the result:
+
+1. Change the result to a number between 1 and 20 inclusively. Note that `randomWords` is an array that could contain several random values. In this example, request 1 random value.
+1. Assign the transformed value to the address in the `s_results` mapping variable.
+1. Emit a `DiceLanded` event.
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract VRFD20 is VRFConsumerBaseV2Plus {
+    // ...
+    // { variables }
+    // ...
+
+    // events
+    // ...
+    event DiceLanded(uint256 indexed requestId, uint256 indexed result);
+
+    // ...
+    // { constructor }
+    // ...
+
+    // ...
+    // { rollDice function }
+    // ...
+
+    // fulfillRandomWords function
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+
+        // transform the result to a number between 1 and 20 inclusively
+        uint256 d20Value = (randomWords[0] % 20) + 1;
+
+        // assign the transformed value to the address in the s_results mapping variable
+        s_results[s_rollers[requestId]] = d20Value;
+
+        // emitting event to signal that dice landed
+        emit DiceLanded(requestId, d20Value);
+    }
+}
+```
+
+### `house` function
+
+Finally, the `house` function returns the house of an address.
+
+To have a list of the house's names, create the `getHouseName` function that is called in the `house` function.
+
+{/* prettier-ignore */}
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract VRFD20 is VRFConsumerBaseV2Plus {
+    // ...
+    // { variables }
+    // ...
+
+    // ...
+    // { events }
+    // ...
+
+    // ...
+    // { constructor }
+    // ...
+
+    // ...
+    // { rollDice function }
+    // ...
+
+    // ...
+    // { fulfillRandomWords function }
+    // ...
+
+    // house function
+    function house(address player) public view returns (string memory) {
+        // dice has not yet been rolled to this address
+        require(s_results[player] != 0, "Dice not rolled");
+
+        // not waiting for the result of a thrown dice
+        require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
+
+        // returns the house name from the name list function
+        return getHouseName(s_results[player]);
+    }
+
+    // getHouseName function
+    function getHouseName(uint256 id) private pure returns (string memory) {
+        // array storing the list of house's names
+        string[20] memory houseNames = [
+            "Targaryen",
+            "Lannister",
+            "Stark",
+            "Tyrell",
+            "Baratheon",
+            "Martell",
+            "Tully",
+            "Bolton",
+            "Greyjoy",
+            "Arryn",
+            "Frey",
+            "Mormont",
+            "Tarley",
+            "Dayne",
+            "Umber",
+            "Valeryon",
+            "Manderly",
+            "Clegane",
+            "Glover",
+            "Karstark"
+        ];
+
+        // returns the house name given an index
+        return houseNames[id - 1];
+    }
+}
+```
+
+{/* prettier-ignore */}
+<CodeSample src="samples/VRF/v2-5/VRFD20.sol" showButtonOnly/>
+
+You have now completed all necessary functions to generate randomness and assign the user a _Game of Thrones_ house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
+
+## How do I deploy to testnet?
+
+You will deploy this contract on the Sepolia test network. You must have some Sepolia testnet ETH in your MetaMask account to pay for the gas for each contract interaction with the Sepolia network.
+
+You can choose to pay for your VRF requests in either Sepolia ETH or testnet LINK. The `rollDice` function is written to use LINK by default. If you want to change to using Sepolia, set `nativePayment` to `true` before deploying your contract.
+
+You can request both testnet LINK and testnet ETH from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia). Testnet ETH is also available from several [public faucets](https://faucetlink.to/sepolia).
+
+This deployment is slightly different than the example in the [Deploy Your First Contract](/quickstarts/deploy-your-first-contract) guide. In this case, you pass in parameters to the constructor upon deployment.
+
+Once compiled, you'll see a dropdown menu that looks like this in the deploy pane:
+
+<ClickToZoom src="/images/vrf/v2-5/select-vrfd20-contract.png" alt="Remix contract selected" />
+
+Select the `VRFD20` contract or the name that you gave to your contract.
+
+Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription ID.
+
+<ClickToZoom src="/images/vrf/v2-5/deploy-with-sub-id.png" alt="Remix contract parameters to deploy" />
+
+Then click the `Deploy` button and use your MetaMask account to confirm the transaction.
+
+<Aside type="note" title="Address, Key Hashes and more">
+  For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported
+  Networks](/vrf/v2-5/supported-networks#configurations).
+</Aside>
+
+At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK or Sepolia ETH balance in your subscription. If you click `rollDice`, the transaction will revert.
+
+## How do I add my contract to my subscription account?
+
+After you deploy your contract, you must add it as an approved consumer contract so it can use the subscription balance when requesting for randomness.
+
+1. Find your contract address in Remix under **Deployed Contracts** on the bottom left, and copy the contract address:
+
+   <ClickToZoom src="/images/vrf/v2-5/copy-contract-address.png" alt="Copy Remix contract address" />
+
+1. Go to the [Subscription Manager](https://vrf.chain.link), open the details page for your subscription, and add your deployed contract address to the list of consumers:
+
+   <ClickToZoom src="/images/vrf/v2-5/ui-add-consumer.png" alt="Add a consumer to your VRF subscription" />
+
+## How do I test `rollDice`?
+
+After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address to specify a "dice roller", and click `rollDice`.
+
+It takes a few minutes for the transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
+
+## Further reading
+
+To read more about generating random numbers in Solidity, read our blog posts:
+
+- [35+ Blockchain RNG Use Cases Enabled by Chainlink VRF](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/)
+- [How to Build Dynamic NFTs on Polygon](https://blog.chain.link/how-to-build-dynamic-nfts-on-polygon/)
+- [Scaling Onchain Verifiable Randomness With Chainlink VRF v2.5](https://blog.chain.link/introducing-vrf-v2-5/)

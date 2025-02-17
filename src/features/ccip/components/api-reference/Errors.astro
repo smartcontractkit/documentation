@@ -1,0 +1,109 @@
+---
+import type { CCIPSendErrorEntry } from "@config/data/ccip/types"
+import { errors } from "@config/data/ccip/data"
+import { CopyText } from "@components"
+import { marked } from "marked"
+
+// Define error parameter type
+interface ErrorParameter {
+  type: string
+  name: string
+}
+
+// Props with literal types - use the same keys as in data.ts
+interface Props {
+  type: "erc20" | "router" | "onramp" | "rate-limiter" | "price-registry" | "pool" | "burnMintERC20"
+  version: "v1_5_0" | "v1_5_1"
+}
+
+const { type, version } = Astro.props
+
+// Simple mapping to error keys
+const typeToErrorKey = {
+  erc20: "erc20CCIPSendErrors",
+  router: "routerCCIPSendErrors",
+  onramp: "onrampCCIPSendErrors",
+  "rate-limiter": "ratelimiterCCIPSendErrors",
+  "price-registry": "priceregistryCCIPSendErrors",
+  pool: "poolCCIPSendErrors",
+  burnMintERC20: "burnMintERC20CCIPSendErrors",
+} as const
+
+const selectedErrors = errors[version]?.[typeToErrorKey[type]] || []
+
+if (!selectedErrors.length) {
+  throw new Error(`Invalid error type: ${type} or version: ${version}`)
+}
+
+// Fix for undefined parameters length
+const hasParameters = selectedErrors.some(
+  (error: CCIPSendErrorEntry) => Array.isArray(error.parameters) && error.parameters.length > 0
+)
+const hasErrorSelector = selectedErrors.some((error: CCIPSendErrorEntry) => error.errorSelector)
+
+// Fix for marked.parse return type
+const renderMarkdown = (text: string): string => {
+  const result = marked.parse(text)
+  // Handle potential Promise return
+  return typeof result === "string" ? result : ""
+}
+---
+
+<div class="errors-table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Error</th>
+        {hasParameters && <th>Parameters</th>}
+        {hasErrorSelector && <th>Error Selector</th>}
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        selectedErrors.map((error: CCIPSendErrorEntry) => (
+          <tr>
+            <td>{error.error}</td>
+            {hasParameters && (
+              <td>
+                {Array.isArray(error.parameters) && error.parameters.length > 0
+                  ? error.parameters.map((param: ErrorParameter, i: number) => (
+                      <>
+                        <span>
+                          {param.type} {param.name}
+                        </span>
+                        {i < error.parameters!.length - 1 && <br />}
+                      </>
+                    ))
+                  : "-"}
+              </td>
+            )}
+            {hasErrorSelector && <td>{error.errorSelector ? <CopyText text={error.errorSelector} code /> : "-"}</td>}
+            <td class="description" set:html={renderMarkdown(error.description)} />
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .errors-table-container {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 1em;
+    white-space: nowrap;
+  }
+  td.description {
+    text-align: left;
+    white-space: normal;
+  }
+</style>

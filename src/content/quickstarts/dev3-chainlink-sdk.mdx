@@ -1,6 +1,7 @@
 ---
 title: "Dev3 Chainlink SDK"
 description: "Learn how to install and use the Dev3 Chainlink SDK in your applications."
+githubSourceCodeUrl: "https://github.com/0xDev3/dev3-sdk"
 image: "QuickStarts-Dev3-Chainlink-SDK.webp"
 products: ["general"]
 time: "30 minutes"
@@ -12,7 +13,7 @@ import { TabsContent } from "@components/Tabs"
 
 ## Overview
 
-The [Dev3 Chainlink SDK module](https://github.com/0xDev3/dev3-sdk) is a fully open source TypeScript SDK which enables any frontend developer to fetch the prices of various assets through Chainlink Data Feeds. The SDK works with vanilla npm projects and frontend frameworks like Angular and React. Users can fetch price pairs, NFT floor price information, and more.
+The [Dev3 Chainlink SDK module](https://github.com/0xDev3/dev3-sdk) is a fully open source TypeScript SDK which enables any frontend developer to fetch the prices of various assets through Chainlink Data Feeds. The SDK works with vanilla npm projects and frontend frameworks like Angular and React. Users can fetch price pairs and other data.
 
 ## Objective
 
@@ -72,8 +73,7 @@ Once the SDK is initialized, you can start consuming different feeds as outlined
 {/* prettier-ignore */}
 <TabsContent sharedStore="feedType" client:visible>
   <Fragment slot="tab.1">Price Feeds</Fragment>
-  <Fragment slot="tab.2">NFT Floor Price Feeds</Fragment>
-  <Fragment slot="tab.3">Proof of Reserve Feeds</Fragment>
+  <Fragment slot="tab.2">Proof of Reserve Feeds</Fragment>
   <Fragment slot="panel.1">
   1. Add the following code to your JavaScript or TypeScript file:
       ```ts
@@ -91,8 +91,8 @@ Once the SDK is initialized, you can start consuming different feeds as outlined
   <Fragment slot="panel.2">
   1. Add the following code to your JavaScript or TypeScript file:
       ```ts
-      // Azuki floor price
-      ethSDK.getFromOracle(ethSDK.feeds.COINBASE_AZUKI_FLOOR_PRICE_ETH).then((res) => {
+      // HBTC PoR
+      ethSDK.getFromOracle(ethSDK.feeds.HBTC_POR).then((res) => {
           console.log(res.answer.toString());
       });
       ```
@@ -100,21 +100,7 @@ Once the SDK is initialized, you can start consuming different feeds as outlined
       ```sh
       node index.js
       ```
-  1. The output should be similar to: `3480450640000000000`. Compare this to the [Azuki floor price feed](https://data.chain.link/ethereum/mainnet/nft-floor-prices/coinbase-azuki-floor-price-eth), which returns `Ξ3.4805` at the time of writing.
-  </Fragment>
-  <Fragment slot="panel.3">
-  1. Add the following code to your JavaScript or TypeScript file:
-      ```ts
-      // eFIL reserves
-      ethSDK.getFromOracle(ethSDK.feeds.EFIL_POR).then((res) => {
-          console.log(res.answer.toString());
-      });
-      ```
-  1. Run your file. For example:
-      ```sh
-      node index.js
-      ```
-  1. The output should be similar to: `126365967984000000000000`. Compare this to the [eFIL reserves price feed](https://data.chain.link/ethereum/mainnet/reserves/efil-por), which returns `126,366` at the time of writing.
+  1. The output should be similar to: `970807798330000000000`. Compare this to the [HBTC PoR price feed](https://data.chain.link/feeds/ethereum/mainnet/hbtc-por), which returns `970.81` at the time of writing.
   </Fragment>
 </TabsContent>
 
@@ -124,7 +110,7 @@ You can find all available feeds by visiting [data.chain.link](https://data.chai
 
 ## Reading data
 
-The data is returned in the form of an RoundDataModel object:
+The data is returned in the form of a RoundDataModel object:
 
 ```ts
 export interface RoundDataModel {

@@ -5,35 +5,36 @@ title: "CCIP Service Limits"
 ---
 
 import { Aside } from "@components"
-
-<Aside type="note" title="Early Access">
-  Chainlink CCIP is in the “Early Access” stage of development, which means that Chainlink CCIP currently has
-  functionality which is under development and may be changed in later versions. There is no guarantee any of the
-  contemplated features of Chainlink CCIP or the Chainlink Network will be implemented as specified. Chainlink CCIP is a
-  messaging protocol. Chainlink does not hold or transfer any assets. Please review the [Chainlink Terms of
-  Service](https://chain.link/terms) which provides important information and disclosures. By using Chainlink CCIP, you
-  expressly acknowledge and agree to accept these terms.
-</Aside>
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Mainnet
 
 <Aside type="note" title="Increase the gas limit">
   If you consistently need more than 3M for your use case, please reach out to your Chainlink Labs point of contact or
-  contact us via this [contact form](https://chain.link/contact?v=Build%20Cross-Chain%20Applications).
+  contact us via this [contact form](https://chain.link/ccip-contact).
 </Aside>
 
-| Item                                         | Description                                                                                       | Limit             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------- |
-| Maximum&nbsp;message&nbsp;`data`&nbsp;length | `data` payload sent within the [CCIP message](/ccip/api-reference/client#evm2anymessage)          | 30&nbsp;kilobytes |
-| Message&nbsp;Gas&nbsp;Limit                  | User specified [gas limit](/ccip/api-reference/client#evmextraargsv1)                             | 3,000,000         |
-| Maximum&nbsp;number&nbsp;of&nbsp;tokens      | Maximum number of distinct tokens a user can transfer in a single transaction                     | 1                 |
-| Smart Execution time window                  | Maximum duration for the execution of a [CCIP message](/ccip/api-reference/client#evm2anymessage) | 8 hours           |
+<Aside type="note" title="Need more gas for releaseOrMint?">
+  If you're building a token pool where the combined execution consumes more than 90,000 gas—including the `balanceOf`
+  function calls (from the token contract) before and after minting/releasing, and the `releaseOrMint` function (from
+  the token pool contract)—and you cannot optimize it further, please contact your Chainlink Labs point of contact or
+  use this [contact form](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to request assistance.
+</Aside>
+
+| Item                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Limit             |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Maximum&nbsp;message&nbsp;`data`&nbsp;length       | `data` payload sent within the [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage)                                                                                                                                                                                                                                                                                                                               | 30&nbsp;kilobytes |
+| Message&nbsp;Execution&nbsp;Gas&nbsp;Limit         | User specified [gas limit](/ccip/api-reference/v1.5.1/client#evmextraargsv1)<br/> <br/> Exception: Lanes originating from CORN have a maximum gas limit of 500,000.                                                                                                                                                                                                                                                           | 3,000,000         |
+| Maximum&nbsp;number&nbsp;of&nbsp;tokens            | Maximum number of distinct tokens a user can transfer in a single transaction.                                                                                                                                                                                                                                                                                                                                                | 1                 |
+| Smart Execution time window                        | Maximum duration for the execution of a [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage)                                                                                                                                                                                                                                                                                                                      | 8 hours           |
+| Token&nbsp;Pool&nbsp;Execution&nbsp;Gas&nbsp;Limit | Maximum gas for executing the combined steps in token pools during cross-chain transfers, including: (1) `balanceOf` check before minting/releasing, (2) `releaseOrMint` function, and (3) `balanceOf` check after minting/releasing. For more details on building custom token pools and handling gas constraints, refer to the [Token Pools documentation](/ccip/concepts/cross-chain-tokens#requirements-for-token-pools). | 90,000            |
 
 ## Testnet
 
-| Item                                         | Description                                                                                       | Limit             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------- |
-| Maximum&nbsp;message&nbsp;`data`&nbsp;length | `data` payload sent within the [CCIP message](/ccip/api-reference/client#evm2anymessage)          | 30&nbsp;kilobytes |
-| Message&nbsp;Gas&nbsp;Limit                  | User specified [gas limit](/ccip/api-reference/client#evmextraargsv1)                             | 3,000,000         |
-| Maximum&nbsp;number&nbsp;of&nbsp;tokens      | Maximum number of distinct tokens a user can transfer in a single transaction                     | 1                 |
-| Smart Execution timeframe                    | Maximum duration for the execution of a [CCIP message](/ccip/api-reference/client#evm2anymessage) | 8 hours           |
+| Item                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Limit             |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Maximum&nbsp;message&nbsp;`data`&nbsp;length       | `data` payload sent within the [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage)                                                                                                                                                                                                                                                                                                                               | 30&nbsp;kilobytes |
+| Message&nbsp;Execution&nbsp;Gas&nbsp;Limit         | User specified [gas limit](/ccip/api-reference/v1.5.1/client#evmextraargsv1)<br/> <br/> Exception: Lanes originating from CORN have a maximum gas limit of 500,000.                                                                                                                                                                                                                                                           | 3,000,000         |
+| Maximum&nbsp;number&nbsp;of&nbsp;tokens            | Maximum number of distinct tokens a user can transfer in a single transaction                                                                                                                                                                                                                                                                                                                                                 | 1                 |
+| Smart Execution timeframe                          | Maximum duration for the execution of a [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage)                                                                                                                                                                                                                                                                                                                      | 8 hours           |
+| Token&nbsp;Pool&nbsp;Execution&nbsp;Gas&nbsp;Limit | Maximum gas for executing the combined steps in token pools during cross-chain transfers, including: (1) `balanceOf` check before minting/releasing, (2) `releaseOrMint` function, and (3) `balanceOf` check after minting/releasing. For more details on building custom token pools and handling gas constraints, refer to the [Token Pools documentation](/ccip/concepts/cross-chain-tokens#requirements-for-token-pools). | 90,000            |

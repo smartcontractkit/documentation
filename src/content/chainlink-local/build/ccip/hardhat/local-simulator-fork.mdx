@@ -1,0 +1,157 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Using CCIP Local Simulator in Your Hardhat Project - Forked Environments"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage" />
+
+You can use Chainlink Local to run CCIP in forked environments within your Hardhat project. To get started quickly, you will use the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat).
+This project includes the `Example1.spec.tst` file located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
+
+Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, we will fork _Arbitrum Sepolia_ and _Ethereum Sepolia_.
+
+## Prerequisites
+
+This guide assumes that you are familiar with the guide [Using CCIP Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator).
+If not, please get familiar with it and run all the prerequisites.
+
+Set an environment variable file. For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc).
+Use this tool to encrypt your environment variables at rest.
+
+    1.  Set an encryption password for your environment variables.
+
+        ```shell
+        npx env-enc set-pw
+        ```
+
+    1.  Run `npx env-enc set` to configure a `.env.enc` file with:
+
+         - `ARBITRUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
+         - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+## Test tokens transfers
+
+You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example1.spec.ts` is located in the `./test/fork` directory.
+This file contains one test case:
+
+**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies
+that the sender account was debited and the receiver account was credited.
+
+In this test, we simulate a transfer of tokens from an Externally Owned Account (EOA) on a source blockchain (which is a fork of _Arbitrum Sepolia_) to an EOA on a destination blockchain
+(which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing
+a realistic testing scenario.
+
+For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    npx hardhat test test/fork/Example1.spec.ts
+    ```
+
+Example output:
+
+      ```text
+      $ npx hardhat test test/fork/Example1.spec.ts
+
+
+      Example 1 - Fork
+         ✔ Should transfer CCIP test tokens from EOA to EOA (10889ms)
+
+
+      1 passing (11s)
+      ```
+
+## Examine the code
+
+To transfer tokens using CCIP in a forked environment, we need the following:
+
+- Destination chain selector
+- Source CCIP router
+- LINK token for paying CCIP fees
+- A test token contract (such as CCIP-BnM) on both source and destination chains
+- A sender account (Alice)
+- A receiver account (Bob)
+
+The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up the necessary environment and runs the test. Here are the steps involved:
+
+1. Initialize the sender and receiver accounts:
+
+   ```typescript
+   const [alice, bob] = await hre.ethers.getSigners()
+   ```
+
+1. Set the source and destination chains:
+
+   ```typescript
+   const [source, destination] = ["ethereumSepolia", "arbitrumSepolia"]
+   ```
+
+1. Retrieve the necessary addresses and configurations (such as the LINK token address, source router address, and so on).
+
+1. Fork the source network:
+
+   ```typescript
+   await hre.network.provider.request({
+     method: "hardhat_reset",
+     params: [
+       {
+         forking: {
+           jsonRpcUrl: getProviderRpcUrl(source),
+         },
+       },
+     ],
+   })
+   ```
+
+1. Connect to the source router and CCIP-BnM contracts.
+
+1. Call `sourceCCIPBnM.drip` to request CCIP-BnM tokens for Alice (sender).
+
+1. Approve the source router to spend tokens on behalf of Alice (sender).
+
+1. Construct the `Client.EVM2AnyMessage` structure. This step is similar to the non fork example.
+
+1. Call the source router to estimate the fees.
+
+1. Call the [`requestLinkFromFaucet`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#requestlinkfromthefaucet)
+   function to request LINK tokens for Alice (sender).
+
+1. Connect to the LINK contract and approve the LINK token for paying CCIP fees.
+
+1. Estimate Alice (sender) balance before the transfer.
+
+1. Call the source router to send the CCIP request.
+
+1. Wait for the transaction to be included in a block.
+
+1. Call the [`getEvm2EvmMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#getevm2evmmessage)
+   function to parse the transaction receipt and extract the `CCIPSendRequested` event and then decodes it to an object.
+
+1. Verify that Alice's balance has decreased by the amount sent.
+
+1. Fork and switch to the destination network:
+
+   ```typescript
+   await hre.network.provider.request({
+     method: "hardhat_reset",
+     params: [
+       {
+         forking: {
+           jsonRpcUrl: getProviderRpcUrl(destination),
+         },
+       },
+     ],
+   })
+   ```
+
+1. Call the [`routeMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#routemessage) function
+   to route the message to the destination router.
+
+1. Connect to the CCIP-BnM contract using the CCIP-BnM destination address.
+
+1. Verify that Bob's balance has increased by the amount sent.

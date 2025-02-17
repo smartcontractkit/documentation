@@ -1,0 +1,247 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 RegistryModuleOwnerCustom Contract API Reference"
+metadata:
+  description: "API documentation for the RegistryModuleOwnerCustom contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## RegistryModuleOwnerCustom
+
+A contract that facilitates token administrator registration through various ownership patterns.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol)
+
+**Inherits:**
+
+- [ITypeAndVersion](/ccip/api-reference/v1.5.1/i-type-and-version)
+
+<Aside>
+
+This contract provides multiple methods for registering token administrators:
+
+- Supports registration via [`getCCIPAdmin`](#registeradminviagetccipadmin) method
+- Supports registration via [`owner`](#registeradminviaowner) method
+- Supports registration via OpenZeppelin's [`AccessControl`](#registeraccesscontroldefaultadmin)
+- Enforces self-registration security pattern
+- Integrates with [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) for administrator management
+
+</Aside>
+
+## Events
+
+### AdministratorRegistered
+
+```solidity
+event AdministratorRegistered(address indexed token, address indexed administrator);
+```
+
+<Aside>
+  Emitted when a new administrator is successfully registered for a token through any of the registration methods
+  ([`registerAccessControlDefaultAdmin`](#registeraccesscontroldefaultadmin),
+  [`registerAdminViaGetCCIPAdmin`](#registeradminviagetccipadmin), or
+  [`registerAdminViaOwner`](#registeradminviaowner)).
+</Aside>
+
+**Parameters**
+
+| Name            | Type      | Indexed | Description                          |
+| --------------- | --------- | ------- | ------------------------------------ |
+| `token`         | `address` | Yes     | The token contract address           |
+| `administrator` | `address` | Yes     | The registered administrator address |
+
+## Errors
+
+### AddressZero
+
+```solidity
+error AddressZero();
+```
+
+<Aside>
+  Thrown when attempting to initialize with a zero address for the
+  [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry).
+</Aside>
+
+### CanOnlySelfRegister
+
+```solidity
+error CanOnlySelfRegister(address admin, address token);
+```
+
+<Aside>
+  Thrown when an address attempts to register an administrator other than itself through any of the registration
+  methods.
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                        |
+| ------- | --------- | ---------------------------------- |
+| `admin` | `address` | The expected administrator address |
+| `token` | `address` | The token contract address         |
+
+### RequiredRoleNotFound
+
+```solidity
+error RequiredRoleNotFound(address msgSender, bytes32 role, address token);
+```
+
+<Aside>
+  Thrown when the caller lacks the required role for administrator registration in
+  [`registerAccessControlDefaultAdmin`](#registeraccesscontroldefaultadmin).
+</Aside>
+
+**Parameters**
+
+| Name        | Type      | Description                  |
+| ----------- | --------- | ---------------------------- |
+| `msgSender` | `address` | The caller's address         |
+| `role`      | `bytes32` | The required role identifier |
+| `token`     | `address` | The token contract address   |
+
+## State Variables
+
+### i_tokenAdminRegistry
+
+```solidity
+ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
+```
+
+<Aside>
+  Immutable reference to the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract that
+  manages administrator registrations.
+</Aside>
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.0";
+```
+
+<Aside>Contract identifier that specifies the implementation version.</Aside>
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(address tokenAdminRegistry);
+```
+
+<Aside>
+
+Initializes the contract with a reference to the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry):
+
+- Validates the tokenAdminRegistry address is not zero (reverts with [`AddressZero`](#addresszero))
+- Sets up the immutable registry reference
+
+</Aside>
+
+**Parameters**
+
+| Name                 | Type      | Description                                    |
+| -------------------- | --------- | ---------------------------------------------- |
+| `tokenAdminRegistry` | `address` | The address of the TokenAdminRegistry contract |
+
+### registerAccessControlDefaultAdmin
+
+Registers a token administrator using OpenZeppelin's AccessControl DEFAULT_ADMIN_ROLE.
+
+```solidity
+function registerAccessControlDefaultAdmin(address token) external;
+```
+
+<Aside>
+
+Validates and registers an administrator using AccessControl:
+
+- Verifies caller has DEFAULT_ADMIN_ROLE (reverts with [`RequiredRoleNotFound`](#requiredrolenotfound))
+- Only allows self-registration (reverts with [`CanOnlySelfRegister`](#canonlyselfregister))
+- Emits [`AdministratorRegistered`](#administratorregistered) event on success
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                              |
+| ------- | --------- | ---------------------------------------- |
+| `token` | `address` | The token contract to register admin for |
+
+### registerAdminViaGetCCIPAdmin
+
+Registers a token administrator using the `getCCIPAdmin` method.
+
+```solidity
+function registerAdminViaGetCCIPAdmin(address token) external;
+```
+
+<Aside>
+
+Validates and registers an administrator using getCCIPAdmin:
+
+- Calls token's getCCIPAdmin method
+- Only allows self-registration (reverts with [`CanOnlySelfRegister`](#canonlyselfregister))
+- Emits [`AdministratorRegistered`](#administratorregistered) event on success
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                              |
+| ------- | --------- | ---------------------------------------- |
+| `token` | `address` | The token contract to register admin for |
+
+### registerAdminViaOwner
+
+Registers a token administrator using the `owner` method.
+
+```solidity
+function registerAdminViaOwner(address token) external;
+```
+
+<Aside>
+
+Validates and registers an administrator using owner pattern:
+
+- Calls token's owner method
+- Only allows self-registration (reverts with [`CanOnlySelfRegister`](#canonlyselfregister))
+- Emits [`AdministratorRegistered`](#administratorregistered) event on success
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                              |
+| ------- | --------- | ---------------------------------------- |
+| `token` | `address` | The token contract to register admin for |
+
+### \_registerAdmin
+
+Internal function to handle administrator registration.
+
+```solidity
+function _registerAdmin(address token, address admin) internal;
+```
+
+<Aside>
+
+Core registration logic:
+
+- Validates caller is the admin (reverts with [`CanOnlySelfRegister`](#canonlyselfregister))
+- Proposes administrator to registry
+- Emits [`AdministratorRegistered`](#administratorregistered) event
+
+</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                                |
+| ------- | --------- | ------------------------------------------ |
+| `token` | `address` | The token contract to register admin for   |
+| `admin` | `address` | The administrator address being registered |

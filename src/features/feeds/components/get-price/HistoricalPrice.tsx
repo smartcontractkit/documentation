@@ -1,11 +1,11 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import { aggregatorV3InterfaceABI } from "@abi"
-import { BigNumber, ethers } from "ethers"
-import { ROUND_DATA_RESPONSE } from "@features/feeds"
-import { PriceButton } from "./PriceButton"
-import { SupportedChain } from "@config"
-import { getWeb3Provider } from "~/features/utils"
+import { ethers } from "ethers"
+import { ROUND_DATA_RESPONSE } from "@features/feeds/types/index.ts"
+import { PriceButton } from "./PriceButton.tsx"
+import { SupportedChain } from "@config/index.ts"
+import { getWeb3Provider } from "~/features/utils/index.ts"
 
 export const HistoricalPrice = ({
   feedAddress,
@@ -26,7 +26,7 @@ export const HistoricalPrice = ({
 
     const priceFeed = new ethers.Contract(feedAddress, aggregatorV3InterfaceABI, rpcProvider)
 
-    priceFeed.getRoundData(BigNumber.from(roundId)).then((historicalRoundData: ROUND_DATA_RESPONSE) => {
+    priceFeed.getRoundData(BigInt(roundId)).then((historicalRoundData: ROUND_DATA_RESPONSE) => {
       setHistoricalPrice(historicalRoundData.answer.toString())
     })
   }

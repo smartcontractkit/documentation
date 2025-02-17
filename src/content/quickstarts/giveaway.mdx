@@ -1,6 +1,7 @@
 ---
 title: "Giveaway Manager"
 description: "Build an app to manage distribution."
+githubSourceCodeUrl: "https://github.com/smartcontractkit/quickstarts-giveaway"
 image: "QuickStarts-Giveaway-Manager.webp"
 products: ["general"]
 time: "180 minutes"
@@ -18,7 +19,7 @@ The Giveaway Manager app is a highly configurable proof of concept for provably-
 
 ## Objective
 
-In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The UI was designed to run simple drawings and giveaways with just a CSV list of participants. Chainlink Automation provisioning and setup is also covered to enable timed-based, dynamic drawings.
+In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The UI was designed to run simple drawings and giveaways with just a CSV list of participants. Chainlink Automation provisioning and setup are also covered to enable timed-based, dynamic drawings.
 
 You can use this to run:
 
@@ -46,8 +47,7 @@ Before you start this tutorial, complete the following items:
 
 - Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
 - Fund your wallet with the following testnet tokens:
-  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your onchain transactions.
-  - Request ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai). You will need [at least 5.1 LINK](#required-balance-amounts) to set up each giveaway with this app.
+  - Request ERC-677 testnet LINK and Sepolia ETH from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia). You will need [at least 5.1 LINK](#required-balance-amounts) to set up each giveaway with this app.
 
 ## Steps to implement
 
@@ -67,11 +67,10 @@ git clone https://github.com/smartcontractkit/quickstart-giveaway.git
 
 The recommended networks for this app are:
 
-- Polygon mainnet and Mumbai testnet
+- Ethereum mainnet and Sepolia testnet
 
-For demo purposes, use Polygon Mumbai for this tutorial. Create a block explorer API key to verify contracts on your preferred network:
+For demo purposes, use Sepolia for this tutorial. Create a block explorer API key to verify contracts on your preferred network:
 
-- [Polygonscan](https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics)
 - [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
 
 </Accordion>
@@ -82,11 +81,11 @@ For demo purposes, use Polygon Mumbai for this tutorial. Create a block explorer
 
    - The RPC URL for your deployment network, using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
    - The private key for your deployer account. If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
-   - The block explorer API key from Etherscan or Polygonscan that you [created earlier](#create-a-block-explorer-api-key).
+   - The block explorer API key from Etherscan that you [created earlier](#create-a-block-explorer-api-key).
 
    | Parameter         | Description                                                                             | Example                                                |
    | ----------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.                                      | `https://polygon-mumbai.g.alchemy.com/v2/your-api-key` |
+   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.                                      | `https://eth-sepolia.g.alchemy.com/v2/your-api-key` |
    | `PRIVATE_KEY`     | The private key of the account you want to deploy from. <br/> Add `0x` before your key. | `0xabc123abc123abc123abc123abc123...`                  |
    | `EXPLORER_KEY`    | The block explorer API key needed for contract verification.                            | `ABC123ABC123ABC123ABC123ABC123ABC1`                   |
 
@@ -198,11 +197,11 @@ $ make deploy
 Save the deployed contract address from your terminal output. This is the giveaway contract manager address that you will need when you [run the UI](#run-and-view-the-ui). Scroll up in the terminal output and look for your contract address, which appears shortly after the `Success` message:
 
 ```shell
-##### mumbai
-✅  [Success]Hash: 0x6feb039ea7533c2ad1b385d73370a38ccb330f76360dfa1444b26c8ba57c6e0a
-Contract Address: 0x97fD95333b827dae8c58BC74394Cc8E7d83fDEbA
-Block: 40656570
-Paid: 0.01104793954 ETH (5469277 gas * 2.02 gwei)
+##### sepolia
+✅  [Success]Hash: 0x050ec798d7205c41bafa91029fcdd30104b99c17003a59ac033099dbe47d3658
+Contract Address: 0xA168A5eAd28d5E4C1C9cEaF6492a0F9D715ea8D8
+Block: 5727377
+Paid: 0.005473916599834344 ETH (5470873 gas * 1.000556328 gwei)
 ```
 
 </Accordion>
@@ -236,15 +235,15 @@ Set environment variables to run the UI and then view it locally.
    | Item                                   | Value                                                                                                                                                                                                                                 |
    | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
    | `UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS` | The address of the Giveaway Contract Manager contract that you [deployed earlier](#deploy-contract)                                                                                                                                   |
-   | `UI_LINK_TOKEN_CONTRACT_ADDRESS`       | For Polygon Mumbai: <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/> <br/> See all [LINK token contract addresses](/resources/link-token-contracts)                                                                 |
-   | `UI_KEEPER_REGISTRY_CONTRACT_ADDRESS`  | For Polygon Mumbai: <CopyText text="0x02777053d6764996e594c3E88AF1D58D5363a2e6" code/> <br/> This app currently supports Automation v1.2. See all [Automation registry contract addresses](/chainlink-automation/overview/supported-networks/) |
+   | `UI_LINK_TOKEN_CONTRACT_ADDRESS`       | For Ethereum Sepolia: <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> <br/> See all [LINK token contract addresses](/resources/link-token-contracts)                                                                 |
+   | `UI_KEEPER_REGISTRY_CONTRACT_ADDRESS`  | For Ethereum Sepolia: <CopyText text="0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" code/> <br/> This app currently supports Automation v1.2. See all [Automation registry contract addresses](/chainlink-automation/overview/supported-networks/) |
 
 1. Navigate to the `/client/packages/ui` directory, and run these commands to set up your UI environment variables. Do not use quotes to assign values:
    ```bash
    # <root>/client/packages/ui
    export UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS=
-   export UI_LINK_TOKEN_CONTRACT_ADDRESS=
-   export UI_KEEPER_REGISTRY_CONTRACT_ADDRESS=
+   export UI_LINK_TOKEN_CONTRACT_ADDRESS=0x779877A7B0D9E8603169DdbD7836e478b4624789
+   export UI_KEEPER_REGISTRY_CONTRACT_ADDRESS=0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2
    ```
 1. After setting the environment variables, run the UI locally:
    ```bash

@@ -1,0 +1,92 @@
+---
+section: dataStreams
+title: "Developer Responsibilities: Market Integrity and Application Code Risks"
+whatsnext:
+  {
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Find the schema of data to expect from Data Streams reports": "/data-streams/reference/report-schema",
+    "Learn the basics about how to retrieve Data Streams reports using the Streams Trade implementation": "/data-streams/getting-started",
+    "Learn how to fetch and decode Data Streams reports using the Streams Direct API": "/data-streams/tutorials/streams-direct/streams-direct-api",
+  }
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+Chainlink Data Streams provide access to high-frequency market data backed by decentralized, fault-tolerant, and transparent infrastructure, where offchain data can be pulled onchain and verified by Chainlink's Verify Contract, as needed by your application. The assets priced by Chainlink Data Streams are subject to market conditions beyond the ability of Chainlink node operators to control. As such, developers are responsible for understanding market conditions and other external risks and how they can impact their products and services.
+
+When integrating Chainlink Data Streams, developers must understand that the performance of individual Streams is subject to risks associated with both market integrity and application code.
+
+- **Market Integrity Risks** are those associated with external market conditions impacting price behavior and data quality in unanticipated ways. Developers are solely responsible for monitoring and mitigating any potential market integrity risks.
+- **Application Code Risks** are those associated with the quality, reliability, and dependencies of the code on which an application operates. Developers are solely responsible for monitoring and mitigating any potential application code risks related to their own products and services.
+
+See the [Market Manipulation vs. Oracle Exploits](https://chain.link/education-hub/market-manipulation-vs-oracle-exploits) article for information about market integrity risks and how developers can protect their applications.
+
+## Developer Responsibilities
+
+Developers are responsible for maintaining the security and user experience of their applications. They must also securely manage all interactions between their applications and third-party services.
+
+In particular, developers implementing Chainlink Data Streams in their code and applications are responsible for their application's market integrity and code risks that may cause unanticipated pricing data behavior. These are described below in more detail:
+
+### Market Integrity Risks
+
+Market conditions can impact the pricing behavior of assets in ways beyond the ability of Chainlink node operators to predict or control.
+
+Market integrity risk factors can include, but are not limited to, [market manipulation](https://chain.link/education-hub/market-manipulation-vs-oracle-exploits) such as Spoofing, Ramping, Bear Raids, Cross-Market Manipulation, Washtrading, and Frontrunning. Developers are solely responsible for accounting for such risk factors when integrating Chainlink Data Streams into their applications. Developers should understand the market risks around the assets they intend their application to support before integrating associated Chainlink Data Streams and inform their end users about applicable market risks.
+
+Developers should be aware that some assets, particularly those with low liquidity, may experience significant price volatility due to factors such as wider price spreads among exchanges. In such conditions, large trades can significantly move an asset's price, causing unexpected price oscillations.
+
+#### Traditional Market Assets
+
+Among other assets, Data Streams supports foreign exchange (FX) spot markets for major currencies against USD, gold and silver spot against USD, and WTI oil spot contracts. In traditional finance, these markets are some of the most liquid instruments and are traded across most financial centers including London, New York, Tokyo, and Singapore. Unlike Crypto markets, most traditional markets do not trade 24/7 and therefore liquidity and spreads can vary during the day and trading week. For assets traded within traditional markets, Chainlink Data Streams provides developers with an indication of the market's status (either open or closed), such as via a market status flag in price reports, which can be used by applications as applicable.
+
+The market status provided on Streams serves as an indication of the open and close hours for traditional market assets based on historical practice; it is provided for referential purposes only. Developers are responsible for independently assessing the risks associated with trading at these times, particularly at opening and closing price levels. Developers are solely responsible for determining the actual status of markets for any streams they utilize. Protocol developers are advised to proceed with caution and make trading decisions at their own risk.
+
+Under the shared responsibility model, developers must thoroughly understand the methodologies, trading behaviors, and market liquidity patterns related to traditional asset classes and instruments, particularly during and around market opening and closing hours. Developers should be aware of unique risks such as price volatility, sudden liquidity shifts, and trading halts that can affect data reliability and availability. A comprehensive understanding of these factors will help developers better anticipate and address potential issues, resulting in more resilient and trustworthy integrations for end users.
+
+**Data Streams developers are solely responsible for defining and implementing their own risk procedures and systems, including being aware of market open and closing times, and bank holidays, when integrating associated Chainlink Data Streams.**
+
+#### DEX-based Assets
+
+Data Streams also provides pricing data related to assets that trade, primarily, on decentralized exchanges (DEXs). Under the Shared Responsibility model, it is essential that developers understand the methodology and risks associated with such DEX-based assets. The risks include, but are not limited to:
+
+- Data may be sourced by reading the state of onchain contracts and estimating the price at which trades in a certain asset pool could be executed. The accuracy of prices may be hindered by such factors as:
+  - Slippage: The movement of prices between (i) the time of observation, and (ii) the time of execution, caused by other transactions changing the state of the respective smart contract.
+  - Price Impact: The movement of price caused by the volume of trades being settled on a respective pool.
+- Certain assets may not trade actively—if data is based on traded prices, it may not reflect the current state of the respective pool, and/or the current realizable price.
+- There is a certain level of latency between (i) the observability of price data on DEXs, and (ii) the price data being reflected in our streams. This can increase the risk of frontrunning.
+
+#### New Token Data Streams
+
+When a token is newly launched, the historical data required to implement a rigorous data quality and risk analysis is unavailable. Consistent price discovery may involve an indeterminate amount of time. Developers are responsible for understanding the market and volatility risks inherent with such assets when choosing to integrate them into any products or services.
+
+Newly issued tokens may have limited trading activity at launch. Thin order books can lead to substantial price fluctuation resulting in significant volatility. Developers are responsible for being aware, when choosing to integrate such tokens into any products or services, of the inherent volatility, potential for illiquidity, and significant price fluctuation that often characterize newly issued tokens as market attempts to find a clearing level, i.e equilibrium price.
+
+Token prices may exhibit oscillations between two or more price points within regular intervals due to price disagreements across exchanges. In early trading sessions, wide bid and ask spreads may reflect uncertainty about the token market value. Developers are responsible for understanding the possibility of token price oscillation of this nature when choosing to integrate newly issued tokens into any products or services.
+
+Developers implementing Chainlink New Token Data Streams are responsible for independently verifying the liquidity, quality and stability of the assets pricing when integrating them in their use cases
+
+#### Custom Data Streams
+
+Custom Data Streams are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataStreams) if you want more detail on any specific feeds in this category.
+
+### Application Code Risks
+
+Developers implementing Chainlink Data Streams are solely responsible for instituting risk mitigations, including, but not limited to, data quality checks, circuit breakers, and appropriate contingency logic for their use case. Some general guidelines include:
+
+- **Code quality and reliability:** Developers must execute code using Chainlink Data Streams only if their code meets the quality and reliability requirements for their use case and application.
+- **Code and application audits:** Developers are responsible for auditing their code and applications before deploying to production. Developers must determine the quality of any audits and ensure that they meet the requirements for their application.
+- **Code dependencies and imports:** Developers are responsible for ensuring the quality, reliability, and security of any dependencies or imported packages that they use with Chainlink Data Streams, and review and audit these dependencies and packages.
+- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
+  - Implementing the [Streams Direct Architecture](/data-streams/architecture#streams-direct-architecture),
+  - Adopting an [active-active](/data-streams/architecture#active-active-multi-site-deployment) deployment strategy and [configuring the SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) to support multiple concurrent WebSocket connections,
+  - Retrieving any potentially missing reports via the [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api).
+
+### Additional Considerations on Data Usage and Verification
+
+- **Combined Data Sources:** Mixing data from Data Streams with other pricing sources introduces additional complexity and risk. It may result in unforeseen results, potentially impacting application performance or reliability. Developers are solely responsible for any such outcomes, and it is imperative that thorough risk assessments and comprehensive testing protocols are implemented.
+
+- **Bypassing Data Verification:** Verifying against the Chainlink Verifier Contract is essential for ensuring data integrity. Bypassing or improperly implementing it increases the risk of data manipulation and should be avoided.
+
+Developers are responsible for understanding and managing all additional risk factors. Implementing proper risk assessment and mitigation strategies is crucial to maintaining the integrity and reliability of applications that rely on external data sources.

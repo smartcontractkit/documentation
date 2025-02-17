@@ -1,12 +1,25 @@
-import { Sections } from "../content/config"
-export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
+import { Sections } from "../content.config.ts"
+import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json" assert { type: "json" }
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json" assert { type: "json" }
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" assert { type: "json" }
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" assert { type: "json" }
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" assert { type: "json" }
+
+export type SectionContent = {
+  title: string
+  url: string
+  highlightAsCurrent?: string[]
+  children?: SectionContent[]
+  isCollapsible?: boolean
+}
 type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
-  dataFeeds: [
+  [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
       contents: [
@@ -31,12 +44,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "Proof of Reserve Feeds",
-          url: "data-feeds/proof-of-reserve",
-        },
-        {
-          title: "NFT Floor Price Feeds",
-          url: "data-feeds/nft-floor-price",
+          title: "SmartData",
+          url: "data-feeds/smartdata",
         },
         {
           title: "Rate and Volatility Feeds",
@@ -56,12 +65,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "Proof of Reserve Addresses",
-          url: "data-feeds/proof-of-reserve/addresses",
-        },
-        {
-          title: "NFT Floor Price Addresses",
-          url: "data-feeds/nft-floor-price/addresses",
+          title: "SmartData Feed Addresses",
+          url: "data-feeds/smartdata/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -112,11 +117,38 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "StarkNet Guides",
+      section: "Starknet Guides",
       contents: [
         {
-          title: "Using Data Feeds on StarkNet",
+          title: "Data Feeds on Starknet",
           url: "data-feeds/starknet",
+        },
+        {
+          title: "Starknet Foundry Guides",
+          url: "data-feeds/starknet/tutorials/snfoundry/",
+          children: [
+            {
+              title: "Read Data from Chainlink Data Feeds (Offchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/read-data",
+            },
+            {
+              title: "Deploy and interact with a Consumer Contract (Onchain)",
+              url: "data-feeds/starknet/tutorials/snfoundry/consumer-contract",
+            },
+            {
+              title: "Experiment on a Devnet",
+              url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
         },
       ],
     },
@@ -136,10 +168,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataFeeds",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataFeeds",
@@ -203,7 +231,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  dataStreams: [
+  [SIDEBAR_SECTIONS.DATA_STREAMS]: [
     {
       section: "Chainlink Data Streams",
       contents: [
@@ -212,16 +240,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started (Remix IDE)",
-          url: "data-streams/getting-started",
+          title: "Developer Responsibilities",
+          url: "data-streams/developer-responsibilities",
         },
         {
-          title: "Getting Started (Hardhat CLI)",
-          url: "data-streams/getting-started-hardhat",
-        },
-        {
-          title: "Stream IDs",
-          url: "data-streams/stream-ids",
+          title: "Billing",
+          url: "data-streams/billing",
         },
         {
           title: "Release Notes",
@@ -230,25 +254,136 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Streams & Report Schemas",
+      contents: [
+        {
+          title: "Cryptocurrency Streams",
+          url: "data-streams/crypto-streams",
+          children: [
+            {
+              title: "Report Schema v3",
+              url: "data-streams/reference/report-schema",
+            },
+          ],
+        },
+        {
+          title: "Real World Asset (RWA) Streams",
+          url: "data-streams/rwa-streams",
+          children: [
+            {
+              title: "Report Schema v4",
+              url: "data-streams/reference/report-schema-v4",
+            },
+          ],
+        },
+        {
+          title: "Market Hours",
+          url: "data-streams/market-hours",
+        },
+      ],
+    },
+    {
+      section: "Streams Trade",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-trade",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/getting-started",
+          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
+        },
+        {
+          title: "Handle StreamsLookup errors",
+          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+        },
+      ],
+    },
+    {
+      section: "Streams Direct",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-direct",
+        },
+        {
+          title: "Fetch and decode reports",
+          url: "data-streams/tutorials/streams-direct/streams-direct-api-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-api-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
+          ],
+        },
+        {
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/streams-direct/streams-direct-ws-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-rust",
+          ],
+        },
+        {
+          title: "Verify report data (EVM)",
+          url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+        },
+        {
+          title: "Verify report data (Solana)",
+          url: "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/streams-direct/solana-offchain-report-verification"],
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Architecture",
+          url: "data-streams/architecture",
+        },
+        {
+          title: "Liquidity-Weighted Bid and Ask prices",
+          url: "data-streams/concepts/liquidity-weighted-prices",
+        },
+      ],
+    },
+    {
       section: "Reference",
       contents: [
         {
-          title: "Report Schema",
-          url: "data-streams/reference/report-schema",
+          title: "Streams Trade",
+          url: "data-streams/reference/streams-trade-interface",
         },
         {
-          title: "Interfaces",
-          url: "data-streams/reference/interfaces",
+          title: "Streams Direct",
+          url: "data-streams/reference/streams-direct",
+          children: [
+            {
+              title: "REST API",
+              url: "data-streams/reference/streams-direct/streams-direct-interface-api",
+            },
+            {
+              title: "WebSocket",
+              url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
+            },
+            {
+              title: "SDK References",
+              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
+              highlightAsCurrent: ["data-streams/reference/streams-direct/streams-direct-rust-sdk"],
+            },
+            {
+              title: "Onchain report verification (EVM chains)",
+              url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
+            },
+          ],
         },
       ],
     },
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=dataStreams",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataStreams",
@@ -318,7 +453,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  automation: [
+  [SIDEBAR_SECTIONS.AUTOMATION]: [
     {
       section: "Chainlink Automation",
       contents: [
@@ -339,11 +474,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/supported-networks",
         },
         {
+          title: "Best Practices",
+          url: "chainlink-automation/concepts/best-practice",
+        },
+        {
+          title: "Service Limits",
+          url: "chainlink-automation/overview/service-limits",
+        },
+        {
           title: "Release Notes",
           url: "chainlink-automation/overview/automation-release-notes",
         },
         {
-          title: "Migrate to Automation V2",
+          title: "Migrate to Automation v2.1",
           url: "chainlink-automation/guides/migrate-to-v2",
         },
       ],
@@ -388,6 +531,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/manage-upkeeps",
         },
         {
+          title: "Set a gas price threshold on your upkeep",
+          url: "chainlink-automation/guides/gas-price-threshold",
+        },
+        {
           title: "Using the StreamsLookup error handler",
           url: "chainlink-automation/guides/streams-lookup-error-handler",
         },
@@ -403,10 +550,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Architecture",
           url: "chainlink-automation/concepts/automation-architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/concepts/best-practice",
         },
       ],
     },
@@ -430,10 +573,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=automation",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=automation",
@@ -497,7 +636,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkFunctions: [
+  [SIDEBAR_SECTIONS.CHAINLINK_FUNCTIONS]: [
     {
       section: "Chainlink Functions",
       contents: [
@@ -626,10 +765,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=chainlinkFunctions",
-        },
-        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
         },
@@ -692,9 +827,9 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  vrf: [
+  [SIDEBAR_SECTIONS.VRF]: [
     {
-      section: "Chainlink VRF",
+      section: "Chainlink VRF v2.5",
       contents: [
         {
           title: "Overview",
@@ -702,19 +837,31 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Getting Started",
-          url: "vrf/v2/getting-started",
+          url: "vrf/v2-5/getting-started",
+        },
+        {
+          title: "Migrating from V2",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "Migrating from V1",
+          url: "vrf/v2-5/migration-from-v1",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2-5/supported-networks",
         },
         {
           title: "Security Considerations",
-          url: "vrf/v2/security",
+          url: "vrf/v2-5/security",
         },
         {
           title: "Best Practices",
-          url: "vrf/v2/best-practices",
+          url: "vrf/v2-5/best-practices",
         },
         {
           title: "Billing",
-          url: "vrf/v2/estimating-costs",
+          url: "vrf/v2-5/billing",
         },
         {
           title: "Release Notes",
@@ -723,70 +870,59 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Subscription Method",
+      section: "Learn VRF V2.5",
       contents: [
         {
-          title: "Introduction",
-          url: "vrf/v2/subscription",
+          title: "Introduction to subscription",
+          url: "vrf/v2-5/overview/subscription",
         },
         {
-          title: "Get a Random Number",
-          url: "vrf/v2/subscription/examples/get-a-random-number",
+          title: "Introduction to direct funding",
+          url: "vrf/v2-5/overview/direct-funding",
         },
         {
-          title: "Programmatic Subscription",
-          url: "vrf/v2/subscription/examples/programmatic-subscription",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/subscription/examples/test-locally",
-        },
-        {
-          title: "Subscription Manager UI",
-          url: "vrf/v2/subscription/ui",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/subscription/supported-networks",
-        },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/subscription/migration-from-v1",
+          title: "Arbitrum gas estimation with VRF",
+          url: "vrf/v2-5/arbitrum-cost-estimation",
         },
       ],
     },
     {
-      section: "Direct Funding Method",
+      section: "Build with VRF 2.5",
       contents: [
         {
-          title: "Introduction",
+          title: "Create and manage subscriptions",
+          url: "vrf/v2-5/subscription/create-manage",
+        },
+        {
+          title: "Get a random number with subscription",
+          url: "vrf/v2-5/subscription/get-a-random-number",
+        },
+        {
+          title: "Test locally with a subscription mock contract",
+          url: "vrf/v2-5/subscription/test-locally",
+        },
+        {
+          title: "Get a random number with direct funding",
+          url: "vrf/v2-5/direct-funding/get-a-random-number",
+        },
+      ],
+    },
+    {
+      section: "VRF V2 [Legacy]",
+      contents: [
+        {
+          title: "VRF V2 Subscription Method",
+          url: "vrf/v2/subscription",
+        },
+        {
+          title: "VRF V2 Direct Funding Method",
           url: "vrf/v2/direct-funding",
-        },
-        {
-          title: "Get a Random Number",
-          url: "vrf/v2/direct-funding/examples/get-a-random-number",
-        },
-        {
-          title: "Test Locally Using a Mock Contract",
-          url: "vrf/v2/direct-funding/examples/test-locally",
-        },
-        {
-          title: "Supported Networks",
-          url: "vrf/v2/direct-funding/supported-networks",
-        },
-        {
-          title: "Migrating from VRF v1",
-          url: "vrf/v2/direct-funding/migration-from-v1",
         },
       ],
     },
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=vrf",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=vrf",
@@ -850,7 +986,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  ccip: [
+  [SIDEBAR_SECTIONS.CCIP]: [
     {
       section: "Chainlink CCIP",
       contents: [
@@ -863,16 +999,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/getting-started",
         },
         {
-          title: "Supported Networks",
-          url: "ccip/supported-networks",
+          title: "CCIP Directory",
+          url: "ccip/directory",
           children: [
             {
               title: "Mainnet",
-              url: "ccip/supported-networks/v1_2_0/mainnet",
+              url: "ccip/directory/mainnet",
             },
             {
               title: "Testnet",
-              url: "ccip/supported-networks/v1_2_0/testnet",
+              url: "ccip/directory/testnet",
             },
           ],
         },
@@ -883,6 +1019,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Service Responsibility",
           url: "ccip/service-responsibility",
+        },
+        {
+          title: "Execution Latency",
+          url: "ccip/concepts/ccip-execution-latency",
         },
         {
           title: "Billing",
@@ -898,8 +1038,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Using the CCIP JavaScript SDK",
+          url: "ccip/ccip-javascript-sdk",
+        },
+        {
           title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          url: "ccip/tutorials/transfer-tokens-from-contract",
         },
         {
           title: "Transfer Tokens with Data",
@@ -910,12 +1054,49 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/programmable-token-transfers-defensive",
         },
         {
+          title: "Using the Token Manager",
+          url: "ccip/tutorials/token-manager",
+        },
+        {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/tutorials/cross-chain-tokens",
+          children: [
+            {
+              title: "Deploy and Register Using Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
+            {
+              title: "Register from an EOA (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+            },
+            {
+              title: "Register from an EOA (Lock & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+            },
+            {
+              title: "Set Token Pool rate limits",
+              url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+            },
+            {
+              title: "Register from a Safe Smart Account (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+            },
+          ],
+        },
+        {
+          title: "Test CCIP Locally",
+          url: "ccip/tutorials/test-ccip-locally",
+        },
+        {
           title: "Offchain",
           url: "ccip/tutorials/offchain",
           children: [
             {
               title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+              url: "ccip/tutorials/transfer-tokens-from-eoa",
             },
             {
               title: "Checking CCIP Message Status",
@@ -932,7 +1113,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tutorials/send-arbitrary-data",
         },
         {
-          title: "Send Arbitrary Data with Acknowledgment of Receipt",
+          title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
           url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
         },
         {
@@ -961,6 +1142,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/concepts/cross-chain-tokens",
+        },
+        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },
@@ -974,20 +1159,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "API Reference",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "Overview",
+          url: "ccip/api-reference",
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
+          title: "v1.5.1 (Latest)",
+          url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
+          children: ccipV151Contents,
         },
         {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "v1.5.0",
+          url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
+          children: ccipV150Contents,
         },
       ],
     },
@@ -1003,10 +1188,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=ccip",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=ccip",
@@ -1070,7 +1251,108 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  nodeOperator: [
+  [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
+    {
+      section: "Chainlink Local",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-local/learn/architecture",
+        },
+        {
+          title: "Contributing",
+          url: "chainlink-local/learn/contributing",
+        },
+      ],
+    },
+    {
+      section: "Build - CCIP",
+      contents: [
+        {
+          title: "Foundry",
+          url: "chainlink-local/build/ccip/foundry",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/foundry/local-simulator",
+            },
+            {
+              title: "Using the CCIP Local Simulator in forked environments",
+              url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
+            },
+            {
+              title: "Using the CCIP Local Simulator to fork mainnets",
+              url: "chainlink-local/build/ccip/foundry/forking-mainnets",
+            },
+            {
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
+            },
+          ],
+        },
+        {
+          title: "Hardhat",
+          url: "chainlink-local/build/ccip/hardhat",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator",
+            },
+            {
+              title: "Using the CCIP Local Simulator in forked environments",
+              url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
+            },
+          ],
+        },
+        {
+          title: "Remix IDE",
+          url: "chainlink-local/build/ccip/remix",
+          children: [
+            {
+              title: "Using the CCIP Local Simulator",
+              url: "chainlink-local/build/ccip/remix/local-simulator",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.NODE_OPERATORS]: [
     {
       section: "Chainlink Nodes",
       contents: [
@@ -1207,27 +1489,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "External Adapters",
-      contents: [
-        {
-          title: "Introduction",
-          url: "chainlink-nodes/external-adapters/external-adapters",
-        },
-        {
-          title: "External Adapters in Solidity",
-          url: "chainlink-nodes/external-adapters/contract-creators",
-        },
-        {
-          title: "Building External Adapters",
-          url: "chainlink-nodes/external-adapters/developers",
-        },
-        {
-          title: "Bridges: Adding External Adapters to Nodes",
-          url: "chainlink-nodes/external-adapters/node-operators",
-        },
-      ],
-    },
-    {
       section: "External Initiators",
       contents: [
         {
@@ -1296,14 +1557,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  global: [
+  [SIDEBAR_SECTIONS.GLOBAL]: [
     {
       section: "General Documentation",
       contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials",
-        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview",
@@ -1367,7 +1624,73 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  legacy: [
+  [SIDEBAR_SECTIONS.LEGACY]: [
+    {
+      section: "VRF V2 Subscription Method [Legacy]",
+      contents: [
+        {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "Introduction",
+          url: "vrf/v2/subscription",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/subscription/examples/get-a-random-number",
+        },
+        {
+          title: "Programmatic Subscription",
+          url: "vrf/v2/subscription/examples/programmatic-subscription",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
+          title: "Subscription Manager UI",
+          url: "vrf/v2/subscription/ui",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/subscription/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+      ],
+    },
+    {
+      section: "VRF V2 Direct Funding Method [Legacy]",
+      contents: [
+        {
+          title: "Migrate to VRF V2.5",
+          url: "vrf/v2-5/migration-from-v2",
+        },
+        {
+          title: "Introduction",
+          url: "vrf/v2/direct-funding",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test Locally Using a Mock Contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/direct-funding/supported-networks",
+        },
+        {
+          title: "V2 Billing",
+          url: "vrf/v2/estimating-costs",
+        },
+      ],
+    },
     {
       section: "VRF v1 [DEPRECATED]",
       contents: [
@@ -1380,23 +1703,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Best Practices", url: "vrf/v1/best-practices" },
         { title: "Supported Networks", url: "vrf/v1/supported-networks" },
         { title: "API Reference", url: "vrf/v1/api-reference" },
-      ],
-    },
-    {
-      section: "v1 JSON Jobs [REMOVED]",
-      contents: [
-        {
-          title: "Job Specifications",
-          url: "chainlink-nodes/oracle-jobs/v1/job-specifications",
-        },
-        {
-          title: "Core Adapters",
-          url: "chainlink-nodes/oracle-jobs/v1/adapters",
-        },
-        {
-          title: "Initiators",
-          url: "chainlink-nodes/oracle-jobs/v1/initiators",
-        },
       ],
     },
   ],

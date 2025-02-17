@@ -1,6 +1,7 @@
 ---
 title: "VRF Subscription Balance Monitor"
 description: "Automatically top-up your VRF subscription balances using Chainlink Automation to ensure there is sufficient funding for requests."
+githubSourceCodeUrl: "https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/VRFSubscriptionBalanceMonitor.sol"
 image: "QuickStarts-VRF-Balance-Subscription-Manager.webp"
 products: ["automation", "vrf"]
 time: "30 minutes"
@@ -33,9 +34,7 @@ Before you start this tutorial, complete the following items:
 
 - If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract).
 - Install and configure a cryptocurrency wallet like [MetaMask](https://metamask.io/).
-- Add testnet funds to your wallet:
-  - Add the gas currency for the chain where your contract is deployed. For this example, use Sepolia. [Get 0.5 Sepolia ETH](https://sepoliafaucet.com/).
-  - Add ERC-677 LINK. You can get 20 Sepolia testnet LINK from [faucets.chain.link](https://faucets.chain.link/).
+- Get Sepolia testnet LINK and ETH from [faucets.chain.link](https://faucets.chain.link/sepolia).
 - Gather the subscription IDs for any existing VRF subscriptions you would like to monitor. If you do not have any VRF subscriptions, you will create two for demo purposes in this tutorial.
 
 <Aside type="note" title="New to smart contracts?">
@@ -121,7 +120,6 @@ For Sepolia, these values are all consolidated here:
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LINK token address          | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/> |
 | VRF Coordinator             | <Address contractUrl="https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" />                                                                                       |
-| Automation registry address | <Address contractUrl="https://sepolia.etherscan.io/address/0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" />                                                                                       |
 
 1. Open the `VRFSubscriptionBalanceMonitor.sol` contract in Remix.
 
@@ -137,7 +135,6 @@ For Sepolia, these values are all consolidated here:
    | ----------------------- | ------------------------------------------------------------------ |
    | `LINKTOKENADDRESS`      | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> |
    | `COORDINATORADDRESS`    | <CopyText text="0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" code/> |
-   | `KEEPERREGISTRYADDRESS` | <CopyText text="0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" code/> |
    | `MINWAITPERIODSECONDS`  | <CopyText text="60" code/>                                         |
 
 1. Click **Deploy**. MetaMask opens and prompts you to confirm the contract deployment transaction.
@@ -163,22 +160,35 @@ Registering an upkeep on Chainlink Automation creates a smart contract that will
 
 1. Click **Register new Upkeep**.
 
-1. Select the _Custom logic_ trigger.
+1. Select the _Custom logic_ trigger option.
 
-1. Input the address of your deployed subscription balance monitor contract.
+1. Copy your contract address from Remix and paste it into the **Target contract address** field.
 
-1. Get the ABI from Remix.
+1. Specify a name for your upkeep and set a **Starting balance** of 5 LINK for this demo. Leave the other settings at their default values.
 
-1. Enter the values for the constructor.
+1. Go to the **Upkeep details** page and copy your **Forwarder address**.
 
-   | Item                    | Value                                                              |
-   | ----------------------- | ------------------------------------------------------------------ |
-   | `LINKTOKENADDRESS`      | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> |
-   | `COORDINATORADDRESS`    | <CopyText text="0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" code/> |
-   | `KEEPERREGISTRYADDRESS` | <CopyText text="0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" code/> |
-   | `MINWAITPERIODSECONDS`  | <CopyText text="60" code/>                                         |
+1. Navigate back to Remix and find the `setForwarderAddress` function. Paste your forwarder address and click click **transact** to run the function. MetaMask asks you to confirm the transaction.
 
-1. Fund the upkeep with enough LINK to monitor your VRF subscriptions.
+Now that you've registered the upkeep and configured your contract with your new upkeep's forwarder address, Chainlink Automation handles the rest of the process.
+
+</Accordion>
+
+<Accordion title="Configure the subscription watch list" number={5}>
+
+Before your contract will fund a subscription, you must set the `watchList` address array with `minBalancesJuels` and `topUpAmountsJuels` variables. For demonstration purposes, you configure your own wallet as the top-up address. This makes it easy to see the ETH being sent as part of the automated top-up function. After you complete this tutorial, you can configure any wallet or contract address that you want to keep funded.
+
+1. In the list of functions for your deployed contract, run the `setWatchList` function. This function requires an `subscriptionIds` array, a `minBalancesJuels` array that maps to the subscriptions, and a `topUpAmountsJuels` array that also maps to the subscriptions. In Remix, arrays require brackets and quotes around integer values. For this example, set the following values:
+
+   - **subscriptionIds**: `["SUB_ID_1", "SUB_ID_2"]`
+   - **minBalancesJuels**: `["2000000000000000000", "2000000000000000000"]`
+   - **topUpAmountsJuels**: `["10000000000000000", "10000000000000000"]`
+
+   These values tell the top up contract to top up the specified address with 0.01 LINK if the address balance is less than 2 LINK. These settings are intended to demonstrate the example using testnet faucet funds. For a production application, you might set more reasonable values that top up a smart contract with 10 LINK if the balance is less than 1 LINK.
+
+1. After you configure the function values, click **transact** to run the function. MetaMask asks you to confirm the transaction.
+
+1. In the functions list, click the `getWatchList` function to confirm your settings are correct.
 
 </Accordion>
 

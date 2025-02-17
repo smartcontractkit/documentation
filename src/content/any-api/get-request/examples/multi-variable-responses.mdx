@@ -16,14 +16,10 @@ whatsnext:
 import { Aside, CodeSample } from "@components"
 import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 
+<AnyApiCallout callout="usefunctions" />
+
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/any-api/introduction) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
-
-<Aside type="note" title="Chainlink Functions">
-  Chainlink Functions provides your smart contracts access to trust-minimized compute infrastructure, allowing you to
-  fetch data from APIs and perform custom computation. Read the [Chainlink Functions
-  documentation](/chainlink-functions) to learn more.
-</Aside>
 
 <AnyApiCallout callout="prerequisites" />
 
@@ -50,7 +46,7 @@ The response should be similar to the following:
 ```
 
 The request above shows how to get the price of _ETH_ against _BTC_. Now let say we want the price of _ETH_ against several currencies: _BTC_, _USD_, and _EUR_. Our contract will have to support receiving multiple responses.
-To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
+To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
 
 - Link token address
 - Oracle address

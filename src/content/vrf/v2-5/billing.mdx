@@ -1,0 +1,355 @@
+---
+section: vrf
+date: Last Modified
+title: "VRF Billing"
+metadata:
+  title: "Estimating costs for Chainlink VRF v2.5"
+  description: "Learn how to estimate costs for Chainlink VRF v2.5."
+isMdx: true
+---
+
+import { CodeSample } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+This guide explains how to estimate VRF 2.5 costs for both the subscription and direct funding methods.
+
+## Understanding transaction costs
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+For Chainlink VRF v2.5 to fulfill your requests, you must maintain enough funds in your subscription balance. Gas cost calculation includes the following variables:
+
+- **Gas price:** The current gas price, which fluctuates depending on network conditions.
+
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values.
+
+- **Verification gas:** The amount of gas used to verify randomness onchain.
+
+The gas price depends on current network conditions. The callback gas depends on your callback function, and the number of random values in your request. The cost of each request is final only after the transaction is complete, but you define the limits you are willing to spend for the request with the following variables:
+
+- **Gas lane:** The maximum gas price you are willing to pay for a request in wei. Define this limit by specifying the appropriate `keyHash` in your request. The limits of each gas lane are important for handling gas price spikes when Chainlink VRF bumps the gas price to fulfill your request quickly.
+
+- **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
+
+</Fragment>
+
+<Fragment slot="panel.2">
+For Chainlink VRF v2.5 to fulfill your requests, you must maintain enough funds in your consuming contract.
+
+Gas cost calculation includes the following variables:
+
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values. The callback gas depends on your callback function and the number of random values in your request. Set the **callback gas limit** to specify the maximum amount of gas you are willing to spend on the callback request.
+
+- **Number of random values requested:** The number of random values (`numWords`) per request to VRF.
+
+- **Gas price:** The current gas price, which fluctuates depending on network conditions.
+
+- **Coordinator overhead gas:** The amount of gas used to verify randomness onchain. This consists of two components:
+
+  - **Coordinator overhead gas (Native or LINK):** The coordinator overhead gas has different values depending on whether you're using LINK or native tokens.
+  - **Coordinator overhead gas per word:** The amount of additional gas the coordinator uses per random value ("word") that you request.
+
+- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract.
+
+Because the consuming contract directly pays for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Test your callback function to learn how to correctly estimate the callback gas limit.
+
+- If the gas limit is underestimated, the callback fails and the consuming contract is still charged for the work done to generate the requested random values.
+- If the gas limit is overestimated, the callback function will be executed but your contract is not refunded for the excess gas amount that you paid.
+
+Make sure that your consuming contracts have enough funds in either LINK or native tokens to cover the transaction costs. If the consuming contract doesn't have enough funds, your request will revert.
+
+</Fragment>
+</TabsContent>
+
+### Estimate gas costs
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+You need to pre-fund your subscription enough to meet the [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance)
+in order to have a buffer against gas volatility.
+
+After the request is complete, the final gas cost is recorded based on how much gas is used for the verification and callback.
+The actual cost of the request is deducted from your subscription balance.
+
+The total gas cost in wei for your request uses the following formula:
+
+```
+(Gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+If you're paying for VRF in LINK, the total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is
+unavailable, the VRF coordinator uses the `fallbackWeiPerUnitLink` value for the conversion instead. The
+`fallbackWeiPerUnitLink` value is defined in the
+[coordinator contract](/vrf/v2-5/supported-networks#configurations) for your selected network.
+
+</Fragment>
+<Fragment slot="panel.2">
+The final gas cost to fulfill randomness is estimated based on how much gas is expected for the verification and callback. The total gas cost in wei uses the following formula:
+
+```
+(Gas price * (Coordinator gas overhead
+              + Callback gas limit
+              + Wrapper gas overhead)) = total gas cost
+```
+
+The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF Wrapper uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [VRF v2.5 Wrapper contract](/vrf/v2-5/supported-networks#configurations) for your selected network.
+
+The maximum allowed `callbackGasLimit` value for your requests is defined in the [Coordinator contract supported networks](/vrf/v2-5/supported-networks) page. Because the VRF v2.5 Wrapper adds gas overheads, your `callbackGasLimit` must not exceed `maxGasLimit - wrapperGasOverhead`.
+
+</Fragment>
+</TabsContent>
+
+### Apply premium
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+The premium is charged as a percentage of the overall gas cost. The premium is defined in the [coordinator contract](/vrf/v2-5/supported-networks/#configurations). Premium percentages are listed there as whole integers. For example, a 20% premium is listed as `20`.
+
+```
+(total gas cost) * ((100 + Premium percentage) / 100) = total request cost
+```
+
+The total request cost is charged to your subscription balance. Since you have the option to pay for VRF requests either in LINK or the native token for the network you're using, your subscription can have both a LINK balance and a native token balance. The premium is higher when you pay with native tokens than when you pay with LINK. For example, the premium percentage for using Ethereum is 24 if you pay with Ethereum, and 20 if you pay with LINK.
+
+</Fragment>
+<Fragment slot="panel.2">
+The premium is divided in two parts:
+
+- Wrapper premium: This premium is charged as a percentage of the overall gas cost. Premium percentages are listed there as whole integers. For example, a 20% premium is listed as `20`. You can find the percentage for your network in the [Supported networks](/vrf/v2-5/supported-networks#configurations) page.
+- Coordinator premium: A flat fee. This premium is defined in the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK. You can find the flat fee of the coordinator for your network in the [Supported networks](/vrf/v2-5/supported-networks#configurations) page.
+
+```
+(Coordinator premium
+  + (total gas cost) * ((100 + Premium percentage) / 100)) = total request cost
+```
+
+The total request cost is charged to your consuming contract. The premium is higher when you pay with native tokens than when you pay with LINK. For example, the premium percentage for using Ethereum is 24 if you pay with Ethereum, and 20 if you pay with LINK.
+
+</Fragment>
+</TabsContent>
+
+### Subscription cost examples
+
+These are example calculations of a VRF subscription request on Ethereum, shown in both ETH and LINK. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2-5/supported-networks) page.
+The examples show how to estimate the following:
+
+- The [minimum subscription balance](/vrf/v2-5/overview/subscription#minimum-subscription-balance), which is a higher amount you need to reserve before your request is processed. This provides a buffer in case gas prices go higher when processing the request. The VRF Subscription Manager displays your minimum subscription balance as **Max Cost**.
+- The actual cost of the request after it is processed, which is lower than the minimum subscription balance.
+
+#### Estimate minimum subscription balance
+
+These example calculations show an estimated minimum subscription balance for using VRF on Ethereum, shown in both ETH and LINK. The premium is higher when you pay with native tokens than when you pay with LINK.
+{/* prettier-ignore */}
+
+<TabsContent sharedStore="feePaymentMethod" client:visible>
+<Fragment slot="tab.1">Paying in LINK</Fragment>
+<Fragment slot="tab.2">Paying in ETH</Fragment>
+<Fragment slot="panel.1">
+| Parameter            | Value     |
+| -------------------- | --------- |
+| Gas lane             | 500 gwei  |
+| Callback gas limit   | 100000    |
+| Max verification gas | 200000    |
+| Premium percentage   | 20        |
+
+1. Calculate the total gas cost, using the maximum possible gas price for the selected gas lane, the estimated maximum verification gas, and the full callback gas limit:
+
+   | Gas cost calculation                          | Total gas cost            |
+   | --------------------------------------------- | ------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                           |
+   | 500 gwei x (200000 + 100000)                  | 150000000 gwei (0.15 ETH) |
+
+1. Apply the premium percentage to get the total maximum cost of a request:
+
+   | Applying premium percentage                              | Maximum request cost (ETH) |
+   | -------------------------------------------------------- | -------------------------- |
+   | Total gas cost (ETH) \* ((100 + premium percentage)/100) |                            |
+   | 0.15 ETH \* ((100 + 20)/100)                             | 0.18 ETH                   |
+
+1. Convert the total cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.005 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Maximum request cost (LINK) |
+   | --------------------------- | --------------------------- |
+   | 0.18 ETH / 0.005 ETH/LINK   | 36 LINK                     |
+
+For this example request to go through, you need to reserve a minimum subscription balance of 36 LINK, but that does not mean the actual request will cost 36 LINK. Check the **Max Cost** in the
+Subscription Manager to view the minimum subscription balance for all your contracts. When your request is processed, the actual cost of the request is calculated and deducted from your subscription balance. See [the next section](#estimate-vrf-request-cost) for an example of how to calculate the actual request cost.
+
+</Fragment>
+<Fragment slot="panel.2">
+| Parameter            | Value     |
+| -------------------- | --------- |
+| Gas lane             | 500 gwei  |
+| Callback gas limit   | 100000    |
+| Max verification gas | 200000    |
+| Premium percentage   | 24        |
+
+1. Calculate the total gas cost, using the maximum possible gas price for the selected gas lane, the estimated maximum verification gas, and the full callback gas limit:
+
+   | Gas cost calculation                          | Total gas cost            |
+   | --------------------------------------------- | ------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                           |
+   | 500 gwei x (200000 + 100000)                  | 150000000 gwei (0.15 ETH) |
+
+1. Apply the premium percentage to get the total maximum cost of a request:
+
+   | Applying premium percentage                              | Maximum request cost (ETH) |
+   | -------------------------------------------------------- | -------------------------- |
+   | Total gas cost (ETH) \* ((100 + premium percentage)/100) |                            |
+   | 0.15 ETH \* ((100 + 24)/100)                             | 0.186 ETH                  |
+
+For this example request to go through, you need to reserve a minimum subscription balance of 0.186 ETH, but that does not mean the actual request will cost 0.186 ETH. Check the **Max Cost** in the Subscription Manager to view the minimum subscription balance for all your contracts. When your request is processed, the actual cost of the request is deducted from your subscription balance. See [the next section](#estimate-vrf-request-cost) for an example of how to calculate the actual request cost.
+
+</Fragment>
+</TabsContent>
+
+#### Estimate VRF request cost
+
+These example calculations show a cost breakdown of a VRF subscription request on the Ethereum network. Check [Etherscan](https://etherscan.io/gastracker)
+for current gas prices.
+
+<TabsContent sharedStore="feePaymentMethod" client:visible>
+<Fragment slot="tab.1">Paying in LINK</Fragment>
+<Fragment slot="tab.2">Paying in ETH</Fragment>
+<Fragment slot="panel.1">
+| Parameter             | Value     |
+| --------------------- | --------- |
+| Actual gas price      | 50 gwei   |
+| Callback gas used     | 95000     |
+| Verification gas used | 115000    |
+| Premium percentage    | 20        |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                          | Total gas cost             |
+   | --------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                            |
+   | 50 gwei x (115000 + 95000)                    | 10500000 gwei (0.0105 ETH) |
+
+1. Apply the premium percentage to get the total cost of a request:
+
+   | Applying premium percentage                              | Total request cost (ETH) |
+   | -------------------------------------------------------- | ------------------------ |
+   | Total gas cost (ETH) \* ((100 + premium percentage)/100) |                          |
+   | 0.0105 ETH \* ((100 + 20)/100)                           | 0.0126 ETH               |
+
+1. Convert the total cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.005 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.0126 ETH / 0.005 ETH/LINK | 2.52 LINK             |
+
+This example request would cost 2.52 LINK, which is deducted from your subscription balance.
+
+</Fragment>
+<Fragment slot="panel.2">
+| Parameter             | Value     |
+| --------------------- | --------- |
+| Actual gas price      | 50 gwei   |
+| Callback gas used     | 95000     |
+| Verification gas used | 115000    |
+| Premium percentage    | 24        |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                          | Total gas cost             |
+   | --------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                            |
+   | 50 gwei x (115000 + 95000)                    | 10500000 gwei (0.0105 ETH) |
+
+1. Apply the premium percentage to get the total maximum cost of a request:
+
+   | Applying premium percentage                              | Maximum request cost (ETH) |
+   | -------------------------------------------------------- | -------------------------- |
+   | Total gas cost (ETH) \* ((100 + premium percentage)/100) |                            |
+   | 0.0105 ETH \* ((100 + 24)/100)                           | 0.01302 ETH                |
+
+This example request would cost 0.01302 ETH, which is deducted from your subscription balance.
+
+</Fragment>
+</TabsContent>
+
+### Direct funding cost examples
+
+These are example calculations of a VRF direct funding request on Ethereum, shown in both ETH and LINK. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2-5/supported-networks) page.
+
+<TabsContent sharedStore="feePaymentMethod" client:visible>
+<Fragment slot="tab.1">Paying in LINK</Fragment>
+<Fragment slot="tab.2">Paying in ETH</Fragment>
+<Fragment slot="panel.1">
+| Parameter                                   | Value     |
+| ------------------------------------------- | --------- |
+| Gas price                                   | 50 gwei   |
+| Callback gas limit                          | 100000    |
+| Coordinator gas overhead (LINK)             | 112000    |
+| Wrapper gas overhead                        | 13400     |
+| Coordinator gas overhead per word           | 435       |
+| Number of random values (words)             | 2         |
+| Wrapper premium percentage                  | 20        |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                                                                                                                       | Total gas cost                |
+   | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+   | Gas price _ (Coordinator overhead gas + Callback gas limit + Wrapper gas overhead + (Coordinator overhead gas per word _ Number of words)) |                               |
+   | 50 gwei x (112000 + 100000 + 13400 + (435 \* 2))                                                                                           | 11313500 gwei (0.0113135 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion    | Total gas cost (LINK) |
+   | ------------------------------ | --------------------- |
+   | 0.0113135 ETH / 0.004 ETH/LINK | 2.828375 LINK         |
+
+1. Apply the premium percentage to get the total cost of a request:
+
+   | Applying premium percentage                               | Request cost (LINK) |
+   | --------------------------------------------------------- | ------------------- |
+   | Total gas cost (LINK) \* ((100 + premium percentage)/100) |                     |
+   | (2.828375 LINK \* (100 + 20))/100)                        | 3.39405 LINK        |
+
+This example request would cost 3.39405 LINK.
+
+</Fragment>
+<Fragment slot="panel.2">
+| Parameter                                   | Value     |
+| ------------------------------------------- | --------- |
+| Gas price                                   | 50 gwei   |
+| Callback gas limit                          | 100000    |
+| Coordinator gas overhead (Native)           | 90000     |
+| Wrapper gas overhead                        | 13400     |
+| Coordinator gas overhead per word           | 435       |
+| Number of random values (words)             | 2         |
+| Wrapper premium percentage                  | 24        |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                                                                                                                       | Total gas cost                |
+   | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+   | Gas price _ (Coordinator overhead gas + Callback gas limit + Wrapper gas overhead + (Coordinator overhead gas per word _ Number of words)) |                               |
+   | 50 gwei x (90000 + 100000 + 13400 + (435 \* 2))                                                                                            | 10213500 gwei (0.0102135 ETH) |
+
+1. Apply the premium percentage to get the total cost of a request:
+
+   | Applying premium percentage                              | Request cost (ETH) |
+   | -------------------------------------------------------- | ------------------ |
+   | Total gas cost (ETH) \* ((100 + premium percentage)/100) |                    |
+   | (0.0102135 ETH \* (100 + 24))/100)                       | 0.01266474 ETH     |
+
+This example request would cost 0.01266474 ETH.
+
+</Fragment>
+</TabsContent>

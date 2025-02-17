@@ -60,12 +60,6 @@ To run the example:
    $ node examples/4-post-data/request.js
    secp256k1 unavailable, reverting to browser version
    Start simulation...
-   Performing simulation with the following versions:
-   deno 1.36.3 (release, aarch64-apple-darwin)
-   v8 11.6.189.12
-   typescript 5.1.6
-
-
    Simulation result {
      capturedTerminalOutput: 'Get name, capital and currency for country code: JP\n' +
        'HTTP POST Request to https://countries.trevorblades.com/\n' +
@@ -75,18 +69,17 @@ To run the example:
    ✅ Decoded response to string:  {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
    Estimate request costs...
-   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Fulfillment cost estimated to 0.0 LINK
+   Fulfillment cost estimated to 1.007671833192655 LINK
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x20e03fdd42fc69f8573b8bcda8f9e8df64caf2fe49712f0f18d3e5db303351ed. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x20e03fdd42fc69f8573b8bcda8f9e8df64caf2fe49712f0f18d3e5db303351ed
+   ✅ Functions request sent! Transaction hash 0x5a315eeebea90f4828d176906d13dd3133e8a8d9afa912b1f8c34e90e775d081. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x5a315eeebea90f4828d176906d13dd3133e8a8d9afa912b1f8c34e90e775d081
 
-   ✅ Request 0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3 fulfilled with code: 0. Cost is 0.000035602577256 LINK. Complete response:  {
-     requestId: '0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3',
-     subscriptionId: 3,
-     totalCostInJuels: 35602577256000n,
+   ✅ Request 0xc760ee5ca5c73999ca9c4ce426b9d2d44eab4429d3110276e57c445537ad5ddd successfully fulfilled. Cost is 0.257726519296170771 LINK.Complete response:  {
+     requestId: '0xc760ee5ca5c73999ca9c4ce426b9d2d44eab4429d3110276e57c445537ad5ddd',
+     subscriptionId: 2303,
+     totalCostInJuels: 257726519296170771n,
      responseBytesHexstring: '0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d',
      errorString: '',
      returnDataBytesHexstring: '0x',
@@ -100,9 +93,8 @@ To run the example:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3](https://mumbai.polygonscan.com/tx/0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3) and the request ID is `0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3`.
-
-   - The DON successfully fulfilled your request. The total cost was: `0.000035602577256 LINK`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x5a315eeebea90f4828d176906d13dd3133e8a8d9afa912b1f8c34e90e775d081](https://sepolia.etherscan.io/tx/0x5a315eeebea90f4828d176906d13dd3133e8a8d9afa912b1f8c34e90e775d081) and the request ID is `0xc760ee5ca5c73999ca9c4ce426b9d2d44eab4429d3110276e57c445537ad5ddd`.
+   - The DON successfully fulfilled your request. The total cost was: `0.257726519296170771 LINK`.
    - The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it offchain to `string` gives you a result:
 
      `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
@@ -206,13 +198,13 @@ const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on Sepolia.
+   - `donId`: Identifier of the DON that will fulfill your requests on Sepolia.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["JP"]`, which fetches country data for Japan.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

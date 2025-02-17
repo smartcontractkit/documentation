@@ -1,7 +1,7 @@
-import { SubProductsNav, ProductsNav } from "../config"
-import { SearchTrigger } from "../NavBar"
-import { ProductNavigation as Desktop } from "./Desktop/ProductNavigation"
-import { ProductNavigation as Mobile } from "./Mobile/ProductNavigation"
+import { SubProductsNav, ProductsNav } from "../config.tsx"
+import { SearchTrigger } from "../NavBar.tsx"
+import { ProductNavigation as Desktop } from "./Desktop/ProductNavigation.tsx"
+import { ProductNavigation as Mobile } from "./Mobile/ProductNavigation.tsx"
 
 type Props = {
   path: string
@@ -9,11 +9,14 @@ type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
   productsNav: ProductsNav
   subProductsNav?: SubProductsNav
+  showMegaMenu: () => void
+  isMegamenuOpen: boolean
+  exitMegamenu: () => void
 }
 
 export const ProductNavigation = (props: Props) => (
   <>
     <Desktop {...props} />
-    <Mobile searchTrigger={props.searchTrigger} productsNav={props.productsNav} />
+    <Mobile />
   </>
 )

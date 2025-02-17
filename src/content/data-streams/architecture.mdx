@@ -1,0 +1,112 @@
+---
+section: dataStreams
+title: "Data Streams Architecture"
+whatsnext:
+  {
+    "Find the list of available Stream IDs.": "/data-streams/crypto-streams",
+    "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema",
+  }
+---
+
+import { Aside, ClickToZoom } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+## High Level Architecture
+
+Chainlink Data Streams has the following core components:
+
+- **A Chainlink Decentralized Oracle Network (DON):** This DON operates similarly to the DONs that power [Chainlink Data Feeds](/data-feeds), but the key difference is that it signs and delivers reports to the Chainlink Data Streams Aggregation Network rather than delivering answers onchain directly. This allows the Data Streams DON to deliver reports more frequently for time-sensitive applications. Nodes in the DON retrieve data from many different data providers, reach a consensus about the median price of an asset, sign a report including that data, and deliver the report to the Data Streams Aggregation Network.
+- **The Chainlink Data Streams Aggregation Network:** The Data Streams Aggregation Network stores the signed reports and makes them available for retrieval. The network uses an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) to ensure high availability and robust fault tolerance by operating multiple active sites in parallel. The network delivers these reports to Chainlink Automation upon request ([Streams Trade](/data-streams/architecture#streams-trade-architecture)) or provide direct access via the API ([Streams Direct](/data-streams/architecture#streams-direct-architecture)).
+- **The Chainlink Verifier Contract:** This contract verifies the signature from the DON to cryptographically guarantee that the report has not been altered from the time that the DON reached consensus to the point where you use the data in your application.
+
+## Streams Trade Architecture
+
+Using Chainlink Automation with Data Streams automates trade execution and mitigates frontrunning by executing the transaction before the data is recorded onchain. Chainlink Automation requests data from the Data Streams Aggregation Network. It executes transactions only in response to the data and the verified report, so the transaction is executed correctly and independently from the decentralized application itself.
+
+<ClickToZoom
+  src="/images/data-streams/data-streams-trade-architecture-v3.webp"
+  alt="Chainlink Data Streams - Streams Trade Architecture"
+/>
+
+### Example trading flow using Streams Trade
+
+One example of how to use Data Streams with Automation is in a decentralized exchange. An example flow might work using the following process:
+
+<ClickToZoom
+  src="/images/data-streams/streams-trade-sequence-diagram.webp"
+  alt="Chainlink Data Streams - Streams Trade Example Trading Flow"
+/>
+
+1. A user initiates a trade by confirming an `initiateTrade` transaction in their wallet.
+1. The onchain contract for the decentralized exchange responds by emitting a [log trigger](/chainlink-automation/concepts/automation-concepts#upkeeps-and-triggers) event.
+1. The Automation upkeep monitors the contract for the event. When Automation detects the event, it runs the `checkLog` function specified in the upkeep contract. The upkeep is defined by the decentralized exchange.
+1. The `checkLog` function uses a `revert` with a custom error called `StreamsLookup`. This approach aligns with [EIP-3668](https://eips.ethereum.org/EIPS/eip-3668#use-of-revert-to-convey-call-information) and conveys the required information through the data in the `revert` custom error.
+1. Automation monitors the `StreamsLookup` custom error that triggers Data Streams to process the offchain data request. Data Streams then returns the requested signed report in the `checkCallback` function for Automation.
+1. Automation passes the report to the Automation Registry, which executes the `performUpkeep` function defined by the decentralized exchange. The report is included as a variable in the `performUpkeep` function.
+1. The `performUpkeep` function calls the `verify` function on the Data Streams onchain verifier contract and passes the report as a variable.
+1. The verifier contract returns a `verifierResponse` bytes value to the upkeep.
+1. If the response indicates that the report is valid, the upkeep executes the user's requested trade. If the response is invalid, the upkeep rejects the trade and notifies the user.
+
+This is one example of how you can combine Data Streams and Automation, but the systems are highly configurable. You can write your own log triggers or [custom logic triggers](/chainlink-automation/guides/register-upkeep) to initiate Automation upkeeps for a various array of events. You can configure the `StreamsLookup` to retrieve multiple reports. You can configure the `performUpkeep` function to perform a wide variety of actions using the report.
+
+Read the [Getting Started](/data-streams/getting-started) guide to learn how to build your own smart contract that retrieves reports from Data Streams using the Streams Trade implementation.
+
+**Note**: Before implementing Streams Trade, ensure that Chainlink Automation is available on your desired network by checking the [Automation Supported Networks page](/chainlink-automation/overview/supported-networks).
+
+## Streams Direct Architecture
+
+<DataStreams section="streamsDirectEarlyAccess" />
+
+### Example of offchain price updates with Streams Direct
+
+Streams Direct enables seamless offchain price updates through a mechanism designed for real-time data delivery. Here is an example of how your Client will benefit from low-latency market data directly from the Data Streams Aggregation Network.
+
+1. The Client opens a WebSocket connection to the Data Streams Aggregation Network to subscribe to new reports with low latency.
+
+1. The Data Streams Aggregation Network streams price reports via WebSocket, which gives the Client instant access to updated market data.
+
+1. The Client stores the price reports in a cache for quick access and use, which preserves data integrity over time.
+
+1. The Client regularly queries the Data Streams Aggregation Network for any missed reports to ensure data completeness.
+
+1. The Aggregation Network sends back an array of reports to the Client.
+
+1. The Client updates its cache to backfill any missing reports, ensuring the data set remains complete and current.
+
+<ClickToZoom
+  src="/images/data-streams/streams-direct-offchain-price-updates.webp"
+  alt="Chainlink Data Streams - Streams Direct Off-Chain Price Updates"
+/>
+
+## Active-Active Multi-Site Deployment
+
+Active-active is a system configuration strategy where redundant systems remain active simultaneously to serve requests. Incoming requests are distributed across all active resources and load-balanced to provide high availability, scalability, and fault tolerance. This strategy is the opposite of active-passive where a secondary system remains inactive until the primary system fails.
+
+The Data Streams API services use an active-active setup as a highly available and resilient architecture across multiple distributed and fully isolated origins. This setup ensures that the services are operational even if one origin fails, which provides robust fault tolerance and high availability. This configuration applies to both the [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api) and the [WebSocket API](/data-streams/reference/streams-direct/streams-direct-interface-ws). A global load balancer seamlessly manages the system to provide automated and transparent failovers. For advanced use cases, the service publishes available origins using HTTP headers, which enables you to interact directly with specific origin locations if necessary.
+
+### Active-Active Setup
+
+The API services are deployed across multiple distributed data centers. Each active deployment is fully isolated and capable of handling requests independently. This redundancy ensures that the service can withstand the failure of any single site without interrupting service availability.
+
+### Global Load Balancer
+
+A global load balancer sits in front of the distributed deployments. The load balancer directs incoming traffic to the healthiest available site based on real-time health checks and observed load.
+
+- **Automated Failover:** In the event of a site failure, traffic is seamlessly rerouted to operational sites without user intervention.
+- **Load Distribution:** Requests are balanced across all active sites to optimize resource usage and response times.
+
+### Origin Publishing
+
+To enable advanced interactions, the service includes the origin information for all of the available origins in the HTTP headers of API responses. This feature allows customers to explicitly target specific deployments if desired. It also allows for concurrent WebSocket consumption from multiple sites, ensuring fault tolerant WebSocket subscriptions, low-latency, and minimized risk of report gaps.
+
+### Example Failover Scenarios
+
+Automatic failover handles availability and traffic routing in the following scenarios:
+
+- **Automatic Failover:** If one of the origins becomes unavailable, the global load balancer automatically reroutes traffic to the next available origin. This process is transparent to the user and ensures uninterrupted service. During automatic failover, WebSockets experience a reconnect. Failed REST requests must be retried.
+
+- **Manual Traffic Steering:** If you want to bypass the load balancer and target a specific site, you can use the origin headers to direct your requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
+
+- **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each stream and discards duplicate reports before merging the report stream locally.

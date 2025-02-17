@@ -1,0 +1,603 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token (CCT) standard"
+whatsnext: { "CCT Guides": "/ccip/tutorials/cross-chain-tokens" }
+metadata:
+  description: "Chainlink's Cross-Chain Token (CCT) standard enables permissionless listing of tokens in CCIP. Learn how to make your tokens cross-chain compatible or deploy new cross-chain tokens using this self-service standard. Token developers can deploy and configure their own token pools without third-party intervention, streamlining the process of enabling ERC20-compatible tokens for cross-chain operations."
+  excerpt: "create cct create cross chain token create cross-chain token deploy cross chain token enable token for ccip make token cross chain compatible cross chain token tutorial"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Launch or upgrade your CCT in just a few clicks">
+  Did you know about the [Token Manager](https://tokenmanager.chain.link/)? This newly released app gives you the
+  ability to launch new tokens or upgrade existing tokens into CCTs, no code required. Read more in the
+  [docs](/ccip/tutorials/token-manager).
+</Aside>
+
+The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling an [ERC20-compatible](#requirements-for-cross-chain-tokens) token in CCIP.
+
+## Motivations
+
+The motivation for Cross-Chain Token (CCT) originates from two primary challenges: liquidity fragmentation in a multi-chain ecosystem and the need for greater autonomy for token developers.
+
+- **Liquidity Fragmentation**: [Hundreds](https://chainlist.org/) of blockchains exist, each with their own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems. Token developers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
+
+- **Need for Greater Autonomy**: Another critical motivation behind Cross-Chain Token is to empower projects to enable their tokens for cross-chain operations without the support of third-parties. By providing a self-service model, Cross-Chain Token allows projects to take control of their cross-chain applications. This enables rapid expansion to other blockchains supported by CCIP.
+
+Cross-Chain Token (CCT) solves these challenges by allowing token developers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token developers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes. The CCT standard offers the following benefits:
+
+- **Self-service and Permissionless Deployment**: With CCT, token developers can launch a cross-chain token or enable an existing token in a self-service manner within minutes. The fully audited token pool contracts handle the complexities of burning/minting or locking/minting tokens across blockchains, all without requiring liquidity pools. This enables a streamlined and permissionless deployment process that significantly reduces the barriers to cross-chain expansion. Starting from v1.5.1, token pools support zero-downtime upgrades, allowing seamless transitions between pool versions while maintaining support for in-flight messages.
+
+- **Developer Control and Flexibility**: Token developers retain complete ownership of their token contracts, token pools, and implementation logic. This includes configuring [rate limits](/ccip/architecture#token-pool-rate-limit) across all blockchains, ensuring that token developers have full autonomy to manage their deployments. The CCT standard avoids vendor lock-in, hard-coded functions, and external dependencies, giving projects the flexibility they need to succeed.
+
+- **Defense-in-Depth Security**: The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as the [Risk Management Network](/ccip/concepts#risk-management-network) and configurable transfer [rate limits](/ccip/architecture#token-pool-rate-limit), providing comprehensive security for cross-chain operations.
+
+- **Programmable Token Transfers**: Cross-Chain Token (CCT) supports the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, such as executing on-chain actions alongside token transfers, improving the overall efficiency of cross-chain transactions. For instance, a programmable token transfer could execute a function to stake tokens on the destination blockchain.
+
+- **No Liquidity Pools Required**: The fully audited token pool contracts provided by CCT eliminate the need for liquidity pools, simplifying cross-chain token management. By locking or burning tokens on the source chain and minting or unlocking them on the destination chain, token developers can maintain consistent liquidity without managing fragmented liquidity pools across multiple blockchains.
+
+- **Reduced Liquidity Fragmentation**: The CCT standard addresses liquidity fragmentation by allowing tokens to move seamlessly across multiple blockchains rather than requiring liquidity to be present on both source and destination chains. This unified approach ensures that liquidity remains consistent and accessible across all supported blockchains, reducing inefficiencies and improving the user experience.
+
+- **Zero-Slippage Transfers**: Token developers are provided access to pre-audited token pool contracts that enable zero-slippage cross-chain transfers of CCTs. The exact amount of tokens sent to the CCIP OnRamp on the source chain is always the exact amount of tokens received on the CCIP OffRamp on the destination chain.
+
+- **Ease of Cross-Chain Integration**: With CCT, existing [ERC20-compatible](#requirements-for-cross-chain-tokens) tokens can be easily extended to support cross-chain functionality. This makes it possible for token developers to extend their token's reach across multiple blockchains with minimal effort, avoiding the complexities associated with traditional bridging solutions.
+
+## Key Terms and Concepts
+
+- **Token Developer**: The entity responsible for issuing and managing the token. Token developers decide which blockchains to deploy the token on, manage its lifecycle, and control its availability across different blockchains.
+
+- **Token Owner**: The entity that owns the token contract. The token owner has the authority to manage the token contract, including upgrading the contract, changing the token administrator, or transferring ownership to another address.
+
+- **Token Administrator**: A role assigned to manage cross-chain operations of a token. The token administrator is responsible for mapping a token to a token pool in the TokenAdminRegistry.. The token administrator can be the token owner or another designated entity assigned by the token owner. Technically, the token administrator can be an EOA or a smart account.
+
+- **EOA (Externally Owned Account)**: A standard blockchain account controlled by a private key, typically used by individuals. EOAs do not have associated code, unlike smart accounts, and are used for directly signing transactions.
+
+- **Smart Account**: A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs. For example, smart accounts can use multi-signature mechanisms to add an extra layer of security.
+
+- **ERC20-Compatible Token**: A token that adheres to the [ERC20 token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) or any other token standard that improves upon it, such as [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/). These contracts have the same interface as ERC20 but add extra functionalities. Cross-Chain tokens need to be ERC20-compatible to ensure interoperability across different blockchain ecosystems. The specific requirements for ERC20-compatible tokens in CCIP will be detailed [later](#requirements-for-cross-chain-tokens) in this document, including requirements for Burn & Mint and Lock & Mint mechanisms.
+
+- **Token Pool**: Each token is associated with its own token pool, which acts as an abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide [rate limits](/ccip/architecture#token-pool-rate-limit), a security feature enabling token developers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
+
+  - **Burn and Mint**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain. This keeps the total supply of the token constant across blockchains.
+
+        <ClickToZoom
+            src="/images/ccip/cct/handling/burn-mint.png"
+            alt="Burn and Mint"
+        />
+
+  - **Lock and Mint**: This mechanism is suitable for projects with existing tokens on a single blockchain that have already been minted and lack functionality to control the supply via burn and mint functions on the source blockchain. In this approach, tokens are locked on the issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens, which must support burn and mint functionality, can subsequently be transferred across other non-issuing blockchains using the Burn and Mint mechanism.
+
+          <ClickToZoom
+            src="/images/ccip/cct/handling/lock-mint.png"
+            alt="Lock and Mint"
+        />
+
+  - **Burn and Unlock**: Tokens are burned on the source blockchain (which is the non-issuing blockchain), and an equivalent amount of tokens are released on the destination blockchain (the issuing blockchain). This mechanism is the inverse of the Lock and Mint mechanism and applies when you send tokens back to their issuing source blockchain.
+
+          <ClickToZoom
+            src="/images/ccip/cct/handling/burn-unlock.png"
+            alt="Burn and Unlock"
+        />
+
+  - **Lock and Unlock**: Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. This use case is not recommended, as it implies multiple issuing blockchains, which results in fragmented liquidity as well as the requirement of managing liquidity to ensure liveness of lanes. For additional guidance on Lock and Unlock configuration, please review [best practices](/ccip/best-practices#best-practices-for-liquidity-management).
+
+            <ClickToZoom
+            src="/images/ccip/cct/handling/lock-unlock.png"
+            alt="Lock and Unlock"
+        />
+
+## Requirements for Cross-Chain Tokens
+
+Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
+
+- **Recommended Permissionless Token Administrator address registration methods**: A token can use any of the following supported function signatures for permissionless registration:
+
+  - `owner()`: This function returns the token contract owner's address.
+  - `getCCIPAdmin()`: This function returns the token administrator's address and is recommended for new tokens, as it allows for abstraction of the CCIP Token Administrator role from other common roles, like `owner()`.
+
+    <Aside type="note">
+      If these functions are not available, use [this contact
+      form](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to request assistance with
+      registration.
+    </Aside>
+
+- **Requirements for CCIP token transfers**: The token's smart contract must meet minimum requirements to integrate with CCIP.
+
+  - **Burn & Mint Requirements**:
+    - The token smart contract must have the following functions:
+      - `mint(address account, uint256 amount)`: This function is used to mint the `amount` of tokens to a given `account` on the destination blockchain.
+      - `burn(uint256 amount)`: This function is used to burn the `amount` of tokens on the source blockchain.
+      - `decimals()`: Returns the token's number of decimals.
+      - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+      - `burnFrom(address account, uint256 amount)`: This function burns a specified number of tokens from the provided account on the source blockchain. **Note**: This is an optional function. We generally recommend using the `burn` function, but if you use a tokenPool that calls `burnFrom`, your token contract will need to implement this function.
+    - On the source and destination blockchains, the token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+  - **Lock & Mint Requirements**:
+    - The token smart contract must have the following functions:
+      - `decimals()`: Returns the token's number of decimals.
+      - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+    - On the destination blockchain, The token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+
+If you don't have an existing token: For all blockchains where tokens need to be burned and minted (for example, the source or destination chain in the case of Burn and Mint, or the destination blockchain in the case of Lock and Mint), Chainlink provides a [BurnMintERC677](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) contract that you can use to deploy your token in minutes. This token follows the [ERC677](https://github.com/ethereum/EIPs/issues/677) or [ERC777](https://ethereum.org/en/developers/docs/standards/tokens/erc-777/), allowing you to use it as-is or extend it to meet your specific requirements.
+
+## Requirements for Token Pools
+
+### Common Requirements
+
+All token pools, whether standard or custom, must adhere to the following guidelines:
+
+#### Function Requirements
+
+When CCIP interacts with your token pools, it expects the presence of the following functions:
+
+1. **Source Blockchain**: This must include the following function:
+
+   - `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`: This function locks or burns tokens on the source blockchain. See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/api-reference/v1.5.1/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract#lockorburn).
+
+1. **Destination Blockchain**: This must include the following function:
+
+   - `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`: This function releases or mints tokens on the destination blockchain. See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/api-reference/v1.5.1/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract#releaseormint).
+
+#### Gas Requirements
+
+On the **destination blockchain**, the CCIP OffRamp contract performs three key calls when releasing or minting tokens:
+
+1. `balanceOf` **before minting/releasing tokens**: To check the token balance of the receiver before the minting or releasing operation.
+1. `releaseOrMint` **to mint or release tokens**: To execute the minting or releasing of tokens on the destination blockchain. **Note**: The total execution of the `releaseOrMint` function includes both the **token pool's logic** and the **token's execution logic**. For example, if minting tokens is part of the process, the gas consumed by the minting operation is included in the total gas consumed by the `releaseOrMint` function.
+1. `balanceOf` **after minting/releasing tokens**: To verify the token balance of the receiver after the operation is complete.
+
+**Gas Limit Considerations:**
+
+- The combined execution of these three calls should not exceed the default gas limit of **90,000 gas**. To verify this cost, it is recommended to perform a token transfer on testnet. If the transaction reverts on destination, [manual execution](/ccip/concepts/manual-execution) can be utilized and the resulting transaction can be inspected for the amount of gas that was used.
+- If the default gas limit of **90,000 gas** is exceeded and a custom limit has not been configured, the CCIP execution on the destination blockchain will fail. In such cases, manual intervention by the user will be required to execute the transaction. For more information, see [manual execution](/ccip/concepts/manual-execution).
+- If the combined execution requires more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure. However, it is highly recommended to design your token pool to stay within the **90,000 gas** limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
+
+#### Token Decimal Handling
+
+**v1.5.0**
+
+Token pools on **v1.5.0** do not support tokens with different decimal places across blockchains. When transferring a token between blockchains with differing decimal places, the token loses precision resulting in different amounts of tokens between the source and destination blockchain.
+
+Consider a token developer who deployed their token across two blockchains with different decimal configurations:
+
+- Blockchain A: Token with 12 decimals
+- Blockchain B: Token with 6 decimals
+
+| Transfer Path     | Example                                                                  | Explanation               | Impact                             |
+| ----------------- | ------------------------------------------------------------------------ | ------------------------- | ---------------------------------- |
+| **A → B**(12 → 6) | • Send **1.0** from A (= 10^12 base units)<br/>• Receive on B: 1,000,000 | 10^12/10^6= **1,000,000** | **Gain** of 999,999 (1,000,000 -1) |
+| **B → A**(6 → 12) | • Send **1.0** from B(= 10^6 base units)<br/>• Receive on A: 0.000001    | 10^6/10^12= **0.000001**  | **Loss** of 0.999999 (1-0.000001)  |
+
+We highly recommend [upgrading to v1.5.1](#upgrading-from-v150) to leverage the native support for token decimal handling. If using v1.5.0, please make sure to [configure a custom v1.5.0 token pool](#custom-token-pools).
+
+**v1.5.1**
+
+Starting from **v1.5.1**, token pools support tokens with different decimal places across blockchains. This feature can impact the total number of tokens in circulation because tokens locked/burned on the source chain might result in a smaller number of tokens minted/released on the destination chain due to decimal rounding.
+
+<Aside type="caution" title="Impact on Token Supply">
+  When tokens move between blockchains with different decimal places, rounding can occur. This rounding can affect small
+  amounts of tokens during cross-chain transfers.
+</Aside>
+
+**Understanding Token Decimals**
+
+When deploying their token, token developers can configure different decimal places for each blockchain. For example:
+
+- On Ethereum: The developer sets 18 decimals (0.123456789123456789)
+- On Polygon: The developer sets 9 decimals (0.123456789)
+
+When transferring tokens between these blockchains, CCIP handles decimal conversion automatically but must round numbers to match the destination's configured precision.
+
+**Impact Scenarios**
+
+Consider a token developer who deployed their token across three blockchains with different decimal configurations:
+
+- Blockchain A: High precision (18 decimals)
+- Blockchain B: Low precision (9 decimals)
+- Blockchain C: High precision (18 decimals)
+
+| Scenario                 | Transfer Path | Example                                                                                                       | Impact                                                                                                           |
+| ------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| High to Low Precision ❌ | A → B         | • Send from A: 1.123456789123456789<br/>• Receive on B: 1.123456789<br/><br/>• **Lost**: 0.000000000123456789 | • Burn/mint: Tokens permanently burned on Blockchain A<br/>• Lock/release: Tokens locked in pool on Blockchain A |
+| Low to High Precision ✅ | B → A         | • Send from B: 1.123456789<br/>• Receive on A: 1.123456789000000000                                           | • No precision loss                                                                                              |
+| Equal Precision ✅       | A → C         | • Send from A: 1.123456789123456789<br/>• Receive on C: 1.123456789123456789                                  | • No precision loss                                                                                              |
+
+**Best Practices**
+
+- Deploy tokens with the same number of decimals across all blockchains whenever possible
+  - This prevents any loss of precision during cross-chain transfers
+  - Different decimals should only be used when required by blockchain limitations (e.g., non-EVM chains with decimal constraints)
+- Verify decimal configurations on both source and destination blockchains before transfers
+- Consider implementing UI warnings for transfers that might be affected by rounding
+- When using high-to-low precision transfers, be aware that:
+  - In burn/mint pools: Lost precision results in permanently burned tokens
+  - In lock/release pools: Lost precision results in tokens accumulating in the source pool
+
+### Standard Token Pools
+
+Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/). For most use cases, you should use either:
+
+- [BurnMintTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol): This token pool is used to burn or mint tokens. You can read the API reference [here](/ccip/api-reference/v1.5.1/burn-mint-token-pool).
+- [BurnFromMintTokenPool](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol): This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference [here](/ccip/api-reference/v1.5.1/burn-mint-token-pool). **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
+- [LockReleaseTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol): This token pool is used to lock or release tokens. You can read the API reference [here](/ccip/api-reference/v1.5.1/lock-release-token-pool).
+
+**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates) function, which is used to configure the token pool. You can read the API reference [here](/ccip/api-reference/v1.5.1/token-pool).
+
+### Token Handling Mechanisms and Token Pool Deployment
+
+To facilitate cross-chain token transfers, you need to choose the appropriate token handling mechanism and deploy the correct combination of token pools for the source and destination blockchains. The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools) to deploy for each scenario, ensuring a seamless token transfer process.
+
+| Token Handling Mechanism | Source Blockchain Token Pool | Destination Blockchain Token Pool | Notes                                                                                                                                                                                                                  |
+| ------------------------ | ---------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Burn and Mint            | BurnMintTokenPool            | BurnMintTokenPool                 | - Standard burn and mint mechanism for cross-chain token transfers.                                                                                                                                                    |
+| Lock and Mint            | LockReleaseTokenPool         | BurnMintTokenPool                 | - The source blockchain is the issuing blockchain. <br/> - LockReleaseTokenPool **must** be deployed on the issuing blockchain.                                                                                        |
+| Burn and Unlock          | BurnMintTokenPool            | LockReleaseTokenPool              | - The destination blockchain is the issuing blockchain. <br/> - BurnMintTokenPool is used to burn tokens on the source blockchain, and LockReleaseTokenPool is used to unlock tokens on the issuing blockchain.        |
+| Lock and Unlock          | LockReleaseTokenPool         | LockReleaseTokenPool              | - Tokens are locked on the source blockchain and unlocked on the destination blockchain. <br/> - Not recommended due to fragmented liquidity and requires careful management of liquidity across multiple blockchains. |
+
+### Custom Token Pools
+
+If the standard token pools do not meet your requirements, you have the option to build a custom TokenPool. However, it is essential to adhere to the following guidelines:
+
+- Your custom token pool must inherit from the appropriate base token pool contract depending on your token handling mechanism:
+
+  - For Burn and Mint mechanisms:
+    Your custom token pool should inherit from [`BurnMintTokenPoolAbstract`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPoolAbstract.sol). Use this base contract if your custom pool involves burning tokens on the source chain and minting them on the destination chain.
+  - For Lock and Release mechanisms:
+    Your custom token pool can either inherit from [`TokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) and implement the [`ILiquidityContainer`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/liquiditymanager/interfaces/ILiquidityContainer.sol) interface, or directly inherit from [`LockReleaseTokenPool`](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) and reimplement `lockOrBurn` and `releaseOrMint` functions as needed. This setup is appropriate when your pool involves locking tokens on the source blockchain and releasing them on the destination blockchain.
+
+- Your custom TokenPool must implement the mandatory functions for both the source and destination blockchains. (Refer to the [Common Requirements](#common-requirements) section for more details.)
+
+Here are some examples of use cases that may require custom token pools:
+
+- **Tokens with rebasing or fee-on-transfer mechanisms**:
+
+  - **Use Case**: Rebasing tokens are a unique type of token that adjusts its supply in response to specific parameters (e.g., price). These tokens require custom logic to handle rebasing events during cross-chain transfers.
+  - **Solution**:
+    - **Source Blockchain**: When initiating a cross-chain transfer of rebasing tokens, the TokenPool on the source blockchain should lock or burn the underlying shares rather than a fixed amount of tokens. This ensures that the value is consistently represented, regardless of changes in supply. The number of shares being locked or burned is recorded in the [`destPoolData`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) and passed to the destination blockchain via CCIP.
+    - **Destination Blockchain**: On the destination blockchain, the TokenPool should accurately convert the number of underlying shares to tokens using the current share-to-token ratio. The calculated token amount should then be minted on the destination blockchain and returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
+
+- **Tokens with different decimals across blockchains**:
+
+  <Aside type="note">
+    This custom implementation is only needed for **v1.5.0** pools. Starting from **v1.5.1**, token decimal handling is
+    natively supported by all token pools. See [Token Decimal Handling](#token-decimal-handling) under Common
+    Requirements.
+  </Aside>
+
+  For **v1.5.0** pools:
+
+  - **Use Case**: Some tokens have different decimal values across various blockchains.
+  - **Solution**:
+    - **Source Blockchain**: During the lock or burn process on the source blockchain, the TokenPool should include a shared denomination in the `destPoolData` field of the [`LockOrBurnOutV1`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) struct (returned by the `lockOrBurn` function) to represent the value in a standard format. This data is then passed to the destination blockchain via CCIP.
+    - **Destination Blockchain**: On the destination blockchain, the TokenPool should use the information contained in the `sourcePoolData` of the [`ReleaseOrMintInV1`](/ccip/api-reference/v1.5.1/pool#releaseormintinv1) struct (used by the `releaseOrMint` function) to convert the value into the local denomination. The correct number of tokens should then be minted based on the destination blockchain's decimal format. The minted amount is returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
+
+### Token Pool Upgradability
+
+Starting from CCIP **v1.5.1**, token pools support zero-downtime upgrades, allowing seamless transitions between versions while maintaining support for in-flight messages. This section outlines the requirements and considerations for upgrading token pools.
+
+<Aside type="caution">
+  If you are currently using CCIP **v1.5.0** token pools, please read the [Upgrading from v1.5.0](#upgrading-from-v150)
+  section carefully. **v1.5.0** pools have specific limitations regarding in-flight messages during upgrades.
+</Aside>
+
+#### General Upgrade Paths
+
+When upgrading token pools, there are three scenarios to consider:
+
+1. Complete Blockchain Upgrade (Recommended) ✅
+
+   In this scenario, you upgrade all token pools across your connected blockchains to the latest version simultaneously.
+
+   For example, if you have pools deployed on Ethereum and Polygon:
+
+   - Both pools are upgraded to the latest version
+   - All cross-chain messages continue processing without interruption
+   - No manual intervention is required for in-flight transactions
+
+1. Partial Network Upgrade (Not Recommended) ❌
+
+   In this scenario, not all token pools are upgraded uniformly across blockchains (e.g., upgrading the token pool on Ethereum to version **v1.5.1** while retaining version **v1.5.0** on Polygon). This approach primarily affects **v1.5.0** pools due to their strict source blockchain validation requirements.
+
+   Consider an upgrade between Ethereum and Polygon:
+
+   If you upgrade only the Ethereum pool to **v1.5.1**, any messages that were already sent ("in-flight messages") through the **v1.5.0** pool will fail when they reach Polygon. This happens because **v1.5.0** pools are designed to accept messages only from a single configured remote pool address. When you upgrade the Ethereum pool, messages will come from its new address, which the Polygon pool won't recognize as valid.
+
+   To prevent message delivery failures:
+
+   - Always upgrade all connected **v1.5.0** pools to **v1.5.1** simultaneously
+   - Follow the detailed steps in the [Upgrading from v1.5.0](#upgrading-from-v150) section
+
+1. Adding New Blockchains ✅
+
+   You can safely deploy the latest pool version when expanding to new blockchains without affecting existing operations.
+
+   For example, if you have pools on Ethereum and Polygon and want to expand to Avalanche:
+
+   - Deploy the latest version on Avalanche
+   - Existing pools continue operating normally
+   - New cross-chain routes become available through Avalanche
+
+#### Upgrading from v1.5.0
+
+<Aside type="caution" title="Test upgrades on Testnets">
+  Test the upgrade process on testnet blockchains before deploying to mainnet.
+</Aside>
+
+Token pools in **v1.5.0** have a strict source validation mechanism in their `_validateReleaseOrMint` function that only accepts messages from a single configured remote pool address. Unlike **v1.5.1**, which can validate against multiple remote pools, **v1.5.0** pools reject messages if the source pool address doesn't match their configured remote pool. This limitation requires careful handling of upgrades to prevent in-flight messages from failing validation.
+
+Here's a detailed example of upgrading pools between Ethereum and Polygon:
+
+1. Deploy New Pools
+
+   - Deploy **v1.5.1** pool on Ethereum -> `0xNewPoolEth`
+   - Deploy **v1.5.1** pool on Polygon -> `0xNewPoolPoly`
+
+1. Configure New Pools
+
+   Configure both new pools to accept messages from both the old and new pools. This dual configuration ensures that after the upgrade, the new pools can still process any in-flight messages sent from the old pools before the upgrade.
+
+   Use [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates) to set up the new pools:
+
+   On Ethereum's new pool:
+
+   ```solidity
+   ChainUpdate memory updateForPoly = ChainUpdate({
+       remoteChainSelector: POLYGON_SELECTOR,
+       remotePoolAddresses: [abi.encode(0xOldPoolPoly), abi.encode(0xNewPoolPoly)], // Both old and new pools
+       remoteTokenAddress: TOKEN_POLY_ADDRESS,
+       outboundRateLimiterConfig: outboundConfig,
+       inboundRateLimiterConfig: inboundConfig
+   });
+   tokenPool.applyChainUpdates([], [updateForPoly]);
+   ```
+
+   On Polygon's new pool:
+
+   ```solidity
+   ChainUpdate memory updateForEth = ChainUpdate({
+       remoteChainSelector: ETH_SELECTOR,
+       remotePoolAddresses: [abi.encode(0xOldPoolEth), abi.encode(0xNewPoolEth)], // Both old and new pools
+       remoteTokenAddress: TOKEN_ETH_ADDRESS,
+       outboundRateLimiterConfig: outboundConfig,
+       inboundRateLimiterConfig: inboundConfig
+   });
+   tokenPool.applyChainUpdates([], [updateForEth]);
+   ```
+
+1. Throttle Existing Pools
+
+   Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools.
+
+   Use [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.0/token-pool#setchainratelimiterconfig) on both existing pools:
+
+   On Ethereum's old pool:
+
+   ```solidity
+   // Set minimal rate limit on old pools
+   RateLimiter.Config memory minConfig = RateLimiter.Config({
+       rate: 1,           // 1 wei per second
+       capacity: 1,       // 1 wei capacity
+       isEnabled: true    // Keep enabled but effectively paused
+   });
+   oldPoolEth.setChainRateLimiterConfig(POLYGON_SELECTOR, minConfig, minConfig);
+   ```
+
+   On Polygon's old pool:
+
+   ```solidity
+   oldPoolPoly.setChainRateLimiterConfig(ETH_SELECTOR, minConfig, minConfig);
+   ```
+
+1. Update Token Admin Registry
+
+   Use [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) to update the registry on both blockchains. This step switches token transfers to use the new pools.
+
+   On Ethereum:
+
+   ```solidity
+   tokenAdminRegistry.setPool(tokenAddress, 0xNewPoolEth);
+   ```
+
+   On Polygon:
+
+   ```solidity
+   tokenAdminRegistry.setPool(tokenAddress, 0xNewPoolPoly);
+   ```
+
+1. Handle Manual Executions
+
+   For any failed transactions, follow the [manual execution process](/ccip/concepts/manual-execution).
+
+1. Clean Up
+
+   After verifying all transactions are processed successfully:
+
+   - Use [`removeRemotePool`](/ccip/api-reference/v1.5.1/token-pool#removeremotepool) to remove old pool addresses
+   - This prevents future messages from using the old pools
+   - Only proceed with cleanup after confirming:
+     - No pending transactions in CCIP Explorer
+     - All manual executions are complete
+     - New pools are operating correctly
+
+   On Ethereum's new pool:
+
+   ```solidity
+   newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
+   ```
+
+   On Polygon's new pool:
+
+   ```solidity
+   newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
+   ```
+
+## CCT Architecture Overview
+
+<Aside type="note" title="Prerequisites">
+  Before proceeding, ensure you are familiar with the key [CCIP Concepts](/ccip/concepts) and the general [CCIP
+  Architecture](/ccip/architecture). This knowledge is essential for understanding how CCIP works.
+</Aside>
+
+The Cross-Chain Token (CCT) architecture offers a streamlined, self-service approach to enabling cross-chain operations. This system integrates tightly with Chainlink's Cross-Chain Interoperability Protocol (CCIP), allowing token developers to configure, manage, and transfer tokens across multiple blockchains without requiring the support of third parties.
+
+### Architecture
+
+The detailed architecture diagram below provides a comprehensive view of how CCT fits within the CCIP ecosystem, illustrating the interaction between key components such as token contracts, token pools, and registry modules. While you can explore the full details of these components in the [CCIP Architecture](/ccip/architecture) document, the key takeaway for Cross-Chain Token (CCT) is understanding how the [`TokenAdminRegistry`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/tokenAdminRegistry) contract is used.
+
+<ClickToZoom src="/images/ccip/CCIP_detailed_architecture_1.5.png" alt="Chainlink CCIP Detailed Architecture 1.5" />
+
+The **TokenAdminRegistry** contract is essential when transferring tokens across blockchains. CCIP's [`onRamp`](/ccip/architecture#onramp) and [`offRamp`](/ccip/architecture#offramp) contracts interact with it to fetch the token pool associated with a given token. For cross-chain transfers to work, token administrators need a way to set or configure the token pool linked to a token.
+
+In the following sections, we will explore how token administrators can register their tokens in the TokenAdminRegistry, link them to the relevant token pools, and configure them for use in CCIP.
+
+### Key Contracts
+
+In the Cross-Chain Token (CCT) standard, several key contracts work together to facilitate the secure transfer and management of tokens across multiple blockchains. These contracts can be categorized into three main groups:
+
+#### Registry Contracts
+
+The **Registry contracts** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
+
+- [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry): This contract stores the token administrators and pools for all registered cross-chain tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
+- [`RegistryModuleOwnerCustom`](/ccip/api-reference/v1.5.1/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
+
+#### Token Contract
+
+The **Token contract** represents the actual token being managed and transferred across blockchains. This contract must be **ERC20-compatible** and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, refer to the [Requirements for ERC20-Compatible Tokens](#requirements-for-cross-chain-tokens) section.
+
+#### Token Pool Contract
+
+<CcipCommon callout="tokenPoolOwnership" />
+
+The **Token Pool contract** is responsible for executing the cross-chain token transfers. It manages how tokens are locked, burned, minted, or unlocked across blockchains.
+
+- **Token Pools**: Each blockchain has its own token pool that interacts with the token contract. Depending on the cross-chain handling mechanism (e.g., Burn & Mint or Lock & Mint), different token pool contracts will be deployed. For example:
+  - **BurnMintTokenPool**: Handles the burning, or minting of tokens depending whether it is the source or destination blockchain.
+  - **LockReleaseTokenPool**: Handles the locking or releasing of tokens depending on whether it is the source or destination blockchain.
+
+For more information on the token pool contracts and their functionalities, refer to the [Requirement for Token Pools](#requirements-for-token-pools) section.
+
+### Registration
+
+The process of registering your token for **Cross-Chain Token (CCT)** involves a **two-step process** to ensure that the correct administrator is assigned. The token's administrator will initially be placed in a proposed state. The administrator must then explicitly accept the role to complete the registration.
+
+#### Self-Service Registration Flow
+
+If the token contract includes any of the necessary functions (`getCCIPAdmin()`, or `owner()`), the registration can be done autonomously by the token administrator:
+
+1. **Admin Initiates Registration**: The token administrator begins the process by calling one of these functions on the **RegistryModuleOwnerCustom** contract:
+
+   - [`registerAdminViaGetCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - [`registerAdminViaOwner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+
+1. **Determine Administrator**: The **RegistryModuleOwnerCustom** contract retrieves the administrator from the token contract using the appropriate method:
+
+   - Via [`getCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - Via [`owner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+
+1. **Propose Administrator**: The retrieved administrator is then proposed to the **TokenAdminRegistry** using the `proposeAdministrator()` function, placing the administrator in a pending state.
+
+1. **Pending Administrator**: At this point, the administrator is marked as "pending" in the `TokenAdminRegistry` and must complete the second step—**accepting the role**—before being officially assigned.
+
+#### Non-Self-Service Registration Flow
+
+If the token contract does not have the necessary functions (`getCCIPAdmin()` or `owner()`), the token developer must manually initiate the registration by submitting a request [here](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration).
+
+#### Sequence Diagram: Proposing the Administrator
+
+The following sequence diagram illustrates the process of proposing the administrator for both self-service and manual registration flows:
+
+          <ClickToZoom
+            src="/images/ccip/cct/registration-sequence-diagram.svg"
+            alt="Propose administrator sequence diagram"
+            style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+        />
+
+### Accepting the Administrator Role
+
+Once the administrator has been proposed and is in a pending state, they must accept the role to complete the registration process. This step finalizes the assignment of the administrator.
+
+1. **Administrator Accepts Role**: The pending administrator must explicitly call the `acceptAdminRole()` function on the **TokenAdminRegistry** to complete the registration.
+1. **Finalize Registration**: Once the administrator accepts the role, they are assigned as the token administrator, and the registration process is complete. At this point, the token administrator can set a token pool for the token in the **TokenAdminRegistry**.
+
+Once the administrator has been proposed and is in a pending state, the final step in the registration process is for the pending administrator to accept the role. This sequence diagram illustrates how the pending administrator interacts with the TokenAdminRegistry to complete the registration. It also covers the scenario where an incorrect entity attempts to accept the role, leading to an error.
+
+          <ClickToZoom
+            src="/images/ccip/cct/acceptAdminRole.svg"
+            alt="Accept administrator role sequence diagram"
+            style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+        />
+
+### Transfer Administrator Role
+
+The `transferAdminRole` function allows the current token administrator to initiate the transfer of their role to a new administrator. The transfer process is a secure two-step procedure, requiring the new administrator to explicitly accept the role before the transfer is finalized.
+
+1. **Initiate Role Transfer**: The current administrator calls the `transferAdminRole()` function on the **TokenAdminRegistry**, specifying the token address and the new administrator's address.
+1. **Set Pending Administrator**: The **TokenAdminRegistry** contract verifies that the caller is the current administrator of the token and sets the new administrator as **pending**. The role will remain in this pending state until it is accepted.
+1. **Accept the Role**: The new administrator must call the `acceptAdminRole()` function to finalize the transfer and assume the administrator role.
+
+The following sequence diagram illustrates the process of transferring the administrator role and how the new administrator must accept the role to complete the transfer.
+
+      <ClickToZoom
+        src="/images/ccip/cct/transferAdminRole.svg"
+        alt="Transfer administrator role sequence diagram"
+        style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+      />
+
+### Setting the Token Pool
+
+The `setPool` function allows the token administrator to assign or update the token pool for a specific token in the **TokenAdminRegistry**.
+
+1. **Set Token Pool**: The current administrator calls the `setPool()` function on the **TokenAdminRegistry**, providing the token address and the new pool address.
+1. **Validate Pool**: If the new pool address is not `address(0)`, the contract validates that the provided pool supports the token by calling `isSupportedToken()` on the pool contract.
+1. **Update or Remove Pool**: If validation succeeds, the token's pool is updated in the registry. Setting the pool to `address(0)` effectively delists the token from cross-chain operations.
+
+The sequence diagram below shows how the token administrator sets or updates the pool for a token. If the pool is set to `address(0)`, the token is delisted from cross-chain operations.
+
+      <ClickToZoom
+        src="/images/ccip/cct/setPool.svg"
+        alt="Set token pool sequence diagram"
+        style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
+      />
+
+### Configuring the Token Pool
+
+The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following functions from the [`TokenPool`](/ccip/api-reference/v1.5.1/token-pool) contract are used for configuring token pools:
+
+1. [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates):
+   - **Purpose**: This function is the primary method for configuring which blockchains the token pool supports and defining rate limits for cross-chain transfers.
+   - **Details**:
+     - It allows the token pool owner to add new chains or remove existing ones.
+     - Configures the pool and token addresses for remote blockchains.
+     - Sets rate limits for both outbound and inbound transfers.
+   - **Usage**:
+     - To add a new blockchain, the pool owner provides the remote chain selector, pool address, token address, and rate limiter configurations.
+     - To remove a blockchain, the `allowed` flag is set to `false`, and the chain is removed from the list of supported chains.
+1. [`addRemotePool`](/ccip/api-reference/v1.5.1/token-pool#addremotepool):
+
+   - **Purpose**: Adds a new remote pool address for a specific blockchain, enabling support for multiple pools per chain.
+   - **Details**:
+     - Allows adding multiple pools for a single chain selector, which is crucial during pool upgrades
+     - Maintains support for in-flight messages from existing pools while adding new ones
+     - Validates chain selector support and prevents duplicate pool additions
+     - Each pool address is hashed and stored for efficient lookup
+   - **Usage**: This function is particularly useful during pool upgrades, allowing seamless transitions between pool versions while maintaining transaction support.
+
+1. [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.1/token-pool#setchainratelimiterconfig):
+
+   - **Purpose**: Configures the rate limits for outbound and inbound token transfers between blockchains.
+   - **Details**:
+     - The outbound rate limiter config controls how many tokens can be transferred out of the token pool per unit of time.
+     - The inbound rate limiter config limits how many tokens can be transferred into the token pool per unit of time.
+     - Only the pool owner or rate limit admin can call this function.
+   - **Notes on Rate Limit Admin**: The rate limit admin is a designated address that is authorized to configure the rate limits for a token pool. This admin can be set by the pool owner using the `setRateLimitAdmin` function. If no rate limit admin is set, only the pool owner can modify the rate limits. You can retrieve the current rate limit admin address using the `getRateLimitAdmin` function.
+   - **Usage**: This function adjusts rate limits to prevent excessive token transfers or overload of the token pool. **Note**: This function also supports disabling rate limits.
+
+1. [`applyAllowListUpdates`](/ccip/api-reference/v1.5.1/token-pool#applyallowlistupdates):
+   - **Purpose**: Manages an allowlist of addresses permitted to interact with the token pool.
+   - **Details**:
+     - This function is only relevant if the token pool is access-controlled (i.e., an allowlist is enabled).
+     - The allowlist ensures that only specific addresses, such as trusted addresses, can transfer tokens.
+   - **Usage**: The pool owner uses this function to add or remove addresses from the allowlist, controlling who can transfer the tokens through CCIP.

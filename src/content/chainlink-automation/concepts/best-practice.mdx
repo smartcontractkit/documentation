@@ -10,11 +10,25 @@ whatsnext:
   }
 ---
 
+import { Aside } from "@components"
+
 This guide outlines the best practices when using Chainlink Automation. These best practices are important for using Chainlink Automation securely and reliably when you [create Automation-compatible contracts](/chainlink-automation/guides/compatible-contracts).
 
-### Use Automation 2.0
+### Use the latest version of Chainlink Automation
 
-To get the best reliability and security guarantees for your upkeep we recommend that you use [Automation 2.0](/chainlink-automation/overview/automation-release-notes/#2023-10-02---v20-release). Consider migrating upkeeps to Automation 2.0 if you have upkeeps on an earlier version.
+To get the best reliability and security guarantees for your upkeep, use the latest version of Chainlink Automation.
+
+<Aside type="caution" title="Deprecation of older upkeeps">
+  [Migrate existing upkeeps](/chainlink-automation/guides/migrate-to-v2) before **August 29, 2024**. Versions earlier
+  than 2.1 are no longer supported, and existing upkeeps on versions earlier than 2.1 will stop being performed on
+  August 29, 2024.
+</Aside>
+
+### Make registry and registrar addresses configurable
+
+Where your upkeep calls the registry or the registrar, you must make the address configurable so you can migrate your upkeep easily with the one-click migration capability. If you don't make the address configurable, you must redeploy the upkeep for migrations.
+
+Alternatively, set the forwarder address when your upkeep is deployed and read the registry from the forwarder during your execution to simplify it.
 
 ### Use the Forwarder
 
@@ -26,7 +40,9 @@ If your upkeep uses [StreamsLookup](/chainlink-automation/reference/automation-i
 
 ### Avoid "flickering" custom logic upkeeps
 
-The Automation DON will evaluate your upkeep regularly and will try to perform it when eligible. However, if the state on chain changes and makes your upkeep ineligible before execution happens, the upkeep might not get performed. For best results, ensure the `checkUpkeep` remains true until execution.
+The Automation DON evaluates your upkeep regularly. When your upkeep is eligible, the DON attempts to perform the upkeep. For best results, ensure that `checkUpkeep` remains true until execution.
+
+If the state of your upkeep "flickers" by rapidly alternating between true and false, then your upkeep is at risk of not being performed. "Flickering" upkeeps might cause unintended consequences because there is latency between observing the state of the chain, getting consensus (v2 and later) on what needs to happen, and confirming the transaction onchain.
 
 ### Always test your contracts
 

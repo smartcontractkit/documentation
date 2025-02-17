@@ -1,0 +1,14 @@
+import { Aside } from "@components"
+
+<Aside type="caution" title="Sender Contract Best Practices">
+This example is simplified for educational purposes. For production code, please adhere to the following best practices:
+
+- **Do Not Hardcode `extraArgs`**: In this example, `extraArgs` are hardcoded within the contract for simplicity. It is recommended to make `extraArgs` mutable. For instance, you can construct `extraArgs` off-chain and pass them into your function calls, or store them in a storage variable that can be updated as needed. This approach ensures that `extraArgs` remain backward compatible with future CCIP upgrades. Refer to the [Best Practices](/ccip/best-practices) guide for more information.
+
+- **Validate the Destination Chain**: Always ensure that the destination chain is valid and supported before sending messages.
+
+- **Understand `allowOutOfOrderExecution` Usage**: This example sets `allowOutOfOrderExecution` to `true` (see [EVMExtraArgsV2](/ccip/api-reference/v1.5.1/client#evmextraargsv2)). However, as documented in the [Best Practices: Setting `allowOutOfOrderExecution`](/ccip/best-practices#setting-allowoutoforderexecution), this parameter is available only on lanes where the **Out of Order Execution** property is set to **Optional** or **Required**. Refer to the [CCIP Directory](/ccip/directory) to determine if your target lane supports this feature. For lanes where this parameter is absent, you must use [`extraArgsV1`](/ccip/api-reference/v1.5.1/client#evmextraargsv1) instead.
+
+Following these best practices ensures that your contract is robust, future-proof, and compliant with CCIP standards.
+
+</Aside>

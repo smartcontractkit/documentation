@@ -1,0 +1,168 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Using CCIP local simulator in your Hardhat project"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage" />
+
+You can use Chainlink Local to run CCIP in a localhost environment within your Hardhat project. To get started quickly, you will use the
+[CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat). This project is a Hardhat boilerplate that includes the
+Chainlink Local package and several CCIP examples.
+
+## Prerequisites
+
+1. In a terminal, clone the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) repository and change directories:
+
+   ```shell
+   git clone https://github.com/smartcontractkit/ccip-starter-kit-hardhat && \
+   cd ./ccip-starter-kit-hardhat/
+   ```
+
+1. Install the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package and other required packages:
+
+   ```shell
+   npm install
+   ```
+
+1. Compile the contracts:
+
+   ```shell
+   npm run compile
+   ```
+
+## Test tokens transfers
+
+You will run a test to transfer tokens between two accounts. The test file `Example1.spec.ts` is located in the `./test/no-fork` directory.
+This file contains one test case:
+
+**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test,
+it verifies that the sender account was debited and the receiver account was credited.
+
+For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    npx hardhat test test/no-fork/Example1.spec.ts
+    ```
+
+Example output:
+
+      ```text
+      $ npx hardhat test test/no-fork/Example1.spec.ts
+
+
+      Example 1
+         ✔ Should transfer CCIP test tokens from EOA to EOA (1057ms)
+
+
+      1 passing (1s)
+      ```
+
+## Examine the code
+
+### Setup
+
+To transfer tokens using CCIP, we need the following:
+
+- Destination chain selector
+- Source CCIP router
+- LINK token for paying CCIP fees
+- A test token contract (such as CCIP-BnM)
+- A sender account (Alice)
+- A receiver account (Bob)
+
+The `deployFixture` function is used to set up the initial state for the tests. This function deploys the CCIP local simulator contract and initializes
+the sender and receiver accounts.
+
+1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
+
+    ```typescript
+    const ccipLocalSimulatorFactory = await hre.ethers.getContractFactory("CCIPLocalSimulator")
+    const ccipLocalSimulator: CCIPLocalSimulator = await ccipLocalSimulatorFactory.deploy()
+    ```
+
+1.  Initialize the sender and receiver accounts:
+
+    ```typescript
+    const [alice, bob] = await hre.ethers.getSigners()
+    ```
+
+### Test case: Transfer with LINK fees
+
+The `it("Should transfer CCIP test tokens from EOA to EOA")` function tests the transfer of tokens between two externally owned accounts (EOA)
+while paying fees in LINK. Here are the steps involved in this test case:
+
+1. Invoke the `deployFixture` function to set up the necessary variables:
+
+   ```typescript
+   const { ccipLocalSimulator, alice, bob } = await loadFixture(deployFixture)
+   ```
+
+1. Invoke the [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function to retrieve the configuration details
+   for the pre-deployed contracts and services needed for local CCIP simulations.
+
+1. Connect to the source router and CCIP-BnM contracts.
+
+1. Call `ccipBnM.drip` to request CCIP-BnM tokens for Alice (sender).
+
+1. Create an array `Client.EVMTokenAmount[]` to specify the token transfer details:
+
+   ```typescript
+   const tokenAmounts = [
+     {
+       token: config.ccipBnM_,
+       amount: amountToSend,
+     },
+   ]
+   ```
+
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/v1.5.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+
+   - Use an empty string for the `data` parameter because you are not sending any arbitrary data (only tokens).
+   - Set `gasLimit` to `0` because you are sending tokens to an EOA, which means you do not expect any execution of receiver logic (and therefore do not need gas for that).
+
+   ```typescript
+   const gasLimit = 0
+   const functionSelector = id("CCIP EVMExtraArgsV1").slice(0, 10)
+   const defaultAbiCoder = AbiCoder.defaultAbiCoder()
+   const extraArgs = defaultAbiCoder.encode(["uint256"], [gasLimit])
+   const encodedExtraArgs = `${functionSelector}${extraArgs.slice(2)}`
+
+   const message = {
+     receiver: defaultAbiCoder.encode(["address"], [bob.address]),
+     data: defaultAbiCoder.encode(["string"], [""]), // no data
+     tokenAmounts: tokenAmounts,
+     feeToken: config.linkToken_,
+     extraArgs: encodedExtraArgs,
+   }
+   ```
+
+1. Calculate the required fees for the transfer and approve the router to spend LINK tokens for these fees:
+
+   ```typescript
+   const fee = await mockCcipRouter.getFee(config.chainSelector_, message)
+   await linkToken.connect(alice).approve(mockCcipRouterAddress, fee)
+   ```
+
+1. Send the CCIP transfer request to the router:
+
+   ```typescript
+   await mockCcipRouter.connect(alice).ccipSend(config.chainSelector_, message)
+   ```
+
+1. Verify that Alice's balance has decreased by the amount sent and Bob's balance has increased by the same amount:
+
+   ```typescript
+   expect(await ccipBnM.balanceOf(alice.address)).to.deep.equal(ONE_ETHER - amountToSend)
+   expect(await ccipBnM.balanceOf(bob.address)).to.deep.equal(amountToSend)
+   ```
+
+## Next steps
+
+For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink local in forked environments,
+refer to the guide on [Using CCIP Local Simulator in your Hardhat project with forked environments](/chainlink-local/build/ccip/hardhat/local-simulator-fork).

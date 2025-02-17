@@ -1,0 +1,161 @@
+---
+section: vrf
+date: Last Modified
+title: "VRF Cost Estimation on Arbitrum"
+metadata:
+  title: "Estimating costs for Chainlink VRF v2.5 on Arbitrum"
+  description: "Learn how to estimate costs for Chainlink VRF v2.5 on Arbitrum."
+isMdx: true
+---
+
+import { Tabs, TabsContent } from "@components/Tabs"
+
+The total transaction costs for using Arbitrum involve both L2 gas costs and L1 costs. Arbitrum transactions are [posted in batches to L1 Ethereum](https://developer.arbitrum.io/inside-arbitrum-nitro/#how-the-sequencer-publishes-the-sequence), which incurs an L1 cost. For an individual transaction, the total cost includes part of the L1 cost incurred to post the batch that included the transaction.
+
+To learn how to estimate gas costs for Arbitrum, refer to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas) and the full [Arbitrum gas estimation script](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) using their SDK. There is also a [**version of Arbitrum's gas estimation script extended to include VRF calculations**](#arbitrum-and-vrf-gas-estimation-code).
+
+#### Estimating Arbitrum gas costs with VRF
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+VRF gas costs on L1 networks are calculated based on the amount of verification gas and callback gas used, multiplied by the gas price:
+
+```
+(Gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+For VRF Arbitrum transactions, add a buffer to estimate the additional L1 cost:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + L1 calldata gas buffer))) = total estimated gas cost
+```
+
+To calculate the L1 callback gas buffer:
+
+- `calldataSizeBytes`: A static size for the transaction's calldata in bytes. Total: 720 bytes.
+  - The amount Arbitrum adds to account for the static part of the transaction, fixed at 140 bytes.
+  - The size of an ABI-encoded VRF V2.5 fulfillment, fixed at 580 bytes (`fulfillmentTxSizeBytes`).
+- `L1PricePerByte`: The estimated cost of posting 1 byte of data on L1, which varies with L1 network gas prices.
+- `L2GasPrice`: The L2 gas price, which varies with L2 network gas prices.
+
+```
+L1 calldata gas buffer = (calldataSizeBytes * L1PricePerByte) / L2GasPrice
+
+ = (720 * L1PricePerByte) / L2GasPrice
+```
+
+This conversion allows us to estimate the L1 callback gas cost and incorporate it into the overall L2 gas estimate. You can add this estimated L1 callback gas buffer directly to the verification and callback gas:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + ((calldataSizeBytes * L1PricePerByte) / L2GasPrice)))) = total estimated gas cost
+```
+
+</Fragment>
+<Fragment slot="panel.2">
+VRF gas costs on L1 networks are calculated based on the amount of coordinator overhead gas, wrapper overhead gas, and callback gas, multiplied by the gas price:
+
+```
+(Gas price * (Coordinator overhead gas + Callback gas + Wrapper overhead gas)) = total gas cost
+```
+
+For VRF Arbitrum transactions, add a buffer to estimate the additional L1 cost:
+
+```
+(L2GasPrice
+   * (Coordinator overhead gas
+      + Callback gas
+      + Wrapper overhead gas
+      + L1 calldata gas buffer))) = total estimated gas cost
+```
+
+To calculate the L1 callback gas buffer:
+
+- `calldataSizeBytes`: A static size for the transaction's calldata in bytes. Total: 720 bytes.
+  - The amount Arbitrum adds to account for the static part of the transaction, fixed at 140 bytes.
+  - The size of an ABI-encoded VRF V2.5 fulfillment, fixed at 580 bytes (`fulfillmentTxSizeBytes`).
+- `L1PricePerByte`: The estimated cost of posting 1 byte of data on L1, which varies with L1 network gas prices.
+- `L2GasPrice`: The L2 gas price, which varies with L2 network gas prices.
+
+```
+L1 calldata gas buffer = (calldataSizeBytes * L1PricePerByte) / L2GasPrice
+
+ = (720 * L1PricePerByte) / L2GasPrice
+```
+
+This conversion allows us to estimate the L1 callback gas cost and incorporate it into the overall L2 gas estimate. You can add this estimated L1 callback gas buffer directly to the other gas figures:
+
+```
+(L2GasPrice
+   * (Coordinator overhead gas
+      + Callback gas
+      + Wrapper overhead gas
+      + ((calldataSizeBytes * L1PricePerByte) / L2GasPrice)))) = total estimated gas cost
+```
+
+</Fragment>
+</TabsContent>
+
+#### Arbitrum and VRF gas estimation code
+
+This sample extends the [original Arbitrum gas estimation script](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) to estimate gas costs for VRF subscription and direct funding requests on Arbitrum.
+
+The following snippet shows only the VRF variables and calculations that were added to the Arbitrum gas estimation script. To learn more about how Arbitrum gas is calculated, refer to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas). To run this code, use the [**full Arbitrum gas estimation script that includes VRF calculations**](https://github.com/smartcontractkit/smart-contract-examples/tree/main/vrf-arbitrum-gas-estimation).
+
+```typescript
+// VRF variables and calculations
+// ---------------------------------
+// Full script: https://github.com/smartcontractkit/smart-contract-examples/tree/main/vrf-arbitrum-gas-estimation
+// ---------------------------------
+// Estimated upper bound of verification gas for VRF subscription.
+// To see an estimate with an average amount of verification gas,
+// adjust this to 115000.
+const maxVerificationGas = 200000
+
+// The L1 Calldata size includes:
+// Arbitrum's static 140 bytes for transaction metadata
+// VRF V2's static 580 bytes, the size of a fulfillment's calldata abi-encoded in bytes
+// (from s_fulfillmentTxSizeBytes in VRFV2Wrapper.sol)
+const VRFCallDataSizeBytes = 140 + 580
+
+// For direct funding only
+// Coordinator gas is verification gas.
+// Some overhead gas values vary by network. These are hardcoded for Sepolia.
+// Refer to https://docs.chain.link/vrf/v2-5/supported-networks to find values for other networks.
+const wrapperGasOverhead = 13400
+const coordinatorGasOverheadNative = 90000
+const coordinatorGasOverheadLink = 112000
+const coordinatorGasOverheadPerWord = 435
+
+// VRF user settings
+const callbackGasLimit = 175000
+const numWords = 2 // Max 10 per request
+
+// Estimate VRF L1 buffer
+const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
+const VRFL1Buffer = VRFL1CostEstimate.div(P)
+
+// VRF Subscription gas estimate
+// L2 gas price (P) * (maxVerificationGas + callbackGasLimit + VRFL1Buffer)
+const VRFL2SubscriptionGasSubtotal = BigNumber.from(maxVerificationGas + callbackGasLimit)
+const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
+const VRFSubscriptionGasEstimate = P.mul(VRFSubscriptionGasTotal)
+
+// VRF Direct funding gas estimate
+// L2 gas price (P) * (coordinatorGasOverheadLink + callbackGasLimit + wrapperGasOverhead + VRFL1Buffer)
+// If using native tokens, change coordinatorGasOverheadLink to coordinatorGasOverheadNative below
+const directFundingGasOverheadPerWord = coordinatorGasOverheadPerWord.mul(numWords)
+const VRFL2DirectFundingGasSubtotal = BigNumber.from(
+  coordinatorGasOverheadLink + wrapperGasOverhead + callbackGasLimit + directFundingGasOverheadPerWord
+)
+const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
+const VRFDirectFundingGasEstimate = P.mul(VRFDirectFundingGasTotal)
+```

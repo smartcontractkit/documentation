@@ -13,13 +13,13 @@ Automation network will use this revert to trigger fetching of the specified rep
 
 #### Parameters
 
-| Variable Name  | Type       | Description                                                             | Permissible Values                                      |
-| -------------- | ---------- | ----------------------------------------------------------------------- | ------------------------------------------------------- |
-| `feedParamKey` | `String`   | Specify the feed identifiers that will be provided                      | `"feedIDs"`                                             |
-| `feeds`        | `String[]` | String list of feed identifiers                                         | e.g. `["feedID1","feedID2",..]` with a maximum of 5 IDs |
-| `timeParamKey` | `String`   | Specify query type                                                      | `"timestamp"`                                           |
-| `time`         | `uint256`  | Specify query value                                                     | `block.timestamp`                                       |
-| `extraData`    | `bytes`    | Any extra data user wants to receive in callback, alongside API bytes[] | log data                                                |
+| Variable Name  | Type       | Description                                                             | Permissible Values                                              |
+| -------------- | ---------- | ----------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `feedParamKey` | `String`   | Specify the feed identifiers that will be provided                      | `"feedIDs"`                                                     |
+| `feeds`        | `String[]` | String list of feed identifiers                                         | e.g. `["feedID1","feedID2",..]` with a maximum of 5 IDs         |
+| `timeParamKey` | `String`   | Specify query type                                                      | `"timestamp"`                                                   |
+| `time`         | `uint256`  | Specify query value                                                     | e.g. `log.timestamp` from the returned Log struct in `checkLog` |
+| `extraData`    | `bytes`    | Any extra data user wants to receive in callback, alongside API bytes[] | e.g. log data                                                   |
 
 #### Outputs
 
@@ -28,7 +28,7 @@ The fetched signed reports will be provided to the user in [`checkCallback`](#ch
 | Variable Name | Type      | Description                                                    | Usage examples                                                                 |
 | ------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `values`      | `bytes[]` | List of signed reports fetched from API                        | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
-| `extraData`   | `bytes`   | Bytes data sent as part of original MercuryLookup revert error | e.g. can send log data if you want to decode to use                            |
+| `extraData`   | `bytes`   | Bytes data sent as part of original StreamsLookup revert error | e.g. can send log data if you want to decode to use                            |
 
 ### checkCallback function
 
@@ -38,15 +38,15 @@ This is a `view` function that will be simulated offchain to receive the signed 
 
 | Variable Name | Type      | Description                                                    | Permissible Values                                                             |
 | ------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `values`      | `bytes[]` | List of signed reports fetched from API                        | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
-| `extraData`   | `bytes`   | Bytes data sent as part of original MercuryLookup revert error | e.g. can send log data if you want to decode to use                            |
+| `values`      | `bytes[]` | List of signed reports fetched from Data Streams API           | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
+| `extraData`   | `bytes`   | Bytes data sent as part of original StreamsLookup revert error | e.g. can send log data if you want to decode to use                            |
 
 #### Outputs
 
-| Variable Name  | Type      | Description                                                                                                                                     | Permissible Values |
-| -------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `performData`  | `bytes`   | Data encoded in the `oracleCallback` function that will be used to execute function onchain, e.g. encode signed reports and log data if need be | `bytes`            |
-| `upkeepNeeded` | `boolean` | When set to `true` this will trigger the `performUpkeep` function to be executed onchain                                                        | `true` of `false`  |
+| Variable Name  | Type      | Description                                                                                                                         | Permissible Values |
+| -------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `performData`  | `bytes`   | Encoded data that will be used to execute the `performUpkeep` function onchain. E.g. encoded signed reports and log data if need be | `bytes`            |
+| `upkeepNeeded` | `boolean` | When set to `true`, this will trigger the `performUpkeep` function to be executed onchain                                           | `true` of `false`  |
 
 ### checkErrorHandler function
 

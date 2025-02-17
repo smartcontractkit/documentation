@@ -1,7 +1,7 @@
 ---
-section: vrf
+section: legacy
 date: Last Modified
-title: "Get a Random Number"
+title: "Get a Random Number with VRF V2"
 whatsnext:
   {
     "Programmatic Subscription": "/vrf/v2/subscription/examples/programmatic-subscription",
@@ -17,6 +17,12 @@ metadata:
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 import { Aside, CodeSample } from "@components"
+
+<Aside type="tip" title="VRF V2.5 Subscription Tutorial">
+  Refer to the [VRF V2.5 version of this tutorial](/vrf/v2-5/subscription/get-a-random-number) to learn how the
+  subscription method works in VRF V2.5. To compare V2.5 and V2, refer to the [migration
+  guide](/vrf/v2-5/migration-from-v2).
+</Aside>
 
 <VrfCommon callout="subscription" />
 
@@ -68,9 +74,9 @@ Now that you have a funded subscription account and your subscription ID, [creat
 
 For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) sample contract. This contract imports the following dependencies:
 
-- `VRFConsumerBaseV2.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol)
-- `VRFCoordinatorV2Interface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol)
-- `ConfirmedOwner.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/access/ConfirmedOwner.sol)
+- `VRFConsumerBaseV2.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol)
+- `VRFCoordinatorV2Interface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol)
+- `ConfirmedOwner.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/access/ConfirmedOwner.sol)
 
 The contract also includes pre-configured values for the necessary request parameters such as `vrfCoordinator` address, gas lane `keyHash`, `callbackGasLimit`, `requestConfirmations` and number of random words `numWords`. You can change these parameters if you want to experiment on different testnets, but for this example you only need to specify `subscriptionId` when you deploy the contract.
 
@@ -148,7 +154,7 @@ The contract includes the following functions:
 
 - `fulfillRandomWords()`: Receives random values and stores them with your contract.
 
-- `getRequestStatus()`: Retrive request details for a given `_requestId`.
+- `getRequestStatus()`: Retrieve request details for a given `_requestId`.
 
 <Aside type="note" title="Security Considerations">
   Be sure to review your contracts to make sure they follow the best practices on the [security

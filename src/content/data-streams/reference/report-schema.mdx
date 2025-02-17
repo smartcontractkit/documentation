@@ -1,41 +1,43 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Report Schema Reference"
+title: "Report Schemas"
 ---
 
-import { Aside } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
 
-<Aside type="note" title="Mainnet Access">
-  Chainlink Data Streams is available on Arbitrum Mainnet and Arbitrum Sepolia.
-</Aside>
+<DataStreams section="dsNotes" />
 
-<Aside type="note" title="Talk to an expert">
-  <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert about
-  integrating Chainlink Data Streams with your applications.
-</Aside>
+<PageTabs
+  pages={[
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema",
+    },
+    {
+      name: "Real World Asset (RWA) Report Schema (v4)",
+      url: "/data-streams/reference/report-schema-v4",
+    },
+  ]}
+  headerTitle="Available Report Schemas"
+  headerDescription="Choose the schema version you want to explore."
+/>
 
-Data Streams can deliver a broad array of information in each report. The values you can expect in each report depend on the schema for the Stream ID that you select. You can find the schema for each ID on the [Stream IDs](/data-streams/stream-ids) page.
+Cryptocurrency streams adhere to the report schema outlined below.
 
-## Basic schema
+## Schema Fields
 
-Streams with the `Basic` schema have the following values specifically applicable to market pricing data:
+| Field                   | Type      | Description                                       |
+| ----------------------- | --------- | ------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the data stream             |
+| `validFromTimestamp`    | `uint32`  | Start timestamp of price validity period          |
+| `observationsTimestamp` | `uint32`  | End timestamp of price validity period            |
+| `nativeFee`             | `uint192` | Verification cost in native blockchain tokens     |
+| `linkFee`               | `uint192` | Verification cost in LINK tokens                  |
+| `expiresAt`             | `uint32`  | Timestamp when this report expires                |
+| `price`                 | `int192`  | DON consensus median price (18 decimal places)    |
+| `bid`                   | `int192`  | Simulated buy impact price at X% liquidity depth  |
+| `ask`                   | `int192`  | Simulated sell impact price at X% liquidity depth |
 
-| Value                   | Type      | Description                                                                   |
-| ----------------------- | --------- | ----------------------------------------------------------------------------- |
-| `feedID`                | `bytes32` | The unique identifier for the stream                                          |
-| `validFromTimestamp`    | `uint32`  | The earliest timestamp during which the price is valid                        |
-| `observationsTimestamp` | `uint32`  | The latest timestamp during which the price is valid                          |
-| `nativeFee`             | `uint192` | The cost to verify this report when paying with the blockchain's native token |
-| `linkFee`               | `uint192` | The cost to verify this report when paying with LINK                          |
-| `expiresAt`             | `uint32`  | The expiration date of this report                                            |
-| `price`                 | `int192`  | The DON's consensus median price for this report carried to 8 decimal places  |
-
-## Premium schema
-
-The `Premium` schema includes all values from the `Basic` schema, and also includes `bid` and `ask` values:
-
-| Value | Type     | Description                                                                     |
-| ----- | -------- | ------------------------------------------------------------------------------- |
-| `bid` | `int192` | The simulated price impact of a buy order up to the X% depth of liquidity usage |
-| `ask` | `int192` | Simulated price impact of a sell order up to the X% depth of liquidity usage    |
+**Note**: Future Cryptocurrency streams may use different report schemas.

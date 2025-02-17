@@ -5,13 +5,14 @@ title: "Checking CCIP Message Status"
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 In this tutorial, you will learn how to verify the status of a Chainlink CCIP transaction offchain using JavaScript. Starting with a CCIP message ID, you'll execute the script to query the current status of a cross-chain message.
 
 ## Before you begin
 
 1. Initiate a CCIP transaction and note the CCIP message ID. You can obtain the CCIP message ID by running any of the previous CCIP tutorials.
-1. Complete the prerequisites steps of the [Transfer Tokens between EOAs](/ccip/tutorials/cross-chain-tokens-from-eoa#before-you-begin) tutorial.
+1. Complete the prerequisites steps of the [Transfer Tokens between EOAs](/ccip/tutorials/transfer-tokens-from-eoa#before-you-begin) tutorial.
 
 ## Tutorial
 
@@ -25,18 +26,18 @@ node src/get-status.js sourceChain destinationChain messageID
 
 **The script requires the following parameters:**
 
-- `sourceChain` is the identifier for the source blockchain. For example, `ethereumSepolia`.
-- `destinationChain` is the identifier for the destination blockchain. For example, `polygonMumbai`.
+- `sourceChain` is the identifier for the source blockchain. For example, `avalancheFuji`.
+- `destinationChain` is the identifier for the destination blockchain. For example, `ethereumSepolia`.
 - `messageID` is the unique identifier for the CCIP transaction message that you need to check.
 
 **Example Usage:**
 
-If you initiated a transaction from the Ethereum Sepolia testnet to the Avalanche Fuji testnet and received a message ID, you can check the status of this message with the following command:
+If you initiated a transaction from the Avalanche Fuji testnet to the Ethereum Sepolia testnet and received a message ID, you can check the status of this message with the following command:
 
 ```text
-$ node src/get-status.js ethereumSepolia polygonMumbai 0x4ea8080f2a51377247e93b5f45c00330b8c4fde3043e99847d0cab734f473df2
+$ node src/get-status.js avalancheFuji ethereumSepolia 0x25d18c6adfc1f99514b40f9931a14ca08228cdbabfc5226c1e6a43ce7441595d
 
-Status of message 0x4ea8080f2a51377247e93b5f45c00330b8c4fde3043e99847d0cab734f473df2 on offRamp 0xAC1456bafcc3403eb6e34f08FD2945cd7B3C8F0A is SUCCESS
+Status of message 0x25d18c6adfc1f99514b40f9931a14ca08228cdbabfc5226c1e6a43ce7441595d on offRamp 0x000b26f604eAadC3D874a4404bde6D64a97d95ca is SUCCESS
 ```
 
 ## Code Explanation
@@ -53,7 +54,7 @@ The script imports the required modules and data:
 
 #### Understanding the `getMessageStatus` function
 
-Before diving into the script execution, it's crucial to understand how the [`getMessageStatus`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/offchain/javascript/src/config/offramp.js) function works. This function is designed to translate the numeric status codes returned by Solidity enums into human-readable statuses so they are clear to developers and users. The function uses a mapping defined in [`messageState.json`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/offchain/config/messageState.json), which correlates to the [`MessageExecutionState`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/libraries/Internal.sol#L144) enum used by the [Chainlink CCIP's OffRamp](/ccip/architecture#offramp) contract.
+Before diving into the script execution, it's crucial to understand how the [`getMessageStatus`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/offchain/javascript/src/config/offramp.js) function works. This function is designed to translate the numeric status codes returned by Solidity enums into human-readable statuses so they are clear to developers and users. The function uses a mapping defined in [`messageState.json`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/offchain/config/messageState.json), which correlates to the [`MessageExecutionState`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/libraries/Internal.sol#L144) enum used by the [Chainlink CCIP's OffRamp](/ccip/architecture#offramp) contract.
 
 ### Handling Arguments
 
@@ -85,3 +86,5 @@ To query the status of the provided CCIP message ID, the script completes the fo
 4. Query each matching OffRamp contract for an event related to the message ID
 
 If an event is found, the script reads the status from the arguments. It translates the numeric status into a human-readable status and logs this information.
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -1,0 +1,139 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Using the CCIP local simulator in Remix IDE"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+import { Aside, CodeSample, ClickToZoom, CopyText } from "@components"
+
+<Common callout="importPackage" />
+
+In this guide, you will test the [Chainlink CCIP getting started guide](/ccip/getting-started) locally in Remix IDE. You will:
+
+- Deploy a CCIP sender contract
+- Deploy a CCIP receiver contract
+- Use the local simulator to send data from the sender contract to the receiver contract
+
+## Prerequisites
+
+[Remix IDE](https://remix.ethereum.org/) is an online development environment that allows you to write, deploy, and test smart contracts. By default Remix IDE
+does not persist the files that you open from an external source. To save files, you will need to manually create a workspace and copy the files into the workspace.
+
+1. Open the [Remix IDE](https://remix.ethereum.org/) in your browser.
+1. Create a [new workspace](https://remix-ide.readthedocs.io/en/latest/file_explorer.html#new-workspace).
+1. Copy the content of the [Test CCIP Local Simulator contract](https://docs.chain.link/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace.
+
+   <CodeSample src="samples/CCIP/TestCCIPLocalSimulator.sol" />
+
+1. Copy the content of the [Sender contract](https://docs.chain.link/samples/CCIP/Sender.sol) into a new file in the workspace.
+
+   <CodeSample src="samples/CCIP/Sender.sol" />
+
+1. Copy the content of the [Receiver contract](https://docs.chain.link/samples/CCIP/Receiver.sol) into a new file in the workspace.
+
+   <CodeSample src="samples/CCIP/Receiver.sol" />
+
+At this point, you should have three files in your workspace:
+
+      - **TestCCIPLocalSimulator.sol**: The file imports the Chainlink CCIP local simulator contract.
+
+      - **Sender.sol**: The file contains the Sender contract that interacts with CCIP to send data to the Receiver contract.
+
+      - **Receiver.sol**: The file contains the Receiver contract that receives data from the Sender contract.
+
+## Deploy the contracts
+
+1.  Compile the contracts.
+1.  Under the **Deploy & Run Transactions** tab, make sure _Remix VM_ is selected in the **Environment** drop-down list. Remix will use a sandbox blockchain in the
+    browser to deploy the contracts.
+1.  Deploy the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator):
+
+    1. Select the `TestCCIPLocalSimulator.sol` file in the file explorer.
+    1. In the _Contract_ drop-down list, select `CCIPLocalSimulator`.
+    1. Click the **Deploy** button.
+    1. The `CCIPLocalSimulator` is shown in the **Deployed Contracts** section.
+    1. In the list of functions, click the [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function to retrieve the
+       configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
+
+       <ClickToZoom
+         src="/images/chainlink-local/ccip/remix/cciplocalsimulator-configuration.jpg"
+         alt="Remix IDE CCIP Local Simulator configuration"
+       />
+
+1.  You will interact with the LINK token contract to fund the sender contract with LINK tokens. The LINK token contract is pre-deployed in the local simulator
+    configuration, so you can simply load the LINK token contract instance:
+
+    1.  Select `LinkToken` in the _Contract_ drop-down list.
+    1.  Fill in the _At Address_ field with the address of the `LINK` token contract from the `CCIPLocalSimulator` configuration.
+    1.  Click the **At Address** button.
+
+    The `LinkToken` contract is shown in the **Deployed Contracts** section.
+
+1.  Deploy the `Sender.sol` contract:
+
+    1.  Select the `Sender.sol` file in the file explorer.
+    1.  In the _Contract_ drop-down list, select `Sender`.
+    1.  Under the _Deploy_ section, fill in the constructor parameters:
+        - `_router`: The address of the `sourceRouter` contract from the `CCIPLocalSimulator` configuration.
+        - `_link`: The address of the `LINK` token contract from the `CCIPLocalSimulator` configuration.
+    1.  Click the **Deploy** button.
+
+    The `Sender` contract is shown in the **Deployed Contracts** section.
+
+1.  Deploy the `Receiver.sol` contract:
+
+    1.  Select the `Receiver.sol` file in the file explorer.
+    1.  In the _Contract_ drop-down list, select `Receiver`.
+    1.  Under the _Deploy_ section, fill in the constructor parameters:
+        - `_router`: The address of the `destinationRouter` contract from the `CCIPLocalSimulator` configuration.
+    1.  Click the **Deploy** button.
+
+    The `Receiver` contract is shown in the **Deployed Contracts** section.
+
+## Transfer data from the sender to the receiver
+
+1. Fund the sender contract with LINK tokens to pay for CCIP fees:
+
+   1. Copy the address of the `Sender` contract from the **Deployed Contracts** section.
+   1. In the `CCIPLocalSimulator` contract, fill in the [`requestLinkFromFaucet`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#requestlinkfromfaucet)
+      function with the following inputs:
+      - `to`: The address of the `Sender` contract.
+      - `amount`: The amount of LINK tokens to transfer. For instance: <CopyText text="1000000000000000000" code/>.
+   1. Click the **Transact** button.
+
+1. Send data from the sender contract to the receiver contract:
+
+   1. Copy the address of the `Receiver` contract from the **Deployed Contracts** section.
+   1. In the `Sender` contract, fill in the `sendMessage` function with:
+
+      - `destinationChainSelector`: The destination chain selector. You can find it in the `CCIPLocalSimulator` configuration.
+      - `receiver`: The address of the `Receiver` contract.
+      - `text`: The text to send. For instance <CopyText text="Hello!" code/>.
+
+   1. Remix IDE fails to estimate the gas properly for the `sendMessage` function. To work around this, you need to set the gas limit manually
+      to <CopyText text="3000000" code/>:
+
+      <ClickToZoom
+        src="/images/chainlink-local/ccip/remix/sendMessage-estimateGas.jpg"
+        alt="RemixIDE CCIP Local sendMessage force gas limit"
+      />
+
+   1. Click the **Transact** button.
+
+1. Check the receiver contract to verify the data transfer:
+
+   1. In the `Receiver` contract, click on the `getLastReceivedMessageDetails` function.
+   1. The `getLastReceivedMessageDetails` function returns the text sent from the `Sender` contract:
+
+      <ClickToZoom
+        src="/images/chainlink-local/ccip/remix/receivedMessage.jpg"
+        alt="RemixIDE CCIP Local receivedMessage"
+      />
+
+## Next steps
+
+You have successfully tested the CCIP getting started guide within a few minutes using Remix IDE. Testing locally is useful to debug your contracts and fix any
+issues before testing them on testnets, saving you time and resources. As an exercise, you can try any of the
+[CCIP guides](/ccip/tutorials) using the local simulator in Remix IDE.

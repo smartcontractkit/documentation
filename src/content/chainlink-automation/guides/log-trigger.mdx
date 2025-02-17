@@ -20,6 +20,10 @@ Create powerful smart contracts that use log data as both trigger and input. Thi
   your upkeep on a testnet before deploying it to a mainnet.
 </Aside>
 
+## Understanding maximum logs processed
+
+Chainlink Automation processes a limited number of logs per block per upkeep. See the [Service Limits](/chainlink-automation/overview/service-limits) page to learn about how logs are processed and how many logs you can expect to be processed per block on the chain you're using.
+
 ## Emit a log
 
 1. Open `CountEmitLog.sol` in Remix. This contract contains an event `WantsToCount` that keeps track of the address of the message sender. The function `emitCountLog` emits this event.
@@ -78,7 +82,7 @@ Select **Log Trigger**.
   Your upkeeps will be protected against logs that are emitted during a reorg.
 </Aside>
 
-1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. In this case, we will paste the address of `CountWithLog.sol`. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) to ensure Automation nodes can interact with your contract as expected.
+1. **Provide the address of your [Automation-compatible contract](/chainlink-automation/guides/compatible-contracts)** that you want to automate. In this case, we will paste the address of `CountWithLog.sol`. This contract must follow the format of the [ILogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) to ensure Automation nodes can interact with your contract as expected.
 
    <ClickToZoom src="/images/automation/log_trig_1_upkeep_address.png" />
 
@@ -118,8 +122,7 @@ Provide the following information in the Automation app:
 
       <Aside type="tip" title="ERC-677 Link">
         For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to
-        [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported
-        testnet, get [LINK](/resources/link-token-contracts) from [faucets.chain.link](https://faucets.chain.link/).
+        [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). Use [faucets.chain.link](https://faucets.chain.link/) to get testnet LINK.
       </Aside>
 
     - **Check data**: Optional input field that you may use depending on whether you are using it in your contract.

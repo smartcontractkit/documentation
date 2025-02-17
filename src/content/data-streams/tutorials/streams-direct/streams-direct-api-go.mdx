@@ -1,0 +1,587 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Fetch and decode V3 reports using the Go SDK"
+whatsnext:
+  {
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/streams-direct/streams-direct-ws",
+    "Learn how to verify your data onchain": "/data-streams/reference/streams-direct/streams-direct-onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+  }
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Go SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Go SDK - V4 reports for RWA streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Rust SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "Rust SDK - V4 reports for RWA streams",
+      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams/streams-direct) implementation_ and the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to fetch and decode [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet early access.
+
+## Guide
+
+You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [crypto streams](/data-streams/crypto-streams), and log their attributes to your terminal.
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-data-streams-project
+   cd my-data-streams-project
+   ```
+
+1. Initialize a new Go module:
+
+   ```bash
+   go mod init my-data-streams-project
+   ```
+
+1. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Fetch and decode a report with a single stream
+
+1. Create a new Go file, `single-stream.go`, in your project directory:
+
+   ```bash
+   touch single-stream.go
+   ```
+
+1. Insert the following code example and save your `single-stream.go` file:
+
+   ```go
+   package main
+
+   import (
+       "context"
+       "fmt"
+       "os"
+       "time"
+
+       streams "github.com/smartcontractkit/data-streams-sdk/go"
+       feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+       report "github.com/smartcontractkit/data-streams-sdk/go/report"
+       v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3" // Import the v3 report schema for Crypto streams
+   )
+
+   func main() {
+       // Validate command-line arguments
+       if len(os.Args) < 2 {
+           fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782\n")
+           os.Exit(1)
+       }
+       feedIDInput := os.Args[1]
+
+       // Get API credentials from environment variables
+       apiKey := os.Getenv("API_KEY")
+       apiSecret := os.Getenv("API_SECRET")
+       if apiKey == "" || apiSecret == "" {
+           fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+           os.Exit(1)
+       }
+
+       // Define the configuration for the SDK client
+       cfg := streams.Config{
+           ApiKey:    apiKey,
+           ApiSecret: apiSecret,
+           RestURL:   "https://api.testnet-dataengine.chain.link",
+           Logger:    streams.LogPrintf,
+       }
+
+       // Initialize the SDK client
+       client, err := streams.New(cfg)
+       if err != nil {
+           cfg.Logger("Failed to create client: %v\n", err)
+           os.Exit(1)
+       }
+
+       // Create context with timeout
+       ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+       defer cancel()
+
+       // Parse the feed ID
+       var feedID feed.ID
+       if err := feedID.FromString(feedIDInput); err != nil {
+           cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
+           os.Exit(1)
+       }
+
+       // Fetch the latest report
+       reportResponse, err := client.GetLatestReport(ctx, feedID)
+       if err != nil {
+           cfg.Logger("Failed to get latest report: %v\n", err)
+           os.Exit(1)
+       }
+
+       // Log the raw report data
+       cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+       // Decode the report
+       decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+       if err != nil {
+           cfg.Logger("Failed to decode report: %v\n", err)
+           os.Exit(1)
+       }
+
+       // Format and display the decoded report
+       fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
+           "------------------------------------------\n"+
+           "Observations Timestamp: %d\n"+
+           "Benchmark Price       : %s\n"+
+           "Bid                   : %s\n"+
+           "Ask                   : %s\n"+
+           "Valid From Timestamp  : %d\n"+
+           "Expires At            : %d\n"+
+           "Link Fee              : %s\n"+
+           "Native Fee            : %s\n"+
+           "------------------------------------------\n",
+           feedIDInput,
+           decodedReport.Data.ObservationsTimestamp,
+           decodedReport.Data.BenchmarkPrice.String(),
+           decodedReport.Data.Bid.String(),
+           decodedReport.Data.Ask.String(),
+           decodedReport.Data.ValidFromTimestamp,
+           decodedReport.Data.ExpiresAt,
+           decodedReport.Data.LinkFee.String(),
+           decodedReport.Data.NativeFee.String(),
+       )
+   }
+   ```
+
+1. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+1. Set up the SDK client configuration within `single-stream.go` with your API credentials and the REST endpoint:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `RestURL` is the REST endpoint to poll for specific reports. See the [Streams Direct Interface](/data-streams/reference/streams-direct/streams-direct-interface-api#domains) page for more information.
+
+   See the [SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) page for more configuration options.
+
+1. For this example, you will read from the ETH/USD crypto stream. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Stream Addresses](/data-streams/crypto-streams) page for a complete list of available crypto assets.
+
+   Execute your application:
+
+```bash
+go run single-stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+```
+
+Expect output similar to the following in your terminal:
+
+```bash
+Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f8e8a11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000001787ff5c6fb8000000000000000000000000000000000000000000000000000c01807477ecd000000000000000000000000000000000000000000000000000000000675f5bdb0000000000000000000000000000000000000000000000d1865f8f627c4113300000000000000000000000000000000000000000000000d18572c6cdc3b915000000000000000000000000000000000000000000000000d1879ab8e98f743ad00000000000000000000000000000000000000000000000000000000000000002f3316e5c964d118f6683eecda454985fcc696e4ba34d65edb4a71a8d0cfe970676f465618c7d01196e433cc35b6994e7ad7b8189b0462b51458e663d601fdfaa0000000000000000000000000000000000000000000000000000000000000002219a4493fdf311421d664e0c8d69efa74b776461f8e252d191eda7edb980ab9a5cce69ec0ad35ba210cf60a201ceff6771b35b44860fda859f4aaba242c476bf","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1734216283,"observationsTimestamp":1734216283}
+
+Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
+------------------------------------------
+Observations Timestamp: 1734216283
+Benchmark Price       : 3865052126782320350000
+Bid                   : 3864985478146740000000
+Ask                   : 3865140837060103650000
+Valid From Timestamp  : 1734216283
+Expires At            : 1734302683
+Link Fee              : 3379350941986000
+Native Fee            : 25872872271800
+------------------------------------------
+```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                      |
+| `Observations Timestamp` | `1734216283`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                   |
+| `Benchmark Price`        | `3865052126782320350000`                                             | The observed price in the report, with 18 decimals. For readability: `3,865.0521267823204` USD per ETH.                                                                                                                |
+| `Bid`                    | `3864985478146740000000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,864.9854781467400` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices).    |
+| `Ask`                    | `3865140837060103650000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,865.1408370601037` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices). |
+| `Valid From Timestamp`   | `1734216283`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                |
+| `Expires At`             | `1734302683`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                       |
+| `Link Fee`               | `3379350941986000`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.03379350941986` LINK. **Note:** This example fee is not indicative of actual fees.                |
+| `Native Fee`             | `25872872271800`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                  |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+
+### Fetch and decode reports for multiple streams
+
+1.  Create a new Go file, `multiple-streams.go`, in your project directory:
+
+    ```bash
+    touch multiple-streams.go
+    ```
+
+1.  Insert the following code example in your `multiple-streams.go` file:
+
+    ```go
+    package main
+
+    import (
+        "context"
+        "fmt"
+        "os"
+        "time"
+
+        streams "github.com/smartcontractkit/data-streams-sdk/go"
+        feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+        report "github.com/smartcontractkit/data-streams-sdk/go/report"
+        v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3" // Import the v3 report schema for Crypto streams
+    )
+
+    func main() {
+        // Validate command-line arguments
+        if len(os.Args) < 3 {
+            fmt.Printf("Usage: go run multiple-streams.go [StreamID1] [StreamID2] ...\n"+
+                "Example: go run multiple-streams.go "+
+                "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 "+
+                "0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265\n")
+            os.Exit(1)
+        }
+
+        // Get API credentials from environment variables
+        apiKey := os.Getenv("API_KEY")
+        apiSecret := os.Getenv("API_SECRET")
+        if apiKey == "" || apiSecret == "" {
+            fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+            os.Exit(1)
+        }
+
+        // Define the configuration for the SDK client
+        cfg := streams.Config{
+            ApiKey:    apiKey,
+            ApiSecret: apiSecret,
+            RestURL:   "https://api.testnet-dataengine.chain.link",
+            Logger:    streams.LogPrintf,
+        }
+
+        // Initialize the SDK client
+        client, err := streams.New(cfg)
+        if err != nil {
+            cfg.Logger("Failed to create client: %v\n", err)
+            os.Exit(1)
+        }
+
+        // Create context with timeout
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer cancel()
+
+        // Parse Feed IDs
+        var ids []feed.ID
+        for _, arg := range os.Args[1:] {
+            var fid feed.ID
+            if err := fid.FromString(arg); err != nil {
+                cfg.Logger("Invalid feed ID format '%s': %v\n", arg, err)
+                continue
+            }
+            ids = append(ids, fid)
+        }
+
+        if len(ids) == 0 {
+            cfg.Logger("No valid feed IDs provided\n")
+            os.Exit(1)
+        }
+
+        // Fetch reports for all streams
+        timestamp := uint64(time.Now().Unix())
+        reportResponses, err := client.GetReports(ctx, ids, timestamp)
+        if err != nil {
+            cfg.Logger("Failed to get reports: %v\n", err)
+            os.Exit(1)
+        }
+
+        // Process reports
+        for _, reportResponse := range reportResponses {
+            // Log the raw report data
+            cfg.Logger("Raw report data for Stream ID %s: %+v\n",
+                reportResponse.FeedID.String(), reportResponse)
+
+            // Decode the report
+            decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+            if err != nil {
+                cfg.Logger("Failed to decode report for Stream ID %s: %v\n",
+                    reportResponse.FeedID.String(), err)
+                continue // Skip to next report if decoding fails
+            }
+
+            // Format and display the decoded report
+            fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
+                "------------------------------------------\n"+
+                "Observations Timestamp: %d\n"+
+                "Benchmark Price       : %s\n"+
+                "Bid                   : %s\n"+
+                "Ask                   : %s\n"+
+                "Valid From Timestamp  : %d\n"+
+                "Expires At            : %d\n"+
+                "Link Fee              : %s\n"+
+                "Native Fee            : %s\n"+
+                "------------------------------------------\n",
+                reportResponse.FeedID.String(),
+                decodedReport.Data.ObservationsTimestamp,
+                decodedReport.Data.BenchmarkPrice.String(),
+                decodedReport.Data.Bid.String(),
+                decodedReport.Data.Ask.String(),
+                decodedReport.Data.ValidFromTimestamp,
+                decodedReport.Data.ExpiresAt,
+                decodedReport.Data.LinkFee.String(),
+                decodedReport.Data.NativeFee.String(),
+            )
+        }
+    }
+    ```
+
+1.  Before running the example, verify that your API credentials are still set in your current terminal session:
+
+    ```bash
+    echo $API_KEY
+    echo $API_SECRET
+    ```
+
+    If the commands above don't show your credentials, set them again:
+
+    ```bash
+    export API_KEY="<YOUR_API_KEY>"
+    export API_SECRET="<YOUR_API_SECRET>"
+    ```
+
+1.  For this example, you will read from the ETH/USD and LINK/USD Data Streams crypto streams. Run your application:
+
+    ```bash
+    go run multiple-streams.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
+    ```
+
+    Expect to see the output below in your terminal:
+
+    ```bash
+    2024-12-14T17:49:06-05:00 Raw report data for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f8eb301000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675e0b6100000000000000000000000000000000000000000000000000000000675e0b610000000000000000000000000000000000000000000000000000178bcfba6d60000000000000000000000000000000000000000000000000000c1536af09b42c00000000000000000000000000000000000000000000000000000000675f5ce10000000000000000000000000000000000000000000000d1646f5fd0b1e6e6a00000000000000000000000000000000000000000000000d1635f8df6b0fce2600000000000000000000000000000000000000000000000d1677c13a6c9d89620000000000000000000000000000000000000000000000000000000000000000222412e1bd137097dc97def8914c72ae7305179eedc5c15e344bc119a06f1db76ef20f3e6493a97c2be2ab831199bfc00dbbf02551f2a27a70cfd55653270acac0000000000000000000000000000000000000000000000000000000000000002343957d73014b446eb0b0436072e16261a643102e502529d3b97412027c3468977bf0806e8971a37e6487b855243957a57749cde2ac92ebc2bda412d94981251","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1734216545,"observationsTimestamp":1734216545}
+
+
+    Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
+    ------------------------------------------
+    Observations Timestamp: 1734216545
+    Benchmark Price       : 3862606619881446500000
+    Bid                   : 3862530109428509500000
+    Ask                   : 3862826368095386900000
+    Valid From Timestamp  : 1734216545
+    Expires At            : 1734302945
+    Link Fee              : 3401024329593900
+    Native Fee            : 25889252994400
+    ------------------------------------------
+    2024-12-14T17:49:06-05:00 Raw report data for Stream ID 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265: {"fullReport":"0x00060a2676459d14176b64106fcf3246631d3a03734171737eb082fe79c956e0000000000000000000000000000000000000000000000000000000005437220a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000002800001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012000036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d026500000000000000000000000000000000000000000000000000000000675e0b6100000000000000000000000000000000000000000000000000000000675e0b610000000000000000000000000000000000000000000000000000178bc5ba4c04000000000000000000000000000000000000000000000000000c153d429e703c00000000000000000000000000000000000000000000000000000000675f5ce1000000000000000000000000000000000000000000000001980b3d7d3ec2df6000000000000000000000000000000000000000000000000197f69e569cfba588000000000000000000000000000000000000000000000001981e643ba148a6040000000000000000000000000000000000000000000000000000000000000002ae4d6d1a241622f6b9c5cc53c5ac6abc4e46759c7bda4942936e02f2fc9ba7374869e71ce1572ae581049e6e9463537056031e30b0c11f84ff44e45363e3fa9300000000000000000000000000000000000000000000000000000000000000021ab422f2202e0f59016a29b37c2795b47d78c19ba2358808794c6f0cd3b04bde7adb2f30669b051ddde1059f106c161c65c401909b78d76bd13ad593e31ab13e","feedID":"0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265","validFromTimestamp":1734216545,"observationsTimestamp":1734216545}
+
+
+    Decoded Report for Stream ID 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265:
+    ------------------------------------------
+    Observations Timestamp: 1734216545
+    Benchmark Price       : 29402662200351580000
+    Bid                   : 29396857712545605000
+    Ask                   : 29408052824047658500
+    Valid From Timestamp  : 1734216545
+    Expires At            : 1734302945
+    Link Fee              : 3401052575395900
+    Native Fee            : 25889085213700
+    ------------------------------------------
+    ```
+
+    Your application has successfully fetched and decoded data for both streams.
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `fullReport` payloads to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+
+## Explanation
+
+### Initializing the client and configuration
+
+The Data Streams client is initialized in two steps:
+
+1. Configure the client with [`streams.Config`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/config.go#L10):
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger:    streams.LogPrintf,
+   }
+   ```
+
+   The configuration requires:
+
+   - `ApiKey` and `ApiSecret` for authentication (required)
+   - `RestURL` for the API endpoint (required)
+   - `Logger` for debugging and error tracking (optional, defaults to `streams.LogPrintf`)
+
+2. Create the client with [`streams.New`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L56):
+   ```go
+   client, err := streams.New(cfg)
+   ```
+   The client handles:
+   - Authentication with HMAC signatures
+   - Connection management and timeouts
+   - Error handling and retries
+
+### Fetching reports
+
+The SDK provides two main methods to fetch reports:
+
+1. Latest report for a single stream with [`GetLatestReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L130):
+
+   ```go
+   reportResponse, err := client.GetLatestReport(ctx, feedID)
+   ```
+
+   - Takes a context and feed ID
+   - Returns a single `ReportResponse` with the most recent data
+   - No timestamp parameter needed
+   - Useful for real-time price monitoring
+
+2. Latest reports for multiple streams with [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L208):
+
+   ```go
+   reportResponses, err := client.GetReports(ctx, ids, timestamp)
+   ```
+
+   - Takes context, feed IDs array, and Unix timestamp
+   - Returns array of `ReportResponse`, one per feed ID
+   - Timestamp determines the point in time for the reports
+   - Efficient for monitoring multiple assets simultaneously
+
+Each API request automatically:
+
+- Handles authentication with API credentials
+- Manages request timeouts via context
+- Processes responses into structured types
+
+### Decoding reports
+
+Reports are decoded in two steps:
+
+1. Report decoding with [`report.Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30):
+
+   ```go
+   decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+   ```
+
+   This step:
+
+   - Takes the raw `FullReport` bytes from the response
+   - Uses `v3.Data` schema for Crypto streams (use `v4.Data` for RWA streams)
+   - Validates the format and decodes using Go generics
+   - Returns a structured report with typed data
+
+2. Data access:
+   ```go
+   data := decodedReport.Data
+   price := data.BenchmarkPrice.String()  // Convert big number to string
+   bid := data.Bid.String()              // All prices use 18 decimal places
+   ask := data.Ask.String()
+   validFrom := data.ValidFromTimestamp  // Unix timestamp
+   expiresAt := data.ExpiresAt          // Unix timestamp
+   ```
+   Provides access to:
+   - Benchmark price, bid, and ask prices (as big numbers)
+   - Fee information (LINK and native token fees)
+   - Timestamp data (validity period)
+   - All numeric values require `.String()` for display
+
+### Error handling
+
+The SDK uses Go's standard error handling patterns with some enhancements:
+
+1. Context management:
+
+   ```go
+   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+   defer cancel()
+   ```
+
+   - Sets request timeouts for API calls
+   - `defer cancel()` ensures cleanup of resources
+   - Same context pattern for both single and multiple reports
+
+2. Error checking:
+
+   ```go
+   if err != nil {
+       cfg.Logger("Failed to decode report: %v\n", err)
+       os.Exit(1)           // Fatal errors: exit the program
+       // or
+       continue            // Non-fatal errors: skip this report
+   }
+   ```
+
+   - Fatal errors (client creation, no valid feeds) use `os.Exit(1)`
+   - Non-fatal errors (single report decode) use `continue`
+   - All errors are logged before handling
+
+3. SDK logging:
+   ```go
+   cfg.Logger("Raw report data: %+v\n", reportResponse)
+   ```
+   - Uses configured logger for SDK operations
+   - `fmt.Printf` for user-facing output
+   - Debug information includes raw report data
+   - Structured error messages with context
+
+The decoded data can be used for further processing or display in your application. For production environments, you must verify the data onchain using the provided `fullReport` payload.

@@ -1,6 +1,7 @@
 ---
 title: "VRF-Enabled Mystery Box"
 description: "Build a mystery box smart contract using VRF."
+githubSourceCodeUrl: "https://github.com/smartcontractkit/quickstarts-mysterybox"
 image: "QuickStarts-VRF-Enabled-LootBox-Pack-Contract.webp"
 products: ["vrf"]
 time: "90 minutes"
@@ -11,15 +12,21 @@ import { Accordion, Aside, CodeSample } from "@components"
 
 ## Overview
 
-This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF](https://vrf.chain.link/).
+This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF V2.5](https://docs.chain.link/vrf).
 
-Smart contracts are based on the gas efficient [ERC721Psi](https://github.com/estarriolvetch/ERC721Psi) and are fully tested. It's super easy to deploy and configure with most of the steps automated in the deploy script.
+Smart contracts are based on the gas efficient [ERC721Psi](https://github.com/estarriolvetch/ERC721Psi). It's super easy to deploy and configure with most of the steps automated in the deploy script.
 
-Some of the key features of this template include private minting stage with a merkle tree, rate limited batch minting, delayed reveal with randomization technique to save gas, provenance hash to verify the authenticity of the metadata, royalties for secondary sales, and configurable parameters.
+The key features of this template include:
+- a private minting stage with a merkle tree
+- rate limited batch minting
+- delayed reveal with randomization technique to save gas
+- provenance hash to verify the authenticity of the metadata
+- royalties for secondary sales 
+- configurable parameters
 
 ## Objective
 
-You will use a HardHat project with the Chainlink Hardhat Plugin to deploy an existing MysteryBox application on Avalanche Fuji testnet.
+You will use a Hardhat project to deploy an existing MysteryBox application on Ethereum Sepolia.
 
 <Aside type="caution" title="Disclaimer">
   This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
@@ -41,12 +48,12 @@ You will use a HardHat project with the Chainlink Hardhat Plugin to deploy an ex
 Before you start this tutorial, complete the following items:
 
 - Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
-- Fund your wallet with AVAX and LINK from [faucets.chain.link](https://faucets.chain.link/fuji).
+- Fund your wallet with testnet ETH and LINK from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia).
 - Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Run `git --version` to check the installation.
 - Install [Nodejs](https://nodejs.org/en/) version 16 or later.
 - Optionally, you can [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) and use it to run this example instead of using `npm`.
-- [Create an SnowTrace API key](https://docs.snowtrace.io/getting-started/viewing-api-usage-statistics) if you do not already have one. This is used to verifiy your contracts onchain.
-- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one.
+- [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one. This is used to verify your contracts onchain.
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to obtain an RPC endpoint if you do not already have one.
 
 ## Steps to implement
 
@@ -88,9 +95,9 @@ Set the parameters for the NFT contract. If you don't have a VRF subscription, d
 | `NFT_UNREVEALED_URI`    | The metadata URI for all tokens before reveal                                                                             | `https://example.com` |
 | `NFT_MAX_SUPPLY`        | The maximum number of tokens that can be minted                                                                           | `100`                 |
 | `NFT_MAX_MINT_PER_USER` | The maximum number of tokens that can be minted per user address                                                          | `10`                  |
-| `NFT_FEE`               | The fee for minting a token in ETH                                                                                        | `0.1`                 |
+| `NFT_FEE`               | The fee for minting a token in ETH                                                                                        | `0.01`                 |
 | `NFT_ROYALTY_BPS`       | The royalty fee for selling a token in basis points                                                                       | `500`                 |
-| `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `123`                 |
+| `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF V2.5 subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `79850349243438349975305816782035019118399435445660033947721688676378382535454`                 |
 
 
 </Accordion>
@@ -101,13 +108,13 @@ Set the parameters for the NFT contract. If you don't have a VRF subscription, d
 
 | Parameter         | Description                                                                                                                                                                                          | Example                                               |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `FUJI_URL`        | The RPC URL for Avalanche Fuji testnet. You can use the default, or use your own URL. If you later decide to use Polygon Mumbai or another testnet, set the appropriate parameter from the template. | `https://avalanche-mainnet.infura.io/v3/your-api-key` |
-| `PRIVATE_KEY`     | The private key of the account you want to deploy from.                                                                                                                                              | `0xabc123abc123abc123abc123abc123...`                 |
-| `SCANNER_API_KEY` | The API key for SnowTrace used for contract verification. If you decide to deploy on Polygon Mumbai or another testnet, use that key instead.                                                        | `ABC123ABC123ABC123ABC123ABC123ABC1`                  |
+| `SEPOLIA_RPC_URL`        | The RPC URL for the Ethereum Sepolia network. | `https://eth-sepolia.g.alchemy.com/v2/...` |
+| `PRIVATE_KEY`     | The private key of the account you want to deploy from.                                                                                                                                              | `abc123abc123abc123abc123abc123...`                 |
+| `SCANNER_API_KEY` | The API key for Etherscan used for contract verification.                                                        | `ABC123ABC123ABC123ABC123ABC123ABC1`                  |
 
 </Accordion>
 
-<Accordion title="Test the contracts locally" number={3}>
+<Accordion title="Test the contracts locally" number={4}>
 
 To run the unit tests, run the following command:
 
@@ -129,7 +136,7 @@ npm run coverage
 
 </Accordion>
 
-<Accordion title="Deploy the example contract" number={3}>
+<Accordion title="Deploy the example contract" number={5}>
 
 Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-mysterybox/blob/main/hardhat.config.ts).
 
@@ -139,32 +146,32 @@ npx hardhat run scripts/deploy.ts --network <network>
 
 In addition to deploying the contract, the deploy script also completes the following steps automatically:
 
-1.  Create and fund a VRF subscription if one is not provided. Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/) to get LINK. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+1.  Create and fund a VRF V2.5 subscription if one is not provided. Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/) to get LINK. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link) to see the additional balance needed.
 
-1.  Add the deployed contract address as a consumer to the VRF subscription. If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
+1.  Add the deployed contract address as a consumer to the VRF subscription. If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addConsumerToSubscription` function in the deploy script and add the contract address manually.
 
-1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file. Leave the file empty if you don't want to do a private mint.
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file.
 
-1.  Verify the contract on SnowTrace. This is important to show users the source code for the contract so they can confirm how it works. It's also required to run the example yourself.
+1.  Verify the contract on Etherscan. This is important to show users the source code for the contract so they can confirm how it works. It's also required to run the example yourself.
 
-After the deployment is complete, the terminal prints the link to view your contract on SnowTrace.
+After the deployment is complete, the terminal prints the link to view your contract on Etherscan.
 
 </Accordion>
 
-<Accordion title="Run the example" number={4}>
+<Accordion title="Run the example" number={6}>
 
-After the contract is deployed, run the example using contract functions on SnowTrace.
+After the contract is deployed, run the example using contract functions on Etherscan.
 
-1. Open the SnowTrace link from your terminal to view your contract.
+1. Open the Etherscan link from your terminal to view your contract.
 1. On the **Contract** tab, click the **Write Contract** tab to view your contract's write functions.
-1. Click **Connect to Web3** to connect your wallet to SnowTrace so you can run the functions.
+1. Click **Connect to Web3** to connect your wallet to Etherscan so you can run the functions.
 1. Enable public minting:
 1. Open the `setPublicMint` function.
 1. Enter a value of `true`.
 1. Click **Write** to run the function. Approve the transaction in MetaMask.
 1. Mint an NFT to test the contract:
 1. Open the `publicMint` function.
-1. Enter a `publicMint` value of `0.1` AVAX and an amount of `1`.
+1. Enter a `publicMint` value of `0.01` ETH and an amount of `1`.
 1. Click **Write** to run the function. Approve the transaction in MetaMask.
 1. Reveal the box:
 1. Open the `reveal` function.

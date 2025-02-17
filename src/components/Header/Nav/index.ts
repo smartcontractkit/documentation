@@ -1,2 +1,1 @@
-export { NavBar } from "./NavBar"
-export type { devHubCategories } from "./config"
+export { NavBar } from "./NavBar.tsx"

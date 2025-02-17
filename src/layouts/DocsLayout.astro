@@ -3,11 +3,14 @@ import PageContent from "~/components/PageContent/PageContent.astro"
 import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
 import RightSidebar from "~/components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "~/config"
-import type { BaseFrontmatter } from "~/content/config"
+import type { BaseFrontmatter } from "~/content.config.ts"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
+import { VersionSelector } from "~/components/VersionSelector/index.js"
+import { detectApiReference } from "@components/VersionSelector/utils/versions"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -40,10 +43,14 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+
+// Detect if this is an API reference page and get the product
+const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage} />
   <main>
     <div id="left-bg"></div>
     <div class="layout">
@@ -51,6 +58,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
+        {isApiReference && product && isVersioned && <VersionSelector product={product} currentPath={currentPage} />}
         <PageContent {titleHeading}>
           <slot />
         </PageContent>
@@ -71,7 +79,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       display: grid;
       grid-template-columns: auto;
       --gutter: var(--space-6x);
-      --doc-padding: 2rem;
+      --doc-padding: var(--space-6x);
       margin-bottom: 0;
     }
 
@@ -95,8 +103,9 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
       }
 
       .layout {
-        grid-template-columns: auto auto auto;
+        grid-template-columns: auto 1fr auto;
         gap: var(--gutter);
+        width: 100vw;
         max-width: 1440px;
       }
 
@@ -153,7 +162,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
   <script>
     import "~/scripts"
     if (window["includeLinkToWalletScript"]) {
-      import("~/scripts/link-to-wallet")
+      import("~/scripts/link-to-wallet.ts")
     }
   </script>
 </BaseLayout>

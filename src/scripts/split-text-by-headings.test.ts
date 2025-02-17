@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals"
-import { splitTextByHeadings } from "./split-text-by-headings"
+import { splitTextByHeadings } from "./split-text-by-headings.ts"
 
 describe("splitTextByHeadings", () => {
   test("works", () => {

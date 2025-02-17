@@ -1,6 +1,7 @@
 ---
 title: "Automate Contract Balance Top-up"
 description: "Automate the process of maintaining an Ethereum balance in your smart contract using Chainlink Automation."
+githubSourceCodeUrl: "https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol"
 image: "QuickStarts-ETH-Balance-Monitor.webp"
 products: ["automation"]
 time: "30 minutes"
@@ -15,7 +16,7 @@ Some smart contract applications require you to maintain a certain Ethereum bala
 
 This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. You will deploy this example monitor contract and use the [automation.chain.link](https://automation.chain.link/) interface to register an upkeep and run the contract. To learn the basics about Chainlink Automation, read the [Chainlink Automation Overview](/chainlink-automation).
 
-For this example, use the Polygon Mumbai testnet to simplify access to testnet funds. You will top up an address with a specific amount of testnet MATIC. Later, you can use another EVM-compatible network of your choice.
+For this example, use the Ethereum Sepolia testnet to simplify access to testnet funds. You will top up an address with a specific amount of testnet ETH. Later, you can use another EVM-compatible network of your choice.
 
 ## Before you begin
 
@@ -24,8 +25,8 @@ Before you start this tutorial, complete the following items:
 - If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract).
 - Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
 - Fund your wallet with the following testnet tokens:
-  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your onchain transactions.
-  - Get at least 2 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
+  - Get testnet ETH from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your onchain transactions.
+  - Get ERC-677 testnet LINK from [faucets.chain.link/fuji](https://faucets.chain.link/fuji).
 
 ## Steps to implement
 
@@ -40,20 +41,21 @@ Before you start this tutorial, complete the following items:
 
 1. On the **Deploy & Run Transactions** tab in Remix, set your Environment to Injected Provider and allow Remix to connect to MetaMask.
 
-1. The constructor requires a `keeperRegistryAddress` value and a `minWaitPeriodSeconds` value. Specify these in the **Deploy** fields in Remix. You can find these registry addresses on the Automation [Supported Networks](/chainlink-automation/overview/supported-networks) page. For this example using Polygon Mumbai, enter the following values:
+1. The constructor requires a `minWaitPeriodSeconds` value. Specify this in the **Deploy** fields in Remix. For this example using Ethereum Sepolia, enter the following value:
 
-   - **keeperRegistryAddress**: `0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2`
    - **minWaitPeriodSeconds**: `60`
 
 1. Click **Transact** to deploy the contract with the defined constructor settings and accept the transaction in MetaMask. After the contract is deployed, it will appear in your **Deployed Contracts** list with several functions available to configure.
 
-1. Use metamask to Send 0.001 MATIC to your contract address. The funds are used to top-up other contracts with MATIC. See the [Fund Your Contracts](/resources/fund-your-contract?parent=automation) page to learn how to find your contract address and send funds to those contracts. For this example, 0.001 MATIC is sufficient for demonstration purposes. In a production environment, you might store a larger amount of funds in the contract so Chainlink Automation can automatically distribute them to several different addresses as they are needed over time.
+   Note: You will come back and set your forwarder address later. This forwarder address becomes available after you create your upkeep.
+
+1. Use MetaMask to Send 0.001 ETH to your contract address. The funds are used to top-up other contracts with ETH. See the [Fund Your Contracts](/resources/fund-your-contract?parent=automation) page to learn how to find your contract address and send funds to those contracts. For this example, 0.001 ETH is sufficient for demonstration purposes. In a production environment, you might store a larger amount of funds in the contract so Chainlink Automation can automatically distribute them to several different addresses as they are needed over time.
 
 </Accordion>
 
 <Accordion title="Configure the address watch list" number={2}>
 
-Before your contract will fund an address, you must set the `watchList` address array with `minBalancesWei` and `topUpAmmountsWei` variables. For this example on Polygon Mumbai, you are using testnet MATIC instead of wei (ETH). For demonstration purposes, you configure your own wallet as the top-up address. This makes it easy to see the MATIC being sent as part of the automated top-up function. After you complete this tutorial, you can configure any wallet or contract address that you want to keep funded.
+Before your contract will fund an address, you must set the `watchList` address array with `minBalancesWei` and `topUpAmountsWei` variables. For demonstration purposes, you configure your own wallet as the top-up address. This makes it easy to see the ETH being sent as part of the automated top-up function. After you complete this tutorial, you can configure any wallet or contract address that you want to keep funded.
 
 1. In the list of functions for your deployed contract, run the `setWatchList` function. This function requires an `addresses` array, a `minBalancesWei` array that maps to the addresses, and a `topUpAmountsWei` array that also maps to the addresses. In Remix, arrays require brackets and quotes around both addresses and integer values. For this example, set the following values:
 
@@ -61,7 +63,7 @@ Before your contract will fund an address, you must set the `watchList` address 
    - **minBalancesWei**: `["100000000000000000000"]`
    - **topUpAmountsWei**: `["000100000000000000"]`
 
-   These values tell the top up contract to top up the specified address with 0.0001 MATIC if the address balance is less than 100 MATIC. These settings are intended to demonstrate the example using testnet faucet funds. For a production application, you might set more reasonable values that top up a smart contract with 10 MATIC if the balance is less than 1 MATIC.
+   These values tell the top up contract to top up the specified address with 0.0001 ETH if the address balance is less than 100 ETH. These settings are intended to demonstrate the example using testnet faucet funds. For a production application, you might set more reasonable values that top up a smart contract with 10 ETH if the balance is less than 1 ETH.
 
 1. After you configure the function values, click **transact** to run the function. MetaMask asks you to confirm the transaction.
 
@@ -89,27 +91,31 @@ Now that the contract is deployed, funded, and configured, register the upkeep a
 
 1. Click **Register Upkeep** to complete the registration process.
 
-Now that you've registered the upkeep, Chainlink Automation handles the rest of the process.
+1. Go to the **Upkeep details** page and copy your **Forwarder address**.
+
+1. Navigate back to Remix and find the `setForwarderAddress` function. Paste your forwarder address and click click **transact** to run the function. MetaMask asks you to confirm the transaction.
+
+Now that you've registered the upkeep and configured your contract with your new upkeep's forwarder address, Chainlink Automation handles the rest of the process.
 
 </Accordion>
 
 <Accordion title="Check your upkeeps" number={4}>
 
-The upkeep runs the `checkUpkeep` function in your contract, which checks the balances of all addresses in the `watchList` against their defined limits. If any of the addresses are below their specified minimum balances, the upkeep runs the `topUp` function for that specific address, which distributes the MATIC in your contract to that address. Unless your wallet happens to have more than 100 testnet MATIC, you will receive MATIC in your wallet every 60 seconds as defined by `minWaitPeriodSeconds` in your contract. Check to make sure the example is running correctly:
+The upkeep runs the `checkUpkeep` function in your contract, which checks the balances of all addresses in the `watchList` against their defined limits. If any of the addresses are below their specified minimum balances, the upkeep runs the `topUp` function for that specific address, which distributes the ETH in your contract to that address. Unless your wallet happens to have more than 100 testnet ETH, you will receive ETH in your wallet every 60 seconds as defined by `minWaitPeriodSeconds` in your contract. Check to make sure the example is running correctly:
 
 1. Go to [automation.chain.link](https://automation.chain.link/), view your new upkeep, and confirm that it is performing upkeeps in the **History** list.
 
-1. View your contract address and your wallet address at [mumbai.polygonscan.com](https://mumbai.polygonscan.com/) to see the transactions happening between your contract and your wallet address.
+1. View your contract address and your wallet address at the [Sepolia block explorer](https://sepolia.etherscan.io/) to see the transactions happening between your contract and your wallet address.
 
-The example continues to run until your upkeep runs out of LINK, your contract runs out of MATIC, or until you manually pause or cancel the upkeep.
+The example continues to run until your upkeep runs out of LINK, your contract runs out of ETH, or until you manually pause or cancel the upkeep.
 
-After you are done with this example, you can run the `withdraw` function on your contract to withdraw any remaining testnet MATIC so you can use it later. Also, you can cancel your upkeep in the Automation UI and withdraw any remaining unspent LINK.
+After you are done with this example, you can run the `withdraw` function on your contract to withdraw any remaining testnet ETH so you can use it later. Also, you can cancel your upkeep in the Automation UI and withdraw any remaining unspent LINK.
 
 </Accordion>
 
 ## Examine the example code
 
-The [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol) is ownable, pauseable, and compatible with the [`AutomationCompatibleInterface` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol):
+The [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol) is ownable, pauseable, and compatible with the [`AutomationCompatibleInterface` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol):
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of _user permissions_ and allows for transfer of ownership.
 - **Pauseable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
@@ -127,7 +133,7 @@ Functions with an asterisk (`*`) denote features that only the owner can change.
 | Function Name                | Description                                                                            |
 | ---------------------------- | -------------------------------------------------------------------------------------- |
 | `setWatchList`\*             | Addresses to watch minimum balance and how much to top it up.                          |
-| `setKeeperRegistryAddress`\* | Updates the `KeeperRegistry` address.                                                  |
+| `setForwarderAddress`\* | Updates your upkeep's forwarder address, which is available after you create your upkeep.                   |
 | `setMinWaitPeriodSeconds`\*  | Updates the global minimum period between top ups.                                     |
 | `topUp`                      | Used by `performUpkeep`. This function will only trigger top up if conditions are met. |
 
@@ -136,7 +142,7 @@ Below are the feed functions in `EthBalanceMonitor`:
 | Read Function Name         | Description                                                                                                                         |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `getUnderfundedAddresses`  | View function used in `checkUpkeep` to find underfunded balances.                                                                   |
-| `getKeeperRegistryAddress` | Views the `KeeperRegistry` address.                                                                                                 |
+| `getForwarderAddress` | Views the upkeep's forwarder address.                                                                                                 |
 | `getMinWaitPeriodSeconds`  | Views the global minimum period between top ups.                                                                                    |
 | `getWatchList`             | Views addresses to watch minimum balance and how much to top it up.                                                                 |
 | `getAccountInfo`           | Provides information about the specific target address, including the last time it was topped up. This function is _external only_. |
@@ -153,15 +159,15 @@ Below are the feed functions in `EthBalanceMonitor`:
 
 Only the owner can `setWatchList`. Each of the parameters should be set with distinct requirements for each address.
 
-### `setKeeperRegistryAddress` Function
+### `setForwarderAddress` Function
 
 #### Parameters
 
 | Name                    | Description                                        |
 | ----------------------- | -------------------------------------------------- |
-| `keeperRegistryAddress` | Address that requires updating in `KeeperRegistry` |
+| `forwarderAddress`      | Unique forwarder address used to secure your upkeep |
 
-Only the `keeperRegistryAddress` can `performUpkeep`, which is a _global setting_. `KeeperRegistry` addresses can be found on the [Chainlink Automation app](https://automation.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
+Only the `forwarderAddress` can `performUpkeep`. Your upkeep's forwarder address can be found on the [Chainlink Automation app](https://automation.chain.link/) after you create the upkeep. Only the owner can set a new `forwarderAddress` after deployment.
 
 ### `setMinWaitPeriodSeconds` Function
 

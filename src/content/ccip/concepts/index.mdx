@@ -6,6 +6,8 @@ isIndex: true
 whatsnext: { "CCIP Architecture": "/ccip/architecture", "Learn CCIP best practices": "/ccip/best-practices" }
 ---
 
+import CCIPCommon from "@features/ccip/CcipCommon.astro"
+
 Before you explore how Chainlink CCIP works in the [architecture guide](/ccip/architecture), it is best to understand the core concepts.
 
 ## Prerequisites
@@ -15,7 +17,7 @@ Before you learn about Chainlink CCIP, you should understand these fundamental b
 - [Accounts](https://ethereum.org/en/developers/docs/accounts/): you should understand the differences between Externally-owned accounts (EOA) and Contract accounts.
 - [Smart Contracts](https://ethereum.org/en/developers/docs/smart-contracts/).
 - [Decentralized Applications (dApps)](https://ethereum.org/en/developers/docs/dapps/).
-- [ERC-20 Token Standard](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/).
+- [ERC-20 Token standard](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/).
 - [Merkle Trees](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/).
 
 ## Cross-Chain dApps
@@ -38,9 +40,11 @@ To learn more, read about [blockchain interoperability](https://chain.link/educa
 
 Finality varies across different networks. Some networks offer instant finality and others require multiple confirmations. These time differences are set to ensure the security of CCIP and its users. Finality is crucial for token transfers because funds are locked and not reorganized once they are released onto the destination chain. In this scenario, finality ensures that funds on the destination chain are available only after they have been successfully committed on the source chain.
 
+To learn more about finality, read the [CCIP Execution Latency](/ccip/concepts/ccip-execution-latency) conceptual guide.
+
 ## Lane
 
-A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination blockchain. Lanes are unidirectional. For instance, _Ethereum Sepolia => Polygon Mumbai_ and _Polygon Mumbai => Ethereum Sepolia_ are two different lanes.
+A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination blockchain. Lanes are unidirectional. For instance, _Ethereum Mainnet => Polygon Mainnet_ and _Polygon Mainnet => Ethereum Mainnet_ are two different lanes.
 
 ## Decentralized Oracle Network (DON)
 
@@ -48,10 +52,9 @@ Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](/arch
 
 ## Risk Management Network
 
-The Risk Management Network is built using offchain and onchain components:
+<CCIPCommon callout="rmnCaution" />
 
-- **[Offchain](#offchain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
-- **[onchain](#onchain-risk-management-contract):** One Risk Management contract per supported CCIP chain
+The Risk Management Network is built using offchain and onchain components.
 
 ### Offchain Risk Management node
 
@@ -60,7 +63,7 @@ The Risk Management Network has two main modes of operation:
 
 - **Blessing:** Each Risk Management node monitors all Merkle roots of messages committed on each destination chain. The Committing DON commits these Merkle roots. (More information on Merkle roots can be found on the [architecture page](/ccip/architecture)). The Risk Management node independently reconstructs the Merkle tree by fetching all messages on the source chain. Then, it checks for a match between the Merkle root committed by the Committing DON and the root of the reconstructed Merkle tree. If both Merkle roots match, the Risk Management node blesses the root to the Risk Management contract on the destination chain. The Risk Management contract tracks the votes. When a quorum is met, the Risk Management contract dubs the Merkle root **blessed**.
 
-- **Cursing:** If a Risk Management node detects an anomaly, the Risk Management node will curse the CCIP system. After a quorum of votes has been met, the Risk Management contract dubs the CCIP system **cursed**. CCIP will automatically pause on that chain and wait until the contract owner assesses the situation before potentially lifting the curse. There are two cases where Risk Management nodes pause CCIP:
+- **Cursing:** If a Risk Management node detects an anomaly, the Risk Management node will curse the CCIP system. Cursing is blockchain-specific and will only affect lanes going to and from the relevant blockchain. After a quorum of votes has been met, the Risk Management contract dubs the CCIP system **cursed**. CCIP will automatically pause on that chain and wait until the contract owner assesses the situation before potentially lifting the curse. There are two cases where Risk Management nodes pause CCIP:
 
   - **Finality violation:** A deep reorganization which violates the safety parameters set by the Risk Management configuration occurs on a CCIP chain.
 
@@ -83,4 +86,4 @@ The contract also maintains two thresholds to determine the quorum for blessing 
 - **Blessing voting procedure:** every time a Risk Management node blesses a Merkle root, the Risk Management contract adds the blessing weight for that node. If the sum of the weights of votes to bless exceeds the blessing threshold, the Risk Management contract considers the contract _blessed_.
 - **Cursing voting procedure:** a Risk Management node that sends a vote to curse assigns the vote a random 32-byte ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the Risk Management contract considers the node to have voted to curse. The Risk Management contract adds the cursing weight for that node. If the sum of the weights of votes to curse exceeds the curse threshold, the Risk Management contract considers the contract _cursed_.
 
-If the Risk Management contract is cursed, then the owner of the original contract must resolve any underlying issues the original contract might have. If the owner is satisfied that these issues have been resolved, they can revoke the cursing on behalf of Risk Management nodes.
+When the RMN contract is cursed, only the [CCIP owner](https://github.com/smartcontractkit/ccip-owner-contracts/blob/main/src/ManyChainMultiSig.sol) of the RMN contract can interact with it. Once the root cause of the curse has been identified and the issue addressed, this owner has the ability to unvote the curse on behalf of the RMN nodes. Once enough active votes to curse are inactivated the curse is lifted; in this case the sum of weights of RMN nodes with active votes to curse must drop below the curse threshold.

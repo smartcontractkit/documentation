@@ -1,13 +1,14 @@
 ---
 title: "Pass VRF Costs to the End Users"
 description: "Identify the cost of specific VRF requests in order to pass this cost to the end users of your application."
+githubSourceCodeUrl: "https://github.com/smartcontractkit/vrf-direct-funding-example"
 image: "QuickStarts-Pass-VRF-Costs-to-the-End-Users.webp"
 products: ["vrf"]
 time: "30 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Accordion, Aside, ClickToZoom } from "@components"
+import { Accordion, Aside, ClickToZoom, CopyText } from "@components"
 import { TabsContent } from "@components/Tabs"
 
 ## Objective
@@ -150,7 +151,7 @@ This gives you an existing [Foundry](https://github.com/foundry-rs/foundry) proj
    export PRIVATE_KEY=
 
    # Explorer API key used to verify contracts
-   export EXPLORER_KEY=
+   export ETHERSCAN_API_KEY=
    ```
 
 1. In your `.env` file, fill in these values:
@@ -158,7 +159,7 @@ This gives you an existing [Foundry](https://github.com/foundry-rs/foundry) proj
    | Parameter      | Description                                                 | Example                                     |
    | -------------- | ----------------------------------------------------------- | ------------------------------------------- |
    | `RPC_URL`      | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
-   | `PRIVATE_KEY`  | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `PRIVATE_KEY`  | The private key of the account you want to deploy from. <br/> Add `0x` before your key.  | `0xabc123abc123abc123abc123abc123...`       |
    | `EXPLORER_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
 
 </Accordion>
@@ -171,11 +172,11 @@ At the root of the `vrf-direct-funding-example/` directory, run:
 make install
 ```
 
-This command will install the project dependencies, which include [chainlink](https://github.com/smartcontractkit/chainlink) and [openzepplin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) for secure smart contract development.
+This command will install the project dependencies, which include [chainlink](https://github.com/smartcontractkit/chainlink) and [openzeppelin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) for secure smart contract development.
 
 </Accordion>
 
-<Accordion title="Install dependencies" number={4}>
+<Accordion title="Deploy the contract" number={4}>
 
 ### Deploy the contract
 
@@ -193,17 +194,17 @@ make deploy
 
 Test the contract as the end-user.
 
-1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Polygon Mumbai you can open the [0x0ed18e80aacede8cb52a6043976c255eff6fedbf](https://mumbai.polygonscan.com/address/0x0ed18e80aacede8cb52a6043976c255eff6fedbf#writeContract) contract.
+1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Ethereum Sepolia you can open the [0x779877A7B0D9E8603169DdbD7836e478b4624789](https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789#writeContract) contract.
 
-1. Connect your wallet to the scanning app so you can run write functions.
+1. Connect your wallet to the block explorer (e.g. [Etherscan](https://sepolia.etherscan.io/) for Ethereum Sepolia) so you can run write functions.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/connect-to-scanner.webp"
-     alt="Connect wallet to the scanner"
+     alt="Connect wallet to the block explorer"
      style="max-width: 50%;"
    />
 
-1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and `5000000000000000000` Juels (5 LINK) as variables. Click **Write** to run the function. Metamask asks you to approve the transaction.
+1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and <CopyText text="5000000000000000000" code/> Juels (5 LINK) as variables. Click **Write** to run the function. MetaMask asks you to approve the transaction.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/approve-link-spend.webp"
@@ -211,15 +212,15 @@ Test the contract as the end-user.
      style="max-width: 50%;"
    />
 
-1. Open your deployed contract in the scanner.
+1. Open your deployed contract in the block explorer.
 
 1. On the **Contract** tab, open the **Write Contract** functions list for your deployed contract.
 
-1. Again, connect your wallet to the scanner so you can run write functions on the deployed contract.
+1. Again, connect your wallet to the block explorer so you can run write functions on the deployed contract.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/connect-to-scanner-deployed-contract.webp"
-     alt="Connect to the scanner while viewing your deployed contract"
+     alt="Connect to the block explorer while viewing your deployed contract"
      style="max-width: 50%;"
    />
 
@@ -233,9 +234,9 @@ Test the contract as the end-user.
 
 1. If the transaction is successful, you will see a **View your transaction** button.
 
-1. On the **Read Contract** tab for your deployed contract, view the `lastRequestId` value.
+1. On the **Read Contract** tab for your deployed contract, view and copy `lastRequestId` value.
 
-1. Use this value to find the request status and view the random value.
+1. Use this value to find the request status and view the random value. Expand `getRequestStatus`, enter the `_requestId`, and click **Query**. The `randomWords` value displays in the response below the **Query** button.
 
    <ClickToZoom
      src="/images/quickstarts/pass-cost-to-end-user/request-status-with-answer.webp"
@@ -261,37 +262,46 @@ struct RequestStatus {
 mapping(uint256 => RequestStatus) public s_requests;
 ```
 
-The `requestRandomWords()` function uses a method in the VRF wrapper contract to calculate the request cost upfront, and then transfers enough LINK to the VRF wrapper to cover the request. After sending the request, it sets up the `RequestStatus` with the cost and other attributes to be updated after request fulfillment.
+The `requestRandomWords` function calls the `calculateRequestPrice` function on the VRF wrapper contract to calculate the request cost upfront, and then transfers enough LINK to the VRF wrapper to cover the request. After sending the request, the `requestRandomWords` function stores the `RequestStatus` with the cost and other request attributes, and emits a `RequestSent` event.
 
 ```solidity
-uint256 requestPrice = vrfWrapper.calculateRequestPrice(
-            requestConfig.callbackGasLimit
-        );
+function requestRandomWords() external returns (uint256) {
+   // Calculate the price required for the VRF request based on the configured parameters.
+   uint256 requestPrice = calculateRequestPrice();
 
-require(
-      linkTokenContract.transferFrom(
-            msg.sender,
-            address(this),
-            requestPrice
-      ),
-      "Not enough LINK"
+   // Transfer the required LINK tokens from the caller's address to this contract.
+   transferLinkFromUser(requestPrice);
+
+   // Send the randomness request to the VRF Wrapper contract and retrieve the request ID and the paid price.
+   bytes memory extraArgs = VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}));
+   (uint256 requestId, uint256 reqPrice) = requestRandomness(
+      requestConfig.callbackGasLimit, requestConfig.requestConfirmations, requestConfig.numWords, extraArgs
    );
-   ...
+   // Record the request details.
+   s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+   requestIds.push(requestId);
+   lastRequestId = requestId;
 
-   s_requests[requestId] = RequestStatus({
-            paid: requestPrice,
-            randomWords: new uint256[](0),
-            fulfilled: false
-        });
+   // Emit an event indicating that a request has been sent.
+   emit RequestSent(requestId, requestConfig.numWords);
+
+   return requestId;
+}
+
+[...]
+
+function calculateRequestPrice() internal view returns (uint256) {
+   return i_vrfV2PlusWrapper.calculateRequestPrice(requestConfig.callbackGasLimit, requestConfig.numWords);
+}
 ```
 
-After the VRF service fulfills your randomness request, it calls back your `fulfillRandomWords()` function, where you implement logic to handle the random values. It's recommended to keep the processing in your callback function minimal to save on gas costs. In this case, the example contract updates the `RequestStatus` in the request mapping, and emits an event indicating that the request has been fulfilled. Another part of your application can listen for this event and further process the random values separately from the callback function.
+After the VRF service fulfills your randomness request, it calls back your `fulfillRandomWords` function, where you implement logic to handle the random values. It's recommended to keep the processing in your callback function minimal to save on gas costs. In this case, the example contract updates the `RequestStatus` in the request mapping, and emits an event indicating that the request has been fulfilled. Another part of your application can listen for this event and further process the random values separately from the callback function.
 
 ```solidity
 function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
-  require(s_requests[_requestId].paid > 0, "request not found");
-  s_requests[_requestId].fulfilled = true;
-  s_requests[_requestId].randomWords = _randomWords;
-  emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+   require(s_requests[_requestId].paid > 0, "request not found");
+   s_requests[_requestId].fulfilled = true;
+   s_requests[_requestId].randomWords = _randomWords;
+   emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
 }
 ```

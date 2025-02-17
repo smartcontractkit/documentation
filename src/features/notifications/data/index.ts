@@ -1,8 +1,8 @@
-import { BannerContent } from "../components/HeaderBanner"
+import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "Introducing Transporter, a new bridging app powered by CCIP.",
+  description: "The CCIP Token Manager is now live.",
   type: "info",
-  linkText: "Go cross-chain.",
-  linkUrl: "https://transporter.io?utm_campaign=ga&utm_medium=referral&utm_source=chainlink-docs&utm_content=banner",
+  linkText: "Try it now.",
+  linkUrl: "https://tokenmanager.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ga",
 }

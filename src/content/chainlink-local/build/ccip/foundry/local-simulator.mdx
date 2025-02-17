@@ -1,0 +1,263 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Using CCIP local simulator in your Foundry project"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage" />
+
+You can use Chainlink Local to run CCIP in a localhost environment within your Foundry project. To get started quickly, you will use the
+[CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project is a Foundry boilerplate that includes the Chainlink Local
+package and several CCIP examples.
+
+## Prerequisites
+
+1. In a terminal, clone the [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry) repository and change directories.
+
+   ```shell
+   git clone https://github.com/smartcontractkit/ccip-starter-kit-foundry.git && \
+   cd ./ccip-starter-kit-foundry/
+   ```
+
+1. Run `npm install` to install the dependencies. This command installs the [Chainlink Local](https://github.com/smartcontractkit/chainlink-local) package
+   and other required packages:
+
+   ```shell
+   npm install
+   ```
+
+1. Run `forge install` to install packages:
+
+   ```shell
+   forge install
+   ```
+
+1. Run `forge build` to compile the contracts:
+
+   ```shell
+   forge build
+   ```
+
+## Test tokens transfers
+
+You will run a test to transfer tokens between two accounts. The test file `Example01.t.sol` is located in the `./test/no-fork` directory. This file contains two test cases:
+
+1. **Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies that the sender account was debited and the receiver account was credited.
+
+1. **Transfer with native gas fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in native gas. At the end of the test, it verifies that the sender account was debited and the receiver account was credited.
+
+For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    forge test --match-contract Example01Test
+    ```
+
+Example output:
+
+    ```text
+    $ forge test --match-contract Example01Test
+    [⠊] Compiling...
+    No files changed, compilation skipped
+
+    Ran 2 tests for test/no-fork/Example01.t.sol:Example01Test
+    [PASS] test_transferTokensFromEoaToEoaPayFeesInLink() (gas: 167576)
+    [PASS] test_transferTokensFromEoaToEoaPayFeesInNative() (gas: 122348)
+    Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 8.79ms (976.54µs CPU time)
+
+    Ran 1 test suite in 201.00ms (8.79ms CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
+    ```
+
+## Examine the code
+
+### Setup
+
+To transfer tokens using CCIP, we need the following:
+
+- Destination chain selector
+- Source CCIP router
+- LINK token for paying CCIP fees
+- A test token contract (such as CCIP-BnM)
+- A sender account (Alice)
+- A receiver account (Bob)
+
+The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
+
+1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
+
+    ```solidity
+    ccipLocalSimulator = new CCIPLocalSimulator();
+    ```
+
+1.  Invoke the [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
+
+    ```solidity
+    (
+        uint64 chainSelector,
+        IRouterClient sourceRouter,
+        ,
+        ,
+        LinkToken linkToken,
+        BurnMintERC677Helper ccipBnM,
+    ) = ccipLocalSimulator.configuration();
+    ```
+
+         **Note**: The [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function also returns the destination router, WETH9, and CCIP-LnM contracts, but we are not using them in these test cases. Hence, there are commas in the return values.
+
+1.  Initialize the sender and receiver accounts:
+
+    ```solidity
+    alice = makeAddr("alice")
+    bob = makeAddr("bob")
+    ```
+
+1.  All the variables are stored in the contract state for use in the test cases.
+
+### Prepare scenario (helper function)
+
+The `prepareScenario()` function is invoked at the beginning of each test case. It performs the following actions:
+
+1. Request CCIP-BnM tokens for Alice (sender):
+
+   ```solidity
+   ccipBnMToken.drip(alice);
+   ```
+
+1. Approve the source router to spend tokens on behalf of Alice (sender):
+
+   ```solidity
+   amountToSend = 100;
+   ccipBnMToken.approve(address(router), amountToSend);
+   ```
+
+1. Create an array [Client.EVMTokenAmount](/ccip/api-reference/v1.5.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send are returned by the prepareScenario() function for use in the calling test case:
+
+   ```solidity
+   tokensToSendDetails = new Client.EVMTokenAmount[](1);
+   Client.EVMTokenAmount memory tokenToSendDetails =
+       Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
+   tokensToSendDetails[0] = tokenToSendDetails;
+   ```
+
+### Test case 1: Transfer with LINK fees
+
+The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK.
+Here are the steps involved in this test case:
+
+1. Invoke the `prepareScenario()` function to set up the necessary variables:
+
+   ```solidity
+   (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
+   ```
+
+1. Record the initial token balances for Alice (sender) and Bob (receiver):
+
+   ```solidity
+   uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
+   uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
+   ```
+
+1. Begin impersonating Alice (sender) to perform the subsequent actions:
+
+   ```solidity
+   vm.startPrank(alice);
+   ```
+
+1. Request 5 LINK tokens from the CCIP Local Simulator faucet for Alice (sender):
+
+   ```solidity
+   ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
+   ```
+
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/v1.5.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+
+   - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
+   - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
+
+   ```solidity
+   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+       receiver: abi.encode(bob),
+       data: abi.encode(""),
+       tokenAmounts: tokensToSendDetails,
+       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+       feeToken: address(linkToken)
+   });
+   ```
+
+1. Calculate the required fees for the transfer and approve the router to spend LINK tokens for these fees:
+
+   ```solidity
+   uint256 fees = router.getFee(destinationChainSelector, message);
+   linkToken.approve(address(router), fees);
+   ```
+
+1. Send the CCIP transfer request to the router:
+
+   ```solidity
+   router.ccipSend(destinationChainSelector, message);
+   ```
+
+1. Stop impersonating (sender):
+
+   ```solidity
+   vm.stopPrank();
+   ```
+
+1. Record the final token balances for Alice (sender) and Bob (receiver):
+
+   ```solidity
+   uint256 balanceOfAliceAfter = ccipBnMToken.balanceOf(alice);
+   uint256 balanceOfBobAfter = ccipBnMToken.balanceOf(bob);
+   ```
+
+1. Verify that Alice's balance has decreased by the amount sent and Bob's balance has increased by the same amount:
+
+   ```solidity
+   assertEq(balanceOfAliceAfter, balanceOfAliceBefore - amountToSend);
+   assertEq(balanceOfBobAfter, balanceOfBobBefore + amountToSend);
+   ```
+
+### Test case 2: Transfer with native gas fees
+
+The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas.
+Here are the steps involved in this test case:
+
+1. Invoke the `prepareScenario()` function to set up the necessary variables. (This step is the same as in the previous test case.)
+1. Record the initial token balances of Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
+1. Begin impersonating Alice (sender) and provide her with native gas to pay for the fees:
+
+   ```solidity
+   vm.startPrank(alice);
+   deal(alice, 5 ether);
+   ```
+
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/v1.5.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
+   The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
+
+   ```solidity
+   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+       receiver: abi.encode(bob),
+       data: abi.encode(""),
+       tokenAmounts: tokensToSendDetails,
+       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+       feeToken: address(0)
+   });
+   ```
+
+1. Calculate the required fees for the transfer and send the CCIP transfer request along with the necessary native gas:
+
+   ```solidity
+   uint256 fees = router.getFee(destinationChainSelector, message);
+   router.ccipSend{value: fees}(destinationChainSelector, message);
+   ```
+
+1. Stop impersonating Alice (sender) and verify the token balances for Alice (sender) and Bob (receiver). (This step is the same as in the previous test case.)
+
+## Next steps
+
+For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink Local in forked environments, refer to
+the guide on [Using the CCIP Local Simulator in your Foundry project with forked environments](/chainlink-local/build/ccip/foundry/local-simulator-fork).

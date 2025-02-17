@@ -9,7 +9,68 @@
   display: none;
 }
 
-@media screen and (min-width: 768px) {
+.navLink {
+  color: var(--gray-600);
+  font-size: var(--space-4x);
+  font-weight: var(--font-weight-medium);
+  padding: 0px 16px;
+  height: 100%;
+  position: relative;
+  transition: all 200ms ease-in-out;
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1x);
+}
+
+.navLink:hover {
+  color: var(--blue-800);
+}
+
+.active::before,
+.navLink::before,
+.megaMenu::before {
+  position: absolute;
+  content: "";
+  width: var(--space-4x);
+  height: var(--space-4x);
+  /* TODO: change with a var when avaialble in the chainlink repo */
+  background-color: #0847f7;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  opacity: 0;
+  transition: all 200ms ease-in-out;
+}
+
+.navLink:hover::before {
+  opacity: 1;
+}
+
+.active {
+  color: var(--blue-800);
+}
+
+.megaMenu::before,
+.active::before {
+  opacity: 1;
+}
+
+.megaMenu::after {
+  content: "";
+  position: absolute;
+  bottom: -35px;
+  right: 35%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 20px;
+  height: 20px;
+  z-index: 100;
+  background-color: white;
+  padding: var(--space-2x);
+}
+
+@media screen and (min-width: 992px) {
   .root {
     display: flex;
   }
@@ -34,19 +95,35 @@
 }
 
 .button {
-  composes: text-300 from global;
+  composes: text-100 from global;
   line-height: 1.5rem;
-  padding-block: var(--space-2x);
   user-select: none;
   display: flex;
   align-items: center;
-  gap: var(--space-2x);
+  gap: var(--space-1x);
   width: fit-content;
   color: var(--blue-800);
 }
 
 .button:hover {
   color: var(--blue-600);
+}
+
+.button > div > img {
+  display: flex;
+  width: 1.2rem;
+  transform: translate3d(0rem, 0rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg, 0deg);
+  transition-duration: 200ms;
+  opacity: 0.6;
+  transform-style: prserve-3d;
+}
+
+.button:hover > div > img {
+  transform: translate3d(0.15rem, -0.15rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg)
+    skew(0deg, 0deg);
+  transition-duration: 200ms;
+  opacity: 1;
+  transform-style: preserve-3d;
 }
 
 .content {
@@ -79,7 +156,9 @@
   top: 100%;
   overflow: hidden;
   z-index: 1;
-  transition: width, transform 250ms ease;
+  transition:
+    width,
+    transform 250ms ease;
 }
 .indicator[data-state="visible"] {
   animation: fadeIn 200ms ease;
@@ -105,13 +184,74 @@
   overflow: hidden;
   box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.15);
   height: var(--radix-navigation-menu-viewport-height);
-  transition: width, height, 300ms ease;
+  transition:
+    width,
+    height,
+    300ms ease;
 }
 .navigationViewport[data-state="open"] {
   animation: scaleIn 200ms ease;
 }
 .navigationViewport[data-state="closed"] {
   animation: scaleOut 200ms ease;
+}
+
+.resourcesMenuContent {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  background-color: white;
+  border-radius: var(--border-radius-secondary);
+  box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.15);
+  top: 60px;
+  left: 20px;
+  right: 20px;
+  transform: translateX(-50%);
+}
+
+.resourcesMenuContent::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.15);
+}
+
+.resourcesMenuContent h2 {
+  font-size: var(--space-3x);
+  font-weight: var(--font-weight-medium);
+  padding-bottom: var(--space-3x);
+  color: var(--gray-500);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.resourcesMenuContentMain {
+  padding: var(--space-16x);
+}
+
+.resourcesMenuContentFeatured {
+  padding: var(--space-8x);
+  background-color: var(--gray-100);
+}
+
+.featuredImage {
+  width: 260px !important;
+}
+
+.trigger span {
+  position: relative;
+  color: var(--gray-600) !important;
+  font-size: var(--space-4x);
+  font-weight: var(--font-weight-medium);
+}
+
+.trigger:hover span {
+  color: var(--blue-800) !important;
 }
 
 .arrow {

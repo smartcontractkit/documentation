@@ -10,25 +10,58 @@ whatsnext:
   }
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Aside, ClickToZoom, CodeSample } from "@components"
+import { TabsContent } from "@components/Tabs"
 
 This tutorial explains how to use the `Forwarder` to add additional security to your Automation upkeeps. To learn how other Chainlink Automation contracts work, click [here](/chainlink-automation/reference/automation-contracts).
 
 ## What is a Forwarder? When is it used?
 
-Starting with Automation 2.0, each registered upkeep under the Chainlink Automation network will have its own unique `Forwarder` contract. The `Forwarder` address will only be known after registration, as we deploy a new forwarder for each upkeep. The `Forwarder` contract is the intermediary between the Automation Registry and your Upkeep contract. The `Forwarder` will always be the `msg.Sender` for your upkeep.
+Each registered upkeep under the Chainlink Automation network has its own unique `Forwarder` contract. The `Forwarder` address becomes available only after upkeep registration, as we deploy a new forwarder for each upkeep. The `Forwarder` contract is the intermediary between the Automation Registry and your Upkeep contract, so you make it the `msg.Sender` for your upkeep.
 
-If your `performUpkeep` function is open and callable by anyone without risk of accepting unintentional external data, you don't need to use the `Forwarder`.
+If you don't use the forwarder address, your contract's `performUpkeep` function is open and callable by anyone. If your contract is without risk of accepting unintentional external data, you don't need to use the forwarder address.
 
 ## Securing your upkeep
 
-If your upkeep's perform function needs to be permissioned, please consider adding `msg.sender = forwarder` at the top of your `performUpkeep` function.
+If your upkeep's perform function needs to be permissioned, please consider setting `msg.sender` as your forwarder address at the top of your `performUpkeep` function.
 
 To make this work you will need to:
 
 - Create `forwarder` as a mutable address variable on your contract that only _you_ can update. `forwarder` is a unique value that cannot change for your upkeep.
-- Create `setForwarder` function so you can update the `forwarder` address
-- After registration run `setForwarder` with the forwarder address in your UI, or programmatically fetch it using `registry.getForwarder(upkeepID)` using the Registry interface.
+- Create a `setForwarder` function in your contract so you can update the `forwarder` address.
+- Register your upkeep and then retrieve its forwarder address from the Chainlink Automation App or programmatically.
+- Call the `setForwarder` function, passing the forwarder address as an input argument.
+
+<Aside type="caution" title="Permissioning for time-based upkeeps">
+For [time-based upkeeps](/chainlink-automation/guides/job-scheduler), the **Upkeep address** is the address of the contract that is calling your contract. Do **not** use the forwarder address to permission time-based upkeeps.
+
+In the [Chainlink Automation App](https://automation.chain.link/), open the Details page for your upkeep. Locate the listed **Upkeep address** and use it instead of the **Forwarder address** for permissioning.
+
+</Aside>
+
+### Finding the forwarder address
+
+After you register an upkeep, its forwarder address is available in the Chainlink Automation App. Alternatively, you can fetch it programmatically using `registry.getForwarder(upkeepID)` from the Registry interface.
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="upkeepType" client:visible>
+<Fragment slot="tab.1">Time-based upkeeps</Fragment>
+<Fragment slot="tab.2">Custom or log trigger upkeeps</Fragment>
+<Fragment slot="panel.1">
+For time-based upkeeps, do **not** use the listed forwarder address. Instead, use the **Upkeep address** shown in the Chainlink Automation App:
+<ClickToZoom src="/images/automation/cron-upkeep-address.png" alt="Upkeep address in Chainlink Automation App" />
+
+The **Upkeep address** is shown in the middle card of the **Details** section for your upkeep.
+
+</Fragment>
+<Fragment slot="panel.2">
+For custom upkeeps or log trigger upkeeps, use the **Forwarder address** listed in the Chainlink Automation App:
+<ClickToZoom src="/images/automation/forwarder-address-ui.png" alt="Forwarder address in Chainlink Automation App" />
+
+The **Forwarder address** is shown in the left card of the **Details** section for your upkeep.
+
+</Fragment>
+</TabsContent>
 
 ## Code example
 

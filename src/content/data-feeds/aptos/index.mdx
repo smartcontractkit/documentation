@@ -1,0 +1,340 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using Data Feeds on Aptos"
+isIndex: true
+whatsnext: { "Aptos Price Feed Addresses": "/data-feeds/price-feeds/addresses?network=aptos" }
+metadata:
+  description: "Explore how to use Chainlink Data Feeds on Aptos to power your applications with data."
+---
+
+import { CopyText } from "@components"
+
+Aptos is a Layer 1 blockchain that uses the [Move](https://move-language.github.io/move/) programming language for smart contracts.
+
+Chainlink Data Feeds on Aptos provides data through a single price feed contract that handles multiple data feeds. You interact with this contract by passing the specific feed ID(s) for the data you need. This contrasts with Chainlink's integration on other blockchains, where each price feed has a separate contract address.
+
+## Getting Started (CLI)
+
+This guide explains how to use Chainlink Data Feeds with your Move smart contracts on Aptos testnet using the `Benchmark` structure provided by the data feeds contract. You will use the [Aptos CLI](https://aptos.dev/en/build/cli) to compile, publish, and interact with your contract.
+
+### Requirements
+
+Make sure you have the [Aptos CLI](https://aptos.dev/en/build/cli) installed. You can run <CopyText text="aptos help" code /> in your terminal to verify if the CLI is correctly installed.
+
+### Integrate Chainlink Data Feeds on Aptos
+
+Create a new directory for your project and navigate to it in your terminal:
+
+```bash
+mkdir aptos-data-feeds && cd aptos-data-feeds
+```
+
+#### Set up your Aptos testnet account
+
+1. Run the following command in your terminal to create a new account on testnet:
+
+   ```bash
+   aptos init --network=testnet --assume-yes
+   ```
+
+1. You are prompted to enter a private key:
+
+   ```bash
+   Configuring for profile default
+   Configuring for network Testnet
+   Enter your private key as a hex literal (0x...) [Current: Redacted | No input: Generate new key (or keep one if present)]
+   ```
+
+   Press `Enter` to generate a new key pair with the [`ed25519` key scheme](https://aptos.dev/en/network/blockchain/accounts#authentication-key).
+
+   Expect an output similar to the following:
+
+   ```bash
+   No key given, generating key...
+   Account 0x35107a273065fc0f428b2db719145682f6b5bf16a32b071ccd649fcd8b1a44e9 doesn't exist, creating it and funding it with 100000000 Octas
+   Account 0x35107a273065fc0f428b2db719145682f6b5bf16a32b071ccd649fcd8b1a44e9 funded successfully
+
+   ---
+   Aptos CLI is now set up for account 0x35107a273065fc0f428b2db719145682f6b5bf16a32b071ccd649fcd8b1a44e9 as profile default!
+   See the account here: https://explorer.aptoslabs.com/account/0x35107a273065fc0f428b2db719145682f6b5bf16a32b071ccd649fcd8b1a44e9?network=testnet
+   Run `aptos --help` for more information about commands
+   {
+     "Result": "Success"
+   }
+   ```
+
+You now have a funded testnet account on Aptos.
+
+#### Set up your project
+
+1. Initialize a Move package in your `aptos-data-feeds` directory:
+
+   ```bash
+   aptos move init --name aptos-data-feeds
+   ```
+
+   Expect the following output:
+
+   ```bash
+   {
+   "Result": "Success"
+   }
+   ```
+
+   You should now have a Move project with the following structure:
+
+   ```plaintext
+    Move.toml
+    ├── /.aptos
+    ├── /scripts
+    ├── /sources
+    └── /tests
+   ```
+
+1. Update your `Move.toml` file to include the required dependencies and addresses:
+
+   ```toml
+   [package]
+   name = "my-app"
+   version = "1.0.0"
+   authors = []
+
+   [addresses]
+   sender = "<YOUR_ACCOUNT_ADDRESS>"
+   owner = "<YOUR_ACCOUNT_ADDRESS>"
+   data_feeds = "0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
+   platform = "0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99"
+   move_stdlib = "0x1"
+   aptos_std = "0x1"
+
+   [dev-addresses]
+
+   [dependencies]
+   AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "main" }
+   MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/move-stdlib", rev = "main" }
+   ChainlinkDataFeeds = { local = "./ChainlinkDataFeeds" }
+   ```
+
+   Where:
+
+   - `<YOUR_ACCOUNT_ADDRESS>` is your Aptos testnet account address. You can find your address in the `~/.aptos/config.yaml` file. Alternatively, run the following command in your terminal to retrieve it:
+
+     ```bash
+     aptos config show-profiles --profile=default
+     ```
+
+   - The `data_feeds` address is the Chainlink Data Feeds contract address on Aptos testnet (`0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3`).
+
+1. Run the following command to download the compiled bytecode for the `ChainlinkPlatform` and `ChainlinkDataFeeds` packages:
+
+   ```bash
+   aptos move download --account 0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99 --package ChainlinkPlatform && \
+   aptos move download --account 0xccad6853cabea164842907df3de4f89bb34be5bf249bbf16939f9c90db1bf63b --package ChainlinkDataFeeds
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Saved package with 2 module(s) to `~/aptos-data-feeds/ChainlinkPlatform`
+   {
+     "Result": "Download succeeded"
+   }
+   Saved package with 2 module(s) to `~/aptos-data-feeds/ChainlinkDataFeeds`
+   {
+     "Result": "Download succeeded"
+   }
+   ```
+
+1. Open the `ChainlinkDataFeeds` package configuration file (`ChainlinkDataFeeds/Move.toml`) and update the `ChainlinkPlatform` dependency to point to your local path:
+
+   ```toml
+   ChainlinkPlatform = { local = "../ChainlinkPlatform" }
+   ```
+
+#### Write the Move contract to interact with Chainlink Data Feeds
+
+In this step, you will develop a Move module that interacts with Chainlink Data Feeds to fetch the latest price and timestamp for a specified feed ID. This module retrieves benchmark data for the given feed ID, extracts the price and timestamp, and stores this information in the invoking account's global storage. You can then retrieve this data using a view function.
+
+1. Create a new Move module in the `sources` directory of your project:
+
+   ```bash
+   touch sources/MyOracleContract.move
+   ```
+
+1. Insert the following code example and save your `MyOracleContract.move` file:
+
+   ```rust
+   module sender::MyOracleContractTest {
+      use std::vector;
+      use std::signer;
+      use data_feeds::router::get_benchmarks;
+      use data_feeds::registry::{Benchmark, get_benchmark_value, get_benchmark_timestamp};
+      use move_stdlib::option::{Option, some, none};
+
+      struct PriceData has copy, key, store {
+         /// The price value with 18 decimal places of precision
+         price: u256,
+         /// Unix timestamp in seconds
+         timestamp: u256,
+      }
+
+      // Function to fetch and store the price data for a given feed ID
+      public entry fun fetch_price(account: &signer, feed_id: vector<u8>) acquires PriceData {
+         let feed_ids = vector[feed_id]; // Use the passed feed_id
+         let billing_data = vector[];
+         let benchmarks: vector<Benchmark> = get_benchmarks(account, feed_ids, billing_data);
+         let benchmark = vector::pop_back(&mut benchmarks);
+         let price: u256 = get_benchmark_value(&benchmark);
+         let timestamp: u256 = get_benchmark_timestamp(&benchmark);
+
+         // Check if PriceData exists and update it
+         if (exists<PriceData>(signer::address_of(account))) {
+               let data = borrow_global_mut<PriceData>(signer::address_of(account));
+               data.price = price;
+               data.timestamp = timestamp;
+         } else {
+               // If PriceData does not exist, create a new one
+               move_to(account, PriceData { price, timestamp });
+         }
+      }
+
+      // View function to get the stored price data
+      #[view]
+      public fun get_price_data(account_address: address): Option<PriceData> acquires PriceData {
+         if (exists<PriceData>(account_address)) {
+               let data = borrow_global<PriceData>(account_address);
+               some(*data)
+         } else {
+               none()
+         }
+      }
+   }
+   ```
+
+#### Compile and publish the contract
+
+1.  Compile and publish the contract to the Aptos testnet:
+
+    ```bash
+    aptos move publish --skip-fetch-latest-git-deps
+    ```
+
+    - You are prompted to confirm the transaction details. Type `yes` and press `Enter` to proceed.
+
+      ```bash
+      Compiling, may take a little while to download git dependencies...
+      INCLUDING DEPENDENCY AptosFramework
+      INCLUDING DEPENDENCY AptosStdlib
+      INCLUDING DEPENDENCY ChainlinkDataFeeds
+      INCLUDING DEPENDENCY ChainlinkKeystone
+      INCLUDING DEPENDENCY MoveStdlib
+      BUILDING my-app
+      package size 2133 bytes
+      Do you want to submit a transaction for a range of [176700 - 265000] Octas at a gas unit price of 100 Octas? [yes/no] >
+      ```
+
+    - Expect an output similar to the following:
+
+      ```bash
+      Transaction submitted: https://explorer.aptoslabs.com/txn/0x22a65eedb37ad7e41e195409c06e23b154c71bba11c73e6f67df6ba41e6768a4?network=testnet
+      {
+        "Result": {
+          "transaction_hash": "0x22a65eedb37ad7e41e195409c06e23b154c71bba11c73e6f67df6ba41e6768a4",
+          "gas_used": 1767,
+          "gas_unit_price": 100,
+          "sender": "4006c4623e114a6169b409cc0ad91b0780e62667633ce2e069b31125cc6a5d37",
+          "sequence_number": 0,
+          "success": true,
+          "timestamp_us": 1731707700843776,
+          "version": 6238520375,
+          "vm_status": "Executed successfully"
+        }
+      }
+      ```
+
+**Notes**:
+
+- Your `default` profile within the `~/.aptos/config.yaml` file is used by default. You can specify a different profile using the `--profile` flag.
+- Ensure you have enough testnet APT tokens in your account to cover the deployment fees. You can fund your account with testnet APT tokens using the following command, where the amount used is in Octas (1 APT = 100,000,000 Octas):
+  ```bash
+  aptos account fund-with-faucet --account <YOUR_PUBLIC_ADDRESS> --amount 100000000
+  ```
+
+#### Interact with the deployed contract
+
+In this step, you will interact with your deployed contract to fetch the BTC/USD price and timestamp. The BTC/USD feed ID on Aptos testnet is: <CopyText 
+text="0x01a0b4d920000332000000000000000000000000000000000000000000000000" code />. You can find the feed ID for other assets in the [Feed Addresses page](/data-feeds/price-feeds/addresses?network=aptos&page=1).
+
+1. Fetch benchmark data for the BTC/USD feed, extract the price and timestamp, and store this information in your account's global storage.
+
+   - Run the following command, replacing `<YOUR_ACCOUNT_ADDRESS>` with your actual account address:
+
+     ```bash
+     aptos move run \
+     --function-id '<YOUR_ACCOUNT_ADDRESS>::MyOracleContractTest::fetch_price' \
+     --args hex:0x01a0b4d920000332000000000000000000000000000000000000000000000000
+     ```
+
+     **Note**: `<YOUR_ACCOUNT_ADDRESS>` is your Aptos testnet account address. You can find your address in the `~/.aptos/config.yaml` file. Alternatively, run the following command in your terminal to retrieve it:
+
+     ```bash
+     aptos config show-profiles --profile=default
+     ```
+
+   - You are prompted to confirm the transaction details. Type `yes` and press `Enter` to proceed:
+
+     ```bash
+     Do you want to submit a transaction for a range of [47200 - 70800] Octas at a gas unit price of 100 Octas? [yes/no] >
+     ```
+
+   - Expect an output similar to the following:
+
+     ```bash
+     Transaction submitted: https://explorer.aptoslabs.com/txn/0x7180e890ececbcab4f052f84ecae21d37f33a31d0e475f566f92fc6df157c725?network=testnet
+     {
+      "Result": {
+        "transaction_hash": "0x7180e890ececbcab4f052f84ecae21d37f33a31d0e475f566f92fc6df157c725",
+        "gas_used": 472,
+        "gas_unit_price": 100,
+        "sender": "4006c4623e114a6169b409cc0ad91b0780e62667633ce2e069b31125cc6a5d37",
+        "sequence_number": 1,
+        "success": true,
+        "timestamp_us": 1731707764586551,
+        "version": 6238524110,
+        "vm_status": "Executed successfully"
+      }
+     }
+     ```
+
+1. Retrieve this data using the view function:
+
+   - Run the following command, replacing `<YOUR_ACCOUNT_ADDRESS>` with your actual account address:
+
+     ```bash
+     aptos move view \
+     --function-id '<YOUR_ACCOUNT_ADDRESS>::MyOracleContractTest::get_price_data' \
+     --args address:<YOUR_ACCOUNT_ADDRESS>
+     ```
+
+   - Expect an output similar to the following:
+
+     ```bash
+     {
+       "Result": [
+         {
+           "vec": [
+             {
+               "price": "70376345325832900000000",
+               "timestamp": "1730827175"
+             }
+           ]
+         }
+       ]
+     }
+     ```
+
+     Where:
+
+     - `price` is the latest BTC/USD price with 18 decimal places.
+     - `timestamp` is the Unix timestamp in seconds when the price is fetched.

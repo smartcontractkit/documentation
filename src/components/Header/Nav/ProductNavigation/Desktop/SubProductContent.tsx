@@ -1,6 +1,6 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
-import { SubProductsNav } from "../../config"
-import { clsx } from "../../utils"
+import { SubProductsNav } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
 import styles from "./subProductContent.module.css"
 
 export const SubProductContent = ({ subProductsNav }: { subProductsNav: SubProductsNav }) => (
@@ -20,6 +20,7 @@ export const SubProductContent = ({ subProductsNav }: { subProductsNav: SubProdu
         .map((item) => (
           <NavigationMenu.Link key={item.label} asChild>
             <a className={clsx(styles.link, "subproduct-link")} href={item.href}>
+              <img className={clsx(styles.icon, "subproduct-icon")} src={item.icon}></img>
               {item.label}
             </a>
           </NavigationMenu.Link>

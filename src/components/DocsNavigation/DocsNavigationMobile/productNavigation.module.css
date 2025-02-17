@@ -1,0 +1,143 @@
+.root {
+  display: initial;
+}
+
+.logo {
+  margin-right: var(--space-2x);
+  width: var(--space-5x);
+  height: var(--space-5x);
+}
+
+.icon {
+  width: var(--space-5x);
+  height: var(--space-5x);
+}
+
+.caret {
+  width: var(--space-4x);
+  height: var(--space-4x);
+  border-radius: 50%;
+  position: absolute;
+  right: var(--space-4x);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caret span {
+  width: var(--space-2x);
+  height: var(--space-2x);
+  border-right: 2px solid var(--gray-600);
+  border-bottom: 2px solid var(--gray-600);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  margin-bottom: 1px;
+}
+
+.menuContent {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--white);
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  width: 100dvw;
+  display: flex;
+  overflow: hidden;
+  z-index: 11;
+}
+
+.hidden {
+  display: none;
+}
+
+.content {
+  width: 200vw;
+  display: flex;
+  transition: transform 0.3s;
+}
+
+.main {
+  transform: translateX(0vw);
+}
+
+.submenu {
+  transform: translateX(-100vw);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--space-6x);
+  left: var(--space-8x);
+  z-index: 12;
+}
+
+.productContent,
+.subProductContent {
+  overflow: scroll;
+  padding: var(--space-4x) var(--space-6x);
+  list-style: none;
+  width: 100vw;
+  padding-bottom: 56px;
+}
+.subProductContent {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.menuContent[data-state="open"] {
+  animation: slideFromLeft 0.3s forwards;
+}
+
+.menuContent[data-state="closed"] {
+  animation: slideToLeft 0.3s forwards;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-16x);
+  gap: var(--space-2x);
+  isolation: isolate;
+  z-index: 100;
+  position: relative;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trigger span {
+  /* todo: This was manually set on request. Should be changed with Design System */
+  color: var(--Page-Foreground-Muted, #6c7585);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+@media screen and (min-width: 992px) {
+  .logo,
+  .trigger {
+    display: none;
+  }
+}

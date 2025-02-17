@@ -1,0 +1,306 @@
+---
+section: vrf
+date: Last Modified
+title: "Migrating from VRF v1"
+---
+
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
+import { Aside, CodeSample } from "@components"
+import { Tabs, TabsContent } from "@components/Tabs"
+
+<Vrf2_5Common callout="security" />
+
+VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Learn more about VRF V2.5](https://blog.chain.link/introducing-vrf-v2-5/).
+
+## Comparing VRF v1 to VRF v2.5
+
+Chainlink VRF v2.5 includes several improvements and changes to the way you fund and request randomness for your smart contracts:
+
+- You have the option to manage payment for your VRF requests by pre-funding a subscription account, or to directly fund your consuming contracts as you do with VRF V1. [Compare subscription and direct funding](/vrf/#choosing-the-correct-method).
+- VRF v2.5 introduces the option to pay for requests in either LINK or native tokens. This choice is available for both subscription and direct funding.
+
+### New billing options
+
+- **Native billing:** You have the option to use either native tokens or LINK to pay for VRF requests. Instead of a flat LINK fee per request, there is percentage-based premium fee applied to each request. See the [Billing](/vrf/v2-5/billing) page for more details. To find out the premium percentages for the networks you use, see the [Supported Networks](/vrf/v2-5/supported-networks) page.
+
+- **Subscription management:** Chainlink VRF v2.5 has a [Subscription Manager](https://vrf.chain.link) application that allows smart contract applications to pre-fund multiple requests for randomness using one subscription account. This reduces the gas fees for VRF requests by eliminating the need to transfer funds for each individual request. You transfer funds to the subscription balance only when it requires additional funding.
+
+- **Unified Billing - Delegate Subscription Balance to Multiple Addresses:** Chainlink VRF v2.5 allows up to 100 smart contract addresses to fund their requests for verifiable randomness from a single subscription account, which is managed by the subscription owner.
+
+- **Variable Callback Gas Limit:** Chainlink VRF v2.5 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the callback request function that receives the random values. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain you use. See the gas limits on the [VRF Supported Networks](/vrf/v2-5/supported-networks) page.
+
+- **More configuration capability:** You can define how many block confirmations must pass before verifiable randomness is generated and delivered onchain when your application makes a request transaction. The range is from 3 to 200 blocks. VRF V1 always waited 10 blocks on Ethereum before delivering onchain randomness. Select a value that protects your application from block re-organizations while still providing sufficiently low latency from request to response. See the [Security Considerations](/vrf/v2-5/security) page to learn more.
+
+- **Multiple Random Outputs in a Single Request:** In VRF v2.5, you can request multiple random numbers (multi-word) in a single onchain transaction, which reduces gas costs. The fulfillment is also a single transaction, which reduces the latency of responses.
+
+For direct funding, the configurations for overhead gas have changed:
+
+- The amount of wrapper overhead gas is reduced compared to V2.
+- The amount of coordinator overhead gas used varies depending on the network used for your request, whether you're paying in LINK or native tokens, and how many random values you want in each VRF request. See the [Billing](/vrf/v2-5/billing) page for more details and examples. The new configurations are listed in the [Supported Networks](/vrf/v2-5/supported-networks) page.
+
+### Updating your applications to use VRF v2.5
+
+You have the option to manage payment for your VRF requests with a subscription account, or to directly fund your consuming contracts as you do with VRF V1. [Compare subscription and direct funding](/vrf/#choosing-the-correct-method).
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+To modify your existing smart contract code to work with VRF v2.5, complete the following changes. See the [Get a Random Number](/vrf/v2-5/subscription/get-a-random-number) guide for an example.
+
+1. Set up and fund a subscription in the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
+   {/* prettier-ignore */}
+
+   <div class="remix-callout">
+     <a href="https://vrf.chain.link">Open the Subscription Manager</a>
+   </div>
+
+1. Add the following imports to your contract:
+
+   - [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol). Remove the v1 `VRFConsumerBase.sol` import. `VRFConsumerBaseV2Plus` includes the `fulfillRandomWords` function. The `VRFConsumerBaseV2Plus` contract imports the `IVRFCoordinatorV2Plus` interface, which includes the `requestRandomWords` function.
+   - [`VRFV2PlusClient`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev//libraries/VRFV2PlusClient.sol) is a library used to format your VRF requests.
+
+   ```solidity
+   import { VRFConsumerBaseV2Plus } from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+   import { VRFV2PlusClient } from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+   ```
+
+1. Add a `VRFConsumerBaseV2Plus` constructor, passing in the LINK token address for the network you're using, as shown in the [Get a Random Number](/vrf/v2-5/subscription/get-a-random-number) example.
+
+1. Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters. The `extraArgs` key allows you to add extra arguments related to new VRF features. Use the `nativePayment` argument to enable or disable payment in native tokens.
+
+   {/* prettier-ignore */}
+   ```solidity
+    uint256 requestId = s_vrfCoordinator.requestRandomWords(
+        VRFV2PlusClient.RandomWordsRequest({
+            keyHash: keyHash,
+            subId: s_vrfSubscriptionId,
+            requestConfirmations: requestConfirmations,
+            callbackGasLimit: callbackGasLimit,
+            numWords: numWords,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true}))
+        })
+    );
+    ```
+
+1. Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.
+
+1. Use the `setCoordinator` function in your contract so that you can easily update the VRF coordinator for future VRF releases. This function is inherited from the [`IVRFCoordinatorV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol) interface.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+To modify your existing smart contract code to work with VRF v2.5, complete the following changes. See the [Get a Random Number](/vrf/v2-5/direct-funding/get-a-random-number) guide for an example.
+
+1.  Import and inherit the [`VRFV2PlusWrapperConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+
+1.  Add a `VRFV2PlusWrapperConsumerBase` constructor, passing in the VRF wrapper address for the network you're using, as shown in the [Get a Random Number](/vrf/v2-5/direct-funding/get-a-random-number) example.
+
+1.  You can still call the `requestRandomness` function. However, the v2 `requestRandomness` function requires several different parameters. See the [Supported networks](/vrf/v2-5/supported-networks) page to adjust them for your own needs.
+
+    - The `requestRandomness` function in the wrapper contract requires a new `extraArgs` argument that allows you to add extra arguments related to new VRF features. Use the `nativePayment` argument to enable or disable payment in native tokens.
+    - Additionally, the `requestRandomness` function now returns two arguments instead of one: the request ID and the request price.
+
+    {/* prettier-ignore */}
+    ```solidity
+    bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+        VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+    );
+    (uint256 reqId, uint256 reqPrice) = requestRandomness(
+        callbackGasLimit,
+        requestConfirmations,
+        numWords,
+        extraArgs
+    );
+    ```
+
+1.  If you're paying for requests with LINK, you can still call the `requestRandomness` function. However, if you're paying with native tokens, call the `requestRandomnessPayInNative` function instead.
+
+    - Both functions return two arguments instead of one: the request ID and the request price.
+    - Both functions require one additional parameter, `extraArgs`. Use `nativePayment` to specify whether or not you want to pay for VRF requests using native tokens:
+
+          {/* prettier-ignore */}
+          <Tabs sharedStore="feePaymentType" client:visible>
+          <Fragment slot="tab.1">LINK</Fragment>
+          <Fragment slot="tab.2">Native tokens</Fragment>
+          <Fragment slot="panel.1">
+          {/* prettier-ignore */}
+          ```solidity
+          bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+              VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+          );
+          (uint256 reqId, uint256 reqPrice) = requestRandomness(
+              callbackGasLimit,
+              requestConfirmations,
+              numWords,
+              extraArgs
+          );
+          ```
+          </Fragment>
+          <Fragment slot="panel.2">
+          {/* prettier-ignore */}
+          ```solidity
+          bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+              VRFV2PlusClient.ExtraArgsV1({nativePayment: true})
+          );
+          (uint256 reqId, uint256 reqPrice) = requestRandomnessPayInNative(
+              callbackGasLimit,
+              requestConfirmations,
+              numWords,
+              extraArgs
+          );
+          ```
+          </Fragment>
+
+      </Tabs>
+
+1.  Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.
+
+</Fragment>
+</TabsContent>
+
+## Migration walkthrough
+
+VRF v2.5 currently supports subscriptions and direct funding on all [supported networks](/vrf/v2-5/supported-networks). To migrate, you need to [update your existing smart contract code](#update-your-code) and redeploy your contracts.
+
+If using subscriptions, [create and fund a new VRF v2.5 subscription](/vrf/v2-5/subscription/create-manage).
+
+For direct funding, deploy the [`DirectFundingConsumer`](/samples/VRF/v2-5/DirectFundingConsumer.sol) example:
+
+<CodeSample src="samples/VRF/v2-5/DirectFundingConsumer.sol" showButtonOnly />
+
+### Update your code
+
+To modify your existing smart contract code to work with VRF v2.5, complete the following changes:
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+1. Import the [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol) contract and remove the v2 `VRFConsumerBaseV2` import.
+
+1.  Import the VRF v2.5 coordinator, [`VRFCoordinatorV2_5`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFCoordinatorV2_5.sol), and update any old references to the VRF V2 coordinator in your contract.
+
+1.  Add a `VRFConsumerBaseV2Plus` constructor, passing in the LINK token address for the network you're using.
+
+1.  Update your `requestRandomWords` function calls to reflect the new request structure for VRF v2.5. Make sure to include the new `extraArgs` part of the `VRFV2PlusClient.RandomWordsRequest` object, and specify whether or not you want to pay for VRF requests using native tokens:
+
+        {/* prettier-ignore */}
+        <Tabs sharedStore="feePaymentType" client:visible>
+        <Fragment slot="tab.1">LINK</Fragment>
+        <Fragment slot="tab.2">Native tokens</Fragment>
+        <Fragment slot="panel.1">
+
+        {/* prettier-ignore */}
+        ```solidity
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_vrfSubscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
+        );
+        ```
+
+        </Fragment>
+        <Fragment slot="panel.2">
+
+        {/* prettier-ignore */}
+        ```solidity
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_vrfSubscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true}))
+            })
+        );
+        ```
+        </Fragment>
+        </Tabs>
+
+1.  When using the [`@chainlink/contracts`](https://www.npmjs.com/package/@chainlink/contracts/v/1.1.1) package version 1.1.1 and later, update your `fulfillRandomWords` function signature to match the `VRFConsumerBaseV2Plus` contract, which has changed to:
+
+        ```
+        function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+        ```
+
+        In the `@chainlink/contracts` package version 1.1.0 and earlier, the `randomWords` parameter has a `memory` storage location.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+1.  Import the [`VRFV2PlusWrapperConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol) contract and remove the v2 `VRFV2WrapperConsumerBase` import.
+
+1.  Add a `VRFV2PlusWrapperConsumerBase` constructor, passing in the VRF wrapper address for the network you're using. Unlike in V2, you don't have to pass the LINK token address to the constructor.
+
+1.  If you're paying for requests with LINK, you can still call the `requestRandomness` function. However, if you're paying with native tokens, call the `requestRandomnessPayInNative` function instead.
+
+    Both functions require one additional parameter, `extraArgs`. Use `nativePayment` to specify whether or not you want to pay for VRF requests using native tokens:
+
+        {/* prettier-ignore */}
+        <Tabs sharedStore="feePaymentType" client:visible>
+        <Fragment slot="tab.1">LINK</Fragment>
+        <Fragment slot="tab.2">Native tokens</Fragment>
+        <Fragment slot="panel.1">
+
+        {/* prettier-ignore */}
+        ```solidity
+        bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+            VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+        );
+        (uint256 reqId, uint256 reqPrice) = requestRandomness(
+            callbackGasLimit,
+            requestConfirmations,
+            numWords,
+            extraArgs
+        );
+        ```
+
+        </Fragment>
+
+    <Fragment slot="panel.2">
+
+        {/* prettier-ignore */}
+        ```solidity
+        bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+            VRFV2PlusClient.ExtraArgsV1({nativePayment: true})
+        );
+        (uint256 reqId, uint256 reqPrice) = requestRandomnessPayInNative(
+            callbackGasLimit,
+            requestConfirmations,
+            numWords,
+            extraArgs
+        );
+        ```
+
+        </Fragment>
+
+    </Tabs>
+
+1.  The V2.5 `requestRandomness` and `requestRandomnessPayInNative` functions both return a tuple: `(uint256 requestId, uint256 requestPrice)`. Adjust your `requestRandomWords` function or any other functions in your code where you call the V2.5 wrapper's `requestRandomness` or `requestRandomnessPayInNative` functions.
+
+1.  Make sure your contract has a withdraw function for both native tokens and LINK. Both are included in the [direct funding example code](#view-example-code) and the [`VRFV2PlusWrapperConsumerExample`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/testhelpers/VRFV2PlusWrapperConsumerExample.sol) contract.
+
+</Fragment>
+</TabsContent>
+
+## View example code
+
+View example code for both VRF 2.5 subscription and direct funding:
+
+Open the full example `SubscriptionConsumer` contract:
+
+<CodeSample src="samples/VRF/v2-5/SubscriptionConsumer.sol" showButtonOnly />
+
+Open the full example `DirectFundingConsumer` contract:
+
+<CodeSample src="samples/VRF/v2-5/DirectFundingConsumer.sol" showButtonOnly />

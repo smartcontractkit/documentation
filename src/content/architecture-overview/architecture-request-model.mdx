@@ -22,7 +22,7 @@ All source code is open source and available in the [Chainlink Github repository
 
 ### ChainlinkClient
 
-[`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol) is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](/resources/create-a-chainlinked-project).
+[`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/ChainlinkClient.sol) is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](/resources/create-a-chainlinked-project).
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
@@ -36,7 +36,7 @@ Learn more about [ERC-677 and the LINK token](/resources/link-token-contracts).
 
 ### Operator Contract
 
-[`Operator` contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/Operator.sol) are owned by oracle node operators, which run alongside offchain oracle nodes.
+[`Operator` contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/Operator.sol) are owned by oracle node operators, which run alongside offchain oracle nodes.
 
 #### Request
 
@@ -48,7 +48,7 @@ The client contract that initiates this cycle must create a request with the fol
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle).
 
-Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/operatorforwarder/dev/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
+Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/operatorforwarder/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
 
 #### Fulfillment
 

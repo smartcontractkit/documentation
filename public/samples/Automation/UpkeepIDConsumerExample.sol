@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.6;
+pragma solidity 0.8.19;
 
 // UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
 // ./interfaces/LinkTokenInterface.sol

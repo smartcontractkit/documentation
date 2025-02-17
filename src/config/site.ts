@@ -1,18 +1,18 @@
 export const SITE = {
   title: "Chainlink Documentation",
   description:
-    "Chainlink is the most widely used oracle network for powering universally connected smart contracts, enabling any blockchain to access real-world data & APIs.",
+    "Simple, clean, and comprehensive documentation for any developer to learn, experiment, and build with the Chainlink platform. Start building now.",
   defaultLanguage: "en_US",
 }
 
 export const PAGE = {
-  titleFallback: "Blockchain Oracles for Connected Smart Contracts",
+  titleFallback: "Chainlink Documentation",
 }
 
 export const OPEN_GRAPH = {
   image: {
-    src: "https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa2e075cfcf344baa0e9063_chainlink-open-graph-images_home%20(with%20illustration).png",
-    alt: "Chainlink is the most widely used oracle network for powering universally connected smart contracts, enabling any blockchain to access real-world data & APIs.",
+    src: "/images/og.png",
+    alt: "Simple, clean, and comprehensive documentation for any developer to learn, experiment, and build with the Chainlink platform. Start building now.",
   },
   twitter: "chainlink",
 }

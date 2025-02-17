@@ -14,7 +14,7 @@ This tutorial demonstrates how to import modules and use them with your Function
 
 - Each import must be 10 MB or less in size.
 - Up to 100 imports total are supported.
-- Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatability List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
+- Deno supports [ESM compatible NPM imports](https://docs.deno.com/runtime/manual/node/npm_specifiers) and some [standard Node modules](https://docs.deno.com/runtime/manual/node/node_specifiers). See the [Compatibility List](https://docs.deno.com/runtime/manual/node/compatibility) for details.
 - Third-party modules are imported at runtime, so import statements must use asynchronous logic like the following examples:
 
   - Importing from `deno.land`:
@@ -82,40 +82,40 @@ To run the example:
    secp256k1 unavailable, reverting to browser version
    Start simulation...
    Simulation result {
-   capturedTerminalOutput: 'Fetched BTC / USD price: 4367193987453\n',
-   responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003f8d10bd97d'
+     capturedTerminalOutput: 'Fetched BTC / USD price: 6644228390483\n',
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000060afadf7e53'
    }
-   ✅ Decoded response to int256:  4367193987453n
+   ✅ Decoded response to int256:  6644228390483n
 
    Estimate request costs...
-   Fulfillment cost estimated to 0.20243353895715 LINK
+   Fulfillment cost estimated to 1.09518769822223 LINK
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3
+   ✅ Functions request sent! Transaction hash 0xa73d895adb28360d1737a695647390a3a7f000368d976135fcfe9c834ee75ed6. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0xa73d895adb28360d1737a695647390a3a7f000368d976135fcfe9c834ee75ed6
 
-   ✅ Request 0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef successfully fulfilled. Cost is 0.200014890551438381 LINK.Complete reponse:  {
-   requestId: '0xa8a7bec42edc16cf549f69e734161f2f2550a1057bb4060611a8043253ee61ef',
-   subscriptionId: 38,
-   totalCostInJuels: 200014890551438381n,
-   responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003f8d10bd97d',
-   errorString: '',
-   returnDataBytesHexstring: '0x',
-   fulfillmentCode: 0
+   ✅ Request 0x5bac800974596113a3013bf788919a6b3df5ea65ec6238a1c98114a60daff6d2 successfully fulfilled. Cost is 0.236901088749168095 LINK.Complete response:  {
+     requestId: '0x5bac800974596113a3013bf788919a6b3df5ea65ec6238a1c98114a60daff6d2',
+     subscriptionId: 2303,
+     totalCostInJuels: 236901088749168095n,
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000060afadf7e53',
+     errorString: '',
+     returnDataBytesHexstring: '0x',
+     fulfillmentCode: 0
    }
 
-   ✅ Decoded response to int256:  4367193987453n
+   ✅ Decoded response to int256:  6644228390483n
    ```
 
    The output of the example gives you the following information:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0xed3d0419189c012ce852b37b51d47bdcd80f06a4749b4c01a81a3f5fb06139e3` and the request ID is `0xdfb161de5a6ad34e58bb115dd07651a11d4cf4739652f509ecad78a1bf506e82`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0xa73d895adb28360d1737a695647390a3a7f000368d976135fcfe9c834ee75ed6` and the request ID is `0x5bac800974596113a3013bf788919a6b3df5ea65ec6238a1c98114a60daff6d2`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.200435783655508510 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x000000000000000000000000000000000000000000000000000003f8d10bd97d`. Decoding it offchain to `int256` gives you a result: `4367193987453`.
+   - The DON successfully fulfilled your request. The total cost was: `0.236901088749168095 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000060afadf7e53`. Decoding it offchain to `int256` gives you a result: `6644228390483`.
 
 ## Examine the code
 
@@ -133,7 +133,7 @@ The Decentralized Oracle Network will run the [JavaScript code](https://github.c
 
 The example `source.js` file uses a JSON RPC call to the [`latestRoundData()` function](/data-feeds/api-reference#latestrounddata) of a [Chainlink Data Feed](/data-feeds).
 
-The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be inherited to override the JsonRpcProvider [`_send` method](https://docs.ethers.org/v6/api/providers/jsonrpc/#JsonRpcProvider). This customization is necessary because Deno does not natively support Node.js modules like [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html). We override the `_send` method to use the [fetch API](https://deno.land/api@v1.39.2?s=fetch), which is the standard way to make HTTP(s) requests in Deno. **Note**: The `url` passed in the constructor is the URL of the JSON RPC provider.
+The request requires a few modifications to work in the Chainlink Functions environment. For example, the `JsonRpcProvider` class must be inherited to override the JsonRpcProvider [`_send` method](https://docs.ethers.org/v6/api/providers/jsonrpc/#JsonRpcProvider). This customization is necessary because Deno does not natively support Node.js modules like [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html). We override the `_send` method to use the [fetch API](https://docs.deno.com/api/web/~/fetch), which is the standard way to make HTTP(s) requests in Deno. **Note**: The `url` passed in the constructor is the URL of the JSON RPC provider.
 
 ```javascript
 // Chainlink Functions compatible Ethers JSON RPC provider class
@@ -187,13 +187,13 @@ const consumerAddress = "0x91257aa1c6b7f382759c357fbc53c565c80f7fee" // REPLACE 
 const subscriptionId = 38 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
+   - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, these arguments are passed to the source code.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

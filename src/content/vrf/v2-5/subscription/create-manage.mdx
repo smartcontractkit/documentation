@@ -1,0 +1,98 @@
+---
+section: vrf
+date: Last Modified
+title: "Create and manage VRF V2.5 subscriptions"
+---
+
+import Vrf2_5Common from "@features/vrf/v2-5/Vrf2_5Common.astro"
+import { CodeSample } from "@components"
+import { Tabs, TabsContent } from "@components/Tabs"
+
+<Vrf2_5Common callout="security" />
+
+## Using the VRF Subscription Manager
+
+The [VRF Subscription Manager](https://vrf.chain.link/) is available to help you create and manage VRF V2.5 subscriptions. You can create and manage new V2.5 subscriptions, and manage existing V2 subscriptions, but you can no longer create new V2 subscriptions in the VRF Subscription Manager. Alternatively, you can [create and manage subscriptions programmatically](#create-a-subscription-programmatically).
+
+### Create a subscription
+
+To create a VRF 2.5 subscription:
+
+1. Use the VRF Subscription Manager at [vrf.chain.link](https://vrf.chain.link/). Connect your wallet in the upper right corner and then click **Create subscription**. The address of your connected wallet is automatically filled in the **Admin** address field.
+
+1. When the subscription is successfully created, there will be an alert in the upper right corner telling you that the subscription was successfully created. Click **Home** to navigate back to your main dashboard.
+
+1. Your new subscription shows in the **My Subscriptions** list, along with any previous V2 subscriptions you might have. Click the Subscription ID for your new subscription in the list.
+
+### Add a consumer
+
+To add a consuming contract:
+
+1. On the details page for your subscription, select **Add Consumer**.
+
+1. Provide the address of your consuming contract, and then select **Add Consumer** again. Confirm the resulting prompts in MetaMask or other wallet browser extension.
+
+### Fund your subscription
+
+To fund your subscription:
+
+1. On the page for your subscription, select the **Actions** menu and then select **Fund subscription**.
+
+1. Your subscription has two balances: one for LINK, and one for the native token. Expand the **Asset** menu to select either LINK or the native token.
+
+1. In **Amount to fund**, enter the amount you want to fund your subscription. Your wallet balance is displayed below the **Asset** field for easier reference. Select **Confirm** to fund your wallet, and then confirm the resulting prompts in MetaMask or other wallet browser extension.
+
+### Cancel your subscription and withdraw funds
+
+To withdraw your funds from a subscription, you must cancel the subscription.
+
+1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link/) and click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
+
+1. On your subscription details page, expand the **Actions** menu and select **Cancel subscription**. A field displays, prompting you to add the wallet address you want to send the remaining funds to.
+
+1. Enter your wallet address and click **Cancel subscription**. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF closes your subscription account and sends the remaining LINK to your wallet.
+
+If your subscription's admin address is a contract instead of an EOA, you may not be able to cancel the subscription directly. In this case, you must transfer ownership of your subscription to an EOA so that you can cancel the subscription and withdraw your funds.
+
+## Create a subscription programmatically
+
+If you prefer to create, fund and manage your subscriptions programmatically, you can either deploy a subscription manager contract or use your network's block explorer:
+
+1. Create a new subscription for VRF v2.5:
+
+   {/* prettier-ignore */}
+   <TabsContent sharedStore="subCreationMethod" client:visible>
+    <Fragment slot="tab.1">Subscription contract</Fragment>
+    <Fragment slot="tab.2">Using a block explorer</Fragment>
+    <Fragment slot="panel.1">
+    Deploy the [`SubscriptionManager` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/SubscriptionManager.sol). On deployment, the contract creates a new subscription and adds itself as a consumer to the new subscription.
+    </Fragment>
+    <Fragment slot="panel.2">
+    1. Navigate to the VRF coordinator contract on the block explorer for the network you want to use (for example, Etherscan or Polygonscan). You can find the coordinator addresses with links to the block explorers on the [Supported Networks](/vrf/v2-5/supported-networks) page.
+    1. In the **Contract** tab, select the **Write contract** tab. Connect your wallet to the block explorer.
+    1. Expand the `createSubscription` function and select the **Write** button. Follow the prompts in MetaMask to confirm the transaction.
+    1. Get your subscription ID for the next step, funding your subscription.
+    </Fragment>
+    </TabsContent>
+
+1. Fund your new VRF v2.5 subscription:
+
+   {/* prettier-ignore */}
+   <TabsContent sharedStore="subCreationMethod" client:visible>
+    <Fragment slot="tab.1">Subscription contract</Fragment>
+    <Fragment slot="tab.2">Using a block explorer</Fragment>
+    <Fragment slot="panel.1">
+    1. [Fund your new `VRFv2PlusSubscriptionManager` contract](/resources/fund-your-contract).
+    1. Call `topUpSubscription` from the `VRFv2PlusSubscriptionManager` contract. This function uses the LINK token contract's `transferAndCall` function to fund your new subscription.
+    </Fragment>
+    <Fragment slot="panel.2">
+    1. [Fund your new `VRFv2PlusSubscriptionManager` contract](/resources/fund-your-contract).
+    1. Navigate to the LINK token contract on the block explorer for the network you want to use (for example, Etherscan or Polygonscan). You can find the LINK token contract addresses with links to the block explorers on the [Supported Networks](/vrf/v2-5/supported-networks) page.
+    1. In the **Contract** tab, select the **Write contract** tab. Connect your wallet to the block explorer.
+    1. Expand the `transferAndCall` function and fill in the following parameters:
+        - **to(address)**: The address of the VRF coordinator.
+        - **value(uint256)**: The amount you want to fund your subscription with.
+        - **data(bytes)**: The ABI-encoded subscription ID.
+    1. Select the **Write** button and follow the prompts in MetaMask to confirm the transaction.
+    </Fragment>
+    </TabsContent>

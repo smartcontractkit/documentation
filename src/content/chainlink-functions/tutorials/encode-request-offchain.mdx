@@ -74,41 +74,34 @@ To run the example:
    $ node examples/9-send-cbor/request.js
    secp256k1 unavailable, reverting to browser version
    Start simulation...
-   Performing simulation with the following versions:
-   deno 1.36.3 (release, aarch64-apple-darwin)
-   v8 11.6.189.12
-   typescript 5.1.6
-
-
    Simulation result {
-   capturedTerminalOutput: 'Median Bitcoin price: 25713.36\n',
-   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000273c48'
+   capturedTerminalOutput: 'Median Bitcoin price: 66346.16\n',
+   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000653c78'
    }
-   ✅ Decoded response to uint256:  2571336n
+   ✅ Decoded response to uint256:  6634616n
 
    Estimate request costs...
-   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Fulfillment cost estimated to 0.000000000000215 LINK
+   Fulfillment cost estimated to 1.08425528035514 LINK
 
    Make request...
-   Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/user. StorageSlotId 0. Expiration in minutes: 15
+   Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/,https://02.functions-gateway.testnet.chain.link/. slotId 0. Expiration in minutes: 15
 
-   ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693899379, success: true }
+   ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/,https://02.functions-gateway.testnet.chain.link/! Gateways response:  { version: 1712947615, success: true }
 
-   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60
+   ✅ Functions request sent! Transaction hash 0x730a66676cd797b11943635d53af9941c561d90a7088106800d05b4fdb2de189. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x730a66676cd797b11943635d53af9941c561d90a7088106800d05b4fdb2de189
 
-   ✅ Request 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20 fulfilled with code: 0. Cost is 0.000039224977086446 LINK. Complete response:  {
-   requestId: '0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20',
-   subscriptionId: 3,
-   totalCostInJuels: 39224977086446n,
-   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000273c48',
+   ✅ Request 0x8329a6e56461117508885f9eaee338f25095eb0f863d6972877f38c4412c0a29 successfully fulfilled. Cost is 0.236443904180225775 LINK.Complete response:  {
+   requestId: '0x8329a6e56461117508885f9eaee338f25095eb0f863d6972877f38c4412c0a29',
+   subscriptionId: 2303,
+   totalCostInJuels: 236443904180225775n,
+   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000653c78',
    errorString: '',
    returnDataBytesHexstring: '0x',
    fulfillmentCode: 0
    }
 
-   ✅ Decoded response to uint256:  2571336n
+   ✅ Decoded response to uint256:  6634616n
    ```
 
    The output of the example gives you the following information:
@@ -116,10 +109,10 @@ To run the example:
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
    - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60](https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60) and the request ID is `0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x730a66676cd797b11943635d53af9941c561d90a7088106800d05b4fdb2de189](https://sepolia.etherscan.io/tx/0x730a66676cd797b11943635d53af9941c561d90a7088106800d05b4fdb2de189) and the request ID is `0x8329a6e56461117508885f9eaee338f25095eb0f863d6972877f38c4412c0a29`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.000039224977086446 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000273c48`. Decoding it offchain to `uint256` gives you a result: `2571336`. The median BTC price is 25713.36 USD.
+   - The DON successfully fulfilled your request. The total cost was: `0.236443904180225775 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000653c78`. Decoding it offchain to `uint256` gives you a result: `6634616`. The median BTC price is 66346.16 USD.
 
 ## Examine the code
 
@@ -152,14 +145,14 @@ const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function can be broken into seven main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function can be broken into seven main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
+   - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
    - `gatewayUrls`: The secrets endpoint URL to which you will upload the encrypted secrets.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `explorerUrl`: Block explorer url of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt args to fetch other asset prices.
    - `secrets`: The secrets object that will be encrypted.

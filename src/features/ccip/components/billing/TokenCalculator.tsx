@@ -7,11 +7,11 @@ import {
   getTokenMechanism,
   calculateNetworkFeesForTokenMechanism,
   Version,
-} from "@config/data/ccip"
-import { getTitle } from "@features/utils"
-import { SupportedChain } from "@config"
+} from "@config/data/ccip/index.ts"
+import { getTitle } from "@features/utils/index.ts"
+import { SupportedChain } from "@config/index.ts"
 import button from "@chainlink/design-system/button.module.css"
-import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown"
+import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown.tsx"
 import {
   FetchParams,
   FetchDataReturn,
@@ -22,7 +22,7 @@ import {
   BlockchainData,
   FeeData,
   BlockchainTitle,
-} from "./types"
+} from "./types.ts"
 
 const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): FetchDataReturn => {
   const params = { version: Version.V1_2_0, ...fetchParams }
@@ -35,9 +35,17 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
       const { tokens, token, sourceBlockchain, destinationBlockchain } = params
       const tokenData = tokens[token]
       if (!sourceBlockchain) {
+        if (!tokenData) {
+          return { blockchains: [] }
+        }
         return { blockchains: Object.keys(tokenData) as SupportedChain[] }
       } else if (sourceBlockchain && !destinationBlockchain) {
-        return { blockchains: Object.keys(tokenData[sourceBlockchain]) as SupportedChain[] }
+        const sourceData = tokenData[sourceBlockchain]
+        if (sourceData) {
+          return { blockchains: Object.keys(sourceData) as SupportedChain[] }
+        } else {
+          return { blockchains: [] }
+        }
       }
     },
     fees: (params: FetchParams) => {
@@ -51,8 +59,6 @@ const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): Fe
       })
 
       const networkFee = calculateNetworkFeesForTokenMechanism(mechanism, sourceBlockchain, destinationBlockchain)
-
-      console.log({ fees: { token, mechanism, fee: networkFee } })
 
       return { fees: { token, mechanism, fee: networkFee } }
     },
@@ -79,6 +85,7 @@ const containerStyle = {
   alignItems: "center",
   gap: "0.5em",
   padding: "1em",
+  overflowX: "auto",
 }
 
 const tableStyle = {
@@ -318,16 +325,16 @@ const NetworkFeeCalculator = () => {
             </th>
           </tr>
           <tr>
-            <th style={cellStyle}>(Wrapped) Gas Token</th>
             <th style={cellStyle}>LINK</th>
+            <th style={cellStyle}>Others</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td style={cellStyle}>{fees ? fees.token : ""}</td>
             <td style={cellStyle}>{fees ? fees.mechanism : ""}</td>
-            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
             <td style={cellStyle}>{fees ? fees.fee.linkFee : ""}</td>
+            <td style={cellStyle}>{fees ? fees.fee.gasTokenFee : ""}</td>
           </tr>
         </tbody>
       </table>

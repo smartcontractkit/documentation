@@ -47,49 +47,42 @@ To run the example:
    $ node examples/2-call-api/request.js
    secp256k1 unavailable, reverting to browser version
    Start simulation...
-   Performing simulation with the following versions:
-   deno 1.36.3 (release, aarch64-apple-darwin)
-   v8 11.6.189.12
-   typescript 5.1.6
+    Simulation result {
+      capturedTerminalOutput: 'HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD\n' +
+        'ETH price is: 3420.54 USD\n',
+      responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000053826'
+    }
+    ✅ Decoded response to uint256:  342054n
 
+    Estimate request costs...
+    Fulfillment cost estimated to 1.004325887213695 LINK
 
-   Simulation result {
-     capturedTerminalOutput: 'HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD\n' +
-       'ETH price is: 1633.36 USD\n',
-     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000027e08'
-   }
-   ✅ Decoded response to uint256:  163336n
+    Make request...
 
-   Estimate request costs...
-   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Fulfillment cost estimated to 0.000000000000215 LINK
+    ✅ Functions request sent! Transaction hash 0xbbe473ccc6593b6f3baf30fd66b2329b05a32fe0321a319d09142f4b9ba4547c. Waiting for a response...
+    See your request in the explorer https://sepolia.etherscan.io/tx/0xbbe473ccc6593b6f3baf30fd66b2329b05a32fe0321a319d09142f4b9ba4547c
 
-   Make request...
+    ✅ Request 0xe55201188012e3ec198427937f7897729999ab7b287207ff8f0c157a9662e5f0 successfully fulfilled. Cost is 0.249819373001796045 LINK.Complete response:  {
+      requestId: '0xe55201188012e3ec198427937f7897729999ab7b287207ff8f0c157a9662e5f0',
+      subscriptionId: 2303,
+      totalCostInJuels: 249819373001796045n,
+      responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000053892',
+      errorString: '',
+      returnDataBytesHexstring: '0x',
+      fulfillmentCode: 0
+    }
 
-   ✅ Functions request sent! Transaction hash 0x0b628b0cf4c59456ec00829235f589012b0101dbda26e5b9efd7ce610add6790. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x0b628b0cf4c59456ec00829235f589012b0101dbda26e5b9efd7ce610add6790
-
-   ✅ Request 0x528a410fa14859d80c99a27dad02089693a21ac26db86c643bebbfb52fd6afb6 fulfilled with code: 0. Cost is 0.000038106748112156 LINK. Complete response:  {
-     requestId: '0x528a410fa14859d80c99a27dad02089693a21ac26db86c643bebbfb52fd6afb6',
-     subscriptionId: 3,
-     totalCostInJuels: 38106748112156n,
-     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000027df7',
-     errorString: '',
-     returnDataBytesHexstring: '0x',
-     fulfillmentCode: 0
-   }
-
-   ✅ Decoded response to uint256:  163319n
+    ✅ Decoded response to uint256:  342162n
    ```
 
    The output of the example gives you the following information:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x0b628b0cf4c59456ec00829235f589012b0101dbda26e5b9efd7ce610add6790](https://mumbai.polygonscan.com/tx/0x0b628b0cf4c59456ec00829235f589012b0101dbda26e5b9efd7ce610add6790) and the request ID is `0x528a410fa14859d80c99a27dad02089693a21ac26db86c643bebbfb52fd6afb6`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0xbbe473ccc6593b6f3baf30fd66b2329b05a32fe0321a319d09142f4b9ba4547c](https://sepolia.etherscan.io/tx/0xbbe473ccc6593b6f3baf30fd66b2329b05a32fe0321a319d09142f4b9ba4547c) and the request ID is `0xe55201188012e3ec198427937f7897729999ab7b287207ff8f0c157a9662e5f0`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.000038106748112156 LINK`.
-   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000027df7`. Decoding it offchain to `uint256` gives you a result: `163319`.
+   - The DON successfully fulfilled your request. The total cost was: `0.249819373001796045 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000053892`. Decoding it offchain to `uint256` gives you a result: `342162`.
 
 ## Examine the code
 
@@ -180,13 +173,13 @@ const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on Sepolia.
+   - `donId`: Identifier of the DON that will fulfill your requests on Sepolia.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["ETH", "USD"]`, which fetches the current `ETH/USD` price. You can adapt `args` to fetch another asset price. See the [CryptoCompare API docs](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint) to get the list of supported symbols.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

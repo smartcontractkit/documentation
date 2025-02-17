@@ -1,0 +1,50 @@
+---
+import BaseLayout from "./BaseLayout.astro"
+import * as CONFIG from "../config"
+
+interface QuickLinksLayoutProps {
+  title?: string
+  description?: string
+  image?: string
+}
+const { title, description, image } = Astro.props as QuickLinksLayoutProps
+
+const formattedContentTitle = `${title ? title + " | " : ""}${CONFIG.SITE.title}`
+---
+
+<BaseLayout
+  title={formattedContentTitle}
+  metadata={{
+    title: title,
+    description: description,
+    image: image || "/images/hero-background.svg",
+  }}
+>
+  <main class="layout">
+    <slot />
+  </main>
+
+  <style>
+    .layout {
+      display: flex;
+      flex-direction: column;
+      align-self: center;
+      width: 100%;
+      max-width: var(--max-width);
+      padding: 0 var(--space-6x);
+    }
+
+    @media (min-width: 50em) {
+      .layout {
+        max-width: var(--fullwidth-max-width);
+      }
+    }
+
+    @media (min-width: 72em) {
+      .layout {
+        max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
+        padding: 0;
+      }
+    }
+  </style>
+</BaseLayout>

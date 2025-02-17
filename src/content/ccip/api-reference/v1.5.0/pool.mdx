@@ -1,0 +1,136 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 Pool Library API Reference"
+metadata:
+  description: "API documentation for the Pool library in Chainlink CCIP v1.5.0, providing token pool functions for cross-chain operations."
+  canonical: "/ccip/api-reference/v1.5.1/pool"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+The [`Pool`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/libraries/Pool.sol) library provides various token pool functions to construct return data for cross-chain operations in Chainlink's CCIP.
+
+```solidity
+import { Pool } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Pool.sol";
+```
+
+## Types and Constants
+
+### CCIP_POOL_V1
+
+The tag used to signal support for the Pool v1 standard.
+
+```solidity
+bytes4 CCIP_POOL_V1
+```
+
+### CCIP_POOL_V1_RET_BYTES
+
+The number of bytes in the return data for a pool v1 `releaseOrMint` call.
+
+```solidity
+uint16 CCIP_POOL_V1_RET_BYTES
+```
+
+### CCIP_LOCK_OR_BURN_V1_RET_BYTES
+
+The default maximum number of bytes in the return data for a pool v1 `lockOrBurn` call.
+
+```solidity
+uint32 CCIP_LOCK_OR_BURN_V1_RET_BYTES
+```
+
+## Structs
+
+### LockOrBurnInV1
+
+This struct is used when locking or burning tokens for cross-chain operations.
+
+```solidity
+struct LockOrBurnInV1 {
+  bytes receiver;
+  uint64 remoteChainSelector;
+  address originalSender;
+  uint256 amount;
+  address localToken;
+}
+```
+
+| Name                | Type    | Description                                                                       |
+| ------------------- | ------- | --------------------------------------------------------------------------------- |
+| receiver            | bytes   | The recipient of the tokens on the destination chain, ABI encoded.                |
+| remoteChainSelector | uint64  | The chain ID of the destination chain.                                            |
+| originalSender      | address | The original sender of the transaction on the source chain.                       |
+| amount              | uint256 | The amount of tokens to lock or burn, denominated in the source token's decimals. |
+| localToken          | address | The address of the token on this chain to lock or burn.                           |
+
+### LockOrBurnOutV1
+
+This struct represents the output data from a lockOrBurn call.
+
+```solidity
+struct LockOrBurnOutV1 {
+  bytes destTokenAddress;
+  bytes destPoolData;
+}
+```
+
+| Name             | Type  | Description                                                                                                           |
+| ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
+| destTokenAddress | bytes | The address of the destination token, ABI encoded. This value is untrusted as any pool owner can modify it.           |
+| destPoolData     | bytes | Optional pool data to be transferred to the destination chain, capped by default at `CCIP_LOCK_OR_BURN_V1_RET_BYTES`. |
+
+### ReleaseOrMintInV1
+
+This struct is used to release or mint tokens on the destination chain.
+
+```solidity
+struct ReleaseOrMintInV1 {
+  bytes originalSender;
+  uint64 remoteChainSelector;
+  address receiver;
+  uint256 amount;
+  address localToken;
+  bytes sourcePoolAddress;
+  bytes sourcePoolData;
+  bytes offchainTokenData;
+}
+```
+
+| Name                | Type    | Description                                                                                       |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| originalSender      | bytes   | The original sender of the transaction on the source chain.                                       |
+| remoteChainSelector | uint64  | The chain ID of the source chain.                                                                 |
+| receiver            | address | The recipient of the tokens on the destination chain.                                             |
+| amount              | uint256 | The amount of tokens to release or mint, denominated in the source token's decimals.              |
+| localToken          | address | The address of the token on this chain to release or mint.                                        |
+| sourcePoolAddress   | bytes   | The address of the source pool, ABI encoded. This value must be verified before processing funds. |
+| sourcePoolData      | bytes   | Data received from the source pool to process the release or mint.                                |
+| offchainTokenData   | bytes   | Untrusted offchain data to process the release or mint.                                           |
+
+<Aside type="note">
+  - The `sourcePoolAddress` field in `ReleaseOrMintInV1` should be verified before any processing occurs to ensure that it matches the expected pool address for the given `remoteChainSelector`. <br />
+
+- The `offchainTokenData` field is considered untrusted data and should be handled accordingly. <br />
+
+- Fields like `destTokenAddress` and `sourcePoolAddress` may contain ABI encoded data for EVM chains.
+
+</Aside>
+
+### ReleaseOrMintOutV1
+
+This struct represents the output data from a `releaseOrMint` call.
+
+```solidity
+struct ReleaseOrMintOutV1 {
+  uint256 destinationAmount;
+}
+```
+
+| Name              | Type    | Description                                                                                                                                      |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| destinationAmount | uint256 | The number of tokens released or minted on the destination chain, denominated in the local token's decimals. Expected to match the input amount. |

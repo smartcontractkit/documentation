@@ -1,15 +1,20 @@
 ---
-import { Metadata } from "~/content/config"
+import { Metadata } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
+import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
+
 export interface Props {
   metadata?: Metadata
   canonicalURL: URL | string
 }
+
 const { metadata, canonicalURL } = Astro.props
 const formattedContentTitle = metadata?.title
   ? `${metadata.title} | ${SITE.title}`
   : `${PAGE.titleFallback} | ${SITE.title}`
 const description = metadata?.description ?? SITE.description
+const excerpt = metadata?.excerpt ?? description
 
 // Check that the metadata image property exists, else use OPEN_GRAPH.image.src
 var canonicalImageSrc = OPEN_GRAPH.image.src
@@ -24,10 +29,22 @@ if (metadata?.image) {
     canonicalImageSrc = imageUrl
   }
 }
+
+// Detect if this is an API reference page and get the product
+const currentPage = new URL(Astro.request.url).pathname
+const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 ---
+
+<!-- Version-specific SEO tags for API reference pages -->{
+  isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
+}
 
 <!-- Page Metadata -->
 <link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<meta name="description" content={description} />
+<meta name="keywords" content={excerpt} />
 
 <!-- OpenGraph Tags -->
 <meta property="og:title" content={formattedContentTitle} />
@@ -36,7 +53,7 @@ if (metadata?.image) {
 <meta property="og:locale" content={SITE.defaultLanguage} />
 <meta property="og:image" content={canonicalImageSrc} />
 <meta property="og:image:alt" content={OPEN_GRAPH.image.alt} />
-<meta name="description" property="og:description" content={description} />
+<meta property="og:description" content={description} />
 <meta property="og:site_name" content={SITE.title} />
 
 <!-- Twitter Tags -->
@@ -48,15 +65,8 @@ if (metadata?.image) {
 <meta name="twitter:image:alt" content={OPEN_GRAPH.image.alt} />
 
 <!-- PWA Icons -->
-<link
-  href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa97474da20bc75f63bfdc4_Chainlink-favicon-32.png"
-  rel="shortcut icon"
-  type="image/x-icon"
-/>
-<link
-  href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa973e31adbc3414aa8f77d_Chainlink-webclip.png"
-  rel="apple-touch-icon"
-/>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+<link href="/images/logo.png" rel="apple-touch-icon" />
 
 <!--
   TODO: Add json+ld data, maybe https://schema.org/APIReference makes sense?

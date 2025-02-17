@@ -1,0 +1,291 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Using the CCIP Local Simulator in your Foundry project with forked environments"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage" />
+
+You can use Chainlink Local to run CCIP in forked environments within your Foundry project. To get started quickly, you will use the
+[CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project includes the `Example01ForkTest` file
+located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
+
+Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, you will fork _Arbitrum Sepolia_
+and _Ethereum Sepolia_.
+
+## Prerequisites
+
+This guide assumes that you are familiar with the guide [Using the CCIP Local Simulator in your Foundry project](/chainlink-local/build/ccip/foundry/local-simulator).
+If not, please get familiar with it and run all the prerequisites.
+
+Set up an `.env` file with the following data:
+
+- `ARBITRUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on
+  [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/),
+  [Infura](https://www.infura.io/), or another node provider service.
+
+## Test tokens transfers
+
+You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example01ForkTest.t.sol` is located in the `./test/fork` directory.
+This file contains two test cases:
+
+1. **Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test,
+   it verifies that the sender account was debited and the receiver account was credited.
+
+1. **Transfer with native gas fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in native gas. At the end of the test,
+   it verifies that the sender account was debited and the receiver account was credited.
+
+In these tests, we simulate transfers from a source blockchain (which is a fork of _Arbitrum Sepolia_) to a destination blockchain (which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing a realistic testing scenario.
+
+For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    forge test --match-contract Example01ForkTest
+    ```
+
+Example output:
+
+    ```text
+    $ forge test --match-contract Example01ForkTest
+    [⠊] Compiling...
+    No files changed, compilation skipped
+
+    Ran 2 tests for test/fork/Example01Fork.t.sol:Example01ForkTest
+    [PASS] test_transferTokensFromEoaToEoaPayFeesInLink() (gas: 475199)
+    [PASS] test_transferTokensFromEoaToEoaPayFeesInNative() (gas: 451096)
+    Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 11.71s (17.29s CPU time)
+
+    Ran 1 test suite in 11.90s (11.71s CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
+    ```
+
+## Examine the code
+
+### Setup
+
+To transfer tokens using CCIP in a forked environment, we need the following:
+
+- Destination chain selector
+- Source CCIP router
+- LINK token for paying CCIP fees
+- A test token contract (such as CCIP-BnM) on both source and destination chains
+- A sender account (Alice)
+- A receiver account (Bob)
+
+The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
+
+1. Initialize the source and destination forks:
+
+   ```solidity
+   string memory DESTINATION_RPC_URL = vm.envString("ETHEREUM_SEPOLIA_RPC_URL");
+   string memory SOURCE_RPC_URL = vm.envString("ARBITRUM_SEPOLIA_RPC_URL");
+   destinationFork = vm.createSelectFork(DESTINATION_RPC_URL);
+   sourceFork = vm.createFork(SOURCE_RPC_URL);
+   ```
+
+1. Initialize the sender and receiver accounts:
+
+   ```solidity
+   bob = makeAddr("bob");
+   alice = makeAddr("alice");
+   ```
+
+1. Initialize the [fork CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#cciplocalsimulatorfork).
+
+   **Note**: `vm.makePersistent` is used to make the `ccipLocalSimulatorFork` address persistent across forks:
+
+   ```solidity
+   ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+   vm.makePersistent(address(ccipLocalSimulatorFork));
+   ```
+
+1. Retrieve and set up the network details for the destination chain.
+
+   **Note**: [`Register.NetworkDetails`](/chainlink-local/api-reference/v0.2.3/register#networkdetails)
+   is a struct that stores network details (such as chain selector, router address, link address, wrapped native address, or CCIP test tokens), and
+   [`getNetworkDetails`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#getnetworkdetails) pulls network details based on chain IDs:
+
+   ```solidity
+   Register.NetworkDetails memory destinationNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+   destinationCCIPBnMToken = BurnMintERC677Helper(destinationNetworkDetails.ccipBnMAddress);
+   destinationChainSelector = destinationNetworkDetails.chainSelector;
+   ```
+
+1. Switch to the source fork and retrieve the network details for the source chain:
+
+   ```solidity
+   vm.selectFork(sourceFork);
+   Register.NetworkDetails memory sourceNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+   sourceCCIPBnMToken = BurnMintERC677Helper(sourceNetworkDetails.ccipBnMAddress);
+   sourceLinkToken = IERC20(sourceNetworkDetails.linkAddress);
+   sourceRouter = IRouterClient(sourceNetworkDetails.routerAddress);
+   ```
+
+1. All the variables are stored in the contract state for use in the test cases.
+
+### Prepare scenario (helper function)
+
+The `prepareScenario()` function is invoked at the beginning of each test case. It performs the following actions:
+
+1. Select the source fork and request CCIP-BnM tokens for Alice:
+
+   ```solidity
+   vm.selectFork(sourceFork);
+   vm.startPrank(alice);
+   sourceCCIPBnMToken.drip(alice);
+   ```
+
+1. Approve the source router to spend tokens on behalf of Alice:
+
+   ```solidity
+   uint256 amountToSend = 100;
+   sourceCCIPBnMToken.approve(address(sourceRouter), amountToSend);
+   ```
+
+1. Create an array [Client.EVMTokenAmount](/ccip/api-reference/v1.5.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send
+   are returned by the `prepareScenario()` function for use in the calling test case:
+
+   ```solidity
+   tokensToSendDetails = new Client.EVMTokenAmount[](1);
+   Client.EVMTokenAmount memory tokenToSendDetails =
+       Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
+   tokensToSendDetails[0] = tokenToSendDetails;
+   ```
+
+1. Stop impersonating Alice (sender):
+
+   ```solidity
+   vm.stopPrank();
+   ```
+
+### Test case 1: Transfer with LINK fees
+
+The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK.
+Here are the steps involved in this test case:
+
+1. Invoke the `prepareScenario()` function to set up the necessary variables:
+
+   ```solidity
+   (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
+   ```
+
+1. Select the destination fork and record the initial token balance of Bob receiver:
+
+   ```solidity
+   vm.selectFork(destinationFork);
+   uint256 balanceOfBobBefore = destinationCCIPBnMToken.balanceOf(bob);
+   ```
+
+1. Select the source fork and record the initial token balance of Alice (sender):
+
+   ```solidity
+   vm.selectFork(sourceFork);
+   uint256 balanceOfAliceBefore = sourceCCIPBnMToken.balanceOf(alice);
+   ```
+
+1. Request 10 LINK tokens from the CCIP local simulator faucet for Alice (sender):
+
+   ```solidity
+   ccipLocalSimulatorFork.requestLinkFromFaucet(alice, 10 ether);
+   ```
+
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/v1.5.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+
+   - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
+   - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
+
+   ```solidity
+   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+       receiver: abi.encode(bob),
+       data: abi.encode(""),
+       tokenAmounts: tokensToSendDetails,
+       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+       feeToken: address(sourceLinkToken)
+   });
+   ```
+
+1. Calculate the required fees for the transfer and approve the router to spend LINK tokens for these fees:
+
+   ```solidity
+   uint256 fees = sourceRouter.getFee(destinationChainSelector, message);
+   sourceLinkToken.approve(address(sourceRouter), fees);
+   ```
+
+1. Send the CCIP transfer request to the router:
+
+   ```solidity
+   sourceRouter.ccipSend(destinationChainSelector, message);
+   ```
+
+1. Stop impersonating Alice (sender):
+
+   ```solidity
+   vm.stopPrank();
+   ```
+
+1. Record Alice's final token balance and verify that it has decreased by the amount sent:
+
+   ```solidity
+   uint256 balanceOfAliceAfter = sourceCCIPBnMToken.balanceOf(alice);
+   assertEq(balanceOfAliceAfter, balanceOfAliceBefore - amountToSend);
+   ```
+
+1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#switchchainandroutemessage) function to switch
+   to the destination fork and route the message to complete the transfer:
+
+   ```solidity
+   ccipLocalSimulatorFork.switchChainAndRouteMessage(destinationFork);
+   ```
+
+1. Record Bob's final token balance and verify that it has increased by the amount sent:
+
+   ```solidity
+   uint256 balanceOfBobAfter = destinationCCIPBnMToken.balanceOf(bob);
+   assertEq(balanceOfBobAfter, balanceOfBobBefore + amountToSend);
+   ```
+
+### Test case 2: Transfer with native gas fees
+
+The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas.
+Here are the steps involved in this test case:
+
+1. Invoke the `prepareScenario()` function to set up the necessary variables. (This function is the same as in the previous test case.)
+1. Select the destination fork and record Bob's initial token balance. (This step is the same as in the previous test case.)
+1. Select the source fork and record Alice's initial token balance. (This step is the same as in the previous test case.)
+1. Begin impersonating Alice (sender) and provide her with native gas:
+
+   ```solidity
+   vm.startPrank(alice);
+   deal(alice, 5 ether);
+   ```
+
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/v1.5.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
+   The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
+
+   ```solidity
+   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+       receiver: abi.encode(bob),
+       data: abi.encode(""),
+       tokenAmounts: tokensToSendDetails,
+       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+       feeToken: address(0)
+   });
+   ```
+
+1. Calculate the required fees for the transfer and send the CCIP transfer request along with the necessary native gas:
+
+   ```solidity
+   uint256 fees = sourceRouter.getFee(destinationChainSelector, message);
+   sourceRouter.ccipSend{value: fees}(destinationChainSelector, message, fees);
+   ```
+
+1. Stop impersonating Alice (sender). (This step is the same as in the previous test case.)
+1. Verify Alice's (sender) balance. (This step is the same as in the previous test case.)
+1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#switchchainandroutemessage) function
+   to switch to the destination fork and route the message to complete the transfer. (This step is the same as in the previous test case.)
+1. Verify Bob's (receiver) balance. (This step is the same as in the previous test case.)

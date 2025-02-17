@@ -2,7 +2,8 @@
 section: dataFeeds
 date: Last Modified
 title: "Selecting Quality Data Feeds"
-excerpt: "Learn how to assess data feeds that you use in your smart contracts."
+metadata:
+  excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 
 import { Aside } from "@components"
@@ -158,7 +159,6 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 - [Market Failures Resulting from Extreme Events](#market-failures-resulting-from-extreme-events)
 - [Periods of High Network Congestion](#periods-of-high-network-congestion)
 - [Unknown and Known Users](#unknown-and-known-users)
-- [Fast Gas Reliability](#fast-gas-reliability)
 - [DEX volumes](#dex-volumes)
 
 ### Liquidity and its Distribution
@@ -229,15 +229,31 @@ Front running (when a third party benefits from prior access to information abou
 
 To mitigate the risk associated with front running, users building highly latency-dependent applications should assess whether the configuration of data feeds meets their needed specifications for speed and frequency. [Chainlink Data Streams](https://docs.chain.link/data-streams) serve as an alternative solution to Data Feeds for latency-sensitive applications, providing low-latency delivery of market data offchain that can be verified onchain while mitigating front running.
 
-### Fast Gas Reliability
-
-The [Fast Gas Data Feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-gwei) provides a simple way to determine the price of gas so you can estimate how much gas you need to make a transaction execute quickly. Fast gas prices can be manipulated, so you should design your applications to detect gas price volatility or malicious activity that might affect the costs of your transactions.
-
 ## Exchange Rate Feeds
 
-These feeds relay a value across blockchains from a specified contract. Chainlink Labs does not control this contract, and therefore, users are encouraged to research the originating contract and function and implement circuit breakers in case the reported value falls outside of expected bounds.
+The architecture of exchange rate feeds differs from that of standard market rate Chainlink Price Feeds.
+
+**Market rate feeds** (e.g., Chainlink Price Feeds) deliver price updates based on the volume-based aggregated market price of a specific asset. Price data is [aggregated from across multiple sources](https://blog.chain.link/chainlink-price-feeds-secure-defi/), including centralized and decentralized exchanges, to provide an accurate representation of an asset's market-wide price.
+
+**Exchange rate feeds** are tied to specific protocols or ecosystems and report the internal redemption rates for an asset (i.e., the value/rate at which an asset can be redeemed or exchanged within that protocol's ecosystem). This data is sourced directly from a specified smart contract on a source chain and relayed to a destination chain.
+
+Exchange rate feeds are useful in circumstances such as:
+
+- **Pricing yield-bearing assets:** Multiplying a yield-bearing asset's exchange rate by the underlying asset's market rate can be used to calculate the yield-bearing asset's current price. This methodology can reduce certain pricing volatility risks associated with lower-liquidity yield-bearing assets.
+- **Enabling cross-chain staking:** For example, liquid staking tokens (LSTs) or liquid restaking tokens (LRTs) can be minted at the exchange rate on a layer 2, while Chainlink CCIP transfers the underlying asset to a layer 1 for staking.
+- **Improving liquidity pool performance for yield-bearing assets:** Exchange rate feeds can be utilized to programmatically adjust swap curves to maximize liquidity efficiency.
 
 <Aside type="note">
-  The best practices above are provided for informational purposes only. You are responsible for reviewing the quality
-  of the data that you integrate into your smart contracts.
+  Users must be aware that both market rate and exchange rate pricing methodologies have unique risk considerations and
+  mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for decisions
+  relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project, contact us
+  [here](https://chain.link/contact).
 </Aside>
+
+## ETF and Forex feeds
+
+When you use Data Feeds for ETFs or Foreign Exchange (Forex) data, be aware of the following best practices:
+
+- Offchain equity and ETF assets are traded only during [standard market hours](/data-feeds/selecting-data-feeds#market-hours). Do not use these feeds outside those windows.
+- Assets on the Forex (Foreign Exchange) markets are traded only during [defined market hours](/data-feeds/selecting-data-feeds#market-hours). Additionally, some currencies might trade only during local banking hours. Do not use Forex feeds outside market hours for the specific currency.
+- UK ETF price feed answers are 15 minutes delayed from their original published source. Assets are traded only during [standard market hours](/data-feeds/selecting-data-feeds#market-hours). Do not use these feeds outside their specified hours.

@@ -45,37 +45,31 @@ To run the example:
 
    ```text
    $ node examples/1-simple-computation/request.js
+
    secp256k1 unavailable, reverting to browser version
    Start simulation...
-   Performing simulation with the following versions:
-   deno 1.36.3 (release, aarch64-apple-darwin)
-   v8 11.6.189.12
-   typescript 5.1.6
-
-
    Simulation result {
-     capturedTerminalOutput: 'calculate geometric mean of 1,2,3,4,5,6,7,8,9,10\ngeometric mean is: 4.53\n',
-     responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5'
+   capturedTerminalOutput: 'calculate geometric mean of 1,2,3,4,5,6,7,8,9,10\ngeometric mean is: 4.53\n',
+   responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5'
    }
    ✅ Decoded response to uint256:  453n
 
    Estimate request costs...
-   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Fulfillment cost estimated to 0.000000000000215 LINK
+   Fulfillment cost estimated to 1.004325887213695 LINK
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b
+   ✅ Functions request sent! Transaction hash 0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22
 
-   ✅ Request 0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe fulfilled with code: 0. Cost is 0.000038017374812478 LINK. Complete response:  {
-     requestId: '0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe',
-     subscriptionId: 3,
-     totalCostInJuels: 38017374812478n,
-     responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5',
-     errorString: '',
-     returnDataBytesHexstring: '0x',
-     fulfillmentCode: 0
+   ✅ Request 0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715 successfully fulfilled. Cost is 0.240613623834519812 LINK.Complete response:  {
+   requestId: '0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715',
+   subscriptionId: 2303,
+   totalCostInJuels: 240613623834519812n,
+   responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000000001c5',
+   errorString: '',
+   returnDataBytesHexstring: '0x',
+   fulfillmentCode: 0
    }
 
    ✅ Decoded response to uint256:  453n
@@ -85,9 +79,9 @@ To run the example:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b](https://mumbai.polygonscan.com/tx/0x662988579b77c0ab2ca78e40a3ece7d150bd6afb26bbaf42b2c3e5f13a4f895b) and the request ID is `0xfedbdc53de4c796cb44e693a3a34600d616b76ce7ea3902849e687a20a3d86fe`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22](https://sepolia.etherscan.io/tx/0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22) and the request ID is `0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.000038017374812478 LINK`.
+   - The DON successfully fulfilled your request. The total cost was: `0.240613623834519812 LINK`.
    - The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000000001c5`. Decoding it offchain to `uint256` gives you a result: `453`.
 
 ## Examine the code
@@ -133,13 +127,13 @@ const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE 
 const subscriptionId = 3 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
+   - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

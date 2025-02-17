@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
@@ -156,8 +156,14 @@ contract ProgrammableTokenTransfersLowGasLimit is CCIPReceiver, OwnerIsCreator {
             data: abi.encode(_text), // ABI-encoded string
             tokenAmounts: tokenAmounts, // The amount and type of token being transferred
             extraArgs: Client._argsToBytes(
-                // gasLimit set to 20_000 on purpose to force the execution to fail on the destination chain
-                Client.EVMExtraArgsV1({gasLimit: 20_000})
+                // Additional arguments, setting gas limit and allowing out-of-order execution.
+                // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
+                // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
+                // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/best-practices#using-extraargs
+                Client.EVMExtraArgsV2({
+                    gasLimit: 20_000, // Gas limit for the callback on the destination chain
+                    allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
+                })
             ),
             // Set the feeToken to a LINK token address
             feeToken: address(s_linkToken)

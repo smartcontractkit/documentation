@@ -39,17 +39,17 @@ In this tutorial, you will use a different Chainlink Functions consumer contract
    <CodeSample src="samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol" showButtonOnly={true} />
 
 1. Compile the contract.
-1. Open MetaMask and select the _Polygon Mumbai_ network.
-1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
-1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
-1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+1. Open MetaMask and select the _Ethereum Sepolia_ network.
+1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Ethereum Sepolia_.
+1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find this address on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Ethereum Sepolia_, the router address is <CopyText text="0xb83E47C2bC239B3bf370bc41e1459A34b41238D0" code/>.
+1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Ethereum Sepolia_.
 1. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address.
-1. Add your consumer contract address to your subscription on _Polygon Mumbai_.
+1. Add your consumer contract address to your subscription on _Ethereum Sepolia_.
 
 ## Tutorial
 
 This tutorial demonstrates using the [ethers](https://www.npmjs.com/package/ethers) library to interact with smart contract functions through a JSON RPC provider. It involves calling the [`latestRoundData`](/data-feeds/api-reference#latestrounddata), [`decimals`](/data-feeds/api-reference#decimals), and [`description`](/data-feeds/api-reference#description) functions of a price feed contract based on the `AggregatorV3Interface`.
-After retrieving the necessary data, the guide shows how to use ABI encoding to encode these responses into a single hexadecimal string and then convert this string to a [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array). This step ensures compliance with the [Chainlink functions' API requirements](/chainlink-functions/api-reference/javascript-source#data-encoding-functions), which specify that the source code must return a Uint8Array representing the bytes for on-chain use.
+After retrieving the necessary data, the guide shows how to use ABI encoding to encode these responses into a single hexadecimal string and then convert this string to a [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array). This step ensures compliance with the [Chainlink Functions API requirements](/chainlink-functions/api-reference/javascript-source#data-encoding-functions), which specify that the source code must return a Uint8Array representing the bytes for on-chain use.
 
 You can locate the scripts used in this tutorial in the [_examples/12-abi-encoding_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/12-abi-encoding).
 
@@ -78,45 +78,45 @@ To run the example:
    Start simulation...
    Simulation result {
      capturedTerminalOutput: 'Fetched BTC / USD price: dataFeedResponse.answer\n' +
-       'Updated at: 1707155795\n' +
+       'Updated at: 1712941559\n' +
        'Decimals: 8\n' +
        'Description: BTC / USD\n',
-     responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003e1b870b6320000000000000000000000000000000000000000000000000000000065c12153000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000'
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000'
    }
-   ✅ Decoded response to bytes:  0x000000000000000000000000000000000000000000000000000003e1b870b6320000000000000000000000000000000000000000000000000000000065c12153000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
+   ✅ Decoded response to bytes:  0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
 
    Estimate request costs...
-   Fulfillment cost estimated to 0.20180840394238 LINK
+   Fulfillment cost estimated to 1.007671833192655 LINK
 
    Make request...
 
-   ✅ Functions request sent! Transaction hash 0x660bc9bd4c85645209295c957d0764823b94a1d351a5ead380113e5352e01fb5. Waiting for a response...
-   See your request in the explorer https://mumbai.polygonscan.com/tx/0x660bc9bd4c85645209295c957d0764823b94a1d351a5ead380113e5352e01fb5
+   ✅ Functions request sent! Transaction hash 0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1. Waiting for a response...
+   See your request in the explorer https://sepolia.etherscan.io/tx/0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1
 
-   ✅ Request 0xa790aaaca3fdcdd0ca0b0e68bf0c699d84da8d59f8b6dd95aa3d4046a3801c27 successfully fulfilled. Cost is 0.200304341399547731 LINK.Complete reponse:  {
-     requestId: '0xa790aaaca3fdcdd0ca0b0e68bf0c699d84da8d59f8b6dd95aa3d4046a3801c27',
-     subscriptionId: 139,
-     totalCostInJuels: 200304341399547731n,
-     responseBytesHexstring: '0x000000000000000000000000000000000000000000000000000003e1b870b6320000000000000000000000000000000000000000000000000000000065c12153000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000',
+   ✅ Request 0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b successfully fulfilled. Cost is 0.282344694329387405 LINK.Complete response:  {
+     requestId: '0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b',
+     subscriptionId: 2303,
+     totalCostInJuels: 282344694329387405n,
+     responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000',
      errorString: '',
      returnDataBytesHexstring: '0x',
      fulfillmentCode: 0
    }
 
-   ✅ Raw response:  0x000000000000000000000000000000000000000000000000000003e1b870b6320000000000000000000000000000000000000000000000000000000065c12153000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
+   ✅ Raw response:  0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000
 
-   ✅ Fetched BTC / USD price: 4267996919346 (updatedAt: 1707155795) (decimals: 8) (description: BTC / USD)
+   ✅ Fetched BTC / USD price: 6855664389252 (updatedAt: 1712941559) (decimals: 8) (description: BTC / USD)
    ```
 
    The output of the example gives you the following information:
 
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
-   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0x660bc9bd4c85645209295c957d0764823b94a1d351a5ead380113e5352e01fb5`, and the request ID is `0xa790aaaca3fdcdd0ca0b0e68bf0c699d84da8d59f8b6dd95aa3d4046a3801c27`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is `0x5618089ec9b5e662ec72c81241d78cb6daa135ecc3fa3a33032d910e3b47c2b1`, and the request ID is `0xdf22fa28c81a3ea78f356334b6d28d969e953009fae8ece4fe544f2eb466419b`.
 
-   - The DON successfully fulfilled your request. The total cost was: `0.200304341399547731 LINK`.
-   - The consumer contract received a response in hexadecimal string with a value of `0x000000000000000000000000000000000000000000000000000003e1b870b6320000000000000000000000000000000000000000000000000000000065c12153000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000`. This value is the ABI encoded response of the `latestRoundData`, `decimals`, and `description` of the _BTC / USD_ price feed. This value is then decoded and stored in the consumer contract.
-   - The script calls the consumer contract to fetch the decoded values and then logs them to the console. The output is `Fetched BTC / USD price: 4267996919346 (updatedAt: 1707155795) (decimals: 8) (description: BTC / USD)`.
+   - The DON successfully fulfilled your request. The total cost was: `0.282344694329387405 LINK`.
+   - The consumer contract received a response in hexadecimal string with a value of `0x0000000000000000000000000000000000000000000000000000063c3570cc8400000000000000000000000000000000000000000000000000000000661969f7000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000009425443202f205553440000000000000000000000000000000000000000000000`. This value is the ABI encoded response of the `latestRoundData`, `decimals`, and `description` of the _BTC / USD_ price feed. This value is then decoded and stored in the consumer contract.
+   - The script calls the consumer contract to fetch the decoded values and then logs them to the console. The output is `Fetched BTC / USD price: 6855664389252 (updatedAt: 1712941559) (decimals: 8) (description: BTC / USD)`.
 
 ## Examine the code
 
@@ -175,7 +175,7 @@ This explanation focuses on the [request.js](https://github.com/smartcontractkit
 
 The script imports:
 
-- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/12-abi-encoding/source.js).
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html): Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/12-abi-encoding/source.js).
 - [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
 - `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
 - `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
@@ -188,13 +188,13 @@ const consumerAddress = "0x5fC6e53646CC53f0C3575fd2c71b5056c4823f5c" // REPLACE 
 const subscriptionId = 139 // REPLACE this with your subscription ID
 ```
 
-The primary function that the script executes is `makeRequestMumbai`. This function consists of five main parts:
+The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
 
-   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
-   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
-   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `routerAddress`: Chainlink Functions router address on Sepolia.
+   - `donId`: Identifier of the DON that will fulfill your requests on Sepolia.
+   - `explorerUrl`: Block explorer URL of the Sepolia testnet.
    - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
    - `args`: During the execution of your function, These arguments are passed to the source code.
    - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.

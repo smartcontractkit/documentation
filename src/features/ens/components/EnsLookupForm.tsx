@@ -1,8 +1,8 @@
 /** @jsxImportSource preact */
-import { EnsOptions } from "../data"
+import { EnsOptions } from "../data/index.ts"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
-import { getWeb3Provider } from "@features/utils"
+import { getWeb3Provider } from "@features/utils/index.ts"
 
 export const EnsLookupForm = () => {
   const [ensResult, setEnsResult] = useState<
@@ -30,15 +30,18 @@ export const EnsLookupForm = () => {
           }`,
       })
 
-      const response = await fetch("https://api.thegraph.com/subgraphs/name/ensdomains/ens", {
-        method: "post",
-        body: data,
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Length": data.length.toString(),
-          "User-Agent": "Node",
-        },
-      })
+      const response = await fetch(
+        "https://gateway-arbitrum.network.thegraph.com/api/934b65a95f6dd6f3d9a468d9cdda9ec6/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH",
+        {
+          method: "post",
+          body: data,
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Length": data.length.toString(),
+            "User-Agent": "Node",
+          },
+        }
+      )
       const json = await response.json()
       const hashName = json.data.domains[0] ? json.data.domains[0].id : "Not Found"
 

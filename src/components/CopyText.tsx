@@ -1,14 +1,16 @@
 /** @jsxImportSource preact */
-import { clsx } from "../lib" // Ensure that the `clsx` function is correctly imported or implemented.
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export type Props = {
   text: string
   code?: boolean
   format?: boolean // determine if formatting is needed
   formatType?: "bytes32"
+  eventName?: string
+  additionalInfo?: Record<string, string>
 }
 
-const CopyContainer = ({ text, code, format, formatType }: Props) => {
+const CopyContainer = ({ text, code, format, formatType, eventName, additionalInfo = {} }: Props) => {
   // Function to format text based on format type
   const formatText = (text: string, type: string | undefined) => {
     if (type === "bytes32" && text.length > 10) {
@@ -24,6 +26,19 @@ const CopyContainer = ({ text, code, format, formatType }: Props) => {
 
   // Determine if formatting is needed
   const displayText = format ? formatText(text, formatType) : text
+
+  const handleClick = (e) => {
+    e.preventDefault()
+
+    if (eventName !== undefined) {
+      const dataLayerEvent = {
+        event: eventName,
+        ...additionalInfo,
+      }
+      window.dataLayer.push(dataLayerEvent)
+    }
+  }
+
   return (
     <span className="copyContainer">
       {code ? <code>{displayText}</code> : displayText}
@@ -31,6 +46,7 @@ const CopyContainer = ({ text, code, format, formatType }: Props) => {
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
         data-clipboard-text={text}
+        onClick={handleClick}
       >
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
       </button>
@@ -40,8 +56,10 @@ const CopyContainer = ({ text, code, format, formatType }: Props) => {
           display: inline-flex;
           align-items: center;
           gap: var(--space-1x);
-          word-break: break-word;
-          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-break: break-all;
+          margin-top: 0;
         }
 
         .copyBtn {

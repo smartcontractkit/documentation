@@ -1,88 +1,48 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React from "react"
-import { ProductsNav } from "../../config"
-import { SearchTrigger } from "../../NavBar"
-import { clsx } from "../../utils"
-import { CaretIcon } from "../CaretIcon"
-import { extendRadixComponent } from "../extendRadixComponent"
-import { BottomBar } from "./BottomBar"
-import { ProductContent } from "./ProductContent"
+import { clsx } from "../../utils.ts"
+import { extendRadixComponent } from "../extendRadixComponent.ts"
 import styles from "./productNavigation.module.css"
-import { SubProductContent } from "./SubProductContent"
-
-export type SubProducts = {
-  label: string
-  items: { label: string; href: string }[]
-}
-
-type Props = {
-  searchTrigger?: SearchTrigger
-  productsNav: ProductsNav
-}
+import { MenuIcon } from "./MenuIcon.tsx"
+import { BackArrowIcon } from "./BackArrowIcon.tsx"
+import { CaretRightIcon } from "./CaretRightIcon.tsx"
+import MegaMenu from "./MegaMenu.tsx"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
-export function ProductNavigation({ productsNav }: Props) {
+export function ProductNavigation() {
   const [open, setOpen] = React.useState(false)
-  const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
   const [showSearch, setShowSearch] = React.useState(false)
-  const [producsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
+  const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
-
-  const onProductClick = React.useCallback((subProducts: SubProducts) => {
-    setSubProducts(subProducts)
-    setProductsSlidePosition("submenu")
-  }, [])
-
-  const onSubproductClick = () => {
-    setProductsSlidePosition("main")
-  }
 
   const handleOpenChange = (newOpenState: boolean) => {
     setOpen(newOpenState)
     if (!newOpenState) {
+      setProductsSlidePosition("main")
       setShowSearch(false)
     }
   }
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <a
-        rel="noreferrer noopener"
-        target="_blank"
-        className={clsx("home-logo", styles.logo)}
-        href="https://chain.link/"
-      >
-        <img
-          alt="Chainlink Home"
-          title="Chainlink Home"
-          style={{ display: "flex" }}
-          src="/assets/icons/chainlink.svg"
-          height={24}
-          width={24}
-        />
-      </a>
       <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
-        <span
-          className={"text-300"}
-          style={{ color: "var(--color-text-label)", fontWeight: "var(--font-weight-medium)" }}
-        >
-          Developer Hub
-        </span>
-        <CaretIcon
-          style={{
-            color: "var(--color-text-primary)",
-            fill: "var(--color-text-primary)",
-          }}
+        <img
+          alt="Documentation Home"
+          title="Documentation Home"
+          style={{ display: "flex" }}
+          src="/chainlink-docs.svg"
+          height={32}
         />
+        <MenuIcon />
       </Trigger>
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content className={clsx(styles.menuContent)}>
+        <Dialog.Content className={styles.menuContent}>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{
@@ -92,21 +52,61 @@ export function ProductNavigation({ productsNav }: Props) {
                 overflow: "hidden",
               }}
             >
-              <div className={clsx(styles.content, styles[producsSlidePosition])}>
-                <ul className={clsx(styles.productContent)}>
-                  <ProductContent onProductClick={onProductClick} productsNav={productsNav} />
-                </ul>
-                <div className={clsx(styles.subProductContent)}>
-                  <SubProductContent subProducts={subProducts} onSubproductClick={onSubproductClick} />
+              <div className={clsx(styles.content, styles[productsSlidePosition])}>
+                <div>
+                  <div className={styles.header}>
+                    <img
+                      alt="Documentation Home"
+                      title="Documentation Home"
+                      style={{ display: "flex" }}
+                      src="/chainlink-docs.svg"
+                      height={32}
+                    />
+                    <Close ref={closeButtonRef} className={styles.closeButton}>
+                      <img src="/assets/icons/close.svg" />
+                    </Close>
+                  </div>
+                  <ul className={clsx(styles.productContent)}>
+                    <button
+                      className={styles.productContentLink}
+                      onClick={() => setProductsSlidePosition("submenu")}
+                      data-testid="sub-product-navigation-trigger-mobile"
+                    >
+                      Resources
+                      <CaretRightIcon />
+                    </button>
+                    <a href="/" className={styles.productContentLink}>
+                      Docs
+                    </a>
+                    <a href="https://dev.chain.link/demos" className={styles.productContentLink}>
+                      Demos
+                    </a>
+                    <a href="https://dev.chain.link/tools" className={styles.productContentLink}>
+                      Tools
+                    </a>
+                    <a href="https://dev.chain.link/chainlog" className={styles.productContentLink}>
+                      Changelog
+                    </a>
+                    <a href="https://dev.chain.link/certification" className={styles.productContentLink}>
+                      Get Certified
+                    </a>
+                  </ul>
+                </div>
+                <div className={clsx(styles.subProductContentPage)}>
+                  <div className={styles.header}>
+                    <button key="back" className={styles.back} onClick={() => setProductsSlidePosition("main")}>
+                      <BackArrowIcon />
+                    </button>
+                    <span className={styles.subProductContentTitle}>Resources</span>
+                    <span></span> {/* Spacer */}
+                  </div>
+                  <div className={styles.subProductContent}>
+                    <MegaMenu />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <Close ref={closeButtonRef} className={styles.closeButton}>
-            <img src="/assets/icons/close.svg" />
-          </Close>
-
-          <BottomBar />
         </Dialog.Content>
       </Portal>
     </Root>

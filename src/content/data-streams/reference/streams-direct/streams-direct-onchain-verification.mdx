@@ -1,0 +1,41 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Onchain report verification (EVM chains)"
+whatsnext:
+  {
+    "Learn how to verify report data onchain (EVM chains)": "/data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+  }
+---
+
+import { CodeSample, Aside } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<Aside type="caution" title="Onchain Data Verification">
+  Onchain verification ensures the integrity of reports by confirming their authenticity as signed by the Decentralized
+  Oracle Network (DON). It is the responsibility of the application contract(s) to determine the suitability of the
+  report data for any further actions, such as trade execution.
+</Aside>
+
+<DataStreams section="dsNotes" />
+
+## Verify reports onchain
+
+To verify data onchain on EVM chains, Streams Direct requires several Solidity interfaces.
+
+The primary onchain interaction occurs between the `IVerifierProxy` interface and your protocol's client contract. Find the Verifier proxy address for each stream on the [Stream Addresses](/data-streams/crypto-streams) page.
+
+### Interfaces
+
+- IVerifierProxy
+- IFeeManager
+
+In the current code example for verifying reports onchain using Streams Direct, these interfaces are specified in the example itself. Imports for these interfaces will be available in the future.
+
+### Contract example to verify report data onchain
+
+This contract example allows you to verify reports and pay the verification fee in LINK tokens. Your contract must have sufficient LINK tokens to pay for the verification fee. Learn how to [fund your contract with LINK tokens](/resources/fund-your-contract).
+
+<DataStreams section="asideDisclaimer" />
+
+<CodeSample src="samples/DataStreams/ClientReportsVerifier.sol" />

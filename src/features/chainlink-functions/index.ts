@@ -1,1 +1,1 @@
-export * from "./DonIdTooltip"
+export * from "./DonIdTooltip/index.ts"

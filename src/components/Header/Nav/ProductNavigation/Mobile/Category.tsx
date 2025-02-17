@@ -1,9 +1,8 @@
 import React from "react"
-import { ProductItem } from "../../config"
-import { clsx } from "../../utils"
-import { CaretRightIcon } from "./CaretRightIcon"
+import { ProductItem, SubProducts, SubProductItem } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
+import { CaretRightIcon } from "./CaretRightIcon.tsx"
 import styles from "./category.module.css"
-import { SubProducts } from "./ProductNavigation"
 
 type ListItemProps = {
   item: ProductItem
@@ -14,17 +13,35 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
   ({ item: { label, icon, href, subProducts }, onProductClick }, forwardedRef) => {
     const itemComponent = (
       <>
-        {icon && <img height={24} width={24} src={`/assets/icons/${icon}-navbar-icon.svg`} />}
+        {icon && <img height={20} width={20} src={icon} />}
         <span style={{ flex: 1, textAlign: "start" }} className="text-300">
           {label}
         </span>
       </>
     )
+
+    const handleProductClick = () => {
+      const subProductItems = subProducts as unknown as SubProductItem[]
+      const mappedSubProducts: SubProducts = {
+        label,
+        items: subProductItems.map((subProductItem) => ({
+          label: subProductItem.label,
+          href: subProductItem.href || "#",
+          pages: subProductItem.items.map((item) => ({
+            label: item.label,
+            href: item.href || "/",
+            children: item.children || [],
+          })),
+        })),
+      }
+      onProductClick(mappedSubProducts)
+    }
+
     return subProducts ? (
       <button
         className={clsx(styles.link, "product-link")}
         style={{ marginTop: "var(--space-0x)" }}
-        onClick={() => onProductClick(subProducts)}
+        onClick={handleProductClick}
         data-testid="sub-product-navigation-trigger-mobile"
       >
         {itemComponent}

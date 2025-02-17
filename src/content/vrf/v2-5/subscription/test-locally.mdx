@@ -1,0 +1,168 @@
+---
+section: vrf
+title: "Local testing using a mock subscription contract"
+metadata:
+  description: "Example contract for generating random words using the VRF v2.5 subscription method on your local blockchain using a mock contract."
+---
+
+import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+import ContentCommon from "@features/common/ContentCommon.astro"
+import { Aside, ClickToZoom, CodeSample, CopyText, Icon } from "@components"
+import { linkEth } from "@features/data"
+import { LatestPrice } from "@features/feeds"
+import button from "@chainlink/design-system/button.module.css"
+
+This guide explains how to test Chainlink VRF v2.5 on a [Remix IDE](https://remix-ide.readthedocs.io/en/latest/run.html#environment) sandbox blockchain environment. **Note**: You can reuse the same logic on another development environment, such as Hardhat or Foundry. For example, read the Hardhat Starter Kit [RandomNumberConsumer unit tests](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/test/unit/RandomNumberConsumer.spec.js).
+
+<Aside type="caution" title="Test on public testnets thoroughly">
+  Even though local testing has several benefits, testing with a VRF mock covers the bare minimum of use cases. Make
+  sure to test your consumer contract thoroughly on public testnets.
+</Aside>
+
+## Benefits of local testing
+
+<ContentCommon section="localTestingBenefits" />
+
+## Testing logic
+
+Complete the following tasks to test your VRF v2.5 consumer locally:
+
+1. Deploy the [VRFCoordinatorV2_5Mock](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol). This contract is a mock of the [VRFCoordinatorV2_5](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/VRFCoordinatorV2_5.sol) contract.
+1. Call the [createSubscription function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol#L56) (which `VRFCoordinatorV2_5Mock` inherits) to create a new subscription.
+1. Call the VRFCoordinatorV2_5Mock [`fundSubscription` function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol#L174) to fund your newly created subscription. **Note**: You can fund with an arbitrary amount.
+1. Deploy your VRF consumer contract.
+1. Call the [addConsumer function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol#L12) (which `VRFCoordinatorV2_5Mock` inherits) to add your consumer contract to your subscription.
+1. Request random words from your consumer contract.
+1. Call the VRFCoordinatorV2_5Mock [fulfillRandomWords function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol#L101) to fulfill your consumer contract request.
+
+## Testing
+
+### Open the contracts on Remix IDE
+
+For local testing, use the default "Remix VM" environment.
+
+Open _VRFv2_5Consumer_ and compile in Remix:
+
+<CodeSample src="samples/VRF/mock/VRFv2_5Consumer.sol" />
+
+Open _VRFCoordinatorV2_5Mock_ in Remix:
+
+<CodeSample src="samples/VRF/mock/VRFCoordinatorV2_5Mock.sol" />
+
+On the _Solidity Compiler_ tab, expand the _Advanced Configurations_ section and check the _Enable optimization_ box before you compile the _VRFCoordinatorV2_5Mock_ contract:
+
+<ClickToZoom src="/images/vrf/v2-5/mock/enable-optimization.png" />
+
+Your Remix IDE file explorer should display _VRFCoordinatorV2_5Mock.sol_ and _VRFv2_5Consumer.sol_:
+
+<ClickToZoom src="/images/vrf/v2-5/mock/file-explorer.png" />
+
+### Deploy VRFCoordinatorV2_5Mock
+
+1. Open _VRFCoordinatorV2_5Mock.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFCoordinatorV2_5Mock_.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/deployment-contracts-list.png" />
+
+1. Under _DEPLOY_, fill in the `_BASEFEE`, `_GASPRICELINK` and `_WEIPERUNITLINK`. These variables are used in the _VRFCoordinatorV2_5Mock_ contract to represent the base fee, the gas price (in LINK tokens), and the current LINK/ETH price for the VRF requests.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/mock-deployment-parameters.png" />
+
+   You can set:
+
+   - `_BASEFEE` to <CopyText text="100000000000000000" code/>
+   - `_GASPRICELINK` to <CopyText text="1000000000" code/>
+   - `_WEIPERUNITLINK` to the current LINK/ETH price. Click the "Latest Price" button to view it:
+     {" "}
+     <LatestPrice client:idle feedAddress={linkEth.link.eth.sepolia.address} supportedChain="ETHEREUM_SEPOLIA" />
+
+1. Click _transact_ to deploy the _VRFCoordinatorV2_5Mock_ contract.
+
+1. Once deployed, you should see the _VRFCoordinatorV2_5Mock_ contract under _Deployed Contracts_.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/deployed-mock.png" />
+
+1. Note the address of the deployed contract.
+
+### Create and fund a subscription
+
+1. Click `createSubscription` to create a new subscription.
+
+1. In the Remix IDE console, read your transaction decoded output to find the subscription ID. Note the subscription ID, which is required for multiple steps in this tutorial.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/example-output-sub-id.png" />
+
+1. Click on `fundSubscription` to fund your subscription. Fill in your subscription ID for `_subid` and set the `_amount` to <CopyText text="100000000000000000000" code/>. This mocks funding your subscription with 100 LINK.
+
+### Deploy the VRF consumer contract
+
+1. In the file explorer, open _VRFv2_5Consumer.sol_.
+
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _RandomNumberConsumerV2_5_.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/deploy-consumer.png" />
+
+1. Under _DEPLOY_, fill in the following parameters:
+
+   - `SUBSCRIPTIONID` with your subscription ID
+   - `VRFCOORDINATOR` with the deployed _VRFCoordinatorV2_5Mock_ address
+   - `_KEYHASH_` with an arbitrary `bytes32` (In this example, you can set the _KEYHASH_ to <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>).
+
+1. Click _transact_ to deploy the _RandomNumberConsumerV2_5_ contract.
+
+1. After the consumer contract is deployed, you should see the _RandomNumberConsumerV2_5_ contract under _Deployed Contracts_. Note the address of the deployed contract.
+
+### Add the consumer contract to your subscription
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2_5Mock_ contract.
+
+1. Click _addConsumer_ and fill in the `_subid` with your subscription ID and `_consumer` with your deployed consumer contract address.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/add-consumer.png" />
+
+1. Click _transact_.
+
+### Request random words
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _RandomNumberConsumerV2_5_ contract.
+
+1. Click `requestRandomWords`.
+
+   <ClickToZoom src="/images/vrf/mock/v2-requestrandomwords.jpg" />
+
+1. Click `s_requestId` to display the last request ID. In this example, the output is _1_.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/show-last-request-id.png" />
+
+1. Note your request ID.
+
+### Fulfill the VRF request
+
+Because you are testing on a local blockchain environment, you must fulfill the VRF request yourself.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2_5Mock_ contract.
+
+1. Click `fulfillRandomWords` and fill in `_requestId` with your VRF request ID and `_consumer` with your consumer contract address.
+
+   <ClickToZoom src="/images/vrf/v2-5/mock/manual-fulfill-request.png" />
+
+1. Click `transact`.
+
+### Check the results
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _RandomNumberConsumerV2_5_ contract.
+
+1. For each VRF request, your consumer contract requests two random words. After a request is fulfilled, the two random words are stored in the `s_randomWords` array. You can check the stored random words by reading the two first indexes of the `s_randomWords` array. To do so, click the _s_randomWords_ function and:
+
+   1. Fill in the index with _0_ then click _call_ to read the first random word.
+
+      {" "}
+
+      <ClickToZoom src="/images/vrf/v2-5/mock/show-random-word.png" />
+
+   1. You can read the second random word in a similar way: fill in the index with _1_ then click _call_ to display the second random word.
+
+## Next steps
+
+This guide demonstrated how to test a VRF v2.5 consumer contract on your local blockchain. The guide uses the Remix IDE for learning purposes, but you can reuse the same [testing logic](#testing-logic) in another development environment, such as Hardhat. For example, see the Hardhat Starter Kit [RandomNumberConsumer unit tests](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/test/unit/RandomNumberConsumer.spec.js).

@@ -4,9 +4,9 @@ date: Last Modified
 title: "Send Arbitrary Data"
 whatsnext:
   {
-    "Learn how to send arbitrary data with acknowledgment of receipt": "/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
+    "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A": "/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
     "See example cross-chain dApps and tools": "/ccip/examples",
-    "See the list of supported networks": "/ccip/supported-networks",
+    "CCIP Directory": "/ccip/directory",
     "Learn about CCIP Architecture and Billing": "/ccip/architecture",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
@@ -15,7 +15,7 @@ whatsnext:
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-In this tutorial, you will use Chainlink CCIP to send data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or MATIC on Polygon.
+In this tutorial, you will use Chainlink CCIP to send data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or AVAX on Avalanche.
 
 <Aside type="note" title="Node Operator Rewards">
   CCIP rewards the oracle node and Risk Management node operators in LINK.
@@ -24,12 +24,14 @@ In this tutorial, you will use Chainlink CCIP to send data between smart contrac
 ## Before you begin
 
 - You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
-- Your account must have some ETH tokens on _Ethereum Sepolia_ and MATIC tokens on _Polygon Mumbai_.
+- Your account must have some AVAX tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_.
 - Learn how to [Acquire testnet LINK](/resources/acquire-link) and [Fund your contract with LINK](/resources/fund-your-contract).
 
 ## Tutorial
 
-In this tutorial, you will send a _string_ text between smart contracts on _Ethereum Sepolia_ and _Polygon Mumbai_ using CCIP. First, you will pay [CCIP fees in LINK](#send-data-and-pay-in-link), then you will pay [CCIP fees in native gas](#send-data-and-pay-in-native).
+<CcipCommon callout="useSimulator" />
+
+In this tutorial, you will send a _string_ text between smart contracts on _Avalanche Fuji_ and _Ethereum Sepolia_ using CCIP. First, you will pay [CCIP fees in LINK](#send-data-and-pay-in-link), then you will pay [CCIP fees in native gas](#send-data-and-pay-in-native).
 
 <CodeSample src="samples/CCIP/Messenger.sol" />
 
@@ -40,71 +42,68 @@ To use this contract:
 1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Messenger.sol).
 
 1. Compile your contract.
-1. Deploy your sender contract on _Ethereum Sepolia_ and enable sending messages to _Polygon Mumbai_:
+1. Deploy your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
+
+   1. Open MetaMask and select the network _Avalanche Fuji_.
+   1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
+   1. Fill in the router address and the link address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK token address on the [LINK Token contracts page](/resources/link-token-contracts?parent=ccip). For _Avalanche Fuji_:
+      - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>,
+      - The LINK contract address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
+   1. Click on _transact_. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
+      Note your contract address.
+   1. Enable your contract to send CCIP messages to _Ethereum Sepolia_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
+      1. Call the `allowlistDestinationChain` with <CopyText text="16015286601757825753" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
+
+1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
-   1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Ethereum Sepolia_.
-   1. Fill in the router address and the link address for your network. You can find the router address on the [supported networks page](/ccip/supported-networks) and the LINK token address on the [LINK Token contracts page](/resources/link-token-contracts?parent=ccip). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
-   1. Click on _transact_. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
-      Note your contract address.
-   1. Enable your contract to send CCIP messages to _Polygon Mumbai_:
-      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
-      1. Call the `allowlistDestinationChain` with <CopyText text="12532609583862916517" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
-
-1. Deploy your receiver contract on _Polygon Mumbai_ and enable receiving messages from your sender contract:
-
-   1. Open MetaMask and select the network _Polygon Mumbai_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
-   1. Fill in the router address and the LINK address for your network. You can find the router address on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Polygon Mumbai_, the router address is <CopyText text="0x1035CabC275068e0F4b745A29CEDf38E13aF41b1" code/> and the LINK contract address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>.
+   1. Fill in the router address and the LINK address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_:
+      - The router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>,
+      - The LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
    1. Click on _transact_. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
       Note your contract address.
-   1. Enable your contract to receive CCIP messages from _Ethereum Sepolia_:
-      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
-      1. Call the `allowlistSourceChain` with <CopyText text="16015286601757825753" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
-   1. Enable your contract to receive CCIP messages from the contract that you deployed on _Ethereum Sepolia_:
-      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
-      1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_, and <CopyText text="true" code/> as allowed.
+   1. Enable your contract to receive CCIP messages from _Avalanche Fuji_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
+      1. Call the `allowlistSourceChain` with <CopyText text="14767482510784806043" code/> as the source chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
+   1. Enable your contract to receive CCIP messages from the contract that you deployed on _Avalanche Fuji_:
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
+      1. Call the `allowlistSender` with the contract address of the contract that you deployed on _Avalanche Fuji_, and <CopyText text="true" code/> as allowed.
 
-At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_. **Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
+At this point, you have one _sender_ contract on _Avalanche Fuji_ and one _receiver_ contract on _Ethereum Sepolia_. As security measures, you enabled the sender contract to send CCIP messages to _Ethereum Sepolia_ and the receiver contract to receive CCIP messages from the sender and _Avalanche Fuji_. **Note**: Another security measure enforces that only the router can call the `_ccipReceive` function. Read the [explanation](#explanation) section for more details.
 
 ### Send data and pay in LINK
 
 You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in LINK. Read this [explanation](#sending-data-and-pay-in-link) for a detailed description of the code example.
 
-1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with LINK tokens. You can transfer <CopyText text="0.1" code/> _LINK_ to your contract. In this example, LINK is used to pay the CCIP fees.
+1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with LINK tokens. You can transfer <CopyText text="70" code/> _LINK_ to your contract. In this example, LINK is used to pay the CCIP fees.
 
-1.  Send "Hello World!" from _Ethereum Sepolia_:
+    **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+    from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
-    1.  Open MetaMask and select the network _Ethereum Sepolia_.
-    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
+1.  Send "Hello World!" from _Avalanche Fuji_:
+
+    1.  Open MetaMask and select the network _Avalanche Fuji_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
 
                <br />
 
-        | Argument                   | Description                                                                                                                                             | Value (_Polygon Mumbai_)                     |
-        | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-        | \_destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="12532609583862916517" code/> |
-        | \_receiver                 | The destination smart contract address                                                                                                                  | Your deployed receiver contract address      |
-        | \_text                     | any `string`                                                                                                                                            | <CopyText text="Hello World!" code/>         |
+        | Argument                   | Description                                                                                                                         | Value (_Ethereum Sepolia_)                   |
+        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+        | \_destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="16015286601757825753" code/> |
+        | \_receiver                 | The destination smart contract address                                                                                              | Your deployed receiver contract address      |
+        | \_text                     | any `string`                                                                                                                        | <CopyText text="Hello World!" code/>         |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
-    1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0xb7da6f6f8ed216b05c10668e8f0311e3f46e1a82ccd8e4e733881e168fcf00de) of a transaction on _Ethereum Sepolia_.
+    1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x233d2d882e6cfe736c982d58a33021d2f4f6b96e0cfd2c7a874cf2eb63790aa1) of a transaction on _Avalanche Fuji_.
 
-    <Aside type="note">
-      During gas price spikes, your transaction might fail, requiring more than _0.1 LINK_ to proceed. If your
-      transaction fails, fund your contract with more _LINK_ tokens and try again.
-    </Aside>
+        <CcipCommon callout="gasSpike" />
 
 1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
 
-                <br />
-
-          <ClickToZoom
-            src="/images/ccip/tutorials/ccip-explorer-pay-link-tx-details.jpg"
-            alt="Chainlink CCIP Explorer transaction details"
-          />
-
-1.  The CCIP transaction is completed once the status is marked as "Success". **Note**: In this example, the CCIP message ID is _0x223b73f2e7dfb65cf317661ed9c5ba6b9f0bd8d61170a95c801b707d3526070a_.
+1.  The CCIP transaction is completed once the status is marked as "Success". **Note**: In this example, the CCIP message ID is _0x28a804fa891bde8fb4f6617931187e1033a128c014aa76465911613588bc306f_.
 
                 <br />
 
@@ -115,48 +114,45 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in L
 
 1.  Check the receiver contract on the destination chain:
 
-    1.  Open MetaMask and select the network _Polygon Mumbai_.
-    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+    1.  Open MetaMask and select the network _Ethereum Sepolia_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
 
         <br />
 
         <ClickToZoom
-          src="/images/ccip/tutorials/mumbai-getmessagedetails-pay-link.jpg"
-          alt="Chainlink CCIP Mumbai message details"
+          src="/images/ccip/tutorials/sepolia-getmessagedetails-pay-link.jpg"
+          alt="Chainlink CCIP Sepolia message details"
         />
 
-    1.  Notice the received text is the one you sent, "Hello World!" and the message ID is the one you expect _0x223b73f2e7dfb65cf317661ed9c5ba6b9f0bd8d61170a95c801b707d3526070a_.
+    1.  Notice the received text is the one you sent, "Hello World!" and the message ID is the one you expect _0x28a804fa891bde8fb4f6617931187e1033a128c014aa76465911613588bc306f_.
 
-**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to send data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
+**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to send data from _Avalanche Fuji_ to _Ethereum Sepolia_ and from _Ethereum Sepolia_ back to _Avalanche Fuji_.
 
 ### Send data and pay in native
 
 You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in native gas. Read this [explanation](#sending-data-and-pay-in-native) for a detailed description of the code example.
 
-1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with ETH. You can transfer <CopyText text="0.01" code/> _ETH_ to your contract. In this example, ETH is used to pay the CCIP fees.
+1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with AVAX. You can transfer <CopyText text="1" code/> _AVAX_ to your contract. In this example, AVAX is used to pay the CCIP fees.
 
-1.  Send "Hello World!" from _Ethereum Sepolia_:
+1.  Send "Hello World!" from _Avalanche Fuji_:
 
-    1.  Open MetaMask and select the network _Ethereum Sepolia_.
-    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
+    1.  Open MetaMask and select the network _Avalanche Fuji_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayNative**_ function:
 
                <br />
 
-        | Argument                   | Description                                                                                                                                             | Value (_Polygon Mumbai_)                     |
-        | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-        | \_destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [ supported networks page ](/ccip/supported-networks) | <CopyText text="12532609583862916517" code/> |
-        | \_receiver                 | The destination smart contract address                                                                                                                  | Your deployed receiver contract address      |
-        | \_text                     | any `string`                                                                                                                                            | <CopyText text="Hello World!" code/>         |
+        | Argument                   | Description                                                                                                                         | Value (_Ethereum Sepolia_)                   |
+        | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+        | \_destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="16015286601757825753" code/> |
+        | \_receiver                 | The destination smart contract address                                                                                              | Your deployed receiver contract address      |
+        | \_text                     | any `string`                                                                                                                        | <CopyText text="Hello World!" code/>         |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
-    1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0xf32beea1640aef99870a1f3da9ab202c08c1634932e9321e9ef2320fe1564453) of a transaction on _Ethereum Sepolia_.
+    1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x5cb5ea9b1631f62148105d67b780b56fce66db398667276ea498104b7896ffee) of a transaction on _Avalanche Fuji_.
 
-    <Aside type="note">
-      During gas price spikes, your transaction might fail, requiring more than _0.01 ETH_ to proceed. If your
-      transaction fails, fund your contract with more _ETH_ and try again.
-    </Aside>
+        <CcipCommon callout="gasSpike" />
 
 1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
 
@@ -167,7 +163,7 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
             alt="Chainlink CCIP Explorer transaction details"
           />
 
-1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x54862fd17ca9718b55e3e2d34c84f26ef1e71a20cc2398f76974e40aff378838_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0xb8cb414128f440e115dcd5d6ead50e14d250f9a47577c38af4f70deb14191457_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
 
                 <br />
 
@@ -178,20 +174,20 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
 
 1.  Check the receiver contract on the destination chain:
 
-    1.  Open MetaMask and select the network _Polygon Mumbai_.
-    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+    1.  Open MetaMask and select the network _Ethereum Sepolia_.
+    1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
 
         <br />
 
         <ClickToZoom
-          src="/images/ccip/tutorials/mumbai-getmessagedetails-pay-native.jpg"
-          alt="Chainlink CCIP Mumbai message details"
+          src="/images/ccip/tutorials/sepolia-getmessagedetails-pay-native.jpg"
+          alt="Chainlink CCIP Sepolia message details"
         />
 
-    1.  Notice the received text is the one you sent, "Hello World!" and the message ID is the one you expect _0x54862fd17ca9718b55e3e2d34c84f26ef1e71a20cc2398f76974e40aff378838_.
+    1.  Notice the received text is the one you sent, "Hello World!" and the message ID is the one you expect _0xb8cb414128f440e115dcd5d6ead50e14d250f9a47577c38af4f70deb14191457_.
 
-**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to send data from _Ethereum Sepolia_ to _Polygon Mumbai_ and from _Polygon Mumbai_ back to _Ethereum Sepolia_.
+**Note**: These example contracts are designed to work bi-directionally. As an exercise, you can use them to send data from _Avalanche Fuji_ to _Ethereum Sepolia_ and from _Ethereum Sepolia_ back to _Avalanche Fuji_.
 
 ## Explanation
 
@@ -206,32 +202,32 @@ Defining the router address is useful for the following:
 
 - Sender part:
 
-  - Calls the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee) to estimate the CCIP fees.
-  - Calls the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend) to send CCIP messages.
+  - Calls the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee) to estimate the CCIP fees.
+  - Calls the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend) to send CCIP messages.
 
 - Receiver part:
-  - The contract inherits from [CCIPReceiver](/ccip/api-reference/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
+  - The contract inherits from [CCIPReceiver](/ccip/api-reference/v1.5.1/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
 
 ### Sending data and pay in LINK
 
 The `sendMessagePayLINK` function undertakes five primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) array as no tokens are transferred.
+   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) array as no tokens are transferred.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000`.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
      {" "}
 
-     <CcipCommon callout="extraArgsCallout" />
+     <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in LINK is enough to cover the fees.
 1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend).
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend).
 
 **Note**: As a security measure, the `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
@@ -239,27 +235,27 @@ The `sendMessagePayLINK` function undertakes five primary operations:
 
 The `sendMessagePayNative` function undertakes four primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/client#evmtokenamount) array as no tokens are transferred.
+   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) array as no tokens are transferred.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000`.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
      {" "}
 
-     <CcipCommon callout="extraArgsCallout" />
+     <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in native gas is enough to cover the fees.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
 **Note**: As a security measure, the `sendMessagePayNative` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
 ### Receiving data
 
-On the destination blockchain, the router invokes the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive) which expects an `Any2EVMMessage` [struct](/ccip/api-reference/client#any2evmmessage) that contains:
+On the destination blockchain, the router invokes the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive) which expects an `Any2EVMMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage) that contains:
 
 - The CCIP `messageId`.
 - The `sourceChainSelector`.
@@ -268,5 +264,7 @@ On the destination blockchain, the router invokes the `ccipReceive` [function](/
 
 This example applies three important security measures:
 
-- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/ccip-receiver#onlyrouter) for more information.
+- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/v1.5.1/ccip-receiver#onlyrouter) for more information.
 - The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender is accepted.
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -1,0 +1,166 @@
+---
+import changelogData from "../../public/changelog.json"
+import { chainNames } from "./QuickLinks/data/productChainLinks"
+import { marked } from "marked"
+
+export type Props = {
+  topic: string
+  subTopic?: string
+}
+
+export interface ChangelogEntry {
+  category: string
+  changes?: string[]
+  date: string
+  description: string
+  relatedNetworks?: RelatedNetwork[]
+  relatedTokens?: string[]
+  title: string
+  topic: string
+  subTopic?: string
+  urls?: string[]
+}
+
+type RelatedNetwork = keyof typeof chainNames
+
+function isValidNetwork(entry: unknown): entry is ChangelogEntry {
+  try {
+    if (!entry || typeof entry !== "object") {
+      console.error("Invalid entry format:", entry)
+      return false
+    }
+
+    const e = entry as Partial<ChangelogEntry>
+
+    // Required fields validation
+    const requiredFields = ["category", "date", "description", "title", "topic"] as const
+    for (const field of requiredFields) {
+      if (!(field in e)) {
+        console.error(`Missing required field "${field}" in entry:`, e)
+        return false
+      }
+    }
+
+    if (e.relatedNetworks) {
+      if (!Array.isArray(e.relatedNetworks)) {
+        console.error(
+          `Invalid type for field "relatedNetworks" in entry "${e.title}": expected array, received ${typeof e.relatedNetworks}`
+        )
+        return false
+      }
+
+      for (const network of e.relatedNetworks) {
+        if (!(network in chainNames)) {
+          console.error(
+            `Invalid relatedNetwork "${network}" in entry "${e.title}". Must be one of: ${Object.keys(chainNames).join(", ")}`
+          )
+          return false
+        }
+      }
+    }
+
+    // Validate optional arrays
+    if (e.changes && !Array.isArray(e.changes)) {
+      console.error(`Invalid changes field in entry "${e.title}": expected array`)
+      return false
+    }
+
+    if (e.urls && !Array.isArray(e.urls)) {
+      console.error(`Invalid urls field in entry "${e.title}": expected array`)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error("Error validating entry:", error)
+    return false
+  }
+}
+
+async function loadChangelogData(): Promise<ChangelogEntry[]> {
+  try {
+    if (!Array.isArray(changelogData)) {
+      console.error("Changelog data is not an array:", changelogData)
+      return []
+    }
+
+    return changelogData.filter(isValidNetwork)
+  } catch (error) {
+    console.error("Error loading changelog data:", error)
+    return []
+  }
+}
+
+const { topic, subTopic } = Astro.props as Props
+
+// Load and filter the changelog entries
+const changelog = await loadChangelogData()
+const entries = changelog.filter(
+  (entry) => (entry.topic === topic && !subTopic) || (subTopic && entry.subTopic === subTopic)
+)
+---
+
+{
+  entries.length > 0 ? (
+    entries.map((entry) => {
+      const entryId = `${entry.date}-${entry.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+      return (
+        <section>
+          <h2 id={entryId}>
+            <a href={`#${entryId}`}>
+              {entry.date} - {entry.title}
+            </a>
+          </h2>
+          <article set:html={marked.parse(entry.description)} />
+          {entry.changes && entry.changes.length > 0 && (
+            <ul>
+              {entry.changes.map((change) => (
+                <li set:html={marked.parse(change)} />
+              ))}
+            </ul>
+          )}
+          {entry.urls && entry.urls.length > 0 && (
+            <div class="related-links">
+              <h3>Related Links</h3>
+              <ul>
+                {entry.urls.map((url) => (
+                  <li>
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      {url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )
+    })
+  ) : (
+    <p class="no-entries">No release notes available for this section.</p>
+  )
+}
+
+<style>
+  section {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  .related-links {
+    margin-top: 1rem;
+  }
+
+  .no-entries {
+    color: #666;
+    font-style: italic;
+  }
+
+  ul {
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+  }
+</style>
