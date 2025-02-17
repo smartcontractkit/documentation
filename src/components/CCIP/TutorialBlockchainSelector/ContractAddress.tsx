@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react"
-import { utils } from "ethers"
-import { setSourceContract, setDestinationContract } from "@stores/lanes"
-import type { DeployedContracts } from "@stores/lanes"
+import { isAddress } from "ethers"
+import { setSourceContract, setDestinationContract } from "~/stores/lanes/index.ts"
+import type { DeployedContracts } from "~/stores/lanes/index.ts"
 import "./ContractAddress.css"
 
 interface ContractAddressProps {
@@ -28,7 +28,7 @@ export const ContractAddress = ({ type, chain, placeholder }: ContractAddressPro
       }
 
       // Validate non-empty values
-      const valid = utils.isAddress(value)
+      const valid = isAddress(value)
       setIsValid(valid)
 
       // Only update store if it's a valid address

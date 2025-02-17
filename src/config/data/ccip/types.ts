@@ -1,4 +1,4 @@
-import { ExplorerInfo } from "~/config/types"
+import { ExplorerInfo } from "~/config/types.ts"
 
 export type RateLimiterConfig = {
   capacity: string

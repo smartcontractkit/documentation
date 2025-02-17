@@ -41,7 +41,7 @@ contract VRFSubscriptionBalanceMonitor is
     error InvalidWatchList();
     error OnlyKeeperRegistry();
     error OnlyForwarder();
-    error DuplicateSubcriptionId(uint64 duplicate);
+    error DuplicateSubscriptionId(uint64 duplicate);
 
     struct Target {
         bool isActive;
@@ -96,7 +96,7 @@ contract VRFSubscriptionBalanceMonitor is
         }
         for (uint256 idx = 0; idx < subscriptionIds.length; idx++) {
             if (s_targets[subscriptionIds[idx]].isActive) {
-                revert DuplicateSubcriptionId(subscriptionIds[idx]);
+                revert DuplicateSubscriptionId(subscriptionIds[idx]);
             }
             if (subscriptionIds[idx] == 0) {
                 revert InvalidWatchList();

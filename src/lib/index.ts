@@ -1,1 +1,1 @@
-export * from "./clsx/clsx"
+export * from "./clsx/clsx.ts"

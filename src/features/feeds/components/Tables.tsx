@@ -1,12 +1,12 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import feedList from "./FeedList.module.css"
-import { clsx } from "../../../lib"
-import { ChainNetwork } from "~/features/data/chains"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { ChainNetwork } from "~/features/data/chains.ts"
 import tableStyles from "./Tables.module.css"
 import button from "@chainlink/design-system/button.module.css"
-import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds, FeedDataItem } from "~/features/data"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
+import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
@@ -15,7 +15,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure."
     >
-      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" alt="Low Market Risk" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" aria-label="Low Market Risk" target="_blank">
         🟢
       </a>
     </span>
@@ -25,7 +25,11 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk."
     >
-      <a href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds" alt="Medium Market Risk" target="_blank">
+      <a
+        href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds"
+        aria-label="Medium Market Risk"
+        target="_blank"
+      >
         🟡
       </a>
     </span>
@@ -35,7 +39,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks."
     >
-      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" alt="High Market Risk" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" aria-label="High Market Risk" target="_blank">
         🔴
       </a>
     </span>
@@ -45,7 +49,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use."
     >
-      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" alt="New Token" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" aria-label="New Token" target="_blank">
         🟠
       </a>
     </span>
@@ -55,7 +59,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case."
     >
-      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" aria-label="Custom" target="_blank">
         🔵
       </a>
     </span>
@@ -65,7 +69,7 @@ const feedCategories = {
       className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
       title="Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more."
     >
-      <a href="/data-feeds/deprecating-feeds" alt="Deprecating" target="_blank">
+      <a href="/data-feeds/deprecating-feeds" aria-label="Deprecating" target="_blank">
         ⭕
       </a>
     </span>
@@ -391,12 +395,80 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Berachain",
+    logoUrl: "/assets/chains/berachain.svg",
+    networkStatus: "https://status.berachain.com/",
+    mainnet: {
+      label: "Berachain Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://berascan.com/address/%s",
+    },
+    testnet: {
+      label: "Berachain bArtio Testnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://bartio.beratrail.io/address/%s",
+    },
+  },
+  {
+    network: "Blast",
+    logoUrl: "/assets/chains/blast.svg",
+    networkStatus: "https://status.blast.io/",
+    mainnet: {
+      label: "Blast Mainnet",
+      verifierProxy: "0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e",
+      explorerUrl: "https://blastscan.io/address/%s",
+    },
+    testnet: {
+      label: "Blast Sepolia Testnet",
+      verifierProxy: "0x141f4278A5D71070Dc09CA276b72809b80F20eF0",
+      explorerUrl: "https://sepolia.blastscan.io/address/%s",
+    },
+  },
+  {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
     testnet: {
       label: "Botanix Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
       explorerUrl: "https://testnet.botanixscan.io/address/%s",
+    },
+  },
+  {
+    network: "Ethereum",
+    logoUrl: "/assets/chains/ethereum.svg",
+    mainnet: {
+      label: "Ethereum Mainnet",
+      verifierProxy: "0x5A1634A86e9b7BfEf33F0f3f3EA3b1aBBc4CC85F",
+      explorerUrl: "https://etherscan.io/address/%s",
+    },
+    testnet: {
+      label: "Sepolia Testnet",
+      verifierProxy: "0x4e9935be37302B9C97Ff4ae6868F1b566ade26d2",
+      explorerUrl: "https://sepolia.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "HashKey Chain",
+    logoUrl: "/assets/chains/hashkey.svg",
+    mainnet: {
+      label: "HashKey Chain Mainnet",
+      verifierProxy: "0x3278e7a582B94d82487d4B99b31A511CbAe2Cd54",
+      explorerUrl: "https://hashkey.blockscout.com/address/%s",
+    },
+  },
+  {
+    network: "Ink",
+    logoUrl: "/assets/chains/ink.svg",
+    networkStatus: "https://status.inkonchain.com/",
+    mainnet: {
+      label: "Ink Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://explorer.inkonchain.com/address/%s",
+    },
+    testnet: {
+      label: "Ink Sepolia Testnet",
+      verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
+      explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
     },
   },
   {
@@ -415,6 +487,15 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "Monad",
+    logoUrl: "/assets/chains/monad.svg",
+    testnet: {
+      label: "Monad Testnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+    },
+  },
+  {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
     networkStatus: "https://opbnb-status.bnbchain.org/",
@@ -430,18 +511,32 @@ const StreamsNetworksData = [
     },
   },
   {
-    network: "Optimism",
+    network: "OP",
     logoUrl: "/assets/chains/optimism.svg",
     networkStatus: "https://status.optimism.io/",
     mainnet: {
-      label: "Optimism Mainnet",
+      label: "OP Mainnet",
       verifierProxy: "0xEBA4789A88C89C18f4657ffBF47B13A3abC7EB8D",
       explorerUrl: "https://optimistic.etherscan.io/address/%s",
     },
     testnet: {
-      label: "Optimism Testnet",
+      label: "OP Sepolia",
       verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
       explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "Ronin",
+    logoUrl: "/assets/chains/ronin.svg",
+    mainnet: {
+      label: "Ronin Mainnet",
+      verifierProxy: "0x499Ce6718a50e154B0C69905eEE8D307e5B003cc",
+      explorerUrl: "https://app.roninchain.com/address/%s",
+    },
+    testnet: {
+      label: "Ronin Saigon Testnet",
+      verifierProxy: "0xE02A72Be64DA496797821f1c4BB500851C286C6c",
+      explorerUrl: "https://saigon-app.roninchain.com/address/%s",
     },
   },
   {
@@ -519,6 +614,20 @@ const StreamsNetworksData = [
     },
   },
   {
+    network: "World Chain",
+    logoUrl: "/assets/chains/worldchain.svg",
+    mainnet: {
+      label: "World Chain Mainnet",
+      verifierProxy: "0x65eaE24251C5707D5aCBF7461A49fe87CB1bE4c7",
+      explorerUrl: "https://worldscan.org/address/%s",
+    },
+    testnet: {
+      label: "World Chain Sepolia Testnet",
+      verifierProxy: "0x2482A390bE58b3cBB6Df72dB2e950Db20256e55E",
+      explorerUrl: "https://sepolia.worldscan.org/address/%s",
+    },
+  },
+  {
     network: "ZKSync",
     logoUrl: "/assets/chains/zksync.svg",
     networkStatus: "https://uptime.com/statuspage/zkSync",
@@ -590,7 +699,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -600,7 +708,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.mainnet?.explorerUrl}
                             network={network}
                             environment="Mainnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -612,7 +719,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.mainnet.explorerUrl}
                           network={network}
                           environment="Mainnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -631,7 +737,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="verifierProgramId"
                           />
                         </div>
                         <div className={tableStyles.solanaAddress}>
@@ -641,7 +746,6 @@ export const StreamsNetworkAddressesTable = () => {
                             explorerUrl={network?.testnet?.explorerUrl}
                             network={network}
                             environment="Testnet"
-                            type="accessController"
                           />
                         </div>
                       </>
@@ -653,7 +757,6 @@ export const StreamsNetworkAddressesTable = () => {
                           explorerUrl={network.testnet.explorerUrl}
                           network={network}
                           environment="Testnet"
-                          type="verifierProxy"
                         />
                       </div>
                     )}
@@ -681,13 +784,11 @@ const CopyableAddress = ({
   explorerUrl,
   network,
   environment,
-  type,
 }: {
   address?: string
   explorerUrl: string
   network: NetworkData
   environment: string
-  type: string
 }) => {
   if (!address) return null
 

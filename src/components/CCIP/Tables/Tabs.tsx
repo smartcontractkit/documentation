@@ -1,6 +1,6 @@
 import { useState } from "react"
 import "./Tabs.css"
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 interface TabsProps {
   tabs: {

@@ -1,8 +1,8 @@
 import { useStore } from "@nanostores/react"
-import { laneStore } from "@stores/lanes"
-import type { DeployedContracts } from "@stores/lanes"
-import { ReactCopyText } from "@components/ReactCopyText"
-import { utils } from "ethers"
+import { laneStore } from "~/stores/lanes/index.ts"
+import type { DeployedContracts } from "~/stores/lanes/index.ts"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
+import { isAddress, AbiCoder, getAddress } from "ethers"
 
 type AddressFields = Extract<keyof DeployedContracts, "token" | "tokenPool" | "tokenPools">
 
@@ -23,16 +23,16 @@ export const StoredContractAddress = ({ type, chain, code = true, encode = false
     if (!value) return ""
 
     if (Array.isArray(value)) {
-      const validAddresses = value.filter((addr): addr is string => typeof addr === "string" && utils.isAddress(addr))
+      const validAddresses = value.filter((addr): addr is string => typeof addr === "string" && isAddress(addr))
       if (!validAddresses.length) return ""
 
       return encode
-        ? validAddresses.map((addr) => utils.defaultAbiCoder.encode(["address"], [addr])).join(", ")
+        ? validAddresses.map((addr) => AbiCoder.defaultAbiCoder().encode(["address"], [addr])).join(", ")
         : validAddresses.join(", ")
     }
 
     if (typeof value === "string" && value) {
-      return encode ? utils.defaultAbiCoder.encode(["address"], [utils.getAddress(value)]) : utils.getAddress(value)
+      return encode ? AbiCoder.defaultAbiCoder().encode(["address"], [getAddress(value)]) : getAddress(value)
     }
 
     return ""

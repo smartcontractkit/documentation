@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { ethers } from "ethers"
-import { laneStore, type RateLimiterConfig, updateRateLimits } from "@stores/lanes"
+import { laneStore, type RateLimiterConfig, updateRateLimits } from "~/stores/lanes/index.ts"
 import { useStore } from "@nanostores/react"
 import styles from "./ChainUpdateBuilder.module.css"
-import { ErrorBoundary } from "@components/ErrorBoundary"
-import { Callout } from "../TutorialSetup/Callout"
+import { ErrorBoundary } from "~/components/ErrorBoundary.tsx"
+import { Callout } from "../TutorialSetup/Callout.tsx"
 
 interface ChainUpdateBuilderProps {
   chain: "source" | "destination"
@@ -82,11 +82,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
   }>({ inbound: null, outbound: null })
 
   const canGenerateUpdate = () => {
-    return (
-      readOnly.chainSelector &&
-      ethers.utils.isAddress(readOnly.poolAddress) &&
-      ethers.utils.isAddress(readOnly.tokenAddress)
-    )
+    return readOnly.chainSelector && ethers.isAddress(readOnly.poolAddress) && ethers.isAddress(readOnly.tokenAddress)
   }
 
   const handleRateLimitChange = (type: "inbound" | "outbound", field: keyof RateLimiterConfig, value: string) => {
@@ -417,13 +413,13 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                 <span className={styles.noticeTitle}>Action Required</span>
               </div>
               <div className={styles.noticeContent}>
-                {!ethers.utils.isAddress(readOnly.tokenAddress) && (
+                {!ethers.isAddress(readOnly.tokenAddress) && (
                   <div className={styles.noticeItem}>
                     <span className={styles.noticeItemIcon}>→</span>
                     <span>Please deploy your token first to proceed with configuration</span>
                   </div>
                 )}
-                {!ethers.utils.isAddress(readOnly.poolAddress) && (
+                {!ethers.isAddress(readOnly.poolAddress) && (
                   <div className={styles.noticeItem}>
                     <span className={styles.noticeItemIcon}>→</span>
                     <span>Token pool address is required</span>

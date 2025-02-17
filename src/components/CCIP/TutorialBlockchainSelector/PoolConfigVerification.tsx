@@ -1,11 +1,13 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, TUTORIAL_STEPS, type RateLimits } from "@stores/lanes"
-import { utils } from "ethers"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { laneStore, TUTORIAL_STEPS, type RateLimits } from "~/stores/lanes/index.ts"
+import { AbiCoder } from "ethers"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 import styles from "./PoolConfigVerification.module.css"
-import { TutorialCard, TutorialStep, NetworkCheck, SolidityParam } from "../TutorialSetup"
-import { Callout } from "../TutorialSetup/Callout"
-import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
+import { TutorialCard, TutorialStep } from "../TutorialSetup/index.ts"
+import { NetworkCheck } from "../TutorialSetup/NetworkCheck.tsx"
+import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
+import { Callout } from "../TutorialSetup/Callout.tsx"
+import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 
 type ChainType = "source" | "destination"
 
@@ -119,7 +121,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                   <div className={styles.resultTitle}>Expected Result:</div>
                   <div className={styles.resultContent}>
                     {remoteContracts.token
-                      ? utils.defaultAbiCoder.encode(["address"], [remoteContracts.token])
+                      ? AbiCoder.defaultAbiCoder().encode(["address"], [remoteContracts.token])
                       : "Waiting for remote token address..."}
                   </div>
                 </div>
@@ -166,7 +168,7 @@ export const PoolConfigVerification = ({ chain }: { chain: ChainType }) => {
                   <div className={styles.resultTitle}>Expected Result:</div>
                   <div className={styles.resultContent}>
                     {remoteContracts.tokenPool
-                      ? [utils.defaultAbiCoder.encode(["address"], [remoteContracts.tokenPool])]
+                      ? [AbiCoder.defaultAbiCoder().encode(["address"], [remoteContracts.tokenPool])]
                       : "Waiting for remote pool address..."}
                   </div>
                 </div>

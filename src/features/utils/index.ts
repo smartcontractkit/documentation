@@ -1,6 +1,13 @@
-import { chains, chainToTechnology, ExplorerInfo, SupportedChain, SupportedTechnology, web3Providers } from "@config"
-import { utils } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json"
+import {
+  chains,
+  chainToTechnology,
+  ExplorerInfo,
+  SupportedChain,
+  SupportedTechnology,
+  web3Providers,
+} from "@config/index.ts"
+import { toQuantity } from "ethers"
+import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -17,7 +24,7 @@ interface AddEthereumChainParameter {
 
 export const getEthereumChainParameter = (chainId: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chain = referenceChains.find((c: any) => utils.hexValue(c.chainId) === chainId)
+  const chain = referenceChains.find((c: any) => toQuantity(c.chainId) === chainId)
   if (!chain || !chain.chainId) {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
@@ -127,7 +134,9 @@ export const normalizeConfig = <T>(config: Partial<Record<SupportedChain, T>>) =
         title: chains[technology].title,
         chains: {},
       }
-    normalizedConfig[technology]!.chains[chain] = config[chain]
+    if (normalizedConfig[technology]) {
+      normalizedConfig[technology].chains[chain] = config[chain]
+    }
   }
   return normalizedConfig
 }
@@ -278,10 +287,34 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MONAD_TESTNET"
     case "core-testnet":
       return "CORE_TESTNET"
+    case "core-mainnet":
+      return "CORE_MAINNET"
     case "treasure-mainnet":
       return "TREASURE_MAINNET"
     case "treasure-testnet-topaz":
       return "TREASURE_TOPAZ"
+    case "ethereum-testnet-sepolia-lens-1":
+      return "LENS_SEPOLIA"
+    case "berachain-mainnet":
+      return "BERACHAIN_MAINNET"
+    case "berachain-testnet-bartio":
+      return "BERACHAIN_BARTIO"
+    case "hyperliquid-testnet":
+      return "HYPERLIQUID_TESTNET"
+    case "bitcoin-testnet-merlin":
+      return "MERLIN_TESTNET"
+    case "bitcoin-merlin-mainnet":
+      return "MERLIN_MAINNET"
+    case "ethereum-testnet-holesky-fraxtal-1":
+      return "FRAXTAL_TESTNET"
+    case "fraxtal-mainnet":
+      return "FRAXTAL_MAINNET"
+    case "hedera-testnet":
+      return "HEDERA_TESTNET"
+    case "ethereum-testnet-sepolia-unichain-1":
+      return "UNICHAIN_SEPOLIA"
+    case "ethereum-mainnet-unichain-1":
+      return "UNICHAIN_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -427,12 +460,36 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "bitcoin-testnet-botanix"
     case "CORE_TESTNET":
       return "core-testnet"
+    case "CORE_MAINNET":
+      return "core-mainnet"
     case "MONAD_TESTNET":
       return "monad-testnet"
     case "TREASURE_MAINNET":
       return "treasure-mainnet"
     case "TREASURE_TOPAZ":
       return "treasure-testnet-topaz"
+    case "LENS_SEPOLIA":
+      return "ethereum-testnet-sepolia-lens-1"
+    case "BERACHAIN_MAINNET":
+      return "berachain-mainnet"
+    case "BERACHAIN_BARTIO":
+      return "berachain-testnet-bartio"
+    case "HYPERLIQUID_TESTNET":
+      return "hyperliquid-testnet"
+    case "MERLIN_TESTNET":
+      return "bitcoin-testnet-merlin"
+    case "MERLIN_MAINNET":
+      return "bitcoin-mainnet-merlin"
+    case "FRAXTAL_TESTNET":
+      return "ethereum-testnet-holesky-fraxtal-1"
+    case "FRAXTAL_MAINNET":
+      return "fraxtal-mainnet"
+    case "HEDERA_TESTNET":
+      return "hedera-testnet"
+    case "UNICHAIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-unichain-1"
+    case "UNICHAIN_MAINNET":
+      return "ethereum-mainnet-unichain-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

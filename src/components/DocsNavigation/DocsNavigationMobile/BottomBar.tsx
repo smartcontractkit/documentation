@@ -1,5 +1,5 @@
 import styles from "./bottomBar.module.css"
-import { clsx } from "~/lib"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 const ResourcesButton = () => (
   <a rel="noreferrer noopener" target="_blank" href="https://github.com/smartcontractkit/documentation">

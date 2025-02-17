@@ -2,7 +2,7 @@
 export { default as VersionSelector } from "./base/VersionSelector.astro"
 
 // Types
-export * from "./types"
+export * from "./types/index.ts"
 
 // Utils
-export * from "./utils"
+export * from "./utils/index.ts"

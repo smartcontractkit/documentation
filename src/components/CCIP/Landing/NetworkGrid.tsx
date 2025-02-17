@@ -1,6 +1,6 @@
 import { useState } from "react"
-import NetworkCard from "../Cards/NetworkCard"
-import SeeMore from "../SeeMore/SeeMore"
+import NetworkCard from "../Cards/NetworkCard.tsx"
+import SeeMore from "../SeeMore/SeeMore.tsx"
 import "./NetworkGrid.css"
 
 interface NetworkGridProps {

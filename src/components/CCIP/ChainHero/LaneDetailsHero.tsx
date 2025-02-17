@@ -1,10 +1,10 @@
-import { Tooltip } from "~/features/common/Tooltip"
-import AddressComponent from "~/components/AddressReact"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import AddressComponent from "~/components/AddressReact.tsx"
 import "./LaneDetailsHero.css"
-import { getExplorerAddressUrl } from "~/features/utils"
-import CopyValue from "../CopyValue/CopyValue"
-import { LaneFilter } from "~/config/data/ccip"
-import { ExplorerInfo } from "~/config/types"
+import { getExplorerAddressUrl } from "~/features/utils/index.ts"
+import CopyValue from "../CopyValue/CopyValue.tsx"
+import { LaneFilter } from "~/config/data/ccip/types.ts"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -114,7 +114,7 @@ function LaneDetailsHero({
             <div data-clipboard-type="destination-chain-selector">
               <Tooltip
                 label={enforceOutOfOrderString}
-                tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where ‘Out of Order Execution’ is required, you must set this to true; otherwise, the transaction will revert."
+                tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
                 labelStyle={{
                   marginRight: "10px",
                 }}

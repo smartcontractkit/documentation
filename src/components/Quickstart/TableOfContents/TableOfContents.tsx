@@ -4,8 +4,8 @@ import { useEffect, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
 import { useStore } from "@nanostores/preact"
-import { shouldUpdateToc } from "./tocStore"
-import { clsx } from "~/lib"
+import { shouldUpdateToc } from "./tocStore.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 type HeaderWrapperClass = "header-wrapper-2" | "header-wrapper-3"
 const wrapperDepthMap: Record<HeaderWrapperClass, number> = {

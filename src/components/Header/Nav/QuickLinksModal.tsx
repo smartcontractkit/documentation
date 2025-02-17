@@ -1,4 +1,4 @@
-import ProductChainTable from "~/components/QuickLinks/sections/ProductChainTable"
+import ProductChainTable from "~/components/QuickLinks/sections/ProductChainTable.tsx"
 import styles from "./navBar.module.css"
 
 function QuickLinksModal({ toggleModal }: { toggleModal: () => void }) {

@@ -1,7 +1,7 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
 import React from "react"
-import { SubProductsNavItem } from "../../config"
-import { clsx } from "../../utils"
+import { SubProductsNavItem } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
 import styles from "./category.module.css"
 
 type ListItemProps = SubProductsNavItem & { className?: string }

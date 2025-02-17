@@ -1,4 +1,4 @@
-import { updateStepProgress, type StepId, TUTORIAL_STEPS, subscribeToStepProgress } from "@stores/lanes"
+import { updateStepProgress, type StepId, TUTORIAL_STEPS, subscribeToStepProgress } from "@stores/lanes/index.ts"
 import { useCallback, memo, useMemo, useEffect, useRef } from "react"
 
 interface StepCheckboxProps<T extends StepId> {
@@ -6,8 +6,8 @@ interface StepCheckboxProps<T extends StepId> {
   subStepId: T extends "sourceChain"
     ? "token-deployed" | "admin-claimed" | "admin-accepted" | "pool-deployed" | "pool-registered"
     : T extends "destinationChain"
-    ? "dest-token-deployed" | "admin-claimed" | "admin-accepted" | "dest-pool-deployed" | "dest-pool-registered"
-    : string
+      ? "dest-token-deployed" | "admin-claimed" | "admin-accepted" | "dest-pool-deployed" | "dest-pool-registered"
+      : string
   label?: string
   onChange?: (checked: boolean) => void
 }

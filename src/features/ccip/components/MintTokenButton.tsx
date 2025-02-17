@@ -3,8 +3,8 @@ import detectEthereumProvider from "@metamask/detect-provider"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import { useEffect, useState } from "preact/hooks"
-import { NetworkDropdown } from "./NetworkDropdown"
-import { InjectedProvider, checkConnection } from "../../utils/getInjectedProvider"
+import { NetworkDropdown } from "./NetworkDropdown.tsx"
+import { InjectedProvider, checkConnection } from "../../utils/getInjectedProvider.ts"
 import "./container.css"
 
 declare global {

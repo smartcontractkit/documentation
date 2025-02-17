@@ -1,4 +1,4 @@
-import { ChainMetadata } from "./api"
+import { ChainMetadata } from "./api/index.ts"
 
 type ChainTags = ("default" | "smartData" | "rates" | "streams")[]
 export interface ChainNetwork {
@@ -212,8 +212,8 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "optimism",
-    label: "Optimism",
-    title: "Optimism Data Feeds",
+    label: "OP",
+    title: "OP Data Feeds",
     img: "/assets/chains/optimism.svg",
     networkStatusUrl: "https://status.optimism.io/",
     tags: ["default"],
@@ -221,14 +221,14 @@ export const CHAINS: Chain[] = [
     l2SequencerFeed: true,
     networks: [
       {
-        name: "Optimism Mainnet",
+        name: "OP Mainnet",
         explorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
         queryString: "optimism-mainnet",
       },
       {
-        name: "Optimism Sepolia",
+        name: "OP Sepolia",
         explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-optimism-1.json",
@@ -660,6 +660,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "unichain",
+    label: "Unichain",
+    title: "Unichain Data Feeds",
+    img: "/assets/chains/unichain.svg",
+    networkStatusUrl: "https://status.unichain.org/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Unichain Sepolia",
+        explorerUrl: "https://sepolia.uniscan.xyz/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-unichain-1.json",
+        queryString: "unichain-sepolia",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
@@ -726,7 +744,7 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "arbitrum-mainnet",
       },
       {
-        name: "Optimism Mainnet",
+        name: "OP Mainnet",
         explorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",

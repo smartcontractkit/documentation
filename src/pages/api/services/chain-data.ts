@@ -1,9 +1,9 @@
-import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip/types"
-import { ChainsConfig } from "@config/data/ccip"
-import { SelectorsConfig } from "@config/data/ccip/selectors"
-import { resolveChainOrThrow, LogLevel, structuredLog } from "../ccip/utils"
-import { getChainId, getNativeCurrency, getTitle } from "../../../features/utils"
-import { SupportedChain } from "~/config"
+import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip/types/index.ts"
+import { ChainsConfig } from "@config/data/ccip/index.ts"
+import { SelectorsConfig } from "@config/data/ccip/selectors.ts"
+import { resolveChainOrThrow, LogLevel, structuredLog } from "../ccip/utils.ts"
+import { getChainId, getNativeCurrency, getTitle } from "../../../features/utils/index.ts"
+import { SupportedChain } from "~/config/index.ts"
 
 export const prerender = false
 
