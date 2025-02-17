@@ -1,2 +1,2 @@
-export * from "./components"
-export * from "./types"
+export * from "./components/index.ts"
+export * from "./types/index.ts"

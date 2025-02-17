@@ -2,7 +2,7 @@ import TickIcon from "../assets/tick-icon.svg"
 import LinkIcon from "../assets/external-link-icon.svg"
 import LINKTokenIcon from "../assets/link-token-icon.svg"
 import styles from "./ProductChainTable.module.css"
-import { chainNames, productChainLinks } from "../data/productChainLinks"
+import { chainNames, productChainLinks } from "../data/productChainLinks.ts"
 
 interface ProductData {
   learnMoreLink: string

@@ -1,8 +1,8 @@
 import { useState } from "react"
 import styles from "./PrerequisitesCard.module.css"
-import { type StepId, type SubStepId } from "@stores/lanes"
-import { SetupSection } from "./SetupSection"
-import { TutorialCard } from "./TutorialCard"
+import { type StepId, type SubStepId } from "@stores/lanes/index.ts"
+import { SetupSection } from "./SetupSection.tsx"
+import { TutorialCard } from "./TutorialCard.tsx"
 
 interface Link {
   text: string

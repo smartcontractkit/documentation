@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
 import styles from "./SolidityParam.module.css"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { ReactCopyText } from "@components/ReactCopyText.tsx"
 
 interface SolidityParamProps {
   name: string

@@ -2,10 +2,10 @@
 import { useState } from "preact/hooks"
 import { feedRegistryInterfaceABI } from "@abi"
 import { ethers } from "ethers"
-import { ROUND_DATA_RESPONSE } from "@features/feeds"
-import { PriceButton } from "./PriceButton"
-import { SupportedChain } from "@config"
-import { getWeb3Provider } from "@features/utils"
+import { ROUND_DATA_RESPONSE } from "@features/feeds/types/index.ts"
+import { PriceButton } from "./PriceButton.tsx"
+import { SupportedChain } from "@config/index.ts"
+import { getWeb3Provider } from "@features/utils/index.ts"
 
 export const RegistryPrice = ({
   registryAddress,

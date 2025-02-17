@@ -1,5 +1,5 @@
 import { defineConfig } from "astro/config"
-import vercel from "@astrojs/vercel/serverless"
+import vercel from "@astrojs/vercel"
 import preact from "@astrojs/preact"
 import react from "@astrojs/react"
 import mdx from "@astrojs/mdx"
@@ -10,6 +10,7 @@ import sitemap from "@astrojs/sitemap"
 import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
+import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 
 // https://astro.build/config
 export default defineConfig({
@@ -22,6 +23,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],
     }),
@@ -46,9 +48,13 @@ export default defineConfig({
     syntaxHighlight: "prism",
     smartypants: false,
   },
-  output: "hybrid",
+  // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
+  output: "static",
   adapter: vercel(),
   vite: {
     plugins: [yaml()],
+  },
+  legacy: {
+    collections: false,
   },
 })

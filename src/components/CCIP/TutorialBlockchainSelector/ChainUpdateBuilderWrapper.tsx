@@ -1,13 +1,15 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, TUTORIAL_STEPS } from "@stores/lanes"
-import { ChainUpdateBuilder } from "./ChainUpdateBuilder"
+import { laneStore, TUTORIAL_STEPS } from "~/stores/lanes/index.ts"
+import { ChainUpdateBuilder } from "./ChainUpdateBuilder.tsx"
 import { ethers } from "ethers"
 import styles from "./ChainUpdateBuilderWrapper.module.css"
-import { ReactCopyText } from "@components/ReactCopyText"
+import { ReactCopyText } from "~/components/ReactCopyText.tsx"
 import { useState } from "react"
-import type { Network } from "@config/data/ccip/types"
-import { TutorialCard, SolidityParam, NetworkCheck, TutorialStep } from "../TutorialSetup"
-import { StepCheckbox } from "../TutorialProgress/StepCheckbox"
+import type { Network } from "~/config/data/ccip/types.ts"
+import { TutorialCard, TutorialStep } from "../TutorialSetup/index.ts"
+import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
+import { NetworkCheck } from "../TutorialSetup/NetworkCheck.tsx"
+import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 
 interface ChainUpdateBuilderWrapperProps {
   chain: "source" | "destination"
@@ -91,9 +93,9 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
       isDataReady &&
       remoteNetwork?.chainSelector &&
       remoteContracts.tokenPool &&
-      ethers.utils.isAddress(remoteContracts.tokenPool) &&
+      ethers.isAddress(remoteContracts.tokenPool) &&
       remoteContracts.token &&
-      ethers.utils.isAddress(remoteContracts.token)
+      ethers.isAddress(remoteContracts.token)
     )
   }
 
@@ -107,11 +109,11 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
 
     try {
       // Validate addresses
-      if (!ethers.utils.isAddress(input.poolAddress) || !ethers.utils.isAddress(input.tokenAddress)) {
+      if (!ethers.isAddress(input.poolAddress) || !ethers.isAddress(input.tokenAddress)) {
         if (process.env.NODE_ENV === "development") {
           console.log(`[UpdateSkipped] ${chain}-update-builder: Invalid addresses`, {
-            validPoolAddress: ethers.utils.isAddress(input.poolAddress),
-            validTokenAddress: ethers.utils.isAddress(input.tokenAddress),
+            validPoolAddress: ethers.isAddress(input.poolAddress),
+            validTokenAddress: ethers.isAddress(input.tokenAddress),
             timestamp: new Date().toISOString(),
           })
         }
@@ -121,9 +123,9 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
       const formattedUpdate = {
         remoteChainSelector: input.remoteChainSelector,
         remotePoolAddresses: [input.poolAddress].map((addr) =>
-          ethers.utils.defaultAbiCoder.encode(["address"], [addr])
+          ethers.AbiCoder.defaultAbiCoder().encode(["address"], [addr])
         ),
-        remoteTokenAddress: ethers.utils.defaultAbiCoder.encode(["address"], [input.tokenAddress]),
+        remoteTokenAddress: ethers.AbiCoder.defaultAbiCoder().encode(["address"], [input.tokenAddress]),
         outboundRateLimiterConfig: {
           enabled: input.outbound.enabled,
           capacity: input.outbound.capacity,

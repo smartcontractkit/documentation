@@ -1,14 +1,19 @@
-import { automationAddresses, chainlinkAutomationConfig as currentConfig } from "@features/chainlink-automation/data"
-import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types"
-import { SupportedChain } from "@config"
-import { getWeb3Provider } from "@features/utils"
+import {
+  automationAddresses,
+  chainlinkAutomationConfig as currentConfig,
+} from "@features/chainlink-automation/data/index.ts"
+import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types/index.ts"
+import { SupportedChain } from "@config/index.ts"
+import { getWeb3Provider } from "@features/utils/index.ts"
 // eslint-disable-next-line camelcase
 import { KeeperRegistry, keeperRegistry1_3, keeperRegistry2_0 } from "@abi"
-import { ContractInterface, ethers } from "ethers"
+import { InterfaceAbi, ethers, Interface, Provider } from "ethers"
 import { normalize } from "path"
-import { isEqual } from "lodash"
+import lodash from "lodash"
 import { writeFile } from "fs/promises"
 import { format } from "prettier"
+
+const { isEqual } = lodash
 
 const configToBePath = normalize("./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json")
 
@@ -21,8 +26,8 @@ const getRegistryAbi = (supportedChain: SupportedChain) => {
 }
 
 const getChainlinkAutomationConfig = async (
-  provider: ethers.providers.Provider,
-  abi: ContractInterface,
+  provider: Provider,
+  abi: InterfaceAbi | Interface,
   registryAddress: string
 ) => {
   const registry = new ethers.Contract(registryAddress, abi, provider)
@@ -61,7 +66,7 @@ const getChainlinkAutomationConfigs = async () => {
   const configs: ChainlinkAutomationConfigs = {}
   for (const key in automationAddresses) {
     const supportedChain = key as SupportedChain
-    const abi = getRegistryAbi(supportedChain) as ContractInterface
+    const abi = getRegistryAbi(supportedChain)
     const registryAddress = automationAddresses[key].registryAddress
     const provider = getWeb3Provider(supportedChain)
     if (!registryAddress) {
@@ -96,7 +101,7 @@ compareConfigs().then(async (res) => {
   if (!res.isEqual) {
     await writeFile(
       configToBePath,
-      format(JSON.stringify(res.toBeConfig), {
+      await format(JSON.stringify(res.toBeConfig), {
         parser: "json",
         semi: true,
         trailingComma: "es5",

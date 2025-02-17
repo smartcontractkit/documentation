@@ -1,8 +1,9 @@
-import { SupportedChain, chainToTechnology } from "@config"
-import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types"
-import { networkFees } from "./data"
-import BigNumber from "bignumber.js"
-import { utils } from "ethers"
+import { SupportedChain } from "~/config/types.ts"
+import { chainToTechnology } from "~/config/chains.ts"
+import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
+import { networkFees } from "./data.ts"
+import { BigNumber as BigNumberJs } from "bignumber.js"
+import { commify } from "~/utils/index.js"
 
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
@@ -40,7 +41,7 @@ export const tokenPoolDisplay = (poolType?: PoolType) => {
     feeTokenOnly: "Fee Token Only",
   }
 
-  return poolType ? poolTypeMapping[poolType] ?? "Unsupported" : "Unsupported"
+  return poolType ? (poolTypeMapping[poolType] ?? "Unsupported") : "Unsupported"
 }
 
 export const calculateNetworkFeesForTokenMechanismDirect = (
@@ -117,8 +118,8 @@ export const calculateMessaingNetworkFees = (sourceChain: SupportedChain, destin
   return calculateMessagingNetworkFeesDirect(laneSpecificFeeKey)
 }
 
-const normalizeNumber = (bigNum: BigNumber, decimals = 18) => {
-  const divisor = new BigNumber(10).pow(decimals)
+const normalizeNumber = (bigNum: BigNumberJs, decimals = 18) => {
+  const divisor = new BigNumberJs(10).pow(decimals)
   const normalized = bigNum.dividedBy(divisor)
 
   return normalized.toNumber()
@@ -161,19 +162,19 @@ export const displayCapacity = (decimals = 18, token: string, rateLimiterConfig?
   }
 
   const capacity = String(rateLimiterConfig?.capacity || 0)
-  const numberWithoutDecimals = normalizeNumber(new BigNumber(capacity), decimals).toString()
-  return `${utils.commify(numberWithoutDecimals)} ${token}`
+  const numberWithoutDecimals = normalizeNumber(new BigNumberJs(capacity), decimals).toString()
+  return `${commify(numberWithoutDecimals)} ${token}`
 }
 
 export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
-  const capacityNormalized = normalizeNumber(new BigNumber(capacity), decimals) // normalize capacity
-  const rateNormalized = normalizeNumber(new BigNumber(rate), decimals) // normalize capacity
+  const capacityNormalized = normalizeNumber(new BigNumberJs(capacity), decimals) // normalize capacity
+  const rateNormalized = normalizeNumber(new BigNumberJs(rate), decimals) // normalize capacity
 
   const totalRefillTime = capacityNormalized / rateNormalized // in seconds
   const displayTime = `${formatTime(totalRefillTime)}`
 
   return {
-    rateSecond: `${utils.commify(rateNormalized)} ${symbol}/second`,
-    maxThroughput: `Refills from 0 to ${utils.commify(capacityNormalized)} ${symbol} in ${displayTime}`,
+    rateSecond: `${commify(rateNormalized)} ${symbol}/second`,
+    maxThroughput: `Refills from 0 to ${commify(capacityNormalized)} ${symbol} in ${displayTime}`,
   }
 }

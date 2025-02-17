@@ -1,6 +1,6 @@
-import { clsx } from "~/lib"
-import { useNavBar } from "../../Header/useNavBar/useNavBar"
-import DocsPickerMobile from "./DocsPickerMobile"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { useNavBar } from "../../Header/useNavBar/useNavBar.ts"
+import DocsPickerMobile from "./DocsPickerMobile.tsx"
 import styles from "./docsNavigationMobile.module.css"
 
 function DocsNavigationMobile({ pathname, children }: { pathname: string; children?: React.ReactNode }) {

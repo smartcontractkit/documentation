@@ -1,9 +1,10 @@
-import { Sections } from "../content/config"
-import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json"
-import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json"
-import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json"
-import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json"
-import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json"
+import { Sections } from "../content.config.ts"
+import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json" assert { type: "json" }
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json" assert { type: "json" }
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" assert { type: "json" }
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" assert { type: "json" }
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" assert { type: "json" }
 
 export type SectionContent = {
   title: string
@@ -18,7 +19,7 @@ type SectionEntry = {
 }
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
-  dataFeeds: [
+  [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
       contents: [
@@ -226,7 +227,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  dataStreams: [
+  [SIDEBAR_SECTIONS.DATA_STREAMS]: [
     {
       section: "Chainlink Data Streams",
       contents: [
@@ -448,7 +449,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  automation: [
+  [SIDEBAR_SECTIONS.AUTOMATION]: [
     {
       section: "Chainlink Automation",
       contents: [
@@ -631,7 +632,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkFunctions: [
+  [SIDEBAR_SECTIONS.CHAINLINK_FUNCTIONS]: [
     {
       section: "Chainlink Functions",
       contents: [
@@ -822,7 +823,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  vrf: [
+  [SIDEBAR_SECTIONS.VRF]: [
     {
       section: "Chainlink VRF v2.5",
       contents: [
@@ -981,7 +982,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  ccip: [
+  [SIDEBAR_SECTIONS.CCIP]: [
     {
       section: "Chainlink CCIP",
       contents: [
@@ -1246,7 +1247,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkLocal: [
+  [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
       contents: [
@@ -1347,7 +1348,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  nodeOperator: [
+  [SIDEBAR_SECTIONS.NODE_OPERATORS]: [
     {
       section: "Chainlink Nodes",
       contents: [
@@ -1552,7 +1553,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  global: [
+  [SIDEBAR_SECTIONS.GLOBAL]: [
     {
       section: "General Documentation",
       contents: [
@@ -1619,7 +1620,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  legacy: [
+  [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [Legacy]",
       contents: [

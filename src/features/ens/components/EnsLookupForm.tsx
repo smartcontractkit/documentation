@@ -1,8 +1,8 @@
 /** @jsxImportSource preact */
-import { EnsOptions } from "../data"
+import { EnsOptions } from "../data/index.ts"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
-import { getWeb3Provider } from "@features/utils"
+import { getWeb3Provider } from "@features/utils/index.ts"
 
 export const EnsLookupForm = () => {
   const [ensResult, setEnsResult] = useState<

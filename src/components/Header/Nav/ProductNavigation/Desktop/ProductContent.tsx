@@ -1,5 +1,5 @@
-import { ProductItem } from "../../config"
-import { Category } from "./Category"
+import { ProductItem } from "../../config.tsx"
+import { Category } from "./Category.tsx"
 import styles from "./productContent.module.css"
 
 type Props = { categories: { label?: string; items: ProductItem[] }[] }

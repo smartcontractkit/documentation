@@ -1,7 +1,7 @@
 // Chain Data API Types
 
-import { Environment, ChainConfig } from "@config/data/ccip/types"
-import { ChainInfo } from "@config/types"
+import { Environment, ChainConfig } from "@config/data/ccip/types.ts"
+import { ChainInfo } from "@config/types.ts"
 
 export { Environment }
 

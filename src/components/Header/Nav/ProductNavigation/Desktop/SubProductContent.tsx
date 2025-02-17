@@ -1,6 +1,6 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
-import { SubProductsNav } from "../../config"
-import { clsx } from "../../utils"
+import { SubProductsNav } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
 import styles from "./subProductContent.module.css"
 
 export const SubProductContent = ({ subProductsNav }: { subProductsNav: SubProductsNav }) => (
