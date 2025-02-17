@@ -1,0 +1,272 @@
+---
+title: "CCIP Cross-Chain NFT"
+description: "Mint an NFT on one blockchain from another blockchain using Chainlink CCIP."
+image: "QuickStarts-Batch-Collection-Reveal.webp"
+products: ["ccip"]
+time: "180 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
+---
+
+import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
+import { Tabs, TabsContent } from "@components/Tabs"
+
+## Overview
+
+This project demonstrates how to mint an NFT on one blockchain from another blockchain using Chainlink CCIP.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Objective
+
+Imagine that you want to go to a conference that sells tickets as NFTs on one chain, but you have funds on some other chain. You will need to bridge your tokens to that chain where the NFT contract exists, to mint the NFT, and optionally bridge funds back.
+
+In this tutorial, you are building an cross-chain NFT minting system. This project aims to mint an NFT on the destination blockchain by sending the `to` address from the source blockchain. This tutorial uses a relatively simple example so you can understand a basic cross-chain message, but you can expand it to accept payment for minting on the source blockchain, add extra features, and more.
+
+The basic architecture diagram of what we want to accomplish looks like this:
+
+<ClickToZoom src="/images/quickstarts/cross-chain-nft/detailed-architecture-diagram.png" />
+
+
+## Before you begin
+
+Before you start this tutorial, install the required tools:
+
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
+- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
+
+
+1. Verify installation by typing:
+
+```shell
+node -v
+```
+
+and
+
+```shell
+npm -v
+```
+
+1. Clone the repo and install the packages:
+
+```shell
+git clone https://github.com/smartcontractkit/ccip-cross-chain-nft.git && \
+cd ccip-cross-chain-nft && \
+npm install
+```
+
+1. Compile the contracts:
+
+```
+npx hardhat compile
+```
+
+### Configure environment variables
+
+There are several Hardhat tasks available for deployment and interaction with this project. But before that, you need to set up some environment variables.
+
+We are going to use the [`@chainlink/env-enc`](https://www.npmjs.com/package/@chainlink/env-enc) package for extra security. Instead of storing environment variables as plain text in the `.env` file, the `env-enc` package encrypts this sensitive data by creating a new `.env.enc` file. Although it's not recommended to push this file online, if that accidentally happens your secrets will still be encrypted.
+
+1. Set a password for encrypting and decrypting the environment variable file. You can change it later by typing the same command.
+
+```shell
+npx env-enc set-pw
+```
+
+1. Now set the following environment variables: `PRIVATE_KEY`, Source Blockchain RPC URL, Destination Blockchain RPC URL. You can see available options in the `.env.example` file:
+
+```shell
+ETHEREUM_SEPOLIA_RPC_URL=""
+OPTIMISM_GOERLI_RPC_URL=""
+ARBITRUM_TESTNET_RPC_URL=""
+AVALANCHE_FUJI_RPC_URL=""
+POLYGON_MUMBAI_RPC_URL=""
+```
+
+You specify which blockchain is the source and which one is the destination during [contract deployment](#deployment). For now, set the environment variable for each supported blockchain you're using.
+
+To set these variables, type the following command and follow the instructions in the terminal:
+
+```shell
+npx env-enc set
+```
+
+```shell
+Please enter the variable name (or press ENTER to finish): 
+ARBITRUM_TESTNET_RPC_URL
+Please enter the variable value (input will be hidden): 
+*********************************************************************
+Would you like to set another variable? Please enter the variable name (or press ENTER to finish): 
+```
+
+After you are done, the `.env.enc` file is automatically generated.
+
+If you want to validate your inputs, run the next command:
+
+```shell
+npx env-enc view
+```
+
+### Deployment
+
+1. Deploy the [`MyNFT.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/MyNFT.sol) and [`DestinationMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/DestinationMinter.sol) smart contracts to the **destination blockchain**, by running the `deploy-destination-minter` task:
+
+```shell
+npx hardhat deploy-destination-minter
+--router [routerAddress] # Optional
+```
+
+For example, if you want to mint NFTs on Avalanche Fuji, run:
+
+```shell
+npx hardhat deploy-destination-minter --network avalancheFuji
+```
+
+2. Deploy the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract to the **source blockchain**, by running the `deploy-source-minter` task:
+
+```shell
+npx hardhat deploy-source-minter
+--router [routerAddress] # Optional
+--link [linkTokenAddress] # Optional
+```
+
+For example, if you want to mint NFTs on Avalanche Fuji by sending requests from Ethereum Sepolia, run:
+
+```shell
+npx hardhat deploy-source-minter --network ethereumSepolia
+```
+
+### Fee management
+
+Fund the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract with tokens for CCIP fees. You can use either native tokens or LINK tokens:
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="fundingMethod" client:visible>
+<Fragment slot="tab.1">Native tokens</Fragment>
+<Fragment slot="tab.2">LINK tokens</Fragment>
+<Fragment slot="panel.1">
+If you want to pay for CCIP fees in Native tokens:
+
+Open MetaMask and fund your contract with Native tokens. For example, if you want to mint from Ethereum Sepolia to Avalanche Fuji, you can send 0.01 Sepolia ETH to the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract.
+
+Alternatively, you can execute the `fill-sender` task by running:
+
+```shell
+npx hardhat fill-sender
+--sender-address [sourceMinterAddress]
+--blockchain [blockchain]
+--amount [amountToSend]
+--pay-fees-in Native
+```
+
+For example, if you want to fund it with 0.01 Sepolia ETH, run:
+
+```shell
+npx hardhat fill-sender --sender-address [SOURCE_MINTER_ADDRESS] --blockchain ethereumSepolia --amount 10000000000000000 --pay-fees-in Native
+```
+</Fragment>
+<Fragment slot="panel.2">
+If you want to pay for CCIP fees in LINK tokens:
+
+Open Metamask and fund your contract with LINK tokens. For example, if you want to mint from Ethereum Sepolia to Avalanche Fuji, you can send 0.001 Sepolia LINK to the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract.
+
+Alternatively, you can execute the `fill-sender` task by running:
+
+```shell
+npx hardhat fill-sender
+--sender-address [sourceMinterAddress]
+--blockchain [blockchain]
+--amount [amountToSend]
+--pay-fees-in LINK
+```
+
+For example, if you want to fund it with 0.001 Sepolia LINK, run:
+
+```shell
+npx hardhat fill-sender --sender-address [SOURCE_MINTER_ADDRESS] --blockchain ethereumSepolia --amount 1000000000000000 --pay-fees-in LINK
+```
+</Fragment>
+</TabsContent>
+
+
+### Minting
+
+Mint NFTs by calling the `mint()` function of the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract on the **source blockchain**. This sends the CCIP cross-chain message with the ABI-encoded mint function signature from the [`MyNFT.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/MyNFT.sol) smart contract. 
+
+The [`DestinationMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/DestinationMinter.sol) smart contract receives the CCIP cross-chain message with the ABI-encoded mint function signature as a payload and calls the [`MyNFT.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/MyNFT.sol) smart contract using it. The [`MyNFT.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/MyNFT.sol) smart contract will then mint the new NFT to the `msg.sender` account from the `mint()` function of the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract, a.k.a to the account from which you will call the following command:
+
+```shell
+npx hardhat cross-chain-mint
+--source-minter [sourceMinterAddress]
+--source-blockchain [sourceBlockchain]
+--destination-blockchain [destinationBlockchain]
+--destination-minter [destinationMinterAddress]
+--pay-fees-in [Native | LINK]
+```
+
+For example, if you want to mint NFTs on Avalanche Fuji by sending requests from Ethereum Sepolia, run:
+
+```shell
+npx hardhat cross-chain-mint
+--source-minter SOURCE_MINTER_ADDRESS
+--source-blockchain ethereumSepolia 
+--destination-blockchain avalancheFuji
+--destination-minter DESTINATION_MINTER_ADDRESS
+--pay-fees-in Native
+```
+
+5. Once the CCIP message is finalized on the destination blockchain, you can query the MyNFTs balance of your account, using the `balance-of` task:
+
+<ClickToZoom src="/images/quickstarts/cross-chain-nft/ccip-explorer.png" />
+
+```shell
+npx hardhat balance-of
+--my-nft [myNftContractAddress]
+--blockchain [destinationBlockchain]
+--owner [theAccountToCheckBalanceOf]
+```
+
+For example, to verify that the new MyNFT was minted, type:
+
+```shell
+npx hardhat balance-of --my-nft MY_NFT_CONTRACT_ADDRESS --blockchain avalancheFuji --owner PUT_YOUR_EOA_ADDRESS_HERE
+```
+
+Of course, you can see your newly minted NFT on popular NFT Marketplaces, like OpenSea for instance:
+
+<ClickToZoom src="/images/quickstarts/cross-chain-nft/opensea.png" />
+
+## Withdrawing fee tokens
+
+You can always withdraw tokens for Chainlink CCIP fees from the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) smart contract using the `withdraw` task. Note that the `--token-address` flag is optional. If not provided, native coins will be withdrawn.
+
+```shell
+npx hardhat withdraw
+--beneficiary [withdrawTo]
+--blockchain [sourceMinterBlockchain]
+--from [sourceMinterAddress]
+--token-address [tokensToWithdraw] # Optional, if left empty native coins will be withdrawn
+```
+
+For example, to withdraw tokens previously sent for Chainlink CCIP fees, run:
+
+```shell
+npx hardhat withdraw --beneficiary BENEFICIARY_ADDRESS --blockchain ethereumSepolia --from SOURCE_MINTER_ADDRESS
+```
+
+or
+
+```shell
+npx hardhat withdraw --beneficiary BENEFICIARY_ADDRESS --blockchain ethereumSepolia --from SOURCE_MINTER_ADDRESS --token-address 0x779877A7B0D9E8603169DdbD7836e478b4624789
+```
+
+depending on whether you filled the [`SourceMinter.sol`](https://github.com/smartcontractkit/ccip-cross-chain-nft/contracts/cross-chain-nft-minter/SourceMinter.sol) contract with `Native` or `LINK` in step number 3.
