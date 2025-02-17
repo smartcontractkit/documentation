@@ -1,0 +1,119 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Consuming Data Feeds using the Hardhat CLI"
+excerpt: "Smart Contracts and Chainlink"
+whatsnext:
+  {
+    "See examples for how to read feeds onchain and offchain": "/data-feeds/using-data-feeds",
+    "Learn how to retrieve Historical Price Data": "/data-feeds/historical-data",
+    "Read the Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+metadata:
+  title: "Consuming Data Feeds"
+  description: "Learn how to consume Chainlink Data Feeds in your smart contracts using the Hardhat CLI."
+  image: "/files/1a63254-link.png"
+---
+
+import { Aside, CodeSample, CopyText } from "@components"
+import DataFeeds from "@features/feeds/common/DataFeeds.astro"
+
+You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
+
+This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
+
+This CLI guide uses the [Hardhat Framework](https://hardhat.org/) so you can complete these steps using terminal commands rather than the web-based Remix IDE. If you prefer Remix or are unfamiliar with how to run terminal commands, read the [Getting Started - Remix IDE](/data-feeds/getting-started) guide instead.
+
+The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
+
+<Aside type="caution" title="Using Data Feeds on L2 networks">
+  If you are using Chainlink Data Feeds on L2 networks like Arbitrum, Optimism, and Metis, you must also check the
+  latest answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer
+  outage. See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
+  networks.
+</Aside>
+
+## Before you begin
+
+This guide uses the [Hardhat](https://hardhat.org/) development environment to deploy and interact with the contracts. To learn more about Hardhat, read the [Hardhat Documentation](https://hardhat.org/hardhat-runner/docs/getting-started).
+
+### Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Nodejs** and **npm**: [Install the latest release of Node.js 20](https://nodejs.org/en/download/). Optionally, you can use the nvm package to switch between Node.js versions with <CopyText text="nvm use 20" code/>. To ensure you are running the correct version in a terminal, type <CopyText text="node -v" code/>.
+  ```bash
+   $ node -v
+   v20.11.0
+  ```
+- **Testnet funds**: This guide requires testnet ETH on Ethereum Sepolia. If necessary, go to [faucets.chain.link](https://faucets.chain.link/sepolia) and get testnet ETH on Ethereum Sepolia.
+
+<DataFeeds section="gettingStartedExamineContract" />
+
+## Tutorial
+
+### Setup
+
+1. Clone the repository that contains the Hardhat project setup for this guide. This repository contains the Solidity contract and the Hardhat configuration files you need to deploy and interact with the contract.
+
+   ```bash
+   git clone https://github.com/smartcontractkit/smart-contract-examples.git
+   cd data-feeds/getting-started/hardhat
+   ```
+
+1. Install all the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+1. Set an encryption password for your environment variables. This password needs to be set each time you create or restart a terminal shell session.
+
+   ```bash
+   npx env-enc set-pw
+   ```
+
+1. Set the required environment variables using the following command:
+
+   ```bash
+   npx env-enc set
+   ```
+
+   - `PRIVATE_KEY`: The private key for your testnet wallet that will deploy and interact with the contracts. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+   - `ETHEREUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Ethereum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Ethereum Sepolia project.
+
+### Deploy the `DataConsumerV3` contract
+
+Execute the following command to deploy the `DataConsumerV3` contract on the Ethereum Sepolia testnet:
+
+```bash
+npx hardhat deployDataConsumerV3 --network ethereumSepolia
+```
+
+After a few seconds, the transaction completes. Expect output similar to the following in your terminal:
+
+```bash
+ℹ Compiling contracts...
+Compiled 2 Solidity files successfully (evm target: paris).
+ℹ Starting deployment of DataConsumerV3 with account: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+✔ DataConsumerV3 deployed at: 0xcbEAC520915727e2cf242feA77EEEEEb319A43bB on ethereumSepolia
+```
+
+Save the deployed contract address. You will use this address later.
+
+### Get the latest answer from the aggregator contract
+
+Execute the following command to get the latest answer from the aggregator contract:
+
+```bash
+npx hardhat getLatestAnswer --data-consumer-v3 <DataConsumerV3Address> --network ethereumSepolia
+```
+
+Replace `<DataConsumerV3Address>` with the address of the `DataConsumerV3` contract you saved earlier.
+
+Expect output similar to the following in your terminal:
+
+```bash
+✔ Latest BTC / USD Data Feed answer: 6292416053902
+```
+
+In this example, the answer is the latest price. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `6292416053902` indicates a BTC / USD price of `62924.16053902`. Each feed uses a different number of decimal places for answers.
