@@ -1,3 +1,5 @@
+import { ExplorerInfo } from "~/config/types.ts"
+
 export type RateLimiterConfig = {
   capacity: string
   isEnabled: boolean
@@ -39,7 +41,7 @@ type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
   poolAddress?: string
-  poolType?: PoolType
+  poolType: PoolType
   name?: string
   symbol: string
   decimals: number
@@ -49,6 +51,18 @@ export type ChainConfig = {
   feeTokens: string[]
   chainSelector: string
   router: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
     address: string
     version: string
   }
@@ -110,6 +124,11 @@ export enum Environment {
   Testnet = "testnet",
 }
 
+export enum LaneFilter {
+  Inbound = "inbound",
+  Outbound = "outbound",
+}
+
 export enum Version {
   V1_2_0 = "1.2.0",
 }
@@ -122,4 +141,33 @@ export interface CCIPSendErrorEntry {
   }>
   errorSelector?: string
   description: string
+}
+
+export enum LaneStatus {
+  OPERATIONAL = "OPERATIONAL",
+  MAINTENANCE = "MAINTENANCE",
+  DEGRADED = "DEGRADED",
+  CURSED = "CURSED",
+}
+
+export interface Network {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  totalLanes: number
+  totalTokens: number
+  key: string
+  tokenAdminRegistry?: string
+  explorer: ExplorerInfo
+  registryModule?: string
+  router?: {
+    address: string
+    version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  routerExplorerUrl: string
 }

@@ -1,4 +1,4 @@
-export function extendRadixComponent<T extends React.ComponentType<any>>(Component: T) {
+export function extendRadixComponent<T extends React.ComponentType<Record<string, unknown>>>(Component: T) {
   type ExtendedProps = React.ComponentPropsWithRef<T> & {
     children?: React.ReactNode
     className?: string

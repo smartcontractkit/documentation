@@ -1,0 +1,73 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 BurnMintTokenPoolAbstract Contract API Reference"
+metadata:
+  description: "API documentation for the BurnMintTokenPoolAbstract contract in Chainlink CCIP v1.5.0, implementing burn/mint functionality for cross-chain token transfers."
+  canonical: "/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+## BurnMintTokenPoolAbstract
+
+[`BurnMintTokenPoolAbstract`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/BurnMintTokenPoolAbstract.sol) is an abstract contract that extends the [`TokenPool`](/ccip/api-reference/v1.5.0/token-pool) contract. It defines the common logic for burning tokens in the pool. This contract contains validation mechanisms and logic for burning tokens in the context of a cross-chain token transfer. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens.
+
+## Functions
+
+### \_burn
+
+```solidity
+function _burn(uint256 amount) internal virtual
+```
+
+Contains the specific burn call for a pool.
+
+#### Parameters
+
+| Name   | Type    | Description                   |
+| ------ | ------- | ----------------------------- |
+| amount | uint256 | The amount of tokens to burn. |
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(struct Pool.LockOrBurnInV1 lockOrBurnIn) external virtual returns (struct Pool.LockOrBurnOutV1)
+```
+
+Burn the token in the pool.
+
+#### Parameters
+
+| Name         | Type                | Description                              |
+| ------------ | ------------------- | ---------------------------------------- |
+| lockOrBurnIn | Pool.LockOrBurnInV1 | The input parameters for burning tokens. |
+
+#### Return Values
+
+| Name | Type                 | Description                               |
+| ---- | -------------------- | ----------------------------------------- |
+| [0]  | Pool.LockOrBurnOutV1 | The output data after burning the tokens. |
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(struct Pool.ReleaseOrMintInV1 releaseOrMintIn) external virtual returns (struct Pool.ReleaseOrMintOutV1)
+```
+
+Mint tokens from the pool to the recipient.
+
+#### Parameters
+
+| Name            | Type                   | Description                              |
+| --------------- | ---------------------- | ---------------------------------------- |
+| releaseOrMintIn | Pool.ReleaseOrMintInV1 | The input parameters for minting tokens. |
+
+#### Return Values
+
+| Name | Type                    | Description                               |
+| ---- | ----------------------- | ----------------------------------------- |
+| [0]  | Pool.ReleaseOrMintOutV1 | The output data after minting the tokens. |

@@ -1,3 +1,2 @@
-export * from "./types"
-export * from "./components"
-export * from "./data"
+export * from "./types/index.ts"
+export * from "./data/index.ts"

@@ -1,0 +1,108 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 RegistryModuleOwnerCustom Contract API Reference"
+metadata:
+  description: "API documentation for the RegistryModuleOwnerCustom contract in Chainlink CCIP v1.5.0, enabling token developers to register as administrators for their tokens."
+  canonical: "/ccip/api-reference/v1.5.1/registry-module-owner-custom"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+The [`RegistryModuleOwnerCustom`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol) contract is responsible for registering the administrator of a token in the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.0/token-admin-registry). This contract allows for the registration of token administrators through either the `getCCIPAdmin()` method (for tokens with a CCIP admin) or the `owner()` method (for standard tokens with an owner). The contract enforces that only the rightful administrator of the token can register themselves, ensuring secure and accurate registration within the `TokenAdminRegistry`. The contract also emits an event, `AdministratorRegistered`, whenever a token administrator is successfully registered.
+
+## Errors
+
+### CanOnlySelfRegister
+
+```solidity
+error CanOnlySelfRegister(address admin, address token)
+```
+
+### AddressZero
+
+```solidity
+error AddressZero()
+```
+
+## Events
+
+### AdministratorRegistered
+
+```solidity
+event AdministratorRegistered(address token, address administrator)
+```
+
+## Constants
+
+### typeAndVersion
+
+```solidity
+string typeAndVersion
+```
+
+## Variables
+
+### i_tokenAdminRegistry
+
+```solidity
+ITokenAdminRegistry i_tokenAdminRegistry
+```
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(address tokenAdminRegistry) public
+```
+
+### registerAdminViaGetCCIPAdmin
+
+```solidity
+function registerAdminViaGetCCIPAdmin(address token) external
+```
+
+Registers the admin of the token using the `getCCIPAdmin` method.
+
+_The caller must be the admin returned by the `getCCIPAdmin` method._
+
+#### Parameters
+
+| Name  | Type    | Description                          |
+| ----- | ------- | ------------------------------------ |
+| token | address | The token to register the admin for. |
+
+### registerAdminViaOwner
+
+```solidity
+function registerAdminViaOwner(address token) external
+```
+
+Registers the admin of the token using the `owner` method.
+
+_The caller must be the admin returned by the `owner` method._
+
+#### Parameters
+
+| Name  | Type    | Description                          |
+| ----- | ------- | ------------------------------------ |
+| token | address | The token to register the admin for. |
+
+### \_registerAdmin
+
+```solidity
+function _registerAdmin(address token, address admin) internal
+```
+
+Registers the admin of the token to msg.sender given that the admin is equal to msg.sender.
+
+#### Parameters
+
+| Name  | Type    | Description                          |
+| ----- | ------- | ------------------------------------ |
+| token | address | The token to register the admin for. |
+| admin | address | The caller must be the admin.        |

@@ -1,4 +1,4 @@
-import { SectionContent } from "~/config"
+import { SectionContent } from "~/config/index.ts"
 
 export const flattenChildren = function (arr) {
   const flattenedArray: SectionContent[] = []

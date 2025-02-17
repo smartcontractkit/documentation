@@ -1,0 +1,144 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 BurnMintTokenPoolAbstract Contract API Reference"
+metadata:
+  description: "API documentation for the BurnMintTokenPoolAbstract contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## BurnMintTokenPoolAbstract
+
+An abstract contract that implements core token pool functionality for burning and minting operations in cross-chain token transfers.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/pools/BurnMintTokenPoolAbstract.sol)
+
+**Inherits:**
+
+- [TokenPool](/ccip/api-reference/v1.5.1/token-pool)
+
+## Events
+
+### Burned
+
+```solidity
+event Burned(address indexed sender, uint256 amount);
+```
+
+<Aside>Emitted when tokens are burned in the pool.</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description                               |
+| -------- | --------- | ------- | ----------------------------------------- |
+| `sender` | `address` | Yes     | The address initiating the burn operation |
+| `amount` | `uint256` | No      | The number of tokens burned               |
+
+### Minted
+
+```solidity
+event Minted(address indexed sender, address indexed recipient, uint256 amount);
+```
+
+<Aside>Emitted when new tokens are minted from the pool.</Aside>
+
+**Parameters**
+
+| Name        | Type      | Indexed | Description                               |
+| ----------- | --------- | ------- | ----------------------------------------- |
+| `sender`    | `address` | Yes     | The address initiating the mint operation |
+| `recipient` | `address` | Yes     | The address receiving the minted tokens   |
+| `amount`    | `uint256` | No      | The number of tokens minted               |
+
+## Functions
+
+### \_burn
+
+Internal function that executes the token burning operation.
+
+```solidity
+function _burn(uint256 amount) internal virtual;
+```
+
+<Aside>
+Contains the specific burn call for a pool.
+
+This method can be overridden to create pools with different burn signatures without duplicating the underlying logic.
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                  |
+| -------- | --------- | ---------------------------- |
+| `amount` | `uint256` | The number of tokens to burn |
+
+### lockOrBurn
+
+Burns tokens in the pool during a cross-chain transfer.
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) external virtual override returns (Pool.LockOrBurnOutV1 memory);
+```
+
+<Aside>
+
+Burns tokens in the pool with essential security validation:
+
+- Performs security validation through `_validateLockOrBurn`
+- Burns the specified amount of tokens
+- Emits a `Burned` event
+- Returns destination token information
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type                                                                    | Description                             |
+| -------------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/v1.5.1/pool#lockorburninv1) | Input parameters for the burn operation |
+
+**Returns**
+
+| Type                                                                      | Description                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) | Contains destination token address and pool data |
+
+### releaseOrMint
+
+Mints new tokens to a recipient during a cross-chain transfer.
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) external virtual override returns (Pool.ReleaseOrMintOutV1 memory);
+```
+
+<Aside>
+
+Mints tokens to a specified recipient with the following steps:
+
+- Performs security validation through `_validateReleaseOrMint`
+- Calculates the correct local token amount using decimal adjustments
+- Mints tokens to the specified receiver
+- Emits a `Minted` event
+
+</Aside>
+
+**Parameters**
+
+| Name              | Type                                                                          | Description                             |
+| ----------------- | ----------------------------------------------------------------------------- | --------------------------------------- |
+| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/v1.5.1/pool#releaseormintinv1) | Input parameters for the mint operation |
+
+**Returns**
+
+| Type                                                                            | Description                                      |
+| ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) | Contains the final amount minted in local tokens |

@@ -1,0 +1,124 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "AggregatorV3Interface v0.2.1 API Reference"
+metadata:
+  description: "API documentation for AggregatorV3Interface in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## AggregatorV3Interface
+
+[`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/data-feeds/interfaces/AggregatorV3Interface.sol) defines the extended interface for Chainlink Data Feed aggregators, providing comprehensive round data and metadata about the feed.
+
+## Functions
+
+### decimals
+
+```solidity
+function decimals() external view returns (uint8)
+```
+
+Retrieves the number of decimals used to format the answer.
+
+**Returns:**
+
+| Type    | Description                            |
+| ------- | -------------------------------------- |
+| `uint8` | The number of decimals in the response |
+
+### description
+
+```solidity
+function description() external view returns (string memory)
+```
+
+Retrieves the description of the price feed.
+
+**Returns:**
+
+| Type     | Description                       |
+| -------- | --------------------------------- |
+| `string` | The description of the price feed |
+
+### getRoundData
+
+```solidity
+function getRoundData(uint80 _roundId) external view returns (
+    uint80 roundId,
+    int256 answer,
+    uint256 startedAt,
+    uint256 updatedAt,
+    uint80 answeredInRound
+)
+```
+
+Retrieves the complete round data for a specific round ID.
+
+<Aside type="caution">
+  This function should raise "No data present" if data is unavailable, instead of returning unset values which could be
+  misinterpreted as actual reported values.
+</Aside>
+
+**Parameters:**
+
+| Parameter | Type     | Description           |
+| --------- | -------- | --------------------- |
+| \_roundId | `uint80` | The round ID to query |
+
+**Returns:**
+
+| Parameter       | Type      | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| roundId         | `uint80`  | The round ID from the aggregator for this round |
+| answer          | `int256`  | The price answer for this round                 |
+| startedAt       | `uint256` | Timestamp when the round started                |
+| updatedAt       | `uint256` | Timestamp when the round was updated            |
+| answeredInRound | `uint80`  | The round ID in which the answer was computed   |
+
+### latestRoundData
+
+```solidity
+function latestRoundData() external view returns (
+    uint80 roundId,
+    int256 answer,
+    uint256 startedAt,
+    uint256 updatedAt,
+    uint80 answeredInRound
+)
+```
+
+Retrieves the latest round data from the aggregator.
+
+<Aside type="caution">
+  This function should raise "No data present" if data is unavailable, instead of returning unset values which could be
+  misinterpreted as actual reported values.
+</Aside>
+
+**Returns:**
+
+| Parameter       | Type      | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| roundId         | `uint80`  | The round ID from the aggregator for this round |
+| answer          | `int256`  | The latest price answer                         |
+| startedAt       | `uint256` | Timestamp when the round started                |
+| updatedAt       | `uint256` | Timestamp when the round was updated            |
+| answeredInRound | `uint80`  | The round ID in which the answer was computed   |
+
+### version
+
+```solidity
+function version() external view returns (uint256)
+```
+
+Retrieves the version number of the aggregator implementation.
+
+**Returns:**
+
+| Type      | Description                          |
+| --------- | ------------------------------------ |
+| `uint256` | The version number of the aggregator |

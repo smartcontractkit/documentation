@@ -1,0 +1,99 @@
+---
+import SideBySideCodeReact from "./index"
+import fs from "node:fs/promises"
+import path from "node:path"
+import fetch from "node-fetch"
+import { createHighlighter } from "shiki"
+import type { BundledLanguage, SpecialLanguage } from "shiki"
+
+interface LineHighlight {
+  lines: number[]
+  label: string
+  description: string
+}
+
+export interface Props {
+  language?: BundledLanguage | SpecialLanguage | string
+  codeSrc: string
+  title?: string
+  highlights?: LineHighlight[]
+}
+
+const { language = "plaintext", codeSrc, title, highlights = [] } = Astro.props
+
+async function fetchFromUrl(url: string): Promise<string> {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch code from ${url}: ${response.statusText}`)
+  }
+  return response.text()
+}
+
+async function readLocalFile(filePath: string): Promise<string> {
+  const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath
+  const fullPath = path.join(process.cwd(), "public", "samples", normalizedPath)
+  const fileContent = await fs.readFile(fullPath, "utf-8")
+
+  if (!fileContent.trim()) {
+    throw new Error("File is empty")
+  }
+  return fileContent
+}
+
+let code: string
+let error: Error | null = null
+try {
+  if (!codeSrc) throw new Error("codeSrc is required")
+
+  if (codeSrc.startsWith("http://") || codeSrc.startsWith("https://")) {
+    code = await fetchFromUrl(codeSrc)
+  } else {
+    code = await readLocalFile(codeSrc)
+  }
+} catch (e) {
+  error = e as Error
+  code = `// Error: ${e.message}`
+}
+
+let highlightedCode: string
+try {
+  // Specify themes and langs at creation time
+  const highlighter = await createHighlighter({
+    themes: ["github-dark"],
+    langs: ["plaintext", "javascript", "typescript", "solidity"], // add more if needed
+  })
+
+  const highlightLang = typeof language === "string" ? language : "plaintext"
+  highlightedCode = highlighter.codeToHtml(code, {
+    lang: highlightLang as BundledLanguage,
+    theme: "github-dark",
+  })
+} catch (e) {
+  console.error("Failed to highlight code:", e)
+  highlightedCode = `<pre><code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`
+}
+---
+
+{error && <div class="error-message">Failed to load code: {error.message}</div>}
+
+<SideBySideCodeReact
+  client:only="react"
+  language={language}
+  codeSrc={codeSrc}
+  highlightedCode={highlightedCode}
+  title={title}
+  highlights={highlights}
+>
+  <slot />
+</SideBySideCodeReact>
+
+<style>
+  .error-message {
+    color: var(--theme-error-text, #f85149);
+    background: var(--theme-error-bg, #3d1818);
+    border: 1px solid var(--theme-error-border, #f85149);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+</style>

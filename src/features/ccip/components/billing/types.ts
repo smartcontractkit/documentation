@@ -1,5 +1,11 @@
-import { SupportedChain } from "@config"
-import { Environment, NetworkFeeStructure, SupportedTokenConfig, TokenMechanism, Version } from "@config/data/ccip"
+import { SupportedChain } from "@config/index.ts"
+import {
+  Environment,
+  NetworkFeeStructure,
+  SupportedTokenConfig,
+  TokenMechanism,
+  Version,
+} from "@config/data/ccip/index.ts"
 
 export interface EnvironmentData {
   environments: Environment[]

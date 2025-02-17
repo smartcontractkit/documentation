@@ -1,0 +1,217 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockEvm2EvmOffRamp v0.2.1 API Reference"
+metadata:
+  description: "API documentation for MockEvm2EvmOffRamp in Solidity, version v0.2.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage021" />
+
+## MockEvm2EvmOffRamp
+
+[`MockEvm2EvmOffRamp`](https://github.com/smartcontractkit/chainlink-local/blob/ba1f4636e657f161df634379a5057a5a394e2fbb/src/ccip/MockEvm2EvmOffRamp.sol) simulates the destination chain component of CCIP's cross-chain message delivery system. This contract handles token releases and message execution in a test environment.
+
+## Errors
+
+### CanOnlySimulatorCall
+
+```solidity
+error CanOnlySimulatorCall()
+```
+
+Thrown when a non-simulator address attempts to call restricted functions.
+
+### ReceiverError
+
+```solidity
+error ReceiverError(bytes error)
+```
+
+Thrown when the CCIP receiver execution fails.
+
+### TokenHandlingError
+
+```solidity
+error TokenHandlingError(bytes error)
+```
+
+Thrown when token release or minting operations encounter non-rate-limiting errors.
+
+### UnsupportedToken
+
+```solidity
+error UnsupportedToken(IERC20 token)
+```
+
+Thrown when attempting to interact with a token that doesn't have an associated pool.
+
+## Structs
+
+### DynamicConfig
+
+```solidity
+struct DynamicConfig {
+  uint32 permissionLessExecutionThresholdSeconds;
+  address router;
+  address priceRegistry;
+  uint16 maxNumberOfTokensPerMsg;
+  uint32 maxDataBytes;
+  uint32 maxPoolReleaseOrMintGas;
+}
+```
+
+Configuration parameters that can be updated during contract operation:
+
+• permissionLessExecutionThresholdSeconds - Waiting time before manual execution is enabled
+• router - Router address
+• priceRegistry - Price registry address
+• maxNumberOfTokensPerMsg - Maximum number of ERC20 token transfers per message
+• maxDataBytes - Maximum payload data size in bytes
+• maxPoolReleaseOrMintGas - Maximum gas for token pool releaseOrMint calls
+
+## Variables
+
+### i_sourceChainSelector
+
+```solidity
+uint64 internal immutable i_sourceChainSelector
+```
+
+The chain selector identifying the source chain for this off-ramp.
+
+### s_ccipLocalSimulator
+
+```solidity
+address internal s_ccipLocalSimulator
+```
+
+The address of the local CCIP simulator controlling this off-ramp.
+
+### s_dynamicConfig
+
+```solidity
+DynamicConfig internal s_dynamicConfig
+```
+
+Current dynamic configuration settings for the off-ramp.
+
+### s_poolsBySourceToken
+
+```solidity
+EnumerableMapAddresses.AddressToAddressMap private s_poolsBySourceToken
+```
+
+Maps source token addresses to their corresponding token pool addresses.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor(
+    address ccipLocalSimulator,
+    DynamicConfig memory dynamicConfig,
+    RateLimiter.Config memory config,
+    uint64 sourceChainSelector,
+    address[] memory sourceTokens,
+    address[] memory pools
+) AggregateRateLimiter(config)
+```
+
+Initializes the off-ramp with simulator settings, configuration parameters, and token pool mappings.
+
+**Parameters:**
+
+| Parameter           | Type                 | Description                                 |
+| ------------------- | -------------------- | ------------------------------------------- |
+| ccipLocalSimulator  | `address`            | Address of the CCIP simulator               |
+| dynamicConfig       | `DynamicConfig`      | Initial dynamic configuration settings      |
+| config              | `RateLimiter.Config` | Rate limiter configuration                  |
+| sourceChainSelector | `uint64`             | Chain selector for the source chain         |
+| sourceTokens        | `address[]`          | Array of source token addresses             |
+| pools               | `address[]`          | Array of corresponding token pool addresses |
+
+### executeSingleMessage
+
+```solidity
+function executeSingleMessage(
+    Internal.EVM2EVMMessage memory message,
+    bytes[] memory offchainTokenData
+) external
+```
+
+Processes a single cross-chain message by releasing tokens and executing the receiver's callback.
+
+<Aside type="note">
+  Only the CCIP simulator can call this function. It handles token transfers and executes the receiver's message
+  handling logic.
+</Aside>
+
+**Parameters:**
+
+| Parameter         | Type                      | Description                          |
+| ----------------- | ------------------------- | ------------------------------------ |
+| message           | `Internal.EVM2EVMMessage` | The cross-chain message to process   |
+| offchainTokenData | `bytes[]`                 | Token data provided by off-chain DON |
+
+### getPoolBySourceToken
+
+```solidity
+function getPoolBySourceToken(IERC20 sourceToken) public view returns (IPool)
+```
+
+Retrieves the token pool associated with a source token.
+
+**Parameters:**
+
+| Parameter   | Type     | Description                         |
+| ----------- | -------- | ----------------------------------- |
+| sourceToken | `IERC20` | The source token address to look up |
+
+**Returns:**
+
+| Type    | Description                                  |
+| ------- | -------------------------------------------- |
+| `IPool` | The token pool contract for the source token |
+
+### \_releaseOrMintTokens
+
+```solidity
+function _releaseOrMintTokens(
+    Client.EVMTokenAmount[] memory sourceTokenAmounts,
+    bytes memory originalSender,
+    address receiver,
+    bytes[] memory sourceTokenData,
+    bytes[] memory offchainTokenData
+) internal returns (Client.EVMTokenAmount[] memory)
+```
+
+Handles the release or minting of tokens through token pools. This function includes safety measures against malicious tokens and rate limiting.
+
+<Aside type="note">Uses pools to release or mint a number of different tokens to a receiver address.</Aside>
+
+<Aside type="tip">
+  This function wraps the token pool call in a try catch block to gracefully handle any non-rate limiting errors that
+  may occur. If we encounter a rate limiting related error we bubble it up. If we encounter a non-rate limiting error we
+  wrap it in a TokenHandlingError.
+</Aside>
+
+**Parameters:**
+
+| Parameter          | Type                      | Description                                                     |
+| ------------------ | ------------------------- | --------------------------------------------------------------- |
+| sourceTokenAmounts | `Client.EVMTokenAmount[]` | List of tokens and amount values to be released/minted          |
+| originalSender     | `bytes`                   | The message sender                                              |
+| receiver           | `address`                 | The address that will receive the tokens                        |
+| sourceTokenData    | `bytes[]`                 | Array of token data returned by token pools on the source chain |
+| offchainTokenData  | `bytes[]`                 | Array of token data fetched offchain by the DON                 |
+
+**Returns:**
+
+| Type                      | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `Client.EVMTokenAmount[]` | Array of processed token amounts and addresses |

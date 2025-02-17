@@ -1,0 +1,189 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 LockReleaseTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the LockReleaseTokenPool contract in Chainlink CCIP v1.5.0, implementing lock/release functionality for tokens on their native chain."
+  canonical: "/ccip/api-reference/v1.5.1/lock-release-token-pool"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+## LockReleaseTokenPool
+
+The [`LockReleaseTokenPool`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) contract is used for handling tokens on their native chain using a lock and release mechanism. It allows tokens to be locked in the pool, facilitating their transfer across blockchains, and then released to the recipient on the destination chain. When allowlist is enabled, it ensures only token-developer specified addresses can transfer tokens.
+
+This contract inherits from the [`TokenPool`](/ccip/api-reference/v1.5.0/token-pool) contract and implements additional functions for liquidity management.
+
+### typeAndVersion
+
+```solidity
+string typeAndVersion
+```
+
+### constructor
+
+```solidity
+constructor(IERC20 token, address[] allowlist, address rmnProxy, bool acceptLiquidity, address router)
+```
+
+Initializes the pool with a token, allowlist, RMN proxy, and router. The constructor also determines whether the pool can accept liquidity.
+
+#### Parameters
+
+| Name            | Type      | Description                                                           |
+| --------------- | --------- | --------------------------------------------------------------------- |
+| token           | IERC20    | The token managed by the pool.                                        |
+| allowlist       | address[] | List of addresses allowed to be original senders for token transfers. |
+| rmnProxy        | address   | The RMN proxy address.                                                |
+| acceptLiquidity | bool      | Whether the pool accepts liquidity.                                   |
+| router          | address   | The router address for cross-chain communication.                     |
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external virtual returns (Pool.LockOrBurnOutV1 memory)
+```
+
+Locks the token in the pool for transfer across chains.
+
+#### Parameters
+
+| Name         | Type                         | Description                             |
+| ------------ | ---------------------------- | --------------------------------------- |
+| lockOrBurnIn | Pool.LockOrBurnInV1 calldata | Encoded data fields for token transfer. |
+
+#### Return Values
+
+| Name             | Type  | Description                                         |
+| ---------------- | ----- | --------------------------------------------------- |
+| destTokenAddress | bytes | The destination token address on the remote chain.  |
+| destPoolData     | bytes | Optional data to be passed to the destination pool. |
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external virtual returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+Releases tokens from the pool to the recipient.
+
+#### Parameters
+
+| Name            | Type                            | Description                                                |
+| --------------- | ------------------------------- | ---------------------------------------------------------- |
+| releaseOrMintIn | Pool.ReleaseOrMintInV1 calldata | Encoded data fields for releasing tokens to the recipient. |
+
+#### Return Values
+
+| Name              | Type    | Description                                                       |
+| ----------------- | ------- | ----------------------------------------------------------------- |
+| destinationAmount | uint256 | The amount of tokens released or minted on the destination chain. |
+
+### getRebalancer
+
+```solidity
+function getRebalancer() external view returns (address)
+```
+
+Gets the address of the rebalancer.
+
+#### Return Values
+
+| Name       | Type    | Description             |
+| ---------- | ------- | ----------------------- |
+| rebalancer | address | The current rebalancer. |
+
+### setRebalancer
+
+```solidity
+function setRebalancer(address rebalancer) external
+```
+
+Sets the LiquidityManager address. Only callable by the contract owner.
+
+#### Parameters
+
+| Name       | Type    | Description                       |
+| ---------- | ------- | --------------------------------- |
+| rebalancer | address | The new LiquidityManager address. |
+
+### canAcceptLiquidity
+
+```solidity
+function canAcceptLiquidity() external view returns (bool)
+```
+
+Checks if the pool can accept liquidity.
+
+#### Return Values
+
+| Name | Type | Description                                          |
+| ---- | ---- | ---------------------------------------------------- |
+| [0]  | bool | true if the pool accepts liquidity, false otherwise. |
+
+### provideLiquidity
+
+```solidity
+function provideLiquidity(uint256 amount) external
+```
+
+Adds liquidity to the pool.
+
+#### Parameters
+
+| Name   | Type    | Description                         |
+| ------ | ------- | ----------------------------------- |
+| amount | uint256 | Amount of liquidity to be provided. |
+
+### withdrawLiquidity
+
+```solidity
+function withdrawLiquidity(uint256 amount) external
+```
+
+Removes liquidity from the pool and sends the tokens to the sender.
+
+#### Parameters
+
+| Name   | Type    | Description                          |
+| ------ | ------- | ------------------------------------ |
+| amount | uint256 | Amount of liquidity to be withdrawn. |
+
+### transferLiquidity
+
+```solidity
+function transferLiquidity(address from, uint256 amount) external
+```
+
+Transfers liquidity from an older version of the pool to this pool.
+
+#### Parameters
+
+| Name   | Type    | Description                                               |
+| ------ | ------- | --------------------------------------------------------- |
+| from   | address | The address of the older pool to transfer liquidity from. |
+| amount | uint256 | The amount of liquidity to transfer.                      |
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) public pure virtual returns (bool)
+```
+
+Checks which interface the contract supports.
+
+#### Parameters
+
+| Name        | Type   | Description               |
+| ----------- | ------ | ------------------------- |
+| interfaceId | bytes4 | The interface identifier. |
+
+#### Return Values
+
+| Name | Type | Description                         |
+| ---- | ---- | ----------------------------------- |
+| [0]  | bool | true if the interface is supported. |

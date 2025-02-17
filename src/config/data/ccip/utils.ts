@@ -1,6 +1,9 @@
-import { SupportedChain, chainToTechnology } from "@config"
-import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey } from "./types"
-import { networkFees } from "./data"
+import { SupportedChain } from "~/config/types.ts"
+import { chainToTechnology } from "~/config/chains.ts"
+import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
+import { networkFees } from "./data.ts"
+import { BigNumber as BigNumberJs } from "bignumber.js"
+import { commify } from "~/utils/index.js"
 
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
@@ -28,6 +31,17 @@ export const determineTokenMechanism = (
   }
 
   return TokenMechanism.Unsupported
+}
+
+export const tokenPoolDisplay = (poolType?: PoolType) => {
+  const poolTypeMapping: Record<PoolType, string> = {
+    lockRelease: "Lock/Release",
+    burnMint: "Burn/Mint",
+    usdc: "Burn/Mint",
+    feeTokenOnly: "Fee Token Only",
+  }
+
+  return poolType ? (poolTypeMapping[poolType] ?? "Unsupported") : "Unsupported"
 }
 
 export const calculateNetworkFeesForTokenMechanismDirect = (
@@ -102,4 +116,65 @@ export const calculateMessaingNetworkFees = (sourceChain: SupportedChain, destin
   }
 
   return calculateMessagingNetworkFeesDirect(laneSpecificFeeKey)
+}
+
+const normalizeNumber = (bigNum: BigNumberJs, decimals = 18) => {
+  const divisor = new BigNumberJs(10).pow(decimals)
+  const normalized = bigNum.dividedBy(divisor)
+
+  return normalized.toNumber()
+}
+
+const formatTime = (seconds: number) => {
+  const minute = 60
+  const hour = 3600 // 60*60
+
+  if (seconds < minute) {
+    return `${seconds} second${seconds > 1 ? "s" : ""}`
+  } else if (seconds < hour && hour - seconds > 300) {
+    // if the difference less than 5 minutes(300 seconds), round to hours
+    const minutes = Math.round(seconds / minute)
+    return `${minutes} minute${minutes > 1 ? "s" : ""}`
+  } else {
+    let hours = Math.floor(seconds / hour)
+    const remainingSeconds = seconds % hour
+
+    // Determine the nearest 5-minute interval
+    let minutes = Math.round(remainingSeconds / minute / 5) * 5
+
+    // Round up to the next hour if minutes are 60
+    if (minutes === 60) {
+      hours += 1
+      minutes = 0
+    }
+
+    return `${hours}${
+      minutes > 0
+        ? ` hour${hours > 1 ? "s" : ""} and ${minutes} minute${minutes > 1 ? "s" : ""}`
+        : ` hour${hours > 1 ? "s" : ""}`
+    }`
+  }
+}
+
+export const displayCapacity = (decimals = 18, token: string, rateLimiterConfig?: RateLimiterConfig) => {
+  if (!rateLimiterConfig?.isEnabled) {
+    return "N/A"
+  }
+
+  const capacity = String(rateLimiterConfig?.capacity || 0)
+  const numberWithoutDecimals = normalizeNumber(new BigNumberJs(capacity), decimals).toString()
+  return `${commify(numberWithoutDecimals)} ${token}`
+}
+
+export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
+  const capacityNormalized = normalizeNumber(new BigNumberJs(capacity), decimals) // normalize capacity
+  const rateNormalized = normalizeNumber(new BigNumberJs(rate), decimals) // normalize capacity
+
+  const totalRefillTime = capacityNormalized / rateNormalized // in seconds
+  const displayTime = `${formatTime(totalRefillTime)}`
+
+  return {
+    rateSecond: `${commify(rateNormalized)} ${symbol}/second`,
+    maxThroughput: `Refills from 0 to ${commify(capacityNormalized)} ${symbol} in ${displayTime}`,
+  }
 }

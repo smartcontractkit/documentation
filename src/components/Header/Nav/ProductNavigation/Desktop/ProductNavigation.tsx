@@ -1,11 +1,11 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
 import React from "react"
-import { SubProductsNav } from "../../config"
-import { clsx } from "../../utils"
-import { extendRadixComponent } from "../extendRadixComponent"
+import { SubProductsNav } from "../../config.tsx"
+import { clsx } from "../../utils.ts"
+import { extendRadixComponent } from "../extendRadixComponent.ts"
 import styles from "./productNavigation.module.css"
-import { CaretIcon } from "../CaretIcon"
-import MegaMenu from "./MegaMenu"
+import { CaretIcon } from "../CaretIcon.tsx"
+import MegaMenu from "./MegaMenu.tsx"
 
 type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
@@ -74,6 +74,11 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
           <Item>
             <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/chainlog">
               Changelog
+            </NavigationMenu.Link>
+          </Item>
+          <Item>
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/certification">
+              Get Certified
             </NavigationMenu.Link>
           </Item>
         </List>

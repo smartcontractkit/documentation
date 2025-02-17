@@ -1,5 +1,5 @@
 ---
-import { Sections } from "~/content/config"
+import { Sections } from "~/content.config.ts"
 import { SIDEBAR, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 import ActiveIcon from "./ActiveIcon.astro"
@@ -15,8 +15,8 @@ const getSidebarSections = (section?: Sections) => {
   if (!section) {
     return []
   } else if (section === "global") {
-    return Object.keys(SIDEBAR).flatMap((parentSection) => {
-      return SIDEBAR[parentSection].map((entry: any) => ({ ...entry, parentSection }))
+    return Object.entries(SIDEBAR).flatMap(([parentSection, entries]) => {
+      return entries?.map((entry) => ({ ...entry, parentSection })) ?? []
     })
   }
   return SIDEBAR[section] ?? []
@@ -84,109 +84,226 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
                 s.contents.map((child) => (
                   <>
                     <li>
-                      <a
-                        class={`nav-link ${isCurrentPageMatch(child.url, currentPage) ? "active" : ""}`}
-                        href={`${Astro.site?.pathname}${child.url}`}
-                        aria-current={
-                          isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
-                        }
-                      >
-                        <ActiveIcon />
-                        {child.title}
-                      </a>
-                    </li>
-                    {child.children && (
-                      <ul class="nav-group-entries nested">
-                        {child.children.map((childItem) => (
-                          <>
-                            <li>
-                              <a
-                                class={`nav-link ${
-                                  isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
-                                    ? "active"
-                                    : ""
-                                } nested`}
-                                href={`${Astro.site?.pathname}${childItem.url}`}
-                                aria-current={
-                                  isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
-                                    ? "page"
-                                    : "false"
-                                }
-                              >
-                                <ActiveIcon />
-                                {childItem.title}
-                              </a>
-                            </li>
-                            {childItem.children && (
-                              <ul class="nav-group-entries nested">
-                                {childItem.children.map((subChildItem) => (
-                                  <>
-                                    <li>
-                                      <a
-                                        class={`nav-link ${
-                                          isCurrentPageMatch(
-                                            subChildItem.url,
-                                            currentPage,
-                                            subChildItem.highlightAsCurrent
-                                          )
-                                            ? "active"
-                                            : ""
-                                        } nested`}
-                                        href={`${Astro.site?.pathname}${subChildItem.url}`}
-                                        aria-current={
-                                          isCurrentPageMatch(
-                                            subChildItem.url,
-                                            currentPage,
-                                            subChildItem.highlightAsCurrent
-                                          )
-                                            ? "page"
-                                            : "false"
-                                        }
-                                      >
-                                        <ActiveIcon />
-                                        {subChildItem.title}
-                                      </a>
-                                    </li>
-                                    {subChildItem.children && (
-                                      <ul class="nav-group-entries nested">
-                                        {subChildItem.children.map((deepChildItem) => (
+                      {child.isCollapsible ? (
+                        <details
+                          open={
+                            !!flattenChildren(child.children || []).filter((object) =>
+                              isCurrentPageMatch(object.url, currentPage, object.highlightAsCurrent)
+                            ).length
+                          }
+                        >
+                          <summary class="nav-link">
+                            <a
+                              href={`${Astro.site?.pathname}${child.url}`}
+                              class={isCurrentPageMatch(child.url, currentPage) ? "active" : ""}
+                              aria-current={
+                                isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
+                              }
+                            >
+                              <ActiveIcon />
+                              {child.title}
+                            </a>
+                          </summary>
+                          {child.children && (
+                            <ul class="nav-group-entries nested">
+                              {child.children.map((childItem) => (
+                                <>
+                                  <li>
+                                    <a
+                                      class={`nav-link ${
+                                        isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                          ? "active"
+                                          : ""
+                                      } nested`}
+                                      href={`${Astro.site?.pathname}${childItem.url}`}
+                                      aria-current={
+                                        isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                          ? "page"
+                                          : "false"
+                                      }
+                                    >
+                                      <ActiveIcon />
+                                      {childItem.title}
+                                    </a>
+                                  </li>
+                                  {childItem.children && (
+                                    <ul class="nav-group-entries nested">
+                                      {childItem.children.map((subChildItem) => (
+                                        <>
                                           <li>
                                             <a
                                               class={`nav-link ${
                                                 isCurrentPageMatch(
-                                                  deepChildItem.url,
+                                                  subChildItem.url,
                                                   currentPage,
-                                                  deepChildItem.highlightAsCurrent
+                                                  subChildItem.highlightAsCurrent
                                                 )
                                                   ? "active"
                                                   : ""
                                               } nested`}
-                                              href={`${Astro.site?.pathname}${deepChildItem.url}`}
+                                              href={`${Astro.site?.pathname}${subChildItem.url}`}
                                               aria-current={
                                                 isCurrentPageMatch(
-                                                  deepChildItem.url,
+                                                  subChildItem.url,
                                                   currentPage,
-                                                  deepChildItem.highlightAsCurrent
+                                                  subChildItem.highlightAsCurrent
                                                 )
                                                   ? "page"
                                                   : "false"
                                               }
                                             >
                                               <ActiveIcon />
-                                              {deepChildItem.title}
+                                              {subChildItem.title}
                                             </a>
                                           </li>
-                                        ))}
-                                      </ul>
-                                    )}
-                                  </>
-                                ))}
-                              </ul>
-                            )}
-                          </>
-                        ))}
-                      </ul>
-                    )}
+                                          {subChildItem.children && (
+                                            <ul class="nav-group-entries nested">
+                                              {subChildItem.children.map((deepChildItem) => (
+                                                <li>
+                                                  <a
+                                                    class={`nav-link ${
+                                                      isCurrentPageMatch(
+                                                        deepChildItem.url,
+                                                        currentPage,
+                                                        deepChildItem.highlightAsCurrent
+                                                      )
+                                                        ? "active"
+                                                        : ""
+                                                    } nested`}
+                                                    href={`${Astro.site?.pathname}${deepChildItem.url}`}
+                                                    aria-current={
+                                                      isCurrentPageMatch(
+                                                        deepChildItem.url,
+                                                        currentPage,
+                                                        deepChildItem.highlightAsCurrent
+                                                      )
+                                                        ? "page"
+                                                        : "false"
+                                                    }
+                                                  >
+                                                    <ActiveIcon />
+                                                    {deepChildItem.title}
+                                                  </a>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          )}
+                                        </>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </>
+                              ))}
+                            </ul>
+                          )}
+                        </details>
+                      ) : (
+                        <>
+                          <a
+                            class={`nav-link ${isCurrentPageMatch(child.url, currentPage) ? "active" : ""}`}
+                            href={`${Astro.site?.pathname}${child.url}`}
+                            aria-current={
+                              isCurrentPageMatch(child.url, currentPage, child.highlightAsCurrent) ? "page" : "false"
+                            }
+                          >
+                            <ActiveIcon />
+                            {child.title}
+                          </a>
+                          {child.children && (
+                            <ul class="nav-group-entries nested">
+                              {child.children.map((childItem) => (
+                                <>
+                                  <li>
+                                    <a
+                                      class={`nav-link ${
+                                        isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                          ? "active"
+                                          : ""
+                                      } nested`}
+                                      href={`${Astro.site?.pathname}${childItem.url}`}
+                                      aria-current={
+                                        isCurrentPageMatch(childItem.url, currentPage, childItem.highlightAsCurrent)
+                                          ? "page"
+                                          : "false"
+                                      }
+                                    >
+                                      <ActiveIcon />
+                                      {childItem.title}
+                                    </a>
+                                  </li>
+                                  {childItem.children && (
+                                    <ul class="nav-group-entries nested">
+                                      {childItem.children.map((subChildItem) => (
+                                        <>
+                                          <li>
+                                            <a
+                                              class={`nav-link ${
+                                                isCurrentPageMatch(
+                                                  subChildItem.url,
+                                                  currentPage,
+                                                  subChildItem.highlightAsCurrent
+                                                )
+                                                  ? "active"
+                                                  : ""
+                                              } nested`}
+                                              href={`${Astro.site?.pathname}${subChildItem.url}`}
+                                              aria-current={
+                                                isCurrentPageMatch(
+                                                  subChildItem.url,
+                                                  currentPage,
+                                                  subChildItem.highlightAsCurrent
+                                                )
+                                                  ? "page"
+                                                  : "false"
+                                              }
+                                            >
+                                              <ActiveIcon />
+                                              {subChildItem.title}
+                                            </a>
+                                          </li>
+                                          {subChildItem.children && (
+                                            <ul class="nav-group-entries nested">
+                                              {subChildItem.children.map((deepChildItem) => (
+                                                <li>
+                                                  <a
+                                                    class={`nav-link ${
+                                                      isCurrentPageMatch(
+                                                        deepChildItem.url,
+                                                        currentPage,
+                                                        deepChildItem.highlightAsCurrent
+                                                      )
+                                                        ? "active"
+                                                        : ""
+                                                    } nested`}
+                                                    href={`${Astro.site?.pathname}${deepChildItem.url}`}
+                                                    aria-current={
+                                                      isCurrentPageMatch(
+                                                        deepChildItem.url,
+                                                        currentPage,
+                                                        deepChildItem.highlightAsCurrent
+                                                      )
+                                                        ? "page"
+                                                        : "false"
+                                                    }
+                                                  >
+                                                    <ActiveIcon />
+                                                    {deepChildItem.title}
+                                                  </a>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          )}
+                                        </>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </>
+                              ))}
+                            </ul>
+                          )}
+                        </>
+                      )}
+                    </li>
                   </>
                 ))}
             </ul>
@@ -261,6 +378,7 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
     transform: rotate(180deg);
   }
 
+  /* Original nav-link styles */
   .nav-link {
     display: flex;
     align-items: center;
@@ -275,12 +393,15 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
   .nav-link.active,
   .nav-link:hover,
   .nav-link:focus,
-  .nav-link[aria-current="page"] {
+  .nav-link[aria-current="page"],
+  details summary.nav-link:has(a.active),
+  details summary.nav-link:has(a[aria-current="page"]) {
     color: var(--color-text-link);
     font-weight: 500;
   }
 
-  .nav-link[aria-current="page"] {
+  .nav-link[aria-current="page"],
+  details summary.nav-link:has(a[aria-current="page"]) {
     font-weight: 600;
   }
 
@@ -290,6 +411,35 @@ const isAnyPageMatch = (contents: SectionContent[], currentPage: string): boolea
 
   .nav-link.nested {
     padding-left: var(--space-4x);
+  }
+
+  /* Only add these minimal styles for collapsible items */
+  .nav-group-entries details summary.nav-link::after {
+    content: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
+    width: 16px;
+    height: 16px;
+    margin-left: auto;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+  }
+
+  .nav-group-entries details[open] summary.nav-link::after {
+    transform: rotate(180deg);
+  }
+
+  /* Style for links inside collapsible summaries */
+  details summary.nav-link a {
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
+  }
+
+  /* Maintain caret position */
+  .nav-group-entries details summary.nav-link::after {
+    margin-left: var(--space-2x);
   }
 </style>
 

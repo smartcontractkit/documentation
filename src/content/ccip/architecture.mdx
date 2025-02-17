@@ -6,10 +6,11 @@ whatsnext:
   {
     "CCIP manual execution": "/ccip/concepts/manual-execution",
     "Learn CCIP best practices": "/ccip/best-practices",
-    "Find the list of supported networks, lanes, and rate limits on the CCIP Supported Networks page": "/ccip/supported-networks",
+    "Find the list of supported networks, lanes, and rate limits on the CCIP Directory": "/ccip/directory",
   }
 ---
 
+import { Tabs } from "@components/Tabs"
 import { Aside, ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
@@ -53,11 +54,14 @@ CCIP enables a _sender_ on a _source blockchain_ to send a _message_ to a _recei
 
 The figure below outlines the different components involved in a cross-chain transaction:
 
-- Cross-Chain dApps are user-specific. A smart contract or an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) interacts with the CCIP Router to send arbitrary data and/or transfer tokens cross-chain.
+- Cross-Chain dApps are user-specific. A smart contract, a [smart account](https://erc7579.com/resources/terms), or an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) interacts with the CCIP Router to send arbitrary data and/or transfer tokens cross-chain.
 - The contracts in dark blue are the CCIP interface ([Router](#router)). To use CCIP, users need only to understand how to interact with the router; they don't need to understand the whole CCIP architecture. **Note**: The CCIP interface is static and remains consistent over time to provide reliability and stability to the users.
 - The contracts in light blue are internal to the CCIP protocol and subject to change.
+- The contracts highlighted in orange have been integrated into the CCIP protocol to enable the [Cross-Chain Token (CCT) standard](/ccip/concepts/cross-chain-tokens).
 
-<ClickToZoom src="/images/ccip/detailed-architecture.png" alt="Chainlink CCIP Detailed Architecture" />
+      <br />
+
+      <ClickToZoom src="/images/ccip/CCIP_detailed_architecture_1.5.png" alt="Chainlink CCIP Detailed Architecture 1.5" />
 
 ### Onchain components
 
@@ -74,36 +78,52 @@ The [Committing DON](#committing-don) interacts with the `CommitStore` contract 
 
 #### OnRamp
 
-One OnRamp contract per [lane](/ccip/concepts#lane) exists. This contract performs the following tasks:
+One OnRamp contract exists per [lane](/ccip/concepts#lane). This contract performs the following tasks:
 
-- Checks destination-blockchain-specific validity such as validating account address syntax
-- Verifies the message size limit and gas limits
-- Keeps track of sequence numbers to preserve the sequence of messages for the receiver
-- Manages [billing](/ccip/billing)
-- Interacts with the [TokenPool](#token-pools) if the message includes a token transfer.
-- Emits an event monitored by the [committing DON](#committing-don)
+- Checks destination blockchain-specific validity, such as validating account address syntax.
+- Verifies message size limits and gas limits.
+- Keeps track of sequence numbers to preserve the order of messages for the receiver
+- Manages [billing](/ccip/billing).
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry-and-registrymoduleownercustom) to retrieve the token pool linked to a token if the message includes a token transfer.
+
+- Interacts with the [TokenPool](#token-pools) to lock or burn a specified amount of tokens if the message includes a token transfer.
+- Emits an event monitored by the [committing DON](#committing-don).
 
 #### OffRamp
 
-One OffRamp contract per [lane](/ccip/concepts#lane) exists. This contract performs the following tasks:
+One OffRamp contract exists per [lane](/ccip/concepts#lane). This contract performs the following tasks:
 
-- Ensures the message is authentic by verifying the proof provided by the Executing DON against a committed and blessed Merkle root
-- Makes sure transactions are executed only once
-- After validation, the OffRamp contract transmits any received message to the [Router](#router) contract. If the CCIP transaction includes token transfers, the OffRamp contract calls the [TokenPool](#token-pools) to transfer the correct assets to the receiver.
+- Ensures the message is authentic by verifying the proof provided by the Executing DON against a committed and blessed Merkle root.
+- Ensures transactions are executed only once.
+- Interacts with the [TokenAdminRegistry](#tokenadminregistry-and-registrymoduleownercustom) to retrieve the token pool linked to a token if the message includes a token transfer.
+- If the CCIP transaction includes token transfers, the OffRamp contract calls the [TokenPool](#token-pools) to unlock or mint the correct assets for the receiver.
+- After validation, the OffRamp contract transmits any received message to the [Router](#router) contract.
+
+#### TokenAdminRegistry and RegistryModuleOwnerCustom
+
+The registry contracts manage the registration of tokens within the Cross-Chains Tokens (CCT) standard. For more information, read the [CCT standard concepts](/ccip/concepts/cross-chain-tokens).
 
 #### Token pools
 
-Each token is associated with its own token pool, an abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide rate limiting, a security feature enabling token issuers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
+<CcipCommon callout="tokenPoolOwnership" />
+
+Each token is associated with its own token pool, an abstraction layer over ERC-20 tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide rate limiting, a security feature enabling token developers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain. This setup results in four primary mechanisms:
 
 - **Burn and Mint**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain.
 - **Lock and Mint**: Tokens are locked on their issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens can be transferred across non-issuing blockchains using the _Burn and Mint_ mechanism.
 - **Burn and Unlock**: Tokens are burned on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. This mechanism is the inverse of the _Lock and Mint_ mechanism. It applies when you send tokens to their issuing source blockchain.
 - **Lock and Unlock**: Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain.
 
+Currently, token pools are administered in two ways:
+
+- **Self-Administered Token Pools**: These are managed directly by projects, allowing them to self-manage their tokens. Projects configure their token pools autonomously. This is currently only possible on blockchains where the [Cross-Chain Token standard](/ccip/concepts/cross-chain-tokens) is available.
+
+- **CCIP-Managed Token Pools**: Some token pools that existed before the [Cross-Chain Token standard](/ccip/concepts/cross-chain-tokens) are managed by CCIP and will continue to exist alongside the self-administered ones. Eventually, all token pools will be fully administered by their respective projects.
+
 The mechanism for handling tokens varies depending on the characteristics of each token. Below are several examples to illustrate this:
 
 - LINK Token is minted on a single blockchain (Ethereum mainnet) and has a fixed total supply. Consequently, CCIP cannot natively mint it on another blockchain. For LINK, the token pool is configured to lock tokens on Ethereum mainnet (the issuing blockchain) and mint them on the destination blockchain. Conversely, when transferring from a non-issuing blockchain to Ethereum mainnet, the LINK token pool is set to burn the tokens on the source (non-issuing) blockchain and unlock them on Ethereum Mainnet (issuing). For example, transferring 10 LINK from Ethereum mainnet to Base mainnet involves the LINK token pool locking 10 LINK on Ethereum mainnet and minting 10 LINK on Base mainnet. Conversely, transferring 10 LINK from Base mainnet to Ethereum mainnet involves the LINK token pool burning 10 LINK on Base mainnet and unlocking 10 LINK on Ethereum mainnet.
-- Wrapped native Assets (e.g., WETH) use a _Lock and Unlock_ mechanism. For instance, when transferring 10 WETH from Ethereum mainnet to Optimism mainnet, the WETH token pool will lock 10 WETH on Ethereum mainnet and unlock 10 WETH on Optimism mainnet. Conversely, transferring from Optimism mainnet back to Ethereum mainnet involves the WETH token pool locking 10 WETH on Optimism mainnet and unlocking 10 WETH on the Ethereum mainnet.
+- Wrapped native Assets (e.g., WETH) use a _Lock and Unlock_ mechanism. For instance, when transferring 10 WETH from Ethereum mainnet to OP Mainnet, the WETH token pool will lock 10 WETH on Ethereum mainnet and unlock 10 WETH on OP Mainnet. Conversely, transferring from OP Mainnet back to Ethereum mainnet involves the WETH token pool locking 10 WETH on OP Mainnet and unlocking 10 WETH on the Ethereum mainnet.
 - Stablecoins (e.g., USDC) can be minted natively on multiple blockchains. Their respective token pools employ a _Burn and Mint_ mechanism, burning the token on the source blockchain and then minting it natively on the destination blockchain.
 - Tokens with a Proof Of Reserve (PoR) with a PoR feed on a specific blockchain present a challenge for the _Burn and Mint_ mechanism when applied across other blockchains due to conflicts with the PoR feed. For such tokens, the _Lock and Mint_ approach is preferred.
 
@@ -114,21 +134,8 @@ The mechanism for handling tokens varies depending on the characteristics of eac
   1. Send WETH via CCIP: Next, users call the CCIP Router to send WETH to the receiver account on the desired destination blockchain. 
   1. Unwrap WETH back into ETH: Finally, on the destination blockchain, users call the WETH contract or use a DEX to convert the WETH into ETH.
  
-**Note**: You can use the [EthSenderContract.sol](https://github.com/smartcontractkit/ccip/tree/ccip-develop/contracts/src/v0.8/ccip/applications/EtherSenderReceiver.sol) contract as a reference to transfer ETH across blockchains using CCIP.
-  
+**Note**: You can use the [EthSenderContract.sol](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/applications/EtherSenderReceiver.sol) contract as a reference to transfer ETH across blockchains using CCIP.
 </Aside>
-
-<section id="onboarding-new-tokens">
-  <Aside type="note" title="Onboarding New Tokens">
-    Supported tokens for each lane are listed on the [CCIP supported network pages](/ccip/supported-networks). Expanding
-    support for additional tokens is an ongoing process to help ensure the highest level of cross-chain security. [Token
-    pool rate limits](/ccip/architecture/#token-pool-rate-limit) are configured per-token for each lane. These rate
-    limits are set together with token issuers where applicable. Rate limits are also selected based on various factors,
-    such as the unique risk characteristics of the token and the intended use cases. The onboarding process for adding
-    new tokens also helps ensure that dApps and users interact with the correct token version, reducing risks within the
-    cross-chain ecosystem.
-  </Aside>
-</section>
 
 #### Risk Management Network contract
 
@@ -170,17 +177,17 @@ Read the [Risk Management Network Concepts](/ccip/concepts#risk-management-netwo
 
 Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity.
 
-<ClickToZoom src="/images/ccip/ccip-refill-rate-v03.webp" alt="Chainlink CCIP Detailed Architecture" />
+<ClickToZoom src="/images/ccip/ccip-refill-rate-v03.webp" alt="Chainlink CCIP Detailed Architecture refill rate" />
 
-You can find the complete list of lanes and their rate limits on the [CCIP Supported Networks](/ccip/supported-networks) page.
+You can find the complete list of lanes and their rate limits on the [CCIP Directory](/ccip/directory) page.
 
-The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/errors#ratelimiter) page.
+The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/v1.5.1/errors#rate-limiter-errors) page.
 
 ### Token pool rate limit
 
 For each supported token on each individual [lane](/ccip/concepts#lane), the token pool rate limit manages the total number of tokens that can be transferred within a given time. This limit is independent of the USD value of the token.
 
-For example, the maximum capacity of the suUSD token pool on the [Ethereum mainnet → Base mainnet lane](/ccip/supported-networks/v1_2_0/mainnet#ethereum-mainnet-base-mainnet) is 200,000 suUSD. The refill rate is 2 suUSD per second. If 200,000 suUSD are transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 20 suUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 1200 suUSD every 10 minutes.
+For example, the maximum capacity of the suUSD token pool on the [Ethereum mainnet → Base mainnet lane](/ccip/directory/mainnet/chain/ethereum-mainnet-base-1) is 200,000 suUSD. The refill rate is 2 suUSD per second. If 200,000 suUSD are transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 20 suUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 1200 suUSD every 10 minutes.
 
 ### Aggregate rate limit
 
@@ -203,7 +210,7 @@ Execution delays in excess of one hour should be rare as a result of _Smart Exec
 Upgradability in the context of CCIP refers to the ability to upgrade CCIP’s operational scope, feature set, security, or reliability. These updates are applied via changes to the following items:
 
 - **Smart Contract Configuration:** Configuration can be updated via dedicated functions exposed by the smart contract. Examples are updates to the rate limits for a specific lane, the list of supported tokens, and the OnRamp contract to call for a given destination blockchain.
-- **Smart Contract Code:** Once deployed, smart contract code cannot be modified or upgraded. The only option is to deploy a new version of the contract (e.g., OnRamp, OffRamp, Token Pool) and redirect the calling contract to the newly deployed contract via a configuration change. _**One exception**_ is the _**Router**_ contract, which is the primary interface for CCIP users on both the source and destination blockchains. The contract remains static and consistent over time to ensure reliability and stability for developers who integrate with it.
+- **Smart Contract Code:** Once deployed, smart contract code cannot be modified or upgraded. The only option is to deploy a new version of the contract (e.g., OnRamp, OffRamp, Token Pool) and redirect the calling contract to the newly deployed contract via a configuration change. _**One exception**_ is the _**Router**_ contract, which is the primary interface for CCIP users on both the source and destination blockchains. The Router contract remains static and consistent over time to ensure reliability and stability for developers who integrate with it.
 
 ### Implementation process
 

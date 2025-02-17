@@ -1,0 +1,105 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 BurnFromMintTokenPool Contract API Reference"
+metadata:
+  description: "API documentation for the BurnFromMintTokenPool contract in Chainlink CCIP v1.5.1, implementing burn/mint functionality for third-party tokens using burnFrom."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## BurnFromMintTokenPool
+
+A specialized token pool contract that manages third-party tokens through minting and burning operations, specifically using the `burnFrom` function.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol)
+
+**Inherits:**
+
+- [BurnMintTokenPoolAbstract](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract)
+- [ITypeAndVersion](/ccip/api-reference/v1.5.1/i-type-and-version)
+
+<Aside>
+
+This pool manages third-party token minting and burning operations with the following characteristics:
+
+- The pool's whitelisting mode is permanently set during contract deployment
+- The pool can be configured to either:
+  - Accept transactions from any address as originalSender
+  - Accept transactions only from whitelisted originalSender addresses
+- Whitelisting mode can only be changed by deploying a new pool
+- Before deployment, ensure the token's burner/minter roles can be adjusted if needed
+- This implementation extends BurnMintTokenPool by using the `burnFrom(from, amount)` function
+
+</Aside>
+
+## State Variables
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "BurnFromMintTokenPool 1.5.1";
+```
+
+<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+
+**Returns**
+
+| Type     | Description                                           |
+| -------- | ----------------------------------------------------- |
+| `string` | The contract identifier "BurnFromMintTokenPool 1.5.1" |
+
+## Functions
+
+### \_burn
+
+Internal function that executes the token burning operation.
+
+```solidity
+function _burn(uint256 amount) internal virtual override;
+```
+
+<Aside>
+Implements the core burn functionality for the pool.
+
+The function can be overridden in derived contracts to implement different burning mechanisms while preserving the base logic.
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                    |
+| -------- | --------- | ------------------------------ |
+| `amount` | `uint256` | The quantity of tokens to burn |
+
+### constructor
+
+```solidity
+constructor(
+  IBurnMintERC20 token,
+  uint8 localTokenDecimals,
+  address[] memory allowlist,
+  address rmnProxy,
+  address router
+) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router);
+```
+
+<Aside>
+Sets up the BurnFromMintTokenPool contract with initial configuration.
+
+For maximum compatibility, the constructor automatically grants the pool maximum allowance to burn tokens from itself, as some tokens require explicit approval for burning operations.
+
+</Aside>
+
+**Parameters**
+
+| Name                 | Type             | Description                                            |
+| -------------------- | ---------------- | ------------------------------------------------------ |
+| `token`              | `IBurnMintERC20` | Address of the token contract to be managed            |
+| `localTokenDecimals` | `uint8`          | Decimal precision of the local token                   |
+| `allowlist`          | `address[]`      | List of addresses authorized to interact with the pool |
+| `rmnProxy`           | `address`        | Address of the RMN proxy contract                      |
+| `router`             | `address`        | Address of the router contract                         |

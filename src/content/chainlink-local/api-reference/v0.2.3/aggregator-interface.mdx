@@ -1,0 +1,148 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "AggregatorInterface v0.2.3 API Reference"
+metadata:
+  description: "API documentation for AggregatorInterface in Solidity, version v0.2.3."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage023" />
+
+## AggregatorInterface
+
+Interface for accessing price feed data from an aggregator contract.
+
+[`AggregatorInterface`](https://github.com/smartcontractkit/chainlink-local/blob/7d8b2f888e1f10c8841ccd9e0f4af0f5baf11dab/src/data-feeds/interfaces/AggregatorInterface.sol)
+
+<Aside>Provides methods to get the latest and historical price data for specific rounds.</Aside>
+
+## Events
+
+### AnswerUpdated
+
+```solidity
+event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 updatedAt)
+```
+
+<Aside>Emitted when the answer is updated.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                   |
+| --------- | --------- | --------------------------------------------- |
+| current   | `int256`  | The updated answer                            |
+| roundId   | `uint256` | The round ID for which the answer was updated |
+| updatedAt | `uint256` | The timestamp when the answer was updated     |
+
+### NewRound
+
+```solidity
+event NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)
+```
+
+<Aside>Emitted when a new round is started.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                       |
+| --------- | --------- | ------------------------------------------------- |
+| roundId   | `uint256` | The round ID of the new round                     |
+| startedBy | `address` | The address of the account that started the round |
+| startedAt | `uint256` | The timestamp when the round was started          |
+
+## Functions
+
+### getAnswer
+
+Gets the answer for a specific round ID.
+
+```solidity
+function getAnswer(uint256 roundId) external view returns (int256)
+```
+
+<Aside>Gets the answer for a specific round ID.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| roundId   | `uint256` | The round ID to get the answer for |
+
+#### Returns
+
+| Parameter | Type     | Description                       |
+| --------- | -------- | --------------------------------- |
+| (unnamed) | `int256` | The answer for the given round ID |
+
+### getTimestamp
+
+Gets the timestamp for a specific round ID.
+
+```solidity
+function getTimestamp(uint256 roundId) external view returns (uint256)
+```
+
+<Aside>Gets the timestamp for a specific round ID.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                           |
+| --------- | --------- | ------------------------------------- |
+| roundId   | `uint256` | The round ID to get the timestamp for |
+
+#### Returns
+
+| Parameter | Type      | Description                          |
+| --------- | --------- | ------------------------------------ |
+| (unnamed) | `uint256` | The timestamp for the given round ID |
+
+### latestAnswer
+
+Gets the latest answer from the aggregator.
+
+```solidity
+function latestAnswer() external view returns (int256)
+```
+
+<Aside>Gets the latest answer from the aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type     | Description       |
+| --------- | -------- | ----------------- |
+| (unnamed) | `int256` | The latest answer |
+
+### latestRound
+
+Gets the latest round ID from the aggregator.
+
+```solidity
+function latestRound() external view returns (uint256)
+```
+
+<Aside>Gets the latest round ID from the aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type      | Description         |
+| --------- | --------- | ------------------- |
+| (unnamed) | `uint256` | The latest round ID |
+
+### latestTimestamp
+
+Gets the timestamp of the latest answer from the aggregator.
+
+```solidity
+function latestTimestamp() external view returns (uint256)
+```
+
+<Aside>Gets the timestamp of the latest answer from the aggregator.</Aside>
+
+#### Returns
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| (unnamed) | `uint256` | The timestamp of the latest answer |

@@ -9,17 +9,38 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 USDC is a digital dollar backed 100% and is always redeemable 1:1 for US dollars. The [stablecoin](https://chain.link/education-hub/stablecoins) is issued by [Circle](https://www.circle.com/en/usdc) on multiple blockchain platforms.
 
-This guide will first explain how Chainlink CCIP enables native USDC transfers under the hood by leveraging [Circle's Cross-Chain Transfer Protocol (CCTP)](https://www.circle.com/en/cross-chain-transfer-protocol). Then, you will learn how to use Chainlink CCIP to transfer USDC and arbitrary data from a smart contract on _Avalanche Fuji_ to a smart contract on _Ethereum Sepolia_.
-**Note**: In addition to programmable token transfers, you can also use CCIP to transfer USDC tokens without data. Check the [Mainnets](/ccip/supported-networks/mainnet) and [Testnets](/ccip/supported-networks/testnet) configuration pages to learn on which blockchains CCIP supports USDC transfers.
+This guide will first explain how Chainlink CCIP enables native USDC transfers when both the source and destination blockchains support [Circle's Cross-Chain Transfer Protocol (CCTP)](https://www.circle.com/en/cross-chain-transfer-protocol).
+
+Additionally, it will outline how CCIP also supports transferring Bridged USDC on blockchains that **are not** CCTP-enabled, allowing projects to later migrate to CCTP-enabled transfers if approved by Circle.
+
+The hands-on tutorial at the end demonstrates how to use Chainlink CCIP to transfer USDC and arbitrary data from a smart contract on _Avalanche Fuji_ to a smart contract on _Ethereum Sepolia_.
+
+**Note**: In addition to programmable token transfers, you can also use CCIP to transfer USDC tokens without data. Check the [Mainnets](/ccip/directory/mainnet) and [Testnets](/ccip/directory/testnet) configuration pages to learn on which blockchains CCIP supports USDC transfers.
 
 ## Architecture
 
-Fundamentally the [architecture](/ccip/architecture#detailed-architecture) of CCIP and [API](/ccip/api-reference/i-router-client) are unchanged:
+### Native USDC vs. Bridged USDC
 
-- The sender has to interact with the CCIP router to initiate a cross-chain transaction, similar to the process for any other token transfers. See the [Transfer Tokens](/ccip/tutorials/cross-chain-tokens) guide to learn more.
+New blockchains frequently encounter the **cold start problem**—a scarcity of initial liquidity and limited user adoption that hampers the development and functionality of decentralized applications (dApps). Without sufficient stablecoin liquidity, essential use cases such as borrowing, lending, and trading remain constrained.
+
+To overcome this challenge, Circle introduced the [Bridged USDC Standard](https://www.circle.com/blog/bridged-usdc-standard). This standard facilitates the seamless issuance of Bridged USDC on any EVM-compatible blockchain, enabling third-party teams to deploy USDC without awaiting native support from Circle. By standardizing bridged token issuance, Circle aims to:
+
+- **Reduce Liquidity Fragmentation**: Ensure a unified and efficient USDC supply across multiple blockchains.
+- **Enhance User Experience**: Minimize complexities and inconsistencies in managing multiple bridged USDC versions.
+- **Facilitate Seamless Upgrades**: Enable projects to transition smoothly to Native USDC once their blockchain is approved for native issuance via the [Cross-Chain Transfer Protocol (CCTP)](https://www.circle.com/en/cross-chain-transfer-protocol).
+
+Projects using Bridged USDC can easily migrate to Native USDC once their blockchain is approved for CCTP by Circle. This migration ensures that user balances, contract addresses, and integrations remain intact, eliminating the need for complex token swaps or liquidity migrations. For more detailed information, refer to Circle's [Bridged USDC Standard](https://www.circle.com/blog/bridged-usdc-standard).
+
+### How CCIP Works with USDC
+
+Chainlink CCIP maintains a consistent [API](/ccip/api-reference/v1.5.1/i-router-client) regardless of whether the transfer involves Native USDC or Bridged USDC. Here's how it operates in both scenarios:
+
+- The sender has to interact with the CCIP router to initiate a cross-chain transaction, similar to the process for any other token transfers. See the [Transfer Tokens](/ccip/tutorials/transfer-tokens-from-contract) guide to learn more.
 - The process uses the same onchain components including the Router, OnRamp, Commit Store, OffRamp, and Token Pool.
 - The process uses the same offchain components including the Committing DON, Executing DON, and the Risk Management Network.
 - USDC transfers also benefit from CCIP additional security provided by the [Risk Management Network](/ccip/concepts#risk-management-network).
+
+#### Native USDC (CCTP-enabled)
 
 The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle’s contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/architecture#detailed-architecture).
 
@@ -31,13 +52,26 @@ The following describes the operational process:
    1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP’s contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
    1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
 1. Offchain:
-   1. Circle attestation service listens to CCTP events on the source blockchain.
-   1. CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
+   1. The Circle attestation service listens to CCTP events on the source blockchain.
+   1. The CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
 1. On the destination blockchain:
    1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
    1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted, the Receiver address, and the Circle attestation.
    1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the Receiver.
    1. If there is data in the CCIP message and the Receiver is not an EOA, then the OffRamp contract transmits the CCIP message via the [Router](/ccip/architecture#router) contract to the Receiver.
+
+#### Bridged USDC (non-CCTP-enabled)
+
+<Aside type="note">
+  Are you a blockchain team interested in having CCIP support Bridged USDC on your network? If your implementation
+  follows the [Circle Bridged USDC Standard](https://www.circle.com/blog/bridged-usdc-standard), use [this
+  form](https://chain.link/ccip-contact?v=General%20Technical%20Support) to discuss integration options.
+</Aside>
+
+To facilitate USDC transfers between a blockchain that issues native USDC and another that only supports Bridged USDC, Chainlink CCIP employs the [Lock and Mint mechanism](/ccip/architecture#token-pools). This approach ensures that each Bridged USDC token on the destination blockchain is fully backed by an equivalent amount of native USDC locked on the source blockchain. Accounting for Non-CCTP-Enabled USDC is isolated on a per-blockchain basis for security and risk mitigation.
+
+1. **Lock native USDC on Source**: The [Lock and Release token pool](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/pools/USDC/HybridLockReleaseUSDCTokenPool.sol) locks the specified USDC tokens.
+2. **Mint Bridged USDC on Destination**: This Bridged USDC serves as a proxy for the original USDC, enabling liquidity and user adoption without direct integration with CCTP. A [Burn and Mint token pool](/ccip/concepts/cross-chain-tokens#standard-token-pools) is recommended for the Destination Chain; it will mint Bridged USDC for incoming transfers and burn Bridged USDC for outgoing transfers. Other token pools are also supported, depending on the preferences and constraints of the Destination Chain.
 
 ## Example
 
@@ -65,7 +99,7 @@ The purpose of including the function signature and arguments in the data is to 
 
 1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_. You can use the [Chainlink faucet](https://faucets.chain.link/) to acquire testnet tokens.
-1. Check the [Supported Networks page](/ccip/supported-networks) to confirm that USDC are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/supported-networks/v1_2_0/testnet#avalanche-fuji-ethereum-sepolia).
+1. Check the [CCIP Directory](/ccip/directory) to confirm that USDC are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
 1. Use the [Circle faucet](https://faucet.circle.com/) to acquire USDC tokens on _Avalanche Fuji_.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC-20 tokens as long as they appear in the list of tokens in MetaMask.
 
@@ -82,7 +116,7 @@ Deploy the Sender contract on _Avalanche Fuji_:
 
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
-   1. Fill in your blockchain's router, LINK, and USDC contract addresses. The router and USDC addresses can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For Avalanche Fuji, the addresses are:
+   1. Fill in your blockchain's router, LINK, and USDC contract addresses. The router and USDC addresses can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For Avalanche Fuji, the addresses are:
 
       - Router address: <CopyText text="0xf694e193200268f9a4868e4aa017a0118c9a8177" code/>
       - LINK contract address: <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>
@@ -105,7 +139,7 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
 
    1. Compile your contract.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
-   1. Fill in the usdc contract address. The usdc contract address can be found on the [supported networks page](/ccip/supported-networks). For _Ethereum Sepolia_, the usdc contract address is:
+   1. Fill in the usdc contract address. The usdc contract address can be found on the [CCIP Directory](/ccip/directory). For _Ethereum Sepolia_, the usdc contract address is:
       - <CopyText text="0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" code />.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
 
@@ -117,7 +151,7 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
 
    1. Compile your contract.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_ and that you are still connected to _Ethereum Sepolia_.
-   1. Fill in your blockchain's router, LINK, and Staker contract addresses. The router and usdc addresses can be found on the [supported networks page](/ccip/supported-networks) and the Staker contract address from the previous step. For _Ethereum Sepolia_, the addresses are:
+   1. Fill in your blockchain's router, LINK, and Staker contract addresses. The router and usdc addresses can be found on the [CCIP Directory](/ccip/directory) and the Staker contract address from the previous step. For _Ethereum Sepolia_, the addresses are:
 
       - Router address: <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>
       - USDC contract address: <CopyText text="0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" code/>
@@ -130,10 +164,10 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
 
       <br />
 
-      | Argument              | Value and Description                                                                                                                                                   |
-      | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | \_sourceChainSelector | <CopyText text="14767482510784806043" code/> <br /> The chain selector of _Avalanche Fuji_. You can find it on the [supported networks page](/ccip/supported-networks). |
-      | \_sender              | Your sender contract address at _Avalanche Fuji_. <br /> The sender contract address.                                                                                   |
+      | Argument              | Value and Description                                                                                                                                 |
+      | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | \_sourceChainSelector | <CopyText text="14767482510784806043" code/> <br /> The chain selector of _Avalanche Fuji_. You can find it on the [CCIP Directory](/ccip/directory). |
+      | \_sender              | Your sender contract address at _Avalanche Fuji_. <br /> The sender contract address.                                                                 |
 
    1. Click on `transact` and confirm the transaction on MetaMask.
 
@@ -145,19 +179,19 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
 
       <br />
 
-      | Argument                   | Value and Description                                                                                                                                                     |
-      | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> The chain selector of _Ethereum Sepolia_. You can find it on the [supported networks page](/ccip/supported-networks). |
-      | \_receiver                 | Your receiver contract address at _Ethereum Sepolia_. <br /> The receiver contract address.                                                                               |
+      | Argument                   | Value and Description                                                                                                                                   |
+      | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> The chain selector of _Ethereum Sepolia_. You can find it on the [CCIP Directory](/ccip/directory). |
+      | \_receiver                 | Your receiver contract address at _Ethereum Sepolia_. <br /> The receiver contract address.                                                             |
 
    1. Fill in the arguments of the _**setGasLimitForDestinationChain**_: function:
 
       <br />
 
-      | Argument                   | Value and Description                                                                                                                                                     |
-      | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> The chain selector of _Ethereum Sepolia_. You can find it on the [supported networks page](/ccip/supported-networks). |
-      | \_gasLimit                 | <CopyText text="200000" code/> <br /> The gas limit for the execution of the CCIP message on the destination chain.                                                       |
+      | Argument                   | Value and Description                                                                                                                                   |
+      | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> The chain selector of _Ethereum Sepolia_. You can find it on the [CCIP Directory](/ccip/directory). |
+      | \_gasLimit                 | <CopyText text="200000" code/> <br /> The gas limit for the execution of the CCIP message on the destination chain.                                     |
 
 At this point:
 
@@ -177,11 +211,11 @@ You will transfer _1 USDC_ and arbitrary data, which contains the encoded stake 
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
 
-        | Argument                   | Value and Description                                                                                                                                                                                                                      |
-        | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [supported networks page](/ccip/supported-networks). |
-        | \_beneficiary              | The beneficiary of the Staker tokens on _Ethereum Sepolia_. You can set your own EOA (Externally Owned Account) so you can redeem the Staker tokens in exchange for USDC tokens.                                                           |
-        | \_amount                   | <CopyText text="1000000" code/> <br /> The token amount (_1 USDC_).                                                                                                                                                                        |
+        | Argument                   | Value and Description                                                                                                                                                                                                    |
+        | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+        | \_destinationChainSelector | <CopyText text="16015286601757825753" code/> <br /> CCIP Chain identifier of the destination blockchain (_Ethereum Sepolia_ in this example). You can find each chain selector on the [CCIP Directory](/ccip/directory). |
+        | \_beneficiary              | The beneficiary of the Staker tokens on _Ethereum Sepolia_. You can set your own EOA (Externally Owned Account) so you can redeem the Staker tokens in exchange for USDC tokens.                                         |
+        | \_amount                   | <CopyText text="1000000" code/> <br /> The token amount (_1 USDC_).                                                                                                                                                      |
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
     1.  After the transaction is successful, record the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x5e066ec7e94496e1547c368df4199b9f0c4f8f6c82012b2d974aa258a5c9e9fe) of a transaction on _Avalanche Fuji_.
@@ -335,3 +369,5 @@ The Receiver contract handles incoming cross-chain messages, processes them, and
 1. `getFailedMessages` function:
 
    - Retrieves a paginated list of failed messages for inspection.
+
+<CcipCommon callout="educationalDisclaimer" />

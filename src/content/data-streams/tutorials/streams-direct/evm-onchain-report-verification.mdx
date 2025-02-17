@@ -1,0 +1,181 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Verify report data onchain"
+whatsnext: { "Find the list of available Stream IDs": "/data-streams/crypto-streams" }
+---
+
+import { CodeSample, CopyText, ClickToZoom, PageTabs } from "@components"
+import { Tabs } from "@components/Tabs"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "EVM Chains (Solidity)",
+      url: "/data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+      icon: "/images/tutorial-icons/solidity_logo.svg",
+    },
+    {
+      name: "Solana (Rust) / onchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+    {
+      name: "Solana (Rust) / offchain integration",
+      url: "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+  ]}
+/>
+
+<DataStreams section="dsNotes" />
+
+In this guide, you'll learn how to verify onchain the integrity of reports by confirming their authenticity as signed by the Decentralized Oracle Network (DON). You'll use a verifier contract to verify the data onchain and pay the verification fee in LINK tokens.
+
+<DataStreams section="asideDisclaimer" />
+
+## Before you begin
+
+Make sure you understand how to use the [Streams Direct](/data-streams/streams-direct) implementation of Chainlink Data Streams to fetch reports via the [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api) or [WebSocket](/data-streams/reference/streams-direct/streams-direct-interface-ws) connection. Refer to the following guides for more information:
+
+- [Fetch and decode reports via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api)
+- [Stream and decode reports via WebSocket](/data-streams/tutorials/streams-direct/streams-direct-ws)
+
+## Requirements
+
+- This guide requires testnet ETH and LINK on _Arbitrum Sepolia_. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+- Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
+
+## Tutorial
+
+### Deploy the verifier contract
+
+Deploy a `ClientReportsVerifier` contract on _Arbitrum Sepolia_. This contract is enabled to verify reports and pay the verification fee in LINK tokens.
+
+1. [Open the ClientReportsVerifier.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataStreams/ClientReportsVerifier.sol) contract in Remix.
+
+   <CodeSample src="samples/DataStreams/ClientReportsVerifier.sol" showButtonOnly />
+
+1. Select the `ClientReportsVerifier.sol` contract in the **Solidity Compiler** tab.
+
+   <ClickToZoom
+     src="/images/data-streams/onchain-verification/solidity-compiler.webp"
+     alt="Chainlink Data Streams - Verify Report Data Onchain - Solidity Compiler"
+     style="max-width: 70%;"
+   />
+
+1. Compile the contract.
+
+1. Open MetaMask and set the network to _Arbitrum Sepolia_. If you need to add Arbitrum Sepolia to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#arbitrum-sepolia-testnet) page.
+
+   - <a
+       class="erc-token-address"
+       id="421614_0xb1D4538B4571d411F07960EF2838Ce337FE1E80E"
+       href="/resources/link-token-contracts#arbitrum-sepolia-testnet"
+     >
+       Arbitrum Sepolia testnet and LINK token contract
+     </a>
+
+1. On the **Deploy & Run Transactions** tab in Remix, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Arbitrum Sepolia_.
+
+   <ClickToZoom
+     src="/images/data-streams/onchain-verification/injected-provider.webp"
+     alt="Chainlink Data Streams - Verify Report Data Onchain - Injected Provider MetaMask"
+     style="max-width: 70%;"
+   />
+
+1. In the **Contract** section, select the `ClientReportsVerifier` contract and fill in the Arbitrum Sepolia **verifier proxy address**: <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find the verifier proxy addresses on the [Stream Addresses](/data-streams/crypto-streams) page.
+
+   <ClickToZoom
+     src="/images/data-streams/onchain-verification/deploy-clientReportsVerifier.webp"
+     alt="Chainlink Data Streams Remix Deploy ClientReportsVerifier Contract"
+     style="max-width: 70%;"
+   />
+
+1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to ensure you deploy the contract to _Arbitrum Sepolia_.
+
+1. After you confirm the transaction, the contract address appears under the **Deployed Contracts** list in Remix. Save this contract address for the next step.
+
+   <ClickToZoom
+     src="/images/data-streams/onchain-verification/deployed-clientReportsVerifier-1.webp"
+     alt="Chainlink Data Streams Remix Deployed ClientReportsVerifier Contract"
+     style="max-width: 70%;"
+   />
+
+### Fund the verifier contract
+
+In this example, the verifier contract pays for onchain verification of reports in LINK tokens.
+
+Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier contract address you saved earlier.
+
+### Verify a report onchain
+
+1.  In Remix, on the **Deploy & Run Transactions** tab, expand your verifier contract under the **Deployed Contracts** section.
+
+1.  Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide as an example:
+
+        ```
+        0x000660403d36be006d0c15d9b306f93c8660c5cfeab7db8e28c78ba316d395970000000000000000000000000000000000000000000000000000000032c3780a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200003c8e550d2fc5304993010112de9b69798297e4cc11990ee6250e464daf760000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000025bd3eb74c080000000000000000000000000000000000000000000000000021c6a95c654c7400000000000000000000000000000000000000000000000000000000670837150000000000000000000000000000000000000000000000079a2ab4077fc8fc6000000000000000000000000000000000000000000000000799fcb42536dfd8300000000000000000000000000000000000000000000000079a59496c3f29a0000000000000000000000000000000000000000000000000000000000000000002bd4acd37ce3cd5799de05d156ab328a5effd94468ebbaf2ff18d13d9631259cbe66cca01af6a8bb36e79d2d731a44e16791ee31e46ce27ed6530f1590cd7734c0000000000000000000000000000000000000000000000000000000000000002391562f1f2e4986bdb978fbf5ee27f7012992a79301af42d3473761ef2ede6271a61fbf4b32ac5be68a598bcfa523e035b624dab3b3d9a46276834f824ee592a
+        ```
+
+        {" "}
+        <ClickToZoom
+
+    src="/images/data-streams/onchain-verification/deployed-clientReportsVerifier-2.webp"
+    alt="Chainlink Data Streams Remix Deployed ClientReportsVerifier Contract"
+    style="max-width: 70%;"
+    />
+
+1.  Click the `verifyReport` button to call the function. MetaMask prompts you to accept the transaction.
+
+1.  Click the `last_decoded_price` getter function to view the decoded price from the verified report. The answer on the ETH/USD stream uses 18 decimal places, so an answer of `3257579704051546000000` indicates an ETH/USD price of 3,257.579704051546. Each stream uses a different number of decimal places for answers. See the [Stream Addresses](/data-streams/crypto-streams) page for more information.
+
+    <ClickToZoom
+      src="/images/data-streams/onchain-verification/price-from-verified-report.webp"
+      alt="Chainlink Data Streams - Price from Verified Report"
+      style="max-width: 70%;"
+    />
+
+## Examine the code
+
+The example code you deployed has all the interfaces and functions required to verify Data Streams reports onchain.
+
+<CodeSample src="samples/DataStreams/ClientReportsVerifier.sol" />
+
+### Initializing the contract
+
+When deploying the contract, you define the verifier proxy address for the stream you want to read from. You can find this address on the [Stream Addresses](/data-streams/crypto-streams) page. The verifier proxy address provides functions that are required for this example:
+
+- The `s_feeManager` function to estimate the verification fees.
+- The `verify` function to verify the report onchain.
+
+### Verifying a report
+
+The `verifyReport` function is the core function that handles onchain report verification. Here's how it works:
+
+- **Report data extraction**:
+
+  - The function decodes the `unverifiedReport` to extract the report data.
+  - It then extracts the report version by reading the first two bytes of the report data, which correspond to the schema version encoded in the stream ID:
+    - Schema version `0x0003` corresponds to the [report schema v3](/data-streams/reference/report-schema) (Crypto assets).
+    - Schema version `0x0004` corresponds to the [report schema v4](/data-streams/reference/report-schema-v4) (Real World Assets).
+  - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
+
+- **Fee calculation**:
+
+  - The function interacts with the `FeeManager` contract (accessed via the verifier proxy) to calculate the fees required for verification.
+  - It uses the `getFeeAndReward` function to obtain the fee amount in LINK tokens.
+
+- **Token approval**: It approves the `RewardManager` contract to spend the calculated amount of LINK tokens from the contract's balance.
+
+- **Report verification**:
+
+  - The `verify` function of the verifier proxy is called to perform the actual verification.
+  - It passes the `unverifiedReport` and the encoded fee token address as parameters.
+
+- **Data decoding**:
+
+  - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3` or `ReportV4`).
+  - It emits a `DecodedPrice` event with the price extracted from the verified report.
+  - The `lastDecodedPrice` state variable is updated with the new price.

@@ -4,7 +4,9 @@ date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
 ---
 
-When constructing a [CCIP message](/ccip/api-reference/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+When constructing a [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
 - Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, which requires a manual re-execution with an increased gas limit. For more details about this scenario, read the [Manual Execution](/ccip/tutorials/manual-execution) guide.
 - Conversely, an excessively high gas limit leads to higher fees.
@@ -60,7 +62,7 @@ This code shows how gas consumption for the `_ccipReceive` function can fluctuat
 
 ## Gas estimation in a local environment
 
-To facilitate testing within a local environment, you will use the [MockCCIPRouter](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract. This contract serves as a mock implementation of the CCIP Router contract, enabling the local testing of CCIP Sender and Receiver contracts.
+To facilitate testing within a local environment, you will use the [MockCCIPRouter](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract. This contract serves as a mock implementation of the CCIP Router contract, enabling the local testing of CCIP Sender and Receiver contracts.
 A notable feature of the `MockCCIPRouter` contract is its ability to emit a `MsgExecuted` event:
 
 ```solidity
@@ -264,7 +266,7 @@ Now that you've locally estimated the gas usage of the `ccipReceive` function us
 
 To estimate the gas usage of the `ccipReceive` function within your own Foundry project, follow these steps:
 
-1. Create a testing file in the `test` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
+1. Create a testing file in the `test` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
 
    ```solidity
    import { MockCCIPRouter } from "@chainlink/contracts-ccip/src/v0.8/ccip/test/mocks/MockRouter.sol";
@@ -286,7 +288,7 @@ To estimate the gas usage of the `ccipReceive` function within your own Foundry 
 
 To estimate the gas usage of the `ccipReceive` function within your own Hardhat project, follow these steps:
 
-1. Create a Solidity file in the `contracts` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
+1. Create a Solidity file in the `contracts` directory of your project and import the [`MockCCIPRouter`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/test/mocks/MockRouter.sol) contract:
 
    ```solidity
    import { MockCCIPRouter } from "@chainlink/contracts-ccip/src/v0.8/ccip/test/mocks/MockRouter.sol";
@@ -540,3 +542,5 @@ As we have explored various methods for estimating gas for the `ccipReceive` fun
 1. **Comprehensive Testing:** Emphasize testing under diverse scenarios to ensure your gas estimations are robust. Different conditions can significantly affect gas usage, so covering as many cases as possible in your tests is crucial.
 1. **Preliminary Local Estimates:** Local testing is a critical first step for estimating gas and ensuring your contracts function correctly under various scenarios. While Hardhat and Foundry facilitate development and testing, it's key to remember that these environments may not perfectly mirror your target blockchain's conditions. These initial estimates serve as valuable insights, guiding you toward more accurate gas limit settings when you proceed to testnet validations. Incorporating a buffer based on these preliminary results can help mitigate the risks of underestimating gas requirements due to environmental differences.
 1. **Efficiency with Offchain Methods:** Since testing across different blockchains can be resource-intensive, leaning on offchain methods for gas estimation is invaluable. Tools such as Tenderly not only facilitate rapid and accurate gas usage insights on your target blockchains but also enable you to simulate the execution of the `ccipReceive` function on actual contracts deployed on mainnets. If Tenderly doesn't support a particular blockchain, a practical alternative is to use a Web3 provider that does support that chain, as illustrated in the [Estimate gas using a Web3 provider](#estimate-gas-using-a-web3-provider) section. This is particularly helpful when considering the diversity in gas metering rules across blockchains. This approach saves time and enhances the precision of your gas limit estimations, allowing for more cost-effective transactions from your dApp.
+
+<CcipCommon callout="educationalDisclaimer" />

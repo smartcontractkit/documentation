@@ -1,20 +1,25 @@
-import { Sections } from "../content/config"
-import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
+import { Sections } from "../content.config.ts"
+import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json" assert { type: "json" }
+import ccipV151Contents from "./sidebar/ccip/api-reference/v1_5_1.json" assert { type: "json" }
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" assert { type: "json" }
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" assert { type: "json" }
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" assert { type: "json" }
+
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
 type SectionEntry = {
   section: string
   contents: SectionContent[]
 }
 
-const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
-
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
-  dataFeeds: [
+  [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
       contents: [
@@ -35,8 +40,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "Proof of Reserve Feeds",
-          url: "data-feeds/proof-of-reserve",
+          title: "SmartData",
+          url: "data-feeds/smartdata",
         },
         {
           title: "Rate and Volatility Feeds",
@@ -56,8 +61,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "Proof of Reserve Addresses",
-          url: "data-feeds/proof-of-reserve/addresses",
+          title: "SmartData Feed Addresses",
+          url: "data-feeds/smartdata/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -131,6 +136,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
         },
       ],
     },
@@ -213,18 +227,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  dataStreams: [
+  [SIDEBAR_SECTIONS.DATA_STREAMS]: [
     {
       section: "Chainlink Data Streams",
       contents: [
         {
           title: "Overview",
           url: "data-streams",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/getting-started",
-          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
         },
         {
           title: "Developer Responsibilities",
@@ -241,50 +250,85 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Stream Addresses",
+      section: "Streams & Report Schemas",
       contents: [
         {
-          title: "Crypto streams",
+          title: "Cryptocurrency Streams",
           url: "data-streams/crypto-streams",
+          children: [
+            {
+              title: "Report Schema v3",
+              url: "data-streams/reference/report-schema",
+            },
+          ],
         },
         {
-          title: "RWA streams",
+          title: "Real World Asset (RWA) Streams",
           url: "data-streams/rwa-streams",
+          children: [
+            {
+              title: "Report Schema v4",
+              url: "data-streams/reference/report-schema-v4",
+            },
+          ],
+        },
+        {
+          title: "Market Hours",
+          url: "data-streams/market-hours",
         },
       ],
     },
     {
-      section: "Guides",
+      section: "Streams Trade",
       contents: [
         {
-          title: "Streams Trade",
-          url: "data-streams/tutorials/streams-trade/",
-          children: [
-            {
-              title: "Handle StreamsLookup errors",
-              url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-            },
+          title: "Overview",
+          url: "data-streams/streams-trade",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/getting-started",
+          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
+        },
+        {
+          title: "Handle StreamsLookup errors",
+          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+        },
+      ],
+    },
+    {
+      section: "Streams Direct",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-direct",
+        },
+        {
+          title: "Fetch and decode reports",
+          url: "data-streams/tutorials/streams-direct/streams-direct-api-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-api-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
           ],
         },
         {
-          title: "Streams Direct SDK",
-          url: "data-streams/tutorials/streams-direct/",
-          children: [
-            {
-              title: "Fetch and decode reports",
-              url: "data-streams/tutorials/streams-direct/streams-direct-api",
-              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-api-rwa"],
-            },
-            {
-              title: "Stream and decode reports (WebSocket)",
-              url: "data-streams/tutorials/streams-direct/streams-direct-ws",
-              highlightAsCurrent: ["data-streams/tutorials/streams-direct/streams-direct-ws-rwa"],
-            },
-            {
-              title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
-            },
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/streams-direct/streams-direct-ws-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rust",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
+            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-rust",
           ],
+        },
+        {
+          title: "Verify report data (EVM)",
+          url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+        },
+        {
+          title: "Verify report data (Solana)",
+          url: "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/streams-direct/solana-offchain-report-verification"],
         },
       ],
     },
@@ -305,16 +349,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Reference",
       contents: [
         {
-          title: "Report Schemas",
-          url: "data-streams/reference/report-schema",
-          highlightAsCurrent: ["data-streams/reference/report-schema-v4"],
-        },
-        {
-          title: "Streams Trade Interface",
+          title: "Streams Trade",
           url: "data-streams/reference/streams-trade-interface",
         },
         {
-          title: "Streams Direct Interface",
+          title: "Streams Direct",
           url: "data-streams/reference/streams-direct",
           children: [
             {
@@ -326,11 +365,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
             },
             {
-              title: "SDK Reference",
+              title: "SDK References",
               url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
+              highlightAsCurrent: ["data-streams/reference/streams-direct/streams-direct-rust-sdk"],
             },
             {
-              title: "Onchain report data verification",
+              title: "Onchain report verification (EVM chains)",
               url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
             },
           ],
@@ -409,7 +449,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  automation: [
+  [SIDEBAR_SECTIONS.AUTOMATION]: [
     {
       section: "Chainlink Automation",
       contents: [
@@ -592,7 +632,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkFunctions: [
+  [SIDEBAR_SECTIONS.CHAINLINK_FUNCTIONS]: [
     {
       section: "Chainlink Functions",
       contents: [
@@ -783,7 +823,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  vrf: [
+  [SIDEBAR_SECTIONS.VRF]: [
     {
       section: "Chainlink VRF v2.5",
       contents: [
@@ -942,7 +982,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  ccip: [
+  [SIDEBAR_SECTIONS.CCIP]: [
     {
       section: "Chainlink CCIP",
       contents: [
@@ -955,16 +995,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/getting-started",
         },
         {
-          title: "Supported Networks",
-          url: "ccip/supported-networks",
+          title: "CCIP Directory",
+          url: "ccip/directory",
           children: [
             {
               title: "Mainnet",
-              url: "ccip/supported-networks/v1_2_0/mainnet",
+              url: "ccip/directory/mainnet",
             },
             {
               title: "Testnet",
-              url: "ccip/supported-networks/v1_2_0/testnet",
+              url: "ccip/directory/testnet",
             },
           ],
         },
@@ -994,8 +1034,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Using the CCIP JavaScript SDK",
+          url: "ccip/ccip-javascript-sdk",
+        },
+        {
           title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
+          url: "ccip/tutorials/transfer-tokens-from-contract",
         },
         {
           title: "Transfer Tokens with Data",
@@ -1004,6 +1048,39 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Transfer Tokens with Data - Defensive Example",
           url: "ccip/tutorials/programmable-token-transfers-defensive",
+        },
+        {
+          title: "Using the Token Manager",
+          url: "ccip/tutorials/token-manager",
+        },
+        {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/tutorials/cross-chain-tokens",
+          children: [
+            {
+              title: "Deploy and Register Using Remix IDE",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-remix",
+            },
+            {
+              title: "Register from an EOA (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+            },
+            {
+              title: "Register from an EOA (Lock & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+            },
+            {
+              title: "Set Token Pool rate limits",
+              url: "ccip/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+              highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+            },
+            {
+              title: "Register from a Safe Smart Account (Burn & Mint)",
+              url: "ccip/tutorials/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+            },
+          ],
         },
         {
           title: "Test CCIP Locally",
@@ -1015,7 +1092,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+              url: "ccip/tutorials/transfer-tokens-from-eoa",
             },
             {
               title: "Checking CCIP Message Status",
@@ -1061,6 +1138,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/architecture",
         },
         {
+          title: "Cross-Chain Token (CCT) standard",
+          url: "ccip/concepts/cross-chain-tokens",
+        },
+        {
           title: "Manual execution",
           url: "ccip/concepts/manual-execution",
         },
@@ -1074,20 +1155,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "API Reference",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "Overview",
+          url: "ccip/api-reference",
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
+          title: "v1.5.1 (Latest)",
+          url: "ccip/api-reference/v1.5.1",
+          isCollapsible: true,
+          children: ccipV151Contents,
         },
         {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "v1.5.0",
+          url: "ccip/api-reference/v1.5.0",
+          isCollapsible: true,
+          children: ccipV150Contents,
         },
       ],
     },
@@ -1166,7 +1247,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkLocal: [
+  [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
       contents: [
@@ -1199,6 +1280,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
+            {
+              title: "Using the CCIP Local Simulator to fork mainnets",
+              url: "chainlink-local/build/ccip/foundry/forking-mainnets",
+            },
+            {
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
+            },
           ],
         },
         {
@@ -1227,9 +1320,35 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    { ...chainlinkLocalAPIReferenceTyped },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
   ],
-  nodeOperator: [
+  [SIDEBAR_SECTIONS.NODE_OPERATORS]: [
     {
       section: "Chainlink Nodes",
       contents: [
@@ -1434,7 +1553,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  global: [
+  [SIDEBAR_SECTIONS.GLOBAL]: [
     {
       section: "General Documentation",
       contents: [
@@ -1501,7 +1620,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  legacy: [
+  [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [Legacy]",
       contents: [

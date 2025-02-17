@@ -3,9 +3,9 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 This guide shows you how to read data from a Data Streams stream, verify the answer onchain, and store it.
 
-This example uses the _[Streams Trade](/data-streams#streams-trade-using-data-streams-with-chainlink-automation) implementation_, with a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
+This example uses the _[Streams Trade](/data-streams/streams-trade) implementation_, with a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
 
-Note: To learn how to use the _[Streams Direct](/data-streams#streams-direct-using-data-streams-with-your-own-bot) implementation_ of Data Streams, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/streams-direct/streams-direct-ws) guide.
+Note: To learn how to use the _[Streams Direct](/data-streams/streams-direct) implementation_ of Data Streams, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/streams-direct/streams-direct-ws) guide.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -59,7 +59,7 @@ Deploy an upkeep contract that is enabled to retrieve data from Data Streams. Fo
      style="max-width: 70%;"
    />
 
-1. In the **Contract** section, select the `StreamsUpkeep` contract and fill in the Arbitrum Sepolia **verifier proxy address**: <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find the verifier proxy addresses on the [Data Streams streams](/data-streams/crypto-streams) page.
+1. In the **Contract** section, select the `StreamsUpkeep` contract and fill in the Arbitrum Sepolia **verifier proxy address**: <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find the verifier proxy addresses on the [Stream Addresses](/data-streams/crypto-streams) page.
 
    <ClickToZoom
      src="/images/data-streams/getting-started/deploy-upkeep.webp"
@@ -203,7 +203,7 @@ The code example uses `revert` with `StreamsLookup` to convey call information a
 
 ### Initializing the upkeep contract
 
-When deploying the contract, you define the verifier proxy address. You can find this address on the [Streams Addresses](/data-streams/crypto-streams) page. The verifier proxy address provides functions that are required for this example:
+When you deploy the contract, you define the verifier proxy address. You can find this address on the [Stream Addresses](/data-streams/crypto-streams) page. The `IVerifierProxy` interface provides the following functions:
 
 - The `s_feeManager` function to estimate the verification fees.
 - The `verify` function to verify the report onchain.
@@ -220,6 +220,15 @@ After registering your upkeep contract with Chainlink Automation with a log trig
 ### Viewing the retrieved price
 
 The `lastDecodedPrice` getter function of your upkeep contract retrieves the last price stored by the `performUpkeep` function in the `lastDecodedPrice` state variable of the `StreamsUpkeep` contract.
+
+### Feed ID types and conversion
+
+Chainlink Data Streams uses different data types for feed IDs at different stages of the process:
+
+- The [`StreamsLookup` error](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol#L6) requires feed IDs to be provided as an array of `string`,
+- The decoded reports within the contract use `bytes32` types for feed IDs (see the [Report Schemas](/data-streams/reference/report-schema) reference).
+
+If your application needs to compare the feed ID(s) sent in the `StreamsLookup` with those received in the report(s), you must convert between `string` and `bytes32` types.
 
 ### Optional: Handle Data Streams fetching errors offchain with `checkErrorHandler`
 

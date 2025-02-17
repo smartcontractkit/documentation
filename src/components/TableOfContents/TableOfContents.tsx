@@ -3,8 +3,8 @@ import type { FunctionalComponent } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
-import { shouldUpdateToc } from "./tocStore"
-import { clsx } from "~/lib"
+import { shouldUpdateToc } from "./tocStore.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 import { useStore } from "@nanostores/preact"
 
 const TableOfContents: FunctionalComponent<{
