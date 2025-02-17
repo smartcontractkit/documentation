@@ -27,9 +27,9 @@ export function ProductNavigation({ path }: Props) {
   const [showSearch, setShowSearch] = React.useState(false)
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
-  const { productsNav } = getNavigationProps()
 
-  const { subProductsNav } = getNavigationProps()
+  const { productsNav, subProductsNav } = getNavigationProps()
+
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
   const label = subProductTrigger?.label || "Resources"

@@ -1,5 +1,5 @@
 import { statSync, promises as fs } from "fs"
-import { ethers } from "ethers"
+import { getAddress } from "ethers"
 import glob from "glob"
 import path from "path"
 import { fileURLToPath } from "url"
@@ -14,7 +14,7 @@ const ignoreFiles = [path.resolve(__dirname, "../../../public/search-index.json"
 // helper function to check if a string is a valid Ethereum address
 const getCorrectAddress = (value: string) => {
   try {
-    return ethers.utils.getAddress(value)
+    return getAddress(value)
   } catch (error) {
     if (error.reason && (error.reason as string).includes("bad address checksum")) {
       console.error(error.reason)

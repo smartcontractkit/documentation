@@ -82,11 +82,7 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
   }>({ inbound: null, outbound: null })
 
   const canGenerateUpdate = () => {
-    return (
-      readOnly.chainSelector &&
-      ethers.utils.isAddress(readOnly.poolAddress) &&
-      ethers.utils.isAddress(readOnly.tokenAddress)
-    )
+    return readOnly.chainSelector && ethers.isAddress(readOnly.poolAddress) && ethers.isAddress(readOnly.tokenAddress)
   }
 
   const handleRateLimitChange = (type: "inbound" | "outbound", field: keyof RateLimiterConfig, value: string) => {
@@ -417,13 +413,13 @@ export const ChainUpdateBuilder = ({ chain, readOnly, defaultConfig, onCalculate
                 <span className={styles.noticeTitle}>Action Required</span>
               </div>
               <div className={styles.noticeContent}>
-                {!ethers.utils.isAddress(readOnly.tokenAddress) && (
+                {!ethers.isAddress(readOnly.tokenAddress) && (
                   <div className={styles.noticeItem}>
                     <span className={styles.noticeItemIcon}>→</span>
                     <span>Please deploy your token first to proceed with configuration</span>
                   </div>
                 )}
-                {!ethers.utils.isAddress(readOnly.poolAddress) && (
+                {!ethers.isAddress(readOnly.poolAddress) && (
                   <div className={styles.noticeItem}>
                     <span className={styles.noticeItemIcon}>→</span>
                     <span>Token pool address is required</span>
