@@ -1,8 +1,9 @@
-import Address from "~/components/AddressReact"
-import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils"
-import { PoolType, tokenPoolDisplay } from "~/config/data/ccip"
+import Address from "~/components/AddressReact.tsx"
+import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { PoolType } from "~/config/data/ccip/types.ts"
+import { tokenPoolDisplay } from "~/config/data/ccip/utils.ts"
 import "./ChainHero.css"
-import { ExplorerInfo } from "~/config/types"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface TokenDetailsHeroProps {
   network: {
@@ -56,7 +57,11 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorer)(token.address)} />
+              <Address
+                endLength={4}
+                contractUrl={getExplorerAddressUrl(network?.explorer)(token.address)}
+                address={token.address}
+              />
             </div>
           </div>
           <div className="ccip-chain-hero__details__item">
@@ -66,7 +71,11 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool">
-              <Address endLength={4} contractUrl={getExplorerAddressUrl(network?.explorer)(token.poolAddress)} />
+              <Address
+                endLength={4}
+                contractUrl={getExplorerAddressUrl(network?.explorer)(token.poolAddress)}
+                address={token.poolAddress}
+              />
             </div>
           </div>
         </div>

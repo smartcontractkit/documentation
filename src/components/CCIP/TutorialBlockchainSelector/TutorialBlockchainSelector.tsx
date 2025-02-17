@@ -1,11 +1,11 @@
 import { useStore } from "@nanostores/react"
-import { laneStore, updateStepProgress } from "@stores/lanes"
-import { Environment, getAllNetworks } from "@config/data/ccip"
-import type { Network } from "@config/data/ccip/types"
-import { ChainSelect } from "./ChainSelect"
+import { laneStore, updateStepProgress } from "~/stores/lanes/index.ts"
+import { Environment, getAllNetworks } from "~/config/data/ccip/index.ts"
+import type { Network } from "~/config/data/ccip/types.ts"
+import { ChainSelect } from "./ChainSelect.tsx"
 import styles from "./TutorialBlockchainSelector.module.css"
-import { TutorialCard } from "../TutorialSetup/TutorialCard"
-import { SetupSection } from "../TutorialSetup/SetupSection"
+import { TutorialCard } from "../TutorialSetup/TutorialCard.tsx"
+import { SetupSection } from "../TutorialSetup/SetupSection.tsx"
 
 type ChainUpdate = Partial<{
   sourceChain: string

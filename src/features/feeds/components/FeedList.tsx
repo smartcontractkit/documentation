@@ -1,15 +1,15 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
-import { clsx } from "~/lib"
-import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
-import { useGetChainMetadata } from "./useGetChainMetadata"
-import { ChainMetadata } from "../../data/api"
-import useQueryString from "~/hooks/useQueryString"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains.ts"
+import { useGetChainMetadata } from "./useGetChainMetadata.ts"
+import { ChainMetadata } from "~/features/data/api/index.ts"
+import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
-import SectionWrapper from "~/components/SectionWrapper/SectionWrapper"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 
 export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({
@@ -24,10 +24,11 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
 
   const [selectedChain, setSelectedChain] = useQueryString(
-    "network",
-    ecosystem === "deprecating" ? chains[0].page : initialNetwork
+    isStreams ? "" : "network",
+    isStreams ? "" : ecosystem === "deprecating" ? chains[0].page : initialNetwork
   )
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
@@ -51,12 +52,16 @@ export const FeedList = ({
     { key: "NAVLink", name: "NAVLink" },
     { key: "SmartAUM", name: "SmartAUM" },
   ]
-  const chain = chains.filter((chain) => chain.page === selectedChain)[0]
+  const [streamsChain] = useState(initialNetwork)
+  const activeChain = isStreams ? streamsChain : selectedChain
+  const chain = chains.filter((chain) => chain.page === activeChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
 
   function handleNetworkSelect(chain: Chain) {
-    setSelectedChain(chain.page)
+    if (!isStreams) {
+      setSelectedChain(chain.page)
+    }
     setSearchValue("")
     setSelectedFeedCategories([])
     setCurrentPage("1")
@@ -104,7 +109,6 @@ export const FeedList = ({
   }
 
   useOutsideAlerter(wrapperRef)
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
@@ -154,8 +158,8 @@ export const FeedList = ({
                   Array.isArray(selectedFeedCategories)
                     ? selectedFeedCategories
                     : selectedFeedCategories
-                    ? [selectedFeedCategories]
-                    : []
+                      ? [selectedFeedCategories]
+                      : []
                 }
                 network={network}
                 showExtraDetails={showExtraDetails}
@@ -369,8 +373,8 @@ export const FeedList = ({
                         Array.isArray(selectedFeedCategories)
                           ? selectedFeedCategories
                           : selectedFeedCategories
-                          ? [selectedFeedCategories]
-                          : []
+                            ? [selectedFeedCategories]
+                            : []
                       }
                       network={network}
                       showExtraDetails={showExtraDetails}

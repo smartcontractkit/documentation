@@ -1,6 +1,6 @@
 import "../Tables/Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore"
-import TokenDetailsHero from "../ChainHero/TokenDetailsHero"
+import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import TokenDetailsHero from "../ChainHero/TokenDetailsHero.tsx"
 import {
   Environment,
   getLane,
@@ -13,14 +13,14 @@ import {
   PoolType,
   getTokenData,
   LaneConfig,
-} from "~/config/data/ccip"
+} from "~/config/data/ccip/index.ts"
 import { useState } from "react"
-import { ExplorerInfo, SupportedChain } from "~/config"
-import LaneDrawer from "../Drawer/LaneDrawer"
-import TableSearchInput from "../Tables/TableSearchInput"
-import Tabs from "../Tables/Tabs"
-import { Tooltip } from "~/features/common/Tooltip"
-import RateTooltip from "../Tooltip/RateTooltip"
+import { ExplorerInfo, SupportedChain } from "~/config/index.ts"
+import LaneDrawer from "../Drawer/LaneDrawer.tsx"
+import TableSearchInput from "../Tables/TableSearchInput.tsx"
+import Tabs from "../Tables/Tabs.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import RateTooltip from "../Tooltip/RateTooltip.tsx"
 
 function TokenDrawer({
   token,
@@ -190,7 +190,7 @@ function TokenDrawer({
                   Mechanism
                   <Tooltip
                     label=""
-                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                    tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
                     labelStyle={{
                       marginRight: "5px",
                     }}

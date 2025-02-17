@@ -1,2 +1,2 @@
-export { Tabs } from "./Tabs"
-export { TabsContent } from "./TabsContent"
+export { Tabs } from "./Tabs.tsx"
+export { TabsContent } from "./TabsContent.tsx"

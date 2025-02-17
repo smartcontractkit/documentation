@@ -1,18 +1,19 @@
-import { Environment, getTokenData, LaneConfig, Version } from "~/config/data/ccip"
-import Address from "~/components/AddressReact"
-import Breadcrumb from "../Breadcrumb/Breadcrumb"
-import Search from "../Search/Search"
+import { Environment, LaneConfig, Version } from "~/config/data/ccip/types.ts"
+import { getTokenData } from "~/config/data/ccip/data.ts"
+import Address from "~/components/AddressReact.tsx"
+import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
+import Search from "../Search/Search.tsx"
 import "./ChainHero.css"
-import CopyValue from "../CopyValue/CopyValue"
+import CopyValue from "../CopyValue/CopyValue.tsx"
 import {
   getExplorerAddressUrl,
   getTokenIconUrl,
   getNativeCurrency,
   directoryToSupportedChain,
   fallbackTokenIconUrl,
-} from "~/features/utils"
-import { Tooltip } from "~/features/common/Tooltip"
-import { ExplorerInfo } from "~/config/types"
+} from "~/features/utils/index.ts"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { ExplorerInfo } from "~/config/types.ts"
 
 interface ChainHeroProps {
   chains: {
@@ -85,12 +86,14 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       tokenId: feeToken,
     })
     const explorer = network.explorer
-    const address = getExplorerAddressUrl(explorer)(token[network.chain].tokenAddress)
+    const address = token[network.chain].tokenAddress
+    const contractUrl = getExplorerAddressUrl(explorer)(token[network.chain].tokenAddress)
 
     return {
       logo,
       token: feeToken,
       address,
+      contractUrl,
     }
   })
 
@@ -150,7 +153,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Router</div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
-                <Address endLength={4} contractUrl={network.routerExplorerUrl} />
+                <Address endLength={4} contractUrl={network.routerExplorerUrl} address={network.router?.address} />
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
@@ -194,6 +197,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   <Address
                     endLength={4}
                     contractUrl={getExplorerAddressUrl(network.explorer)(network.armProxy.address)}
+                    address={network.armProxy.address}
                   />
                 ) : (
                   "n/a"
@@ -221,6 +225,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   <Address
                     endLength={4}
                     contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAdminRegistry)}
+                    address={network.tokenAdminRegistry}
                   />
                 ) : (
                   "n/a"
@@ -248,6 +253,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   <Address
                     endLength={4}
                     contractUrl={getExplorerAddressUrl(network.explorer)(network.registryModule)}
+                    address={network.registryModule}
                   />
                 ) : (
                   "n/a"
@@ -261,7 +267,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           <div className="ccip-chain-hero__feeTokens">
             <div className="ccip-chain-hero__details__label">Fee tokens</div>
             <div className="ccip-chain-hero__feeTokens__list">
-              {feeTokensWithAddress.map(({ token, address, logo }, index) => {
+              {feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => {
                 return (
                   <div key={index} className="ccip-chain-hero__feeTokens__item" data-clipboard-type="fee-token">
                     <object
@@ -274,7 +280,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                       <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
                     </object>
                     <div>{token}</div>
-                    <Address endLength={4} contractUrl={address} />
+                    <Address endLength={4} contractUrl={contractUrl} address={address} />
                   </div>
                 )
               })}

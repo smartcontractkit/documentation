@@ -1,7 +1,7 @@
 import { useState } from "react"
-import SeeMore from "../SeeMore/SeeMore"
+import SeeMore from "../SeeMore/SeeMore.tsx"
 import "./TokenGrid.css"
-import TokenCard from "../Cards/TokenCard"
+import TokenCard from "../Cards/TokenCard.tsx"
 
 interface TokenGridProps {
   tokens: {

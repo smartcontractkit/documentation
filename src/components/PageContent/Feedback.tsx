@@ -3,8 +3,8 @@ import { useState } from "preact/hooks"
 import { v4 as uuidv4 } from "uuid"
 import buttonStyles from "@chainlink/design-system/button.module.css"
 import styles from "./Feedback.module.css"
-import ThumbUpIcon from "./Assets/ThumbUpIcon"
-import ThumbDownIcon from "./Assets/ThumbDownIcon"
+import ThumbUpIcon from "./Assets/ThumbUpIcon.tsx"
+import ThumbDownIcon from "./Assets/ThumbDownIcon.tsx"
 
 export const Feedback = () => {
   const [feedbackType, setFeedbackType] = useState({ type: "", uuid: "" })

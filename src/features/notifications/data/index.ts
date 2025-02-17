@@ -1,4 +1,4 @@
-import { BannerContent } from "../components/HeaderBanner"
+import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
   description: "The CCIP Token Manager is now live.",

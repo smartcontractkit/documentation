@@ -1,23 +1,15 @@
-import Address from "~/components/AddressReact"
+import Address from "~/components/AddressReact.tsx"
 import "../Tables/Table.css"
-import {
-  Environment,
-  getNetwork,
-  getTokenData,
-  LaneConfig,
-  LaneFilter,
-  Version,
-  displayCapacity,
-  determineTokenMechanism,
-} from "~/config/data/ccip"
-
+import { Environment, LaneConfig, LaneFilter, Version } from "~/config/data/ccip/types.ts"
+import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
+import { displayCapacity, determineTokenMechanism } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
-import LaneDetailsHero from "../ChainHero/LaneDetailsHero"
-import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils"
-import TableSearchInput from "../Tables/TableSearchInput"
-import RateTooltip from "../Tooltip/RateTooltip"
-import { Tooltip } from "~/features/common/Tooltip"
-import { ExplorerInfo } from "~/config/types"
+import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
+import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import TableSearchInput from "../Tables/TableSearchInput.tsx"
+import RateTooltip from "../Tooltip/RateTooltip.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { ExplorerInfo } from "~/config/types.ts"
 
 function LaneDrawer({
   lane,
@@ -81,7 +73,7 @@ function LaneDrawer({
                   Mechanism
                   <Tooltip
                     label=""
-                    tip="Token pool mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                    tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
                     labelStyle={{
                       marginRight: "5px",
                     }}

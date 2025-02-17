@@ -1,7 +1,7 @@
 import semver from "semver"
-import type { ProductConfig } from "../types"
-import type { Collection } from "src/content/config"
-import { VERSIONS } from "@config/versions"
+import type { ProductConfig } from "../types/index.ts"
+import type { Collection } from "~/content.config.ts"
+import { VERSIONS } from "@config/versions/index.ts"
 
 /**
  * Sorts version strings in descending order (newest first).

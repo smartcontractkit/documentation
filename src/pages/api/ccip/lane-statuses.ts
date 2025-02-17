@@ -1,15 +1,23 @@
 import type { APIRoute } from "astro"
-import { client } from "@graphql/graphqlClient"
+import { client } from "@graphql/graphqlClient.ts"
 import {
   LaneStatusesFilteredDocument,
   LaneStatusesFilteredQuery,
   LaneStatusesFilteredQueryVariables,
-} from "@graphql/generated"
-import { commonHeaders, getEnvironmentAndConfig, resolveChainOrThrow, checkIfChainIsCursed, withTimeout } from "./utils"
-import { SupportedChain } from "@config"
-import { getProviderForChain } from "@config/web3Providers"
-import { Environment, getSelectorConfig, LaneStatus } from "@config/data/ccip"
-import { getChainId } from "@features/utils"
+} from "@graphql/generated.ts"
+import {
+  commonHeaders,
+  getEnvironmentAndConfig,
+  resolveChainOrThrow,
+  checkIfChainIsCursed,
+  withTimeout,
+  structuredLog,
+  LogLevel,
+} from "./utils.ts"
+import { SupportedChain } from "@config/index.ts"
+import { getProviderForChain } from "@config/web3Providers.ts"
+import { Environment, getSelectorConfig, LaneStatus } from "@config/data/ccip/index.ts"
+import { getChainId } from "@features/utils/index.ts"
 
 export const prerender = false
 const timeoutCurseCheck = 10000
@@ -18,7 +26,13 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     const url = new URL(request.url)
     const sourceNetworkId = url.searchParams.get("sourceNetworkId")
-    console.log(`Fetching lane statuses for ${sourceNetworkId}`)
+    const requestId = request.headers.get("x-request-id") || "unknown"
+
+    structuredLog(LogLevel.INFO, {
+      message: "Fetching lane statuses",
+      requestId,
+      sourceNetworkId,
+    })
 
     // Validate required parameters
     if (!sourceNetworkId) {
@@ -34,7 +48,11 @@ export const GET: APIRoute = async ({ request }) => {
     // Determine the environment and load the configuration
     const envConfig = getEnvironmentAndConfig(sourceNetworkId)
     if (!envConfig) {
-      console.error(`Invalid source network ID: ${sourceNetworkId}`)
+      structuredLog(LogLevel.ERROR, {
+        message: "Invalid source network ID",
+        requestId,
+        sourceNetworkId,
+      })
       return new Response(
         JSON.stringify({
           errorType: "InvalidNetwork",
@@ -54,7 +72,12 @@ export const GET: APIRoute = async ({ request }) => {
       const sourceChainId = getChainId(sourceChain)
       sourceChainAtlas = sourceChainId ? getSelectorConfig(sourceChainId)?.name || "" : ""
     } catch (error) {
-      console.error(`Error resolving source chain for ID ${sourceNetworkId}:`, error)
+      structuredLog(LogLevel.ERROR, {
+        message: "Error resolving source chain",
+        requestId,
+        sourceNetworkId,
+        error: error instanceof Error ? error.message : String(error),
+      })
       return new Response(
         JSON.stringify({
           errorType: "InvalidNetwork",
@@ -63,13 +86,25 @@ export const GET: APIRoute = async ({ request }) => {
         { status: 500, headers: commonHeaders }
       )
     }
+
     // Check if the source chain is cursed
     const sourceProvider = getProviderForChain(sourceChain)
-    const isSourceChainCursed = await withTimeout(
-      checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
-      timeoutCurseCheck,
-      `Timeout while checking if source chain ${sourceChain} is cursed`
-    )
+    let isSourceChainCursed = false
+    try {
+      isSourceChainCursed = await withTimeout(
+        checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
+        timeoutCurseCheck,
+        `Timeout while checking if source chain ${sourceChain} is cursed`
+      )
+    } catch (error) {
+      structuredLog(LogLevel.ERROR, {
+        message: "Error checking if source chain is cursed",
+        requestId,
+        sourceChain,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      // Continue execution instead of returning 500
+    }
 
     const statuses: Record<string, LaneStatus> = {}
     const failedCurseChecks: string[] = []
@@ -165,13 +200,19 @@ export const GET: APIRoute = async ({ request }) => {
     )
 
     if (failedCurseChecks.length > 0) {
-      console.warn(`Curse check failed for the following destination chains: ${failedCurseChecks.join(", ")}`)
+      structuredLog(LogLevel.WARN, {
+        message: "Curse check failed for destination chains",
+        requestId,
+        failedChains: failedCurseChecks,
+      })
     }
 
     if (missingFromGraphQL.length > 0) {
-      console.warn(
-        `The following destination chains were not returned by the GraphQL query: ${missingFromGraphQL.join(", ")}`
-      )
+      structuredLog(LogLevel.WARN, {
+        message: "Destination chains missing from GraphQL response",
+        requestId,
+        missingChains: missingFromGraphQL,
+      })
 
       // Add missing networks as OPERATIONAL by default
       missingFromGraphQL.forEach((network) => {
@@ -187,7 +228,18 @@ export const GET: APIRoute = async ({ request }) => {
         let status = LaneStatus.OPERATIONAL
 
         if (node.successRate === 0) {
-          status = environment === Environment.Testnet ? LaneStatus.MAINTENANCE : LaneStatus.DEGRADED
+          const newStatus = environment === Environment.Testnet ? LaneStatus.MAINTENANCE : LaneStatus.DEGRADED
+          status = newStatus
+          structuredLog(LogLevel.WARN, {
+            message: "Lane status changed due to zero success rate",
+            requestId,
+            lane: {
+              source: sourceChainAtlas,
+              destination: node.destNetworkName || "unknown",
+              status: newStatus,
+              successRate: node.successRate,
+            },
+          })
         }
 
         if (node.destNetworkName) {
@@ -195,10 +247,18 @@ export const GET: APIRoute = async ({ request }) => {
           if (destNetworkId) {
             statuses[destNetworkId] = status
           } else {
-            console.error(`Could not find destination network ID for ${node.destNetworkName}`)
+            structuredLog(LogLevel.ERROR, {
+              message: "Could not find destination network ID for network name",
+              requestId,
+              destNetworkName: node.destNetworkName,
+            })
           }
         } else {
-          console.error(`No destination network name found for lane ${node}`)
+          structuredLog(LogLevel.ERROR, {
+            message: "No destination network name found for lane",
+            requestId,
+            node,
+          })
         }
       }
       return new Response(JSON.stringify(statuses), {
@@ -211,9 +271,12 @@ export const GET: APIRoute = async ({ request }) => {
         },
       })
     } else {
-      console.warn(
-        `No lane statuses found for source network ID ${sourceNetworkId} and destination network IDs ${destinationNetworkIds}`
-      )
+      structuredLog(LogLevel.WARN, {
+        message: "No lane statuses found",
+        requestId,
+        sourceNetworkId,
+        destinationNetworkIds,
+      })
       destinationNetworkIds.forEach((id) => {
         statuses[id] = LaneStatus.OPERATIONAL
       })
@@ -229,7 +292,11 @@ export const GET: APIRoute = async ({ request }) => {
       })
     }
   } catch (error) {
-    console.error("Error fetching lane statuses:", error)
+    structuredLog(LogLevel.ERROR, {
+      message: "Error fetching lane statuses",
+      requestId: request.headers.get("x-request-id") || "unknown",
+      error: error instanceof Error ? error.message : String(error),
+    })
     return new Response(
       JSON.stringify({
         errorType: "ServerError",

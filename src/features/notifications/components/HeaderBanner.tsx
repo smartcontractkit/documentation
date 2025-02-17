@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react"
 import headerbanner from "@chainlink/design-system/headerbanner.module.css"
 import headerbannerCustom from "./headerBanner.module.css"
-import { clsx } from "~/lib"
-import { CloseIcon } from "./CloseIcon"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { CloseIcon } from "./CloseIcon.tsx"
 
 type BannerType = "info" | "success" | "warning" | "danger"
 export type BannerContent = {
@@ -32,7 +32,7 @@ const bannerTypes: Record<BannerType, { primaryColour: string; textColour: strin
 }
 
 export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bannerContent }) => {
-  const [isDismissed, setIsDismissed] = useState(true) // Change to false to show banner later to prevent flasing on page load for users who have already dismissed it
+  const [isDismissed, setIsDismissed] = useState(true) // Change to false to show banner later to prevent flashing on page load for users who have already dismissed it
   useEffect(() => {
     const isDismissedLocalStorage = localStorage.getItem("headerBannerDismissed")
     if (!isDismissedLocalStorage || isDismissedLocalStorage !== bannerContent?.description) {

@@ -1,15 +1,15 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React, { useEffect } from "react"
-import { SubProducts } from "../../Header/Nav/config"
-import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
-import { clsx } from "~/lib"
+import { SubProducts } from "../../Header/Nav/config.tsx"
+import { isMatchedPath } from "../../Header/Nav/isMatchedPath.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 // import { CaretIcon } from "../CaretIcon"
-import { extendRadixComponent } from "./extendRadixComponent"
-import { BottomBar } from "./BottomBar"
-import { ProductContent } from "./ProductContent"
-import { SubProductContent } from "./SubProductContent"
+import { extendRadixComponent } from "./extendRadixComponent.ts"
+import { BottomBar } from "./BottomBar.tsx"
+import { ProductContent } from "./ProductContent.tsx"
+import { SubProductContent } from "./SubProductContent.tsx"
 import styles from "./productNavigation.module.css"
-import { getNavigationProps } from "../../Header/getNavigationProps"
+import { getNavigationProps } from "../../Header/getNavigationProps.ts"
 import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
 type Props = {
@@ -27,9 +27,9 @@ export function ProductNavigation({ path }: Props) {
   const [showSearch, setShowSearch] = React.useState(false)
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
-  const { productsNav } = getNavigationProps()
 
-  const { subProductsNav } = getNavigationProps()
+  const { productsNav, subProductsNav } = getNavigationProps()
+
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
   const label = subProductTrigger?.label || "Resources"

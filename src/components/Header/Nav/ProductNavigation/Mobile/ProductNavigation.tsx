@@ -1,12 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog"
 import React from "react"
-import { clsx } from "../../utils"
-import { extendRadixComponent } from "../extendRadixComponent"
+import { clsx } from "../../utils.ts"
+import { extendRadixComponent } from "../extendRadixComponent.ts"
 import styles from "./productNavigation.module.css"
-import { MenuIcon } from "./MenuIcon"
-import { BackArrowIcon } from "./BackArrowIcon"
-import { CaretRightIcon } from "./CaretRightIcon"
-import MegaMenu from "./MegaMenu"
+import { MenuIcon } from "./MenuIcon.tsx"
+import { BackArrowIcon } from "./BackArrowIcon.tsx"
+import { CaretRightIcon } from "./CaretRightIcon.tsx"
+import MegaMenu from "./MegaMenu.tsx"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)

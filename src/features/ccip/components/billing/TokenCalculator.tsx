@@ -7,11 +7,11 @@ import {
   getTokenMechanism,
   calculateNetworkFeesForTokenMechanism,
   Version,
-} from "@config/data/ccip"
-import { getTitle } from "@features/utils"
-import { SupportedChain } from "@config"
+} from "@config/data/ccip/index.ts"
+import { getTitle } from "@features/utils/index.ts"
+import { SupportedChain } from "@config/index.ts"
 import button from "@chainlink/design-system/button.module.css"
-import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown"
+import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown.tsx"
 import {
   FetchParams,
   FetchDataReturn,
@@ -22,7 +22,7 @@ import {
   BlockchainData,
   FeeData,
   BlockchainTitle,
-} from "./types"
+} from "./types.ts"
 
 const fetchData = (endpoint: string, fetchParams: Partial<FetchParams> = {}): FetchDataReturn => {
   const params = { version: Version.V1_2_0, ...fetchParams }

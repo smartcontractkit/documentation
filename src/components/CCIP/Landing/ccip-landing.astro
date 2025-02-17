@@ -1,6 +1,6 @@
 ---
 import CcipLayout from "~/layouts/CcipLayout.astro"
-import { getEntry } from "astro:content"
+import { getEntry, render } from "astro:content"
 import Hero from "~/components/CCIP/Hero/Hero"
 import {
   Environment,
@@ -13,21 +13,25 @@ import {
 import { getTokenIconUrl } from "~/features/utils"
 import NetworkGrid from "./NetworkGrid"
 import TokenGrid from "../TokenGrid/TokenGrid"
+
 export type Props = {
   environment: Environment
 }
 const { environment } = Astro.props as Props
 
 const entry = await getEntry("ccip", "index")
-const { headings } = await entry.render()
+if (!entry) {
+  throw new Error('No "ccip/index" doc found! Please make sure it exists in src/content/ccip/index.mdx or .md.')
+}
+
+const { headings } = await render(entry)
+
 const networks = getAllNetworks({ filter: environment })
 const supportedTokens = getAllSupportedTokens({
-  environment: environment,
+  environment,
   version: Version.V1_2_0,
 })
-
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
-
 const allTokens = tokens.map((token) => {
   const logo = getTokenIconUrl(token) || ""
   return {
@@ -36,7 +40,6 @@ const allTokens = tokens.map((token) => {
     totalNetworks: getChainsOfToken({ token, filter: environment }).length,
   }
 })
-
 const searchLanes = getSearchLanes({ environment })
 ---
 
@@ -52,7 +55,7 @@ const searchLanes = getSearchLanes({ environment })
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
-        <a class="button secondary" href="/ccip/concepts/cross-chain-tokens">Add my token</a>
+        <a class="button secondary" href="/ccip/tutorials/token-manager#verifying-your-token">Add my token</a>
       </div>
       <TokenGrid tokens={allTokens} environment={environment} client:load />
     </div>
