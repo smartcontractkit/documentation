@@ -455,6 +455,11 @@ const StreamsNetworksData = [
       verifierProxy: "0x3278e7a582B94d82487d4B99b31A511CbAe2Cd54",
       explorerUrl: "https://hashkey.blockscout.com/address/%s",
     },
+    testnet: {
+      label: "HashKey Chain Testnet",
+      verifierProxy: "0xE02A72Be64DA496797821f1c4BB500851C286C6c",
+      explorerUrl: "https://hashkeychain-testnet-explorer.alt.technology/address/%s",
+    },
   },
   {
     network: "Ink",
