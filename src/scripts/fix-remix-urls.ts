@@ -5,22 +5,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // Rewrite Remix URLs with current hostname
     // eg https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol
 
+    // Allowed Remix hosts
+    const ALLOWED_REMIX_HOST = "remix.ethereum.org"
+
     for (const item of Array.from(document.links)) {
       try {
-        if (item.href.startsWith("https://remix.ethereum.org")) {
-          // Parse the Remix URL
-          const remixUrl = new URL(item.href)
+        // Parse URL first before any checks
+        const remixUrl = new URL(item.href)
+
+        // Validate the Remix URL host explicitly
+        if (remixUrl.hostname === ALLOWED_REMIX_HOST) {
           // Get the embedded URL parameter
           const urlParam = remixUrl.hash.split("=")[1]
 
           if (urlParam) {
             // Parse the embedded URL
             const embeddedUrl = new URL(urlParam)
-            // Create a new URL object for manipulation
-            const newEmbeddedUrl = new URL(urlParam)
 
             // Only proceed if the hostname exactly matches docs.chain.link
             if (embeddedUrl.hostname === "docs.chain.link") {
+              // Create new URL for manipulation to preserve original
+              const newEmbeddedUrl = new URL(urlParam)
               // Update hostname
               newEmbeddedUrl.hostname = currentHost
               // Reconstruct the Remix URL safely
