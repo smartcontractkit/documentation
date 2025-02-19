@@ -6,6 +6,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Set default permissions as restrictive as possible
+permissions:
+  actions: write    # Required for upload-artifact
+  contents: read    # Required for checkout and other read operations
+  checks: write     # Required for test results
+
 jobs:
   # Setup job to install and cache dependencies
   setup:
