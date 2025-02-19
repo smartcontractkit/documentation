@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Validate the Remix URL host explicitly
         if (remixUrl.hostname === ALLOWED_REMIX_HOST) {
-          // Get the embedded URL parameter
+          // Extract the embedded URL from the hash segment (#url=...)
           const urlParam = remixUrl.hash.split("=")[1]
 
           if (urlParam) {
@@ -24,13 +24,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Only proceed if the hostname exactly matches docs.chain.link
             if (embeddedUrl.hostname === "docs.chain.link") {
-              // Create new URL for manipulation to preserve original
-              const newEmbeddedUrl = new URL(urlParam)
-              // Update hostname
-              newEmbeddedUrl.hostname = currentHost
-              // Reconstruct the Remix URL safely
-              const newUrl = `${remixUrl.origin}${remixUrl.pathname}#url=${newEmbeddedUrl.toString()}`
-              item.setAttribute("href", newUrl)
+              // Update the embedded URL to use the current preview host
+              embeddedUrl.hostname = currentHost
+
+              // Overwrite the hash portion with the updated embedded URL
+              remixUrl.hash = `url=${embeddedUrl.toString()}`
+
+              // Finally, set the link’s href to the rebuilt Remix URL
+              item.href = remixUrl.toString()
             }
           }
         }
