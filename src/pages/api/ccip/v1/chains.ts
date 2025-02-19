@@ -88,14 +88,11 @@ export const GET: APIRoute = async ({ request }) => {
     const response: ChainApiResponse = {
       metadata,
       data: {
-        evm: chains.reduce(
-          (acc, chain) => {
-            const key = outputKey ? chain[outputKey].toString() : chain.internalId
-            acc[key] = chain
-            return acc
-          },
-          {} as Record<string, ChainDetails>
-        ),
+        evm: chains.reduce((acc, chain) => {
+          const key = outputKey ? chain[outputKey].toString() : chain.internalId
+          acc[key] = chain
+          return acc
+        }, {} as Record<string, ChainDetails>),
       },
       ignored: errors,
     }

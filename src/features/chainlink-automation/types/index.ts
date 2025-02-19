@@ -22,7 +22,7 @@ type ConfigStructOutput = [
   BigNumberish,
   BigNumberish,
   string,
-  string,
+  string
 ] & {
   paymentPremiumPPB: number
   flatFeeMicroLink: number

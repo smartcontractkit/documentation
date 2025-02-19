@@ -20,20 +20,14 @@ const CONFIG = {
 
 // Custom error types for better error handling
 class ChainMetadataError extends Error {
-  constructor(
-    message: string,
-    public readonly cause?: unknown
-  ) {
+  constructor(message: string, public readonly cause?: unknown) {
     super(message)
     this.name = "ChainMetadataError"
   }
 }
 
 class ValidationError extends ChainMetadataError {
-  constructor(
-    message: string,
-    public readonly invalidData?: unknown
-  ) {
+  constructor(message: string, public readonly invalidData?: unknown) {
     super(message)
     this.name = "ValidationError"
   }
