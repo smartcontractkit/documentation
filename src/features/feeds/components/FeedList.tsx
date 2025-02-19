@@ -158,8 +158,8 @@ export const FeedList = ({
                   Array.isArray(selectedFeedCategories)
                     ? selectedFeedCategories
                     : selectedFeedCategories
-                    ? [selectedFeedCategories]
-                    : []
+                      ? [selectedFeedCategories]
+                      : []
                 }
                 network={network}
                 showExtraDetails={showExtraDetails}
@@ -373,8 +373,8 @@ export const FeedList = ({
                         Array.isArray(selectedFeedCategories)
                           ? selectedFeedCategories
                           : selectedFeedCategories
-                          ? [selectedFeedCategories]
-                          : []
+                            ? [selectedFeedCategories]
+                            : []
                       }
                       network={network}
                       showExtraDetails={showExtraDetails}

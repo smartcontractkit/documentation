@@ -33,7 +33,10 @@ export const successHeaders = {
  * Custom error class for CCIP-specific errors
  */
 export class CCIPError extends Error {
-  constructor(public statusCode: number, message: string) {
+  constructor(
+    public statusCode: number,
+    message: string
+  ) {
     super(message)
     this.name = "CCIPError"
   }
