@@ -23,7 +23,7 @@ try {
   const data = JSON.parse(fs.readFileSync(process.cwd() + "/public/search-index.json", "utf-8"))
   objects = data
 } catch (err) {
-  throw Error(err)
+  throw new Error(err instanceof Error ? err.message : String(err))
 }
 
 const index = client.initIndex(process.env.ALGOLIA_INDEX_NAME)
