@@ -709,6 +709,13 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Ink Mainnet",
+        explorerUrl: "https://explorer.inkonchain.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-ink-1.json",
+        queryString: "ink-mainnet",
+      },
+      {
         name: "Ink Sepolia testnet",
         explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
         networkType: "testnet",
