@@ -196,8 +196,7 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl:
-          "https://reference-data-directory-pfsebubr1-chainlinklabs.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         queryString: "arbitrum-mainnet",
         tags: ["streams", "smartData"],
       },
@@ -205,8 +204,7 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Sepolia",
         explorerUrl: "https://sepolia.arbiscan.io/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-pfsebubr1-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
         queryString: "arbitrum-sepolia",
         tags: ["rates", "streams"],
       },

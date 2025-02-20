@@ -256,7 +256,7 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
         return ""
       })}
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.docs.feedCategory] || ""}
+        {feedCategories[proxy.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
