@@ -80,7 +80,6 @@ export const productChainLinks: ProductChainLinks = {
       fantom: "/data-feeds/price-feeds/addresses?network=fantom",
       "gnosis-chain": "/data-feeds/price-feeds/addresses?network=gnosis-chain",
       hedera: "/data-feeds/price-feeds/addresses?network=hedera",
-      ink: "/data-feeds/price-feeds/addresses?network=ink",
       linea: "/data-feeds/price-feeds/addresses?network=linea",
       mantle: "/data-feeds/price-feeds/addresses?network=mantle",
       metis: "/data-feeds/price-feeds/addresses?network=metis",
