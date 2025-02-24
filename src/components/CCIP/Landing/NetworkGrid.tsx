@@ -14,7 +14,7 @@ interface NetworkGridProps {
   environment: string
 }
 
-const BEFORE_SEE_MORE = 2 * 7 // Number of networks to show before the "See more" button, 2 rows x 8 items
+const BEFORE_SEE_MORE = 2 * 7 // Number of networks to show before the "See more" button, 2 rows x 7 items
 
 function NetworkGrid({ networks, environment }: NetworkGridProps) {
   const [seeMore, setSeeMore] = useState(networks.length <= BEFORE_SEE_MORE)
