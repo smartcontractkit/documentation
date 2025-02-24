@@ -494,7 +494,7 @@ export const CHAINS: Chain[] = [
     title: "Solana Data Feeds",
     img: "/assets/chains/solana.svg",
     networkStatusUrl: "https://status.solana.com/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -503,6 +503,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
         queryString: "solana-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Solana Devnet",
