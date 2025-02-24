@@ -281,22 +281,22 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
       <div className={tableStyles.assetAddress}>
         <a
           className={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
           target="_blank"
         >
-          {proxy.proxyAddress}
+          {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
         <button
           className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={proxy.proxyAddress}
+          data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
           onClick={(e) =>
             handleClick(e, {
               product: "FEEDS-POR",
               action: "feedId_copied",
               extraInfo1: network.name,
               extraInfo2: proxy.name,
-              extraInfo3: proxy.proxyAddress,
+              extraInfo3: proxy.proxyAddress ?? proxy.transmissionsAccount,
             })
           }
         >
