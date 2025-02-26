@@ -100,7 +100,7 @@ function LaneDrawer({
                   />
                 </th>
                 <th>
-                  Rate limit refiil rate
+                  Rate limit refill rate
                   <Tooltip
                     label=""
                     tip="Rate at which available capacity is replenished"
