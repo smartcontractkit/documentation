@@ -1,6 +1,6 @@
 import { statSync, promises as fs } from "fs"
 import { getAddress } from "ethers"
-import glob from "glob"
+import { glob } from "glob"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -50,22 +50,27 @@ const checkFile = async (filePath: string) => {
   })
 }
 
-directoryPaths.forEach((directoryPath) => {
-  // use glob to read all files in the directory (and subdirectories)
-  glob.glob(directoryPath + "/**/*", (err, paths) => {
-    if (err) {
-      console.error("An error occurred while trying to read the files:", err)
-      return
-    }
+// Main function to process all directories
+const processDirectories = async () => {
+  try {
+    for (const directoryPath of directoryPaths) {
+      const paths = await glob(directoryPath + "/**/*")
 
-    // iterate over each path
-    paths.forEach((filepath) => {
-      // use fs.statSync() to check if the path is a file
-      if (statSync(filepath).isFile()) {
-        if (!ignoreFiles.includes(filepath)) {
-          checkFile(filepath)
+      // Process each file
+      for (const filepath of paths) {
+        if (statSync(filepath).isFile() && !ignoreFiles.includes(filepath)) {
+          await checkFile(filepath)
         }
       }
-    })
-  })
+    }
+  } catch (error) {
+    console.error("An error occurred while processing files:", error)
+    process.exit(1)
+  }
+}
+
+// Run the script
+processDirectories().catch((error) => {
+  console.error("Failed to process directories:", error)
+  process.exit(1)
 })
