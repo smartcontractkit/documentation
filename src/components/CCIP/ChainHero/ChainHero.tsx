@@ -105,7 +105,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
 
   const nativeTokenHasAddress = () => {
     if (!network) return
-    // We making sure the Navive Currency is not already part of the FeeToken
+    // We making sure the Native Currency is not already part of the FeeToken
     return feeTokensWithAddress?.some((feeToken) => {
       return feeToken.token.toLowerCase() === nativeCurrency?.symbol.toLowerCase()
     })
