@@ -7,7 +7,7 @@ import {
   web3Providers,
 } from "@config/index.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
+import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string

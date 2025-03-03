@@ -1,9 +1,9 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import detectEthereumProvider from "@metamask/detect-provider"
 import { BrowserProvider, ethers, toQuantity } from "ethers"
-import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" assert { type: "json" }
-import chains from "./reference/chains.json" assert { type: "json" }
-import linkNameSymbol from "./reference/linkNameSymbol.json" assert { type: "json" }
+import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" with { type: "json" }
+import chains from "./reference/chains.json" with { type: "json" }
+import linkNameSymbol from "./reference/linkNameSymbol.json" with { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
 const chainlinkLogo = "https://docs.chain.link/images/logo.png"
