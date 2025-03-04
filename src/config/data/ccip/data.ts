@@ -23,14 +23,14 @@ import {
 } from "@features/utils/index.ts"
 
 // For mainnet
-import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" assert { type: "json" }
-import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json" assert { type: "json" }
-import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json" assert { type: "json" }
+import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" with { type: "json" }
+import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json" with { type: "json" }
+import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json" with { type: "json" }
 
 // For testnet
-import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json" assert { type: "json" }
-import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json" assert { type: "json" }
-import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" assert { type: "json" }
+import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json" with { type: "json" }
+import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json" with { type: "json" }
+import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" with { type: "json" }
 
 // Import errors by version
 // eslint-disable-next-line camelcase

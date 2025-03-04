@@ -11,7 +11,7 @@ interface TokenGridProps {
   environment: string
 }
 
-const BEFORE_SEE_MORE = 6 * 4 // Number of networks to show before the "See more" button, 7 rows x 4 items
+const BEFORE_SEE_MORE = 6 * 4 // Number of networks to show before the "See more" button, 6 rows x 4 items
 
 function NetworkGrid({ tokens, environment }: TokenGridProps) {
   const [seeMore, setSeeMore] = useState(tokens.length <= BEFORE_SEE_MORE)

@@ -5,32 +5,30 @@ import { networkFees } from "./data.ts"
 import { BigNumber as BigNumberJs } from "bignumber.js"
 import { commify } from "~/utils/index.js"
 
+// Define valid pool type combinations and their corresponding mechanisms
+const POOL_MECHANISM_MAP: Record<string, TokenMechanism> = {
+  "lockRelease:burnMint": TokenMechanism.LockAndMint,
+  "burnMint:lockRelease": TokenMechanism.BurnAndUnlock,
+  "lockRelease:lockRelease": TokenMechanism.LockAndUnlock,
+  "burnMint:burnMint": TokenMechanism.BurnAndMint,
+  "usdc:usdc": TokenMechanism.BurnAndMint,
+  "usdc:burnMint": TokenMechanism.BurnAndMint,
+  "burnMint:usdc": TokenMechanism.BurnAndMint,
+} as const
+
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
   destinationPoolType: PoolType | undefined
 ): TokenMechanism => {
-  if (!sourcePoolType && destinationPoolType) {
-    return TokenMechanism.NoPoolSourceChain
-  } else if (sourcePoolType && !destinationPoolType) {
-    return TokenMechanism.NoPoolDestinationChain
-  } else if (!sourcePoolType && !destinationPoolType) {
-    return TokenMechanism.NoPoolsOnBothChains
+  // Early return for undefined pool cases
+  if (!sourcePoolType || !destinationPoolType) {
+    if (!sourcePoolType && !destinationPoolType) return TokenMechanism.NoPoolsOnBothChains
+    return !sourcePoolType ? TokenMechanism.NoPoolSourceChain : TokenMechanism.NoPoolDestinationChain
   }
 
-  if (sourcePoolType === "lockRelease" && destinationPoolType === "burnMint") {
-    return TokenMechanism.LockAndMint
-  } else if (sourcePoolType === "burnMint" && destinationPoolType === "lockRelease") {
-    return TokenMechanism.BurnAndUnlock
-  } else if (sourcePoolType === "lockRelease" && destinationPoolType === "lockRelease") {
-    return TokenMechanism.LockAndUnlock
-  } else if (
-    (sourcePoolType === "burnMint" && destinationPoolType === "burnMint") ||
-    (sourcePoolType === "usdc" && destinationPoolType === "usdc")
-  ) {
-    return TokenMechanism.BurnAndMint
-  }
-
-  return TokenMechanism.Unsupported
+  // Look up the mechanism based on pool type combination
+  const key = `${sourcePoolType}:${destinationPoolType}`
+  return POOL_MECHANISM_MAP[key] ?? TokenMechanism.Unsupported
 }
 
 export const tokenPoolDisplay = (poolType?: PoolType) => {
