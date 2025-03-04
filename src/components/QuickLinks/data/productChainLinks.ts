@@ -280,4 +280,8 @@ export const chainNames: Record<string, string> = {
   merlin: "Merlin",
   fraxtal: "Fraxtal",
   zeta: "Zeta",
+  apechain: "Apechain",
+  cronos: "Cronos",
+  cronos_zkevm: "Cronos zkEVM",
+  hemi: "Hemi",
 }
