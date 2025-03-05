@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SeeMore from "../SeeMore/SeeMore"
 import "./TokenGrid.css"
 import TokenCard from "../Cards/TokenCard"
@@ -15,6 +15,16 @@ const BEFORE_SEE_MORE = 6 * 4 // Number of networks to show before the "See more
 
 function NetworkGrid({ tokens, environment }: TokenGridProps) {
   const [seeMore, setSeeMore] = useState(tokens.length <= BEFORE_SEE_MORE)
+
+  // Enables displaying all content when `showAll=true` is present in the URL query parameters.
+  // This is added to help expose additional content for the Algolia crawler.
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get("showAll") === "true") {
+      setSeeMore(true)
+    }
+  }, [])
+
   return (
     <>
       <div className="tokens__grid">

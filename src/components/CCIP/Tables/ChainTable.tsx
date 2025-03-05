@@ -49,6 +49,8 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
     }
   }, [search])
 
+  // Enables displaying all content when `showAll=true` is present in the URL query parameters.
+  // This is added to help expose additional content for the Algolia crawler.
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.get("showAll") === "true") {
@@ -66,14 +68,6 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
     }
     fetchOperationalState(sourceNetwork.key)
   }, [sourceNetwork])
-
-  const handleSeeMoreClick = () => {
-    setSeeMore(true)
-    const urlParams = new URLSearchParams(window.location.search)
-    urlParams.set("showAll", "true")
-    const newUrl = `${window.location.pathname}?${urlParams.toString()}`
-    window.history.replaceState({ path: newUrl }, "", newUrl)
-  }
 
   return (
     <>
@@ -174,7 +168,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
           </tbody>
         </table>
       </div>
-      {!seeMore && <SeeMore onClick={handleSeeMoreClick} />}
+      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
       <div className="ccip-table__notFound">
         {lanes.filter((network) => network.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
           <>No lanes found</>

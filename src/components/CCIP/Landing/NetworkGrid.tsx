@@ -19,20 +19,14 @@ const BEFORE_SEE_MORE = 2 * 7 // Number of networks to show before the "See more
 function NetworkGrid({ networks, environment }: NetworkGridProps) {
   const [seeMore, setSeeMore] = useState(networks.length <= BEFORE_SEE_MORE)
 
+  // Enables displaying all content when `showAll=true` is present in the URL query parameters.
+  // This is added to help expose additional content for the Algolia crawler.
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.get("showAll") === "true") {
       setSeeMore(true)
     }
   }, [])
-
-  const handleSeeMoreClick = () => {
-    setSeeMore(true)
-    const urlParams = new URLSearchParams(window.location.search)
-    urlParams.set("showAll", "true")
-    const newUrl = `${window.location.pathname}?${urlParams.toString()}`
-    window.history.replaceState({ path: newUrl }, "", newUrl)
-  }
 
   return (
     <>
@@ -49,7 +43,7 @@ function NetworkGrid({ networks, environment }: NetworkGridProps) {
           </a>
         ))}
       </div>
-      {!seeMore && <SeeMore onClick={handleSeeMoreClick} />}
+      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
     </>
   )
 }
