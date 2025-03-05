@@ -63,6 +63,10 @@ export const productChainLinks: ProductChainLinks = {
       unichain: "/ccip/directory/mainnet/chain/ethereum-mainnet-unichain-1",
       berachain: "/ccip/directory/mainnet/chain/berachain-mainnet",
       core: "/ccip/directory/mainnet/chain/core-mainnet",
+      cronos: "/ccip/directory/testnet/chain/cronos-testnet",
+      cronoszkevm: "/ccip/directory/testnet/chain/cronos-zkevm-testnet-sepolia",
+      apechain: "/ccip/directory/testnet/chain/apechain-testnet-curtis",
+      hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
     },
   },
   "Data Feeds": {
@@ -223,6 +227,10 @@ export const productChainLinks: ProductChainLinks = {
     fraxtal: "/resources/link-token-contracts#fraxtal",
     lens: "/resources/link-token-contracts#lens",
     berachain: "/resources/link-token-contracts#berachain",
+    hemi: "/resources/link-token-contracts#hemi",
+    apechain: "/resources/link-token-contracts#apechain",
+    cronoszkevm: "/resources/link-token-contracts#cronos-zkevm",
+    cronos: "/resources/link-token-contracts#cronos",
   },
 }
 
@@ -280,4 +288,8 @@ export const chainNames: Record<string, string> = {
   merlin: "Merlin",
   fraxtal: "Fraxtal",
   zeta: "Zeta",
+  apechain: "Apechain",
+  cronos: "Cronos",
+  cronoszkevm: "Cronos zkEVM",
+  hemi: "Hemi",
 }
