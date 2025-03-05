@@ -64,7 +64,7 @@ export const productChainLinks: ProductChainLinks = {
       berachain: "/ccip/directory/mainnet/chain/berachain-mainnet",
       core: "/ccip/directory/mainnet/chain/core-mainnet",
       cronos: "/ccip/directory/testnet/chain/cronos-testnet",
-      cronos_zkevm: "/ccip/directory/testnet/chain/cronos-zkevm-testnet-sepolia",
+      cronoszkevm: "/ccip/directory/testnet/chain/cronos-zkevm-testnet-sepolia",
       apechain: "/ccip/directory/testnet/chain/apechain-testnet-curtis",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
     },
@@ -229,7 +229,7 @@ export const productChainLinks: ProductChainLinks = {
     berachain: "/resources/link-token-contracts#berachain",
     hemi: "/resources/link-token-contracts#hemi",
     apechain: "/resources/link-token-contracts#apechain",
-    cronos_zkevm: "/resources/link-token-contracts#cronos-zkevm",
+    cronoszkevm: "/resources/link-token-contracts#cronos-zkevm",
     cronos: "/resources/link-token-contracts#cronos",
   },
 }
@@ -290,6 +290,6 @@ export const chainNames: Record<string, string> = {
   zeta: "Zeta",
   apechain: "Apechain",
   cronos: "Cronos",
-  cronos_zkevm: "Cronos zkEVM",
+  cronoszkevm: "Cronos zkEVM",
   hemi: "Hemi",
 }
