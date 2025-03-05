@@ -531,6 +531,7 @@ export const getAllNetworkLanes = async ({
     logo: string
     key: string
     directory: SupportedChain
+    noOfSupportedTokens: number
     onRamp: {
       address: string
       version: string
@@ -541,6 +542,7 @@ export const getAllNetworkLanes = async ({
     }
   }[] = Object.keys(allLanes).map((lane) => {
     const laneData = allLanes[lane]
+    const noOfSupportedTokens = laneData?.supportedTokens ? Object.keys(laneData.supportedTokens).length : 0
 
     const directory = directoryToSupportedChain(lane || "")
     const title = getTitle(directory)
@@ -552,6 +554,7 @@ export const getAllNetworkLanes = async ({
       onRamp: laneData.onRamp,
       offRamp: laneData.offRamp,
       key: lane,
+      noOfSupportedTokens,
       directory,
     }
   })

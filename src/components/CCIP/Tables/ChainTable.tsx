@@ -19,6 +19,7 @@ interface TableProps {
   lanes: {
     name: string
     logo: string
+    noOfSupportedTokens: number
     onRamp?: {
       address: string
       version: string
@@ -49,6 +50,13 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
   }, [search])
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get("showAll") === "true") {
+      setSeeMore(true)
+    }
+  }, [])
+
+  useEffect(() => {
     const fetchOperationalState = async (network) => {
       if (network) {
         const result = await getOperationalState(network)
@@ -58,6 +66,14 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
     }
     fetchOperationalState(sourceNetwork.key)
   }, [sourceNetwork])
+
+  const handleSeeMoreClick = () => {
+    setSeeMore(true)
+    const urlParams = new URLSearchParams(window.location.search)
+    urlParams.set("showAll", "true")
+    const newUrl = `${window.location.pathname}?${urlParams.toString()}`
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
 
   return (
     <>
@@ -92,7 +108,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
               .slice(0, seeMore ? lanes.length : BEFORE_SEE_MORE)
               .map((network, index) => (
                 <tr key={index}>
-                  <td>
+                  <td data-supported-tokens={network.noOfSupportedTokens}>
                     <div
                       className="ccip-table__network-name"
                       role="button"
@@ -158,7 +174,7 @@ function ChainTable({ lanes, explorerUrl, sourceNetwork, environment }: TablePro
           </tbody>
         </table>
       </div>
-      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
+      {!seeMore && <SeeMore onClick={handleSeeMoreClick} />}
       <div className="ccip-table__notFound">
         {lanes.filter((network) => network.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
           <>No lanes found</>

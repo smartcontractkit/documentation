@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import NetworkCard from "../Cards/NetworkCard"
 import SeeMore from "../SeeMore/SeeMore"
 import "./NetworkGrid.css"
@@ -18,6 +18,22 @@ const BEFORE_SEE_MORE = 2 * 7 // Number of networks to show before the "See more
 
 function NetworkGrid({ networks, environment }: NetworkGridProps) {
   const [seeMore, setSeeMore] = useState(networks.length <= BEFORE_SEE_MORE)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get("showAll") === "true") {
+      setSeeMore(true)
+    }
+  }, [])
+
+  const handleSeeMoreClick = () => {
+    setSeeMore(true)
+    const urlParams = new URLSearchParams(window.location.search)
+    urlParams.set("showAll", "true")
+    const newUrl = `${window.location.pathname}?${urlParams.toString()}`
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
+
   return (
     <>
       <div className="networks__grid">
@@ -33,7 +49,7 @@ function NetworkGrid({ networks, environment }: NetworkGridProps) {
           </a>
         ))}
       </div>
-      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
+      {!seeMore && <SeeMore onClick={handleSeeMoreClick} />}
     </>
   )
 }
