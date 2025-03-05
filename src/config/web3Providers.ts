@@ -88,13 +88,17 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   BERACHAIN_MAINNET: () => new JsonRpcProvider("https://rpc.berachain.com"),
   BERACHAIN_BARTIO: () => new JsonRpcProvider("https://bartio.rpc.berachain.com"),
   HYPERLIQUID_TESTNET: () => new JsonRpcProvider("https://api.hyperliquid-testnet.xyz/evm"),
-  MERLIN_TESTNET: () => new JsonRpcProvider("hhttps://testnet-rpc.merlinchain.io/"),
+  MERLIN_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.merlinchain.io/"),
   MERLIN_MAINNET: () => new JsonRpcProvider("https://rpc.merlinchain.io"),
   FRAXTAL_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.frax.com"),
   FRAXTAL_MAINNET: () => new JsonRpcProvider("https://rpc.frax.com"),
   HEDERA_TESTNET: () => new JsonRpcProvider("https://testnet.hashio.io/api"),
   UNICHAIN_SEPOLIA: () => new JsonRpcProvider("https://sepolia.unichain.org"),
-  UNICHAIN_MAINNET: () => new JsonRpcProvider("hhttps://mainnet.unichain.org/"),
+  UNICHAIN_MAINNET: () => new JsonRpcProvider("https://mainnet.unichain.org/"),
+  APECHAIN_CURTIS: () => new JsonRpcProvider("https://curtis.hub.caldera.xyz"),
+  CRONOS_TESTNET: () => new JsonRpcProvider("https://cronos.org"),
+  CRONOS_ZKEVM_TESTNET: () => new JsonRpcProvider("https://docs-zkevm.cronos.org"),
+  HEMI_SEPOLIA: () => new JsonRpcProvider("https://hemi.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
