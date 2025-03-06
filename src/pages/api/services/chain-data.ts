@@ -217,6 +217,7 @@ export class ChainDataService {
       rmn: chainConfig.armProxy.address,
       registryModule: chainConfig.registryModule.address,
       tokenAdminRegistry: chainConfig.tokenAdminRegistry.address,
+      tokenPoolFactory: chainConfig.tokenPoolFactory?.address,
     }
 
     structuredLog(LogLevel.DEBUG, {
