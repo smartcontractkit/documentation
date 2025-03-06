@@ -50,6 +50,7 @@ export type SupportedTechnology =
   | "APECHAIN"
   | "CRONOS"
   | "CRONOS_ZKEVM"
+  | "TRON"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -146,6 +147,7 @@ export type SupportedChain =
   | "CRONOS_TESTNET"
   | "CRONOS_ZKEVM_TESTNET"
   | "HEMI_SEPOLIA"
+  | "TRON_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

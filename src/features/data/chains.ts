@@ -700,6 +700,24 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "tron",
+    label: "TRON",
+    title: "TRON Data Feeds",
+    img: "/assets/chains/tron.svg",
+    networkStatusUrl: "",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "TRON Mainnet",
+        explorerUrl: "https://tronscan.org/#/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-tron-mainnet.json",
+        queryString: "tron-mainnet",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.

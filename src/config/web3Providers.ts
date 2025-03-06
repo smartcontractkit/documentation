@@ -99,6 +99,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   CRONOS_TESTNET: () => new JsonRpcProvider("https://cronos.org"),
   CRONOS_ZKEVM_TESTNET: () => new JsonRpcProvider("https://docs-zkevm.cronos.org"),
   HEMI_SEPOLIA: () => new JsonRpcProvider("https://hemi.xyz"),
+  TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
