@@ -52,3 +52,6 @@ Additionally, you may need to refer to the [LINK Token Contracts for Ethereum](h
 ```
 
 The most relevant documentation links for each supported chain and for each product are available in [this table](https://docs.chain.link/builders-quick-links).
+
+---
+*This documentation is maintained by the Chainlink community.*
