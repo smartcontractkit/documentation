@@ -335,7 +335,6 @@ export const loadChainConfiguration = async (
     throw new CCIPError(500, "Failed to load chain configuration")
   }
 }
-
 /**
  * Log levels for structured logging
  */

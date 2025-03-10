@@ -98,6 +98,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-feeds/price-feeds/addresses?network=soneium",
       sonic: "/data-feeds/price-feeds/addresses?network=sonic",
       starknet: "/data-feeds/price-feeds/addresses?network=starknet",
+      tron: "/data-feeds/price-feeds/addresses?network=tron",
       unichain: "/data-feeds/price-feeds/addresses?network=unichain",
       xlayer: "/data-feeds/price-feeds/addresses?network=xlayer",
       zksync: "/data-feeds/price-feeds/addresses?network=zksync",
@@ -292,4 +293,5 @@ export const chainNames: Record<string, string> = {
   cronos: "Cronos",
   cronoszkevm: "Cronos zkEVM",
   hemi: "Hemi",
+  tron: "TRON",
 }

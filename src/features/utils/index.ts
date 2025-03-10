@@ -323,6 +323,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_TESTNET"
     case "cronos-zkevm-testnet-sepolia":
       return "CRONOS_ZKEVM_TESTNET"
+    case "tron-mainnet":
+      return "TRON_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -506,6 +508,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-testnet"
     case "CRONOS_ZKEVM_TESTNET":
       return "cronos-zkevm-testnet-sepolia"
+    case "TRON_MAINNET":
+      return "tron-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
