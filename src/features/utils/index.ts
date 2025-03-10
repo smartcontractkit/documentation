@@ -323,6 +323,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_TESTNET"
     case "cronos-zkevm-testnet-sepolia":
       return "CRONOS_ZKEVM_TESTNET"
+    case "tron-mainnet":
+      return "TRON_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -498,14 +500,6 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-unichain-1"
     case "UNICHAIN_MAINNET":
       return "ethereum-mainnet-unichain-1"
-    case "APECHAIN_CURTIS":
-      return "apechain-testnet-curtis"
-    case "HEMI_SEPOLIA":
-      return "hemi-testnet-sepolia"
-    case "CRONOS_TESTNET":
-      return "cronos-testnet"
-    case "CRONOS_ZKEVM_TESTNET":
-      return "cronos-zkevm-testnet-sepolia"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

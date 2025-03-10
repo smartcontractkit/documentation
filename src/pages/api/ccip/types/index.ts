@@ -1,7 +1,6 @@
 // Chain Data API Types
 
-import { Environment, ChainConfig } from "@config/data/ccip/types.ts"
-import { ChainInfo } from "@config/types.ts"
+import { Environment } from "@config/data/ccip/types.ts"
 
 export { Environment }
 
@@ -21,9 +20,6 @@ export type ChainMetadata = {
   ignoredChainCount: number
 }
 
-// Unified chain configuration type combining both CCIP and general chain data
-export type UnifiedChainConfig = ChainInfo & ChainConfig
-
 export type ChainDetails = {
   chainId: number
   selector: string
@@ -34,6 +30,7 @@ export type ChainDetails = {
   rmn: string
   registryModule: string
   tokenAdminRegistry: string
+  tokenPoolFactory?: string
 }
 
 export type ChainFamily = {
@@ -70,7 +67,3 @@ export type SelectorEntry = {
 export type SelectorsConfig = {
   selectors: Record<string, SelectorEntry>
 }
-
-// Remove redundant type aliases since we're using the original types
-export type { ChainConfig }
-export type CCIPConfig = Record<string, ChainConfig>

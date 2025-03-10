@@ -13,6 +13,7 @@ import {
   structuredLog,
   APIErrorType,
   createErrorResponse,
+  CCIPError,
 } from "../utils.ts"
 
 import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
@@ -117,6 +118,17 @@ export const GET: APIRoute = async ({ request }) => {
       stack: error instanceof Error ? error.stack : undefined,
     })
 
+    // Handle CCIPError specifically, preserving its status code
+    if (error instanceof CCIPError) {
+      return createErrorResponse(
+        error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
+        error.message,
+        error.statusCode,
+        {}
+      )
+    }
+
+    // Handle other errors
     if (error instanceof Error) {
       return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process chain request", 500, {
         message: error.message,
