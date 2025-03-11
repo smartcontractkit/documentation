@@ -293,9 +293,5 @@ export const chainNames: Record<string, string> = {
   cronos: "Cronos",
   cronos_zkevm: "Cronos zkEVM",
   hemi: "Hemi",
-  apechain: "Apechain",
-  cronos: "Cronos",
-  cronoszkevm: "Cronos zkEVM",
-  hemi: "Hemi",
   tron: "TRON",
 }
