@@ -143,6 +143,11 @@ export type SupportedChain =
   | "HEDERA_TESTNET"
   | "UNICHAIN_SEPOLIA"
   | "UNICHAIN_MAINNET"
+  | "APECHAIN_CURTIS"
+  | "HEMI_SEPOLIA"
+  | "CRONOS_TESTNET"
+  | "CRONOS_ZKEVM_TESTNET"
+  | "TRON_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string
