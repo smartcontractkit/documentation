@@ -500,6 +500,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-unichain-1"
     case "UNICHAIN_MAINNET":
       return "ethereum-mainnet-unichain-1"
+    case "APECHAIN_CURTIS":
+      return "apechain-testnet-curtis"
+    case "HEMI_SEPOLIA":
+      return "hemi-testnet-sepolia"
+    case "CRONOS_TESTNET":
+      return "cronos-testnetCRONOS_TESTNET"
+    case "CRONOS_ZKEVM_TESTNET":
+      return "cronos-zkevm-testnet-sepolia"
+    case "TRON_MAINNET:
+      return "tron-mainnet""
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
