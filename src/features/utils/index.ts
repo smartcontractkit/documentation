@@ -505,11 +505,11 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "HEMI_SEPOLIA":
       return "hemi-testnet-sepolia"
     case "CRONOS_TESTNET":
-      return "cronos-testnetCRONOS_TESTNET"
+      return "cronos-testnet"
     case "CRONOS_ZKEVM_TESTNET":
       return "cronos-zkevm-testnet-sepolia"
-    case "TRON_MAINNET:
-      return "tron-mainnet""
+    case "TRON_MAINNET":
+      return "tron-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
