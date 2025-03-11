@@ -1,0 +1,450 @@
+---
+// JavaScript code example
+const jsExample = `const fetchCcipChains = async () => {
+  try {
+    const response = await fetch(
+      'https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&chainId=1'
+    );
+    const data = await response.json();
+    console.log('Chain data:', data);
+    return data;
+  } catch (err) {
+    console.error('Error fetching CCIP chains:', err);
+  }
+}`
+
+// HTML-specific headers
+Astro.response.headers.set("Content-Type", "text/html; charset=utf-8")
+Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalidate")
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CCIP Configuration API Documentation</title>
+
+    <!-- SEO Metadata -->
+    <meta
+      name="description"
+      content="Official documentation for the Cross-Chain Interoperability Protocol (CCIP) Chains API. Explore endpoints, parameters, and response schemas."
+    />
+    <meta name="keywords" content="CCIP, Chain API, Blockchain, Cross-Chain, API Documentation, Chainlink" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" href="https://docs.chain.link/api/ccip/v1/docs" />
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="CCIP Configuration API Documentation" />
+    <meta
+      property="og:description"
+      content="Explore the Cross-Chain Interoperability Protocol (CCIP) Chains API. Find endpoints, examples, and integration guidelines."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://docs.chain.link/api/ccip/v1/docs" />
+    <meta property="og:image" content="https://docs.chain.link/_astro/ccip-logo.Dbxa2KeA.svg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CCIP Configuration API Documentation" />
+    <meta name="twitter:description" content="Documentation for the Chainlink CCIP Configuration API." />
+    <meta name="twitter:image" content="https://docs.chain.link/_astro/ccip-logo.Dbxa2KeA.svg" />
+
+    <!-- Resource hints -->
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+
+    <!-- Swagger UI CSS -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "CCIP Configuration API Documentation",
+        "description": "Documentation for the Chainlink CCIP Configuration API",
+        "author": {
+          "@type": "Organization",
+          "name": "Chainlink"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Chainlink",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://cdn.prod.website-files.com/5f6b7190899f41fb70882d08/665705c1f3833b5b5d8f4ffb_logo-chainlink-blue.svg"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://docs.chain.link/api/ccip/v1/docs"
+        },
+        "datePublished": "2025-03-06T00:00:00+00:00",
+        "dateModified": "2025-03-06T00:00:00+00:00"
+      }
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      /* Header and intro styles */
+      .api-doc-header {
+        background-color: #f8f9fa;
+        padding: 40px 20px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #375bd2;
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin: 1.5rem 0 1rem;
+        color: #333;
+      }
+
+      .lead {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        max-width: 800px;
+      }
+
+      .api-overview {
+        margin: 2rem 0;
+        max-width: 800px;
+      }
+
+      .api-overview ul {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+      }
+
+      .api-overview li {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Version badge */
+      .version-badge {
+        display: inline-block;
+        background-color: #375bd2;
+        color: white;
+        padding: 0.25em 0.8em;
+        border-radius: 2em;
+        font-size: 0.9rem;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      /* Breadcrumbs */
+      .breadcrumbs {
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+
+      .breadcrumbs a {
+        color: #375bd2;
+        text-decoration: none;
+      }
+
+      .breadcrumbs a:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumbs .separator {
+        margin: 0 8px;
+        color: #6c757d;
+      }
+
+      /* Last updated */
+      .last-updated {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+      }
+
+      /* Swagger UI styles */
+      #swagger-ui {
+        max-width: 1460px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .swagger-ui .topbar {
+        background-color: #375bd2;
+      }
+
+      .swagger-ui .info .title small.version-stamp {
+        background-color: #375bd2;
+      }
+
+      .swagger-ui .scheme-container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+      }
+
+      .swagger-ui .opblock-tag {
+        border-bottom: 1px solid #e9ecef;
+        padding: 10px 0;
+      }
+
+      .swagger-ui .opblock {
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .swagger-ui .opblock .opblock-summary {
+        padding: 8px 20px;
+      }
+
+      .swagger-ui .opblock .opblock-summary-method {
+        min-width: 80px;
+        text-align: center;
+      }
+
+      .swagger-ui .model-box {
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+      }
+
+      /* FAQ section */
+      .faq-section {
+        background-color: #fff;
+        padding: 40px 20px;
+        margin-top: 40px;
+      }
+
+      .faq-item {
+        margin-bottom: 25px;
+      }
+
+      .faq-question {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #375bd2;
+        margin-bottom: 10px;
+      }
+
+      .faq-answer {
+        margin-top: 5px;
+      }
+
+      /* Footer styles */
+      .api-doc-footer {
+        background-color: #f8f9fa;
+        padding: 40px 0;
+        margin-top: 40px;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .footer-content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 30px;
+      }
+
+      .footer-section {
+        flex: 1;
+        min-width: 200px;
+        padding-right: 20px;
+        margin-bottom: 20px;
+      }
+
+      .footer-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: #375bd2;
+      }
+
+      .footer-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .footer-section li {
+        margin-bottom: 8px;
+      }
+
+      .footer-section a {
+        color: #555;
+        text-decoration: none;
+      }
+
+      .footer-section a:hover {
+        color: #375bd2;
+        text-decoration: underline;
+      }
+
+      .footer-bottom {
+        border-top: 1px solid #e9ecef;
+        padding-top: 20px;
+        text-align: center;
+        color: #777;
+        font-size: 0.9rem;
+      }
+
+      .footer-bottom a {
+        color: #555;
+        text-decoration: none;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        .lead {
+          font-size: 1.1rem;
+        }
+
+        .api-doc-header {
+          padding: 20px 15px;
+        }
+
+        .footer-content {
+          flex-direction: column;
+        }
+
+        .footer-section {
+          width: 100%;
+          padding-right: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SEO-friendly introduction section -->
+    <header class="api-doc-header">
+      <div class="container">
+        <h1>CCIP Configuration API Documentation <span class="version-badge">v1</span></h1>
+        <p class="lead">
+          The Cross-Chain Interoperability Protocol (CCIP) Configuration API provides comprehensive information about
+          supported blockchain networks and their configurations.
+        </p>
+
+        <div class="api-overview">
+          <h2>API Overview</h2>
+          <p>This documentation provides details about:</p>
+          <ul>
+            <li>Available endpoints for retrieving chain information</li>
+            <li>Chain details including IDs, selectors, and contract addresses</li>
+            <li>Supported fee tokens for cross-chain operations</li>
+            <li>Error handling and response formats</li>
+          </ul>
+          <p>Use the interactive documentation below to explore and test the API endpoints.</p>
+
+          <div class="last-updated">
+            <strong>Last Updated:</strong> March 6, 2025
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Swagger UI container -->
+    <div id="swagger-ui"></div>
+
+    <!-- Code samples section for indexable content -->
+    <section class="container" style="margin: 40px auto;">
+      <h2>API Usage Examples</h2>
+
+      <div style="margin-bottom: 30px;">
+        <h3>Example: Fetch All Mainnet Chains</h3>
+        <pre
+          style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>curl -X GET "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet" \
+  -H "accept: application/json"</code></pre>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3>Example: Filter by Chain IDs</h3>
+        <pre
+          style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>curl -X GET "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&chainId=1,137" \
+  -H "accept: application/json"</code></pre>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3>Example: JavaScript API Request</h3>
+        <pre
+          style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code set:text={jsExample} /></pre>
+      </div>
+    </section>
+
+    <!-- Footer with links and additional information -->
+    <footer class="api-doc-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>API Resources</h3>
+            <ul>
+              <li><a href="/api/ccip/v1/postman-collection.json">Download Postman Collection</a></li>
+              <li><a href="/api/ccip/v1/openapi.json">Download OpenAPI Specification</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Community & Support</h3>
+            <ul>
+              <li><a href="https://github.com/smartcontractkit/documentation/issues/new/choose">Report Issues</a></li>
+              <li><a href="https://discord.gg/chainlink">Join Discord</a></li>
+              <li><a href="https://stackoverflow.com/questions/tagged/chainlink">Stack Overflow</a></li>
+              <li><a href="https://twitter.com/chainlink">Twitter</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Swagger UI scripts with defer for better loading performance -->
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
+    ></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+
+    <!-- Swagger UI initialization script -->
+    <script is:inline>
+      // Using client directive to tell Astro this is client-side code
+      window.addEventListener("load", function () {
+        const ui = SwaggerUIBundle({
+          url: "/api/ccip/v1/openapi.json",
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: "StandaloneLayout",
+          defaultModelsExpandDepth: 3,
+          defaultModelExpandDepth: 3,
+          displayRequestDuration: true,
+          docExpansion: "list",
+          filter: true,
+          showExtensions: true,
+          tryItOutEnabled: true,
+          syntaxHighlight: {
+            activated: true,
+            theme: "monokai",
+          },
+        })
+
+        // Store UI reference on window
+        window.ui = ui
+      })
+    </script>
+  </body>
+</html>

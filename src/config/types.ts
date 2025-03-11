@@ -46,6 +46,11 @@ export type SupportedTechnology =
   | "FRAXTAL"
   | "HEDERA"
   | "UNICHAIN"
+  | "HEMI"
+  | "APECHAIN"
+  | "CRONOS"
+  | "CRONOS_ZKEVM"
+  | "TRON"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -138,6 +143,11 @@ export type SupportedChain =
   | "HEDERA_TESTNET"
   | "UNICHAIN_SEPOLIA"
   | "UNICHAIN_MAINNET"
+  | "APECHAIN_CURTIS"
+  | "CRONOS_TESTNET"
+  | "CRONOS_ZKEVM_TESTNET"
+  | "HEMI_SEPOLIA"
+  | "TRON_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

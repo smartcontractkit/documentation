@@ -7,7 +7,7 @@ import {
   web3Providers,
 } from "@config/index.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" assert { type: "json" }
+import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -315,6 +315,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "UNICHAIN_SEPOLIA"
     case "ethereum-mainnet-unichain-1":
       return "UNICHAIN_MAINNET"
+    case "apechain-testnet-curtis":
+      return "APECHAIN_CURTIS"
+    case "hemi-testnet-sepolia":
+      return "HEMI_SEPOLIA"
+    case "cronos-testnet":
+      return "CRONOS_TESTNET"
+    case "cronos-zkevm-testnet-sepolia":
+      return "CRONOS_ZKEVM_TESTNET"
+    case "tron-mainnet":
+      return "TRON_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -490,6 +500,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-unichain-1"
     case "UNICHAIN_MAINNET":
       return "ethereum-mainnet-unichain-1"
+    case "APECHAIN_CURTIS":
+      return "apechain-testnet-curtis"
+    case "HEMI_SEPOLIA":
+      return "hemi-testnet-sepolia"
+    case "CRONOS_TESTNET":
+      return "cronos-testnet"
+    case "CRONOS_ZKEVM_TESTNET":
+      return "cronos-zkevm-testnet-sepolia"
+    case "TRON_MAINNET":
+      return "tron-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

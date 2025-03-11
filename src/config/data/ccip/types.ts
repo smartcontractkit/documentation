@@ -66,6 +66,10 @@ export type ChainConfig = {
     address: string
     version: string
   }
+  tokenPoolFactory?: {
+    address: string
+    version: string
+  }
 }
 
 export type ChainsConfig = {
