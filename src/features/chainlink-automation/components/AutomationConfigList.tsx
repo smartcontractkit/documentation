@@ -6,8 +6,9 @@ import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@
 import { FunctionComponent } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import GithubSlugger from "github-slugger"
+import NetworkIcons from "./NetworkIcons.tsx"
 
-const TemporaryNote: FunctionComponent<{ title: string }> = ({ title, children }) => {
+const TemporaryNote: FunctionComponent<{ title: string; children: any }> = ({ title, children }) => {
   // Inline styles to mimic Aside.astro styling
   const containerStyle = {
     padding: "16px",
@@ -41,7 +42,7 @@ const TemporaryNote: FunctionComponent<{ title: string }> = ({ title, children }
   }
 
   const contentTextStyle = {
-    fontSize: "10x",
+    fontSize: "14px",
     fontWeight: "400",
     color: "rgb(88, 100, 116)",
   }
@@ -62,62 +63,88 @@ const TemporaryNote: FunctionComponent<{ title: string }> = ({ title, children }
 export const AutomationConfigList = () => {
   const slugger = new GithubSlugger()
   const normalizedConfig = normalizeConfig(chainlinkAutomationConfig)
-  return Object.keys(normalizedConfig).map((technology: SupportedTechnology) => {
-    const config = normalizedConfig[technology]
-    const technologyTitle = config?.title
-    return !technologyTitle ? (
-      <p />
-    ) : (
-      <SectionWrapper
-        title={technologyTitle}
-        idOverride={slugger.slug(technologyTitle)}
-        depth={3}
-        updateTOC={false}
-        key={technology}
-      >
-        {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
-          const title = getTitle(supportedChain)
-          const explorerUrl = getExplorer(supportedChain)
-          const registryAddress = automationAddresses[supportedChain]
-            ? automationAddresses[supportedChain]?.registryAddress
-            : ""
 
-          const config = chainlinkAutomationConfig[supportedChain]
+  // Get all technologies and sort them alphabetically by their display title
+  const sortedTechnologies = Object.keys(normalizedConfig)
+    .filter((technology: SupportedTechnology) => normalizedConfig[technology]?.title)
+    .sort((a: SupportedTechnology, b: SupportedTechnology) => {
+      const titleA = normalizedConfig[a]?.title || ""
+      const titleB = normalizedConfig[b]?.title || ""
+      return titleA.localeCompare(titleB)
+    })
 
-          if (!(title && config && registryAddress && explorerUrl)) {
-            return null
-          }
+  return (
+    <div>
+      <NetworkIcons />
+      {sortedTechnologies.map((technology: SupportedTechnology) => {
+        const config = normalizedConfig[technology]
+        const technologyTitle = config?.title
 
-          return (
-            <SectionWrapper
-              title={title}
-              idOverride={slugger.slug(title)}
-              depth={4}
-              updateTOC={false}
-              key={supportedChain}
-            >
-              {title === "Fantom mainnet" || title === "Fantom testnet" ? (
-                <>
-                  <TemporaryNote title="New Fantom upkeeps not supported">
-                    Creating new Fantom upkeeps is no longer supported. Existing Fantom upkeeps are still supported.
-                  </TemporaryNote>
-                  <AutomationConfig
-                    config={config}
-                    registryAddress={registryAddress}
-                    getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-                  />
-                </>
-              ) : (
-                <AutomationConfig
-                  config={config}
-                  registryAddress={registryAddress}
-                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-                />
-              )}
-            </SectionWrapper>
-          )
-        })}
-      </SectionWrapper>
-    )
-  })
+        if (!technologyTitle) {
+          return null
+        }
+
+        const sortedChains = Object.keys(config.chains)
+          .filter((chain: SupportedChain) => {
+            const title = getTitle(chain)
+            const explorerUrl = getExplorer(chain)
+            const registryAddress = automationAddresses[chain] ? automationAddresses[chain]?.registryAddress : ""
+            const chainConfig = chainlinkAutomationConfig[chain]
+
+            return title && chainConfig && registryAddress && explorerUrl
+          })
+          .sort((a: SupportedChain, b: SupportedChain) => {
+            const titleA = getTitle(a) || ""
+            const titleB = getTitle(b) || ""
+            return titleA.localeCompare(titleB)
+          })
+
+        return (
+          <SectionWrapper
+            title={technologyTitle}
+            idOverride={slugger.slug(technologyTitle)}
+            depth={2}
+            updateTOC={true}
+            key={technology}
+          >
+            {sortedChains.map((supportedChain: SupportedChain) => {
+              const title = getTitle(supportedChain) as string
+              const explorerUrl = getExplorer(supportedChain) as any
+              const registryAddress = automationAddresses[supportedChain]?.registryAddress as string
+              const config = chainlinkAutomationConfig[supportedChain] as any
+
+              return (
+                <SectionWrapper
+                  title={title}
+                  idOverride={slugger.slug(title)}
+                  depth={3}
+                  updateTOC={true}
+                  key={supportedChain}
+                >
+                  {title === "Fantom mainnet" || title === "Fantom testnet" ? (
+                    <>
+                      <TemporaryNote title="New Fantom upkeeps not supported">
+                        Creating new Fantom upkeeps is no longer supported. Existing Fantom upkeeps are still supported.
+                      </TemporaryNote>
+                      <AutomationConfig
+                        config={config}
+                        registryAddress={registryAddress}
+                        getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                      />
+                    </>
+                  ) : (
+                    <AutomationConfig
+                      config={config}
+                      registryAddress={registryAddress}
+                      getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                    />
+                  )}
+                </SectionWrapper>
+              )
+            })}
+          </SectionWrapper>
+        )
+      })}
+    </div>
+  )
 }
