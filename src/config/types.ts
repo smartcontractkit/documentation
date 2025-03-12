@@ -144,9 +144,9 @@ export type SupportedChain =
   | "UNICHAIN_SEPOLIA"
   | "UNICHAIN_MAINNET"
   | "APECHAIN_CURTIS"
+  | "HEMI_SEPOLIA"
   | "CRONOS_TESTNET"
   | "CRONOS_ZKEVM_TESTNET"
-  | "HEMI_SEPOLIA"
   | "TRON_MAINNET"
 
 export type ExplorerInfo = {
