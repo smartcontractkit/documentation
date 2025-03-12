@@ -25,66 +25,102 @@ export const AutomationConfig = ({
   } = config
 
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ display: "block", overflowX: "auto" }}>
+    <div style={{ overflowX: "auto", width: "100%" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th>Item</th>
-            <th>Value</th>
+            <th style={{ textAlign: "center", padding: "8px", borderBottom: "1px solid #ddd" }}>Item</th>
+            <th style={{ textAlign: "center", padding: "8px", borderBottom: "1px solid #ddd" }}>Value</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Registry Address</td>
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Registry Address</td>
             {!registryAddress ? (
-              <td />
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
             ) : (
-              <td>
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
                 <Address contractUrl={getUrl(registryAddress)} />
               </td>
             )}
           </tr>
           <tr>
-            <td>Registrar Address</td>
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Registrar Address</td>
             {!registrar ? (
-              <td />
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
             ) : (
-              <td>
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
                 <Address contractUrl={getUrl(registrar)} />
               </td>
             )}
           </tr>
           <tr>
-            <td>Payment Premium %</td>
-            {!paymentPremiumPPB ? <td /> : <td>{Math.round(parseInt(paymentPremiumPPB.toString(), 10) / 10000000)}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Payment Premium %</td>
+            {!paymentPremiumPPB ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+                {Math.round(parseInt(paymentPremiumPPB.toString(), 10) / 10000000)}
+              </td>
+            )}
           </tr>
           <tr>
-            <td>Block Count per Turn</td>
-            {!blockCountPerTurn ? <td /> : <td>{blockCountPerTurn.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Block Count per Turn</td>
+            {!blockCountPerTurn ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{blockCountPerTurn.toLocaleString()}</td>
+            )}
           </tr>
           <tr>
-            <td>Maximum Check Data Size</td>
-            {!maxCheckDataSize ? <td /> : <td>{maxCheckDataSize.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Maximum Check Data Size</td>
+            {!maxCheckDataSize ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{maxCheckDataSize.toLocaleString()}</td>
+            )}
           </tr>
           <tr>
-            <td>Check Gas Limit</td>
-            {!checkGasLimit ? <td /> : <td>{checkGasLimit.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Check Gas Limit</td>
+            {!checkGasLimit ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{checkGasLimit.toLocaleString()}</td>
+            )}
           </tr>
           <tr>
-            <td>Perform Gas Limit</td>
-            {!maxPerformGas ? <td /> : <td>{maxPerformGas.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Perform Gas Limit</td>
+            {!maxPerformGas ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{maxPerformGas.toLocaleString()}</td>
+            )}
           </tr>
           <tr>
-            <td>Maximum Perform Data Size</td>
-            {!maxPerformDataSize ? <td /> : <td>{maxPerformDataSize.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Maximum Perform Data Size</td>
+            {!maxPerformDataSize ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{maxPerformDataSize.toLocaleString()}</td>
+            )}
           </tr>
           <tr>
-            <td>Gas Ceiling Multiplier</td>
-            {!gasCeilingMultiplier ? <td /> : <td>{gasCeilingMultiplier.toLocaleString()}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Gas Ceiling Multiplier</td>
+            {!gasCeilingMultiplier ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+                {gasCeilingMultiplier.toLocaleString()}
+              </td>
+            )}
           </tr>
           <tr>
-            <td>Minimum Upkeep Spend (LINK)</td>
-            {!minUpkeepSpend ? <td /> : <td>{formatEther(minUpkeepSpend.hex)}</td>}
+            <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>Minimum Upkeep Spend (LINK)</td>
+            {!minUpkeepSpend ? (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }} />
+            ) : (
+              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{formatEther(minUpkeepSpend.hex)}</td>
+            )}
           </tr>
         </tbody>
       </table>

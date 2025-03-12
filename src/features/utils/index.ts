@@ -514,3 +514,5 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       throw Error(`Chain not found ${supportedChain}`)
   }
 }
+
+export * from "./networkIcons.ts"
