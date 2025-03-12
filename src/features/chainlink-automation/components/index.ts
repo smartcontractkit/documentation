@@ -1,2 +1,3 @@
 export * from "./AutomationConfig.tsx"
-export * from "./AutomationConfigList.tsx"
+export { AutomationConfigList } from "./AutomationConfigList.tsx"
+export { default as NetworkIcons } from "./NetworkIcons.tsx"
