@@ -14,11 +14,14 @@ import { Address, Aside, CopyText } from "@components"
 import { TabsContent } from "@components/Tabs"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
+Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract. For implementation details, read [Introduction to Chainlink VRF](/vrf).
+
+VRF v2.5 coordinators for subscription funding are available on several networks. To use Chainlink VRF on certain networks, you may need to conduct token transfers. You can transfer tokens by using [Chainlink CCIP](/ccip/tutorials/transfer-tokens-from-contract), [Transporter](https://www.transporter.io/) or third-party applications such as [XSwap](https://xswap.link/).
+
 <Vrf2_5Common callout="security" />
 
-Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
-
-For implementation details, read [Introduction to Chainlink VRF](/vrf).
+<CcipCommon callout="thirdPartyApps" />
+<ResourcesCallout callout="bridgeRisks" />
 
 ## Coordinator parameters
 
@@ -29,362 +32,9 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-## Configurations
+## <img src="/assets/chains/arbitrum.svg" style="height: 24px; width: auto; margin-right: 8px;" />Arbitrum
 
-VRF v2.5 coordinators for subscription funding are available on several networks.
-
-To use Chainlink VRF on certain networks, you may need to conduct token transfers. You can transfer tokens by using [Chainlink CCIP](/ccip/tutorials/transfer-tokens-from-contract), [Transporter](https://www.transporter.io/) or third-party applications such as [XSwap](https://xswap.link/).
-
-<CcipCommon callout="thirdPartyApps" />
-<ResourcesCallout callout="bridgeRisks" />
-
-### Ethereum mainnet
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                            |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA" urlId="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://etherscan.io/address/0xD7f86b4b8Cae7D942340FF628F82735b7a20893a" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Ethereum Mainnet"}} />                                                                                |
-| 200 gwei Key Hash     | <CopyText text="0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9" code/>                                                                                       |
-| 500 gwei Key Hash    | <CopyText text="0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b" code/>                                                                                       |
-| 1000 gwei Key Hash    | <CopyText text="0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f" code/>                                                                                       |
-| Premium percentage <br/> (paying with ETH)    | 24                                                                                       |
-| Premium percentage <br/> (paying with LINK)   | 20                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                        |
-| Minimum Confirmations | 3                                                                                                                                                                                |
-| Maximum Confirmations | 200                                                                                                                                                                              |
-| Maximum Random Values | 500                                                                                                                                                                              |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA" urlId="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" urlClass="erc-token-address"/>  |
-| VRF Wrapper                | <Address contractUrl="https://etherscan.io/address/0x02aae1A04f9828517b3007f83f6181900CaD910c" />                                                                                |
-| VRF Coordinator       | <Address contractUrl="https://etherscan.io/address/0xD7f86b4b8Cae7D942340FF628F82735b7a20893a" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Ethereum Mainnet"}} />                                                                                 |
-| 200 gwei Key Hash     | <CopyText text="0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9" code/>                                                                                       |
-| 500 gwei Key Hash    | <CopyText text="0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b" code/>                                                                                       |
-| 1000 gwei Key Hash    | <CopyText text="0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f" code/>                                                                                       |
-| Premium percentage <br/> (paying with ETH) | 24                                                                                       |
-| Premium percentage <br/> (paying with LINK) | 20                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 90000                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 112000                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Sepolia testnet
-
-<Aside type="note" title="Sepolia Faucets">
-  Testnet LINK and ETH are available from <a href="https://faucets.chain.link/sepolia">faucets.chain.link</a>.<br />
-  Testnet ETH is also available from several public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
-</Aside>
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Sepolia Testnet"}}  />                                                                                       |
-| 500 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                                      |
-| Premium percentage <br/> (paying with Sepolia ETH)   | 24                                                                                      |
-| Premium percentage <br/> (paying with testnet LINK)  | 20                                                                                      |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                       |
-| Minimum Confirmations | 3                                                                                                                                                                                               |
-| Maximum Confirmations | 200                                                                                                                                                                                             |
-| Maximum Random Values | 500                                                                                                                                                                                             |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/>  |
-| VRF Wrapper                | <Address contractUrl="https://sepolia.etherscan.io/address/0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1" />                                                                                |
-| VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Sepolia Testnet"}}  />                                                                                 |
-| 500 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                       |
-| Premium percentage <br/> (paying with Sepolia ETH) | 24                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK) | 20                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 90000                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 112000                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### BNB Chain
-
-<Aside type="tip" title="Important">
-  The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot
-  be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using
-  Chainlink's PegSwap service**](https://pegswap.chain.link/).
-</Aside>
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                            |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlId="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "BNB Mainnet"}}  />                                                                                 |
-| 200 gwei Key Hash     | <CopyText text="0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4" code/>                                                                                       |
-| 500 gwei Key Hash     | <CopyText text="0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c" code/>                                                                                       |
-| 1000 gwei Key Hash    | <CopyText text="0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd" code/>                                                                                       |
-| Premium percentage <br/> (paying with BNB)    | 60                                                                                       |
-| Premium percentage <br/> (paying with LINK)   | 50                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                        |
-| Minimum Confirmations | 3                                                                                                                                                                                |
-| Maximum Confirmations | 200                                                                                                                                                                              |
-| Maximum Random Values | 500                                                                                                                                                                              |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlId="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94" />                                                                                |
-| VRF Coordinator       | <Address contractUrl="https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "BNB Mainnet"}}  />                                                                                 |
-| 200 gwei Key Hash     | <CopyText text="0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4" code/>                                                                                       |
-| 500 gwei Key Hash     | <CopyText text="0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c" code/>                                                                                       |
-| 1000 gwei Key Hash    | <CopyText text="0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd" code/>                                                                                       |
-| Premium percentage <br/> (paying with testnet BNB) | 60                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### BNB Chain testnet
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-<Aside type="note" title="BNB Chain Faucet">
-  Testnet LINK is available from https://faucets.chain.link/bnb-chain-testnet
-</Aside>
-
-| Item                                                | Value                                                                                                                                                                                                                                                                       |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                                          | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/>                                                                                  |
-| VRF Coordinator                                     | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "BNB Testnet"}} /> |
-| 50 gwei Key Hash                                    | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code/>                                                                                                                                                                                  |
-| Premium percentage <br/> (paying with testnet BNB)  | 60                                                                                                                                                                                                                                                                          |
-| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                                                                                                                                                                                                          |
-| Max Gas Limit                                       | 2,500,000                                                                                                                                                                                                                                                                   |
-| Minimum Confirmations                               | 3                                                                                                                                                                                                                                                                           |
-| Maximum Confirmations                               | 200                                                                                                                                                                                                                                                                         |
-| Maximum Random Values                               | 500                                                                                                                                                                                                                                                                         |
-
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://testnet.bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "BNB Testnet"}}  />                                                                                |
-| 50 gwei Key Hash    | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code />                                                                                             |                                                                            |
-| Premium percentage <br/> (paying with testnet BNB) | 60                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Polygon mainnet
-
-<Aside type="tip" title="Important">
-  The LINK provided by the [Polygon Bridge](https://wallet.polygon.technology/polygon/bridge) is not ERC-677 compatible,
-  so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon using
-  Chainlink's PegSwap service**](https://pegswap.chain.link/)
-</Aside>
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                   |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlId="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://polygonscan.com/address/0xec0Ed46f36576541C75739E915ADbCb3DE24bD77" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Polygon Mainnet"}}  />                                                                                    |
-| 200 gwei Key Hash     | <CopyText text="0x0ffbbd0c1c18c0263dd778dadd1d64240d7bc338d95fec1cf0473928ca7eaf9e" code/>                                                                                              |
-| 500 gwei Key Hash     | <CopyText text="0x719ed7d7664abc3001c18aac8130a2265e1e70b7e036ae20f3ca8b92b3154d86" code />                                                                                             |
-| 1000 gwei Key Hash    | <CopyText text="0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada" code />                                                                                             |
-| Premium percentage <br/> (paying with POL)  | 84                                                                                       |
-| Premium percentage <br/> (paying with LINK)   | 70                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                               |
-| Minimum Confirmations | 3                                                                                                                                                                                       |
-| Maximum Confirmations | 200                                                                                                                                                                                     |
-| Maximum Random Values | 500                                                                                                                                                                                     |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlId="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://polygonscan.com/address/0xc8F13422c49909F4Ec24BF65EDFBEbe410BB9D7c" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://polygonscan.com/address/0xec0Ed46f36576541C75739E915ADbCb3DE24bD77" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Polygon Mainnet"}}  />                                                                                |
-| 200 gwei Key Hash     | <CopyText text="0x0ffbbd0c1c18c0263dd778dadd1d64240d7bc338d95fec1cf0473928ca7eaf9e" code/>                                                                                              |
-| 500 gwei Key Hash     | <CopyText text="0x719ed7d7664abc3001c18aac8130a2265e1e70b7e036ae20f3ca8b92b3154d86" code />                                                                                             |
-| 1000 gwei Key Hash    | <CopyText text="0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada" code />                                                                                             |                                                                            |
-| Premium percentage <br/> (paying with POL) | 84                                                                                       |
-| Premium percentage <br/> (paying with LINK) | 70                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Polygon Amoy testnet
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://amoy.polygonscan.com/address/0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlId="80002_0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://amoy.polygonscan.com/address/0x343300b5d84D444B2ADc9116FEF1bED02BE49Cf2" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Polygon Amoy Testnet"}}  />                                                                                      |
-| 500 gwei Key Hash     | <CopyText text="0x816bedba8a50b294e5cbd47842baf240c2385f2eaf719edbd4f250a137a8c899" code/>                                                                                             |
-| Premium percentage <br/> (paying with testnet POL)  | 84                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK)  | 70                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                              |
-| Minimum Confirmations | 3                                                                                                                                                                                      |
-| Maximum Confirmations | 200                                                                                                                                                                                    |
-| Maximum Random Values | 500                                                                                                                                                                                    |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://amoy.polygonscan.com/address/0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlId="80002_0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://amoy.polygonscan.com/address/0x6e6c366a1cd1F92ba87Fd6f96F743B0e6c967Bf0" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://amoy.polygonscan.com/address/0x343300b5d84D444B2ADc9116FEF1bED02BE49Cf2" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Polygon Amoy Testnet"}}  />                                                                                |
-| 500 gwei Key Hash     | <CopyText text="0x816bedba8a50b294e5cbd47842baf240c2385f2eaf719edbd4f250a137a8c899" code/>                                                                                                     |                                                                                 |
-| Premium percentage <br/> (paying with testnet POL)  | 84                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK) | 70                                                                                       |
-| Minimum Confirmations      | 3                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Avalanche mainnet
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3" urlId="43114_0x5947BB275c521040051D82396192181b413227A3" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://snowtrace.io/address/0xE40895D055bccd2053dD0638C9695E326152b1A4" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Avalanche Mainnet"}}  />                                                                                      |
-| 200 gwei Key Hash     | <CopyText text="0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102" code/>                                                                                             |
-| 500 gwei Key Hash     | <CopyText text="0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d" code/>                                                                                             |
-| 1000 gwei Key Hash    | <CopyText text="0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c" code/>                                                                                             |
-| Premium percentage <br/> (paying with AVAX)  | 60                                                                                       |
-| Premium percentage <br/> (paying with LINK)  | 50                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                              |
-| Minimum Confirmations | 0                                                                                                                                                                                      |
-| Maximum Confirmations | 200                                                                                                                                                                                    |
-| Maximum Random Values | 500                                                                                                                                                                                    |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3" urlId="43114_0x5947BB275c521040051D82396192181b413227A3" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://snowtrace.io/address/0x62Fb87c10A917580cA99AB9a86E213Eb98aa820C" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://snowtrace.io/address/0xE40895D055bccd2053dD0638C9695E326152b1A4" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Avalanche Mainnet"}}  />                                                                                |
-| 200 gwei Key Hash     | <CopyText text="0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102" code/>                                                                                             |
-| 500 gwei Key Hash     | <CopyText text="0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d" code/>                                                                                             |
-| 1000 gwei Key Hash    | <CopyText text="0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c" code/>                                                                                             |                                                                            |
-| Premium percentage <br/> (paying with AVAX)  | 60                                                                                       |
-| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
-| Minimum Confirmations      | 0                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 107000                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 129000                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Avalanche Fuji testnet
-
-<Aside type="note" title="Avax Fuji Faucet">
-  Testnet LINK is available from https://faucets.chain.link/fuji
-</Aside>
-
-{/* prettier-ignore */}
-<TabsContent client:visible>
-<Fragment slot="tab.1">Subscription</Fragment>
-<Fragment slot="tab.2">Direct funding</Fragment>
-<Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                          |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
-| VRF Coordinator       | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Avalanche Fuji Testnet"}}  />                                                                                      |
-| 300 gwei Key Hash     | <CopyText text="0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887" code/>                                                                                                     |
-| Premium percentage <br/> (paying with testnet AVAX)  | 60                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK)  | 50                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                      |
-| Minimum Confirmations | 1                                                                                                                                                                                              |
-| Maximum Confirmations | 200                                                                                                                                                                                            |
-| Maximum Random Values | 500                                                                                                                                                                                            |
-</Fragment>
-<Fragment slot="panel.2">
-| Item                       | Value                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                 | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
-| VRF Wrapper                | <Address contractUrl="https://testnet.snowtrace.io/address/0x327B83F409E1D5f13985c6d0584420FA648f1F56" />                                                                                |
-| VRF Coordinator            | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Avalanche Fuji Testnet"}}  />                                                                                |
-| 300 gwei Key Hash     | <CopyText text="0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887" code/>                                                                                                     |                                                                                 |
-| Premium percentage <br/> (paying with testnet AVAX) | 60                                                                                       |
-| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
-| Minimum Confirmations      | 0                                                                                                                                                                                |
-| Maximum Confirmations      | 200                                                                                                                                                                              |
-| Maximum Random Values      | 10                                                                                                                                                                               |
-| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 104500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 126500                                                                                                                                                                            |
-| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
-</Fragment>
-</TabsContent>
-
-### Arbitrum mainnet
+### Arbitrum Mainnet
 
 {/* prettier-ignore */}
 <TabsContent client:visible>
@@ -427,11 +77,9 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 </Fragment>
 </TabsContent>
 
-### Arbitrum Sepolia testnet
+### Arbitrum Sepolia Testnet
 
-<Aside type="note" title="Arbitrum Sepolia Testnet Faucet">
-  Testnet ETH and LINK are available from https://faucets.chain.link/arbitrum-sepolia
-</Aside>
+Testnet ETH and LINK are available from https://faucets.chain.link/arbitrum-sepolia
 
 {/* prettier-ignore */}
 <TabsContent client:visible>
@@ -470,7 +118,93 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 </Fragment>
 </TabsContent>
 
-### BASE mainnet
+## <img src="/assets/chains/avalanche.svg" style="height: 24px; width: auto; margin-right: 8px;" />Avalanche
+
+### Avalanche Mainnet
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3" urlId="43114_0x5947BB275c521040051D82396192181b413227A3" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://snowtrace.io/address/0xE40895D055bccd2053dD0638C9695E326152b1A4" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Avalanche Mainnet"}}  />                                                                                      |
+| 200 gwei Key Hash     | <CopyText text="0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102" code/>                                                                                             |
+| 500 gwei Key Hash     | <CopyText text="0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d" code/>                                                                                             |
+| 1000 gwei Key Hash    | <CopyText text="0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c" code/>                                                                                             |
+| Premium percentage <br/> (paying with AVAX)  | 60                                                                                       |
+| Premium percentage <br/> (paying with LINK)  | 50                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                              |
+| Minimum Confirmations | 0                                                                                                                                                                                      |
+| Maximum Confirmations | 200                                                                                                                                                                                    |
+| Maximum Random Values | 500                                                                                                                                                                                    |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3" urlId="43114_0x5947BB275c521040051D82396192181b413227A3" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://snowtrace.io/address/0x62Fb87c10A917580cA99AB9a86E213Eb98aa820C" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://snowtrace.io/address/0xE40895D055bccd2053dD0638C9695E326152b1A4" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Avalanche Mainnet"}}  />                                                                                |
+| 200 gwei Key Hash     | <CopyText text="0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102" code/>                                                                                             |
+| 500 gwei Key Hash     | <CopyText text="0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d" code/>                                                                                             |
+| 1000 gwei Key Hash    | <CopyText text="0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c" code/>                                                                                             |                                                                            |
+| Premium percentage <br/> (paying with AVAX)  | 60                                                                                       |
+| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
+| Minimum Confirmations      | 0                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 107000                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 129000                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+### Avalanche Fuji Testnet
+
+Testnet LINK is available from https://faucets.chain.link/fuji
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Avalanche Fuji Testnet"}}  />                                                                                      |
+| 300 gwei Key Hash     | <CopyText text="0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887" code/>                                                                                                     |
+| Premium percentage <br/> (paying with testnet AVAX)  | 60                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK)  | 50                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                      |
+| Minimum Confirmations | 1                                                                                                                                                                                              |
+| Maximum Confirmations | 200                                                                                                                                                                                            |
+| Maximum Random Values | 500                                                                                                                                                                                            |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://testnet.snowtrace.io/address/0x327B83F409E1D5f13985c6d0584420FA648f1F56" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://testnet.snowtrace.io/address/0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Avalanche Fuji Testnet"}}  />                                                                                |
+| 300 gwei Key Hash     | <CopyText text="0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887" code/>                                                                                                     |                                                                                 |
+| Premium percentage <br/> (paying with testnet AVAX) | 60                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
+| Minimum Confirmations      | 0                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 104500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 126500                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+## <img src="/assets/chains/base.svg" style="height: 24px; width: auto; margin-right: 8px;" />BASE
+
+### BASE Mainnet
 
 {/* prettier-ignore */}
 <TabsContent client:visible>
@@ -511,7 +245,7 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 </Fragment>
 </TabsContent>
 
-### BASE Sepolia testnet
+### BASE Sepolia Testnet
 
 {/* prettier-ignore */}
 <TabsContent client:visible>
@@ -550,44 +284,182 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 </Fragment>
 </TabsContent>
 
-### Soneium Minato testnet
+## <img src="/assets/chains/bnb-chain.svg" style="height: 24px; width: auto; margin-right: 8px;" />BNB Chain
+
+### BNB Chain Mainnet
+
+The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot
+be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 {/* prettier-ignore */}
 <TabsContent client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
-| Item                  | Value                                                                                                                                                                                          |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlId="1946_0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlClass="erc-token-address"/> |
-|                       |
-| VRF Coordinator       | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x3Fa01AB73beB4EA09e78FC0849FCe31d0b035b47" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Soneium Minato Testnet"}}  />                                                                                       |
-| 30 gwei Key Hash      | <CopyText text="0x0c970a50393bea0011d5cec18c15c80c6deb37888b9ff579f476b3e52f6d3922" code/>                                                                                                    |
-| Premium percentage <br/> (paying with testnet ETH)  | 60                                                                                       |
-| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                      |
-| Minimum Confirmations | 0                                                                                                                                                                                              |
-| Maximum Confirmations | 200                                                                                                                                                                                            |
-| Maximum Random Values | 500                                                                                                                                                                                            |
+| Item                  | Value                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlId="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "BNB Mainnet"}}  />                                                                                 |
+| 200 gwei Key Hash     | <CopyText text="0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4" code/>                                                                                       |
+| 500 gwei Key Hash     | <CopyText text="0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c" code/>                                                                                       |
+| 1000 gwei Key Hash    | <CopyText text="0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd" code/>                                                                                       |
+| Premium percentage <br/> (paying with BNB)    | 60                                                                                       |
+| Premium percentage <br/> (paying with LINK)   | 50                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                        |
+| Minimum Confirmations | 3                                                                                                                                                                                |
+| Maximum Confirmations | 200                                                                                                                                                                              |
+| Maximum Random Values | 500                                                                                                                                                                              |
 </Fragment>
 <Fragment slot="panel.2">
 | Item                       | Value                                                                                                                                                                            |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlId="1946_0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlClass="erc-token-address"/> |
-| VRF Wrapper           | <Address contractUrl="https://soneium-minato.blockscout.com/address/0xB64019F234f2A4951261B111C6B43eb0d8f33b76" />                                                                                |
-| VRF Coordinator       | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x3Fa01AB73beB4EA09e78FC0849FCe31d0b035b47" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Soneium Minato Testnet"}} />                                                                                       |
-| 30 gwei Key Hash      | <CopyText text="0x0c970a50393bea0011d5cec18c15c80c6deb37888b9ff579f476b3e52f6d3922" code/>                                                                                                    |
-| Premium percentage <br/> (paying with testnet ETH)  | 60                                                                                       |
-| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
-| Minimum Confirmations      | 0                                                                                                                                                                                |
+| LINK Token                 | <Address contractUrl="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlId="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94" />                                                                                |
+| VRF Coordinator       | <Address contractUrl="https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "BNB Mainnet"}}  />                                                                                 |
+| 200 gwei Key Hash     | <CopyText text="0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4" code/>                                                                                       |
+| 500 gwei Key Hash     | <CopyText text="0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c" code/>                                                                                       |
+| 1000 gwei Key Hash    | <CopyText text="0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd" code/>                                                                                       |
+| Premium percentage <br/> (paying with testnet BNB) | 60                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
 | Maximum Confirmations      | 200                                                                                                                                                                              |
 | Maximum Random Values      | 10                                                                                                                                                                               |
 | Wrapper Gas overhead       | 13400                                                                                                                                                                            |
-| Coordinator Gas Overhead (Native)   | 128500                                                                                                                                                                            |
-| Coordinator Gas Overhead (LINK)   | 150400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
 | Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
 </Fragment>
 </TabsContent>
+
+### BNB Chain Testnet
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+Testnet LINK is available from https://faucets.chain.link/bnb-chain-testnet
+
+| Item                                                | Value                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                                          | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/>                                                                                  |
+| VRF Coordinator                                     | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "BNB Testnet"}} /> |
+| 50 gwei Key Hash                                    | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code/>                                                                                                                                                                                  |
+| Premium percentage <br/> (paying with testnet BNB)  | 60                                                                                                                                                                                                                                                                          |
+| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                                                                                                                                                                                                          |
+| Max Gas Limit                                       | 2,500,000                                                                                                                                                                                                                                                                   |
+| Minimum Confirmations                               | 3                                                                                                                                                                                                                                                                           |
+| Maximum Confirmations                               | 200                                                                                                                                                                                                                                                                         |
+| Maximum Random Values                               | 500                                                                                                                                                                                                                                                                         |
+
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlId="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://testnet.bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://testnet.bscscan.com/address/0xDA3b641D438362C440Ac5458c57e00a712b66700" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "BNB Testnet"}}  />                                                                                |
+| 50 gwei Key Hash    | <CopyText text="0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26" code />                                                                                             |                                                                            |
+| Premium percentage <br/> (paying with testnet BNB) | 60                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+## <img src="/assets/chains/ethereum.svg" style="height: 24px; width: auto; margin-right: 8px;" />Ethereum
+
+### Ethereum Mainnet
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA" urlId="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://etherscan.io/address/0xD7f86b4b8Cae7D942340FF628F82735b7a20893a" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Ethereum Mainnet"}} />                                                                                |
+| 200 gwei Key Hash     | <CopyText text="0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9" code/>                                                                                       |
+| 500 gwei Key Hash    | <CopyText text="0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b" code/>                                                                                       |
+| 1000 gwei Key Hash    | <CopyText text="0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f" code/>                                                                                       |
+| Premium percentage <br/> (paying with ETH)    | 24                                                                                       |
+| Premium percentage <br/> (paying with LINK)   | 20                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                        |
+| Minimum Confirmations | 3                                                                                                                                                                                |
+| Maximum Confirmations | 200                                                                                                                                                                              |
+| Maximum Random Values | 500                                                                                                                                                                              |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA" urlId="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" urlClass="erc-token-address"/>  |
+| VRF Wrapper                | <Address contractUrl="https://etherscan.io/address/0x02aae1A04f9828517b3007f83f6181900CaD910c" />                                                                                |
+| VRF Coordinator       | <Address contractUrl="https://etherscan.io/address/0xD7f86b4b8Cae7D942340FF628F82735b7a20893a" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Ethereum Mainnet"}} />                                                                                 |
+| 200 gwei Key Hash     | <CopyText text="0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9" code/>                                                                                       |
+| 500 gwei Key Hash    | <CopyText text="0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b" code/>                                                                                       |
+| 1000 gwei Key Hash    | <CopyText text="0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f" code/>                                                                                       |
+| Premium percentage <br/> (paying with ETH) | 24                                                                                       |
+| Premium percentage <br/> (paying with LINK) | 20                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 90000                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 112000                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+### Ethereum Sepolia Testnet
+
+Testnet LINK and ETH are available from <a href="https://faucets.chain.link/sepolia">faucets.chain.link</a>.
+
+Testnet ETH is also available from several public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Sepolia Testnet"}}  />                                                                                       |
+| 500 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                                      |
+| Premium percentage <br/> (paying with Sepolia ETH)   | 24                                                                                      |
+| Premium percentage <br/> (paying with testnet LINK)  | 20                                                                                      |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                       |
+| Minimum Confirmations | 3                                                                                                                                                                                               |
+| Maximum Confirmations | 200                                                                                                                                                                                             |
+| Maximum Random Values | 500                                                                                                                                                                                             |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/>  |
+| VRF Wrapper                | <Address contractUrl="https://sepolia.etherscan.io/address/0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1" />                                                                                |
+| VRF Coordinator       | <Address contractUrl="https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Sepolia Testnet"}}  />                                                                                 |
+| 500 gwei Key Hash     | <CopyText text="0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae" code/>                                                                                       |
+| Premium percentage <br/> (paying with Sepolia ETH) | 24                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK) | 20                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 90000                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 112000                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+## <img src="/assets/chains/optimism.svg" style="height: 24px; width: auto; margin-right: 8px;" />OP
 
 ### OP Mainnet
 
@@ -630,7 +502,7 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 </Fragment>
 </TabsContent>
 
-### OP Sepolia
+### OP Sepolia Testnet
 
 {/* prettier-ignore */}
 <TabsContent sharedStore="vrfMethod" client:visible>
@@ -659,6 +531,133 @@ To use Chainlink VRF on certain networks, you may need to conduct token transfer
 | 30 gwei Key Hash      | <CopyText text="0xc3d5bc4d5600fa71f7a50b9ad841f14f24f9ca4236fd00bdb5fda56b052b28a4" code/>                                                                                                    |                                                                                    |
 | Premium percentage <br/> (paying with OP Sepolia ETH)  | 60                                                                                       |
 | Premium percentage <br/> (paying with testnet LINK) | 50                                                                                       |
+| Minimum Confirmations      | 0                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 128500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 150400                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+## <img src="/assets/chains/polygon.svg" style="height: 24px; width: auto; margin-right: 8px;" />Polygon
+
+### Polygon Mainnet
+
+The LINK provided by the [Polygon Bridge](https://wallet.polygon.technology/polygon/bridge) is not ERC-677 compatible,
+so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon using
+Chainlink's PegSwap service**](https://pegswap.chain.link/)
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlId="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://polygonscan.com/address/0xec0Ed46f36576541C75739E915ADbCb3DE24bD77" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Polygon Mainnet"}}  />                                                                                    |
+| 200 gwei Key Hash     | <CopyText text="0x0ffbbd0c1c18c0263dd778dadd1d64240d7bc338d95fec1cf0473928ca7eaf9e" code/>                                                                                              |
+| 500 gwei Key Hash     | <CopyText text="0x719ed7d7664abc3001c18aac8130a2265e1e70b7e036ae20f3ca8b92b3154d86" code />                                                                                             |
+| 1000 gwei Key Hash    | <CopyText text="0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada" code />                                                                                             |
+| Premium percentage <br/> (paying with POL)  | 84                                                                                       |
+| Premium percentage <br/> (paying with LINK)   | 70                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                               |
+| Minimum Confirmations | 3                                                                                                                                                                                       |
+| Maximum Confirmations | 200                                                                                                                                                                                     |
+| Maximum Random Values | 500                                                                                                                                                                                     |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlId="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://polygonscan.com/address/0xc8F13422c49909F4Ec24BF65EDFBEbe410BB9D7c" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://polygonscan.com/address/0xec0Ed46f36576541C75739E915ADbCb3DE24bD77" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Polygon Mainnet"}}  />                                                                                |
+| 200 gwei Key Hash     | <CopyText text="0x0ffbbd0c1c18c0263dd778dadd1d64240d7bc338d95fec1cf0473928ca7eaf9e" code/>                                                                                              |
+| 500 gwei Key Hash     | <CopyText text="0x719ed7d7664abc3001c18aac8130a2265e1e70b7e036ae20f3ca8b92b3154d86" code />                                                                                             |
+| 1000 gwei Key Hash    | <CopyText text="0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada" code />                                                                                             |                                                                            |
+| Premium percentage <br/> (paying with POL) | 84                                                                                       |
+| Premium percentage <br/> (paying with LINK) | 70                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+### Polygon Amoy Testnet
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://amoy.polygonscan.com/address/0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlId="80002_0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlClass="erc-token-address"/> |
+| VRF Coordinator       | <Address contractUrl="https://amoy.polygonscan.com/address/0x343300b5d84D444B2ADc9116FEF1bED02BE49Cf2" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Polygon Amoy Testnet"}}  />                                                                                      |
+| 500 gwei Key Hash     | <CopyText text="0x816bedba8a50b294e5cbd47842baf240c2385f2eaf719edbd4f250a137a8c899" code/>                                                                                             |
+| Premium percentage <br/> (paying with testnet POL)  | 84                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK)  | 70                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                              |
+| Minimum Confirmations | 3                                                                                                                                                                                      |
+| Maximum Confirmations | 200                                                                                                                                                                                    |
+| Maximum Random Values | 500                                                                                                                                                                                    |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <Address contractUrl="https://amoy.polygonscan.com/address/0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlId="80002_0x0fd9e8d3af1aaee056eb9e802c3a762a667b1904" urlClass="erc-token-address"/> |
+| VRF Wrapper                | <Address contractUrl="https://amoy.polygonscan.com/address/0x6e6c366a1cd1F92ba87Fd6f96F743B0e6c967Bf0" />                                                                                |
+| VRF Coordinator            | <Address contractUrl="https://amoy.polygonscan.com/address/0x343300b5d84D444B2ADc9116FEF1bED02BE49Cf2" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Polygon Amoy Testnet"}}  />                                                                                |
+| 500 gwei Key Hash     | <CopyText text="0x816bedba8a50b294e5cbd47842baf240c2385f2eaf719edbd4f250a137a8c899" code/>                                                                                                     |                                                                                 |
+| Premium percentage <br/> (paying with testnet POL)  | 84                                                                                       |
+| Premium percentage <br/> (paying with testnet LINK) | 70                                                                                       |
+| Minimum Confirmations      | 3                                                                                                                                                                                |
+| Maximum Confirmations      | 200                                                                                                                                                                              |
+| Maximum Random Values      | 10                                                                                                                                                                               |
+| Wrapper Gas overhead       | 13400                                                                                                                                                                            |
+| Coordinator Gas Overhead (Native)   | 99500                                                                                                                                                                            |
+| Coordinator Gas Overhead (LINK)   | 121500                                                                                                                                                                            |
+| Coordinator Gas Overhead per Word  | 435                                                                                                                                                                           |
+</Fragment>
+</TabsContent>
+
+## <img src="/assets/chains/soneium.svg" style="height: 24px; width: auto; margin-right: 8px;" />Soneium
+
+### Soneium Minato Testnet
+
+{/* prettier-ignore */}
+<TabsContent client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+| Item                  | Value                                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlId="1946_0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlClass="erc-token-address"/> |
+|                       |
+| VRF Coordinator       | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x3Fa01AB73beB4EA09e78FC0849FCe31d0b035b47" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Subscription2.5", extraInfo2: "Soneium Minato Testnet"}}  />                                                                                       |
+| 30 gwei Key Hash      | <CopyText text="0x0c970a50393bea0011d5cec18c15c80c6deb37888b9ff579f476b3e52f6d3922" code/>                                                                                                    |
+| Premium percentage <br/> (paying with testnet ETH)  | 60                                                                                       |
+| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                      |
+| Minimum Confirmations | 0                                                                                                                                                                                              |
+| Maximum Confirmations | 200                                                                                                                                                                                            |
+| Maximum Random Values | 500                                                                                                                                                                                            |
+</Fragment>
+<Fragment slot="panel.2">
+| Item                       | Value                                                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlId="1946_0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2" urlClass="erc-token-address"/> |
+| VRF Wrapper           | <Address contractUrl="https://soneium-minato.blockscout.com/address/0xB64019F234f2A4951261B111C6B43eb0d8f33b76" />                                                                                |
+| VRF Coordinator       | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x3Fa01AB73beB4EA09e78FC0849FCe31d0b035b47" eventName="docs_product_interaction" additionalInfo={{ product: "VRF", action: "vrfCoordinator_copied", extraInfo1: "Direct2.5", extraInfo2: "Soneium Minato Testnet"}} />                                                                                       |
+| 30 gwei Key Hash      | <CopyText text="0x0c970a50393bea0011d5cec18c15c80c6deb37888b9ff579f476b3e52f6d3922" code/>                                                                                                    |
+| Premium percentage <br/> (paying with testnet ETH)  | 60                                                                                       |
+| Premium percentage <br/> (paying with LINK) | 50                                                                                       |
 | Minimum Confirmations      | 0                                                                                                                                                                                |
 | Maximum Confirmations      | 200                                                                                                                                                                              |
 | Maximum Random Values      | 10                                                                                                                                                                               |
