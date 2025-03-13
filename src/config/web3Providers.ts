@@ -93,13 +93,21 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   FRAXTAL_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.frax.com"),
   FRAXTAL_MAINNET: () => new JsonRpcProvider("https://rpc.frax.com"),
   HEDERA_TESTNET: () => new JsonRpcProvider("https://testnet.hashio.io/api"),
+  HEDERA_MAINNET: () => new JsonRpcProvider("https://mainnet.hashio.io/api"),
   UNICHAIN_SEPOLIA: () => new JsonRpcProvider("https://sepolia.unichain.org"),
   UNICHAIN_MAINNET: () => new JsonRpcProvider("https://mainnet.unichain.org/"),
   APECHAIN_CURTIS: () => new JsonRpcProvider("https://curtis.hub.caldera.xyz"),
+  APECHAIN_MAINNET: () => new JsonRpcProvider("https://rpc.apechain.com"),
   CRONOS_TESTNET: () => new JsonRpcProvider("https://cronos.org"),
-  CRONOS_ZKEVM_TESTNET: () => new JsonRpcProvider("https://docs-zkevm.cronos.org"),
-  HEMI_SEPOLIA: () => new JsonRpcProvider("https://hemi.xyz"),
+  CRONOS_MAINNET: () => new JsonRpcProvider("https://evm.cronos.org"),
+  CRONOS_ZKEVM_TESTNET: () => new JsonRpcProvider("https://testnet.zkevm.cronos.org"),
+  CRONOS_ZKEVM_MAINNET: () => new JsonRpcProvider("https://mainnet.zkevm.cronos.org"),
+  HEMI_SEPOLIA: () => new JsonRpcProvider("https://testnet.rpc.hemi.network/rpc"),
+  HEMI_MAINNET: () => new JsonRpcProvider("https://rpc.hemi.network/rpc"),
   TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
+  MIND_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc-mainnet.mindnetwork.xyz"),
+  MEGAETH_TESTNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
+  "0G_NEWTON_TESTNET": () => new JsonRpcProvider("https://evmrpc-testnet.0g.ai"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

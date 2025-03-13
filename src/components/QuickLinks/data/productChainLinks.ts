@@ -294,4 +294,7 @@ export const chainNames: Record<string, string> = {
   cronoszkevm: "Cronos zkEVM",
   hemi: "Hemi",
   tron: "TRON",
+  "0g": "0G",
+  mindnetwork: "Mind Network",
+  megaeth: "MegaETH",
 }
