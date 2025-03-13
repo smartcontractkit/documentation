@@ -7,30 +7,73 @@ title: "L2 Sequencer Uptime Feeds"
 import { ClickToZoom, CodeSample } from "@components"
 import { Aside } from "@components"
 
-Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://docs.optimism.io/stack/rollup/overview) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
+Optimistic rollups (e.g., Arbitrum, Optimism) and many ZK-rollups rely on sequencers to efficiently manage transaction ordering, execution, and batching before submitting them to Layer 1 (L1) blockchains like Ethereum. The sequencer plays a crucial role in optimizing transaction throughput, reducing fees, and ensuring fast transaction confirmations on L2 networks, making it a key component of their scalability and performance.
 
-If a sequencer becomes unavailable, it is impossible to access read/write APIs that consumers are using and applications on the L2 network will be down for most users without interacting directly through the L1 optimistic rollup contracts. The L2 has not stopped, but it would be unfair to continue providing service on your applications when only a few users can use them.
+However, if the sequencer becomes unavailable, users will lose access to the standard read/write APIs, preventing them from interacting with applications on the L2 network. Although the L2 chain's security and state commitments remain enforced by Layer 1, no new batched blocks will be produced by the sequencer. Users with sufficient technical expertise can still interact directly with the network through the underlying rollup contracts on L1. However, this process is more complex and costly, creating an unfair advantage for those who can bypass the sequencer. This imbalance in access can lead to disruptions or distortions in applications, such as liquidations or market operations that rely on timely transactions.
 
-To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to such an event.
+To mitigate these risks, your applications can integrate a **Sequencer Uptime Data Feed**, which continuously monitors and records the last known status of the sequencer. By utilizing this feed, you can:
 
-## Available networks
+- Detect sequencer downtime in real time.
+- Implement a grace period to prevent mass liquidations or unexpected disruptions.
+- Ensure fair access to services by temporarily pausing operations during sequencer failures.
+
+This proactive approach enhances the resilience and fairness of applications operating on L2 networks, ensuring a more stable and equitable user experience.
+
+## Supported Networks
 
 You can find proxy addresses for the L2 sequencer feeds at the following addresses:
 
-- Arbitrum:
-  - Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xFdB631F5EE196F0ed6FAa767959853A9F217697D)
-- OP:
-  - OP mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
-- BASE:
-  - BASE mainnet: [0xBCF85224fc0756B9Fa45aA7892530B47e10b6433](https://basescan.org/address/0xBCF85224fc0756B9Fa45aA7892530B47e10b6433)
-- Metis:
-  - Andromeda mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
-- Scroll:
-  - Scroll mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://scrollscan.com/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
-- zkSync:
-  - zkSync mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zksync.io/address/0x0E6AC8B967393dcD3D36677c126976157F993940)
+### <img src="/assets/chains/arbitrum.svg" style="height: 20px; width: auto; margin-right: 8px;" />Arbitrum
 
-## Arbitrum
+Arbitrum Mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xFdB631F5EE196F0ed6FAa767959853A9F217697D)
+
+<br />
+
+### <img src="/assets/chains/base.svg" style="height: 20px; width: auto; margin-right: 8px;" />BASE
+
+BASE Mainnet: [0xBCF85224fc0756B9Fa45aA7892530B47e10b6433](https://basescan.org/address/0xBCF85224fc0756B9Fa45aA7892530B47e10b6433)
+
+<br />
+
+### <img src="/assets/chains/mantle.svg" style="height: 20px; width: auto; margin-right: 8px;" />Mantle
+
+Mantle Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://mantlescan.xyz/address/0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0)
+
+<br />
+
+### <img src="/assets/chains/metis.svg" style="height: 20px; width: auto; margin-right: 8px;" />Metis
+
+Andromeda Mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
+
+<br />
+
+### <img src="/assets/chains/optimism.svg" style="height: 20px; width: auto; margin-right: 8px;" />OP
+
+OP Mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
+
+<br />
+
+### <img src="/assets/chains/scroll.svg" style="height: 20px; width: auto; margin-right: 8px;" />Scroll
+
+Scroll Mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://scrollscan.com/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
+
+<br />
+
+### <img src="/assets/chains/soneium.svg" style="height: 20px; width: auto; margin-right: 8px;" />Soneium
+
+Soneium Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://soneium.blockscout.com/address/0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0)
+
+<br />
+
+### <img src="/assets/chains/zksync.svg" style="height: 20px; width: auto; margin-right: 8px;" />ZKsync
+
+zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zksync.io/address/0x0E6AC8B967393dcD3D36677c126976157F993940)
+
+<br />
+
+## Real-time Monitoring Process
+
+### Arbitrum
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
@@ -41,13 +84,13 @@ The diagram below shows how these feeds update and how a consumer retrieves the 
 1. The inbox contract sends the message to the [`ArbitrumSequencerUptimeFeed` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumSequencerUptimeFeed.sol). The message calls the `updateStatus` function in the `ArbitrumSequencerUptimeFeed` contract and updates the latest sequencer status to 0 if the sequencer is up and 1 if it is down. It also records the block timestamp to indicate when the message was sent from the L1 network.
 1. A consumer contract on the L2 network can read these values from the [`ArbitrumUptimeFeedProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol), which reads values from the `ArbitrumSequencerUptimeFeed` contract.
 
-### Handling Arbitrum outages
+#### Handling Arbitrum Outages
 
 If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract continues to send messages to the L2 network through the delayed inbox on L1. This message stays there until the sequencer is back up again. When the sequencer comes back online after downtime, it processes all transactions from the delayed inbox before it accepts new transactions. The message that signals when the sequencer is down will be processed before any new messages with transactions that require the sequencer to be operational.
 
-## OP, BASE, Metis, Scroll, and zkSync
+### Other Supported Networks
 
-On OP, BASE, Metis, Scroll, and zkSync, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
+On BASE, Mantle, Metis, OP, Scroll, Soneium and zkSync, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
 
 <ClickToZoom src="/images/data-feed/l2-diagram-optimism-metis.webp" />
 
@@ -71,7 +114,7 @@ On OP, BASE, Metis, Scroll, and zkSync, the sequencer's status is relayed from L
 
 1. Consumers can then read from the `AggregatorProxy` contract, which fetches the latest round data from the `OptimismSequencerUptimeFeed` contract.
 
-### Handling outages on OP, BASE, Metis, Scroll, and zkSync
+#### Handling Other Supported Network Outages
 
 If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no L2 transactions are executed**. Instead, messages are enqueued in the `CanonicalTransactionChain` on L1 and only processed in the order they arrived later when the sequencer comes back up. As long as the message from the validator on L1 is already enqueued in the `CTC`, the flag on the sequencer uptime feed on L2 will be guaranteed to be flipped prior to any subsequent transactions. The transaction that flips the flag on the uptime feed will be executed before transactions that were enqueued after it. This is further explained in the diagrams below.
 
@@ -89,11 +132,11 @@ After the sequencer comes back up, it moves all transactions in the pending queu
 
 <ClickToZoom src="/images/data-feed/seq-down-2.webp" />
 
-## Example code
+## Example Consumer Contract
 
-This example code works on the Arbitrum, OP, and Metis networks. Create the consumer contract for sequencer uptime feeds similarly to the contracts that you use for other [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
+This example code works on any network that supports Solidity. Create the consumer contract for sequencer uptime feeds similarly to the contracts that you use for other [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
 
-- Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
+- Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#supported-networks) for your L2 network.
 - Configure the `dataFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
 
 <CodeSample src="samples/DataFeeds/DataConsumerWithSequencerCheck.sol" />
