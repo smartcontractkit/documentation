@@ -66,6 +66,7 @@ export const productChainLinks: ProductChainLinks = {
       cronos: "/ccip/directory/testnet/chain/cronos-testnet",
       cronoszkevm: "/ccip/directory/testnet/chain/cronos-zkevm-testnet-sepolia",
       apechain: "/ccip/directory/testnet/chain/apechain-testnet-curtis",
+      hedera: "/ccip/directory/testnet/chain/hedera-testnet",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
     },
   },
