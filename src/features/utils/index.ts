@@ -311,20 +311,36 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "FRAXTAL_MAINNET"
     case "hedera-testnet":
       return "HEDERA_TESTNET"
+    case "hedera-mainnet":
+      return "HEDERA_MAINNET"
     case "ethereum-testnet-sepolia-unichain-1":
       return "UNICHAIN_SEPOLIA"
     case "ethereum-mainnet-unichain-1":
       return "UNICHAIN_MAINNET"
     case "apechain-testnet-curtis":
       return "APECHAIN_CURTIS"
+    case "apechain-mainnet":
+      return "APECHAIN_MAINNET"
     case "hemi-testnet-sepolia":
       return "HEMI_SEPOLIA"
+    case "hemi-mainnet":
+      return "HEMI_MAINNET"
     case "cronos-testnet":
       return "CRONOS_TESTNET"
+    case "cronos-mainnet":
+      return "CRONOS_MAINNET"
     case "cronos-zkevm-testnet-sepolia":
       return "CRONOS_ZKEVM_TESTNET"
+    case "cronos-zkevm-mainnet":
+      return "CRONOS_ZKEVM_MAINNET"
     case "tron-mainnet":
       return "TRON_MAINNET"
+    case "0g-testnet-newton":
+      return "0G_NEWTON_TESTNET"
+    case "megaeth-testnet":
+      return "MEGAETH_TESTNET"
+    case "mind-testnet":
+      return "MIND_NETWORK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -496,20 +512,36 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "fraxtal-mainnet"
     case "HEDERA_TESTNET":
       return "hedera-testnet"
+    case "HEDERA_MAINNET":
+      return "hedera-mainnet"
     case "UNICHAIN_SEPOLIA":
       return "ethereum-testnet-sepolia-unichain-1"
     case "UNICHAIN_MAINNET":
       return "ethereum-mainnet-unichain-1"
     case "APECHAIN_CURTIS":
       return "apechain-testnet-curtis"
+    case "APECHAIN_MAINNET":
+      return "apechain-mainnet"
     case "HEMI_SEPOLIA":
       return "hemi-testnet-sepolia"
+    case "HEMI_MAINNET":
+      return "hemi-mainnet"
     case "CRONOS_TESTNET":
       return "cronos-testnet"
+    case "CRONOS_MAINNET":
+      return "cronos-mainnet"
     case "CRONOS_ZKEVM_TESTNET":
       return "cronos-zkevm-testnet-sepolia"
+    case "CRONOS_ZKEVM_MAINNET":
+      return "cronos-zkevm-mainnet"
     case "TRON_MAINNET":
       return "tron-mainnet"
+    case "0G_NEWTON_TESTNET":
+      return "0g-testnet-newton"
+    case "MEGAETH_TESTNET":
+      return "megaeth-testnet"
+    case "MIND_NETWORK_TESTNET":
+      return "mind-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
