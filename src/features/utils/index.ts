@@ -335,11 +335,11 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "tron-mainnet":
       return "TRON_MAINNET"
-    case "0g-newton-testnet":
+    case "0g-testnet-newton":
       return "0G_NEWTON_TESTNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
-    case "mind-network-testnet":
+    case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -537,11 +537,11 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "TRON_MAINNET":
       return "tron-mainnet"
     case "0G_NEWTON_TESTNET":
-      return "0g-newton-testnet"
+      return "0g-testnet-newton"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
-      return "mind-network-testnet"
+      return "mind-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
