@@ -144,6 +144,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Hyperliquid",
+    logoUrl: "/assets/chains/hyperliquid.svg",
+    mainnet: {
+      label: "Hyperliquid Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
+    },
+    testnet: {
+      label: "Hyperliquid Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://evm.hyperstats.xyz/address/%s",
+    },
+  },
+  {
     network: "Ink",
     logoUrl: "/assets/chains/ink.svg",
     networkStatus: "https://status.inkonchain.com/",
