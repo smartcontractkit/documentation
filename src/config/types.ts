@@ -51,6 +51,9 @@ export type SupportedTechnology =
   | "CRONOS"
   | "CRONOS_ZKEVM"
   | "TRON"
+  | "0G"
+  | "MIND_NETWORK"
+  | "MEGAETH"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -141,13 +144,20 @@ export type SupportedChain =
   | "FRAXTAL_TESTNET"
   | "FRAXTAL_MAINNET"
   | "HEDERA_TESTNET"
+  | "HEDERA_MAINNET"
   | "UNICHAIN_SEPOLIA"
   | "UNICHAIN_MAINNET"
   | "APECHAIN_CURTIS"
+  | "APECHAIN_MAINNET"
+  | "HEMI_MAINNET"
   | "CRONOS_TESTNET"
+  | "CRONOS_MAINNET"
   | "CRONOS_ZKEVM_TESTNET"
   | "HEMI_SEPOLIA"
   | "TRON_MAINNET"
+  | "0G_NEWTON_TESTNET"
+  | "MIND_NETWORK_TESTNET"
+  | "MEGAETH_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
