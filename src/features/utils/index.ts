@@ -92,6 +92,7 @@ const transformTokenName = (token: string): string => {
   return token
     .toLowerCase() // Step 1: Convert to lowercase
     .replace(/\./g, "") // Step 2: Remove all dots
+    .replace(/\$/g, "") // Step 3: Remove all dollar signs
     .replace(/\+/g, "%2B") // Step 3: Replace plus signs with %2B
 }
 
