@@ -93,6 +93,21 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "BNB Chain",
+    logoUrl: "/assets/chains/bnb-chain.svg",
+    networkStatus: "https://bscscan.freshstatus.io",
+    mainnet: {
+      label: "BNB Chain Mainnet",
+      verifierProxy: "0xF276a4BC8Da323EA3E8c3c195a4E2E7615a898d1",
+      explorerUrl: "https://bscscan.com/address/%s",
+    },
+    testnet: {
+      label: "BNB Chain Testnet",
+      verifierProxy: "0xF45D6dba93d0dB2C849C280F45e60D6e11b3C4DD",
+      explorerUrl: "https://testnet.bscscan.com/address/%s",
+    },
+  },
+  {
     network: "Bob",
     logoUrl: "/assets/chains/bob.svg",
     mainnet: {

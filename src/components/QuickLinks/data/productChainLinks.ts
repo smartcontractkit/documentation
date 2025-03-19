@@ -114,6 +114,7 @@ export const productChainLinks: ProductChainLinks = {
       base: "/data-streams/crypto-streams",
       berachain: "/data-streams/crypto-streams",
       blast: "/data-streams/crypto-streams",
+      "bnb-chain": "/data-streams/crypto-streams",
       bob: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
       ethereum: "/data-streams/crypto-streams",
