@@ -222,7 +222,7 @@ export const StreamsNetworksData: NetworkData[] = [
     logoUrl: "/assets/chains/megaeth.svg",
     networkStatus: "https://uptime.megaeth.com",
     testnet: {
-      label: "MEGA Testnet",
+      label: "MegaETH Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
       explorerUrl: "https://www.megaexplorer.xyz/address/%s",
     },
