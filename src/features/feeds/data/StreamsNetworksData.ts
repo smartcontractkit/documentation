@@ -218,6 +218,16 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "MegaETH",
+    logoUrl: "/assets/chains/megaeth.svg",
+    networkStatus: "https://uptime.megaeth.com",
+    testnet: {
+      label: "MEGA Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://www.megaexplorer.xyz/address/%s",
+    },
+  },
+  {
     network: "Monad",
     logoUrl: "/assets/chains/monad.svg",
     testnet: {
