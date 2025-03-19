@@ -199,7 +199,6 @@ export const productChainLinks: ProductChainLinks = {
     kroma: "/resources/link-token-contracts#kroma",
     mantle: "/resources/link-token-contracts#mantle",
     linea: "/resources/link-token-contracts#linea",
-    megaeth: "/resources/link-token-contracts#megaeth",
     metis: "/resources/link-token-contracts#metis",
     mode: "/resources/link-token-contracts#mode",
     moonbeam: "/resources/link-token-contracts#moonbeam",
