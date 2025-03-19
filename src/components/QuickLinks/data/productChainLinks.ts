@@ -123,6 +123,7 @@ export const productChainLinks: ProductChainLinks = {
       ink: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
+      megaeth: "/data-streams/crypto-streams",
       monad: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
