@@ -39,6 +39,27 @@ const NetworkDisplay = ({ logo, name }: { logo: string; name: string }) => (
   </div>
 )
 
+// Reusable tooltip component with consistent styling
+const StyledTooltip = ({ label, tip }: { label: string; tip: string }) => (
+  <Tooltip label={label} tip={tip} labelStyle={{ marginRight: "10px" }} style={{ display: "inline-flex" }} />
+)
+
+// Detail item component for consistent label-value pairs
+const DetailItem = ({
+  label,
+  children,
+  clipboardType,
+}: {
+  label: string
+  children: React.ReactNode
+  clipboardType?: string
+}) => (
+  <>
+    <div className="lane-details-hero__details__label">{label}</div>
+    <div data-clipboard-type={clipboardType}>{children}</div>
+  </>
+)
+
 function LaneDetailsHero({
   sourceNetwork,
   destinationNetwork,
@@ -50,11 +71,11 @@ function LaneDetailsHero({
   rmnPermeable,
   inOutbound,
 }: LaneDetailsHeroProps) {
-  let enforceOutOfOrderString = "N/A"
-  if (enforceOutOfOrder === true) {
-    enforceOutOfOrderString = "Required"
-  } else if (enforceOutOfOrder === false) {
-    enforceOutOfOrderString = "Optional"
+  // Map boolean values to display strings
+  const getOutOfOrderText = (value?: boolean) => {
+    if (value === true) return "Required"
+    if (value === false) return "Optional"
+    return "N/A"
   }
 
   return (
@@ -77,73 +98,44 @@ function LaneDetailsHero({
       </div>
 
       <div className="lane-details-hero__details">
+        {/* Display address information based on lane type */}
         {inOutbound === LaneFilter.Inbound ? (
-          <>
-            <div className="lane-details-hero__details__label">OffRamp address</div>
-            <div data-clipboard-type="offramp">
-              <AddressComponent
-                address={offRamp}
-                endLength={6}
-                contractUrl={getExplorerAddressUrl(explorer)(offRamp)}
-              />
-            </div>
-          </>
+          <DetailItem label="OffRamp address" clipboardType="offramp">
+            <AddressComponent address={offRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(offRamp)} />
+          </DetailItem>
         ) : (
-          <>
-            <div className="lane-details-hero__details__label">OnRamp address</div>
-            <div data-clipboard-type="onramp">
-              <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
-            </div>
-          </>
+          <DetailItem label="OnRamp address" clipboardType="onramp">
+            <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
+          </DetailItem>
         )}
-        <div className="lane-details-hero__details__label">Destination chain selector</div>
-        <div data-clipboard-type="destination-chain-selector">
+
+        <DetailItem label="Destination chain selector" clipboardType="destination-chain-selector">
           {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
-        </div>
-        <div className="lane-details-hero__details__label">RMN</div>
-        <div>
+        </DetailItem>
+
+        <DetailItem label="RMN">
           {rmnPermeable ? (
-            <a href="https://docs.chain.link/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
-              <Tooltip
+            <a href="/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
+              <StyledTooltip
                 label="Coming soon"
                 tip="Risk Management Network (RMN) is NOT enabled for this lane at this time."
-                labelStyle={{
-                  marginRight: "10px",
-                }}
-                style={{
-                  display: "inline-flex",
-                }}
               />
             </a>
           ) : (
-            <Tooltip
+            <StyledTooltip
               label="Enabled"
               tip="This field shows the status of the Risk Management Network (RMN) for this lane."
-              labelStyle={{
-                marginRight: "10px",
-              }}
-              style={{
-                display: "inline-flex",
-              }}
             />
           )}
-        </div>
+        </DetailItem>
+
         {inOutbound === LaneFilter.Outbound && (
-          <>
-            <div className="lane-details-hero__details__label">Out of Order Execution</div>
-            <div data-clipboard-type="destination-chain-selector">
-              <Tooltip
-                label={enforceOutOfOrderString}
-                tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
-                labelStyle={{
-                  marginRight: "10px",
-                }}
-                style={{
-                  display: "inline-flex",
-                }}
-              />
-            </div>
-          </>
+          <DetailItem label="Out of Order Execution" clipboardType="out-of-order-execution">
+            <StyledTooltip
+              label={getOutOfOrderText(enforceOutOfOrder)}
+              tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
+            />
+          </DetailItem>
         )}
       </div>
     </div>
