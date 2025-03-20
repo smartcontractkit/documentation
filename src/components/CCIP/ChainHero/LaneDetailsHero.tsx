@@ -41,21 +41,48 @@ function LaneDetailsHero({
   } else if (enforceOutOfOrder === false) {
     enforceOutOfOrderString = "Optional"
   }
+
   return (
     <div className="lane-details-hero">
+      {/* ✅ FIX: Swap Source & Destination for Inbound Lanes */}
       <div className="lane-details-hero__networks">
-        <div className="lane-details-hero__network">
-          <img src={sourceNetwork.logo} alt={sourceNetwork.name} />
-          {sourceNetwork.name}
-        </div>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
-        </svg>
-        <div className="lane-details-hero__network">
-          <img src={destinationNetwork.logo} alt={destinationNetwork.name} className="lane-details-hero__token-logo" />
-          {destinationNetwork.name}
-        </div>
+        {inOutbound === LaneFilter.Inbound ? (
+          <>
+            {/* 🔄 Swap Order for Inbound */}
+            <div className="lane-details-hero__network">
+              <img src={destinationNetwork.logo} alt={destinationNetwork.name} />
+              {destinationNetwork.name}
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
+            </svg>
+            <div className="lane-details-hero__network">
+              <img src={sourceNetwork.logo} alt={sourceNetwork.name} className="lane-details-hero__token-logo" />
+              {sourceNetwork.name}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* ✅ Default Order for Outbound */}
+            <div className="lane-details-hero__network">
+              <img src={sourceNetwork.logo} alt={sourceNetwork.name} />
+              {sourceNetwork.name}
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
+            </svg>
+            <div className="lane-details-hero__network">
+              <img
+                src={destinationNetwork.logo}
+                alt={destinationNetwork.name}
+                className="lane-details-hero__token-logo"
+              />
+              {destinationNetwork.name}
+            </div>
+          </>
+        )}
       </div>
+
       <div className="lane-details-hero__details">
         {inOutbound === LaneFilter.Inbound ? (
           <>
