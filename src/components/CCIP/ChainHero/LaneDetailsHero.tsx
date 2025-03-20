@@ -24,6 +24,21 @@ interface LaneDetailsHeroProps {
   inOutbound: LaneFilter
 }
 
+// Arrow component to avoid duplication
+const DirectionalArrow = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
+  </svg>
+)
+
+// Network display component to standardize rendering
+const NetworkDisplay = ({ logo, name }: { logo: string; name: string }) => (
+  <div className="lane-details-hero__network">
+    <img src={logo} alt={name} className="lane-details-hero__network-logo" />
+    {name}
+  </div>
+)
+
 function LaneDetailsHero({
   sourceNetwork,
   destinationNetwork,
@@ -44,41 +59,19 @@ function LaneDetailsHero({
 
   return (
     <div className="lane-details-hero">
-      {/* ✅ FIX: Swap Source & Destination for Inbound Lanes */}
+      {/* Display networks with direction based on lane type */}
       <div className="lane-details-hero__networks">
         {inOutbound === LaneFilter.Inbound ? (
           <>
-            {/* 🔄 Swap Order for Inbound */}
-            <div className="lane-details-hero__network">
-              <img src={destinationNetwork.logo} alt={destinationNetwork.name} />
-              {destinationNetwork.name}
-            </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
-            </svg>
-            <div className="lane-details-hero__network">
-              <img src={sourceNetwork.logo} alt={sourceNetwork.name} className="lane-details-hero__token-logo" />
-              {sourceNetwork.name}
-            </div>
+            <NetworkDisplay logo={destinationNetwork.logo} name={destinationNetwork.name} />
+            <DirectionalArrow />
+            <NetworkDisplay logo={sourceNetwork.logo} name={sourceNetwork.name} />
           </>
         ) : (
           <>
-            {/* ✅ Default Order for Outbound */}
-            <div className="lane-details-hero__network">
-              <img src={sourceNetwork.logo} alt={sourceNetwork.name} />
-              {sourceNetwork.name}
-            </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.666626 7.99673H14.6666M7.66663 15L14.6666 8L7.66663 1" stroke="var(--gray-900)" />
-            </svg>
-            <div className="lane-details-hero__network">
-              <img
-                src={destinationNetwork.logo}
-                alt={destinationNetwork.name}
-                className="lane-details-hero__token-logo"
-              />
-              {destinationNetwork.name}
-            </div>
+            <NetworkDisplay logo={sourceNetwork.logo} name={sourceNetwork.name} />
+            <DirectionalArrow />
+            <NetworkDisplay logo={destinationNetwork.logo} name={destinationNetwork.name} />
           </>
         )}
       </div>
