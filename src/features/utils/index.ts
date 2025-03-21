@@ -344,6 +344,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MEGAETH_TESTNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
+    case "mind-mainnet":
+      return "MIND_NETWORK_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -547,6 +549,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
+    case "MIND_NETWORK_MAINNET":
+      return "mind-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
