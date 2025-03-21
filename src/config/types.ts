@@ -159,6 +159,7 @@ export type SupportedChain =
   | "TRON_MAINNET"
   | "0G_NEWTON_TESTNET"
   | "MIND_NETWORK_TESTNET"
+  | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
 
 export type ExplorerInfo = {
