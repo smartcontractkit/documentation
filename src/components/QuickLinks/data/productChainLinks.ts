@@ -68,6 +68,7 @@ export const productChainLinks: ProductChainLinks = {
       apechain: "/ccip/directory/testnet/chain/apechain-testnet-curtis",
       hedera: "/ccip/directory/testnet/chain/hedera-testnet",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
+      mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
     },
   },
   "Data Feeds": {
@@ -114,13 +115,16 @@ export const productChainLinks: ProductChainLinks = {
       base: "/data-streams/crypto-streams",
       berachain: "/data-streams/crypto-streams",
       blast: "/data-streams/crypto-streams",
+      "bnb-chain": "/data-streams/crypto-streams",
       bob: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
       ethereum: "/data-streams/crypto-streams",
       hashkey: "/data-streams/crypto-streams",
+      hyperliquid: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
+      megaeth: "/data-streams/crypto-streams",
       monad: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
@@ -233,6 +237,7 @@ export const productChainLinks: ProductChainLinks = {
     apechain: "/resources/link-token-contracts#apechain",
     cronoszkevm: "/resources/link-token-contracts#cronos-zkevm",
     cronos: "/resources/link-token-contracts#cronos",
+    mindnetwork: "/resources/link-token-contracts#mind-network",
   },
 }
 

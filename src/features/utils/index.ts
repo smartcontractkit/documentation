@@ -300,6 +300,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BERACHAIN_MAINNET"
     case "berachain-testnet-bartio":
       return "BERACHAIN_BARTIO"
+    case "hyperliquid-mainnet":
+      return "HYPERLIQUID_MAINNET"
     case "hyperliquid-testnet":
       return "HYPERLIQUID_TESTNET"
     case "bitcoin-testnet-merlin":
@@ -342,6 +344,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MEGAETH_TESTNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
+    case "mind-mainnet":
+      return "MIND_NETWORK_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -501,6 +505,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "berachain-mainnet"
     case "BERACHAIN_BARTIO":
       return "berachain-testnet-bartio"
+    case "HYPERLIQUID_MAINNET":
+      return "hyperliquid-mainnet"
     case "HYPERLIQUID_TESTNET":
       return "hyperliquid-testnet"
     case "MERLIN_TESTNET":
@@ -543,6 +549,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
+    case "MIND_NETWORK_MAINNET":
+      return "mind-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
