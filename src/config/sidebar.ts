@@ -44,6 +44,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/smartdata",
         },
         {
+          title: "SVR Feeds",
+          url: "data-feeds/svr-feeds",
+        },
+        {
           title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds",
         },
