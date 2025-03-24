@@ -68,6 +68,7 @@ export const productChainLinks: ProductChainLinks = {
       apechain: "/ccip/directory/testnet/chain/apechain-testnet-curtis",
       hedera: "/ccip/directory/testnet/chain/hedera-testnet",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
+      mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
     },
   },
   "Data Feeds": {
@@ -236,6 +237,7 @@ export const productChainLinks: ProductChainLinks = {
     apechain: "/resources/link-token-contracts#apechain",
     cronoszkevm: "/resources/link-token-contracts#cronos-zkevm",
     cronos: "/resources/link-token-contracts#cronos",
+    mindnetwork: "/resources/link-token-contracts#mind-network",
   },
 }
 

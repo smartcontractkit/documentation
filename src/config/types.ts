@@ -150,8 +150,8 @@ export type SupportedChain =
   | "UNICHAIN_MAINNET"
   | "APECHAIN_CURTIS"
   | "APECHAIN_MAINNET"
-  | "HEMI_SEPOLIA"
   | "HEMI_MAINNET"
+  | "HEMI_SEPOLIA"
   | "CRONOS_TESTNET"
   | "CRONOS_MAINNET"
   | "CRONOS_ZKEVM_TESTNET"
@@ -159,6 +159,7 @@ export type SupportedChain =
   | "TRON_MAINNET"
   | "0G_NEWTON_TESTNET"
   | "MIND_NETWORK_TESTNET"
+  | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
 
 export type ExplorerInfo = {
