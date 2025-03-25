@@ -1,0 +1,52 @@
+name: Detect New Data (Feeds/SmartData/Streams)
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'  # Sunday 9 PM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write      # needed to commit changes
+  pull-requests: write # needed to open PR
+
+jobs:
+  detect-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed if we want to commit or see full history
+
+      - name: Install Dependencies
+        run: |
+          # If you have a package.json in the repo:
+          npm ci
+
+      - name: Ensure detect-data.sh is executable
+        run: chmod +x .github/scripts/data/detect-data.sh
+
+      - name: Run data detection
+        id: detect_data
+        run: |
+          .github/scripts/data/detect-data.sh check-data
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      # You can replicate your colleague's logic for errors or new data found
+
+      - name: Commit & Create Pull Request
+        if: steps.detect_data.outcome == 'success'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Automated data update from detect-data.sh"
+          branch: "data-update-${{ github.run_id }}"
+          title: "Changelog Update: New data found"
+          body: "This PR was automatically created by detect-data.sh"
+          add-paths: |
+            .github/scripts/data/baseline.json
+            changelog.json
+          labels: |
+            automation
+            documentation
