@@ -5,6 +5,11 @@ on:
     - cron: '0 21 * * 0'  # Sunday 9 PM UTC
   workflow_dispatch: # Allow manual triggering
 
+# Cancel any in-progress job or run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write      # needed to commit changes
   pull-requests: write # needed to open PR
@@ -13,19 +18,64 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  detect-data:
+  # Setup job to install and cache dependencies
+  setup:
+    name: Setup Dependencies
     runs-on: ubuntu-latest
     steps:
-      - name: Check out Repo
+      - name: Checkout Repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0  # needed if we want to commit or see full history
+          fetch-depth: 0  # Fetch all history for git operations
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Cache node_modules to speed up future runs
+      - name: Cache node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        id: cache-node-modules
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss, installing dependencies..."
           npm ci --prefer-offline --no-audit
+
+  detect-new-data:
+    needs: setup
+    name: Check for New Data items
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history for git operations
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
 
       - name: Ensure detect-data.sh is executable
         run: chmod +x .github/scripts/data/detect-data.sh
@@ -43,15 +93,13 @@ jobs:
         if: steps.detect_data.outcome == 'success'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
-          # token: ${{ secrets.GITHUB_TOKEN }}
-          token: ${{ secrets.TOKEN }}  
-          commit-message: "Automated data update from detect-data.sh"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Data: Update changelog for new data items"
           branch: "data-update-${{ github.run_id }}"
           title: "Changelog Update: New data found"
-          body: "This PR was automatically created by detect-data.sh"
+          body: "This PR was automatically created."
           add-paths: |
             .github/scripts/data/baseline.json
             public/changelog.json
           labels: |
             automation
-            documentation
