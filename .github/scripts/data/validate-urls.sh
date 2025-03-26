@@ -17,22 +17,33 @@ main() {
   fi
 
   # We'll parse .newlyFoundItems[]. (url, iconUrl, etc.) via jq
-  # 'failures' will track all broken URLs
-  failures=()
-  tested_count=0
+  # We'll track feed vs icon in separate arrays
+  feedFailures=()
+  iconFailures=()
+  feedTested=0
+  iconTested=0
 
-  # "as $item" needed, then we output two lines per item: icon + feed
   while IFS= read -r line; do
-    # track total tested lines
-    tested_count=$((tested_count + 1))
-
+    # Format: "URL|assetName|type"
+    # type is either 'feed' or 'icon'
     url=$(echo "$line" | cut -d"|" -f1)
     assetName=$(echo "$line" | cut -d"|" -f2)
     urlType=$(echo "$line" | cut -d"|" -f3)
 
+    if [ "$urlType" = "feed" ]; then
+      feedTested=$((feedTested+1))
+    else
+      iconTested=$((iconTested+1))
+    fi
+
     status=$(curl -s -o /dev/null -w "%{http_code}" -I "$url" || echo "000")
     if [ "$status" -lt 200 ] || [ "$status" -ge 400 ]; then
-      failures+=("$assetName|$url|$urlType|$status")
+      # Store failures in different arrays depending on type
+      if [ "$urlType" = "feed" ]; then
+        feedFailures+=("$assetName|$url|$status")
+      else
+        iconFailures+=("$assetName|$url|$status")
+      fi
     fi
   done < <(
     jq -r '
@@ -53,7 +64,8 @@ main() {
       | sed 's/,/|/g'
   )
 
-  if [ "${#failures[@]}" -eq 0 ]; then
+  totalFailures=$(( ${#feedFailures[@]} + ${#iconFailures[@]} ))
+  if [ "$totalFailures" -eq 0 ]; then
     log "All URLs validated successfully."
     echo "url_validation_failed=false" >> $GITHUB_OUTPUT
     exit 0
@@ -65,25 +77,36 @@ main() {
   # Build the markdown report
   mkdir -p "$TEMP_DIR"
   {
-    echo "# GH-action-data-validate-urls: Invalid URLs Detected"
+    echo "# GHA-data-validate-urls: Invalid URLs Detected"
     echo ""
-    # Summary line:
     echo "**Summary**:"
-    echo "- Total URLs tested: **$tested_count**"
-    echo "- Invalid URLs: **${#failures[@]}**"
-    echo ""
-    echo "Below is the list of broken URLs:"
+    echo "- Feed URLs tested: **$feedTested**  (Failures: **${#feedFailures[@]}**)"
+    echo "- Icon URLs tested: **$iconTested**  (Failures: **${#iconFailures[@]}**)"
     echo ""
 
-    for fail in "${failures[@]}"; do
-      # each fail is "assetName|url|type|status"
-      IFS='|' read -r asset url type code <<< "$fail"
-      echo "- **AssetName:** $asset"
-      echo "  - **URL:** $url"
-      echo "  - **Type:** $type"
-      echo "  - **HTTP Status:** $code"
+    if [ "${#feedFailures[@]}" -gt 0 ]; then
+      echo "## Broken Feed URLs"
       echo ""
-    done
+      for fail in "${feedFailures[@]}"; do
+        IFS='|' read -r assetName badUrl status <<< "$fail"
+        echo "- **AssetName:** $assetName"
+        echo "  - **URL:** $badUrl"
+        echo "  - **HTTP Status:** $status"
+        echo ""
+      done
+    fi
+
+    if [ "${#iconFailures[@]}" -gt 0 ]; then
+      echo "## Broken Icon URLs"
+      echo ""
+      for fail in "${iconFailures[@]}"; do
+        IFS='|' read -r assetName badUrl status <<< "$fail"
+        echo "- **AssetName:** $assetName"
+        echo "  - **URL:** $badUrl"
+        echo "  - **HTTP Status:** $status"
+        echo ""
+      done
+    fi
   } > "$URL_REPORT"
 }
 
