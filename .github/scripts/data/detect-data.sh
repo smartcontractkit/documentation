@@ -284,9 +284,6 @@ EOF
 
   log "changelog.json updated."
 
-  # 6) Remove the NEW_DATA_FOUND.json
-  rm -f "$NEW_DATA_FILE"
-
   log "Done."
 }
 
