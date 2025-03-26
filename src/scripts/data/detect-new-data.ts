@@ -1,6 +1,8 @@
 /**
  * @file detect-new-data.ts
- * @description Script to detect newly added feeds, smartData, or streams.
+ * @description Script to detect newly added feeds, smartData, or streams by comparing against a baseline.
+ * This script fetches feed data from various blockchain networks and identifies new feeds that weren't
+ * previously documented in the baseline file.
  *
  * Usage examples:
  *   npx tsx src/scripts/data/detect-new-data.ts
@@ -10,7 +12,8 @@ import fs from "fs"
 import path from "path"
 import fetch from "node-fetch"
 
-// For convenience, store all network endpoints in one array or map:
+// Network endpoints mapping for different blockchain networks
+// Each endpoint provides a JSON file containing feed definitions for that network
 const NETWORK_ENDPOINTS: Record<string, string> = {
   ethereum: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
   "bnb-chain": "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
@@ -41,13 +44,17 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   //   tron: "https://docs.chain.link/files/json/feeds-tron-mainnet.json",
 }
 
-// Path to the baseline JSON with known IDs
+// Path to the baseline JSON file that contains known feed IDs
+// This file serves as our reference point for what feeds already exist
 const BASELINE_PATH = ".github/scripts/data/baseline.json"
 
-// Where we store newly found items, if any
+// Output file path where newly discovered feeds will be written
 const OUTPUT_PATH = "temp/NEW_DATA_FOUND.json"
 
-// A little interface for each feed/stream/smartData item we parse
+/**
+ * Interface defining the structure of a feed/stream/smartData item
+ * This represents the standardized format we use internally for all data types
+ */
 interface DataItem {
   feedID: string
   hidden?: boolean
@@ -59,10 +66,20 @@ interface DataItem {
   quoteAsset?: string
 }
 
+/**
+ * Builds the URL for an asset's icon based on its base asset name
+ * @param baseAsset - The base asset symbol (e.g., "BTC", "ETH")
+ * @returns URL to the asset's icon image
+ */
 function buildIconUrl(baseAsset: string): string {
   return `https://d2f70xi62kby8n.cloudfront.net/tokens/${baseAsset.toLowerCase()}.webp`
 }
 
+/**
+ * Constructs the appropriate URL for a feed based on its type and network
+ * @param item - The data item containing feed information
+ * @returns URL to the feed's data page
+ */
 function buildFeedUrl(item: DataItem): string {
   if (item.deliveryChannelCode === "DS") {
     const base = (item.baseAsset || "BASE").toLowerCase()
@@ -75,7 +92,12 @@ function buildFeedUrl(item: DataItem): string {
 }
 
 /**
- * Main function to detect new data
+ * Main function to detect new data feeds across all configured networks
+ * This function:
+ * 1. Loads the baseline of known feeds
+ * 2. Fetches current feed data from all networks
+ * 3. Identifies new feeds not in the baseline
+ * 4. Generates a report of new feeds
  */
 async function detectNewData(): Promise<void> {
   try {
@@ -115,7 +137,6 @@ async function detectNewData(): Promise<void> {
     }
 
     // 4) Build the object describing newly found items
-    // 4) Build the object describing newly found items
     const output = {
       newDataFound: true,
       timestamp: new Date().toISOString(),
@@ -149,7 +170,10 @@ async function detectNewData(): Promise<void> {
 }
 
 /**
- * Loads the baseline JSON, or returns an empty baseline if it doesn't exist.
+ * Loads the baseline JSON file containing known feed IDs
+ * If the file doesn't exist or is empty, returns an empty baseline
+ * @param filePath - Path to the baseline JSON file
+ * @returns Object containing timestamp and array of known feed IDs
  */
 function loadBaseline(filePath: string): { timestamp: string; knownIds: string[] } {
   if (!fs.existsSync(filePath)) {
@@ -166,7 +190,10 @@ function loadBaseline(filePath: string): { timestamp: string; knownIds: string[]
 }
 
 /**
- * Fetch JSON from a network endpoint
+ * Fetches and parses JSON data from a network endpoint
+ * @param url - The URL to fetch the feed data from
+ * @returns Parsed JSON array of feed definitions
+ * @throws Error if the fetch request fails
  */
 async function fetchNetworkJson(url: string): Promise<any[]> {
   const res = await fetch(url)
@@ -177,8 +204,16 @@ async function fetchNetworkJson(url: string): Promise<any[]> {
 }
 
 /**
- * Convert raw object from the network JSON into a DataItem
- * ignoring hidden items and items without assetName / baseAsset / quoteAsset
+ * Converts a raw feed object from the network JSON into our standardized DataItem format
+ * This function implements validation rules:
+ * 1. Must have a path
+ * 2. Must have an assetName
+ * 3. Must have a baseAsset
+ * 4. For non-SmartData feeds, must have a quoteAsset
+ *
+ * @param obj - Raw feed object from network JSON
+ * @param network - Network identifier (e.g., "ethereum", "bnb-chain")
+ * @returns Standardized DataItem or null if validation fails
  */
 function convertToDataItem(obj: any, network: string): DataItem | null {
   // 1) Must have a `path`
@@ -237,7 +272,8 @@ function convertToDataItem(obj: any, network: string): DataItem | null {
 }
 
 /**
- * Ensures a directory exists, creating it recursively if necessary
+ * Ensures a directory exists by creating it recursively if necessary
+ * @param dirPath - Path to the directory that should exist
  */
 function ensureDirectoryExists(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
@@ -245,7 +281,7 @@ function ensureDirectoryExists(dirPath: string) {
   }
 }
 
-// Run it
+// Execute the main function and handle any errors
 detectNewData().catch((err) => {
   console.error(err)
   process.exit(1)

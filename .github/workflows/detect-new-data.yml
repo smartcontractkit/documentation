@@ -17,7 +17,7 @@ concurrency:
 permissions:
   contents: write      # needed to commit changes
   pull-requests: write # needed to open PR
-  issues: write
+  issues: write       # needed to create issues
 
 # Set environment variables used across jobs
 env:
@@ -59,7 +59,7 @@ jobs:
           echo "Cache miss, installing dependencies..."
           npm ci --prefer-offline --no-audit
 
-  # Second job: Main job to detect new data items
+  # Second job: Main job to detect new data items and validate URLs
   detect-new-data:
     needs: setup
     name: Check for New Data items
@@ -97,7 +97,7 @@ jobs:
       - name: Ensure validate-urls.sh is executable
         run: chmod +x .github/scripts/data/validate-urls.sh
 
-      # Step 5: Run the data detection script
+      # Step 6: Run the data detection script to check for new data items
       - name: Run data detection
         id: detect_data
         run: |
@@ -111,24 +111,28 @@ jobs:
           fi
         continue-on-error: true
 
+      # Step 7: Validate all URLs in the data
       - name: Validate URLs
         id: validate_urls
         run: .github/scripts/data/validate-urls.sh
 
+      # Step 8: Clean up temporary files
       - name: Cleanup NEW_DATA_FOUND
         run: rm -f temp/NEW_DATA_FOUND.json
 
+      # Step 9: Create an issue if any invalid URLs are detected
       - name: Create Issue for Broken URLs
         if: steps.validate_urls.outputs.url_validation_failed == 'true'
         uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
         with:
-          title: "GH-action-data-validate-urls: Invalid URLs Detected"
+          title: "GHA-data-validate-urls: Invalid URLs Detected"
           content-filepath: "temp/url_validation_report.md"
           labels: |
             bug
             gh-action-data
+          assignees: khadni
 
-      # Step 6: Create a pull request with the changes if detection was successful
+      # Step 10: Create a pull request if new data items were found
       - name: Commit & Create Pull Request
         if: steps.detect_data.outputs.new_data_found == 'true'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
@@ -144,6 +148,7 @@ jobs:
           labels: |
             automation
 
+      # Step 11: Upload artifacts for debugging and record-keeping
       - name: Capture output artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
