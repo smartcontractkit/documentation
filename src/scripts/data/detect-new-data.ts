@@ -15,10 +15,10 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   ethereum: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
   "bnb-chain": "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
   polygon: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
-  //   "gnosis-chain": "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-  //   avalanche: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
-  fantom: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
-  arbitrum: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+  // //   "gnosis-chain": "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
+  // // avalanche: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
+  // // fantom: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
+  // arbitrum: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
   //   optimism: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
   //   moonriver: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
   //   moonbeam: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
@@ -156,23 +156,41 @@ async function fetchNetworkJson(url: string): Promise<any[]> {
 
 /**
  * Convert raw object from the network JSON into a DataItem
- * ignoring hidden items
+ * ignoring hidden items and items without assetName / baseAsset / quoteAsset
  */
 function convertToDataItem(obj: any, network: string): DataItem | null {
-  // If `path` is missing or null, skip this item.
+  // Must have a path
   if (!obj?.path) {
     return null
   }
+
+  // Must have a top-level assetName
+  const topLevelAssetName = obj.assetName
+  // Must have baseAsset, quoteAsset in docs
+  const baseAsset = obj.docs?.baseAsset
+  const quoteAsset = obj.docs?.quoteAsset
+
+  // If any are missing, skip entirely
+  if (!topLevelAssetName || !baseAsset || !quoteAsset) {
+    return null
+  }
+
+  // Also skip if hidden is true
   const hidden = obj.docs?.hidden === true
+  if (hidden) {
+    return null
+  }
+
   return {
     feedID: `${network}-${obj.path}`, // combine for uniqueness across networks
     hidden,
     productTypeCode: obj.docs?.productTypeCode,
     deliveryChannelCode: obj.docs?.deliveryChannelCode,
     network,
-    assetName: obj.docs?.assetName,
-    baseAsset: obj.docs?.baseAsset,
-    quoteAsset: obj.docs?.quoteAsset,
+    // now set them properly
+    assetName: topLevelAssetName,
+    baseAsset,
+    quoteAsset,
   }
 }
 

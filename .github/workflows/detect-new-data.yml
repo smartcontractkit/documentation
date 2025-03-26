@@ -3,25 +3,29 @@ name: Detect New Data (Feeds/SmartData/Streams)
 on:
   schedule:
     - cron: '0 21 * * 0'  # Sunday 9 PM UTC
-  workflow_dispatch:
+  workflow_dispatch: # Allow manual triggering
 
 permissions:
   contents: write      # needed to commit changes
   pull-requests: write # needed to open PR
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
   detect-data:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0  # needed if we want to commit or see full history
 
       - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
-          # If you have a package.json in the repo:
-          npm ci
+          echo "Cache miss, installing dependencies..."
+          npm ci --prefer-offline --no-audit
 
       - name: Ensure detect-data.sh is executable
         run: chmod +x .github/scripts/data/detect-data.sh
@@ -37,7 +41,7 @@ jobs:
 
       - name: Commit & Create Pull Request
         if: steps.detect_data.outcome == 'success'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Automated data update from detect-data.sh"
