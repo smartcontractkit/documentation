@@ -40,11 +40,13 @@ main() {
         | [
             $item.iconUrl,
             $item.assetName,
+            $item.baseAsset,
             "icon"
         ],
         [
             $item.url,
             $item.assetName,
+            $item.baseAsset,
             "feed"
         ]
         | @csv
@@ -75,6 +77,7 @@ main() {
       # each fail is "assetName|url|type|status"
       IFS='|' read -r asset url type code <<< "$fail"
       echo "- **AssetName:** $asset"
+      echo "  - **baseAsset:** $baseAsset"
       echo "  - **URL:** $url"
       echo "  - **Type:** $type"
       echo "  - **HTTP Status:** $code"
