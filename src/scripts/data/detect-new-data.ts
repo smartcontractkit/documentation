@@ -88,7 +88,8 @@ function buildFeedUrl(item: DataItem): string {
   }
   // otherwise, it's "https://data.chain.link/feeds/<network>/mainnet/<suffix>"
   const feedSuffix = item.feedID.split("-").slice(1).join("-")
-  return `https://data.chain.link/feeds/${item.network}/mainnet/${feedSuffix}`
+  const safeSuffix = feedSuffix.replace(/\s/g, "%20")
+  return `https://data.chain.link/feeds/${item.network}/mainnet/${safeSuffix}`
 }
 
 /**
