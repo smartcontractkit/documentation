@@ -69,7 +69,7 @@ main() {
   # Build the markdown report
   mkdir -p "$TEMP_DIR"
   {
-    echo "# Warning: Invalid URLs Detected"
+    echo "# GH-action-data-validate-urls: Invalid URLs Detected"
     echo ""
     echo "The following URLs returned an invalid status code:"
     echo ""
