@@ -59,6 +59,21 @@ interface DataItem {
   quoteAsset?: string
 }
 
+function buildIconUrl(baseAsset: string): string {
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${baseAsset.toLowerCase()}.webp`
+}
+
+function buildFeedUrl(item: DataItem): string {
+  if (item.deliveryChannelCode === "DS") {
+    const base = (item.baseAsset || "BASE").toLowerCase()
+    const quote = (item.quoteAsset || "QUOTE").toLowerCase()
+    return `https://data.chain.link/streams/${base}-${quote}`
+  }
+  // otherwise, it's "https://data.chain.link/feeds/<network>/mainnet/<suffix>"
+  const feedSuffix = item.feedID.split("-").slice(1).join("-")
+  return `https://data.chain.link/feeds/${item.network}/mainnet/${feedSuffix}`
+}
+
 /**
  * Main function to detect new data
  */
@@ -100,18 +115,25 @@ async function detectNewData(): Promise<void> {
     }
 
     // 4) Build the object describing newly found items
+    // 4) Build the object describing newly found items
     const output = {
       newDataFound: true,
       timestamp: new Date().toISOString(),
-      newlyFoundItems: newlyFound.map((item) => ({
-        feedID: item.feedID,
-        network: item.network,
-        productTypeCode: item.productTypeCode,
-        deliveryChannelCode: item.deliveryChannelCode,
-        assetName: item.assetName,
-        baseAsset: item.baseAsset,
-        quoteAsset: item.quoteAsset,
-      })),
+      newlyFoundItems: newlyFound.map((item) => {
+        const iconUrl = buildIconUrl(item.baseAsset || "")
+        const feedUrl = buildFeedUrl(item)
+        return {
+          feedID: item.feedID,
+          network: item.network,
+          productTypeCode: item.productTypeCode,
+          deliveryChannelCode: item.deliveryChannelCode,
+          assetName: item.assetName,
+          baseAsset: item.baseAsset,
+          quoteAsset: item.quoteAsset,
+          iconUrl,
+          url: feedUrl,
+        }
+      }),
     }
 
     // 5) Write to temp/NEW_DATA_FOUND.json
