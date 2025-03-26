@@ -87,13 +87,11 @@ jobs:
           echo "exit_code=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      # You can replicate your colleague's logic for errors or new data found
-
       - name: Commit & Create Pull Request
         if: steps.detect_data.outcome == 'success'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           commit-message: "Data: Update changelog for new data items"
           branch: "data-update-${{ github.run_id }}"
           title: "Changelog Update: New data found"
