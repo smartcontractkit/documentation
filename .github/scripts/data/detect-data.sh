@@ -123,7 +123,7 @@ node <<EOF
       changelog.data = [];
     }
 
-    // Group items
+    // === GROUPING: data-streams, smartData, data-feeds ===
     const dataStreams = [];
     const smartData = [];
     const dataFeeds = [];
@@ -139,6 +139,7 @@ node <<EOF
       }
     }
 
+    // === HELPER to build a single Changelog Entry
     function createChangelogEntry(topic, title, description, relatedNetworks, tokens) {
       return {
         category: "integration",
@@ -151,22 +152,58 @@ node <<EOF
       };
     }
 
-    // Streams networks as an example
+    // === Some networks for data-streams:
     const STREAMS_NETWORKS = [
-      "arbitrum", "avalanche", "base", "berachain", "blast", "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid", "ink", "linea", "mantle", "opbnb", "optimism", "ronin", "scroll", "shibarium", "soneium", "sonic", "solana", "unichain", "worldchain", "zksync"
+      "arbitrum", "avalanche", "base", "berachain", "blast",
+      "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
+      "ink", "linea", "mantle", "opbnb", "optimism", "ronin",
+      "scroll", "shibarium", "soneium", "sonic",
+      "solana", "unichain", "worldchain", "zksync"
     ];
 
-    // Build the "relatedTokens" array for each group
-    function buildRelatedTokens(group) {
-      return group.map(i => {
-        // baseAsset always present here, since we skip items in TS if it's missing
-        const baseLower = (i.baseAsset || '').toLowerCase();
-
+    // === Build relatedTokens for FEEDS
+    function buildDataFeedTokens(feedItems) {
+      return feedItems.map(i => {
+        // The baseAsset is guaranteed if the item passed the TS checks
+        const baseLower = i.baseAsset.toLowerCase();
         return {
           assetName: i.assetName,
           baseAsset: i.baseAsset,
-          quoteAsset: i.quoteAsset,
+          // data feeds keep the quoteAsset if it exists
+          quoteAsset: i.quoteAsset || "",
           network: i.network,
+          url: buildFeedUrl(i),
+          iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
+        };
+      });
+    }
+
+    // === Build relatedTokens for STREAMS
+    function buildDataStreamTokens(streamItems) {
+      return streamItems.map(i => {
+        const baseLower = i.baseAsset.toLowerCase();
+        return {
+          assetName: i.assetName,
+          baseAsset: i.baseAsset,
+          // streams keep the quoteAsset if present
+          quoteAsset: i.quoteAsset || "",
+          network: i.network,
+          url: buildFeedUrl(i),
+          iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
+        };
+      });
+    }
+
+    // === Build relatedTokens for SMARTDATA
+    // no quoteAsset, but we *do* store productTypeCode
+    function buildSmartDataTokens(smartItems) {
+      return smartItems.map(i => {
+        const baseLower = i.baseAsset.toLowerCase();
+        return {
+          assetName: i.assetName,
+          baseAsset: i.baseAsset,
+          network: i.network,
+          productTypeCode: i.productTypeCode,
           url: buildFeedUrl(i),
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
@@ -175,6 +212,7 @@ node <<EOF
 
     function buildFeedUrl(item) {
       if (item.deliveryChannelCode === 'DS') {
+        // data-stream
         const base = (item.baseAsset || 'BASE').toLowerCase();
         const quote = (item.quoteAsset || 'QUOTE').toLowerCase();
         return \`https://data.chain.link/streams/\${base}-\${quote}\`;
@@ -184,54 +222,58 @@ node <<EOF
       return \`https://data.chain.link/feeds/\${item.network}/mainnet/\${feedSuffix}\`;
     }
 
-    // Build arrays for each group
-    const dataFeedsTokens = buildRelatedTokens(dataFeeds);
-    const smartDataTokens = buildRelatedTokens(smartData);
-    const dataStreamsTokens = buildRelatedTokens(dataStreams);
+    // === Now build each group
+    const dataFeedsTokens = buildDataFeedTokens(dataFeeds);
+    const dataStreamsTokens = buildDataStreamTokens(dataStreams);
+    const smartDataTokens  = buildSmartDataTokens(smartData);
 
+    // === Create new changelog entries
     const newEntries = [];
 
-    // If data streams found
+    // If we have streams
     if (dataStreamsTokens.length > 0) {
-      const entry = createChangelogEntry(
-        "data-streams",
-        "Added support to Data Streams",
-        "New Data Streams available on all [supported networks](https://docs.chain.link/data-streams/crypto-streams):",
-        STREAMS_NETWORKS,
-        dataStreamsTokens
+      newEntries.push(
+        createChangelogEntry(
+          "data-streams",
+          "Added support to Data Streams",
+          "New Data Streams available on all [supported networks](https://docs.chain.link/data-streams/crypto-streams):",
+          STREAMS_NETWORKS,
+          dataStreamsTokens
+        )
       );
-      newEntries.push(entry);
     }
 
-    // If new smartData
+    // If we have smartData
     if (smartDataTokens.length > 0) {
       const networksSet = new Set(smartDataTokens.map(t => t.network));
       const networksList = [...networksSet];
-      const entry = createChangelogEntry(
-        "smartdata",
-        "Added support to SmartData",
-        "New SmartData Feeds available:",
-        networksList,
-        smartDataTokens
+      newEntries.push(
+        createChangelogEntry(
+          "smartdata",
+          "Added support to SmartData",
+          "New SmartData Feeds available:",
+          networksList,
+          smartDataTokens
+        )
       );
-      newEntries.push(entry);
     }
 
-    // If new data feeds
+    // If we have normal data feeds
     if (dataFeedsTokens.length > 0) {
       const networksSet = new Set(dataFeedsTokens.map(t => t.network));
       const networksList = [...networksSet];
-      const entry = createChangelogEntry(
-        "data-feeds",
-        "Added support to Data Feeds",
-        "New Data Feeds available:",
-        networksList,
-        dataFeedsTokens
+      newEntries.push(
+        createChangelogEntry(
+          "data-feeds",
+          "Added support to Data Feeds",
+          "New Data Feeds available:",
+          networksList,
+          dataFeedsTokens
+        )
       );
-      newEntries.push(entry);
     }
 
-    // Insert new entries at start
+    // Insert them at the start of `changelog.data`
     for (const entry of newEntries.reverse()) {
       changelog.data.unshift(entry);
     }
@@ -239,7 +281,6 @@ node <<EOF
     fs.writeFileSync(CHANGELOG_PATH, JSON.stringify(changelog, null, 2), 'utf8');
     console.log(\`changelog.json updated with \${newEntries.length} new entry(ies).\`);
 EOF
-
 
   log "changelog.json updated."
 
