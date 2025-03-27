@@ -1,0 +1,173 @@
+name: Detect New CCIP Tokens
+
+# This workflow runs on a schedule to detect newly supported tokens in CCIP configuration.
+# It performs the following tasks:
+# 1. Runs the detect-new-tokens.ts script which:
+#    - Compares current token configuration with a historical state
+#    - Identifies newly supported tokens and expanded token support
+#    - Validates token URLs (documentation and icons)
+#    - Generates a changelog entry for new tokens
+# 2. Processes the results using modular bash scripts to:
+#    - Create GitHub issues for validation failures or script errors
+#    - Generate pull requests with changelog updates
+#
+# Requirements:
+# - Node.js environment with npm dependencies
+# - Git history access for historical comparisons (fetch-depth: 0)
+# - Write permissions for issues, PRs, and repository contents
+
+on:
+  schedule:
+    # Run every Sunday at 9:00 PM UTC
+    - cron: '0 21 * * 0'
+  workflow_dispatch: # Allow manual triggering
+
+# Cancel any in-progress job or run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write      # Required for creating issues
+  pull-requests: write
+  contents: write
+
+# Configurable paths and settings as environment variables
+env:
+  SCRIPTS_PATH: .github/scripts/ccip
+  TEMP_DIR: temp
+  NODE_VERSION: '20'
+
+jobs:
+  # Setup job to install and cache dependencies
+  setup:
+    name: Setup Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history for git operations
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Cache node_modules to speed up future runs
+      - name: Cache node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        id: cache-node-modules
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss, installing dependencies..."
+          npm ci --prefer-offline --no-audit
+  # Main job to detect new tokens
+  detect-new-tokens:
+    needs: setup
+    name: Check for New CCIP Tokens
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history for git operations
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      # Verify the helper scripts are executable
+      - name: Ensure scripts are executable
+        run: chmod +x ${{ env.SCRIPTS_PATH }}/*.sh
+
+      # Run main token detection script
+      - name: Run token detection script
+        id: detect_tokens
+        run: |
+          npm run detect-new-tokens
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      # Check for script execution errors
+      - name: Check for script errors
+        id: check_errors
+        if: steps.detect_tokens.outcome != 'success' || steps.detect_tokens.outputs.exit_code != '0'
+        run: ${{ env.SCRIPTS_PATH }}/detect-tokens.sh check-errors "${{ steps.detect_tokens.outputs.exit_code || 'unknown' }}" "${{ steps.detect_tokens.outputs.stderr || 'No detailed error information available' }}"
+
+      # Create issue for script failures
+      - name: Create Issue for Script Failure
+        if: steps.check_errors.outputs.script_failed == 'true'
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        with:
+          title: "Error: CCIP Token Detection Script Failed"
+          content-filepath: ${{ env.TEMP_DIR }}/error_report.md
+          labels: |
+            bug
+            automation
+      # Process detected tokens
+      - name: Check if new tokens detected
+        id: check_tokens
+        if: steps.detect_tokens.outcome == 'success' && steps.detect_tokens.outputs.exit_code == '0'
+        run: ${{ env.SCRIPTS_PATH }}/detect-tokens.sh check-tokens
+
+      # Create issue for URL validation failures
+      - name: Create Issue for URL Validation Failures
+        if: steps.check_tokens.outputs.url_validation_failed == 'true'
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        with:
+          title: "Warning: Invalid Token URLs Detected"
+          content-filepath: ${{ env.TEMP_DIR }}/url_validation_report.md
+          labels: |
+            bug
+            documentation
+            priority:high
+      # Create PR for new tokens
+      - name: Create PR with new token information
+        if: steps.check_tokens.outputs.new_tokens_found == 'true'
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "CCT: Update changelog with new tokens"
+          branch: "ccip-tokens/update-${{ steps.check_tokens.outputs.timestamp }}"
+          delete-branch: true
+          title: "Update CCT Changelog: New CCIP Tokens Detected"
+          body-path: ${{ env.TEMP_DIR }}/newTokensReport.md
+          add-paths: |
+            public/changelog.json
+          labels: |
+            documentation
+            enhancement
+            
+      # Capture output artifacts (always runs, even if previous steps failed)
+      - name: Capture output files
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: token-detection-artifacts-${{ github.run_id }}
+          path: |
+            ${{ env.TEMP_DIR }}/*.json
+            ${{ env.TEMP_DIR }}/*.md
+            public/changelog.json
+          retention-days: 14
+          if-no-files-found: ignore 
