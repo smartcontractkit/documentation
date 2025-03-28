@@ -27,6 +27,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  issues: write      # Required for creating issues
+  pull-requests: write
+  contents: write
+
 # Configurable paths and settings as environment variables
 env:
   SCRIPTS_PATH: .github/scripts/ccip
@@ -70,10 +75,6 @@ jobs:
     needs: setup
     name: Check for New CCIP Tokens
     runs-on: ubuntu-latest
-    permissions:
-      issues: write      # Required for creating issues
-      pull-requests: write
-      contents: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
