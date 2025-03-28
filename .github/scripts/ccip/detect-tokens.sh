@@ -8,6 +8,12 @@ set -e  # Exit immediately if a command exits with a non-zero status
 
 TOKEN_FILE="temp/NEW_TOKENS_FOUND.json"
 
+# Set up github output file if not already set (for local testing)
+if [ -z "$GITHUB_OUTPUT" ]; then
+  export GITHUB_OUTPUT="/dev/null"
+  echo "Running in local mode, GITHUB_OUTPUT will be sent to /dev/null"
+fi
+
 # Print with timestamp for better logging
 log_message() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"

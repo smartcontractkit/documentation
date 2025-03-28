@@ -21,7 +21,7 @@
 
 // cSpell:ignore delisted Delisted lookback LOOKBACK Lookback
 import fs from "fs"
-import { execSync } from "child_process"
+import { execSync, execFileSync } from "child_process"
 import { pino } from "pino"
 import type { TokensConfig, LanesConfig, ChainsConfig } from "../../config/data/ccip/types.ts"
 import { Environment, Version } from "../../config/data/ccip/types.ts"
@@ -1472,7 +1472,7 @@ function getFileFromGitHistory(filePath: string, date: string): string | null {
 
     // Find the closest commit before or on the given date
     const findCommitStartTime = Date.now()
-    const commitHash = execSync(`git log --before="${date}" -n 1 --format="%H" -- ${filePath}`, {
+    const commitHash = execFileSync("git", ["log", `--before=${date}`, "-n", "1", "--format=%H", "--", filePath], {
       encoding: "utf8",
     }).trim()
 
@@ -1493,7 +1493,7 @@ function getFileFromGitHistory(filePath: string, date: string): string | null {
 
     // Get the file content at that commit
     const getContentStartTime = Date.now()
-    const content = execSync(`git show ${commitHash}:${filePath}`, { encoding: "utf8" })
+    const content = execFileSync("git", ["show", `${commitHash}:${filePath}`], { encoding: "utf8" })
 
     logger.debug(
       {
