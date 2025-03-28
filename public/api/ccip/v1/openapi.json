@@ -153,7 +153,7 @@
       "get": {
         "tags": ["tokens"],
         "summary": "Retrieve CCIP token information",
-        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) supported tokens",
+        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) supported tokens. The response includes token details organized by token symbol, with chain-specific information nested under each token and indexed by chain ID or selector (depending on the outputKey parameter).",
         "operationId": "getTokens",
         "parameters": [
           {
@@ -213,21 +213,39 @@
                   },
                   "data": {
                     "LINK": {
-                      "symbol": "LINK",
-                      "lanes": {
-                        "ethereum-mainnet": ["optimism-mainnet", "arbitrum-mainnet"],
-                        "avalanche-mainnet": ["ethereum-mainnet"]
+                      "1": {
+                        "chainId": 1,
+                        "chainName": "Ethereum",
+                        "decimals": 18,
+                        "destinations": [
+                          "1088",
+                          "1111",
+                          "1868",
+                          "2020",
+                          "324",
+                          "34443",
+                          "42220",
+                          "592",
+                          "81457",
+                          "8453"
+                        ],
+                        "name": "ChainLink Token",
+                        "poolAddress": "0xE31009Ac8385147A74463F686Dd148e99d291739",
+                        "poolType": "lockRelease",
+                        "symbol": "LINK",
+                        "tokenAddress": "0x514910771AF9Ca656af840dff83E8264EcF986CA"
                       },
-                      "chains": [
-                        {
-                          "chainId": 1,
-                          "chainName": "Ethereum",
-                          "tokenAddress": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
-                          "decimals": 18,
-                          "poolType": "lockRelease",
-                          "poolAddress": "0x513E3AB6b1d7E3e325d7A4622144a9E2a0F2524A"
-                        }
-                      ]
+                      "42220": {
+                        "chainId": 42220,
+                        "chainName": "Celo",
+                        "decimals": 18,
+                        "destinations": ["1"],
+                        "name": "ChainLink Token",
+                        "poolAddress": "0xEB521366531411b982D1bc822A9fa09EDd94E309",
+                        "poolType": "burnMint",
+                        "symbol": "LINK",
+                        "tokenAddress": "0xd07294e6E917e07dfDcee882dd1e2565085C2ae0"
+                      }
                     }
                   },
                   "ignored": []
@@ -490,6 +508,56 @@
           }
         }
       },
+      "TokenChainData": {
+        "type": "object",
+        "required": ["chainId", "chainName", "tokenAddress", "decimals", "poolType", "poolAddress"],
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "Numeric identifier of the chain"
+          },
+          "chainName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "tokenAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Token contract address on this chain"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 18,
+            "description": "Number of decimals used for the token"
+          },
+          "poolType": {
+            "type": "string",
+            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "description": "Type of pool for this token"
+          },
+          "poolAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Token pool contract address (if applicable)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the token"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol of the token"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Destination chains this token can be sent to"
+          }
+        }
+      },
       "TokenDetails": {
         "type": "object",
         "required": ["symbol", "lanes", "chains"],
@@ -548,9 +616,13 @@
           "data": {
             "type": "object",
             "additionalProperties": {
-              "$ref": "#/components/schemas/TokenDetails"
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/TokenChainData"
+              },
+              "description": "Map of chain IDs/selectors to chain-specific token details"
             },
-            "description": "Token details indexed by symbol"
+            "description": "Token data indexed by token symbol and then by chain ID/selector"
           },
           "ignored": {
             "type": "array",
