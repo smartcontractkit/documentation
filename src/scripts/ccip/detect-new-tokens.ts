@@ -21,7 +21,7 @@
 
 // cSpell:ignore delisted Delisted lookback LOOKBACK Lookback
 import fs from "fs"
-import { execSync, execFileSync } from "child_process"
+import { execFileSync } from "child_process"
 import { pino } from "pino"
 import type { TokensConfig, LanesConfig, ChainsConfig } from "../../config/data/ccip/types.ts"
 import { Environment, Version } from "../../config/data/ccip/types.ts"
