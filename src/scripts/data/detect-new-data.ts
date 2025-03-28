@@ -15,13 +15,13 @@ import fetch from "node-fetch"
 // Network endpoints mapping for different blockchain networks
 // Each endpoint provides a JSON file containing feed definitions for that network
 const NETWORK_ENDPOINTS: Record<string, string> = {
-  ethereum: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+  // ethereum: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
   "bnb-chain": "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
   polygon: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
   "gnosis-chain": "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
   avalanche: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
   fantom: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
-  arbitrum: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+  // arbitrum: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
   optimism: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
   moonriver: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
   moonbeam: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
