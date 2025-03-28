@@ -93,6 +93,21 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "BNB Chain",
+    logoUrl: "/assets/chains/bnb-chain.svg",
+    networkStatus: "https://bscscan.freshstatus.io",
+    mainnet: {
+      label: "BNB Chain Mainnet",
+      verifierProxy: "0xF276a4BC8Da323EA3E8c3c195a4E2E7615a898d1",
+      explorerUrl: "https://bscscan.com/address/%s",
+    },
+    testnet: {
+      label: "BNB Chain Testnet",
+      verifierProxy: "0xF45D6dba93d0dB2C849C280F45e60D6e11b3C4DD",
+      explorerUrl: "https://testnet.bscscan.com/address/%s",
+    },
+  },
+  {
     network: "Bob",
     logoUrl: "/assets/chains/bob.svg",
     mainnet: {
@@ -144,6 +159,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Hyperliquid",
+    logoUrl: "/assets/chains/hyperliquid.svg",
+    mainnet: {
+      label: "Hyperliquid Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
+    },
+    testnet: {
+      label: "Hyperliquid Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://evm.hyperstats.xyz/address/%s",
+    },
+  },
+  {
     network: "Ink",
     logoUrl: "/assets/chains/ink.svg",
     networkStatus: "https://status.inkonchain.com/",
@@ -186,6 +215,16 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Mantle Sepolia Testnet",
       verifierProxy: "0xdc458847982C496E1a5E25D005A332D5a838302B",
       explorerUrl: "https://sepolia.mantlescan.xyz/address/%s",
+    },
+  },
+  {
+    network: "MegaETH",
+    logoUrl: "/assets/chains/megaeth.svg",
+    networkStatus: "https://uptime.megaeth.com",
+    testnet: {
+      label: "MegaETH Testnet",
+      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
+      explorerUrl: "https://www.megaexplorer.xyz/address/%s",
     },
   },
   {

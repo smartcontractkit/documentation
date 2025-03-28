@@ -43,16 +43,16 @@ create_mock_github_output() {
 # Test case 1: No tokens found
 test_no_tokens_found() {
   print_header "TEST CASE 1: No tokens found"
-  
+
   # Delete the tokens file if it exists
   rm -f "$TEMP_DIR/NEW_TOKENS_FOUND.json"
-  
+
   # Mock GitHub output
   create_mock_github_output
-  
+
   # Run the script
   "$TOKENS_SCRIPT" check-tokens
-  
+
   # Check results
   if grep -q "new_tokens_found=false" "$GITHUB_OUTPUT"; then
     print_success "Correctly identified no tokens found"
@@ -64,7 +64,6 @@ test_no_tokens_found() {
 # Test case 2: New tokens found with no URL validation issues
 test_new_tokens_no_validation_issues() {
   print_header "TEST CASE 2: New tokens found with no URL validation issues"
-  
   # Create mock token data
   cat > "$TEMP_DIR/NEW_TOKENS_FOUND.json" << EOF
 {
@@ -100,32 +99,29 @@ test_new_tokens_no_validation_issues() {
   }
 }
 EOF
-  
+
   # Mock GitHub output
   create_mock_github_output
-  
+
   # Run the script
   "$TOKENS_SCRIPT" check-tokens
-  
+
   # Check results
   if grep -q "new_tokens_found=true" "$GITHUB_OUTPUT"; then
     print_success "Correctly identified new tokens found"
   else
     print_error "Failed to set new_tokens_found=true"
   fi
-  
   if grep -q "new_token_count=2" "$GITHUB_OUTPUT"; then
     print_success "Correctly counted 2 new tokens"
   else
     print_error "Failed to count new tokens correctly"
   fi
-  
   if [[ -f "$TEMP_DIR/newTokensReport.md" ]]; then
     print_success "Successfully generated PR description"
   else
     print_error "Failed to generate PR description"
   fi
-  
   if ! grep -q "url_validation_failed" "$GITHUB_OUTPUT"; then
     print_success "Correctly did not flag URL validation failures"
   else
@@ -136,7 +132,6 @@ EOF
 # Test case 3: New tokens found with URL validation issues
 test_new_tokens_with_validation_issues() {
   print_header "TEST CASE 3: New tokens found with URL validation issues"
-  
   # Create mock token data with URL validation issues
   cat > "$TEMP_DIR/NEW_TOKENS_FOUND.json" << EOF
 {
@@ -170,32 +165,29 @@ test_new_tokens_with_validation_issues() {
   }
 }
 EOF
-  
+
   # Mock GitHub output
   create_mock_github_output
-  
+
   # Run the script
   "$TOKENS_SCRIPT" check-tokens
-  
+
   # Check results
   if grep -q "new_tokens_found=true" "$GITHUB_OUTPUT"; then
     print_success "Correctly identified new tokens found"
   else
     print_error "Failed to set new_tokens_found=true"
   fi
-  
   if grep -q "url_validation_failed=true" "$GITHUB_OUTPUT"; then
     print_success "Correctly flagged URL validation failures"
   else
     print_error "Failed to flag URL validation failures"
   fi
-  
   if [[ -f "$TEMP_DIR/url_validation_report.md" ]]; then
     print_success "Successfully generated URL validation report"
   else
     print_error "Failed to generate URL validation report"
   fi
-  
   # Verify validation report contains the right information
   if grep -q "BADURLTOKEN" "$TEMP_DIR/url_validation_report.md"; then
     print_success "URL validation report contains correct token information"
@@ -207,40 +199,37 @@ EOF
 # Test case 4: Script error handling
 test_script_error_handling() {
   print_header "TEST CASE 4: Script error handling"
-  
+
   # Mock GitHub output
   create_mock_github_output
-  
+
   # Temporarily disable exit on error for this test
   set +e
-  
+
   # Run the script with a mock error
   "$TOKENS_SCRIPT" check-errors "123" "Mock error message for testing"
   local script_exit_code=$?
-  
+
   # Re-enable exit on error
   set -e
-  
+
   # Check results
   if grep -q "script_failed=true" "$GITHUB_OUTPUT"; then
     print_success "Correctly flagged script failure"
   else
     print_error "Failed to flag script failure"
   fi
-  
   if [[ -f "$TEMP_DIR/error_report.md" ]]; then
     print_success "Successfully generated error report"
   else
     print_error "Failed to generate error report"
   fi
-  
   # Verify error report contains the right information
   if grep -q "exit code: 123" "$TEMP_DIR/error_report.md" || grep -q "Mock error message" "$TEMP_DIR/error_report.md"; then
     print_success "Error report contains correct information"
   else
     print_error "Error report is missing error information"
   fi
-  
   # Check that the script returned an error code as expected
   if [[ "$script_exit_code" -ne 0 ]]; then
     print_success "Script correctly returned non-zero exit code: $script_exit_code"
@@ -255,7 +244,6 @@ run_all_tests() {
   test_new_tokens_no_validation_issues
   test_new_tokens_with_validation_issues
   test_script_error_handling
-  
   print_header "ALL TESTS PASSED SUCCESSFULLY"
 }
 

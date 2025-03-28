@@ -1,0 +1,164 @@
+# This workflow automatically detects new data items (feeds, smart data, and streams)
+# It runs weekly on Sunday at 9 PM UTC and can also be triggered manually
+name: Detect New Data (Feeds/SmartData/Streams)
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'  # Sunday 9 PM UTC
+  workflow_dispatch: # Allow manual triggering
+
+# Prevent multiple workflow runs from executing simultaneously
+# If a new workflow is triggered, any in-progress runs will be cancelled
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Define required permissions for the workflow
+permissions:
+  contents: write      # needed to commit changes
+  pull-requests: write # needed to open PR
+  issues: write       # needed to create issues
+
+# Set environment variables used across jobs
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # First job: Sets up the environment and installs dependencies
+  setup:
+    name: Setup Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout Repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history for git operations
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Step 3: Cache node_modules for faster future runs
+      - name: Cache node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        id: cache-node-modules
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      # Step 4: Install dependencies if cache miss occurs
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss, installing dependencies..."
+          npm ci --prefer-offline --no-audit
+
+  # Second job: Main job to detect new data items and validate URLs
+  detect-new-data:
+    needs: setup
+    name: Check for New Data items
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out repository code
+      - name: Checkout Repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history for git operations
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Step 3: Restore cached node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      # Step 4: Make the detection script executable
+      - name: Ensure detect-data.sh is executable
+        run: chmod +x .github/scripts/data/detect-data.sh
+
+      # Step 5: Make the validate-urls.sh script executable
+      - name: Ensure validate-urls.sh is executable
+        run: chmod +x .github/scripts/data/validate-urls.sh
+
+      # Step 6: Run the data detection script to check for new data items
+      - name: Run data detection
+        id: detect_data
+        run: |
+          .github/scripts/data/detect-data.sh check-data
+          
+          # If we see temp/NEW_DATA_FOUND.json afterwards, we know new items were found:
+          if [ -f temp/NEW_DATA_FOUND.json ]; then
+            echo "new_data_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "new_data_found=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      # Step 7: Validate all URLs in the data
+      - name: Validate URLs
+        id: validate_urls
+        run: .github/scripts/data/validate-urls.sh
+
+      # Step 8: Clean up temporary files
+      - name: Cleanup NEW_DATA_FOUND
+        run: rm -f temp/NEW_DATA_FOUND.json
+
+      # Step 9: Create an issue if any invalid URLs are detected
+      - name: Create Issue for Broken URLs
+        if: steps.validate_urls.outputs.url_validation_failed == 'true'
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        with:
+          title: "GHA-data-validate-urls: Invalid URLs Detected"
+          content-filepath: "temp/url_validation_report.md"
+          labels: |
+            bug
+            gh-action-data
+          assignees: khadni
+
+      # Step 10: Create a pull request if new data items were found
+      - name: Commit & Create Pull Request
+        if: steps.detect_data.outputs.new_data_found == 'true'
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Data: Update changelog for new data items"
+          branch: "data-update-${{ github.run_id }}"
+          title: "Changelog Update: New data found"
+          body: "This PR was automatically created."
+          add-paths: |
+            .github/scripts/data/baseline.json
+            public/changelog.json
+          labels: |
+            automation
+          assignees: khadni
+
+      # Step 11: Upload artifacts for debugging and record-keeping
+      - name: Capture output artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: data-detection-${{ github.run_id }}
+          path: |
+            temp/*.json
+            temp/*.md
+            public/changelog.json
+          retention-days: 14
+          if-no-files-found: ignore
+

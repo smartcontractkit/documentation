@@ -16,10 +16,10 @@ log_message() {
 # Check if script execution failed and generate error report
 check_script_errors() {
   local exit_code=$1
-  
+
   if [[ $exit_code -ne 0 ]]; then
     log_message "Script failed with exit code: $exit_code"
-    
+
     mkdir -p temp
     {
       echo "# Error: CCIP Token Detection Script Failed"
@@ -32,11 +32,11 @@ check_script_errors() {
       echo "${2:-No detailed error information available}"
       echo '```'
     } > temp/error_report.md
-    
+
     echo "script_failed=true" >> $GITHUB_OUTPUT
     return 1
   fi
-  
+
   log_message "Script execution completed successfully"
   return 0
 }
@@ -44,48 +44,47 @@ check_script_errors() {
 # Check if new tokens were detected and process them
 check_new_tokens() {
   log_message "Checking for new tokens..."
-  
   if [[ ! -f "$TOKEN_FILE" ]]; then
     log_message "No token file found at $TOKEN_FILE"
     echo "new_tokens_found=false" >> $GITHUB_OUTPUT
     return 0
   fi
-  
+
   log_message "Token file found, processing..."
   echo "new_tokens_found=true" >> $GITHUB_OUTPUT
-  
+
   local timestamp
   timestamp=$(date +%Y%m%d%H%M)
   echo "timestamp=${timestamp}" >> $GITHUB_OUTPUT
-  
+
   # Check token counts
   local completely_new_tokens
   completely_new_tokens=$(jq -r '.completelyNewTokens | length' "$TOKEN_FILE")
   echo "new_token_count=${completely_new_tokens}" >> $GITHUB_OUTPUT
-  
+
   log_message "Found $completely_new_tokens completely new tokens"
-  
+
   # Check for URL validation issues
   check_url_validation
-  
+
   # Generate PR description
   generate_pr_description "$completely_new_tokens"
-  
+
   return 0
 }
 
 # Check URL validation results and generate report if needed
 check_url_validation() {
   log_message "Checking URL validation results..."
-  
+
   if jq -e '.urlValidation' "$TOKEN_FILE" > /dev/null 2>&1; then
     local url_validation
     url_validation=$(jq -r '.urlValidation.allValid' "$TOKEN_FILE")
-    
+
     if [[ "$url_validation" == "false" ]]; then
       log_message "URL validation failures detected"
       echo "url_validation_failed=true" >> $GITHUB_OUTPUT
-      
+
       # Generate URL validation issue report
       {
         echo "# Warning: Invalid Token URLs Detected"
@@ -96,7 +95,6 @@ check_url_validation() {
         echo ""
         echo "These URLs should be verified and fixed before the tokens are deployed to production."
       } > temp/url_validation_report.md
-      
       log_message "Generated URL validation report"
     else
       log_message "All URLs validated successfully"
@@ -110,34 +108,23 @@ check_url_validation() {
 generate_pr_description() {
   local completely_new_tokens=$1
   log_message "Generating PR description..."
-  
   {
     echo "# New CCIP Tokens Detected"
     echo ""
     echo "This PR was automatically generated because new CCIP tokens were detected."
     echo ""
-    
     if [[ "$completely_new_tokens" -gt "0" ]]; then
       echo "## New Tokens"
       echo ""
       echo "| Symbol | Name | Documentation | Icon |"
       echo "|--------|------|--------------|------|"
-      jq -r '.completelyNewTokens[] | "| \(.symbol) | \(.name) | [Documentation](\(.documentationUrl)) | ![Icon](\(.iconUrl)) |"' "$TOKEN_FILE"
+      jq -r '.completelyNewTokens[] | "| \(.symbol) | \(.name) | [Documentation](\(.documentationUrl)) | <img src=\"\(.iconUrl)\" width=\"100\" alt=\"\(.symbol) icon\"> |"' "$TOKEN_FILE"
       echo ""
     fi
-    
-    local expanded_tokens
-    expanded_tokens=$(jq -r '.expandedSupportTokens | length' "$TOKEN_FILE")
-    
-    if [[ "$expanded_tokens" -gt "0" ]]; then
-      echo "## Tokens with Expanded Support"
-      echo ""
-      echo "| Symbol | Name | New Chains | New Lanes |"
-      echo "|--------|------|------------|-----------|"
-      jq -r '.expandedSupportTokens[] | "| \(.symbol) | \(.name) | \(.newChains | join(", ")) | \(.newLanes | length) lanes |"' "$TOKEN_FILE"
-    fi
+
+    # Removing the expanded tokens section entirely
   } > temp/newTokensReport.md
-  
+
   log_message "PR description generated successfully"
 }
 
@@ -145,7 +132,6 @@ generate_pr_description() {
 main() {
   local command="${1:-help}"
   shift || true
-  
   case "$command" in
     check-errors)
       check_script_errors "$@"

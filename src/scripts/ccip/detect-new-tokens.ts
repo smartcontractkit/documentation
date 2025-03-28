@@ -30,6 +30,7 @@ import { getTokenIconUrl } from "../../features/utils/index.ts"
 import { randomUUID } from "crypto"
 import os from "os"
 import fetch from "node-fetch"
+import prettier from "prettier"
 
 // ==============================
 // TYPE DEFINITIONS
@@ -180,7 +181,7 @@ interface TokenDetails {
 const SCRIPT_VERSION = "1.0.0"
 
 /** Default number of days to look back in git history */
-const DEFAULT_LOOKBACK_DAYS = 15
+const DEFAULT_LOOKBACK_DAYS = 8
 
 /** Default environment to use */
 const DEFAULT_ENVIRONMENT = Environment.Mainnet
@@ -204,7 +205,7 @@ const FILE_PATHS = {
   /** Path to save the previous token state */
   PREVIOUS_STATE: "temp/previousTokensState.json",
   /** Path to the changelog file */
-  CHANGELOG: "public/changelog-new.json",
+  CHANGELOG: "public/changelog.json",
   /** Flag file to indicate new tokens were found */
   NEW_TOKENS_FLAG: "temp/NEW_TOKENS_FOUND.json",
 }
@@ -321,9 +322,7 @@ function displayHelpMessage(): void {
   logger.info("Help command requested")
 
   console.log(`CCIP Token Detection Script
-
 Usage: npx tsx --require tsconfig-paths/register src/scripts/ccip/detect-new-tokens.ts [options]
-
 Options:
   -h, --help               Show this help message and exit
   -e, --env <environment>  Specify environment (default: ${DEFAULT_ENVIRONMENT})
@@ -331,7 +330,6 @@ Options:
   -v, --version <version>  Specify version (default: ${DEFAULT_VERSION})
                            Valid values: ${Object.values(Version).join(", ")}
   -l, --lookback <days>    Specify git history lookback in days (default: ${DEFAULT_LOOKBACK_DAYS})
-
 Examples:
   # Run with default settings (${DEFAULT_ENVIRONMENT}, ${DEFAULT_VERSION}, ${DEFAULT_LOOKBACK_DAYS} days lookback)
   npx tsx --require tsconfig-paths/register src/scripts/ccip/detect-new-tokens.ts
@@ -1416,7 +1414,7 @@ async function processNewlySupportedTokens(
     tokenDetails.urlValidation = urlValidation
 
     // Generate the changelog entry using the validated token info
-    const changelogResult = generateChangelogEntry(newlySupported, tokensReferenceData, completelyNewTokensInfo)
+    const changelogResult = await generateChangelogEntry(newlySupported, tokensReferenceData, completelyNewTokensInfo)
 
     // Create the flag file with enhanced token information
     fs.writeFileSync(FILE_PATHS.NEW_TOKENS_FLAG, JSON.stringify(tokenDetails, null, 2))
@@ -1527,9 +1525,9 @@ function getFileFromGitHistory(filePath: string, date: string): string | null {
  * @param {NewlySupportedTokens} newlySupported - Map of newly supported tokens
  * @param {TokensConfig} tokensData - Token configuration data
  * @param {TokenInfo[]} validatedTokens - Array of tokens with validated URLs
- * @returns {ChangelogResult} The result of generating the changelog entry
+ * @returns {Promise<ChangelogResult>} The result of generating the changelog entry
  */
-function generateChangelogEntry(
+async function generateChangelogEntry(
   newlySupported: NewlySupportedTokens,
   tokensData: TokensConfig,
   validatedTokens: Array<{
@@ -1538,7 +1536,7 @@ function generateChangelogEntry(
     documentationUrl: string
     iconUrl: string | undefined
   }>
-): ChangelogResult {
+): Promise<ChangelogResult> {
   logger.debug(
     {
       tokenCount: Object.keys(newlySupported).length,
@@ -1615,8 +1613,15 @@ function generateChangelogEntry(
       logger.debug(`Created directory: ${changelogDir}`)
     }
 
+    // Format the JSON with prettier using project config
+    const prettierConfig = await prettier.resolveConfig(process.cwd())
+    const formattedJson = await prettier.format(JSON.stringify(changelog), {
+      ...prettierConfig,
+      parser: "json",
+    })
+
     // Write the updated changelog
-    fs.writeFileSync(FILE_PATHS.CHANGELOG, JSON.stringify(changelog, null, 2))
+    fs.writeFileSync(FILE_PATHS.CHANGELOG, formattedJson)
     const changelogSize = fs.statSync(FILE_PATHS.CHANGELOG).size
 
     logger.debug(
