@@ -11,6 +11,7 @@ import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
 import { LogLevel, structuredLog, resolveChainOrThrow } from "../ccip/utils.ts"
 import { getChainId, getTitle } from "../../../features/utils/index.ts"
+import { SelectorsConfig } from "@config/data/ccip/selectors.ts"
 
 /**
  * Service class for handling CCIP token data operations
@@ -20,12 +21,14 @@ export class TokenDataService {
   private errors: TokenConfigError[] = []
   private readonly requestId: string
   private skippedTokensCount = 0
+  private selectorConfig: SelectorsConfig
 
   /**
    * Creates a new instance of TokenDataService
    */
-  constructor() {
+  constructor(selectorConfig: SelectorsConfig) {
     this.requestId = crypto.randomUUID()
+    this.selectorConfig = selectorConfig
 
     structuredLog(LogLevel.DEBUG, {
       message: "TokenDataService initialized",
@@ -121,11 +124,48 @@ export class TokenDataService {
           }
 
           // Get destinations for this chain
-          const destinations = tokenLanes[chainId] ? Object.keys(tokenLanes[chainId]).sort() : []
+          const rawDestinations = tokenLanes[chainId] ? Object.keys(tokenLanes[chainId]) : []
+
+          // Transform destinations based on outputKey
+          const destinations = rawDestinations
+            .map((destChainId) => {
+              const destSupportedChain = resolveChainOrThrow(destChainId)
+              const destNumericChainId = getChainId(destSupportedChain)
+
+              if (!destNumericChainId) return destChainId
+
+              if (outputKey === "chainId") {
+                return destNumericChainId.toString()
+              } else if (outputKey === "selector") {
+                const selectorEntry = this.selectorConfig?.selectors[destNumericChainId]
+                return selectorEntry?.selector || destChainId
+              } else if (outputKey === "internalId") {
+                const selectorEntry = this.selectorConfig?.selectors[destNumericChainId]
+                return selectorEntry?.name || destChainId
+              }
+              return destChainId
+            })
+            .sort()
+
+          // Get the appropriate key based on outputKey parameter
+          let chainKey = chainId
+          if (outputKey === "chainId") {
+            chainKey = numericChainId.toString()
+          } else if (outputKey === "selector") {
+            const selectorEntry = this.selectorConfig?.selectors[numericChainId]
+            if (selectorEntry) {
+              chainKey = selectorEntry.selector
+            }
+          } else if (outputKey === "internalId") {
+            const selectorEntry = this.selectorConfig?.selectors[numericChainId]
+            if (selectorEntry) {
+              chainKey = selectorEntry.name
+            }
+          }
 
           // Store chain entry for later sorting
           chainEntries.push([
-            chainId,
+            chainKey,
             {
               chainId: numericChainId,
               chainName: getTitle(supportedChain) || chainId,

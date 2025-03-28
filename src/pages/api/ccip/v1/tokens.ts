@@ -1,4 +1,4 @@
-import type { APIRoute } from "astro"
+import { APIRoute } from "astro"
 import {
   validateEnvironment,
   validateOutputKey,
@@ -11,6 +11,7 @@ import {
   APIErrorType,
   createErrorResponse,
   CCIPError,
+  loadChainConfiguration,
 } from "../utils.ts"
 
 import type { TokenFilterType, TokenApiResponse } from "../types/index.ts"
@@ -59,7 +60,15 @@ export const GET: APIRoute = async ({ request }) => {
       outputKey,
     })
 
-    const tokenDataService = new TokenDataService()
+    const config = await loadChainConfiguration(environment)
+    structuredLog(LogLevel.DEBUG, {
+      message: "Chain configuration loaded",
+      requestId,
+      environment,
+      chainCount: Object.keys(config.chainsConfig).length,
+    })
+
+    const tokenDataService = new TokenDataService(config.selectorConfig)
     const {
       tokens,
       errors,
