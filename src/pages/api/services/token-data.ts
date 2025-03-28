@@ -1,10 +1,11 @@
 import {
   Environment,
-  TokenDetails,
   TokenConfigError,
   TokenFilterType,
-  TokenChainInfo,
   OutputKeyType,
+  TokenChainData,
+  TokenDataResponse,
+  TokenServiceResponse,
 } from "../ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
@@ -48,7 +49,7 @@ export class TokenDataService {
     environment: Environment,
     tokenCanonicalId: string,
     outputKey: OutputKeyType
-  ): Promise<Record<string, any> | null> {
+  ): Promise<{ [chainKey: string]: TokenChainData } | null> {
     structuredLog(LogLevel.DEBUG, {
       message: "Processing token data",
       requestId: this.requestId,
@@ -89,11 +90,11 @@ export class TokenDataService {
       }
 
       // Create the new structure with chains as keys
-      const result: Record<string, any> = {}
+      const result: { [chainKey: string]: TokenChainData } = {}
 
       // Process each chain the token exists on
       const chainsProcessed: string[] = []
-      const chainEntries: [string, any][] = []
+      const chainEntries: [string, TokenChainData][] = []
 
       Object.entries(tokenData).forEach(([chainId, chainData]) => {
         try {
@@ -171,7 +172,7 @@ export class TokenDataService {
               chainName: getTitle(supportedChain) || chainId,
               decimals: chainData.decimals,
               destinations,
-              name: chainData.name,
+              name: chainData.name || "",
               poolAddress: chainData.poolAddress,
               poolType: chainData.poolType,
               symbol: chainData.symbol,
@@ -258,11 +259,7 @@ export class TokenDataService {
     environment: Environment,
     filters: TokenFilterType,
     outputKey: OutputKeyType = "chainId"
-  ): Promise<{
-    tokens: Record<string, any>
-    errors: TokenConfigError[]
-    metadata: { validTokenCount: number; ignoredTokenCount: number }
-  }> {
+  ): Promise<TokenServiceResponse> {
     structuredLog(LogLevel.INFO, {
       message: "Starting token filtering process",
       requestId: this.requestId,
@@ -287,7 +284,7 @@ export class TokenDataService {
       rawTokenCount: Object.keys(supportedTokens).length,
     })
 
-    const tokens: Record<string, any> = {}
+    const tokens: TokenDataResponse = {}
 
     // Process each token by its canonical ID
     const tokenCanonicalIds = Object.keys(supportedTokens)
@@ -305,7 +302,6 @@ export class TokenDataService {
     for (const tokenCanonicalId of tokenCanonicalIds) {
       const tokenDetails = await this.processTokenData(environment, tokenCanonicalId, outputKey)
       if (tokenDetails) {
-        // Always use the canonical ID as the key
         tokens[tokenCanonicalId] = tokenDetails
         validTokensCount++
       }
@@ -320,8 +316,8 @@ export class TokenDataService {
       const tokenIdentifiers = filters.token_id.split(",").map((id) => id.trim())
 
       filteredTokens = Object.entries(tokens)
-        .filter(([key]) => tokenIdentifiers.includes(key)) // Filter by canonical ID
-        .reduce<Record<string, any>>((acc, [key, token]) => {
+        .filter(([key]) => tokenIdentifiers.includes(key))
+        .reduce<TokenDataResponse>((acc, [key, token]) => {
           acc[key] = token
           return acc
         }, {})
@@ -331,12 +327,11 @@ export class TokenDataService {
       const chainIds = filters.chain_id.split(",").map((id) => parseInt(id.trim()))
       filteredTokens = Object.entries(filteredTokens)
         .filter(([, tokenData]) => {
-          // Check if any chain in this token matches the requested chain IDs
-          return Object.values(tokenData).some((chainInfo: any) => {
-            return typeof chainInfo === "object" && "chainId" in chainInfo && chainIds.includes(chainInfo.chainId)
+          return Object.values(tokenData).some((chainInfo: TokenChainData) => {
+            return chainIds.includes(chainInfo.chainId)
           })
         })
-        .reduce<Record<string, any>>((acc, [key, token]) => {
+        .reduce<TokenDataResponse>((acc, [key, token]) => {
           acc[key] = token
           return acc
         }, {})

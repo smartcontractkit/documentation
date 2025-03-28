@@ -84,24 +84,36 @@ export type TokenMetadata = {
   validTokenCount: number
 }
 
-export type TokenChainInfo = {
+export type TokenChainData = {
   chainId: number
   chainName: string
-  tokenAddress: string
   decimals: number
-  poolType: string
+  destinations: string[]
+  name: string
   poolAddress: string
+  poolType: string
+  symbol: string
+  tokenAddress: string
 }
 
-export type TokenDetails = {
-  symbol: string
-  lanes: Record<string, string[]> // sourceChain -> [destinationChains]
-  chains: TokenChainInfo[]
+export type TokenDataResponse = {
+  [key: string]: {
+    [chainKey: string]: TokenChainData
+  }
+}
+
+export type TokenServiceResponse = {
+  tokens: TokenDataResponse
+  errors: TokenConfigError[]
+  metadata: {
+    validTokenCount: number
+    ignoredTokenCount: number
+  }
 }
 
 export type TokenApiResponse = {
   metadata: TokenMetadata
-  data: Record<string, TokenDetails>
+  data: TokenDataResponse
   ignored: TokenConfigError[]
 }
 
