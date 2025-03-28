@@ -11,6 +11,7 @@
 import fs from "fs"
 import path from "path"
 import fetch from "node-fetch"
+import prettier from "prettier"
 
 // Network endpoints mapping for different blockchain networks
 // Each endpoint provides a JSON file containing feed definitions for that network
@@ -158,9 +159,17 @@ async function detectNewData(): Promise<void> {
       }),
     }
 
-    // 5) Write to temp/NEW_DATA_FOUND.json
+    // 5) Write to temp/NEW_DATA_FOUND.json with proper formatting
     ensureDirectoryExists(path.dirname(OUTPUT_PATH))
-    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2), "utf8")
+
+    // Format the JSON with prettier using project config
+    const prettierConfig = await prettier.resolveConfig(process.cwd())
+    const formattedJson = await prettier.format(JSON.stringify(output), {
+      ...prettierConfig,
+      parser: "json",
+    })
+
+    fs.writeFileSync(OUTPUT_PATH, formattedJson, "utf8")
 
     console.log(`Found ${newlyFound.length} new items. Results written to ${OUTPUT_PATH}.`)
     process.exit(0)
