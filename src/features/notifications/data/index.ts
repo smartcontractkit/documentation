@@ -1,8 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "The CCIP Token Manager is now live.",
+  description: "You're Invited: Introduction to Chainlink and Solidity Bootcamp.",
   type: "info",
-  linkText: "Try it now.",
-  linkUrl: "https://tokenmanager.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=ga",
+  linkText: "Register now.",
+  linkUrl: "https://go.chain.link/bootcamps/intro-to-chainlink-and-solidity?utm_source=docs",
 }

@@ -5,11 +5,13 @@ import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
 import { SelectorsConfig, selectorsConfig } from "../../../config/data/ccip/selectors.ts"
+import type { TokenMetadata } from "./types/index.ts"
 
 export const prerender = false
 
 // Re-export types from CCIP config
-export type { ChainsConfig, Version, Environment }
+export type { ChainsConfig, Version }
+export { Environment }
 export type { SelectorsConfig } from "../../../config/data/ccip/selectors.ts"
 
 /**
@@ -209,6 +211,21 @@ export const createMetadata = (environment: Environment): ChainMetadata => ({
 })
 
 /**
+ * Creates token-specific metadata object
+ * @param environment - Current network environment
+ * @returns Metadata object with environment, timestamp, and requestId
+ */
+export const createTokenMetadata = (environment: Environment): TokenMetadata => {
+  return {
+    environment,
+    timestamp: new Date().toISOString(),
+    requestId: crypto.randomUUID(),
+    ignoredTokenCount: 0,
+    validTokenCount: 0,
+  }
+}
+
+/**
  * Validates the environment parameter
  * @param environment - Environment string to validate
  * @returns Validated Environment enum value
@@ -335,6 +352,7 @@ export const loadChainConfiguration = async (
     throw new CCIPError(500, "Failed to load chain configuration")
   }
 }
+
 /**
  * Log levels for structured logging
  */
