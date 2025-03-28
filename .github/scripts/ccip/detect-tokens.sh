@@ -122,7 +122,7 @@ generate_pr_description() {
       echo ""
       echo "| Symbol | Name | Documentation | Icon |"
       echo "|--------|------|--------------|------|"
-      jq -r '.completelyNewTokens[] | "| \(.symbol) | \(.name) | [Documentation](\(.documentationUrl)) | ![Icon](\(.iconUrl)) |"' "$TOKEN_FILE"
+      jq -r '.completelyNewTokens[] | "| \(.symbol) | \(.name) | [Documentation](\(.documentationUrl)) | <img src=\"\(.iconUrl)\" width=\"100\" alt=\"\(.symbol) icon\"> |"' "$TOKEN_FILE"
       echo ""
     fi
 
