@@ -126,16 +126,7 @@ generate_pr_description() {
       echo ""
     fi
 
-    local expanded_tokens
-    expanded_tokens=$(jq -r '.expandedSupportTokens | length' "$TOKEN_FILE")
-
-    if [[ "$expanded_tokens" -gt "0" ]]; then
-      echo "## Tokens with Expanded Support"
-      echo ""
-      echo "| Symbol | Name | New Chains | New Lanes |"
-      echo "|--------|------|------------|-----------|"
-      jq -r '.expandedSupportTokens[] | "| \(.symbol) | \(.name) | \(.newChains | join(", ")) | \(.newLanes | length) lanes |"' "$TOKEN_FILE"
-    fi
+    # Removing the expanded tokens section entirely
   } > temp/newTokensReport.md
 
   log_message "PR description generated successfully"
