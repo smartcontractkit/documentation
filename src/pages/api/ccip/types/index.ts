@@ -67,3 +67,57 @@ export type SelectorEntry = {
 export type SelectorsConfig = {
   selectors: Record<string, SelectorEntry>
 }
+
+// Token Data API Types
+
+export type TokenConfigError = {
+  symbol: string
+  reason: string
+  missingFields: string[]
+}
+
+export type TokenMetadata = {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  ignoredTokenCount: number
+  validTokenCount: number
+}
+
+export type TokenChainData = {
+  chainId: number
+  chainName: string
+  decimals: number
+  destinations: string[]
+  name: string
+  poolAddress: string
+  poolType: string
+  symbol: string
+  tokenAddress: string
+}
+
+export type TokenDataResponse = {
+  [key: string]: {
+    [chainKey: string]: TokenChainData
+  }
+}
+
+export type TokenServiceResponse = {
+  tokens: TokenDataResponse
+  errors: TokenConfigError[]
+  metadata: {
+    validTokenCount: number
+    ignoredTokenCount: number
+  }
+}
+
+export type TokenApiResponse = {
+  metadata: TokenMetadata
+  data: TokenDataResponse
+  ignored: TokenConfigError[]
+}
+
+export interface TokenFilterType {
+  token_id?: string
+  chain_id?: string
+}
