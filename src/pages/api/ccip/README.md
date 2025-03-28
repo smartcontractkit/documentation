@@ -1,6 +1,6 @@
-# CCIP Chains API
+# CCIP API
 
-The CCIP Chains API provides information about supported chains in the Cross-Chain Interoperability Protocol (CCIP). This API allows you to query chain details, supported fee tokens, and contract addresses needed for cross-chain operations.
+The CCIP API provides information about supported chains and tokens in the Cross-Chain Interoperability Protocol (CCIP). This API allows you to query chain details, token information, supported fee tokens, and contract addresses needed for cross-chain operations.
 
 ## Quick Start
 
@@ -33,6 +33,7 @@ Now you can start making requests to test the API endpoints!
 ### Direct API Usage
 
 ```bash
+# Chains API
 # Get all mainnet chains
 curl "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet"
 
@@ -44,6 +45,16 @@ curl "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&chainId=1,5
 
 # Get multiple chains by internalId
 curl "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&internalId=ethereum-mainnet,bsc-mainnet"
+
+# Tokens API
+# Get all mainnet tokens
+curl "https://docs.chain.link/api/ccip/v1/tokens?environment=mainnet"
+
+# Get tokens by symbol
+curl "https://docs.chain.link/api/ccip/v1/tokens?environment=mainnet&symbol=LINK"
+
+# Get tokens available on a specific chain
+curl "https://docs.chain.link/api/ccip/v1/tokens?environment=mainnet&chainId=1"
 ```
 
 ## API Reference
@@ -98,6 +109,55 @@ interface ChainDetails {
   rmn: string
   registryModule: string
   tokenAdminRegistry: string
+}
+```
+
+#### GET /api/ccip/v1/tokens
+
+Query CCIP token information.
+
+**Query Parameters:**
+
+- `environment` (required): Network environment
+  - Values: `mainnet`, `testnet`
+- `symbol` (optional): Filter by token symbol
+  - Single value: `LINK` (Chainlink)
+  - Multiple values: `LINK,ETH` (Chainlink and Ethereum)
+- `chainId` (optional): Filter by chain ID where the token is available
+  - Single value: `1` (Ethereum)
+  - Multiple values: `1,56` (Ethereum and BSC)
+- `outputKey` (optional): Key to use for response organization
+  - Values: `chainId`, `selector`, `internalId`
+  - Default: `chainId`
+
+**Response Format:**
+
+```typescript
+interface TokenApiResponse {
+  metadata: {
+    environment: string
+    timestamp: string
+    requestId: string
+    ignoredTokenCount: number
+    validTokenCount: number
+  }
+  data: Record<string, TokenDetails>
+  ignored: TokenConfigError[]
+}
+
+interface TokenDetails {
+  symbol: string
+  lanes: Record<string, string[]> // Source chain -> destination chains
+  chains: TokenChainInfo[]
+}
+
+interface TokenChainInfo {
+  chainId: number
+  chainName: string
+  tokenAddress: string
+  decimals: number
+  poolType: string
+  poolAddress: string
 }
 ```
 

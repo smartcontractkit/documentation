@@ -57,6 +57,7 @@ export const FeedList = ({
   const chain = chains.filter((chain) => chain.page === activeChain)[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
+  const [showOnlySVR, setShowOnlySVR] = useState(false)
 
   function handleNetworkSelect(chain: Chain) {
     if (!isStreams) {
@@ -163,6 +164,7 @@ export const FeedList = ({
                 }
                 network={network}
                 showExtraDetails={showExtraDetails}
+                showOnlySVR={showOnlySVR}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -357,15 +359,31 @@ export const FeedList = ({
                         />
                       </form>
                       {!isStreams && (
-                        <label class={feedList.detailsLabel}>
-                          <input
-                            type="checkbox"
-                            style="width:15px;height:15px;display:inline;"
-                            checked={showExtraDetails}
-                            onChange={() => setShowExtraDetails((old) => !old)}
-                          />
-                          Show more details
-                        </label>
+                        <div className={feedList.checkboxContainer}>
+                          <label className={feedList.detailsLabel}>
+                            <input
+                              type="checkbox"
+                              style="width:15px;height:15px;display:inline;"
+                              checked={showExtraDetails}
+                              onChange={() => setShowExtraDetails((old) => !old)}
+                            />
+                            Show more details
+                          </label>
+                          {!isSmartData && (
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;"
+                                checked={showOnlySVR}
+                                onChange={() => {
+                                  setShowOnlySVR((old) => !old)
+                                  setCurrentPage("1")
+                                }}
+                              />
+                              Show SVR-enabled feeds
+                            </label>
+                          )}
+                        </div>
                       )}
                     </div>
                     <MainnetTable
@@ -378,6 +396,7 @@ export const FeedList = ({
                       }
                       network={network}
                       showExtraDetails={showExtraDetails}
+                      showOnlySVR={showOnlySVR}
                       dataFeedType={dataFeedType}
                       ecosystem={ecosystem}
                       lastAddr={lastAddr}
