@@ -180,7 +180,7 @@ interface TokenDetails {
 const SCRIPT_VERSION = "1.0.0"
 
 /** Default number of days to look back in git history */
-const DEFAULT_LOOKBACK_DAYS = 15
+const DEFAULT_LOOKBACK_DAYS = 8
 
 /** Default environment to use */
 const DEFAULT_ENVIRONMENT = Environment.Mainnet
@@ -204,7 +204,7 @@ const FILE_PATHS = {
   /** Path to save the previous token state */
   PREVIOUS_STATE: "temp/previousTokensState.json",
   /** Path to the changelog file */
-  CHANGELOG: "public/changelog-new.json",
+  CHANGELOG: "public/changelog.json",
   /** Flag file to indicate new tokens were found */
   NEW_TOKENS_FLAG: "temp/NEW_TOKENS_FOUND.json",
 }
