@@ -12,15 +12,18 @@ export interface ChangelogEntry {
   date: string
   description: string
   relatedNetworks?: string[]
-  relatedTokens?: Array<{
-    assetName: string
-    baseAsset: string
-    quoteAsset?: string
-    network?: string
-    productTypeCode?: string
-    url: string
-    iconUrl: string
-  }>
+  relatedTokens?: Array<
+    | {
+        assetName: string
+        baseAsset: string
+        quoteAsset?: string
+        network?: string
+        productTypeCode?: string
+        url: string
+        iconUrl: string
+      }
+    | string
+  >
   newNetworks?: Array<{
     displayName: string
     network: string
@@ -84,6 +87,34 @@ function isValidNetwork(entry: unknown): entry is ChangelogEntry {
       }
     }
 
+    if (e.relatedTokens) {
+      if (!Array.isArray(e.relatedTokens)) {
+        console.error(
+          `Invalid type for field "relatedTokens" in entry "${
+            e.title
+          }": expected array, received ${typeof e.relatedTokens}`
+        )
+        return false
+      }
+
+      for (const token of e.relatedTokens) {
+        if (typeof token !== "string" && typeof token !== "object") {
+          console.error(`Invalid relatedToken format in entry "${e.title}". Must be either a string or an object.`)
+          return false
+        }
+
+        if (typeof token === "object" && token !== null) {
+          const requiredTokenFields = ["assetName", "baseAsset", "url", "iconUrl"]
+          for (const field of requiredTokenFields) {
+            if (!(field in token)) {
+              console.error(`Missing required field "${field}" in token for entry "${e.title}"`)
+              return false
+            }
+          }
+        }
+      }
+    }
+
     return true
   } catch (error) {
     console.error("Error validating entry:", error)
@@ -140,14 +171,20 @@ const entries = changelog.filter((entry) => entry.topic === topic)
           {entry.relatedTokens && entry.relatedTokens.length > 0 && (
             <div class="related-tokens">
               <ul>
-                {entry.relatedTokens.map((token) => (
-                  <li>
-                    <a href={token.url} target="_blank" rel="noopener noreferrer">
-                      {token.assetName} ({token.baseAsset}
-                      {token.quoteAsset ? ` / ${token.quoteAsset}` : ""})
-                    </a>
-                  </li>
-                ))}
+                {entry.relatedTokens.map((token) => {
+                  if (typeof token === "string") {
+                    return <li>{token}</li>
+                  } else {
+                    return (
+                      <li>
+                        <a href={token.url} target="_blank" rel="noopener noreferrer">
+                          {token.assetName} ({token.baseAsset}
+                          {token.quoteAsset ? ` / ${token.quoteAsset}` : ""})
+                        </a>
+                      </li>
+                    )
+                  }
+                })}
               </ul>
             </div>
           )}
