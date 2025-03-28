@@ -30,6 +30,7 @@ import { getTokenIconUrl } from "../../features/utils/index.ts"
 import { randomUUID } from "crypto"
 import os from "os"
 import fetch from "node-fetch"
+import prettier from "prettier"
 
 // ==============================
 // TYPE DEFINITIONS
@@ -1413,7 +1414,7 @@ async function processNewlySupportedTokens(
     tokenDetails.urlValidation = urlValidation
 
     // Generate the changelog entry using the validated token info
-    const changelogResult = generateChangelogEntry(newlySupported, tokensReferenceData, completelyNewTokensInfo)
+    const changelogResult = await generateChangelogEntry(newlySupported, tokensReferenceData, completelyNewTokensInfo)
 
     // Create the flag file with enhanced token information
     fs.writeFileSync(FILE_PATHS.NEW_TOKENS_FLAG, JSON.stringify(tokenDetails, null, 2))
@@ -1524,9 +1525,9 @@ function getFileFromGitHistory(filePath: string, date: string): string | null {
  * @param {NewlySupportedTokens} newlySupported - Map of newly supported tokens
  * @param {TokensConfig} tokensData - Token configuration data
  * @param {TokenInfo[]} validatedTokens - Array of tokens with validated URLs
- * @returns {ChangelogResult} The result of generating the changelog entry
+ * @returns {Promise<ChangelogResult>} The result of generating the changelog entry
  */
-function generateChangelogEntry(
+async function generateChangelogEntry(
   newlySupported: NewlySupportedTokens,
   tokensData: TokensConfig,
   validatedTokens: Array<{
@@ -1535,7 +1536,7 @@ function generateChangelogEntry(
     documentationUrl: string
     iconUrl: string | undefined
   }>
-): ChangelogResult {
+): Promise<ChangelogResult> {
   logger.debug(
     {
       tokenCount: Object.keys(newlySupported).length,
@@ -1612,8 +1613,15 @@ function generateChangelogEntry(
       logger.debug(`Created directory: ${changelogDir}`)
     }
 
+    // Format the JSON with prettier using project config
+    const prettierConfig = await prettier.resolveConfig(process.cwd())
+    const formattedJson = await prettier.format(JSON.stringify(changelog), {
+      ...prettierConfig,
+      parser: "json",
+    })
+
     // Write the updated changelog
-    fs.writeFileSync(FILE_PATHS.CHANGELOG, JSON.stringify(changelog, null, 2))
+    fs.writeFileSync(FILE_PATHS.CHANGELOG, formattedJson)
     const changelogSize = fs.statSync(FILE_PATHS.CHANGELOG).size
 
     logger.debug(
