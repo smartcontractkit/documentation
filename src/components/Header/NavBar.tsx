@@ -3,7 +3,7 @@ import { NavBar as Nav } from "./Nav/index.ts"
 import { Search } from "./aiSearch/Search.tsx"
 import { useNavBar } from "./useNavBar/useNavBar.ts"
 import styles from "./scroll.module.css"
-import { ProductsNav, SubProductsNav } from "./Nav/config.tsx"
+import { AlgoliaVars, ProductsNav, SubProductsNav } from "./Nav/config.tsx"
 
 export const NavBar = ({
   productsNav,
@@ -16,7 +16,7 @@ export const NavBar = ({
   subProductsNav: SubProductsNav
   path: string
   showSearch?: boolean
-  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+  algoliaVars: AlgoliaVars
 }) => {
   const navRef = React.useRef(null)
 

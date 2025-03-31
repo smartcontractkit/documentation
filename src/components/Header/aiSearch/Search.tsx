@@ -1,10 +1,11 @@
 import { SearchButton } from "chainlink-algolia-search"
 import "chainlink-algolia-search/dist/index.css"
+import { AlgoliaVars } from "../Nav/config.tsx"
 
 export const Search = ({
-  algoliaVars: { algoliaAppId, algoliaPublicApiKey },
+  algoliaVars: { algoliaAppId, algoliaPublicApiKey, googleProjectId, googleAppId, googleAccessToken },
 }: {
-  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+  algoliaVars: AlgoliaVars
 }) => {
   return (
     <SearchButton
@@ -18,6 +19,9 @@ export const Search = ({
         },
         { url: "https://dev.chain.link/tools", imgSrc: "/images/algolia/tools.png", label: "Tools" },
       ]}
+      googleProjectId={googleProjectId}
+      googleAppId={googleAppId}
+      googleAccessToken={googleAccessToken}
     />
   )
 }

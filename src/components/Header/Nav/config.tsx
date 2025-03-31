@@ -58,3 +58,11 @@ export type AppConfig = {
   productsNav: ProductsNav
   subProductsNav?: SubProductsNav
 } & LinksConfig
+
+export type AlgoliaVars = {
+  algoliaAppId: string
+  algoliaPublicApiKey: string
+  googleProjectId: string
+  googleAppId: string
+  googleAccessToken: string
+}
