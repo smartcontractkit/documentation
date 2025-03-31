@@ -145,21 +145,12 @@ node <<EOF
         category: "integration",
         date: new Date().toISOString().split('T')[0],
         description,
-        relatedNetworks,
+        ...(relatedNetworks ? { relatedNetworks } : {}),
         relatedTokens: tokens,
         title,
         topic,
       };
     }
-
-    // === Some networks for data-streams:
-    const STREAMS_NETWORKS = [
-      "arbitrum", "avalanche", "base", "berachain", "blast",
-      "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
-      "ink", "linea", "mantle", "opbnb", "optimism", "ronin",
-      "scroll", "shibarium", "soneium", "sonic",
-      "solana", "unichain", "worldchain", "zksync"
-    ];
 
     // === Build relatedTokens for FEEDS
     function buildDataFeedTokens(feedItems) {
@@ -175,7 +166,7 @@ node <<EOF
           url: buildFeedUrl(i),
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
-      });
+      }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
     // === Build relatedTokens for STREAMS
@@ -191,7 +182,7 @@ node <<EOF
           url: buildFeedUrl(i),
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
-      });
+      }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
     // === Build relatedTokens for SMARTDATA
@@ -207,7 +198,7 @@ node <<EOF
           url: buildFeedUrl(i),
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
-      });
+      }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
     function buildFeedUrl(item) {
@@ -234,10 +225,10 @@ node <<EOF
     if (dataStreamsTokens.length > 0) {
       newEntries.push(
         createChangelogEntry(
-          "data-streams",
+          "Data Streams",
           "Added support to Data Streams",
           "New Data Streams available on all [supported networks](https://docs.chain.link/data-streams/crypto-streams):",
-          STREAMS_NETWORKS,
+          null,
           dataStreamsTokens
         )
       );
@@ -249,7 +240,7 @@ node <<EOF
       const networksList = [...networksSet];
       newEntries.push(
         createChangelogEntry(
-          "smartdata",
+          "SmartData",
           "Added support to SmartData",
           "New SmartData Feeds available:",
           networksList,
@@ -264,7 +255,7 @@ node <<EOF
       const networksList = [...networksSet];
       newEntries.push(
         createChangelogEntry(
-          "data-feeds",
+          "Data Feeds",
           "Added support to Data Feeds",
           "New Data Feeds available:",
           networksList,

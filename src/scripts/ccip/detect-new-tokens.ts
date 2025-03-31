@@ -1571,7 +1571,7 @@ async function generateChangelogEntry(
     description: `Newly supported tokens: ${completelyNewTokens.join(", ")}`,
     relatedTokens,
     title: "Cross-chain token (CCT) standard: Added support for new tokens",
-    topic: "ccip",
+    topic: "CCIP",
   }
 
   // Initialize changelog structure with expected format
