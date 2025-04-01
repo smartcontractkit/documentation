@@ -152,6 +152,15 @@ node <<EOF
       };
     }
 
+    // === data-streams networks
+    const STREAMS_NETWORKS = [
+      "arbitrum", "avalanche", "base", "berachain", "blast",
+      "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
+      "ink", "linea", "mantle", "opbnb", "optimism", "ronin",
+      "scroll", "shibarium", "soneium", "sonic",
+      "solana", "unichain", "worldchain", "zksync"
+    ];
+
     // === Build relatedTokens for FEEDS
     function buildDataFeedTokens(feedItems) {
       return feedItems.map(i => {
@@ -178,7 +187,6 @@ node <<EOF
           baseAsset: i.baseAsset,
           // streams keep the quoteAsset if present
           quoteAsset: i.quoteAsset || "",
-          network: i.network,
           url: buildFeedUrl(i),
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
@@ -228,7 +236,7 @@ node <<EOF
           "Data Streams",
           "Added support to Data Streams",
           "New Data Streams available on all [supported networks](https://docs.chain.link/data-streams/crypto-streams):",
-          null,
+          STREAMS_NETWORKS,
           dataStreamsTokens
         )
       );
