@@ -134,7 +134,7 @@ The **token admin** is responsible for configuring token pools across blockchain
 
 ## Best Practices for Liquidity Management
 
-Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being ‘stuck’ in transit.
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being 'stuck' in transit.
 
 ### Ensure Sufficient Liquidity
 
@@ -151,9 +151,9 @@ Using a **Lock and Unlock** mechanism across multiple issuing blockchains can le
 
 ### Monitor Liquidity Health and Automate Alerts
 
-Monitoring the health of your token pool’s liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+Monitoring the health of your token pool's liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
 
-- **Best Practice**: Calculate the amount of time required to deplete your token pool to various threshold levels (ie: Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the pool before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with token pool’s refill rate.
+- **Best Practice**: Calculate the amount of time required to deplete your token pool to various threshold levels (ie: Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the pool before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with token pool's refill rate.
 
 ### Use the `provideLiquidity` and `withdrawLiquidity` Functions Properly
 
@@ -202,3 +202,41 @@ Tools such as [Tenderly](https://tenderly.co/) or [Hypernative](https://www.hype
 ### Documentation and training
 
 Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.
+
+## Chain-Specific Considerations
+
+### Hedera Fee Decimal Handling
+
+When using Chainlink CCIP with Hedera, you must be aware of a critical difference in decimal handling. Hedera's native HBAR token and wrapped WHBAR both use 8 decimals, while most EVM chains use 18 decimals for their native tokens.
+
+#### Impact on CCIP Fee Calculation
+
+When interacting with Hedera using HBAR or WHBAR as fee tokens:
+
+1. HBAR and WHBAR natively use 8 decimals
+1. Hedera's JSON-RPC conversion layer expects a value with 18 decimals for `msg.value` when sending transactions
+
+_Source: [Hedera Documentation on HBAR Decimal Places](https://docs.hedera.com/hedera/sdks-and-apis/sdks/hbars#hbar-decimal-places)_
+
+#### Required Fee Scaling
+
+For off-chain applications (like frontends or scripts) that:
+
+1. Call `getFee()` to determine the fee amount
+1. Then use that amount to send CCIP messages
+
+You **must scale the fee** by multiplying it by **10 decimals**:
+
+```
+Scaled Fee = getFee() * 10^10
+```
+
+When using native HBAR as the fee token, you need to send this scaled value as `msg.value` during the `ccipSend()` call.
+
+When using WHBAR as the fee token, users must approve (ERC20) at least this scaled amount before calling `ccipSend()` with no msg.value.
+
+<Aside type="note">
+  This decimal inconsistency affects only off-chain applications using RPCs. Smart contracts calling `getFee()` directly
+  within Solidity code are not affected. **Who is affected**: Applications sending CCIP messages via RPCs on Hedera with
+  HBAR/WHBAR fee tokens.
+</Aside>
