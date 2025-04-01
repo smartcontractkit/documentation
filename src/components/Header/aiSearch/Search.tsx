@@ -2,7 +2,7 @@ import { SearchButton } from "chainlink-algolia-search"
 import "chainlink-algolia-search/dist/index.css"
 import { AlgoliaVars } from "../Nav/config.tsx"
 
-export const Search = ({
+const Search = ({
   algoliaVars: { algoliaAppId, algoliaPublicApiKey, googleProjectId, googleAppId, googleAccessToken },
 }: {
   algoliaVars: AlgoliaVars
@@ -25,3 +25,5 @@ export const Search = ({
     />
   )
 }
+
+export default Search
