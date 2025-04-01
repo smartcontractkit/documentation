@@ -13,7 +13,7 @@ whatsnext:
 import { CodeSample } from "@components"
 import ChainlinkAutomation from "@features/chainlink-automation/common/ChainlinkAutomation.astro"
 
-Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/guides/compatible-contracts).
+Your Automation-compatible contracts may use the following interfaces. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/contracts-v1.3.0/contracts/src/v0.8/automation). To understand how to implement these contracts, visit the [Compatible Contracts page](/chainlink-automation/guides/compatible-contracts).
 
 - If you want a log event to trigger your upkeep, use the [`ILogAutomation`](#ilogautomation) interface.
 - If you want to use onchain state (excluding logs) in a custom calculation to trigger your upkeep, use [`AutomationCompatibleInterface`](#automationcompatibleinterface) interface.
@@ -26,7 +26,7 @@ Your Automation-compatible contracts may use the following interfaces. You can f
 
 ## AutomationCompatibleInterface
 
-Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) interface. Click on one of the functions below to understand its parameters and limits.
+Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) interface. Click on one of the functions below to understand its parameters and limits.
 
 | Function Name   | Description                                                                          |
 | --------------- | ------------------------------------------------------------------------------------ |
@@ -35,7 +35,7 @@ Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https
 
 ### checkUpkeep function
 
-This view function contains the logic that runs offchain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed onchain. To reduce onchain gas usage, attempt to do your gas intensive calculations offchain in `checkUpkeep` and pass the result to `performUpkeep` onchain. It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+This view function contains the logic that runs offchain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed onchain. To reduce onchain gas usage, attempt to do your gas intensive calculations offchain in `checkUpkeep` and pass the result to `performUpkeep` onchain. It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(
