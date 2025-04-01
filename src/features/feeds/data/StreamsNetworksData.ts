@@ -373,12 +373,12 @@ export const StreamsNetworksData: NetworkData[] = [
     logoUrl: "/assets/chains/worldchain.svg",
     mainnet: {
       label: "World Chain Mainnet",
-      verifierProxy: "0x65eaE24251C5707D5aCBF7461A49fe87CB1bE4c7",
+      verifierProxy: "0x6733e9106094b0C794e8E0297c96611fF60460Bf",
       explorerUrl: "https://worldscan.org/address/%s",
     },
     testnet: {
       label: "World Chain Sepolia Testnet",
-      verifierProxy: "0x2482A390bE58b3cBB6Df72dB2e950Db20256e55E",
+      verifierProxy: "0xd61ceB4521453F147C58d22879B4ec539331F851",
       explorerUrl: "https://sepolia.worldscan.org/address/%s",
     },
   },
