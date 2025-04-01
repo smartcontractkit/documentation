@@ -26,15 +26,93 @@ export const FeedList = ({
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
 
-  const [selectedChain, setSelectedChain] = useQueryString(
-    isStreams ? "" : "network",
-    isStreams ? "" : ecosystem === "deprecating" ? chains[0].page : initialNetwork
-  )
+  // Get network directly from URL
+  const networkFromURL =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
+
+  // If URL has a network param, use it directly
+  const effectiveInitialNetwork = networkFromURL || initialNetwork
+
+  // Initialize state with the URL value
+  const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
+
+  // Get network directly from URL or fall back to initialNetwork
+  const getNetworkFromURL = () => {
+    if (typeof window === "undefined") return initialNetwork
+    const params = new URLSearchParams(window.location.search)
+    const networkParam = params.get("network")
+    return networkParam || initialNetwork
+  }
+
+  // Force initial sync with URL
+  useEffect(() => {
+    // Get the latest network from URL
+    const latestNetworkFromURL = getNetworkFromURL()
+    if (latestNetworkFromURL !== currentNetwork) {
+      setCurrentNetwork(latestNetworkFromURL)
+    }
+
+    // Force a redraw after a short delay
+    if (typeof window !== "undefined") {
+      // execute after the DOM is fully loaded
+      window.addEventListener("load", () => {
+        const networkFromURL = getNetworkFromURL()
+        setCurrentNetwork(networkFromURL)
+
+        // Force a repaint of aria-selected attributes
+        document.querySelectorAll(".network-button").forEach((button) => {
+          const buttonId = button.getAttribute("id")
+          if (buttonId === networkFromURL) {
+            button.setAttribute("aria-selected", "true")
+          } else {
+            button.setAttribute("aria-selected", "false")
+          }
+        })
+      })
+    }
+  }, [])
+
+  // Sync with URL when it changes externally (browser back/forward)
+  useEffect(() => {
+    if (!isStreams && typeof window !== "undefined") {
+      const handleUrlChange = () => {
+        const networkFromURL = getNetworkFromURL()
+        if (networkFromURL !== currentNetwork) {
+          setCurrentNetwork(networkFromURL)
+        }
+      }
+
+      // Listen for popstate events (back/forward navigation)
+      window.addEventListener("popstate", handleUrlChange)
+
+      // Also check immediately in case URL was changed externally
+      handleUrlChange()
+
+      return () => {
+        window.removeEventListener("popstate", handleUrlChange)
+      }
+    }
+  }, [currentNetwork, isStreams])
+
+  // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
+  const [currentPage, setCurrentPage] = useQueryString("page", "1")
+
+  // Update URL when network changes
+  const updateNetworkInURL = (network: string) => {
+    if (typeof window === "undefined") return
+
+    const params = new URLSearchParams(window.location.search)
+    params.set("network", network)
+    const newUrl = window.location.pathname + "?" + params.toString()
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+    setCurrentNetwork(network)
+  }
+
+  // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
-  const [currentPage, setCurrentPage] = useQueryString("page", "1")
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
@@ -53,15 +131,16 @@ export const FeedList = ({
     { key: "SmartAUM", name: "SmartAUM" },
   ]
   const [streamsChain] = useState(initialNetwork)
-  const activeChain = isStreams ? streamsChain : selectedChain
-  const chain = chains.filter((chain) => chain.page === activeChain)[0]
+  const activeChain = isStreams ? streamsChain : currentNetwork
+  const chain = chains.find((c) => c.page === activeChain) || chains[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
 
+  // Network selection handler
   function handleNetworkSelect(chain: Chain) {
     if (!isStreams) {
-      setSelectedChain(chain.page)
+      updateNetworkInURL(chain.page)
     }
     setSearchValue("")
     setSelectedFeedCategories([])
@@ -117,6 +196,51 @@ export const FeedList = ({
 
   const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : "Testnet RWA Streams"
+
+  // handles button selection based on URL
+  const NetworkSelectionUpdater = () => {
+    // Update network buttons based on URL
+    useEffect(() => {
+      function updateNetworkButtons() {
+        if (typeof window === "undefined") return
+
+        // Get network from URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const networkFromURL = urlParams.get("network")
+
+        if (!networkFromURL) return
+
+        // Update all network buttons using DOM API
+        document.querySelectorAll(".network-button").forEach((button) => {
+          const buttonId = button.getAttribute("id")
+          if (buttonId === networkFromURL) {
+            button.setAttribute("aria-selected", "true")
+          } else {
+            button.setAttribute("aria-selected", "false")
+          }
+        })
+      }
+
+      // Run immediately
+      updateNetworkButtons()
+
+      // Also run when DOM is fully loaded
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", updateNetworkButtons)
+      }
+
+      // And run after everything is loaded
+      window.addEventListener("load", updateNetworkButtons)
+
+      return () => {
+        // Clean up listeners
+        document.removeEventListener("DOMContentLoaded", updateNetworkButtons)
+        window.removeEventListener("load", updateNetworkButtons)
+      }
+    }, [])
+
+    return null
+  }
 
   if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa") {
     const mainnetFeeds: ChainNetwork[] = []
@@ -195,32 +319,40 @@ export const FeedList = ({
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
+      <NetworkSelectionUpdater />
+
       {!isDeprecating && (
         <>
           <div class={feedList.clChainnavProduct} role="tablist">
             {chains
               .filter((chain) => {
                 if (isStreams) return chain.tags?.includes("streams")
-
                 if (isSmartData) return chain.tags?.includes("smartData")
-
                 if (isRates) return chain.tags?.includes("rates")
-
                 return chain.tags?.includes("default")
               })
-              .map((chain) => (
-                <button
-                  key={chain.page}
-                  id={chain.page}
-                  role="tab"
-                  aria-selected={selectedChain === chain.page}
-                  class={clsx(feedList.networkSwitchButton)}
-                  onClick={() => handleNetworkSelect(chain)}
-                >
-                  <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
-                  <span>{chain.label}</span>
-                </button>
-              ))}
+              .map((chain) => {
+                // Get network directly from URL
+                const urlNetworkParam =
+                  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
+
+                // Consider selected if either state or URL parameter matches
+                const isSelected = chain.page === (urlNetworkParam || currentNetwork)
+
+                return (
+                  <button
+                    key={chain.page}
+                    id={chain.page}
+                    role="tab"
+                    aria-selected={isSelected}
+                    class={clsx(feedList.networkSwitchButton, "network-button")}
+                    onClick={() => handleNetworkSelect(chain)}
+                  >
+                    <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
+                    <span>{chain.label}</span>
+                  </button>
+                )
+              })}
           </div>
           {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
             <p>
