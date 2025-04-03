@@ -155,38 +155,7 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 ### 3. Decoding the Price Update
 
-#### 3.1. Decoding From Event Logs
-
-In **most cases**, when the SVR aggregator's price update arrives, an `AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 updatedAt)` event is emitted in the aggregator contract logs.
-
-You can parse:
-
-- `address` of the aggregator contract (feed)
-- `topics[1]` for the updated price (encoded as a `big.Int` or `int256`)
-
-Example:
-
-```json
-{
-  "address": "0xb123c2e3a71b57f9678cf6212576f30d642ed89a",
-  "topics": [
-    "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
-    "0x00000000000000000000000000000000000000000000000000000888c6950a3b",
-    "0x000000000000000000000000000000000000000000000000000000000000021e"
-  ],
-  "data": "0x00000000000000000000000000000000000000000000000000000000677fbf43"
-}
-```
-
-Where `topics[1] = 0x00000000000000000000000000000000000000000000000000000888c6950a3b` decodes to `9383540230715`, or $93,835.40230715, depending on feed decimals.
-
-When you see this `AnswerUpdated` event in the logs, you can directly read the updated price.
-
-#### 3.2. Decoding From CallData (If Event Is Missing)
-
-**If `AnswerUpdated()` Is Missing**
-
-Sometimes, the transaction may arrive via the “primary path” before the aggregator emits the event, so the logs won't contain `AnswerUpdated()`. In that case, you can still decode the new price from the `callData` that calls:
+You can decode the new price from the `callData` that calls:
 
 ```solidity
 transmitSecondary(
