@@ -59,7 +59,7 @@ export const productChainLinks: ProductChainLinks = {
       treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
       merlin: "/ccip/directory/mainnet/chain/bitcoin-merlin-mainnet",
       fraxtal: "/ccip/directory/mainnet/chain/fraxtal-mainnet",
-      lens: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-lens-1",
+      lens: "/ccip/directory/mainnet/chain/lens-mainnet",
       unichain: "/ccip/directory/mainnet/chain/ethereum-mainnet-unichain-1",
       berachain: "/ccip/directory/mainnet/chain/berachain-mainnet",
       core: "/ccip/directory/mainnet/chain/core-mainnet",
