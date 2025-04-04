@@ -122,6 +122,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/data-streams/crypto-streams",
       hyperliquid: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
+      lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
       megaeth: "/data-streams/crypto-streams",
