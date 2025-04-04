@@ -55,6 +55,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "L2 Sequencer Uptime Feeds",
           url: "data-feeds/l2-sequencer-feeds",
         },
+        {
+          title: "Flags Contract Registry",
+          url: "data-feeds/contract-registry",
+        },
       ],
     },
     {
