@@ -1,0 +1,56 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Flags Contract Registry"
+metadata:
+  excerpt: "A central reference point for identifying which data feed proxy contracts are owned and operated by Chainlink Labs."
+---
+
+import { Address, Aside, CopyText } from "@components"
+
+The Chainlink Flags Contract Registry provides a reliable, on-chain source of truth for all active Chainlink price feed proxy contracts across supported networks. It serves as a central reference point for identifying which data feeds are **owned and operated by Chainlink Labs (CLL)**, verifying the authenticity of the feeds they rely on.
+
+In addition to signaling ownership, the contract also reflects the **active status of each feed** — with inactive feeds being removed from the registry to ensure accuracy. The list is actively maintained by CLL as new feeds are deployed, making it a trusted resource for keeping up with the evolving state of Chainlink’s oracle infrastructure.
+
+## Querying Flags On-Chain
+
+To determine if a proxy address is flagged as owned by Chainlink Labs (CLL), use the Solidity snippet below:
+
+```solidity
+interface IFlags {
+    function getFlag(address) external view returns (bool);
+}
+
+contract Example {
+    IFlags public flags;
+
+    function isFlagged(address proxy) public view returns (bool) {
+        return flags.getFlag(proxy);
+    }
+}
+```
+
+## Currently Flagged Feeds & Addresses
+
+Below is a list of all currently flagged and active price feed proxy contracts on the supported networks.
+
+| Chain                                                                                                                                           | ChainFlag Contract Address                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="/assets/chains/arbitrum.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Arbitrum                | <Address contractUrl="https://arbiscan.io/address/0x20551B03c092D998b1410c47BD54004D7C3106D0" eventName="docs_product_interaction" />             |
+| <img src="/assets/chains/avalanche.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Avalanche              | <Address contractUrl="https://snowtrace.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />            |
+| <img src="/assets/chains/base.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" />Base                         | <Address contractUrl="https://basescan.org/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />            |
+| <img src="/assets/chains/bob.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Bob                          | <Address contractUrl="https://explorer.gobob.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />      |
+| <img src="/assets/chains/bnb-chain.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> BNB Chain (BSC)        | <Address contractUrl="https://bscscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />             |
+| <img src="/assets/chains/celo.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Celo                        | <Address contractUrl="https://celo.blockscout.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />     |
+| <img src="/assets/chains/ethereum.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Ethereum                | <Address contractUrl="https://etherscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />            |
+| <img src="/assets/chains/gnosis-chain.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Gnosis Chain (xDai) | <Address contractUrl="https://gnosisscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />           |
+| <img src="/assets/chains/ink.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Ink                          | <Address contractUrl="https://explorer.inkonchain.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" /> |
+| <img src="/assets/chains/linea.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Linea                      | <Address contractUrl="https://lineascan.build/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />         |
+| <img src="/assets/chains/mantle.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Mantle                    | <Address contractUrl="https://mantlescan.xyz/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />          |
+| <img src="/assets/chains/optimism.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Optimism                | <Address contractUrl="https://optimistic.etherscan.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" /> |
+| <img src="/assets/chains/polygon.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Polygon                  | <Address contractUrl="https://polygonscan.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />         |
+| <img src="/assets/chains/scroll.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Scroll                    | <Address contractUrl="https://scrollscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />          |
+| <img src="/assets/chains/soneium.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Soneium                  | <Address contractUrl="https://soneium.blockscout.com/address/0x3DE960FE090BFec72F585347fa0a27CF96a83b36" eventName="docs_product_interaction" />  |
+| <img src="/assets/chains/sonic.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> Sonic                      | <Address contractUrl="https://sonicscan.org/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />           |
+| <img src="/assets/chains/unichain.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> UniChain                | <Address contractUrl="https://sepolia.uniscan.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />     |
+| <img src="/assets/chains/zksync.svg" style="height: 24px; width: auto; margin-right: 8px; vertical-align: middle;" /> zkSync                    | <Address contractUrl="https://explorer.zksync.io/address/0xC370405879C1ab0470604679E3275a02bCb89C91" eventName="docs_product_interaction" />      |
