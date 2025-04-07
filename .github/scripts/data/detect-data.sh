@@ -156,7 +156,7 @@ node <<EOF
     const STREAMS_NETWORKS = [
       "arbitrum", "avalanche", "base", "berachain", "blast",
       "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
-      "ink", "linea", "mantle", "opbnb", "optimism", "ronin",
+      "ink", "lens", "linea", "mantle", "opbnb", "optimism", "ronin",
       "scroll", "shibarium", "soneium", "sonic",
       "solana", "unichain", "worldchain", "zksync"
     ];
