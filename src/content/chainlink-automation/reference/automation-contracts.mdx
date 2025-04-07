@@ -7,27 +7,27 @@ whatsnext: { "Automation Architecture": "/chainlink-automation/concepts/automati
 "Automation Interfaces": "/chainlink-automation/reference/automation-interfaces" }
 ---
 
-Automation Nodes use the following contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). For details about how to use them, visit the [Creating Compatible Contracts](/chainlink-automation/guides/compatible-contracts) guide. To understand the logic behind these contracts, visit the [Architecture](/chainlink-automation/concepts/automation-architecture) page.
+Automation Nodes use the following contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/contracts-v1.3.0/contracts/src/v0.8/automation). For details about how to use them, visit the [Creating Compatible Contracts](/chainlink-automation/guides/compatible-contracts) guide. To understand the logic behind these contracts, visit the [Architecture](/chainlink-automation/concepts/automation-architecture) page.
 
-- [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol): Imports the following contracts:
-  - [`AutomationBase.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/chainlink-automation/reference/automation-interfaces#checkupkeep-function) for details.
-  - [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol): The interface to be implemented in order to make your contract compatible. Import this contract for type safety.
+- [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/AutomationCompatible.sol): Imports the following contracts:
+  - [`AutomationBase.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/AutomationBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/chainlink-automation/reference/automation-interfaces#checkupkeep-function) for details.
+  - [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol): The interface to be implemented in order to make your contract compatible. Import this contract for type safety.
 
 ## AutomationRegistry.sol
 
-[`AutomationRegistry2_1.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/v2_1/KeeperRegistry2_1.sol): The registry contract that tracks all registered Upkeeps and the Automation Nodes that can perform them. _Note_: As Chainlink Automation continues adding new functionalities, a new **Automation Registry** is deployed and the contract address may change.
+[`AutomationRegistry2_1.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/v2_1/KeeperRegistry2_1.sol): The registry contract that tracks all registered Upkeeps and the Automation Nodes that can perform them. _Note_: As Chainlink Automation continues adding new functionalities, a new **Automation Registry** is deployed and the contract address may change.
 
 ## AutomationRegistrar.sol
 
-[`AutomationRegistrar2_1.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/v2_1/AutomationRegistrar2_1.sol): The Registrar contract governs the registration of new Upkeeps on the associated `AutomationRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs.
+[`AutomationRegistrar2_1.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/v2_1/AutomationRegistrar2_1.sol): The Registrar contract governs the registration of new Upkeeps on the associated `AutomationRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs.
 
 ## UpkeepTranscoder.sol
 
-[`UpkeepTranscode4_0.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/v2_1/UpkeepTranscoder4_0.sol) allows the conversion of upkeep data from previous Automation registry versions 1.2, 1.3, and 2.0 to registry 2.1.
+[`UpkeepTranscode4_0.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/v2_1/UpkeepTranscoder4_0.sol) allows the conversion of upkeep data from previous Automation registry versions 1.2, 1.3, and 2.0 to registry 2.1.
 
 ## AutomationForwarder.sol
 
-[`AutomationForwarder.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationForwarder.sol) is a relayer that sits between the registry and the customer's target contract. The purpose of the forwarder is to give customers a consistent address to authorize against that stays consistent between migrations. The Forwarder also exposes the registry address, so that users who want to programmatically interact with the registry can do so. The `forward` function in this contract is called by the registry and forwards the call to the target.
+[`AutomationForwarder.sol`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/AutomationForwarder.sol) is a relayer that sits between the registry and the customer's target contract. The purpose of the forwarder is to give customers a consistent address to authorize against that stays consistent between migrations. The Forwarder also exposes the registry address, so that users who want to programmatically interact with the registry can do so. The `forward` function in this contract is called by the registry and forwards the call to the target.
 
 ## CronUpkeepFactory.sol
 

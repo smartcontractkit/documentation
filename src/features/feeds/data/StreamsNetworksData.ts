@@ -188,6 +188,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Lens",
+    logoUrl: "/assets/chains/lens.svg",
+    mainnet: {
+      label: "Lens Mainnet",
+      verifierProxy: "0xD9A79903359B4Dedf3a9c26AB47D4a8Fc62A70A2",
+      explorerUrl: "https://explorer.lens.xyz/address/%s",
+    },
+    testnet: {
+      label: "Lens Testnet",
+      verifierProxy: "0x5c0a4924535667ee025dDA78fCb0F213664927d5",
+      explorerUrl: "https://explorer.testnet.lens.xyz/address/%s",
+    },
+  },
+  {
     network: "Linea",
     logoUrl: "/assets/chains/linea.svg",
     networkStatus: "https://linea.statuspage.io/",
