@@ -296,6 +296,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TREASURE_TOPAZ"
     case "ethereum-testnet-sepolia-lens-1":
       return "LENS_SEPOLIA"
+    case "lens-mainnet":
+      return "LENS_MAINNET"
     case "berachain-mainnet":
       return "BERACHAIN_MAINNET"
     case "berachain-testnet-bartio":
@@ -501,6 +503,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "treasure-testnet-topaz"
     case "LENS_SEPOLIA":
       return "ethereum-testnet-sepolia-lens-1"
+    case "LENS_MAINNET":
+      return "lens-mainnet"
     case "BERACHAIN_MAINNET":
       return "berachain-mainnet"
     case "BERACHAIN_BARTIO":

@@ -39,10 +39,10 @@ contract DataConsumerV3 {
     function getChainlinkDataFeedLatestAnswer() public view returns (int) {
         // prettier-ignore
         (
-            /* uint80 roundID */,
-            int answer,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
+            /* uint80 roundId */,
+            int256 answer,
+            /*uint256 startedAt*/,
+            /*uint256 updatedAt*/,
             /*uint80 answeredInRound*/
         ) = dataFeed.latestRoundData();
         return answer;
