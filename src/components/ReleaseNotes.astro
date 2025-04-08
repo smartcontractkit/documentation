@@ -5,23 +5,33 @@ import { marked } from "marked"
 
 export type Props = {
   topic: string
-  subTopic?: string
 }
 
 export interface ChangelogEntry {
   category: string
-  changes?: string[]
   date: string
   description: string
-  relatedNetworks?: RelatedNetwork[]
-  relatedTokens?: string[]
+  relatedNetworks?: string[]
+  relatedTokens?: Array<
+    | {
+        assetName: string
+        baseAsset: string
+        quoteAsset?: string
+        network?: string
+        productTypeCode?: string
+        url: string
+        iconUrl: string
+      }
+    | string
+  >
+  newNetworks?: Array<{
+    displayName: string
+    network: string
+    url: string
+  }>
   title: string
   topic: string
-  subTopic?: string
-  urls?: string[]
 }
-
-type RelatedNetwork = keyof typeof chainNames
 
 function isValidNetwork(entry: unknown): entry is ChangelogEntry {
   try {
@@ -38,6 +48,20 @@ function isValidNetwork(entry: unknown): entry is ChangelogEntry {
       if (!(field in e)) {
         console.error(`Missing required field "${field}" in entry:`, e)
         return false
+      }
+    }
+
+    if (e.newNetworks) {
+      if (!Array.isArray(e.newNetworks)) {
+        console.error(`Invalid type for field "newNetworks" in entry "${e.title}": expected array`)
+        return false
+      }
+
+      for (const network of e.newNetworks) {
+        if (!network.displayName || !network.network || !network.url) {
+          console.error(`Invalid network entry in "${e.title}": missing required fields`)
+          return false
+        }
       }
     }
 
@@ -63,15 +87,32 @@ function isValidNetwork(entry: unknown): entry is ChangelogEntry {
       }
     }
 
-    // Validate optional arrays
-    if (e.changes && !Array.isArray(e.changes)) {
-      console.error(`Invalid changes field in entry "${e.title}": expected array`)
-      return false
-    }
+    if (e.relatedTokens) {
+      if (!Array.isArray(e.relatedTokens)) {
+        console.error(
+          `Invalid type for field "relatedTokens" in entry "${
+            e.title
+          }": expected array, received ${typeof e.relatedTokens}`
+        )
+        return false
+      }
 
-    if (e.urls && !Array.isArray(e.urls)) {
-      console.error(`Invalid urls field in entry "${e.title}": expected array`)
-      return false
+      for (const token of e.relatedTokens) {
+        if (typeof token !== "string" && typeof token !== "object") {
+          console.error(`Invalid relatedToken format in entry "${e.title}". Must be either a string or an object.`)
+          return false
+        }
+
+        if (typeof token === "object" && token !== null) {
+          const requiredTokenFields = ["assetName", "baseAsset", "url", "iconUrl"]
+          for (const field of requiredTokenFields) {
+            if (!(field in token)) {
+              console.error(`Missing required field "${field}" in token for entry "${e.title}"`)
+              return false
+            }
+          }
+        }
+      }
     }
 
     return true
@@ -83,25 +124,23 @@ function isValidNetwork(entry: unknown): entry is ChangelogEntry {
 
 async function loadChangelogData(): Promise<ChangelogEntry[]> {
   try {
-    if (!Array.isArray(changelogData)) {
-      console.error("Changelog data is not an array:", changelogData)
+    if (!changelogData.data || !Array.isArray(changelogData.data)) {
+      console.error("Changelog data is not in the expected format:", changelogData)
       return []
     }
 
-    return changelogData.filter(isValidNetwork)
+    return changelogData.data.filter(isValidNetwork) as ChangelogEntry[]
   } catch (error) {
     console.error("Error loading changelog data:", error)
     return []
   }
 }
 
-const { topic, subTopic } = Astro.props as Props
+const { topic } = Astro.props as Props
 
 // Load and filter the changelog entries
 const changelog = await loadChangelogData()
-const entries = changelog.filter(
-  (entry) => (entry.topic === topic && !subTopic) || (subTopic && entry.subTopic === subTopic)
-)
+const entries = changelog.filter((entry) => entry.topic === topic)
 ---
 
 {
@@ -116,24 +155,36 @@ const entries = changelog.filter(
             </a>
           </h2>
           <article set:html={marked.parse(entry.description)} />
-          {entry.changes && entry.changes.length > 0 && (
-            <ul>
-              {entry.changes.map((change) => (
-                <li set:html={marked.parse(change)} />
-              ))}
-            </ul>
-          )}
-          {entry.urls && entry.urls.length > 0 && (
-            <div class="related-links">
-              <h3>Related Links</h3>
+          {entry.newNetworks && entry.newNetworks.length > 0 && (
+            <div class="new-networks">
               <ul>
-                {entry.urls.map((url) => (
+                {entry.newNetworks.map((network) => (
                   <li>
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      {url}
+                    <a href={network.url} target="_blank" rel="noopener noreferrer">
+                      {network.displayName}
                     </a>
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}
+          {entry.relatedTokens && entry.relatedTokens.length > 0 && (
+            <div class="related-tokens">
+              <ul>
+                {entry.relatedTokens.map((token) => {
+                  if (typeof token === "string") {
+                    return <li>{token}</li>
+                  } else {
+                    return (
+                      <li>
+                        <a href={token.url} target="_blank" rel="noopener noreferrer">
+                          {token.assetName} ({token.baseAsset}
+                          {token.quoteAsset ? ` / ${token.quoteAsset}` : ""})
+                        </a>
+                      </li>
+                    )
+                  }
+                })}
               </ul>
             </div>
           )}
@@ -154,7 +205,8 @@ const entries = changelog.filter(
     margin-bottom: 1rem;
   }
 
-  .related-links {
+  .new-networks,
+  .related-tokens {
     margin-top: 1rem;
   }
 
