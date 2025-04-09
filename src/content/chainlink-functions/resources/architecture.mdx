@@ -14,7 +14,7 @@ import { Aside, ClickToZoom } from "@components"
 
 ## Request and Receive Data
 
-This model is similar to the [Basic Request Model](/architecture-overview/architecture-request-model): The consumer contract initiates the cycle by sending a request to the [FunctionsRouter contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol). Oracle nodes watch for events emitted by the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_1_0/FunctionsCoordinator.sol) and run the computation offchain. Finally, oracle nodes use the [Chainlink OCR](/architecture-overview/off-chain-reporting) protocol to aggregate all the returned before passing the single aggregated response back to the consumer contract via a callback function.
+This model is similar to the [Basic Request Model](/architecture-overview/architecture-request-model): The consumer contract initiates the cycle by sending a request to the [FunctionsRouter contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol). Oracle nodes watch for events emitted by the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_1_0/FunctionsCoordinator.sol) and run the computation offchain. Finally, oracle nodes use the [Chainlink OCR](/architecture-overview/off-chain-reporting) protocol to aggregate all the returned before passing the single aggregated response back to the consumer contract via a callback function.
 
 <ClickToZoom
   src="/images/chainlink-functions/requestAndReceive.png"
@@ -35,7 +35,7 @@ Let's walk through the sequence of interactions among these components, as illus
 
 1. If there are secrets, a user encrypts secrets with the public key linked to the DON master secret key (MSK) and then uploads the encrypted secrets to the secrets endpoint. The secrets endpoint pushes the encrypted secrets to the nodes part of the DON (The secrets capability depicted in this diagram is called _threshold encryption_ and is explained in [secrets management](/chainlink-functions/resources/secrets#threshold-encryption)).
 1. An [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or Chainlink Automation initiates the request by calling the consumer contract.
-1. The consumer contract should inherit the [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol) contract. This ensures it will be able to receive responses from the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol) contract via the `handleOracleFulfillment` callback. The router contract starts the billing to estimate the fulfillment costs and block the amount in the _reservation balance_ (To learn more, read [Cost simulation](/chainlink-functions/resources/billing#cost-simulation-reservation)). Then it calls the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_1_0/FunctionsCoordinator.sol).
+1. The consumer contract should inherit the [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol) contract. This ensures it will be able to receive responses from the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol) contract via the `handleOracleFulfillment` callback. The router contract starts the billing to estimate the fulfillment costs and block the amount in the _reservation balance_ (To learn more, read [Cost simulation](/chainlink-functions/resources/billing#cost-simulation-reservation)). Then it calls the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_1_0/FunctionsCoordinator.sol).
 1. The coordinator contract emits an `OracleRequest` event containing information about the request.
 1. On reception of the event by the DON, the DON's nodes decrypt the secrets using threshold decryption (The threshold encryption feature is explained in [secrets management](/chainlink-functions/resources/secrets#threshold-encryption)). Each DON's Oracle node executes the request's source code in a serverless environment.
 1. The DON runs the Offchain Reporting protocol (OCR) to aggregate the values returned by each node's execution of the source code.
@@ -51,7 +51,7 @@ Chainlink Functions do not require your consumer contracts to hold LINK tokens a
 
 ### Concepts
 
-- Terms of service (ToS): Before interacting with Chainlink Functions, users must agree to the terms of service. Once signed, the accounts that can manage subscriptions are added to the `allowedSenders` in the [ToS allow list contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
+- Terms of service (ToS): Before interacting with Chainlink Functions, users must agree to the terms of service. Once signed, the accounts that can manage subscriptions are added to the `allowedSenders` in the [ToS allow list contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
 - Chainlink Functions Subscription Manager: A user interface that allows users to agree to the sign Terms of service and interact with the FunctionsRouter to manage subscriptions.
 - Subscription account: An account that holds LINK tokens and makes them available to fund requests to Chainlink DON. A _Subscription ID_ uniquely identifies each account.
 - Subscription ID: 64-bit unsigned integer representing the unique identifier of the _Subscription account_.
@@ -63,17 +63,17 @@ Chainlink Functions do not require your consumer contracts to hold LINK tokens a
 
 ### Accept ToS
 
-To ensure compliance and governance, Chainlink Functions mandates that any account that manages a subscription must first accept the platform's Terms of Service (ToS). The acceptance is verified by cross-referencing the account with the `allowedSenders` registry contained within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
+To ensure compliance and governance, Chainlink Functions mandates that any account that manages a subscription must first accept the platform's Terms of Service (ToS). The acceptance is verified by cross-referencing the account with the `allowedSenders` registry contained within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
 
 <ClickToZoom src="/images/chainlink-functions/subscription/acceptToSEOA.png" />
 
-The acceptance process is initiated via the Chainlink Functions Subscription Manager. After a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
+The acceptance process is initiated via the Chainlink Functions Subscription Manager. After a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
 
 ### Create subscription
 
 <ClickToZoom src="/images/chainlink-functions/subscription/createSubscription.png" />
 
-After the ToS is accepted, EOAs can create subscriptions. Upon creation, the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol) assigns a unique identifier, _Subscription ID_.
+After the ToS is accepted, EOAs can create subscriptions. Upon creation, the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol) assigns a unique identifier, _Subscription ID_.
 
 **Note**: EOAs can directly interact with the FunctionsRouter contract using their preferred web3 library, such as web3.js or ethers.js.
 
@@ -136,7 +136,7 @@ To cancel a subscription:
 Transferring ownership is currently only supported using the [Functions Hardhat Starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) or the [Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit):
 
 1. Use the `functions-sub-transfer` command to initiate the transfer of ownership by specifying the new owner's address.
-1. As a prerequisite, the prospective owner must be part of the `allowedSenders` registry within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol). This verifies their acceptance of the Chainlink Functions' Terms of Service (ToS).
+1. As a prerequisite, the prospective owner must be part of the `allowedSenders` registry within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol). This verifies their acceptance of the Chainlink Functions' Terms of Service (ToS).
 1. The prospective owner should use the [Functions Hardhat Starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) and run the `functions-sub-accept` command to confirm the ownership transfer.
 
 **Note**: This guide will be updated as soon as the Chainlink Functions Subscription Manager supports ownership transfers.

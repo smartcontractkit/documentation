@@ -4,6 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "22:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     versioning-strategy: auto
     labels:
@@ -15,7 +18,163 @@ updates:
         versions: ["*"]
       - dependency-name: "@chainlink/local"
         versions: ["*"]
+      - dependency-name: "chainlink-algolia-search"
+        versions: ["*"]
       # For all deps
       - dependency-name: "*"
         # ignore all major updates
         update-types: ["version-update:semver-major"]
+    groups:
+      # Framework & Core Dependencies
+      astro-framework:
+        patterns:
+          - "astro"
+          - "@astrojs*"
+          - "@astro-community*"
+        exclude-patterns:
+          - "@astrojs/vercel"  # Keep deployment-specific packages separate
+
+      # Deployment & Infrastructure
+      deployment:
+        patterns:
+          - "@astrojs/vercel"
+          - "vite"
+          - "dotenv"
+
+      # Chainlink Ecosystem
+      chainlink-packages:
+        patterns:
+          - "@chainlink*"
+
+      # Web3 & Blockchain
+      blockchain:
+        patterns:
+          - "ethers"
+          - "@metamask*"
+          - "@openzeppelin*"
+          - "@project-serum*"
+          - "hardhat*"
+          - "@nomicfoundation*"
+          - "solhint*"
+          - "bignumber.js"
+
+      # UI & Frontend
+      ui-frameworks:
+        patterns:
+          - "preact*"
+          - "react*"
+          - "@nanostores*"
+          - "nanostores"
+          - "focus-trap-react"
+          - "clipboard"
+          - "swagger-ui*"
+          - "rehype*"
+          - "remark*"
+          - "github-slugger"
+          - "marked"
+
+      # GraphQL & Data
+      graphql-packages:
+        patterns:
+          - "graphql*"
+          - "@graphql*"
+          - "@apollo*"
+          - "@11ty/eleventy-fetch"
+
+      # Testing & Quality
+      testing-tools:
+        patterns:
+          - "jest*"
+          - "@jest*"
+          - "@types/jest"
+          - "ts-jest"
+      
+      # Linting & Formatting
+      linting-tools:
+        patterns:
+          - "eslint*"
+          - "@typescript-eslint*"
+          - "prettier*"
+          - "lint-staged"
+          - "husky"
+          - "solhint*"
+
+      # TypeScript & Types
+      typescript:
+        patterns:
+          - "typescript"
+          - "tsx"
+          - "tsconfig-paths"
+          - "@types/*"
+          - "@rollup/plugin-yaml"
+
+      # Documentation & API
+      documentation:
+        patterns:
+          - "swagger*"
+          - "@apidevtools*"
+          - "openapi-types"
+          - "chainlink-algolia-search"
+          - "react-instantsearch"
+
+      # Utilities
+      utilities:
+        patterns:
+          - "lodash"
+          - "uuid"
+          - "pino"
+          
+      # Security updates (specifically for security vulnerabilities)
+      security-blockchain:
+        applies-to: security-updates
+        patterns:
+          - "@chainlink*"
+          - "ethers"
+          - "@openzeppelin*"
+          - "@metamask*"
+          - "hardhat*"
+          - "@nomicfoundation*"
+
+      security-frontend:
+        applies-to: security-updates
+        patterns:
+          - "astro*"
+          - "@astrojs*"
+          - "preact*"
+          - "react*"
+          - "nanostores*"
+          - "@nanostores*"
+          - "swagger-ui*"
+
+      security-infrastructure:
+        applies-to: security-updates
+        patterns:
+          - "vite"
+          - "dotenv"
+          - "@astrojs/vercel"
+          - "pino"
+
+      security-data:
+        applies-to: security-updates
+        patterns:
+          - "graphql*"
+          - "@apollo*"
+          - "@11ty/eleventy-fetch"
+          - "lodash"
+
+  # GitHub Actions configuration
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "22:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
