@@ -2,7 +2,7 @@ import { SupportedChain } from "~/config/types.ts"
 import { chainToTechnology } from "~/config/chains.ts"
 import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
 import { networkFees } from "./data.ts"
-import { BigNumber as BigNumberJs } from "bignumber.js"
+import BigNumberJs from "bignumber.js"
 import { commify } from "~/utils/index.js"
 
 // Define valid pool type combinations and their corresponding mechanisms
