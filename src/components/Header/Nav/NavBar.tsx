@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { ProductsNav, SubProductsNav } from "./config.tsx"
 import styles from "./navBar.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -7,26 +7,6 @@ import { useScrollPosition } from "./useScrollPosition.tsx"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
 import { useHideHeader } from "./useHideHeader.tsx"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
-
-interface WeglotType {
-  initialize(config: {
-    api_key: string
-    switchers: Array<{
-      button_style: {
-        full_name: boolean
-        with_name: boolean
-        is_dropdown: boolean
-        with_flags: boolean
-      }
-      location: {
-        target: string
-        sibling: null
-      }
-    }>
-  }): void
-}
-
-declare const Weglot: WeglotType
 
 export type SearchTrigger = React.ReactNode
 
@@ -68,41 +48,6 @@ export const NavBar = ({
     setIsModalOpen(!isModalOpen)
   }
 
-  useEffect(() => {
-    if (
-      !window.location.hostname.includes("localhost") &&
-      !window.location.hostname.includes("documentation-private-git-")
-    ) {
-      const script = document.createElement("script")
-      script.src = "https://cdn.weglot.com/weglot.min.js"
-      script.async = true
-      script.onload = () => {
-        Weglot.initialize({
-          api_key: "wg_bc56a95905bfa8990f449554339e82be8",
-          switchers: [
-            {
-              button_style: {
-                full_name: false,
-                with_name: true,
-                is_dropdown: true,
-                with_flags: false,
-              },
-              location: {
-                target: "#weglot",
-                sibling: null,
-              },
-            },
-          ],
-        })
-      }
-      document.body.appendChild(script)
-
-      return () => {
-        document.body.removeChild(script)
-      }
-    }
-  }, [])
-
   const exitMegamenu = () => {
     setShowMegaMenu(false)
   }
@@ -141,7 +86,6 @@ export const NavBar = ({
               />
             </div>
             <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
-              <div id="weglot" className={styles.weglotContainer} />
               {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
             </div>
           </div>
