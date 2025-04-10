@@ -110,6 +110,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
+      apechain: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
@@ -135,6 +136,7 @@ export const productChainLinks: ProductChainLinks = {
       solana: "/data-streams/crypto-streams",
       soneium: "/data-streams/crypto-streams",
       sonic: "/data-streams/crypto-streams",
+      taiko: "/data-streams/crypto-streams",
       unichain: "/data-streams/crypto-streams",
       worldchain: "/data-streams/crypto-streams",
       zksync: "/data-streams/crypto-streams",
@@ -272,6 +274,7 @@ export const chainNames: Record<string, string> = {
   soneium: "Soneium",
   sonic: "Sonic",
   starknet: "Starknet",
+  taiko: "Taiko",
   wemix: "Wemix",
   zksync: "ZKsync",
   mode: "Mode",

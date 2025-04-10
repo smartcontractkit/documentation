@@ -348,6 +348,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
       return "MIND_NETWORK_MAINNET"
+    case "taiko-mainnet":
+      return "TAIKO_MAINNET"
+    case "taiko-testnet":
+      return "TAIKO_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -555,6 +559,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
       return "mind-mainnet"
+    case "TAIKO_MAINNET":
+      return "taiko-mainnet"
+    case "TAIKO_TESTNET":
+      return "taiko-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
