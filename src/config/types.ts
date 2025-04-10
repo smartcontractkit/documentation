@@ -54,6 +54,7 @@ export type SupportedTechnology =
   | "0G"
   | "MIND_NETWORK"
   | "MEGAETH"
+  | "PLUME"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -162,6 +163,8 @@ export type SupportedChain =
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
+  | "PLUME_MAINNET"
+  | "PLUME_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

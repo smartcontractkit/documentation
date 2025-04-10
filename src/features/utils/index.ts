@@ -348,6 +348,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
       return "MIND_NETWORK_MAINNET"
+    case "plume-testnet":
+      return "PLUME_TESTNET"
+    case "plume-mainnet":
+      return "PLUME_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -555,6 +559,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
       return "mind-mainnet"
+    case "PLUME_TESTNET":
+      return "plume-testnet"
+    case "PLUME_MAINNET":
+      return "plume-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

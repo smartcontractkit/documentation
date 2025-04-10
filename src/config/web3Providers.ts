@@ -111,6 +111,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MIND_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc-mainnet.mindnetwork.xyz"),
   MEGAETH_TESTNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
   "0G_NEWTON_TESTNET": () => new JsonRpcProvider("https://evmrpc-testnet.0g.ai"),
+  PLUME_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
+  PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
