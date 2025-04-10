@@ -309,4 +309,5 @@ export const chainNames: Record<string, string> = {
   "0g": "0G",
   mindnetwork: "Mind Network",
   megaeth: "MegaETH",
+  plume: "Plume",
 }
