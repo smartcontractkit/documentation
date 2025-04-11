@@ -189,32 +189,32 @@ Once you've identified a potential SVR feed update transaction, you'll need to d
 
 1. First, the transaction calls the `forward` function:
 
-```solidity
-forward(address to, bytes callData)
-```
+   ```solidity
+   forward(address to, bytes callData)
+   ```
 
 1. Inside the `callData` parameter is the encoded call to `transmitSecondary`, which contains the actual price data:
 
-```solidity
-transmitSecondary(
-    bytes32[3] calldata reportContext,
-    bytes calldata report,
-    bytes32[] calldata rs,
-    bytes32[] calldata ss,
-    bytes32 rawVs
-)
-```
+   ```solidity
+   transmitSecondary(
+       bytes32[3] calldata reportContext,
+       bytes calldata report,
+       bytes32[] calldata rs,
+       bytes32[] calldata ss,
+       bytes32 rawVs
+   )
+   ```
 
-The structure of `report` is:
+   The structure of `report` is:
 
-```solidity
-struct Report {
-  uint32 observationsTimestamp;
-  bytes32 observers;
-  int192[] observations;
-  int192 juelsPerFeeCoin;
-}
-```
+   ```solidity
+   struct Report {
+     uint32 observationsTimestamp;
+     bytes32 observers;
+     int192[] observations;
+     int192 juelsPerFeeCoin;
+   }
+   ```
 
 Below is an example of an ABI definition for the `forward` and `transmitSecondary` function interfaces to help you decode the function calls:
 
