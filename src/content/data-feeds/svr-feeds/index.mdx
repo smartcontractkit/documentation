@@ -12,6 +12,7 @@ whatsnext:
 ---
 
 import { Aside, ClickToZoom, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
 
@@ -159,7 +160,7 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 1. **Execute Liquidation**: If your bundle is selected, your liquidation happens **immediately after** the fresh price arrives onchain, capturing the liquidation bonus. Based on the results of the auction, a portion of the MEV is recaptured and split between Aave and the Chainlink Network, while the rest goes to you.
 
-### 2. Detecting SVR Transactions
+### 2. Listen for Events on MEV Share
 
 Chainlink SVR uses forwarder contracts to route feed updates. You typically see **one transaction per event**, which calls the function `forward(address to, bytes callData)` with the function selector `6fadcf72`. This method, in turn, calls the SVR aggregator's `transmitSecondary()` function with the new price data.
 
@@ -169,9 +170,26 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 1. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
 
-### 3. Decoding the Price Update
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/listener.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/listener.go" lang="go" />
+  </Fragment>
+</Tabs>
 
-You can decode the new price from the `callData` that calls:
+### 3. Decode `callData` for `forward` and `transmitSecondary`
+
+The `forward` function signature is:
+
+```solidity
+forward(address to, bytes callData)
+```
+
+You can decode the new price from the `forward` `callData` that calls:
 
 ```solidity
 transmitSecondary(
@@ -183,24 +201,53 @@ transmitSecondary(
 )
 ```
 
+The structure of report is:
+
+```solidity
+struct Report {
+  uint32 observationsTimestamp;
+  bytes32 observers;
+  int192[] observations;
+  int192 juelsPerFeeCoin;
+}
+```
+
+This is an example ABI that can be used to expedite the decoding of these functions:
+
+<CodeSample src="samples/DataFeeds/SVR/decoding-abi.json" />
+
+Below are code samples that decode the `forward` and `transmitSecondary` functions:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/decoder.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/decoder.go" lang="go" />
+  </Fragment>
+</Tabs>
+
+### 4. Detect SVR-enabled feed for Aave
+
+Check if the `to` address from the `forward` call is one of the following:
+
+| Feed name | Address                                      |
+| --------- | -------------------------------------------- |
+| AAVE/USD  | `0xbd7F896e60B650C01caf2d7279a1148189A68884` |
+| BTC/USD   | `0x85355da30ee4b35F4B30759Bd49a1EBE3fc41Bdb` |
+| LINK/USD  | `0x76F8C9E423C228E83DCB11d17F0Bd8aEB0Ca01bb` |
+
+### 5. Calculate updated price
+
 Inside the `report`, you'll find the updated median price in the field:
 
 ```solidity
 report.observations[report.observations.length / 2]
 ```
 
-The structure of report is:
-
-```solidity
-struct Report {
-  int192 juelsPerFeeCoin;
-  uint32 observationsTimestamp;
-  bytes observers;
-  int192[] observations;
-}
-```
-
-### 4. Bidding With Flashbots MEV-Share
+### 6. Bidding With Flashbots MEV-Share
 
 - **Private Mempool**: Your bid and transaction remain private until included onchain.
 - **Bundles**: You group the price update and your liquidation transaction so that they execute atomically.
@@ -209,13 +256,25 @@ struct Report {
 
 For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
 
-### 5. Considerations
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/broadcaster.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/broadcaster.go" lang="go" />
+  </Fragment>
+</Tabs>
+
+### 7. Considerations
 
 - **Competition**: Multiple searchers might detect the same liquidation. The best bid typically wins.
 - **Profit-Sharing**: A portion of liquidation MEV is recaptured and redirected to the integrating DeFi protocol and the Chainlink Network.
 - **Gas Efficiency**: Bundles that are too costly might erode the profitability of the proposed transaction. Optimize carefully.
+- **Non-SVR `forward` calls**: There are other events on the MEV-Share event stream that have the same `forward` function signature. Be sure to filter for the ones that call `transmitSecondary` on the listed SVR feeds.
 
-### 6. Next Steps for Searchers
+### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
 
