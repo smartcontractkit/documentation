@@ -13,6 +13,47 @@ whatsnext:
 
 import { Aside, ClickToZoom, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
+import { CHAINS } from "@features/data/chains"
+
+export async function getFeeds() {
+  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
+    (network) => network.networkType === "mainnet"
+  )
+
+const rddUrl = ethereumMainnet?.rddUrl
+
+if (!rddUrl) {
+return []
+}
+
+try {
+const response = await fetch(rddUrl)
+const data = await response.json()
+
+    const targetFeeds = [
+      "AAVE/USD-RefPrice-DF-Ethereum-001",
+      "BTC/USD-RefPrice-DF-Ethereum-001",
+      "LINK/USD-RefPrice-DF-Ethereum-001",
+    ]
+
+    const svrFeeds = data.filter(
+      (feed) =>
+        feed.secondaryProxyAddress && feed.docs?.clicProductName && targetFeeds.includes(feed.docs.clicProductName)
+    )
+
+    return svrFeeds
+      .map((feed) => ({
+        name: feed.name.replace(" / ", "/"),
+        address: feed.contractAddress,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+} catch (error) {
+return []
+}
+}
+
+export const feeds = await getFeeds()
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
 
@@ -242,11 +283,30 @@ The following code samples demonstrate the complete decoding process, including 
 
 When processing forward calls, verify that the `to` address (the destination of the forward call) matches one of these feed addresses:
 
-| Feed name | Address                                      |
-| --------- | -------------------------------------------- |
-| AAVE/USD  | `0xcd07B31D85756098334eDdC92DE755dEae8FE62f` |
-| BTC/USD   | `0xdc715c751f1cc129A6b47fEDC87D9918a4580502` |
-| LINK/USD  | `0x64c67984A458513C6BAb23a815916B1b1075cf3a` |
+<table>
+  <thead>
+    <tr>
+      <th>Feed name</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+  <tbody>
+    {feeds &&
+      feeds.map((feed) => (
+        <tr key={feed.address}>
+          <td>{feed.name}</td>
+          <td>
+            <code>{feed.address}</code>
+          </td>
+        </tr>
+      ))}
+    {(!feeds || feeds.length === 0) && (
+      <tr>
+        <td colSpan="2">No SVR feeds found.</td>
+      </tr>
+    )}
+  </tbody>
+</table>
 
 ### 5. Calculate Updated Price
 
