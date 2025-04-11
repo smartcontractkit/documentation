@@ -170,6 +170,8 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 1. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
 
+Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
+
 <Tabs client:visible>
   <Fragment slot="tab.1">TS</Fragment>
   <Fragment slot="tab.2">Go</Fragment>
@@ -183,13 +185,15 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 ### 3. Decode `callData` for `forward` and `transmitSecondary`
 
-The `forward` function signature is:
+Once you've identified a potential SVR feed update transaction, you'll need to decode its payload to extract the new price data. Extracting this price information is essential for determining if profitable liquidation opportunities exist. The decoding process involves understanding two function calls:
+
+1. First, the transaction calls the `forward` function:
 
 ```solidity
 forward(address to, bytes callData)
 ```
 
-You can decode the new price from the `forward` `callData` that calls:
+1. Inside the `callData` parameter is the encoded call to `transmitSecondary`, which contains the actual price data:
 
 ```solidity
 transmitSecondary(
@@ -201,7 +205,7 @@ transmitSecondary(
 )
 ```
 
-The structure of report is:
+The structure of `report` is:
 
 ```solidity
 struct Report {
@@ -212,11 +216,16 @@ struct Report {
 }
 ```
 
-This is an example ABI that can be used to expedite the decoding of these functions:
+Below is an example of an ABI definition for the `forward` and `transmitSecondary` function interfaces to help you decode the function calls:
 
 <CodeSample src="samples/DataFeeds/SVR/decoding-abi.json" />
 
-Below are code samples that decode the `forward` and `transmitSecondary` functions:
+The following code samples demonstrate the complete decoding process, including extracting the median price from the nested report structure. These implementations show how to:
+
+1. Decode the `forward` function call
+1. Extract and decode the `transmitSecondary` function data
+1. Parse the report bytes using the `Report` struct
+1. Access the median observation (the updated price)
 
 <Tabs client:visible>
   <Fragment slot="tab.1">TS</Fragment>
@@ -241,20 +250,40 @@ Check if the `to` address from the `forward` call is one of the following:
 
 ### 5. Calculate updated price
 
-Inside the `report`, you'll find the updated median price in the field:
+After successfully decoding the transaction data, you need to extract the median price from the `observations` array inside the decoded `report`:
 
 ```solidity
 report.observations[report.observations.length / 2]
 ```
 
+This formula retrieves the median value from the sorted array of price observations. The middle element represents the median price. This price is the value committed to the blockchain that protocols will use for determining liquidation eligibility.
+
+To use this price effectively, convert it to the appropriate decimal representation for the asset pair.
+
 ### 6. Bidding With Flashbots MEV-Share
 
-- **Private Mempool**: Your bid and transaction remain private until included onchain.
-- **Bundles**: You group the price update and your liquidation transaction so that they execute atomically.
-- **Bidding**: Builders typically select the highest bidder; you must propose a profitable split to stand out.
-- **Backruns Only**: MEV-Share currently only allows backruns, so your liquidation must come after the price update.
+Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
 
-For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
+- **Bundle Components**: Your bundle must contain two elements in this exact order:
+
+  1. The original oracle update transaction (referenced by its hash)
+  1. Your liquidation transaction (fully signed transaction bytes)
+
+- **Backrun Position**: MEV-Share only permits backruns, meaning your liquidation transaction must come after the target transaction. This order is enforced by the bundle structure.
+
+- **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
+
+  - The gas price of your transaction
+  - Any explicit payment you include to the builder
+
+- **Inclusion Parameters**: Specify the target block range for your bundle to be considered
+
+  - Typically target the next block plus a small range for redundancy
+  - A narrow block range can increase chances of inclusion but risks missing execution
+
+- **Authentication**: All Flashbots bundles require cryptographic signing with your wallet
+
+Below are code examples demonstrating how to construct and submit bundles to the Flashbots relay:
 
 <Tabs client:visible>
   <Fragment slot="tab.1">TS</Fragment>
@@ -266,6 +295,8 @@ For gas management, simulations, and other advanced usage, see the official [Fla
     <CodeSample src="samples/DataFeeds/SVR/broadcaster.go" lang="go" />
   </Fragment>
 </Tabs>
+
+For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
 
 ### 7. Considerations
 
