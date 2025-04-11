@@ -352,6 +352,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TAIKO_MAINNET"
     case "taiko-testnet":
       return "TAIKO_TESTNET"
+    case "plume-testnet":
+      return "PLUME_TESTNET"
+    case "plume-mainnet":
+      return "PLUME_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -563,6 +567,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "taiko-mainnet"
     case "TAIKO_TESTNET":
       return "taiko-testnet"
+    case "PLUME_TESTNET":
+      return "plume-testnet"
+    case "PLUME_MAINNET":
+      return "plume-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

@@ -55,6 +55,7 @@ export type SupportedTechnology =
   | "MIND_NETWORK"
   | "MEGAETH"
   | "TAIKO"
+  | "PLUME"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -165,6 +166,8 @@ export type SupportedChain =
   | "MEGAETH_TESTNET"
   | "TAIKO_MAINNET"
   | "TAIKO_TESTNET"
+  | "PLUME_MAINNET"
+  | "PLUME_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
