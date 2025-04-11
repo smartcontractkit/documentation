@@ -69,6 +69,7 @@ export const productChainLinks: ProductChainLinks = {
       hedera: "/ccip/directory/mainnet/chain/hedera-mainnet",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
+      megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
     },
   },
   "Data Feeds": {
@@ -243,6 +244,7 @@ export const productChainLinks: ProductChainLinks = {
     mindnetwork: "/resources/link-token-contracts#mind-network",
     core: "/resources/link-token-contracts#core",
     starknet: "/resources/link-token-contracts#starknet",
+    megaeth: "/resources/link-token-contracts#megaeth",
   },
 }
 
