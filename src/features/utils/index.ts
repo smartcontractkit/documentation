@@ -338,8 +338,6 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_TESTNET"
     case "cronos-zkevm-mainnet":
       return "CRONOS_ZKEVM_MAINNET"
-    case "tron-mainnet":
-      return "TRON_MAINNET"
     case "0g-testnet-newton":
       return "0G_NEWTON_TESTNET"
     case "megaeth-testnet":
@@ -356,6 +354,30 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLUME_TESTNET"
     case "plume-mainnet":
       return "PLUME_MAINNET"
+    case "tron-mainnetTRON_MAINNET":
+      return "TRON_MAINNET"
+    case "tron-testnet":
+      return "TRON_TESTNET"
+    case "abstract-mainnet":
+      return "ABSTRACT_MAINNET"
+    case "abstract-testnet":
+      return "ABSTRACT_TESTNET"
+    case "lisk-mainnet":
+      return "LISK_MAINNET"
+    case "lisk-testnet":
+      return "LISK_TESTNET"
+    case "zora-mainnet":
+      return "ZORA_MAINNET"
+    case "zora-testnet":
+      return "ZORA_TESTNET"
+    case "mint-mainnet":
+      return "MINT_MAINNET"
+    case "mint-testnet":
+      return "MINT_TESTNET"
+    case "superseed-mainnet":
+      return "SUPERSEED_MAINNET"
+    case "superseed-testnet":
+      return "SUPERSEED_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -553,8 +575,6 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-testnet-sepolia"
     case "CRONOS_ZKEVM_MAINNET":
       return "cronos-zkevm-mainnet"
-    case "TRON_MAINNET":
-      return "tron-mainnet"
     case "0G_NEWTON_TESTNET":
       return "0g-testnet-newton"
     case "MEGAETH_TESTNET":
@@ -571,6 +591,30 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plume-testnet"
     case "PLUME_MAINNET":
       return "plume-mainnet"
+    case "TRON_MAINNET":
+      return "tron-mainnet"
+    case "TRON_TESTNET":
+      return "tron-testnet"
+    case "ABSTRACT_MAINNET":
+      return "abstract-mainnet"
+    case "ABSTRACT_TESTNET":
+      return "abstract-testnet"
+    case "LISK_MAINNET":
+      return "lisk-mainnet"
+    case "LISK_TESTNET":
+      return "lisk-testnet"
+    case "ZORA_MAINNET":
+      return "zora-mainnet"
+    case "ZORA_TESTNET":
+      return "zora-testnet"
+    case "MINT_MAINNET":
+      return "mint-mainnet"
+    case "MINT_TESTNET":
+      return "mint-testnet"
+    case "SUPERSEED_MAINNET":
+      return "superseed-mainnet"
+    case "SUPERSEED_TESTNET":
+      return "superseed-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
