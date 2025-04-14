@@ -1,13 +1,4 @@
-type MevShareEvent struct {
-	Hash common.Hash          `json:"hash"`
-	Txs  []PendingTransaction `json:"txs"`
-}
-
-type PendingTransaction struct {
-	To               common.Address `json:"to"`
-	FunctionSelector string         `json:"functionSelector"`
-	CallData         string         `json:"callData"`
-}
+import "github.com/flashbots/mev-share-node/mevshare"
 
 req, err := http.NewRequestWithContext(
   ctx,
@@ -18,12 +9,12 @@ req, err := http.NewRequestWithContext(
 
 // ... read the event data from the response
 
-var event MevShareEvent
+var event mevshare.Hint
 err := json.Unmarshal(responseData, &event)
 
 // ... check if tx is calling the forward method
 if strings.Compare(
-  strings.ToLower(tx.FunctionSelector),
+  strings.ToLower(tx.FunctionSelector.String()),
   "0x6fadcf72",
 ) != 0 {
 	continue
