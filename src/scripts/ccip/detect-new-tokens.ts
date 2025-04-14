@@ -1614,14 +1614,17 @@ async function generateChangelogEntry(
     }
 
     // Format the JSON with prettier using project config
-    const prettierConfig = await prettier.resolveConfig(process.cwd())
-    const formattedJson = await prettier.format(JSON.stringify(changelog), {
-      ...prettierConfig,
-      parser: "json",
-    })
+    const prettierConfig = (await prettier.resolveConfig(process.cwd())) || {}
 
-    // Write the updated changelog
-    fs.writeFileSync(FILE_PATHS.CHANGELOG, formattedJson)
+    // Write the changelog json to the file first
+    fs.writeFileSync(FILE_PATHS.CHANGELOG, JSON.stringify(changelog))
+
+    // Then format the file directly using prettier API
+    const formatted = await prettier.format(fs.readFileSync(FILE_PATHS.CHANGELOG, "utf8"), {
+      ...prettierConfig,
+      filepath: FILE_PATHS.CHANGELOG, // This ensures the correct parser based on file extension
+    })
+    fs.writeFileSync(FILE_PATHS.CHANGELOG, formatted)
     const changelogSize = fs.statSync(FILE_PATHS.CHANGELOG).size
 
     logger.debug(
@@ -1629,7 +1632,7 @@ async function generateChangelogEntry(
         entriesCount: changelog.data.length,
         sizeBytes: changelogSize,
       },
-      "Changelog file updated"
+      "Changelog file updated and formatted"
     )
   } catch (error) {
     logger.error(
