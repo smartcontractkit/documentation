@@ -1,27 +1,13 @@
-type MevBundle struct {
-    Hash      common.Hash
-    Tx        []byte
-    CanRevert bool
-}
-
-type Inclusion struct {
-    Block       *big.Int
-    MaxBlock    *big.Int
-}
-
-type BundleParams struct {
-    Body []MevBundle
-    inclusion Inclusion
-}
+import "github.com/flashbots/mev-share-node/mevshare"
 
 // ... create and sign your transaction
 tx := types.NewTransaction(...)
 signedTx, err := types.SignTx(tx, ...)
 txBytes := signedTx.MarshalBinary()
 
-bundle := []MevBundle {
+bundle := []mevshare.MevBundleBody {
     {
-        Hash: event.EventHash,
+        Hash: &event.EventHash,
     },
     {
         Tx:        &txBytes,
@@ -29,9 +15,9 @@ bundle := []MevBundle {
     },
 }
 
-params := BundleParams {
+params := mevshare.SendMevBundleArgs {
     Body:      bundle,
-    Inclusion: Inclusion{blockNumber, blockNumber+1},
+    Inclusion: mevshare.MevBundleInclusion{blockNumber, blockNumber+1},
 }
 
 byteParams, err := json.Marshal(params)
