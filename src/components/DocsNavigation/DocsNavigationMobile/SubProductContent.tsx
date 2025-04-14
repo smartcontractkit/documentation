@@ -12,9 +12,9 @@ type Props = {
   currentPath: string
 }
 
-const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
+const renderPages = (pages: Page[], currentPath: string, level = 0) => {
   return pages.map(({ label, href, children }) => {
-    const adjustedHref = "/" + href
+    const adjustedHref = href.startsWith("http") ? href : `/${href}`
     const isActive = currentPath.replace(/\/$/, "") === adjustedHref.replace(/\/$/, "")
 
     const linkRef = useRef<HTMLAnchorElement>(null)
@@ -29,15 +29,19 @@ const renderPages = (pages: Page[], currentPath: string, indent: boolean) => {
       backgroundColor: isActive ? "var(--blue-100)" : "transparent",
       color: isActive ? "var(--blue-600)" : "inherit",
       fontWeight: isActive ? "500" : "normal",
-      marginLeft: indent ? "20px" : "0",
     }
 
     return (
       <React.Fragment key={label}>
-        <a ref={linkRef} style={linkStyle} className={`${styles.link} subproduct-link`} href={adjustedHref}>
+        <a
+          ref={linkRef}
+          style={linkStyle}
+          className={`${styles.link} subproduct-link level-${level}`}
+          href={adjustedHref}
+        >
           {label}
         </a>
-        {children && renderPages(children, currentPath, true)}
+        {children && renderPages(children, currentPath, level + 1)}
       </React.Fragment>
     )
   })
@@ -57,7 +61,7 @@ export const SubProductContent = ({ subProducts, onSubproductClick, currentPath 
       {subProducts.items.map(({ label, pages }) => (
         <div key={label}>
           <h3 className={styles.section}>{label}</h3>
-          {pages && renderPages(pages, currentPath, false)}
+          {pages && renderPages(pages, currentPath, 1)}
         </div>
       ))}
     </>

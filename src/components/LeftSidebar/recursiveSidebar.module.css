@@ -1,0 +1,163 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  line-height: 1.4;
+  font-size: 14px;
+  color: var(--gray-500, #858a95);
+  padding: var(--space-2x) var(--space-6x) var(--space-2x) var(--space-4x);
+  transition: color 100ms ease-in;
+  border-radius: 4px;
+  margin-right: var(--space-2x);
+  position: relative;
+}
+
+.navLink.nested,
+details summary.navLink {
+  padding: var(--space-2x) var(--space-6x) var(--space-2x) var(--space-4x);
+  margin-right: var(--space-2x);
+}
+
+details summary.navLink.nested {
+  padding-left: 0;
+}
+
+details summary.navLink.nested a {
+  padding-left: var(--space-4x);
+}
+
+.navLink.active,
+.navLink:hover,
+.navLink:focus,
+.navLink[aria-current="page"],
+details summary.navLink:has(a.active),
+details summary.navLink:has(a[aria-current="page"]),
+details summary.navLink.active {
+  color: var(--color-text-link);
+}
+
+.navLink:hover,
+.navLink:focus,
+details summary.navLink:hover,
+details summary.navLink:focus {
+  text-decoration: none;
+}
+
+.navLink[aria-current="page"],
+details summary.navLink:has(a[aria-current="page"]),
+details summary.navLink.active,
+details summary.navLink:has(a.active) {
+  font-weight: 600;
+  background-color: rgba(28, 100, 242, 0.08);
+  color: var(--color-text-link);
+}
+
+.navLink.nested {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+details summary.navLink {
+  width: 100%;
+}
+
+details summary.navLink a {
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+  padding: 0;
+  margin: 0;
+}
+
+details summary.navLink:hover a {
+  color: var(--color-text-link);
+}
+
+details summary.navLink a.active,
+details summary.navLink a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--color-text-link);
+}
+
+.navGroupEntries {
+  margin-bottom: 0;
+}
+
+.navGroupEntries > li {
+  margin-bottom: var(--space-3x);
+}
+
+.navGroupEntries > li:last-child {
+  margin-bottom: 0;
+}
+
+.navGroupEntries > li > .navLink,
+.navGroupEntries > li > details > summary > a,
+.navGroupEntries > li > a {
+  padding-left: var(--space-4x);
+}
+
+.navGroupEntries > li > details > summary {
+  padding-left: 0;
+}
+
+.navGroupEntries.nested {
+  margin-left: 0;
+  margin-top: var(--space-1x);
+  padding-left: var(--space-4x);
+  margin-bottom: var(--space-1x);
+  position: relative;
+}
+
+.navGroupEntries.nested::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--gray-200);
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+:global(:root.theme-dark) .navLink[aria-current="page"],
+:global(:root.theme-dark) details summary.navLink.active,
+:global(:root.theme-dark) details summary.navLink:has(a.active) {
+  color: hsla(var(--color-base-white), 100%, 1);
+}
+
+details > summary.navLink {
+  padding-left: var(--space-4x);
+}
+
+details > summary.navLink::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-right: 1.5px solid var(--gray-500);
+  border-bottom: 1.5px solid var(--gray-500);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  position: absolute;
+  top: calc(50% - 4px);
+  left: 0;
+}
+
+details[open] > summary.navLink::before {
+  transform: rotate(45deg);
+  top: calc(50% - 5px);
+}
+
+details:hover > summary.navLink::before {
+  border-color: var(--color-text-link);
+}
