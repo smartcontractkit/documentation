@@ -9,21 +9,28 @@ import BaseLayout from "./BaseLayout.astro"
 
   <style>
     .layout {
-      display: flex;
-      flex-direction: column;
-      align-self: center;
-      max-width: var(--max-width);
-      padding: 0 var(--space-6x);
+      display: grid;
+      grid-template-columns: auto;
+      --gutter: var(--space-6x);
+      --doc-padding: var(--space-6x);
+      margin-bottom: 0;
+      width: 100%;
+      padding: var(--doc-padding) var(--gutter);
     }
+
     @media (min-width: 50em) {
       .layout {
-        max-width: var(--fullwidth-max-width);
+        grid-template-columns: 1fr;
+        gap: var(--gutter);
+        width: 100vw;
+        max-width: 1505px;
+        padding: 0 var(--space-6x);
       }
     }
-    @media (min-width: 72em) {
+
+    @media (min-width: 992px) {
       .layout {
-        max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
-        padding: 0;
+        gap: var(--doc-padding);
       }
     }
   </style>

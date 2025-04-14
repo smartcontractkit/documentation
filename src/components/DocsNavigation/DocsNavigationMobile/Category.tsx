@@ -51,7 +51,11 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
         {itemComponent}
       </button>
     ) : (
-      <a className={clsx(styles.link, "product-link")} href={href} ref={forwardedRef}>
+      <a
+        className={clsx(styles.link, "product-link")}
+        href={href.startsWith("http") ? href : `/${href}`}
+        ref={forwardedRef}
+      >
         {itemComponent}
       </a>
     )

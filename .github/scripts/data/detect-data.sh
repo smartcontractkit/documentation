@@ -154,11 +154,11 @@ node <<EOF
 
     // === data-streams networks
     const STREAMS_NETWORKS = [
-      "arbitrum", "avalanche", "base", "berachain", "blast",
+      "apechain", "arbitrum", "avalanche", "base", "berachain", "blast",
       "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
       "ink", "lens", "linea", "mantle", "opbnb", "optimism", "ronin",
       "scroll", "shibarium", "soneium", "sonic",
-      "solana", "unichain", "worldchain", "zksync"
+      "solana", "taiko", "unichain", "worldchain", "zksync"
     ];
 
     // === Build relatedTokens for FEEDS
