@@ -163,7 +163,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   label=""
                   tip="CCIP Blockchain identifier"
                   labelStyle={{
-                    marginRight: "5px",
+                    marginRight: "8px",
                   }}
                   style={{
                     display: "inline-block",
@@ -183,7 +183,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   label=""
                   tip="The RMN contract verifies RMN blessings, and is used to curse."
                   labelStyle={{
-                    marginRight: "5px",
+                    marginRight: "8px",
                   }}
                   style={{
                     display: "inline-block",
@@ -211,7 +211,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   label=""
                   tip="Indicates if messages from this chain are blessed by RMN."
                   labelStyle={{
-                    marginRight: "5px",
+                    marginRight: "8px",
                   }}
                   style={{
                     display: "inline-block",
@@ -231,7 +231,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   label=""
                   tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
                   labelStyle={{
-                    marginRight: "5px",
+                    marginRight: "8px",
                   }}
                   style={{
                     display: "inline-block",
@@ -259,7 +259,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   label=""
                   tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
                   labelStyle={{
-                    marginRight: "5px",
+                    marginRight: "8px",
                   }}
                   style={{
                     display: "inline-block",

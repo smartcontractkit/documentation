@@ -50,6 +50,9 @@ const StyledTooltip = ({ tip, label = "" }: { tip: string; label?: string }) => 
       alignItems: "center",
       verticalAlign: "middle",
     }}
+    labelStyle={{
+      marginRight: "8px",
+    }}
   />
 )
 

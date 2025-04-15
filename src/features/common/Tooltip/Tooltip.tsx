@@ -21,7 +21,7 @@ export const Tooltip = ({
 
   const tooltipIconStyle = {
     width: "auto",
-    height: "0.8em", // Adjusts size relative to font size
+    height: "1.2em",
     maxWidth: "100%",
   }
 
