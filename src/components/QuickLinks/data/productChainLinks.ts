@@ -69,6 +69,7 @@ export const productChainLinks: ProductChainLinks = {
       hedera: "/ccip/directory/mainnet/chain/hedera-mainnet",
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
+      megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
     },
   },
   "Data Feeds": {
@@ -110,6 +111,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
+      apechain: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
@@ -135,6 +137,7 @@ export const productChainLinks: ProductChainLinks = {
       solana: "/data-streams/crypto-streams",
       soneium: "/data-streams/crypto-streams",
       sonic: "/data-streams/crypto-streams",
+      taiko: "/data-streams/crypto-streams",
       unichain: "/data-streams/crypto-streams",
       worldchain: "/data-streams/crypto-streams",
       zksync: "/data-streams/crypto-streams",
@@ -241,6 +244,7 @@ export const productChainLinks: ProductChainLinks = {
     mindnetwork: "/resources/link-token-contracts#mind-network",
     core: "/resources/link-token-contracts#core",
     starknet: "/resources/link-token-contracts#starknet",
+    megaeth: "/resources/link-token-contracts#megaeth",
   },
 }
 
@@ -272,6 +276,7 @@ export const chainNames: Record<string, string> = {
   soneium: "Soneium",
   sonic: "Sonic",
   starknet: "Starknet",
+  taiko: "Taiko",
   wemix: "Wemix",
   zksync: "ZKsync",
   mode: "Mode",
@@ -306,4 +311,5 @@ export const chainNames: Record<string, string> = {
   "0g": "0G",
   mindnetwork: "Mind Network",
   megaeth: "MegaETH",
+  plume: "Plume",
 }

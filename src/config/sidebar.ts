@@ -1,3 +1,8 @@
+/**
+ * Configuration file for the documentation sidebar navigation structure.
+ * This file defines the entire navigation hierarchy for the documentation website.
+ */
+
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import ccipV150Contents from "./sidebar/ccip/api-reference/v1_5_0.json" with { type: "json" }
@@ -6,6 +11,16 @@ import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
 
+/**
+ * Represents a single item in the sidebar navigation.
+ * Can be either a leaf node (just title and URL) or a parent node with children.
+ *
+ * @property title - Display text for the navigation item
+ * @property url - Target URL for the item (can be undefined for section headers)
+ * @property highlightAsCurrent - Optional array of URLs that should highlight this item as current
+ * @property children - Optional array of nested navigation items
+ * @property isCollapsible - Optional flag to control if a section can be collapsed
+ */
 export type SectionContent = {
   title: string
   url: string
@@ -13,11 +28,40 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
 }
-type SectionEntry = {
+
+/**
+ * Represents a top-level section in the sidebar.
+ * Each section contains a title and an array of navigation items.
+ */
+export type SectionEntry = {
   section: string
   contents: SectionContent[]
+  parentSection?: string
 }
 
+/**
+ * Main sidebar configuration object.
+ * Maps each section identifier to its content structure.
+ *
+ * Structure:
+ * {
+ *   dataFeeds: [
+ *     {
+ *       section: "Section Title",
+ *       contents: [
+ *         { title: "Page Title", url: "page-url" },
+ *         {
+ *           title: "Parent Page",
+ *           url: "parent-url",
+ *           children: [
+ *             { title: "Child Page", url: "child-url" }
+ *           ]
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * }
+ */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
@@ -246,6 +290,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
+        },
+        {
+          title: "Supported Networks",
+          url: "data-streams/supported-networks",
         },
         {
           title: "Billing",

@@ -18,6 +18,20 @@ export type NetworkData = {
 
 export const StreamsNetworksData: NetworkData[] = [
   {
+    network: "Apechain",
+    logoUrl: "/assets/chains/apechain.svg",
+    mainnet: {
+      label: "Apechain Mainnet",
+      verifierProxy: "0x2e6621e5e3F916d5e512124dD79e06b55E258054",
+      explorerUrl: "https://apescan.io/address/%s",
+    },
+    testnet: {
+      label: "Apechain Curtis (Testnet)",
+      verifierProxy: "0x9D93c410AfDb41E8aEb1BA88B5Ff6DEAa09FF537",
+      explorerUrl: "https://explorer.curtis.apechain.com/address/%s",
+    },
+  },
+  {
     network: "Arbitrum",
     logoUrl: "/assets/chains/arbitrum.svg",
     networkStatus: "https://arbiscan.freshstatus.io/",
@@ -366,6 +380,20 @@ export const StreamsNetworksData: NetworkData[] = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "Taiko",
+    logoUrl: "/assets/chains/taiko.svg",
+    mainnet: {
+      label: "Taiko Alethia (Mainnet)",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://taikoscan.io/address/%s",
+    },
+    testnet: {
+      label: "Taiko Hekla (Testnet)",
+      verifierProxy: "0xF45D6dba93d0dB2C849C280F45e60D6e11b3C4DD",
+      explorerUrl: "https://hekla.taikoscan.io/address/%s",
     },
   },
   {
