@@ -40,8 +40,17 @@ const NetworkDisplay = ({ logo, name }: { logo: string; name: string }) => (
 )
 
 // Reusable tooltip component with consistent styling
-const StyledTooltip = ({ label, tip }: { label: string; tip: string }) => (
-  <Tooltip label={label} tip={tip} labelStyle={{ marginRight: "10px" }} style={{ display: "inline-flex" }} />
+const StyledTooltip = ({ tip, label = "" }: { tip: string; label?: string }) => (
+  <Tooltip
+    label={label}
+    tip={tip}
+    style={{
+      display: "inline-flex",
+      marginLeft: "8px",
+      alignItems: "center",
+      verticalAlign: "middle",
+    }}
+  />
 )
 
 // Detail item component for consistent label-value pairs
@@ -49,13 +58,18 @@ const DetailItem = ({
   label,
   children,
   clipboardType,
+  tooltip,
 }: {
   label: string
   children: React.ReactNode
   clipboardType?: string
+  tooltip?: React.ReactNode
 }) => (
   <>
-    <div className="lane-details-hero__details__label">{label}</div>
+    <div className="lane-details-hero__details__label">
+      {label}
+      {tooltip}
+    </div>
     <div data-clipboard-type={clipboardType}>{children}</div>
   </>
 )
@@ -113,28 +127,36 @@ function LaneDetailsHero({
           {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
         </DetailItem>
 
-        <DetailItem label="RMN">
+        <DetailItem
+          label="RMN Verification"
+          tooltip={
+            <StyledTooltip
+              tip={
+                rmnPermeable
+                  ? "Risk Management Network (RMN) is NOT enabled for this lane at this time."
+                  : "Indicates if RMN blessings are verified on the destination chain."
+              }
+            />
+          }
+        >
           {rmnPermeable ? (
             <a href="/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
-              <StyledTooltip
-                label="Coming soon"
-                tip="Risk Management Network (RMN) is NOT enabled for this lane at this time."
-              />
+              Coming soon
             </a>
           ) : (
-            <StyledTooltip
-              label="Enabled"
-              tip="This field shows the status of the Risk Management Network (RMN) for this lane."
-            />
+            "Enabled"
           )}
         </DetailItem>
 
         {inOutbound === LaneFilter.Outbound && (
-          <DetailItem label="Out of Order Execution" clipboardType="out-of-order-execution">
-            <StyledTooltip
-              label={getOutOfOrderText(enforceOutOfOrder)}
-              tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
-            />
+          <DetailItem
+            label="Out of Order Execution"
+            clipboardType="out-of-order-execution"
+            tooltip={
+              <StyledTooltip tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert." />
+            }
+          >
+            {getOutOfOrderText(enforceOutOfOrder)}
           </DetailItem>
         )}
       </div>

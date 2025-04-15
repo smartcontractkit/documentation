@@ -181,7 +181,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 RMN
                 <Tooltip
                   label=""
-                  tip="The Risk Management contract maintains the list of Risk Management node addresses that are allowed to bless or curse. The contract also holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain."
+                  tip="The RMN contract verifies RMN blessings, and is used to curse."
                   labelStyle={{
                     marginRight: "5px",
                   }}
@@ -202,6 +202,26 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 ) : (
                   "n/a"
                 )}
+              </div>
+            </div>
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__label">
+                RMN Blessing
+                <Tooltip
+                  label=""
+                  tip="Indicates if messages from this chain are blessed by RMN."
+                  labelStyle={{
+                    marginRight: "5px",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginBottom: "2px",
+                  }}
+                />
+              </div>
+              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn-blessing">
+                [VALUE_HERE]
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">

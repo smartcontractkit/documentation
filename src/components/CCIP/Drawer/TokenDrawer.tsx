@@ -160,7 +160,7 @@ function TokenDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Maximum amount per transaction"
+                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
                     labelStyle={{
                       marginRight: "5px",
                     }}
