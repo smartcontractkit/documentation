@@ -280,46 +280,54 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )}
               </div>
             </div>
-          </div>
-        )}
-
-        {feeTokensWithAddress && (
-          <div className="ccip-chain-hero__feeTokens">
-            <div className="ccip-chain-hero__details__label">Fee tokens</div>
-            <div className="ccip-chain-hero__feeTokens__list">
-              {feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => {
-                return (
-                  <div key={index} className="ccip-chain-hero__feeTokens__item" data-clipboard-type="fee-token">
+            {feeTokensWithAddress &&
+              feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
+                <div key={`fee-token-${index}`} className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">{index === 0 ? "Fee tokens" : <>&nbsp;</>}</div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-token">
+                    <div className="ccip-chain-hero__feeTokens__item">
+                      <object
+                        data={logo}
+                        type="image/png"
+                        width="20px"
+                        height="20px"
+                        className="ccip-chain-hero__feeTokens__item__logo"
+                      >
+                        <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
+                      </object>
+                      <div>{token}</div>
+                      <Address endLength={4} contractUrl={contractUrl} address={address} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            {!nativeTokenHasAddress() && nativeCurrency && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  {!feeTokensWithAddress || feeTokensWithAddress.length === 0 ? "Fee tokens" : <>&nbsp;</>}
+                </div>
+                <div className="ccip-chain-hero__details__value">
+                  <div className="ccip-chain-hero__feeTokens__item">
                     <object
-                      data={logo}
+                      data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
                       type="image/png"
                       width="20px"
                       height="20px"
                       className="ccip-chain-hero__feeTokens__item__logo"
                     >
-                      <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
+                      <img
+                        src={fallbackTokenIconUrl}
+                        alt={`${nativeCurrency.symbol} icon`}
+                        width="20px"
+                        height="20px"
+                      />
                     </object>
-                    <div>{token}</div>
-                    <Address endLength={4} contractUrl={contractUrl} address={address} />
+                    <div>{nativeCurrency.symbol}</div>
+                    <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
                   </div>
-                )
-              })}
-              {!nativeTokenHasAddress() && nativeCurrency && (
-                <div key={"native-token"} className="ccip-chain-hero__feeTokens__item">
-                  <object
-                    data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
-                    type="image/png"
-                    width="20px"
-                    height="20px"
-                    className="ccip-chain-hero__feeTokens__item__logo"
-                  >
-                    <img src={fallbackTokenIconUrl} alt={`${nativeCurrency.symbol} icon`} width="20px" height="20px" />
-                  </object>
-                  <div>{nativeCurrency.symbol} </div>
-                  <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
