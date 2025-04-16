@@ -1,4 +1,4 @@
-import { Environment, LaneConfig, Version } from "~/config/data/ccip/types.ts"
+import { Environment, LaneConfig, Version, ChainType } from "~/config/data/ccip/types.ts"
 import { getTokenData } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
@@ -48,6 +48,7 @@ interface ChainHeroProps {
     totalLanes: number
     totalTokens: number
     chain: string
+    chainType?: ChainType
     tokenAdminRegistry?: string
     registryModule?: string
     router?: {
@@ -67,6 +68,7 @@ interface ChainHeroProps {
       address: string
       version: string
     }
+    feeQuoterProgram?: string
   }
   token?: {
     id: string
@@ -78,24 +80,25 @@ interface ChainHeroProps {
 }
 
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
-  const feeTokensWithAddress = network?.feeTokens?.map((feeToken) => {
-    const logo = getTokenIconUrl(feeToken)
-    const token = getTokenData({
-      environment,
-      version: Version.V1_2_0,
-      tokenId: feeToken,
-    })
-    const explorer = network.explorer
-    const address = token[network.chain].tokenAddress
-    const contractUrl = getExplorerAddressUrl(explorer)(token[network.chain].tokenAddress)
+  const feeTokensWithAddress =
+    network?.feeTokens?.map((feeToken) => {
+      const logo = getTokenIconUrl(feeToken)
+      const token = getTokenData({
+        environment,
+        version: Version.V1_2_0,
+        tokenId: feeToken,
+      })
+      const explorer = network.explorer || {}
+      const address = token[network.chain]?.tokenAddress
+      const contractUrl = address ? getExplorerAddressUrl(explorer)(address) : ""
 
-    return {
-      logo,
-      token: feeToken,
-      address,
-      contractUrl,
-    }
-  })
+      return {
+        logo,
+        token: feeToken,
+        address,
+        contractUrl,
+      }
+    }) || []
 
   const nativeCurrency = ((network) => {
     if (!network) return
@@ -224,62 +227,100 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 [VALUE_HERE]
               </div>
             </div>
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                Token admin registry
-                <Tooltip
-                  label=""
-                  tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
-                {network.tokenAdminRegistry ? (
-                  <Address
-                    endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAdminRegistry)}
-                    address={network.tokenAdminRegistry}
+
+            {/* Conditional rendering based on chain type */}
+            {(!network.chainType || network.chainType === ChainType.EVM) && (
+              <>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">
+                    Token admin registry
+                    <Tooltip
+                      label=""
+                      tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
+                      labelStyle={{
+                        marginRight: "8px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
+                    {network.tokenAdminRegistry ? (
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAdminRegistry)}
+                        address={network.tokenAdminRegistry}
+                      />
+                    ) : (
+                      "n/a"
+                    )}
+                  </div>
+                </div>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">
+                    Registry module owner
+                    <Tooltip
+                      label=""
+                      tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
+                      labelStyle={{
+                        marginRight: "8px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
+                    {network.registryModule ? (
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.registryModule)}
+                        address={network.registryModule}
+                      />
+                    ) : (
+                      "n/a"
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {network.chainType === ChainType.SVM && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  Fee Quoter Program
+                  <Tooltip
+                    label=""
+                    tip="The Fee Quoter Program provides fee calculations for CCIP transactions on Solana."
+                    labelStyle={{
+                      marginRight: "8px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
                   />
-                ) : (
-                  "n/a"
-                )}
+                </div>
+                <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter">
+                  {network.feeQuoterProgram ? (
+                    <Address
+                      endLength={4}
+                      contractUrl={getExplorerAddressUrl(network.explorer)(network.feeQuoterProgram)}
+                      address={network.feeQuoterProgram}
+                    />
+                  ) : (
+                    "n/a"
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                Registry module owner
-                <Tooltip
-                  label=""
-                  tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
-                {network.registryModule ? (
-                  <Address
-                    endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer)(network.registryModule)}
-                    address={network.registryModule}
-                  />
-                ) : (
-                  "n/a"
-                )}
-              </div>
-            </div>
+            )}
+
             {feeTokensWithAddress &&
               feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
                 <div key={`fee-token-${index}`} className="ccip-chain-hero__details__item">

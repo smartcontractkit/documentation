@@ -1,6 +1,13 @@
 import { SupportedChain } from "~/config/types.ts"
 import { chainToTechnology } from "~/config/chains.ts"
-import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
+import {
+  NetworkFeeStructure,
+  PoolType,
+  TokenMechanism,
+  LaneSpecificFeeKey,
+  RateLimiterConfig,
+  ChainType,
+} from "./types.ts"
 import { networkFees } from "./data.ts"
 import BigNumberJs from "bignumber.js"
 import { commify } from "~/utils/index.js"
@@ -175,4 +182,15 @@ export const displayRate = (capacity: string, rate: string, symbol: string, deci
     rateSecond: `${commify(rateNormalized)} ${symbol}/second`,
     maxThroughput: `Refills from 0 to ${commify(capacityNormalized)} ${symbol} in ${displayTime}`,
   }
+}
+
+// Helper function to determine if a chain is Solana-based
+export const isSolanaChain = (chain?: string): boolean => {
+  if (!chain) return false
+  return chain.toLowerCase().includes("solana")
+}
+
+// Helper function to determine VM type from chain name
+export const getVMTypeFromChain = (chain: string): ChainType => {
+  return isSolanaChain(chain) ? ChainType.SVM : ChainType.EVM
 }

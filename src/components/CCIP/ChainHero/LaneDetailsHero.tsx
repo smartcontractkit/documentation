@@ -3,13 +3,14 @@ import AddressComponent from "~/components/AddressReact.tsx"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import CopyValue from "../CopyValue/CopyValue.tsx"
-import { LaneFilter } from "~/config/data/ccip/types.ts"
+import { LaneFilter, ChainType } from "~/config/data/ccip/types.ts"
 import { ExplorerInfo } from "~/config/types.ts"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
     logo: string
     name: string
+    chainType?: ChainType
   }
   destinationNetwork: {
     logo: string
@@ -121,7 +122,11 @@ function LaneDetailsHero({
             <AddressComponent address={offRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(offRamp)} />
           </DetailItem>
         ) : (
-          <DetailItem label="OnRamp address" clipboardType="onramp">
+          <DetailItem
+            label="OnRamp address"
+            clipboardType="onramp"
+            tooltip={sourceNetwork.chainType === ChainType.SVM ? <StyledTooltip tip="Same as Router" /> : undefined}
+          >
             <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
           </DetailItem>
         )}

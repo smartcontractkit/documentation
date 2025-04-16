@@ -168,6 +168,7 @@ export type SupportedChain =
   | "TAIKO_TESTNET"
   | "PLUME_MAINNET"
   | "PLUME_TESTNET"
+  | "SOLANA_DEVNET"
 
 export type ExplorerInfo = {
   baseUrl: string

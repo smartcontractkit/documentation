@@ -124,6 +124,7 @@ export type NetworkFees = {
 }
 
 export enum Environment {
+  // Standard environments for all VM types
   Mainnet = "mainnet",
   Testnet = "testnet",
 }
@@ -154,6 +155,11 @@ export enum LaneStatus {
   CURSED = "CURSED",
 }
 
+export enum ChainType {
+  EVM = "evm", // Ethereum Virtual Machine
+  SVM = "svm", // Solana Virtual Machine
+}
+
 export interface Network {
   name: string
   chain: string
@@ -162,6 +168,7 @@ export interface Network {
   totalLanes: number
   totalTokens: number
   key: string
+  chainType?: ChainType
   tokenAdminRegistry?: string
   explorer: ExplorerInfo
   registryModule?: string
@@ -169,9 +176,19 @@ export interface Network {
     address: string
     version: string
   }
+  feeTokens?: {
+    name: string
+    logo: string
+  }[]
+  nativeToken?: {
+    name: string
+    symbol: string
+    logo: string
+  }
   armProxy: {
     address: string
     version: string
   }
   routerExplorerUrl: string
+  feeQuoterProgram?: string
 }

@@ -10,8 +10,9 @@ import {
   NetworkFees,
   LaneConfig,
   Network,
+  ChainType,
 } from "./types.ts"
-import { determineTokenMechanism } from "./utils.ts"
+import { determineTokenMechanism, getVMTypeFromChain } from "./utils.ts"
 import { ExplorerInfo, SupportedChain } from "@config/types.ts"
 import {
   directoryToSupportedChain,
@@ -383,36 +384,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     environment: filter,
   })
 
-  const allChains: {
-    name: string
-    logo: string
-    totalLanes: number
-    totalTokens: number
-    chain: string
-    key: string
-    chainSelector: string
-    tokenAdminRegistry?: string
-    explorer: ExplorerInfo
-    registryModule?: string
-    router?: {
-      address: string
-      version: string
-    }
-    feeTokens?: {
-      name: string
-      logo: string
-    }[]
-    nativeToken?: {
-      name: string
-      symbol: string
-      logo: string
-    }
-    armProxy: {
-      address: string
-      version: string
-    }
-    routerExplorerUrl: string
-  }[] = []
+  const allChains: Network[] = []
 
   for (const chain of chains) {
     const directory = directoryToSupportedChain(chain)
@@ -428,14 +400,19 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     const router = chains[chain].router
     if (!explorer) throw Error(`Explorer not found for ${directory}`)
     const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
+
+    // Determine chain type based on chain name
+    const chainType = getVMTypeFromChain(chain)
+
     allChains.push({
       name: title,
       logo,
-      totalLanes: Object.keys(lanes[chain]).length,
+      totalLanes: lanes[chain] ? Object.keys(lanes[chain]).length : 0,
       totalTokens: token.length,
       chain,
       key: chain,
       explorer,
+      chainType,
       tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
       registryModule: chains[chain]?.registryModule?.address,
       router,
@@ -448,6 +425,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       },
       feeTokens: chains[chain].feeTokens,
       armProxy: chains[chain].armProxy,
+      feeQuoterProgram: chainType === ChainType.SVM ? chains[chain]?.feeQuoterProgram : undefined,
     })
   }
 
@@ -468,14 +446,19 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
           chainsReferenceData = chainsTestnetv120 as unknown as ChainsConfig
           break
         default:
-          throw new Error(`Invalid testnet version: ${filter}`)
+          throw new Error(`Invalid environment: ${filter}`)
       }
 
       const chainDetails = chainsReferenceData[chain]
+
+      // Get VM type based on the chain name
+      const chainType = getVMTypeFromChain(chain)
+
       return {
         name: network.name,
         logo: network.logo,
         explorer: network.explorer,
+        chainType,
         ...chainDetails,
       }
     }
@@ -622,6 +605,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       name: string
       logo: string
       key: string
+      chainType?: ChainType
     }
     destinationNetwork: {
       name: string
@@ -636,6 +620,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
     const sourceChainDirectory = directoryToSupportedChain(sourceChain)
     const sourceChainTitle = getTitle(sourceChainDirectory)
     const sourceChainLogo = getChainIcon(sourceChainDirectory)
+    const sourceChainType = getVMTypeFromChain(sourceChain)
 
     for (const destinationChain in lanes[sourceChain]) {
       const destinationChainDirectory = directoryToSupportedChain(destinationChain)
@@ -650,6 +635,7 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
           name: sourceChainTitle || "",
           logo: sourceChainLogo || "",
           key: sourceChain,
+          chainType: sourceChainType,
         },
         destinationNetwork: {
           name: destinationChainTitle || "",
