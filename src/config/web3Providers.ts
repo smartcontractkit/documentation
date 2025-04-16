@@ -115,6 +115,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TAIKO_TESTNET: () => new JsonRpcProvider("https://rpc.hekla.taiko.xyz"),
   PLUME_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
   PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
+  SOLANA_DEVNET: () => new JsonRpcProvider("https://api.devnet.solana.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
