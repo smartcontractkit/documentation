@@ -426,6 +426,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       feeTokens: chains[chain].feeTokens,
       armProxy: chains[chain].armProxy,
       feeQuoterProgram: chainType === ChainType.SVM ? chains[chain]?.feeQuoterProgram : undefined,
+      rmnPermeable: chains[chain]?.rmnPermeable,
     })
   }
 
@@ -459,6 +460,7 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
         logo: network.logo,
         explorer: network.explorer,
         chainType,
+        rmnPermeable: chainDetails?.rmnPermeable,
         ...chainDetails,
       }
     }

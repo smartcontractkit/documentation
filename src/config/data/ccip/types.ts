@@ -70,6 +70,13 @@ export type ChainConfig = {
     address: string
     version: string
   }
+  feeQuoterProgram?: string
+  rmnPermeable?: boolean
+  nativeToken?: {
+    name: string
+    symbol: string
+    logo: string
+  }
 }
 
 export type ChainsConfig = {
@@ -191,4 +198,5 @@ export interface Network {
   }
   routerExplorerUrl: string
   feeQuoterProgram?: string
+  rmnPermeable: boolean
 }

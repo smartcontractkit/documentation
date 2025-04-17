@@ -69,6 +69,7 @@ interface ChainHeroProps {
       version: string
     }
     feeQuoterProgram?: string
+    rmnPermeable?: boolean
   }
   token?: {
     id: string
@@ -224,7 +225,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 />
               </div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn-blessing">
-                [VALUE_HERE]
+                {network?.rmnPermeable === false ? "Enabled" : "Disabled"}
               </div>
             </div>
 
