@@ -79,7 +79,7 @@ const getChainlinkAutomationConfigs = async () => {
         configs[key] = config
       } catch (error) {
         console.error(error)
-        console.error(`Error while retriving chainlink automation config for ${key}`)
+        console.error(`Error while retrieving chainlink automation config for ${key}`)
       }
     }
   }
