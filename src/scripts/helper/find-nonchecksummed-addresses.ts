@@ -18,7 +18,7 @@ const getCorrectAddress = (value: string) => {
   } catch (error) {
     if (error.reason && (error.reason as string).includes("bad address checksum")) {
       console.error(error.reason)
-      console.error(`Search manually for ${error.value} and replace its occurences with a valid checksum`)
+      console.error(`Search manually for ${error.value} and replace its occurrences with a valid checksum`)
     }
 
     return undefined
