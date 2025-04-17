@@ -11,17 +11,18 @@ interface LaneDetailsHeroProps {
     logo: string
     name: string
     chainType?: ChainType
+    rmnPermeable?: boolean
   }
   destinationNetwork: {
     logo: string
     name: string
+    chainType?: ChainType
   }
   onRamp: string
   offRamp: string
   destinationAddress: string
   enforceOutOfOrder?: boolean
   explorer: ExplorerInfo
-  rmnPermeable: boolean
   inOutbound: LaneFilter
 }
 
@@ -86,7 +87,6 @@ function LaneDetailsHero({
   destinationAddress,
   enforceOutOfOrder,
   explorer,
-  rmnPermeable,
   inOutbound,
 }: LaneDetailsHeroProps) {
   // Map boolean values to display strings
@@ -94,6 +94,18 @@ function LaneDetailsHero({
     if (value === true) return "Required"
     if (value === false) return "Optional"
     return "N/A"
+  }
+
+  // Determine if RMN verifications are enabled
+  const isRmnVerificationEnabled = () => {
+    // If destination chain is Solana, RMN verifications are disabled
+    if (destinationNetwork.chainType === ChainType.SVM) {
+      return false
+    }
+
+    // Otherwise, check if source chain has RMN blessings enabled
+    // Note: rmnPermeable === false means RMN blessings are enabled (inverted logic)
+    return sourceNetwork.rmnPermeable === false
   }
 
   return (
@@ -125,7 +137,7 @@ function LaneDetailsHero({
           <DetailItem
             label="OnRamp address"
             clipboardType="onramp"
-            tooltip={sourceNetwork.chainType === ChainType.SVM ? <StyledTooltip tip="Same as Router" /> : undefined}
+            tooltip={sourceNetwork.chainType === ChainType.SVM ? <StyledTooltip tip="Same as Router." /> : undefined}
           >
             <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
           </DetailItem>
@@ -137,23 +149,9 @@ function LaneDetailsHero({
 
         <DetailItem
           label="RMN Verification"
-          tooltip={
-            <StyledTooltip
-              tip={
-                rmnPermeable
-                  ? "Risk Management Network (RMN) is NOT enabled for this lane at this time."
-                  : "Indicates if RMN blessings are verified on the destination chain."
-              }
-            />
-          }
+          tooltip={<StyledTooltip tip={"Indicates if RMN blessings are verified on the destination chain."} />}
         >
-          {rmnPermeable ? (
-            <a href="/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
-              Coming soon
-            </a>
-          ) : (
-            "Enabled"
-          )}
+          {isRmnVerificationEnabled() ? "Enabled" : "Disabled"}
         </DetailItem>
 
         {inOutbound === LaneFilter.Outbound && (

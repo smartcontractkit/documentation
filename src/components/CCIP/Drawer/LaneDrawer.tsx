@@ -32,6 +32,11 @@ function LaneDrawer({
     chain: destinationNetwork.key,
   })
 
+  const sourceNetworkDetails = getNetwork({
+    filter: environment,
+    chain: sourceNetwork.key,
+  })
+
   return (
     <>
       <h2 className="ccip-table__drawer-heading">Lane details</h2>
@@ -40,17 +45,18 @@ function LaneDrawer({
           logo: sourceNetwork.logo,
           name: sourceNetwork.name,
           chainType: sourceNetwork.chainType,
+          rmnPermeable: sourceNetworkDetails?.rmnPermeable,
         }}
         destinationNetwork={{
           logo: destinationNetwork.logo,
           name: destinationNetwork.name,
+          chainType: destinationNetworkDetails?.chainType,
         }}
         onRamp={lane.onRamp.address}
         offRamp={lane.offRamp.address}
         enforceOutOfOrder={lane.onRamp.enforceOutOfOrder}
         explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
-        rmnPermeable={lane.rmnPermeable}
         inOutbound={inOutbound}
       />
 
