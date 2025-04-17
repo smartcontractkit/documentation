@@ -135,7 +135,7 @@ const addAssetToWallet = async (ethereum: MetaMaskInpageProvider, parameters: Ad
 /**
  * Call this function to make the wallet switch to the desired chain
  * @param chainId designed chain in HexString
- * @param ethereum ethereum inpage provider (e.g.: provider loaded by Metamask)
+ * @param ethereum inpage provider (e.g.: provider loaded by Metamask)
  */
 const switchToChain = async (chainId: string, ethereum: MetaMaskInpageProvider) => {
   if (!isChainIdFormatValid(chainId)) {
@@ -172,7 +172,7 @@ const switchToChain = async (chainId: string, ethereum: MetaMaskInpageProvider) 
 /**
  * Call this function to add a new chain to the wallet. Should only be called if the chain doesn't exist already in the wallet
  * @param chainId designed chain in HexString
- * @param ethereum ethereum in page provider (e.g.: provider loaded by Metamask)
+ * @param ethereum in page provider (e.g.: provider loaded by Metamask)
  */
 const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvider) => {
   if (!isChainIdFormatValid(chainId)) {
