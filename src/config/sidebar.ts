@@ -1051,20 +1051,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/getting-started",
         },
         {
-          title: "CCIP Directory",
-          url: "ccip/directory",
-          children: [
-            {
-              title: "Mainnet",
-              url: "ccip/directory/mainnet",
-            },
-            {
-              title: "Testnet",
-              url: "ccip/directory/testnet",
-            },
-          ],
-        },
-        {
           title: "Service Limits",
           url: "ccip/service-limits",
         },
@@ -1083,6 +1069,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Release Notes",
           url: "ccip/release-notes",
+        },
+      ],
+    },
+    {
+      section: "CCIP Directory",
+      contents: [
+        {
+          title: "Mainnet",
+          url: "ccip/directory/mainnet",
+        },
+        {
+          title: "Testnet",
+          url: "ccip/directory/testnet",
         },
       ],
     },
