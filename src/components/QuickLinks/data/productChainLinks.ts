@@ -121,6 +121,7 @@ export const productChainLinks: ProductChainLinks = {
       bob: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
       ethereum: "/data-streams/crypto-streams",
+      "gnosis-chain": "/data-streams/crypto-streams",
       hashkey: "/data-streams/crypto-streams",
       hyperliquid: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
