@@ -8,24 +8,12 @@ interface IconProps {
 
 export const MailIcon: React.FC<IconProps> = ({ width = 20, height = 20, className }) => {
   return (
-    <svg width={width} height={height} viewBox="0 0 24 24" fill="none" className={className}>
-      <rect
-        x="2"
-        y="4"
-        width="20"
-        height="16"
-        rx="2"
-        stroke="currentColor"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width={width} height={height} viewBox="0 0 18 16" fill="none" className={className}>
       <path
-        d="M22 7L13.03 13.2C12.7 13.42 12.35 13.53 12 13.53C11.65 13.53 11.3 13.42 10.97 13.2L2 7"
+        d="M1.66699 4L9.00033 8L16.3337 4M1.66699 2H16.3337V14H1.66699V2Z"
         stroke="currentColor"
         fill="none"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
