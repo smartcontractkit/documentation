@@ -5,4 +5,61 @@ title: "Onchain Architecture - Upgradability (SVM)"
 whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
 ---
 
-XXX
+Chainlink's Cross-Chain Interoperability Protocol (CCIP) is designed to evolve in response to new security considerations, emerging feature requests, and the need to onboard additional blockchains. This evolution requires a secure, transparent upgrade process that preserves users' trust in CCIP while allowing for iterative improvements.
+
+## What Can Be Upgraded
+
+On SVM-based blockchains, upgradability primarily happens in two ways:
+
+1. **Onchain Configuration**
+
+   Many CCIP programs (e.g., Router, OffRamp) offer public functions that allow for parameter updates without redeploying the entire program. Examples might include:
+
+   - Adding or removing supported blockchains.
+   - Enabling a new fee token.
+
+   Because these modifications only change onchain data, operational parameters can be adjusted without redeploying an entire program.
+
+1. **Program Code Upgrades**
+
+   In SVM-based blockchains, programs are mutable by default (unless the upgrade authority is removed after deploying them). This allows the same program ID to point to new code if an upgrade is published. Developers typically use this mechanism to:
+
+   - Patch vulnerabilities or correct unforeseen implementation errors.
+   - Introduce new features or improved logic for cross-chain messaging.
+
+Once the program code is upgraded, external references (such as PDAs or user accounts) are not broken because they rely on the original program ID.
+
+**Special case:** Unlike other CCIP components, the OffRamp program follows a different upgrade pattern. Instead of upgrading in place, new OffRamp program instances are deployed when upgrades are needed. This approach ensures backward compatibility with in-flight messages that need to be processed by the correct OffRamp version.
+
+## Implementation Process
+
+All security-critical onchain configuration changes to CCIP on Solana must pass through a secure upgrade process consisting of the ManyChainMultiSig (MCMS) and Timelock programs. This mechanism helps ensure security, transparency, and proper authorization for all protocol modifications.
+
+1. **Proposals**
+
+   - All proposals originate from the MCMS program, which enforces multi-signature requirements.
+   - Proposals require multiple independent signers from Chainlink node operators with established track records within the Chainlink Network, as well as from Chainlink Labs.
+   - Signers are distributed across multiple global locations and may be rotated periodically to mitigate concentration risks.
+   - Two distinct paths exist for a proposal to succeed:
+     - Time-locked Review: Each proposal submitted to the Timelock program enters a mandatory review period delay. During this window, node operators securing CCIP can veto the proposal by calling the cancel instruction. If no veto occurs, the proposal proceeds to execution after the delay expires.
+     - Expedited Approval: A quorum of independent signers (including Chainlink node operators) actively endorse the proposal, allowing for time-sensitive upgrades.
+
+1. **Review & Veto Window**
+
+   During the timelock review period, CCIP node operators can inspect the onchain proposal (e.g., adjusting a rate limit) and choose to reject it, preventing the proposal from being executed.
+
+1. **Execution**
+
+   - Once the review period delay expires, accounts with the Executor role can call the `execute_batch` instruction on the Timelock program.
+   - The Timelock program verifies the operation is ready and executes each instruction sequentially.
+   - The Timelock uses a Program Derived Address (PDA) as a transaction signer to authorize actions in target programs.
+
+1. **Public Verifiability**
+
+   - The MCMS program's configuration, including registered signers and group quorums, is stored in public PDAs that anyone can inspect.
+   - All scheduled operations, their content, and execution status are visible in onchain accounts.
+   - The Access Controller program maintains public records of all accounts granted specific roles (Proposer, Executor, Cancellers, and Bypasser).
+
+## Additional Resources
+
+[TO BE UPDATED]
