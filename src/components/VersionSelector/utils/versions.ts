@@ -74,8 +74,8 @@ export const validateVersion = <T extends string>(version: T, availableVersions:
  * @returns Complete URL path for the new version
  *
  * @example
- * // Current: /ccip/api-reference/v1.5.0/client
- * // Returns: /ccip/api-reference/v1.5.1/client
+ * // Current: /ccip/tools-resources/api-reference/evm/v1.5.0/client
+ * // Returns: /ccip/tools-resources/api-reference/evm/v1.5.1/client
  */
 export const buildVersionUrl = (
   product: ProductConfig,
@@ -87,7 +87,7 @@ export const buildVersionUrl = (
   const escapedVersion = currentVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
   // Extract the path after version using regex
-  // Example: /ccip/api-reference/v1.5.0/client -> /client
+  // Handle both standard and extended path patterns
   const versionPattern = new RegExp(`${product.basePath}/${escapedVersion}(/.*)?$`)
   const match = currentPath.match(versionPattern)
 
@@ -111,24 +111,29 @@ export const buildVersionUrl = (
  * // Returns { isApiReference: true, product: "ccip", isVersioned: true }
  * detectApiReference("/ccip/api-reference/v1.5.1/client")
  *
- * // Returns { isApiReference: true, product: "ccip", isVersioned: false }
- * detectApiReference("/ccip/api-reference/index")
+ * // Also handles extended paths:
+ * detectApiReference("/ccip/tools-resources/api-reference/evm/v1.5.1/client")
  */
 export const detectApiReference = (
   path: string
 ): { isApiReference: boolean; product?: Collection; isVersioned: boolean } => {
-  // First regex: Matches API reference paths and captures product name
-  // Example: /ccip/api-reference/v1.5.1 -> matches, product = "ccip"
-  const versionMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
-  if (!versionMatch) return { isApiReference: false, isVersioned: false }
+  // Match both standard and extended API reference paths
+  // Standard: /product/api-reference/v1.5.1/client
+  // Extended: /ccip/tools-resources/api-reference/evm/v1.5.1/client
+  const standardMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
+  const extendedMatch = path.match(/^\/([^/]+)\/tools-resources\/api-reference\/(?:[^/]+)(?:\/v\d+\.\d+\.\d+)?/)
 
-  const product = versionMatch[1] as Collection
+  const match = standardMatch || extendedMatch
+  if (!match) return { isApiReference: false, isVersioned: false }
+
+  const product = match[1] as Collection
   const hasVersions = getProductVersionConfig(product)
 
-  // Second regex: Strictly checks if page is under a version directory
-  // Example: /ccip/api-reference/v1.5.1/client -> matches
-  // Example: /ccip/api-reference/index -> doesn't match
-  const isVersioned = path.match(/^\/[^/]+\/api-reference\/v\d+\.\d+\.\d+/) !== null
+  // Check if page is under a version directory
+  // Matches both standard and extended paths with versions
+  const isVersioned =
+    path.match(/^\/[^/]+\/api-reference\/v\d+\.\d+\.\d+/) !== null ||
+    path.match(/^\/[^/]+\/tools-resources\/api-reference\/[^/]+\/v\d+\.\d+\.\d+/) !== null
 
   return {
     isApiReference: true,
