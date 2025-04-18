@@ -56,6 +56,11 @@ export type SupportedTechnology =
   | "MEGAETH"
   | "TAIKO"
   | "PLUME"
+  | "ABSTRACT"
+  | "LISK"
+  | "ZORA"
+  | "MINT"
+  | "SUPERSEED"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -159,7 +164,6 @@ export type SupportedChain =
   | "CRONOS_MAINNET"
   | "CRONOS_ZKEVM_TESTNET"
   | "CRONOS_ZKEVM_MAINNET"
-  | "TRON_MAINNET"
   | "0G_NEWTON_TESTNET"
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
@@ -168,6 +172,18 @@ export type SupportedChain =
   | "TAIKO_TESTNET"
   | "PLUME_MAINNET"
   | "PLUME_TESTNET"
+  | "TRON_MAINNET"
+  | "TRON_TESTNET"
+  | "ABSTRACT_TESTNET"
+  | "ABSTRACT_MAINNET"
+  | "LISK_TESTNET"
+  | "LISK_MAINNET"
+  | "ZORA_TESTNET"
+  | "ZORA_MAINNET"
+  | "MINT_TESTNET"
+  | "MINT_MAINNET"
+  | "SUPERSEED_TESTNET"
+  | "SUPERSEED_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string
