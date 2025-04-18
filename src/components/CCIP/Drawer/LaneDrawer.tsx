@@ -58,6 +58,7 @@ function LaneDrawer({
         explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         inOutbound={inOutbound}
+        laneRmnPermeable={lane.rmnPermeable}
       />
 
       <div className="ccip-table__drawer-container">

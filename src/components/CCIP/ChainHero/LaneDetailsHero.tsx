@@ -24,6 +24,7 @@ interface LaneDetailsHeroProps {
   enforceOutOfOrder?: boolean
   explorer: ExplorerInfo
   inOutbound: LaneFilter
+  laneRmnPermeable?: boolean
 }
 
 // Arrow component to avoid duplication
@@ -88,6 +89,7 @@ function LaneDetailsHero({
   enforceOutOfOrder,
   explorer,
   inOutbound,
+  laneRmnPermeable,
 }: LaneDetailsHeroProps) {
   // Map boolean values to display strings
   const getOutOfOrderText = (value?: boolean) => {
@@ -96,15 +98,21 @@ function LaneDetailsHero({
     return "N/A"
   }
 
-  // Determine if RMN verifications are enabled
+  /**
+   * Determines if RMN verification is enabled for this lane. Logic:
+   * 1. If the destination chain is Solana (SVM), RMN verification is always disabled
+   * 2. If a lane-specific rmnPermeable value exists, it takes precedence
+   * 3. Otherwise, fallback to the source network's rmnPermeable setting
+   */
   const isRmnVerificationEnabled = () => {
-    // If destination chain is Solana, RMN verifications are disabled
     if (destinationNetwork.chainType === ChainType.SVM) {
       return false
     }
 
-    // Otherwise, check if source chain has RMN blessings enabled
-    // Note: rmnPermeable === false means RMN blessings are enabled (inverted logic)
+    if (laneRmnPermeable !== undefined) {
+      return laneRmnPermeable === false
+    }
+
     return sourceNetwork.rmnPermeable === false
   }
 
