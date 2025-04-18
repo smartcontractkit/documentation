@@ -5,4 +5,48 @@ title: "Cross-Chain Token Standard - Tokens (EVM)"
 whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
 ---
 
-XXX
+import { Aside } from "@components"
+
+Before enabling an ERC20-compatible token in CCIP, it's important to understand the requirements it must fulfill to integrate with CCIP.
+
+## Registration functions
+
+A token administrator can use any of the following supported function signatures for enabling their tokens in CCIP:
+
+- `owner()`: This function returns the token contract owner's address.
+- `getCCIPAdmin()`: This function returns the token administrator's address and is recommended for new tokens, as it allows for abstraction of the CCIP Token Administrator role from other common roles, like `owner()`.
+
+<Aside type="note" title="Token Admin Registration">
+  If these functions are not available, use this [contact
+  form](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to request assistance with
+  registration.
+</Aside>
+
+## Transfer functions
+
+The token's smart contract must meet minimum requirements to integrate with CCIP.
+
+### Burn and Mint Requirements
+
+- The token smart contract must have the following functions:
+
+  - `mint(address account, uint256 amount)`: This function is used to mint the `amount` of tokens to a given `account` on the destination blockchain.
+  - `burn(uint256 amount)`: This function is used to burn the `amount` of tokens on the source blockchain.
+  - `decimals()`: Returns the token's number of decimals.
+  - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+  - `burnFrom(address account, uint256 amount)`: This function burns a specified number of tokens from the provided account on the source blockchain. Note: This is an optional function. We generally recommend using the `burn` function, but if you use a tokenPool that calls `burnFrom`, your token contract will need to implement this function.
+
+- On the source and destination blockchains, the token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+
+### Lock and Mint Requirements
+
+- The token smart contract must have the following functions:
+
+  - `decimals()`: Returns the token's number of decimals.
+  - `balanceOf(address account)`: Returns the current token balance of the specified `account`.
+
+- On the destination blockchain, the token contract must support granting mint and burn permissions. The token developers or another role (such as the token administrator) will grant these permissions to the token pool.
+
+---
+
+If you don't have an existing token: For all blockchains where tokens need to be burned and minted (for example, the source or destination chain in the case of Burn and Mint, or the destination blockchain in the case of Lock and Mint), Chainlink provides a [BurnMintERC677](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) contract that you can use to deploy your token in minutes. This token follows the [ERC677](https://github.com/ethereum/EIPs/issues/677), allowing you to use it as-is or extend it to meet your specific requirements.
