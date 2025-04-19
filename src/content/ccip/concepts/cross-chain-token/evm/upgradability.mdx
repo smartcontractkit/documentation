@@ -5,4 +5,153 @@ title: "Cross-Chain Token Standard - Upgradability (EVM)"
 whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
 ---
 
-XXX
+import { Aside } from "@components"
+
+Starting from **CCIP v1.5.1**, token pools support zero-downtime upgrades, allowing seamless transitions between versions while maintaining support for in-flight messages. This section outlines the requirements and considerations for upgrading token pools.
+
+<Aside type="caution" title="Upgrading from v1.5.0">
+  If you are currently using CCIP **v1.5.0** token pools, please read the [Upgrading from v1.5.0](#upgrading-from-v150)
+  section carefully. **v1.5.0** pools have specific limitations regarding in-flight messages during upgrades.
+</Aside>
+
+## Upgrade Paths
+
+When upgrading token pools, there are three scenarios to consider:
+
+### 1. Complete Blockchain Upgrade (Recommended)
+
+In this scenario, you upgrade all token pools across your connected blockchains to the latest version simultaneously. For example, if you have pools deployed on Ethereum and Polygon:
+
+- Both pools are upgraded to the latest version
+- All cross-chain messages continue processing without interruption
+- No manual intervention is required for in-flight transactions
+
+### 2. Partial Network Upgrade (Not Recommended)
+
+In this scenario, not all token pools are upgraded uniformly across blockchains (e.g., upgrading the token pool on Ethereum to version **v1.5.1** while retaining version **v1.5.0** on Polygon). This approach primarily affects v1.5.0 pools due to their strict source blockchain validation requirements.
+
+For example, consider an upgrade between Ethereum and Polygon:
+
+- If you upgrade only the Ethereum pool to **v1.5.1**, any messages that were already sent ("in-flight messages") through the **v1.5.0** pool will fail when they reach Polygon. This happens because **v1.5.0** pools are designed to accept messages only from a single configured remote pool address. When you upgrade the Ethereum pool, messages will come from its new address, which the Polygon pool won't recognize as valid.
+
+- To prevent message delivery failures:
+  - Always upgrade all connected **v1.5.0** pools to **v1.5.1** simultaneously
+  - Follow the detailed steps in the [Upgrading from v1.5.0](#upgrading-from-v150) section
+
+### 3. Adding New Blockchains
+
+You can safely deploy the latest pool version when expanding to new blockchains without affecting existing operations. For example, if you have pools on Ethereum and Polygon and want to expand to Avalanche:
+
+- Deploy the latest version on Avalanche
+- Existing pools continue operating normally
+- New cross-chain routes become available through Avalanche
+
+## Upgrading from v1.5.0
+
+<Aside type="caution" title="Test upgrades on Testnets">
+  Test the upgrade process on testnet blockchains before deploying to mainnet.
+</Aside>
+
+Token pools in **v1.5.0** have a strict source validation mechanism in their `_validateReleaseOrMint` function that only accepts messages from a single configured remote pool address. Unlike **v1.5.1**, which can validate against multiple remote pools, **v1.5.0** pools reject messages if the source pool address doesn't match their configured remote pool. This limitation requires careful handling of upgrades to prevent in-flight messages from failing validation.
+
+### 1. **Deploy New Pools**
+
+- Deploy v1.5.1 pool on Ethereum -> `0xNewPoolEth`
+- Deploy v1.5.1 pool on Polygon -> `0xNewPoolPoly`
+
+### 2. **Configure New Pools**
+
+Configure both new pools to accept messages from both the old and new pools. This dual configuration ensures that after the upgrade, the new pools can still process any in-flight messages sent from the old pools before the upgrade.Use `applyChainUpdates` to set up the new pools:
+
+- On Ethereum's new pool:
+
+  ```solidity
+  ChainUpdate memory updateForPoly = ChainUpdate({
+  remoteChainSelector: POLYGON_SELECTOR,
+  remotePoolAddresses: [abi.encode(0xOldPoolPoly), abi.encode(0xNewPoolPoly)], // Both old and new pools
+  remoteTokenAddress: TOKEN_POLY_ADDRESS,
+  outboundRateLimiterConfig: outboundConfig,
+  inboundRateLimiterConfig: inboundConfig
+  });
+  tokenPool.applyChainUpdates([], [updateForPoly]);
+  ```
+
+- On Polygon's new pool:
+
+  ```solidity
+  ChainUpdate memory updateForEth = ChainUpdate({
+      remoteChainSelector: ETH_SELECTOR,
+      remotePoolAddresses: [abi.encode(0xOldPoolEth), abi.encode(0xNewPoolEth)], // Both old and new pools
+      remoteTokenAddress: TOKEN_ETH_ADDRESS,
+      outboundRateLimiterConfig: outboundConfig,
+  inboundRateLimiterConfig: inboundConfig
+  });
+  tokenPool.applyChainUpdates([], [updateForEth]);
+  ```
+
+### 3. **Throttle Existing Pools**
+
+Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools. Use `setChainRateLimiterConfig` on both existing pools:
+
+- On Ethereum's old pool:
+
+  ```solidity
+  // Set minimal rate limit on old pools
+  RateLimiter.Config memory minConfig = RateLimiter.Config({
+      rate: 1,           // 1 wei per second
+      capacity: 1,       // 1 wei capacity
+      isEnabled: true    // Keep enabled but effectively paused
+  });
+  oldPoolEth.setChainRateLimiterConfig(POLYGON_SELECTOR, minConfig, minConfig);
+  ```
+
+- On Polygon's old pool:
+
+  ```solidity
+  oldPoolPoly.setChainRateLimiterConfig(ETH_SELECTOR, minConfig, minConfig);
+  ```
+
+### 4. **Update Token Admin Registry**
+
+Use `setPool` to update the registry on both blockchains. This step switches token transfers to use the new pools.
+
+- On Ethereum:
+
+  ```solidity
+  tokenAdminRegistry.setPool(tokenAddress, 0xNewPoolEth);
+  ```
+
+- On Polygon:
+
+  ```solidity
+  tokenAdminRegistry.setPool(tokenAddress, 0xNewPoolPoly);
+  ```
+
+### 5. **Handle Manual Executions**
+
+For any failed transactions, follow the manual execution process.
+
+### 6. **Clean Up**
+
+After verifying all transactions are processed successfully:
+
+- Use `removeRemotePool` to remove old pool addresses
+- This prevents future messages from using the old pools
+
+  - Only proceed with cleanup after confirming:
+
+    - No pending transactions in CCIP Explorer
+    - All manual executions are complete
+    - New pools are operating correctly
+
+  - On Ethereum's new pool:
+
+    ```solidity
+    newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
+    ```
+
+  - On Polygon's new pool:
+
+    ```solidity
+    newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
+    ```

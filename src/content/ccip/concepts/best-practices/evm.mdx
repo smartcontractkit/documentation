@@ -5,4 +5,63 @@ title: "CCIP Best Practices (EVM)"
 whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
 ---
 
-XXX
+This page outlines essential best practices for securely implementing and operating CCIP on EVM-compatible blockchains. Key aspects include proper administration of token pools and effective liquidity management.
+
+## Administration
+
+When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
+
+### Securely Manage Admin Roles
+
+The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
+
+- **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/#).
+- **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
+- **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
+
+### Protect Against Unauthorized Admin Actions
+
+- **Monitor Admin Activity**: Implement monitoring systems to track any actions taken by token admins, token pool owners, and rate limit admins. This helps detect unauthorized attempts to modify configurations or execute cross-chain transfers.
+- **Limit Admin Privileges When Possible**: For example, instead of giving the full owner access to manage rate limits, consider assigning the rate limit admin role, which is specifically responsible for updating rate limits.
+- **Leverage Smart Contract Audits**: Ensure your tokens and token pools are audited and follow secure development practices.
+
+### Best Practices for Token Pool Owners and Rate Limit Admins
+
+- **Token Pool Owner Responsibilities**: The token pool owner can enable remote chains, set remote pool addresses for a given chain selector, and configure rate limits. Ensure that this role is assigned to a trusted EOA or smart account, and monitor activity regularly.
+- **Set Rate Limits Appropriately**: Ensure that you set appropriate rate limits for outbound and inbound token transfers when configuring token pools.
+- **Delegate Rate Limit Admin Role**: The rate limit admin is an optional role that the token pool owner can assign to another trusted entity using the `setRateLimitAdmin ()` function. The rate limit admin can only manage rate limits, so this role provides a way to delegate responsibility without giving full access to the token pool configuration.
+
+## Liquidity Management
+
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in Lock and Release token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in reception mode (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being "stuck" in transit.
+
+### Ensure Sufficient Liquidity
+
+When a LockReleaseTokenPool operates in reception mode (on the destination blockchain), it releases the tokens locked in the token pool. The pool must have sufficient liquidity to ensure that tokens can be released to the receiver. If the pool lacks liquidity, the release operation will fail and user funds will not be available on the destination blockchain until sufficient liquidity is replenished and manual execution is performed.
+
+- Estimate expected volume when preparing to add and manage liquidity to ensure sustainable operations.
+- Regularly monitor the liquidity available in your token pool and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
+
+### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+
+Using a Lock and Unlock mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
+
+- Where possible, avoid using the Lock and Unlock mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+
+### Monitor Liquidity Health and Automate Alerts
+
+Monitoring the health of your token pool's liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+
+- **Best Practice**: Calculate the amount of time required to deplete your token pool to various threshold levels (ie: Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the pool before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with token pool's refill rate.
+
+### Use the `provideLiquidity` and `withdrawLiquidity` Functions Properly
+
+In pools like the LockReleaseTokenPool, liquidity providers can add and remove liquidity using the `provideLiquidity` and `withdrawLiquidity` functions.
+
+- Only trusted entities, such as a designated rebalancer, should be allowed to manage liquidity. Make sure to configure liquidity controls securely to prevent unauthorized liquidity manipulation.
+
+### Set and Manage the Rebalancer Role
+
+The rebalancer is responsible for managing the liquidity of the pool and ensuring that there is always sufficient liquidity when needed. They can rebalance liquidity between different pools or pool versions if necessary.
+
+- Assign the rebalancer role to a trusted entity and ensure they understand the responsibilities, such as maintaining liquidity in the pool to support token releases.
