@@ -199,15 +199,6 @@ npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
 ```
 
-This script will:
-
-- Configure the CCIP message with the default parameters
-- Calculate the CCIP fees
-- Approve the router to spend your CCIP-BnM tokens
-- Approve the router to spend your LINK tokens
-- Call the CCIP router contract to execute the cross-chain transfer
-- Return the transaction details and message ID for tracking
-
 ### Expected Output
 
 When the script executes successfully, you'll see output similar to this:
@@ -246,74 +237,16 @@ The output provides important information to track your transfer:
 - Message ID for tracking in the CCIP Explorer
 - Confirmation of transfer completion
 
-### Customizing the Transfer
-
-You can customize the token transfer by providing command-line arguments to the script. These parameters will override any values in the script.
-
-**Specify your own Solana wallet:** ✨ (Recommended for quick testing)
-
-```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
-```
-
-Replace `YOUR_SOLANA_WALLET_ADDRESS` with your Solana wallet address (e.g., DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA).
-
-**Change the token amount:**
-
-```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --amount 2000000000000000
-```
-
-**Use a different fee token (native ETH instead of LINK):**
-
-```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --fee-token native
-```
-
-You can combine these parameters as needed:
-
-```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS --amount 2000000000000000 --fee-token native
-```
-
 ## Verification and Monitoring
 
-After sending your token transfer, you'll want to verify that it was received on the destination chain:
+After sending your token transfer, you'll need to:
 
-1. **CCIP Explorer**: Use the CCIP Explorer link provided in the output to track your message status across chains.
-2. **Etherscan**: Check the transaction on Etherscan using the transaction URL in the output to confirm it was mined and successful.
+1. **Track progress with Message ID**: Use the CCIP Explorer link provided in the output to track your message status across chains. You must wait for the transfer to be successful before proceeding to verification.
 
-3. **Solana Explorer**: Verify token receipt on the Solana Explorer:
+1. **Solana Explorer**: Once the transfer is successful, verify token receipt on the Solana Explorer:
    - Visit [Solana Explorer](https://explorer.solana.com/?cluster=devnet)
    - Search for your Solana wallet address
    - Look for the transferred token in the "Tokens" section
-
-<Aside type="note" title="Processing Time">
-  Cross-chain transfers are not instant. It may take several minutes for the token transfer to be finalized on the
-  destination chain, especially during network congestion.
-</Aside>
-
-## How It Works: Behind the Scenes
-
-When you execute a token transfer from Ethereum to Solana:
-
-1. **Source Chain Actions**:
-
-   - The sender approves the CCIP router to spend their tokens
-   - The sender also approves the router to spend fee tokens (LINK)
-   - The CCIP message is sent to the router contract
-
-2. **CCIP Network Processing**:
-
-   - CCIP validators observe the message on the source chain
-   - They reach consensus on the message data
-   - They execute the message on the destination chain
-
-3. **Destination Chain Actions**:
-   - Since this is a token-only transfer (with `computeUnits: 0`):
-     - No program execution occurs on Solana
-     - Tokens are simply deposited in the recipient's wallet
-     - The equivalent wrapped token is created or transferred on Solana
 
 ## Common Issues and Troubleshooting
 
