@@ -198,11 +198,11 @@ For the CCIP Basic Receiver program, we need two main PDAs:
 
 ## Implementing Arbitrary Messaging
 
-Let's implement arbitrary messaging from Ethereum Sepolia to the CCIP Basic Receiver program on Solana Devnet.
+In this section, we'll examine how arbitrary messaging works in the example script from the starter kit repository. This will help you understand how to send messages to the CCIP Basic Receiver program on Solana Devnet.
 
 ### Deriving Program Derived Addresses
 
-First, we need to derive the PDAs required by the receiver program:
+The script first derives the PDAs required by the receiver program. This is a critical step because the program can only process messages if the correct PDAs are provided:
 
 ```typescript
 function deriveReceiverPDAs(receiverProgramIdStr: string) {
@@ -229,13 +229,13 @@ const pdas = deriveReceiverPDAs(receiverProgramId)
 ```
 
 <Aside type="important" title="PDA Derivation">
-  PDAs must be derived using the exact same seeds that the program uses internally. Incorrect seeds will result in
-  different addresses, causing transaction failures.
+  When interacting with any Solana program, PDAs must be derived using the exact same seeds that the program uses
+  internally. Incorrect seeds will result in different addresses, causing transaction failures.
 </Aside>
 
 ### Configuring the Message
 
-Next, let's configure the CCIP message for arbitrary messaging:
+The script then configures the CCIP message with all necessary parameters for arbitrary messaging:
 
 ```typescript
 const MESSAGE_CONFIG = {
@@ -255,15 +255,14 @@ const MESSAGE_CONFIG = {
   // Extra configuration for Solana
   extraArgs: {
     // Compute units for Solana execution
-    // Higher value needed because message processing requires compute units
+    // Needed because message processing requires compute units
     computeUnits: 200000,
 
     // Allow out-of-order execution - MUST be true for Solana
     allowOutOfOrderExecution: true,
 
-    // Bitmap of accounts that should be made writable
-    // Binary 11 (decimal 3) means both accounts are writable
-    accountIsWritableBitmap: BigInt(3),
+    // Binary 10 (decimal 2) means only the messages storage account is writable
+    accountIsWritableBitmap: BigInt(2),
 
     // Token receiver - for arbitrary messages, this is usually the default PublicKey
     tokenReceiver: PublicKey.default.toString(),
@@ -274,20 +273,15 @@ const MESSAGE_CONFIG = {
 }
 ```
 
-<Aside type="tip" title="Message Data Encoding">
-  When sending string data, you need to encode it as hex: - "Hello World" in hex is "0x48656c6c6f20576f726c64" - You can
-  use online tools or console commands to convert: ```bash echo -n "Hello World" | xxd -p ```
-</Aside>
+### Understanding AccountIsWritableBitmap
 
-### 3. Understanding AccountIsWritableBitmap
-
-The `accountIsWritableBitmap` value is critical for arbitrary messaging. It indicates which accounts in the `accounts` array should be marked as writable.
+When sending messages to Solana programs, you need to specify which accounts can be written to. The `accountIsWritableBitmap` parameter in the script indicates which accounts in the `accounts` array should be marked as writable.
 
 For our example:
 
-- We're providing 2 accounts: `[statePda, messagesStoragePda]`
+- The script provides 2 accounts: `[statePda, messagesStoragePda]`
 - Both accounts need to be writable for the program to update them
-- The bitmap is calculated as follows:
+- The bitmap calculation works as follows:
 
 <Tabs client:visible>
   <Fragment slot="tab.1">Binary Method</Fragment>
@@ -307,9 +301,9 @@ For our example:
   </Fragment>
 </Tabs>
 
-### 4. Creating and Sending the CCIP Message
+### Creating and Sending the CCIP Message
 
-Now, let's create and send the CCIP message:
+Finally, the script creates and sends the CCIP message using the CCIP SDK:
 
 ```typescript
 // Setup client context
@@ -322,9 +316,11 @@ const ccipMessageRequest = await createCCIPMessageRequest(client, config.destina
 const result = await client.sendCCIPMessage(ccipMessageRequest)
 ```
 
+This sends the message to the CCIP router, which then forwards it to the Solana program on the destination chain.
+
 ## Running the Arbitrary Messaging Script
 
-Let's run the script to send an arbitrary message:
+Now that you understand how the arbitrary messaging script works, let's execute it to send a message:
 
 ```bash
 npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
@@ -332,7 +328,7 @@ npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
 
 ### Expected Output
 
-When you run the script, you should see output similar to this:
+When you run the script, it will display detailed information about the message being sent. You should see output similar to this:
 
 ```
 [arbitrary-messaging] [INFO] ==== Environment Information ====
@@ -381,7 +377,7 @@ When you run the script, you should see output similar to this:
 
 ### Customizing the Message
 
-You can customize your arbitrary message:
+The script accepts several command-line parameters that let you customize your message:
 
 <Tabs client:visible>
   <Fragment slot="tab.1">Custom Message</Fragment>
