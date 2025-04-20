@@ -280,7 +280,8 @@ When sending messages to Solana programs, you need to specify which accounts can
 For our example:
 
 - The script provides 2 accounts: `[statePda, messagesStoragePda]`
-- Both accounts need to be writable for the program to update them
+- Only the messagesStoragePda needs to be writable for the program to update it
+- The state PDA is read-only during message processing
 - The bitmap calculation works as follows:
 
 <Tabs client:visible>
@@ -288,16 +289,17 @@ For our example:
   <Fragment slot="tab.2">Decimal Method</Fragment>
   <Fragment slot="tab.3">Position Values</Fragment>
   <Fragment slot="panel.1">
-    **Binary representation of writable accounts**: Position 0 (statePda): Writable → Bit 0 = 1 Position 1
-    (messagesStoragePda): Writable → Bit 1 = 1 Binary: 11 = Decimal 3
+    **Binary representation of writable accounts**: Position 0 (statePda): Not writable → Bit 0 = 0 Position 1
+    (messagesStoragePda): Writable → Bit 1 = 1 Binary: 10 = Decimal 2
   </Fragment>
   <Fragment slot="panel.2">
-    **Each position has a decimal value**: Position 0: 2^0 = 1 Position 1: 2^1 = 2 Total: 1 + 2 = 3
+    **Each position has a decimal value**: Position 0: 2^0 = 1 (not used, as this account is not writable) Position 1:
+    2^1 = 2 Total: 0 + 2 = 2
   </Fragment>
   <Fragment slot="panel.3">
     **Simplified position values**: | Account Position | Decimal Value If Writable |
     |------------------|---------------------------| | 0 | 1 | | 1 | 2 | | 2 | 4 | | 3 | 8 | | 4 | 16 | | 5 | 32 | In
-    our case: Position 0 (1) + Position 1 (2) = 3
+    our case: Only Position 1 is writable (2)
   </Fragment>
 </Tabs>
 
@@ -351,7 +353,7 @@ When you run the script, it will display detailed information about the message 
 [arbitrary-messaging] [INFO] Message Data (decoded): Hello World
 [arbitrary-messaging] [INFO] Extra Args: Solana-specific, 586 bytes
 [arbitrary-messaging] [INFO] Additional Accounts: 9XDoTJ5mYNnxqdtWV5dA583VCiGUhmL3oEMWirqys3tF, CB7ptrDkY9EgwqHoJwa3TF8u4rhwYmTob2YqzaSpPMtE
-[arbitrary-messaging] [INFO] Account Is Writable Bitmap: 3
+[arbitrary-messaging] [INFO] Account Is Writable Bitmap: 2
 
 [arbitrary-messaging] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Estimated fee: 4500001834950675
@@ -374,28 +376,6 @@ When you run the script, it will display detailed information about the message 
 [arbitrary-messaging] [INFO] Please check the CCIP Explorer link to monitor your message status.
 [arbitrary-messaging] [INFO] ✅ Cross-chain transfer completed
 ```
-
-### Customizing the Message
-
-The script accepts several command-line parameters that let you customize your message:
-
-<Tabs client:visible>
-  <Fragment slot="tab.1">Custom Message</Fragment>
-  <Fragment slot="tab.2">Custom Compute Units</Fragment>
-  <Fragment slot="tab.3">Different Fee Token</Fragment>
-  <Fragment slot="panel.1">
-    ```bash # Send a custom text message npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts --data "Your
-    custom message here" ```
-  </Fragment>
-  <Fragment slot="panel.2">
-    ```bash # Adjust compute units for complex programs npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
-    --compute-units 300000 ```
-  </Fragment>
-  <Fragment slot="panel.3">
-    ```bash # Use native ETH instead of LINK for fees npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
-    --fee-token native ```
-  </Fragment>
-</Tabs>
 
 ## Verification: Retrieving the Message
 
@@ -438,68 +418,5 @@ When you run the verification script, you'll see output that confirms your messa
   Cross-chain messages are not instant. It may take several minutes for your message to be processed on the destination
   chain, especially during network congestion.
 </Aside>
-
-## How It Works: Behind the Scenes
-
-When you send an arbitrary message from Ethereum to Solana:
-
-1. **Source Chain Actions**:
-
-   - The sender approves the CCIP router to spend fee tokens (LINK)
-   - The CCIP message is sent to the router contract with the program ID as the receiver
-
-2. **CCIP Network Processing**:
-
-   - CCIP validators observe the message on the source chain
-   - They reach consensus on the message data
-   - They execute the message on the destination chain
-
-3. **Destination Chain Actions**:
-   - The CCIP Offramp program on Solana calls the receiver program
-   - The receiver program processes the message data
-   - The program updates its state and message storage PDAs
-   - The compute units specified in the message are consumed during execution
-
-<ClickToZoom
-  src="/images/ccip/evm_solana_arbitrary_message_execution.jpg"
-  alt="Arbitrary message execution flow on Solana"
-  style="display: block; margin: 0 auto; max-width: 100%; height: auto;"
-/>
-
-## Common Issues and Troubleshooting
-
-Here are some common issues you might encounter and how to resolve them:
-
-| Issue                      | Possible Cause                           | Solution                                                   |
-| -------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| Insufficient funds         | Not enough ETH for gas                   | Add more ETH to your wallet                                |
-| Insufficient fee tokens    | Not enough LINK for CCIP fees            | Get more LINK from the faucet                              |
-| Transaction reverted       | Incorrect PDAs or bitmap                 | Verify your PDAs and bitmap calculation                    |
-| Out of compute units       | Complex program logic needs more compute | Increase `computeUnits` parameter                          |
-| Message not received       | Patience needed                          | CCIP transfers can take several minutes to finalize        |
-| Error in program execution | Incorrect message format                 | Ensure data is properly formatted for the receiver program |
-
-## Advanced: Sending to Custom Programs
-
-While this tutorial uses the CCIP Basic Receiver program, the same principles apply to any Solana program that implements the CCIP receiver interface:
-
-1. **Identify the program ID** of your target Solana program
-2. **Derive the correct PDAs** required by your program
-3. **Set the appropriate `accountIsWritableBitmap`** based on which PDAs need to be written to
-4. **Format your data** according to your program's expected format
-5. **Set sufficient `computeUnits`** based on your program's complexity
-
-<Aside type="tip" title="Custom Program Requirements">
-  When developing your own CCIP-compatible Solana program: - Implement the `ccip_receive` function - Define clear
-  account structures - Document required PDAs and their derivation - Set appropriate access controls
-</Aside>
-
-## Next Steps
-
-Now that you've completed this tutorial, you can explore more advanced CCIP functionality:
-
-1. [Sending tokens and data in a single message](/ccip/tutorials/evm-to-solana-combined-messaging)
-2. [Implementing a CCIP receiver program on Solana](/ccip/tutorials/solana-ccip-receiver)
-3. [Building a cross-chain dApp with arbitrary messaging](/ccip/tutorials/cross-chain-dapp)
 
 <CcipCommon callout="educationalDisclaimer" />
