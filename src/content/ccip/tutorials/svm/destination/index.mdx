@@ -22,22 +22,52 @@ CCIP messages are built using the [`EVM2AnyMessage` struct](https://github.com/s
 
 ```solidity
 struct EVM2AnyMessage {
-    bytes receiver;         // abi.encode(receiver address) for dest EVM chains
-    bytes data;             // Data payload
-    EVMTokenAmount[] tokenAmounts; // Token transfers
-    address feeToken;       // Address of feeToken. address(0) means native token
-    bytes extraArgs;        // Populate this with _argsToBytes(EVMExtraArgsV2)
+    bytes receiver;
+    bytes data;
+    EVMTokenAmount[] tokenAmounts;
+    address feeToken;
+    bytes extraArgs;
 }
 ```
 
-<Aside title="SVM-Specific Requirements">
-  When targeting SVM, the `extraArgs` field must be populated with SVM-specific parameters using the [`SVMExtraArgsV1`
-  structure](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/libraries/Client.sol#L61).
+### receiver
+
+- For SVM destinations: This is the receiver program ID that will execute the CCIP message
+- For token-only transfers: Should be set to the default PublicKey (11111111111111111111111111111111)
+- For arbitrary messaging or programmatic token transfers: Must be the exact program ID of the SVM program that implements `ccip_receive`
+
+<Aside type="caution" title="Program ID Format">
+  When providing a SVM program ID as the receiver, it must be in the correct format - a 32-byte SVM public key.
 </Aside>
 
-## Understanding SVMExtraArgsV1
+### data
 
-The most critical component for SVM-bound messages is the `SVMExtraArgsV1` structure:
+- Contains the payload that will be passed to the receiving program
+- For token-only transfers: Can be empty (`0x`)
+- For arbitrary messaging and programmatic token transfers: Contains the data the receiver program will process
+- Encoding consideration: The SVM receiver program must be able to correctly decode this data
+
+<Aside type="tip" title="Data Encoding">
+  Ensure the SVM program on the destination chain can properly decode the data format you're sending.
+</Aside>
+
+### tokenAmounts
+
+- An array of token addresses and amounts to transfer
+- For data-only messages: Should be an empty array
+- For token transfers or programmatic token transfers: Each entry specifies a token address and amount
+- **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
+
+### feeToken
+
+- Specifies which token to use for paying CCIP fees
+- `address(0)` means use the source chain native gas token (ETH on Ethereum)
+- Can also specify an ERC-20 token address for fee payment
+
+## extraArgs
+
+The most critical component for SVM-bound messages is the [`SVMExtraArgsV1`
+structure](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/libraries/Client.sol#L61) structure:
 
 ```solidity
 struct SVMExtraArgsV1 {
@@ -48,7 +78,6 @@ struct SVMExtraArgsV1 {
     bytes32[] accounts;
 }
 
-// The tag for Solana VM-specific extra args
 bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 ```
 
@@ -195,19 +224,19 @@ Use this configuration when sending only tokens from EVM to Solana:
   <Fragment slot="panel.2">
     ```javascript
     const message = {
-      destinationChainSelector: 5745446,  // Solana Devnet
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
       receiver: "11111111111111111111111111111111",  // Default PubKey
       tokenAmounts: [{ 
-        token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
-        amount: ethers.utils.parseUnits("10", 6)  // 10 USDC 
+        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Ethereum Sepolia
+        amount: "1000000000000000000"  // 1 LINK (18 decimals)
       }],
-      feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789",  // LINK for fees
       data: "0x",  // No data for token-only transfer
       extraArgs: encodeExtraArgs({
         computeUnits: 0,
         allowOutOfOrderExecution: true,
         tokenReceiver: "DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA",  // Recipient wallet
-        accountIsWritableBitmap: 0n,
+        accountIsWritableBitmap: 0,
         accounts: []
       })
     };
@@ -216,13 +245,18 @@ Use this configuration when sending only tokens from EVM to Solana:
 </Tabs>
 
 <Aside type="note" title="Key Requirements">
-  - `computeUnits` **MUST** be 0 - `receiver` should be the default PublicKey - For user transfers, `tokenReceiver`
+
+- `computeUnits` **MUST** be 0
+- `receiver` should be the default PublicKey
+- For user transfers, `tokenReceiver`
   should be the user's wallet
+- For transfers to programs, `tokenReceiver` should be a PDA that the program has authority over
+
 </Aside>
 
 ### Arbitrary Messaging
 
-Use this configuration when sending only data messages to Solana:
+Use this configuration when sending only data messages to SVM:
 
 <Tabs client:visible>
   <Fragment slot="tab.1">Configuration</Fragment>
@@ -230,7 +264,7 @@ Use this configuration when sending only data messages to Solana:
   <Fragment slot="panel.1">
     ```
     {
-      destinationChainSelector: SOLANA_CHAIN_SELECTOR,
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
       receiver: receiverProgramId,
       tokenAmounts: [],
       feeToken: feeTokenAddress,
@@ -240,7 +274,7 @@ Use this configuration when sending only data messages to Solana:
         allowOutOfOrderExecution: true,
         tokenReceiver: DEFAULT_PUBKEY,
         accountIsWritableBitmap: calculatedBitmap,
-        accounts: [stateAccount, messageStorageAccount, ...]
+        accounts: [PDA, account, another program ID...]
       }
     }
     ```
@@ -249,18 +283,21 @@ Use this configuration when sending only data messages to Solana:
     ```javascript
     // Identify which accounts need to be writable
     const accounts = [
-      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // State account (not writable)
-      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // Message account (writable)
-      "4wBqpRvipCi5k5zCZ4NFPiFPEM5gitBKRiSgZ8NZh3nk"   // Config account (not writable)
+      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
+      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
+      "4wBqpRvipCi5k5zCZ4NFPiFPEM5gitBKRiSgZ8NZh3nk"   // account3 (not writable)
     ];
-    
-    // Calculate bitmap (only index 1 is writable)
-    let bitmap = 0n;
-    bitmap |= (1n << 1n);  // Set bit for account at index 1
-    // Result: bitmap = 2n
-    
+
+    // account 1 at index0 , not writable --> bit 0 = 0
+    // account 2 at index1 , writable --> bit 1 = 1
+    // account 3 at index2 , not writable --> bit 2 = 0
+    // bitmap = 00000010
+    // bitmap in decimal = 2
+
+    const bitmap = 2;
+
     const message = {
-      destinationChainSelector: 5745446,  // Solana Devnet
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
       receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
       tokenAmounts: [],  // No tokens for data-only message
       feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
@@ -274,6 +311,7 @@ Use this configuration when sending only data messages to Solana:
       })
     };
     ```
+
   </Fragment>
 </Tabs>
 
@@ -292,7 +330,7 @@ Use this configuration when sending both tokens and data in a single message:
   <Fragment slot="panel.1">
     ```
     {
-      destinationChainSelector: SOLANA_CHAIN_SELECTOR,
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
       receiver: receiverProgramId,
       tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
       feeToken: feeTokenAddress,
@@ -328,10 +366,10 @@ Use this configuration when sending both tokens and data in a single message:
     // Result: bitmap = 42n
     
     const message = {
-      destinationChainSelector: 5745446,  // Solana Devnet
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
       receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
       tokenAmounts: [{ 
-        token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
+        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789", 
         amount: ethers.utils.parseUnits("10", 6)  // 10 USDC 
       }],
       feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
