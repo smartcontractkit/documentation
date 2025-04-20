@@ -133,7 +133,7 @@ const MESSAGE_CONFIG = {
 }
 ```
 
-<Aside type="important" title="Critical Settings">
+<Aside type="caution" title="Critical Settings">
 
 - `computeUnits`: **MUST** be 0 for token-only transfers
 - `receiver`: Set to the default PublicKey
@@ -144,78 +144,22 @@ const MESSAGE_CONFIG = {
 
 </Aside>
 
-### Understanding the Script Structure
+### How the Script Works
 
-Let's examine the key components of the token transfer script:
+The token transfer script handles the complete cross-chain transfer process without requiring you to write any code. The script:
 
-1. **Setup and Configuration**
+1. Configures the CCIP message with the parameters shown above
+1. Calculates the CCIP fees required for the transfer
+1. Approves the router to spend your CCIP-BnM tokens (the tokens being transferred)
+1. Approves the router to spend your LINK tokens (for paying CCIP fees)
+1. Calls the CCIP router contract to execute the cross-chain transfer
+1. Returns the transaction details and message ID for tracking
 
-```typescript
-// Import required libraries
-import { setupClientContext, FeeTokenType } from "@solana-starter-kit/ccip-sdk"
-import { PublicKey } from "@solana/web3.js"
-import { getTokenDetails } from "./utils"
-
-// Configure environment and defaults
-const config = {
-  tokenAddress: "0x316496C5dA67D052235B9952bc42db498d6c520b", // CCIP-BnM on Sepolia
-  destinationChain: "svm", // Solana Virtual Machine
-  destinationChainSelector: 16423721717087811551n, // Solana Devnet selector
-  solanaRecipient: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB", // Your Solana wallet
-}
-```
-
-2. **Message Configuration and Preparation**
-
-```typescript
-// Define the CCIP message configuration
-const MESSAGE_CONFIG = {
-  tokenAmounts: [
-    {
-      address: config.tokenAddress,
-      amount: "1000000000000000", // 0.001 tokens with 18 decimals
-    },
-  ],
-  feeToken: FeeTokenType.LINK,
-  data: "0x", // Empty for token transfers
-  extraArgs: {
-    computeUnits: 0, // MUST be 0 for token-only transfers
-    allowOutOfOrderExecution: true,
-    accountIsWritableBitmap: BigInt(0),
-    tokenReceiver: config.solanaRecipient,
-    accounts: [],
-  },
-  receiver: PublicKey.default.toString(),
-}
-
-// Set up client and prepare the message
-const { client, wallet } = await setupClientContext()
-const { tokenInfo } = await getTokenDetails(client, MESSAGE_CONFIG)
-const ccipMessageRequest = await createCCIPMessageRequest(client, config.destinationChainSelector, MESSAGE_CONFIG)
-```
-
-3. **Executing the Transfer and Handling Results**
-
-```typescript
-// Send the CCIP message and capture the result
-const result = await client.sendCCIPMessage(ccipMessageRequest)
-
-// Display transaction details for tracking
-console.log(`Transaction Hash: ${result.transactionHash}`)
-console.log(`Transaction URL: ${result.transactionUrl}`)
-console.log(`Message ID: ${result.messageId}`)
-console.log(`CCIP Explorer: ${result.ccipExplorerUrl}`)
-```
-
-This structured approach ensures that your token transfer:
-
-- Uses the correct parameters for Solana destinations
-- Includes all required settings for token-only transfers
-- Properly tracks the message across chains
+For those interested in implementation details, the script is well-commented and follows a straightforward flow. You can review the source code at `ccip-scripts/evm/router/1_token-transfer.ts` in the starter kit repository.
 
 ## Running the Token Transfer
 
-Now that you understand the configuration, let's execute the token transfer using the script from the starter kit:
+Now that you understand how the script works, let's execute the token transfer:
 
 1. Ensure you've completed the setup steps outlined earlier
 2. Make sure your `.env` file contains the required values
@@ -224,13 +168,6 @@ Now that you understand the configuration, let's execute the token transfer usin
 ```bash
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
 ```
-
-This script will:
-
-- Connect to the Ethereum Sepolia network
-- Configure the token transfer message
-- Calculate the CCIP fees
-- Execute the transfer to your Solana wallet
 
 ### Expected Output
 
