@@ -83,9 +83,22 @@ EVM_PRIVATE_KEY=your_private_key_here
 EVM_RPC_URL=your_rpc_url_here
 ```
 
-## Understanding Arbitrary Messaging to Solana
+## Understanding Arbitrary Messaging to SVM
 
-Before diving into the code, let's explore how arbitrary messaging differs from token transfers:
+This tutorial focuses on arbitrary messaging from EVM chains to SVM programs. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
+
+Key points specific to arbitrary messaging:
+
+- **Program Execution**: Messages trigger program execution on the destination chain
+- **Mandatory Settings**:
+  - `computeUnits` must be sufficient for the execution of `ccip_receive` instruction of the receiver program
+  - `receiver` field should be set to the Solana program ID
+  - `tokenReceiver` is typically set to the default PublicKey (`11111111111111111111111111111111`)
+  - Required accounts must be specified in the `accounts` array
+  - `accountIsWritableBitmap` must correctly identify which accounts should be writable
+  - `allowOutOfOrderExecution` must be `true`
+
+For more details on the CCIP message structure, `extraArgs`, and how the SVM account model works, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
 
 ### Key Differences from Token Transfers
 
@@ -113,7 +126,7 @@ Before diving into the code, let's explore how arbitrary messaging differs from 
     - No accounts required
 
     **Arbitrary Messaging**:
-    - `computeUnits` must be sufficient (200,000+)
+    - `computeUnits` must be sufficient to execute the `ccip_receive` instruction of the receiver program
     - `receiver` is a Solana program ID
     - `tokenReceiver` is typically default PublicKey
     - Requires specific accounts and proper bitmap
@@ -121,7 +134,7 @@ Before diving into the code, let's explore how arbitrary messaging differs from 
   </Fragment>
   <Fragment slot="panel.3">
     **Token Transfers**:
-    - Tokens arrive in a wallet
+    - Tokens arrive in a wallet or PDA of a receiver program
     - No program execution happens
 
     **Arbitrary Messaging**:
@@ -145,16 +158,15 @@ Before diving into the code, let's explore how arbitrary messaging differs from 
 
 ### The CCIP Basic Receiver Program
 
-This tutorial uses the CCIP Basic Receiver program deployed on Solana Devnet as the destination program. This sample program:
+This tutorial uses the [Basic Receiver program](https://github.com/smartcontractkit/solana-starter-kit-private/tree/main/programs/ccip-basic-receiver) deployed on [Solana Devnet](https://explorer.solana.com/address/BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq?cluster=devnet) as the destination program. This sample program:
 
 - Implements the CCIP receiver interface
 - Receives and stores cross-chain messages
-- Maintains a history of received messages
-- Allows retrieval of message data
+- Allows retrieval of the last message data
 
 <Aside type="note" title="Scope Clarification">
   Learning how to write, deploy, and initialize a Solana program is outside the scope of this tutorial. This guide
-  focuses on sending messages to an existing program. The principles you'll learn can be applied to any Solana program
+  focuses on sending messages to an existing program. The principles you will learn can be applied to any Solana program
   that implements the CCIP receiver interface.
 </Aside>
 
@@ -162,21 +174,33 @@ This tutorial uses the CCIP Basic Receiver program deployed on Solana Devnet as 
 
 To interact with Solana programs, you need to understand Program Derived Addresses (PDAs):
 
-- PDAs are deterministic addresses derived from seeds and a program ID
-- They provide on-chain storage for Solana programs
-- Each PDA serves a specific purpose (e.g., state storage, message storage)
-- When sending messages to a program, you must specify all required PDAs
+    - PDAs are deterministic addresses derived from seeds and a program ID
+    - They provide onchain storage for Solana programs
+    - Each PDA serves a specific purpose
+    - When sending messages to a program, you must specify all accounts (including PDAs) that the program requires
 
 For the CCIP Basic Receiver program, we need two main PDAs:
 
-1. **State PDA**: Stores the program's configuration
-2. **Messages Storage PDA**: Stores received messages
+1.  **State PDA**:
+
+    - Contains essential program settings like the router address and owner
+    - Derived using the seed "state"
+    - Controlled by the program owner/authority
+    - The State PDA is critical for validating incoming messages in the `ccip_receive` instruction. It stores the trusted router program ID, which is used to authenticate the caller
+    - When a message is received, the program checks if the caller is an authorized CCIP router by validating against the router address stored in this PDA
+
+1.  **Messages Storage PDA**:
+
+        - Contains only the most recent cross-chain message
+        - Derived using the seed "messages"
+        - Maintains a message counter and last updated timestamp
+        - Stores message such as the message ID, type, and data payload
 
 ## Implementing Arbitrary Messaging
 
 Let's implement arbitrary messaging from Ethereum Sepolia to the CCIP Basic Receiver program on Solana Devnet.
 
-### 1. Deriving Program Derived Addresses
+### Deriving Program Derived Addresses
 
 First, we need to derive the PDAs required by the receiver program:
 
@@ -209,7 +233,7 @@ const pdas = deriveReceiverPDAs(receiverProgramId)
   different addresses, causing transaction failures.
 </Aside>
 
-### 2. Configuring the Message
+### Configuring the Message
 
 Next, let's configure the CCIP message for arbitrary messaging:
 
@@ -337,7 +361,7 @@ When you run the script, you should see output similar to this:
 [ccip-messenger] [INFO] Estimated fee: 4500001834950675
 [ccip-messenger] [INFO] Approving 0.00540000220194081 LINK for CCIP Router
 [ccip-messenger] [INFO] LINK approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK
+[ccip-messenger] [INFO] ✅ Verified onchain allowance for LINK
 [ccip-messenger] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Transaction sent: 0x8c0c0d0e25ce9609480bcf0d24a5ca29828cd7eba8d8027d9965d4a41f2a91b2
 [ccip-messenger] [INFO] Message ID: 0xddff06d48acba059d3d6741e9f1ec1c190680340fe4c4b1fee55f572d983eff9
@@ -481,17 +505,5 @@ Now that you've completed this tutorial, you can explore more advanced CCIP func
 1. [Sending tokens and data in a single message](/ccip/tutorials/evm-to-solana-combined-messaging)
 2. [Implementing a CCIP receiver program on Solana](/ccip/tutorials/solana-ccip-receiver)
 3. [Building a cross-chain dApp with arbitrary messaging](/ccip/tutorials/cross-chain-dapp)
-
-## Conclusion
-
-In this tutorial, you've learned how to:
-
-- Configure a CCIP message for arbitrary data messaging to Solana
-- Understand PDAs and their role in Solana program interactions
-- Calculate the correct `accountIsWritableBitmap` for program execution
-- Send cross-chain messages that trigger program execution
-- Verify the message was received and processed by the program
-
-Arbitrary messaging opens up powerful possibilities for cross-chain applications, allowing for complex interactions between Ethereum and Solana ecosystems.
 
 <CcipCommon callout="educationalDisclaimer" />
