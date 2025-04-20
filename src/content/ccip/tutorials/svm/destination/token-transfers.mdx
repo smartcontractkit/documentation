@@ -95,7 +95,7 @@ This tutorial focuses on token-only transfers from EVM chains to Solana wallets.
 Key points specific to token-only transfers:
 
 - **No Program Execution**: Tokens are transferred directly to a wallet without program execution
-- **Critical Settings**:
+- **Mandatory Settings**:
   - `computeUnits` **MUST** be set to 0
   - `receiver` field should be set to the default PublicKey (`11111111111111111111111111111111`)
   - The actual recipient is specified in the `tokenReceiver` field
@@ -138,7 +138,19 @@ const MESSAGE_CONFIG = {
 You have two options for customizing the recipient wallet:
 
 1. **Edit the script directly**: Modify the `tokenReceiver`
-   value in the code by changing `"EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB"` to your own Solana wallet address.
+   value in the code by changing `"EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB"` to your own Solana wallet address. You can get your Solana address by running `solana address` in your terminal.
+
+   ```bash
+   solana address
+   ```
+
+   Example output:
+
+   ```
+   $ solana address
+   EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+   ```
+
 1. **Use command-line parameters**: Run the script with the `--token-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
 
 </Aside>
@@ -169,11 +181,11 @@ For those interested in implementation details, the script is well-commented and
 
 ## Running the Token Transfer
 
-Now that you understand how the script works, let's execute the token transfer:
+Now that you understand how the script works, execute the token transfer:
 
 1. Ensure you've completed the setup steps outlined earlier
-2. Make sure your `.env` file contains the required values
-3. Run the script using one of the following options:
+1. Make sure your `.env` file contains the required values
+1. Run the script using one of the following options:
 
 **Option A: Run with default settings** (if you modified the script directly):
 
@@ -181,13 +193,11 @@ Now that you understand how the script works, let's execute the token transfer:
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
 ```
 
-**Option B: Run with your wallet address as a parameter** (recommended for quick testing):
+**Option B: Run with your wallet address as a parameter**:
 
 ```bash
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
 ```
-
-> **Important:** Replace `YOUR_SOLANA_WALLET_ADDRESS` with your actual Solana wallet address to receive tokens in your own wallet.
 
 This script will:
 
