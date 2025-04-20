@@ -133,6 +133,16 @@ const MESSAGE_CONFIG = {
 }
 ```
 
+<Aside type="tip" title="Two Ways to Customize the Wallet Address">
+
+You have two options for customizing the recipient wallet:
+
+1. **Edit the script directly**: Modify the `tokenReceiver`
+   value in the code by changing `"EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB"` to your own Solana wallet address.
+1. **Use command-line parameters**: Run the script with the `--token-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
+
+</Aside>
+
 <Aside type="caution" title="Critical Settings">
 
 - `computeUnits`: **MUST** be 0 for token-only transfers
@@ -163,11 +173,30 @@ Now that you understand how the script works, let's execute the token transfer:
 
 1. Ensure you've completed the setup steps outlined earlier
 2. Make sure your `.env` file contains the required values
-3. Run the script with the following command:
+3. Run the script using one of the following options:
+
+**Option A: Run with default settings** (if you modified the script directly):
 
 ```bash
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
 ```
+
+**Option B: Run with your wallet address as a parameter** (recommended for quick testing):
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
+```
+
+> **Important:** Replace `YOUR_SOLANA_WALLET_ADDRESS` with your actual Solana wallet address to receive tokens in your own wallet.
+
+This script will:
+
+- Configure the CCIP message with the default parameters
+- Calculate the CCIP fees
+- Approve the router to spend your CCIP-BnM tokens
+- Approve the router to spend your LINK tokens
+- Call the CCIP router contract to execute the cross-chain transfer
+- Return the transaction details and message ID for tracking
 
 ### Expected Output
 
@@ -209,15 +238,17 @@ The output provides important information to track your transfer:
 
 ### Customizing the Transfer
 
-You can customize the token transfer by providing command-line arguments to the script:
+You can customize the token transfer by providing command-line arguments to the script. These parameters will override any values in the script.
 
-**Change the recipient Solana wallet address:**
+**Specify your own Solana wallet:** ✨ (Recommended for quick testing)
 
 ```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
 ```
 
-**Change the token amount (in raw format with all decimals):**
+Replace `YOUR_SOLANA_WALLET_ADDRESS` with your Solana wallet address (e.g., DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA).
+
+**Change the token amount:**
 
 ```bash
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --amount 2000000000000000
@@ -229,7 +260,11 @@ npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --amount 200000000000000
 npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --fee-token native
 ```
 
-You can combine these parameters as needed for your specific use case.
+You can combine these parameters as needed:
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS --amount 2000000000000000 --fee-token native
+```
 
 ## Verification and Monitoring
 
