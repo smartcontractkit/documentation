@@ -250,7 +250,7 @@ Use this configuration when sending only tokens from EVM to Solana:
 - `receiver` should be the default PublicKey
 - For user transfers, `tokenReceiver`
   should be the user's wallet
-- For transfers to programs, `tokenReceiver` should be a PDA that the program has authority over
+- For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over
 
 </Aside>
 
@@ -300,14 +300,14 @@ Use this configuration when sending only data messages to SVM:
       destinationChainSelector: 16423721717087811551,  // Solana Devnet
       receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
       tokenAmounts: [],  // No tokens for data-only message
-      feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
-      data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes("Hello Solana from Ethereum!")),
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789",  // LINK for fees
+      data: "0x68656c6c6f", // "hello" in hex
       extraArgs: encodeExtraArgs({
-        computeUnits: 200000,  // Based on program testing
+        computeUnits: 200000,  // compute units required by the program for executing the ccip_receive instruction
         allowOutOfOrderExecution: true,
         tokenReceiver: "11111111111111111111111111111111",  // Default PubKey
-        accountIsWritableBitmap: 2n,  // Decimal representation of bitmap
-        accounts: accounts
+        accountIsWritableBitmap: 2,  // Decimal representation of bitmap
+        accounts: accounts // accounts required by the program for executing the ccip_receive instruction
       })
     };
     ```
@@ -316,11 +316,14 @@ Use this configuration when sending only data messages to SVM:
 </Tabs>
 
 <Aside type="note" title="Key Requirements">
-  - `computeUnits` must be determined through program testing - `accounts` must include all accounts required by the
-  receiver program - `accountIsWritableBitmap` must correctly identify writable accounts
+
+- `computeUnits` must be determined through testing of the receiver program
+- `accounts` must include all accounts required by the receiver program
+- `accountIsWritableBitmap` must correctly identify writable accounts
+
 </Aside>
 
-### Combined Data and Token Transfer
+### Programmatic Token Transfer (Data and Tokens)
 
 Use this configuration when sending both tokens and data in a single message:
 
@@ -338,9 +341,9 @@ Use this configuration when sending both tokens and data in a single message:
       extraArgs: {
         computeUnits: determinedComputeUnits,
         allowOutOfOrderExecution: true,
-        tokenReceiver: tokenVaultPDA,
+        tokenReceiver: PDA,
         accountIsWritableBitmap: calculatedBitmap,
-        accounts: [stateAccount, messageStorageAccount, tokenMint, tokenVault, ...]
+        accounts: [PDA, account, another program ID...]
       }
     }
     ```
@@ -349,152 +352,54 @@ Use this configuration when sending both tokens and data in a single message:
     ```javascript
     // Identify all required accounts
     const accounts = [
-      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // State account (not writable)
-      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // Message account (writable)
-      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  // Token mint (not writable)
-      "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // Token vault (writable)
-      "H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT",  // Vault authority (not writable)
-      "DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA",  // Recipient token account (writable)
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"     // Token program (not writable)
+      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
+      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
+      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  // account3 (not writable)
+      "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // account4 (writable)
+      "H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT",  // account5 (not writable)
+      "DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA",  // account6 (writable)
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"     // account7 (not writable)
     ];
-    
-    // Calculate bitmap (indices 1, 3, and 5 are writable)
-    let bitmap = 0n;
-    bitmap |= (1n << 1n);  // Message account
-    bitmap |= (1n << 3n);  // Token vault
-    bitmap |= (1n << 5n);  // Recipient token account
-    // Result: bitmap = 42n
-    
+
+    // account 1 at index0 , not writable --> bit 0 = 0
+    // account 2 at index1 , writable --> bit 1 = 1
+    // account 3 at index2 , not writable --> bit 2 = 0
+    // account 4 at index3 , writable --> bit 3 = 1
+    // account 5 at index4 , not writable --> bit 4 = 0
+    // account 6 at index5 , writable --> bit 5 = 1
+    // account 7 at index6 , not writable --> bit 6 = 0
+
+    // bitmap = 00101010
+    // bitmap in decimal = 42
+
+    const bitmap = 42;
+
     const message = {
       destinationChainSelector: 16423721717087811551,  // Solana Devnet
       receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
-      tokenAmounts: [{ 
-        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789", 
-        amount: ethers.utils.parseUnits("10", 6)  // 10 USDC 
+      tokenAmounts: [{
+        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789",
+        amount: "1000000000000000000" // 1 LINK (18 decimals)
       }],
       feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
-      data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes("Transfer with message")),
+      data: "0x68656c6c6f", // "hello" in hex
       extraArgs: encodeExtraArgs({
-        computeUnits: 300000,  // Higher for token processing
+        computeUnits: 300000,  // compute units required by the program for executing the ccip_receive instruction
         allowOutOfOrderExecution: true,
-        tokenReceiver: "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // Token vault PDA
-        accountIsWritableBitmap: 42n,  // Decimal representation of bitmap
+        tokenReceiver: "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ", // a PDA that the program has authority over
+        accountIsWritableBitmap: 42,  // Decimal representation of bitmap
         accounts: accounts
       })
     };
     ```
+
   </Fragment>
 </Tabs>
 
 <Aside type="note" title="Key Requirements">
-  - `tokenReceiver` should be a PDA the program has authority over - `accounts` must include both message processing
-  accounts and token accounts - The program must contain logic to forward tokens to the final recipient
+
+- `tokenReceiver` must be a PDA the program has authority over
+- `accounts` must include all accounts required by the receiver program
+- The program must contain logic to handle the received data and tokens
+
 </Aside>
-
-## Detailed AccountIsWritableBitmap Calculation
-
-The `accountIsWritableBitmap` is critical for correct message execution:
-
-1. **Identify writable accounts**:
-
-   - State accounts that store data across calls
-   - Message storage accounts (almost always writable)
-   - Token vaults or accounts sending tokens
-   - Accounts receiving tokens
-
-2. **Calculate the bitmap value**:
-
-   ```javascript
-   let bitmap = 0n
-
-   // For each writable account
-   bitmap |= 1n << accountIndex
-   ```
-
-3. **Example calculation**:
-   For an accounts array with 7 accounts where positions 1, 3, and 5 need to be writable:
-   ```
-   Position 0: Not writable  -> Bit 0 = 0
-   Position 1: Writable      -> Bit 1 = 1
-   Position 2: Not writable  -> Bit 2 = 0
-   Position 3: Writable      -> Bit 3 = 1
-   Position 4: Not writable  -> Bit 4 = 0
-   Position 5: Writable      -> Bit 5 = 1
-   Position 6: Not writable  -> Bit 6 = 0
-   ```
-   Binary: `0101010` = Decimal `42`
-
-<Aside type="tip" title="Validation Check">
-  Before sending your message: - Ensure the highest set bit position is less than the length of your accounts array -
-  Verify the bitmap value doesn't exceed the maximum allowed (2^64 - 1)
-</Aside>
-
-## Best Practices
-
-### Token Handling
-
-- When sending tokens to a program:
-
-  - Always use a PDA that the program has authority over as `tokenReceiver`
-  - Ensure the program can forward tokens to the intended recipient
-  - Verify the token vault PDA is derived correctly
-
-- For user-to-user token transfers:
-  - Set `tokenReceiver` directly to the recipient's wallet address
-  - Use `computeUnits = 0` for optimal cost efficiency
-
-### Compute Units Management
-
-- Determine required compute units through rigorous testing
-- Start with a conservative estimate (200,000-300,000) and adjust based on testing
-- Consider different execution paths in your receiver program
-- Add a safety margin for unexpected conditions
-
-### Account Handling
-
-- Account ordering is critical—must match receiving program expectations
-- Document the expected order clearly in your receiver program
-- Create helper functions to calculate bitmaps automatically
-- Test with different account combinations
-
-## Helper Functions
-
-Use these helper functions to encode SVMExtraArgs correctly:
-
-```javascript
-// Helper function to encode SVMExtraArgsV1
-function encodeExtraArgs({ computeUnits, accountIsWritableBitmap, allowOutOfOrderExecution, tokenReceiver, accounts }) {
-  // SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba
-  return ethers.utils.defaultAbiCoder.encode(
-    ["bytes4", "uint32", "uint64", "bool", "bytes32", "bytes32[]"],
-    ["0x1f3b3aba", computeUnits, accountIsWritableBitmap, allowOutOfOrderExecution, tokenReceiver, accounts]
-  )
-}
-
-// Helper function to calculate accountIsWritableBitmap
-function calculateBitmap(writableIndices, totalAccounts) {
-  if (Math.max(...writableIndices) >= totalAccounts) {
-    throw new Error("Writable index exceeds accounts array length")
-  }
-
-  let bitmap = 0n
-  for (const index of writableIndices) {
-    bitmap |= 1n << BigInt(index)
-  }
-  return bitmap
-}
-```
-
-## Conclusion
-
-Building CCIP messages from EVM to Solana requires careful configuration of the SVMExtraArgsV1 structure. By following the guidelines in this document, you can successfully implement token transfers, arbitrary messaging, and combined transfers between EVM chains and Solana.
-
-Remember these key points:
-
-1. `computeUnits` MUST be 0 for token-only transfers
-2. `allowOutOfOrderExecution` MUST be true for Solana destinations
-3. `tokenReceiver` must be carefully chosen based on your use case
-4. `accountIsWritableBitmap` must be precisely calculated
-5. The `accounts` array must include all required accounts in the correct order
-
-<CcipCommon callout="educationalDisclaimer" />
