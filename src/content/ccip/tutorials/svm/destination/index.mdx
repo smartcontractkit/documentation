@@ -82,7 +82,7 @@ Unlike EVM chains where smart contracts manage their own storage, SVM blockchain
   implicitly.
 </Aside>
 
-### accounts
+#### accounts
 
 An array of 32-byte Solana public keys representing additional accounts required for execution.
 
@@ -96,21 +96,30 @@ An array of 32-byte Solana public keys representing additional accounts required
 
 </Aside>
 
-### accountIsWritableBitmap
+#### accountIsWritableBitmap
 
 A 64-bit bitmap indicating which accounts in the `accounts` array should be marked as writable.
 
 <Tabs client:visible>
-  <Fragment slot="tab.1">Description</Fragment>
+  <Fragment slot="tab.1">Understanding Writability</Fragment>
   <Fragment slot="tab.2">Calculation Example</Fragment>
   <Fragment slot="panel.1">
-    - Each bit corresponds to an account in the `accounts` array
-    - Bit position matches account array index (0-indexed)
-    - Setting bit at position N makes the Nth account writable
-    - Critical for transaction success
+    - **What does "writable" mean?**
+    
+            In Solana, marking an account as "writable":
+            - Allows the program to modify the account's data
+            - Permits lamport balance mutations
+    
+    - **How the bitmap works:**
+
+            - Each bit corresponds to an account in the `accounts` array
+            - Bit position matches account array index (0-indexed)
+            - Setting bit at position N makes the Nth account writable
+            - Critical for `ccip_receive` instruction success
+
   </Fragment>
   <Fragment slot="panel.2">
-    If your accounts array has 7 accounts and accounts at positions 1 and 2 need to be writable:
+    Suppose your accounts array has 7 accounts and accounts at positions 1 and 2 need to be writable:
     ```
     accounts[0]: Not writable (bit 0 = 0)
     accounts[1]: Writable (bit 1 = 1)
@@ -124,20 +133,14 @@ A 64-bit bitmap indicating which accounts in the `accounts` array should be mark
     Binary: `0000110` = Decimal `6`
     
     ```javascript
-    let bitmap = 0n;
-    bitmap |= (1n << 1n); // Set bit for account at index 1
-    bitmap |= (1n << 2n); // Set bit for account at index 2
-    // Result: bitmap = 6n
+    const accountIsWritableBitmap = 6n; // or BigInt(6) in JavaScript/TypeScript
     ```
   </Fragment>
 </Tabs>
 
 ### allowOutOfOrderExecution
 
-<Aside type="caution" title="Required Setting">
-  **MUST** be set to `true` for Solana as a destination chain due to how the Solana CCIP implementation processes
-  messages.
-</Aside>
+**MUST** be set to `true` for SVM as a destination chain.
 
 ### tokenReceiver
 
@@ -147,11 +150,18 @@ The Solana account that will initially receive tokens, represented as a 32-byte 
   <Fragment slot="tab.1">User Transfer</Fragment>
   <Fragment slot="tab.2">Program Transfer</Fragment>
   <Fragment slot="panel.1">
-    For transfers to users: - Set to the user's Solana wallet address - Direct transfer with no intermediate handling
+    For transfers to wallets or multi-sig wallets: 
+    
+        - Set to the user's wallet address 
+        - **Note**: Do not use an Associated Token Account (ATA) as the `tokenReceiver`. Instead, use the user's wallet address directly. The ATA will be automatically derived by the CCIP nodes.
+
   </Fragment>
   <Fragment slot="panel.2">
-    For transfers to programs: - Set to a Program Derived Address (PDA) that the program has authority over - Prevents
-    tokens from being locked in inaccessible accounts - Program should forward tokens to final recipient
+    For transfers to programs: 
+    
+        - Set to a Program Derived Address (PDA) that the program has authority over 
+        - **Note**: If the receiver program does not have authority over the provided `tokenReceiver`, the tokens will be inaccessible.
+
   </Fragment>
 </Tabs>
 
@@ -167,7 +177,7 @@ Use this configuration when sending only tokens from EVM to Solana:
   <Fragment slot="panel.1">
     ```
     {
-      destinationChainSelector: SOLANA_CHAIN_SELECTOR,
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
       receiver: DEFAULT_PUBKEY,
       tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
       feeToken: feeTokenAddress,
