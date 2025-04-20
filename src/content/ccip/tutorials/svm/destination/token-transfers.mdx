@@ -1,0 +1,368 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Transfers: EVM to Solana"
+isIndex: false
+metadata:
+  description: "Learn how to transfer tokens from Ethereum to Solana using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This step-by-step tutorial guides you through setting up and executing a basic token transfer from an EVM chain to a Solana wallet."
+  excerpt: "cross-chain token transfer evm to solana ccip tutorial ethereum sepolia solana devnet"
+---
+
+import { Aside, ClickToZoom, CodeBlock } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to transfer tokens from an Ethereum Virtual Machine (EVM) chain to a Solana wallet using Chainlink CCIP. You will learn how to build a CCIP message on an EVM chain, send it to the CCIP router, and verify the transfer on the destination chain.
+
+<Aside type="note" title="Prerequisites">
+  Make sure you understand how to [build CCIP messages from EVM to Solana](/ccip/tutorials/svm/destination) before
+  beginning this tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial covers transferring tokens from Ethereum Sepolia to a Solana wallet without any additional data payload or program execution.
+
+## What You will Build
+
+In this tutorial, you will:
+
+- Configure a CCIP message for token-only transfers
+- Send CCIP-BnM test tokens from Ethereum Sepolia to a Solana wallet
+- Pay for CCIP transaction fees using LINK tokens
+- Monitor and verify your cross-chain transfer
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+1. **Development Environment**:
+
+   - Node.js v20 or higher. You can use the [nvm package](https://www.npmjs.com/package/nvm) to install and switch between Node.js versions.
+   - Git for cloning the repository.
+   - [Yarn](https://yarnpkg.com/) for installing dependencies.
+
+1. **Tokens for Testing**:
+
+   - ETH on Sepolia (for transaction gas).
+   - LINK on Sepolia (for CCIP fees).
+   - CCIP-BnM on Sepolia (tokens to transfer).
+
+1. **Wallets**:
+
+   - An Ethereum wallet with a private key. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key.
+   - A Solana wallet address to receive tokens. Run the [Solana getting started guide](https://solana.com/docs/toolkit/getting-started) to create a wallet.
+
+1. **RPC URLs**:
+   - An Ethereum RPC URL. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+<Aside type="tip" title="Obtaining Test Tokens">
+
+- Get ETH and LINK from the [Chainlink Faucet](https://faucets.chain.link/)
+- Get CCIP-BnM from the [CCIP test tokens
+  page](/ccip/test-tokens)
+
+</Aside>
+
+## Setup Instructions
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/smartcontractkit/solana-starter-kit-private.git
+cd solana-starter-kit-private
+```
+
+### Install Dependencies
+
+```bash
+yarn install
+```
+
+### Configure Environment Variables
+
+Create a `.env` file in the project root based on the provided example:
+
+```
+EVM_PRIVATE_KEY=your_private_key_here
+EVM_RPC_URL=your_rpc_url_here
+```
+
+## Understanding Token Transfers to SVM
+
+This tutorial focuses on token-only transfers from EVM chains to Solana wallets. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
+
+Key points specific to token-only transfers:
+
+- **No Program Execution**: Tokens are transferred directly to a wallet without program execution
+- **Critical Settings**:
+  - `computeUnits` **MUST** be set to 0
+  - `receiver` field should be set to the default PublicKey (`11111111111111111111111111111111`)
+  - The actual recipient is specified in the `tokenReceiver` field
+  - `data` field should be empty (`0x`)
+  - `allowOutOfOrderExecution` must be `true`
+
+For more details on the CCIP message structure, `extraArgs`, and how the SVM account model works, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
+
+## Implementing Token Transfers
+
+In this section, you'll implement a token transfer from Ethereum Sepolia to Solana Devnet using the example script located at `ccip-scripts/evm/router/1_token-transfer.ts` in the starter kit.
+
+### Token Transfer Configuration
+
+The most important part of implementing a token transfer is configuring the CCIP message correctly. Here's the key configuration from the script:
+
+```typescript
+const MESSAGE_CONFIG = {
+  tokenAmounts: [
+    {
+      address: config.tokenAddress, // BnM token on Ethereum Sepolia
+      amount: "1000000000000000", // 0.001 tokens with 18 decimals
+    },
+  ],
+  feeToken: FeeTokenType.LINK, // LINK is used for CCIP fees
+  data: "0x", // Empty for token transfers
+  extraArgs: {
+    computeUnits: 0, // No execution on destination - MUST be 0
+    allowOutOfOrderExecution: true, // MUST be true for SVM destinations
+    accountIsWritableBitmap: BigInt(0), // No accounts needed
+    tokenReceiver: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB", // Recipient's Solana wallet - Change this to your own wallet address
+    accounts: [], // No accounts needed for token-only transfers
+  },
+  receiver: PublicKey.default.toString(), // Use default PublicKey for token transfers
+}
+```
+
+<Aside type="important" title="Critical Settings">
+
+- `computeUnits`: **MUST** be 0 for token-only transfers
+- `receiver`: Set to the default PublicKey
+  (`11111111111111111111111111111111`)
+- `tokenReceiver`: Set to the recipient's Solana wallet address
+- `data`: Empty (`0x`) since no data is being sent
+- `allowOutOfOrderExecution`: Must be true for Solana destinations
+
+</Aside>
+
+### Understanding the Script Structure
+
+Let's examine the key components of the token transfer script:
+
+1. **Setup and Configuration**
+
+```typescript
+// Import required libraries
+import { setupClientContext, FeeTokenType } from "@solana-starter-kit/ccip-sdk"
+import { PublicKey } from "@solana/web3.js"
+import { getTokenDetails } from "./utils"
+
+// Configure environment and defaults
+const config = {
+  tokenAddress: "0x316496C5dA67D052235B9952bc42db498d6c520b", // CCIP-BnM on Sepolia
+  destinationChain: "svm", // Solana Virtual Machine
+  destinationChainSelector: 16423721717087811551n, // Solana Devnet selector
+  solanaRecipient: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB", // Your Solana wallet
+}
+```
+
+2. **Message Configuration and Preparation**
+
+```typescript
+// Define the CCIP message configuration
+const MESSAGE_CONFIG = {
+  tokenAmounts: [
+    {
+      address: config.tokenAddress,
+      amount: "1000000000000000", // 0.001 tokens with 18 decimals
+    },
+  ],
+  feeToken: FeeTokenType.LINK,
+  data: "0x", // Empty for token transfers
+  extraArgs: {
+    computeUnits: 0, // MUST be 0 for token-only transfers
+    allowOutOfOrderExecution: true,
+    accountIsWritableBitmap: BigInt(0),
+    tokenReceiver: config.solanaRecipient,
+    accounts: [],
+  },
+  receiver: PublicKey.default.toString(),
+}
+
+// Set up client and prepare the message
+const { client, wallet } = await setupClientContext()
+const { tokenInfo } = await getTokenDetails(client, MESSAGE_CONFIG)
+const ccipMessageRequest = await createCCIPMessageRequest(client, config.destinationChainSelector, MESSAGE_CONFIG)
+```
+
+3. **Executing the Transfer and Handling Results**
+
+```typescript
+// Send the CCIP message and capture the result
+const result = await client.sendCCIPMessage(ccipMessageRequest)
+
+// Display transaction details for tracking
+console.log(`Transaction Hash: ${result.transactionHash}`)
+console.log(`Transaction URL: ${result.transactionUrl}`)
+console.log(`Message ID: ${result.messageId}`)
+console.log(`CCIP Explorer: ${result.ccipExplorerUrl}`)
+```
+
+This structured approach ensures that your token transfer:
+
+- Uses the correct parameters for Solana destinations
+- Includes all required settings for token-only transfers
+- Properly tracks the message across chains
+
+## Running the Token Transfer
+
+Now that you understand the configuration, let's execute the token transfer using the script from the starter kit:
+
+1. Ensure you've completed the setup steps outlined earlier
+2. Make sure your `.env` file contains the required values
+3. Run the script with the following command:
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
+```
+
+This script will:
+
+- Connect to the Ethereum Sepolia network
+- Configure the token transfer message
+- Calculate the CCIP fees
+- Execute the transfer to your Solana wallet
+
+### Expected Output
+
+When the script executes successfully, you'll see output similar to this:
+
+```
+[token-transfer] [INFO] ==== Environment Information ====
+[token-transfer] [INFO] Router Address: 0xFf0614d1c51a89729dfa69bf6f7f8e33f47CEC6C
+[token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Native Balance: 3.725863461812024622 ETH
+[token-transfer] [INFO] Token: CCIP-BnM (0x316496C5dA67D052235B9952bc42db498d6c520b)
+[token-transfer] [INFO] Token Balance: 21.189 CCIP-BnM
+[token-transfer] [INFO] Transfer Amount: 0.001 CCIP-BnM
+
+[token-transfer] [INFO] ==== Transfer Summary ====
+[token-transfer] [INFO] Source Chain: Ethereum Sepolia
+[token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
+[token-transfer] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Receiver: 11111111111111111111111111111111
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+
+[token-transfer] [INFO] Token Transfers:
+[token-transfer] [INFO]   1. 0.001 CCIP-BnM (0x316496C5dA67D052235B9952bc42db498d6c520b)
+
+[token-transfer] [INFO] Transaction Hash: 0x997b1eb218834b2d9c4ae53fa9867e0ed2fbb168ac1e8acaa683c4703023880a
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x997b1eb218834b2d9c4ae53fa9867e0ed2fbb168ac1e8acaa683c4703023880a
+[token-transfer] [INFO] Message ID: 0xe5e1596601a07e917a00e52f5acd11866d82aba6a7ddbde03e2ae47507dd3da6
+[token-transfer] [INFO] CCIP Explorer: https://ccip-ui-staging.vercel.app/msg/0xe5e1596601a07e917a00e52f5acd11866d82aba6a7ddbde03e2ae47507dd3da6
+
+[token-transfer] [INFO] ✅ Cross-chain transfer completed
+```
+
+The output provides important information to track your transfer:
+
+- Transaction hash and URL for viewing on Etherscan
+- Message ID for tracking in the CCIP Explorer
+- Confirmation of transfer completion
+
+### Customizing the Transfer
+
+You can customize the token transfer by providing command-line arguments to the script:
+
+**Change the recipient Solana wallet address:**
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA
+```
+
+**Change the token amount (in raw format with all decimals):**
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --amount 2000000000000000
+```
+
+**Use a different fee token (native ETH instead of LINK):**
+
+```bash
+npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --fee-token native
+```
+
+You can combine these parameters as needed for your specific use case.
+
+## Verification and Monitoring
+
+After sending your token transfer, you'll want to verify that it was received on the destination chain:
+
+1. **CCIP Explorer**: Use the CCIP Explorer link provided in the output to track your message status across chains.
+2. **Etherscan**: Check the transaction on Etherscan using the transaction URL in the output to confirm it was mined and successful.
+
+3. **Solana Explorer**: Verify token receipt on the Solana Explorer:
+   - Visit [Solana Explorer](https://explorer.solana.com/?cluster=devnet)
+   - Search for your Solana wallet address
+   - Look for the transferred token in the "Tokens" section
+
+<Aside type="note" title="Processing Time">
+  Cross-chain transfers are not instant. It may take several minutes for the token transfer to be finalized on the
+  destination chain, especially during network congestion.
+</Aside>
+
+## How It Works: Behind the Scenes
+
+When you execute a token transfer from Ethereum to Solana:
+
+1. **Source Chain Actions**:
+
+   - The sender approves the CCIP router to spend their tokens
+   - The sender also approves the router to spend fee tokens (LINK)
+   - The CCIP message is sent to the router contract
+
+2. **CCIP Network Processing**:
+
+   - CCIP validators observe the message on the source chain
+   - They reach consensus on the message data
+   - They execute the message on the destination chain
+
+3. **Destination Chain Actions**:
+   - Since this is a token-only transfer (with `computeUnits: 0`):
+     - No program execution occurs on Solana
+     - Tokens are simply deposited in the recipient's wallet
+     - The equivalent wrapped token is created or transferred on Solana
+
+## Common Issues and Troubleshooting
+
+Here are some common issues you might encounter and how to resolve them:
+
+| Issue                   | Possible Cause                  | Solution                                            |
+| ----------------------- | ------------------------------- | --------------------------------------------------- |
+| Insufficient funds      | Not enough ETH for gas          | Add more ETH to your wallet                         |
+| Insufficient tokens     | Not enough CCIP-BnM to transfer | Get more tokens from the faucet                     |
+| Insufficient fee tokens | Not enough LINK for CCIP fees   | Get more LINK from the faucet                       |
+| Transaction reverted    | Incorrect configuration         | Ensure `computeUnits` is 0 for token transfers      |
+| Transfer not received   | Patience needed                 | CCIP transfers can take several minutes to finalize |
+| Invalid recipient       | Incorrect Solana address format | Ensure the Solana address is valid (base58 encoded) |
+
+## Next Steps
+
+Now that you've completed a basic token transfer, you can explore more advanced CCIP functionality:
+
+1. [Sending arbitrary data to Solana programs](/ccip/tutorials/evm-to-solana-data-messaging)
+2. [Sending tokens and data in a single message](/ccip/tutorials/evm-to-solana-combined-messaging)
+3. [Implementing a token transfer function in your smart contract](/ccip/tutorials/implement-token-transfer-function)
+
+## Conclusion
+
+In this tutorial, you've learned how to:
+
+- Configure a CCIP message for token transfers from Ethereum to Solana
+- Execute a cross-chain token transfer
+- Understand the key parameters for Solana-bound token transfers
+- Verify and track your transfer across chains
+
+Token transfers are just the beginning of what's possible with Chainlink CCIP. As you progress, you'll discover how to build increasingly sophisticated cross-chain applications.
+
+<CcipCommon callout="educationalDisclaimer" />
