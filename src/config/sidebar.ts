@@ -1369,6 +1369,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Transfer Tokens",
               url: "ccip/tutorials/svm/transfer-tokens",
             },
+            {
+              title: "Building CCIP Messages from EVM to SVM",
+              url: "ccip/tutorials/svm/destination",
+            },
           ],
         },
       ],
