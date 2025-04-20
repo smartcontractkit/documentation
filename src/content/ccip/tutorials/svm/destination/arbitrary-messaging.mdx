@@ -14,7 +14,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 This tutorial demonstrates how to send arbitrary data from an Ethereum Virtual Machine (EVM) chain to a program on a SVM chain using Chainlink's Cross-Chain Interoperability Protocol (CCIP). You will learn how to configure CCIP messages that trigger a program execution on the destination chain.
 
-<Aside type="note" title="Prerequisites">
+<Aside title="Prerequisites">
   Make sure you understand how to [build CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination) before
   beginning this tutorial.
 </Aside>
@@ -54,7 +54,7 @@ Before starting, ensure you have:
 1. **RPC URLs**:
    - An Ethereum RPC URL. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
-<Aside type="tip" title="Obtaining Test Tokens">
+<Aside title="Obtaining Test Tokens">
   Get ETH and LINK from the [Chainlink Faucet](https://faucets.chain.link/). Unlike the token transfer tutorial, you
   don't need CCIP-BnM tokens for arbitrary messaging.
 </Aside>
@@ -164,15 +164,15 @@ This tutorial uses the [Basic Receiver program](https://github.com/smartcontract
 - Receives and stores cross-chain messages
 - Allows retrieval of the last message data
 
-<Aside type="note" title="Scope Clarification">
-  Learning how to write, deploy, and initialize a Solana program is outside the scope of this tutorial. This guide
-  focuses on sending messages to an existing program. The principles you will learn can be applied to any Solana program
-  that implements the CCIP receiver interface.
+<Aside title="Scope Clarification">
+  Learning how to write, deploy, and initialize a SVM program is outside the scope of this tutorial. This guide focuses
+  on sending messages to an existing program. The principles you will learn can be applied to any SVM program that
+  implements the CCIP receiver interface.
 </Aside>
 
 ### Understanding Program Derived Addresses (PDAs)
 
-To interact with Solana programs, you need to understand Program Derived Addresses (PDAs):
+To interact with a SVM programs, you need to understand Program Derived Addresses (PDAs):
 
     - PDAs are deterministic addresses derived from seeds and a program ID
     - They provide onchain storage for Solana programs
@@ -228,7 +228,7 @@ const receiverProgramId = getCCIPSVMConfig(ChainId.SOLANA_DEVNET).receiverProgra
 const pdas = deriveReceiverPDAs(receiverProgramId)
 ```
 
-<Aside type="important" title="PDA Derivation">
+<Aside title="PDA Derivation">
   When interacting with any Solana program, PDAs must be derived using the exact same seeds that the program uses
   internally. Incorrect seeds will result in different addresses, causing transaction failures.
 </Aside>
@@ -320,6 +320,8 @@ const result = await client.sendCCIPMessage(ccipMessageRequest)
 
 This sends the message to the CCIP router, which then forwards it to the Solana program on the destination chain.
 
+The script includes detailed comments that explain its implementation and follows a straightforward flow. You can review the source code at `ccip-scripts/evm/router/2_arbitrary-messaging.ts` in the starter kit repository.
+
 ## Running the Arbitrary Messaging Script
 
 Now that you understand how the arbitrary messaging script works, let's execute it to send a message:
@@ -385,6 +387,8 @@ After sending your message, you'll want to verify that it was received and proce
 npx ts-node ccip-scripts/svm/receiver/get-latest-message.ts
 ```
 
+This script queries the program's message storage PDA, deserializes the data, and displays the content of the most recently received cross-chain message.
+
 ### Expected Verification Output
 
 When you run the verification script, you'll see output that confirms your message was received:
@@ -408,15 +412,15 @@ When you run the verification script, you'll see output that confirms your messa
 [2025-04-20T21:49:43.534Z] No tokens transferred in this message
 ```
 
-<Aside type="tip" title="Verifying Message Details">
-  In the output, check that: - The **Message ID** matches the one from your arbitrary messaging script - The **Source
-  Chain Selector** indicates Ethereum Sepolia (16015286601757825753) - The **Sender** matches your EVM wallet address -
-  The **Data** shows your message correctly decoded
-</Aside>
+<Aside  title="Verifying Message Details">
 
-<Aside type="note" title="Processing Time">
-  Cross-chain messages are not instant. It may take several minutes for your message to be processed on the destination
-  chain, especially during network congestion.
+In the output, check that:
+
+    - The **Message ID** matches the one from your arbitrary messaging script
+    - The **Source Chain Selector** indicates Ethereum Sepolia (16015286601757825753)
+    - The **Sender** matches your EVM wallet address
+    - The **Data** shows your message correctly decoded
+
 </Aside>
 
 <CcipCommon callout="educationalDisclaimer" />

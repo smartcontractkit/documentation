@@ -1377,6 +1377,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "Token Transfers",
                   url: "ccip/tutorials/svm/destination/token-transfers",
                 },
+                {
+                  title: "Arbitrary Messaging",
+                  url: "ccip/tutorials/svm/destination/arbitrary-messaging",
+                },
               ],
             },
           ],
