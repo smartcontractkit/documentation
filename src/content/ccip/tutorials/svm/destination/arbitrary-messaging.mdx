@@ -87,7 +87,7 @@ EVM_RPC_URL=your_rpc_url_here
 
 This tutorial focuses on arbitrary messaging from EVM chains to SVM programs. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
 
-Key points specific to arbitrary messaging:
+### Key Points Specific to Arbitrary Messaging
 
 - **Program Execution**: Messages trigger program execution on the destination chain
 - **Mandatory Settings**:
@@ -158,11 +158,7 @@ For more details on the CCIP message structure, `extraArgs`, and how the SVM acc
 
 ### The CCIP Basic Receiver Program
 
-This tutorial uses the [Basic Receiver program](https://github.com/smartcontractkit/solana-starter-kit-private/tree/main/programs/ccip-basic-receiver) deployed on [Solana Devnet](https://explorer.solana.com/address/BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq?cluster=devnet) as the destination program. This sample program:
-
-- Implements the CCIP receiver interface
-- Receives and stores cross-chain messages
-- Allows retrieval of the last message data
+This tutorial uses the [Basic Receiver program](https://github.com/smartcontractkit/solana-starter-kit-private/tree/main/programs/ccip-basic-receiver) deployed on [Solana Devnet](https://explorer.solana.com/address/BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq?cluster=devnet) as the destination program.
 
 <Aside title="Scope Clarification">
   Learning how to write, deploy, and initialize a SVM program is outside the scope of this tutorial. This guide focuses
@@ -170,9 +166,19 @@ This tutorial uses the [Basic Receiver program](https://github.com/smartcontract
   implements the CCIP receiver interface.
 </Aside>
 
-### Understanding Program Derived Addresses (PDAs)
+#### Program Interface Overview
 
-To interact with a SVM programs, you need to understand Program Derived Addresses (PDAs):
+The Basic Receiver program implements the CCIP receiver interface, which requires a `ccip_receive` instruction. This instruction is called by the CCIP offramp when a cross-chain message arrives. Key aspects include:
+
+- The program verifies the caller (must be the trusted CCIP offramp)
+- It deserializes and validates the incoming message
+- The message data is stored in the program's storage PDA
+- The program maintains a message counter to track received messages
+- Received messages can be accessed using helper methods provided in the program
+
+#### Understanding Program Derived Addresses (PDAs)
+
+To interact with SVM programs, you need to understand Program Derived Addresses (PDAs):
 
     - PDAs are deterministic addresses derived from seeds and a program ID
     - They provide onchain storage for Solana programs
@@ -282,26 +288,12 @@ For our example:
 - The script provides 2 accounts: `[statePda, messagesStoragePda]`
 - Only the messagesStoragePda needs to be writable for the program to update it
 - The state PDA is read-only during message processing
-- The bitmap calculation works as follows:
+- The bitmap uses binary representation to specify writable permissions:
+  - Position 0 (statePda): Not writable → Bit value = 0
+  - Position 1 (messagesStoragePda): Writable → Bit value = 1
+  - Binary value: 10 (base 2) = 2 (base 10)
 
-<Tabs client:visible>
-  <Fragment slot="tab.1">Binary Method</Fragment>
-  <Fragment slot="tab.2">Decimal Method</Fragment>
-  <Fragment slot="tab.3">Position Values</Fragment>
-  <Fragment slot="panel.1">
-    **Binary representation of writable accounts**: Position 0 (statePda): Not writable → Bit 0 = 0 Position 1
-    (messagesStoragePda): Writable → Bit 1 = 1 Binary: 10 = Decimal 2
-  </Fragment>
-  <Fragment slot="panel.2">
-    **Each position has a decimal value**: Position 0: 2^0 = 1 (not used, as this account is not writable) Position 1:
-    2^1 = 2 Total: 0 + 2 = 2
-  </Fragment>
-  <Fragment slot="panel.3">
-    **Simplified position values**: | Account Position | Decimal Value If Writable |
-    |------------------|---------------------------| | 0 | 1 | | 1 | 2 | | 2 | 4 | | 3 | 8 | | 4 | 16 | | 5 | 32 | In
-    our case: Only Position 1 is writable (2)
-  </Fragment>
-</Tabs>
+Therefore, we set `accountIsWritableBitmap: BigInt(2)` in our message configuration.
 
 ### Creating and Sending the CCIP Message
 
