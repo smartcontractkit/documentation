@@ -16,15 +16,30 @@ interface Props {
 
 const { product, currentPath } = Astro.props
 
-// Get version config for the product
-const versionConfig = getProductVersionConfig(product)
-if (!versionConfig) {
-  throw new Error(`No version configuration found for product: ${product}`)
+// Support multiple path patterns for version detection
+const standardPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
+const extendedPathMatch = currentPath.match(
+  new RegExp(`/${product}/tools-resources/api-reference/(?:evm|svm)/(v[^/]+)`)
+)
+let pathVersion = extendedPathMatch?.[1] || standardPathMatch?.[1]
+
+// Extract VM type from the path (for CCIP)
+let vmType: string | undefined = undefined
+if (extendedPathMatch) {
+  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/tools-resources/api-reference/(evm|svm)/`))
+  vmType = vmTypeMatch?.[1]
 }
 
-// Extract version from path
-const versionMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
-const pathVersion = versionMatch ? versionMatch[1] : versionConfig.LATEST
+// Get version config for the product with VM type
+const versionConfig = getProductVersionConfig(product, vmType)
+if (!versionConfig) {
+  throw new Error(`No version configuration found for product: ${product}${vmType ? ` and VM type: ${vmType}` : ""}`)
+}
+
+// Use the latest version as fallback if path version is not found
+if (!pathVersion) {
+  pathVersion = versionConfig.LATEST
+}
 
 // Server-side computations
 const validatedVersion = validateVersion(pathVersion, versionConfig.ALL)
@@ -33,8 +48,12 @@ const isNotLatest = validatedVersion !== versionConfig.LATEST
 const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? false
 
 // Extract page path to check availability
-const pageMatch = currentPath.match(new RegExp(`/${product}/api-reference/v[^/]+/(.+?)/?$`))
-const pagePath = pageMatch ? pageMatch[1] : null
+// Support both path patterns
+const standardPageMatch = currentPath.match(new RegExp(`/${product}/api-reference/v[^/]+/(.+?)/?$`))
+const extendedPageMatch = currentPath.match(
+  new RegExp(`/${product}/tools-resources/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
+)
+const pagePath = extendedPageMatch?.[1] || standardPageMatch?.[1] || null
 const productAvailability = PAGE_AVAILABILITY[product]
 
 // Function to check if a version is available for this page
@@ -57,16 +76,22 @@ const isVersionAvailable = (version: string): boolean => {
 }
 
 // Get release date for the current version
-const releaseDate = getVersionReleaseDate(product, validatedVersion)
+const releaseDate = getVersionReleaseDate(product, validatedVersion, vmType)
+
+// Determine base path for version links based on path pattern
+let basePath = `/${product}/api-reference`
+if (extendedPathMatch) {
+  basePath = `/${product}/tools-resources/api-reference/${vmType}`
+}
 
 // Create product config for URLs
 const productConfig = {
   name: product,
-  basePath: `/${product}/api-reference`,
+  basePath,
 }
 
 // Generate changelog URL (points to API reference index)
-const changelogUrl = `/${product}/api-reference`
+const changelogUrl = basePath
 
 // Filter versions based on availability
 const availableVersions = sortedVersions.filter((version) => isVersionAvailable(version))
@@ -89,7 +114,7 @@ const structuredData = {
       "@type": "SoftwareVersion",
       version: version,
       url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
-      releaseDate: getVersionReleaseDate(product, version),
+      releaseDate: getVersionReleaseDate(product, version, vmType),
       status: version === versionConfig.LATEST ? "Latest" : isDeprecated ? "Deprecated" : "Stable",
     })),
   },
