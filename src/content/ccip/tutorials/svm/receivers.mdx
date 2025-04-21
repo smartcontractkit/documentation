@@ -194,16 +194,7 @@ pub struct BaseState {
 
 This is a basic example of state storage, but your program can have more complex state structures with additional data. The critical requirement is that the state must store the router address for verification of the `allowed_offramp` PDA.
 
-<Aside type="note" title="Additional Program Instructions">
-  While this guide focuses on the `ccip_receive` instruction, a comprehensive CCIP Receiver should also implement
-  several administrative instructions: - `initialize`: Set up initial state with router address and owner -
-  `update_router`: Update the router address (restricted to owner) - `transfer_ownership`: Begin ownership transfer
-  process - `accept_ownership`: Complete ownership transfer - `withdraw_tokens`: Allow controlled withdrawal of received
-  tokens These administrative functions are not directly related to receiving messages but are important for proper
-  program management and security.
-</Aside>
-
-### 4. The ccip_receive Instruction
+### The `ccip_receive` Instruction
 
 The core instruction that implements the CCIP receiver interface:
 
@@ -237,6 +228,24 @@ pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Resul
   When using Anchor, the instruction name must be exactly `ccip_receive`. If not using Anchor, the instruction
   discriminator must be `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`. This exact name/discriminator is required
   for the CCIP Offramp to identify your program as a valid receiver.
+</Aside>
+
+<Aside type="note" title="Additional Program Instructions">
+
+While this guide focuses on the `ccip_receive` instruction, a comprehensive CCIP Receiver should also implement
+several administrative instructions:
+
+- `initialize`: Set up initial state with router address and owner
+- `update_router`: Update the router address (restricted to owner)
+- `transfer_ownership`: Begin ownership transfer
+  process
+- `accept_ownership`: Complete ownership transfer
+- `withdraw_tokens`: Allow controlled withdrawal of received
+  tokens
+
+These administrative functions are not directly related to receiving messages but are important for proper
+program management and security.
+
 </Aside>
 
 ## Use Cases and Implementation Approaches
