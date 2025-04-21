@@ -371,6 +371,32 @@ When you run the script, it will display detailed information about the message 
 [arbitrary-messaging] [INFO] ✅ Cross-chain transfer completed
 ```
 
+## Behind the Scenes: Message and Account Encoding
+
+When sending arbitrary messages to SVM programs, proper encoding of both the message data and account structures is critical. The script handles several complex encoding tasks that would need to be implemented in your own applications:
+
+Key utilities used include:
+
+- `deriveReceiverPDAs()`: Calculates Program Derived Addresses using the same seeds as the SVM program
+- `createCCIPMessageRequest()`: Builds the properly formatted CCIP message with all required fields
+- Hex encoding utilities: Convert string data to properly formatted hex with 0x prefix
+- `accountIsWritableBitmap` calculation: Determines which accounts can be written to by the program
+
+These utilities handle essential tasks such as:
+
+- Converting between different address formats (Ethereum addresses vs. SVM public keys)
+- Properly encoding message data with correct prefixes
+- Setting up the required accounts array with properly formatted SVM addresses
+- Calculating the correct bitmap values for account permissions
+
+If you're building your own implementation, you should review these key files:
+
+- `ccip-scripts/evm/utils/message-utils.ts`
+- `ccip-lib/evm/utils/solana.ts`
+- `ccip-lib/evm/core/models.ts`
+
+Understanding these encoding details becomes especially important when working with your own SVM programs, as each program will have its own PDA structure and account requirements.
+
 ## Verification: Retrieving the Message
 
 After sending your message, you'll want to verify that it was received and processed by the receiver program. The CCIP Basic Receiver program stores messages, allowing you to retrieve them:

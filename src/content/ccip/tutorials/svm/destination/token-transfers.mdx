@@ -240,6 +240,32 @@ The output provides important information to track your transfer:
 - Message ID for tracking in the CCIP Explorer
 - Confirmation of transfer completion
 
+## Behind the Scenes: Message Encoding for Token Transfers
+
+While this tutorial focuses on configuration and execution, it's important to understand that the script uses several utility functions to properly encode CCIP messages. If you're implementing your own token transfer solution outside this starter kit, you will need to handle these encoding steps yourself.
+
+Key utilities used by the script include:
+
+- `createCCIPMessageRequest()`: Creates a properly formatted CCIP message with all required fields
+- `validateTokenAmounts()`: Checks token balances and transaction validity
+- `getTokenDetails()`: Fetches token metadata for the proper display of amounts
+- `setupClientContext()`: Sets up connections to the blockchain with the right configuration
+
+These utilities handle critical tasks such as:
+
+- Converting token amounts between decimal and raw formats
+- Properly encoding SVM wallet addresses for token receipt
+- Setting up the required ExtraArgs structure for SVM destinations
+- Managing token approvals and fee calculations
+
+If you're building your own implementation, we recommend examining the source code in:
+
+- `ccip-scripts/evm/utils/message-utils.ts`
+- `ccip-scripts/evm/utils/setup-client.ts`
+- `ccip-lib/evm/core/client/CCIPMessenger.ts`
+
+Understanding these utilities will help you implement your own cross-chain token transfers correctly.
+
 ## Verification and Monitoring
 
 After sending your token transfer, you'll need to:
