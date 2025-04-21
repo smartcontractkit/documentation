@@ -19,9 +19,9 @@ export const ccipRedirects = {
   ...EVM_API_FILES.reduce(
     (redirects, file) => {
       // Only create one redirect without trailing slash
-      redirects[`/ccip/tools-resources/api-reference/evm/${file}`] = {
+      redirects[`/ccip/api-reference/evm/${file}`] = {
         status: 301,
-        destination: `/ccip/tools-resources/api-reference/evm/v1.5.1/${file}`,
+        destination: `/ccip/api-reference/evm/v1.5.1/${file}`,
       }
       return redirects
     },
@@ -30,9 +30,9 @@ export const ccipRedirects = {
   ...SVM_API_FILES.reduce(
     (redirects, file) => {
       // Only create one redirect without trailing slash
-      redirects[`/ccip/tools-resources/api-reference/svm/${file}`] = {
+      redirects[`/ccip/api-reference/svm/${file}`] = {
         status: 301,
-        destination: `/ccip/tools-resources/api-reference/svm/v1.6.0/${file}`,
+        destination: `/ccip/api-reference/svm/v1.6.0/${file}`,
       }
       return redirects
     },

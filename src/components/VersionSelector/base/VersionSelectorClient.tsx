@@ -101,10 +101,10 @@ export const VersionSelectorClient = <T extends string>({
         // Extract the page path from current URL with improved regex that handles both patterns
         // Handle both patterns:
         // 1. Standard: /{product}/api-reference/v{version}/{page}
-        // 2. Extended: /{product}/tools-resources/api-reference/{vm_type}/v{version}/{page}
+        // 2. Extended: /{product}/api-reference/{vm_type}/v{version}/{page}
         const standardPathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
         const extendedPathMatch = currentPath.match(
-          new RegExp(`/${config.product.name}/tools-resources/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
+          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
         )
 
         const pagePath = extendedPathMatch?.[1] || standardPathMatch?.[1]

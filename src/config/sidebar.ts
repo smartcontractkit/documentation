@@ -1395,25 +1395,25 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "API Reference",
-          url: "ccip/tools-resources/api-reference",
+          url: "ccip/api-reference",
           children: [
             {
               title: "Overview",
-              url: "ccip/tools-resources/api-reference/overview",
+              url: "ccip/api-reference/overview",
             },
             {
               title: "EVM",
-              url: "ccip/tools-resources/api-reference/evm",
+              url: "ccip/api-reference/evm",
               children: [
                 {
                   title: "v1.5.1 (Latest)",
-                  url: "ccip/tools-resources/api-reference/evm/v1.5.1",
+                  url: "ccip/api-reference/evm/v1.5.1",
                   isCollapsible: true,
                   children: evmCcipV151Contents,
                 },
                 {
                   title: "v1.5.0",
-                  url: "ccip/tools-resources/api-reference/evm/v1.5.0",
+                  url: "ccip/api-reference/evm/v1.5.0",
                   isCollapsible: true,
                   children: evmCcipV150Contents,
                 },
@@ -1421,11 +1421,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             {
               title: "SVM",
-              url: "ccip/tools-resources/api-reference/svm",
+              url: "ccip/api-reference/svm",
               children: [
                 {
                   title: "v1.6.0",
-                  url: "ccip/tools-resources/api-reference/svm/v1.6.0",
+                  url: "ccip/api-reference/svm/v1.6.0",
                   isCollapsible: true,
                   children: svmCcipV160Contents,
                 },

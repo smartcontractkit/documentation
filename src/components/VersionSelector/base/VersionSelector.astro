@@ -17,15 +17,13 @@ const { product, currentPath, enableEnhanced = true } = Astro.props
 
 // Support multiple path patterns for version detection
 const standardPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
-const extendedPathMatch = currentPath.match(
-  new RegExp(`/${product}/tools-resources/api-reference/(?:evm|svm)/(v[^/]+)`)
-)
+const extendedPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(?:evm|svm)/(v[^/]+)`))
 let pathVersion = extendedPathMatch?.[1] || standardPathMatch?.[1]
 
 // Extract VM type from the path (for CCIP)
 let vmType: string | undefined = undefined
 if (extendedPathMatch) {
-  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/tools-resources/api-reference/(evm|svm)/`))
+  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/api-reference/(evm|svm)/`))
   vmType = vmTypeMatch?.[1]
 }
 
@@ -49,7 +47,7 @@ const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? fal
 // Determine base path for version links based on path pattern
 let basePath = `/${product}/api-reference`
 if (extendedPathMatch) {
-  basePath = `/${product}/tools-resources/api-reference/${vmType}`
+  basePath = `/${product}/api-reference/${vmType}`
 }
 
 // Create product config

@@ -69,9 +69,9 @@ export async function getStaticPaths(): Promise<RouteParams[]> {
       // Find version index entry for this VM type
       const indexEntry = apiEntries.find(
         (entry) =>
-          entry.id === `tools-resources/api-reference/${vmType}/${fileVersion}/index.mdx` ||
-          entry.id === `tools-resources/api-reference/${vmType}/${fileVersion}/index.md` ||
-          entry.id === `tools-resources/api-reference/${vmType}/${fileVersion}`
+          entry.id === `api-reference/${vmType}/${fileVersion}/index.mdx` ||
+          entry.id === `api-reference/${vmType}/${fileVersion}/index.md` ||
+          entry.id === `api-reference/${vmType}/${fileVersion}`
       )
 
       if (!indexEntry) continue
@@ -85,16 +85,14 @@ export async function getStaticPaths(): Promise<RouteParams[]> {
       // Find and add all other docs for this VM type + version
       const versionDocs = apiEntries.filter(
         (doc) =>
-          doc.id.startsWith(`tools-resources/api-reference/${vmType}/${fileVersion}/`) &&
+          doc.id.startsWith(`api-reference/${vmType}/${fileVersion}/`) &&
           !doc.id.endsWith("/index.mdx") &&
           !doc.id.endsWith("/index.md") &&
-          doc.id !== `tools-resources/api-reference/${vmType}/${fileVersion}`
+          doc.id !== `api-reference/${vmType}/${fileVersion}`
       )
 
       for (const doc of versionDocs) {
-        const docPath = doc.id
-          .replace(`tools-resources/api-reference/${vmType}/${fileVersion}/`, "")
-          .replace(/\.(md|mdx)$/, "")
+        const docPath = doc.id.replace(`api-reference/${vmType}/${fileVersion}/`, "").replace(/\.(md|mdx)$/, "")
 
         paths.push({
           params: { product, id: `${vmType}/${version}/${docPath}` },
@@ -109,7 +107,7 @@ export async function getStaticPaths(): Promise<RouteParams[]> {
 
     // Get API reference entries
     const apiEntries = entries.filter(
-      (entry) => entry.id.startsWith("api-reference/") || entry.id.startsWith("tools-resources/api-reference/")
+      (entry) => entry.id.startsWith("api-reference/") || entry.id.startsWith("api-reference/")
     )
 
     for (const version of versions.ALL) {
