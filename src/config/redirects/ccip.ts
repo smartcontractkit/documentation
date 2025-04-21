@@ -1,4 +1,4 @@
-const API_FILES = [
+const EVM_API_FILES = [
   "burn-from-mint-token-pool",
   "burn-mint-token-pool-abstract",
   "burn-mint-token-pool",
@@ -13,14 +13,29 @@ const API_FILES = [
   "errors",
 ]
 
-export const ccipRedirects = API_FILES.reduce(
-  (redirects, file) => {
-    // Only create one redirect without trailing slash
-    redirects[`/ccip/tools-resources/api-reference/evm/${file}`] = {
-      status: 301,
-      destination: `/ccip/tools-resources/api-reference/evm/v1.5.1/${file}`,
-    }
-    return redirects
-  },
-  {} as Record<string, { status: number; destination: string }>
-)
+const SVM_API_FILES = ["events", "router", "errors", "messages"]
+
+export const ccipRedirects = {
+  ...EVM_API_FILES.reduce(
+    (redirects, file) => {
+      // Only create one redirect without trailing slash
+      redirects[`/ccip/tools-resources/api-reference/evm/${file}`] = {
+        status: 301,
+        destination: `/ccip/tools-resources/api-reference/evm/v1.5.1/${file}`,
+      }
+      return redirects
+    },
+    {} as Record<string, { status: number; destination: string }>
+  ),
+  ...SVM_API_FILES.reduce(
+    (redirects, file) => {
+      // Only create one redirect without trailing slash
+      redirects[`/ccip/tools-resources/api-reference/svm/${file}`] = {
+        status: 301,
+        destination: `/ccip/tools-resources/api-reference/svm/v1.6.0/${file}`,
+      }
+      return redirects
+    },
+    {} as Record<string, { status: number; destination: string }>
+  ),
+}
