@@ -15,7 +15,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 Below is a complete API reference for the `ccip_send` instruction from the CCIP Router program.
 
-### `ccip_send` Overview
+### `ccip_send`
 
 This instruction is the entry point for sending a cross-chain message from an SVM-based blockchain to a specified destination blockchain.
 
@@ -28,7 +28,7 @@ fn ccip_send(
 ) -> Result<[u8; 32]>;
 ```
 
-### Parameters
+#### Parameters
 
 | Name                  | Type             | Description                                                                                                            |
 | --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -36,7 +36,7 @@ fn ccip_send(
 | `message`             | `SVM2AnyMessage` | Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details.                              |
 | `token_indexes`       | `Vec<u8>`        | Index offsets slicing the remaining accounts so each token's subset can be grouped (see [Context](#context-accounts)). |
 
-### Context (Accounts)
+#### Context (Accounts)
 
 These are the required accounts passed alongside the instructions. For relevant PDAs, the instructions on how to derive seeds are given below.
 
@@ -60,10 +60,10 @@ These are the required accounts passed alongside the instructions. For relevant 
 | `rmn_remote`                        | `UncheckedAccount<'info>`               | No        | The RMN program ID used to verify if a given chain is cursed.                                                                                                                                                                                                                                                                                                                                                  |
 | `rmn_remote_curses`                 | `UncheckedAccount<'info>`               | No        | PDA containing list of curses chain selectors and global curses. **Derivation**: `["curses"]` under the `rmn_remote` program.                                                                                                                                                                                                                                                                                  |
 | `rmn_remote_config`                 | `UncheckedAccount<'info>`               | No        | RMN config PDA, containing configuration that control how curse verification works. **Derivation**: `["config"]` under the `rmn_remote` program.                                                                                                                                                                                                                                                               |
-| `token_pools_signer`                | `Account<ExternalExecutionConfig>`      | Yes       | PDA with the authority to **CPI** into token pool logic (mint/burn, lock/release). **Derivation**: `["external_token_pools_signer"]` under the `ccip_router` program.                                                                                                                                                                                                                                          |
+| `token_pools_signer`                | `UncheckedAccount<'info>`               | Yes       | PDA with the authority to **CPI** into token pool logic (mint/burn, lock/release). **Derivation**: `["external_token_pools_signer"]` under the `ccip_router` program.                                                                                                                                                                                                                                          |
 | `remaining_accounts`                | `&[AccountInfo]` (slice)                | Yes       | You pass extra accounts for each token you wish to transfer (does not include fee tokens). Typically includes the sender ATA, the token pool config, token admin registry PDAs… etc.                                                                                                                                                                                                                           |
 
-### How `remaining_accounts` and `token_indexes` Work
+#### How `remaining_accounts` and `token_indexes` Work
 
 When you call the Router's `ccip_send` instruction, you pass:
 
@@ -71,7 +71,7 @@ When you call the Router's `ccip_send` instruction, you pass:
 1. A slice of `remaining_accounts` containing the per-token PDAs (e.g., user token ATA, pool config, token admin registry PDA, etc.).
 1. A `token_indexes` array tells the Router where in `remaining_accounts` each token's sub-slice begins.
 
-#### Reason for `remaining_accounts`
+##### Reason for `remaining_accounts`
 
 On Solana, each Anchor instruction has a fixed set of named accounts. However, CCIP must handle any number of tokens, each requiring many PDAs. Rather than define a massive static context, the Router uses Anchor's dynamic `ctx.remaining_accounts`: All token-specific PDAs are packed into one slice.
 
@@ -85,7 +85,7 @@ The Router:
 - Validates each account.
 - Calls the appropriate token pool to the lock-or-burn operation on them.
 
-#### Structure of Each Token's Sub-slice
+##### Structure of Each Token's Sub-slice
 
 Inside each token's sub-slice, the Router expects:
 
@@ -111,9 +111,9 @@ In total, it is typically **12 or more** accounts per token. Repeat that "per-to
 | 11    | `fee_token_config`     | A token billing configuration account under the Fee Quoter program. It contains settings such as whether there is a specific pricing for the token, its pricing in USD, and any premium multipliers. **Note**: In most cases, tokens do not have a custom billing fee structure. In these cases, CCIP uses the fallback default fee configuration. PDA `["fee_billing_token_config", mint]` under the fee_quoter program. |
 | 12    | `…`                    | Additional accounts are passed if required by the token pool.                                                                                                                                                                                                                                                                                                                                                             |
 
-#### Examples
+##### Examples
 
-##### One Token Transfer
+###### One Token Transfer
 
 Suppose you want to send **one token** (`myMint`) cross-chain:
 
@@ -126,7 +126,7 @@ Suppose you want to send **one token** (`myMint`) cross-chain:
    - **12** pool-related accounts (pool config, chain config, token program, etc.).
      That is **13** total.
 
-##### Two Token Transfers
+###### Two Token Transfers
 
 Suppose you want to send **two tokens** (`mintA` and `mintB`) cross-chain:
 
