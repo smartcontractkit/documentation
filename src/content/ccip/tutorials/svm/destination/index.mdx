@@ -194,6 +194,21 @@ The Solana account that will initially receive tokens, represented as a 32-byte 
   </Fragment>
 </Tabs>
 
+## Message Encoding Requirements
+
+When implementing CCIP from EVM to SVM, proper encoding of various elements is crucial for successful message delivery and processing.
+
+<Aside  title="Encoding Considerations">
+
+Before sending a CCIP message to Solana, several elements must be correctly encoded:
+
+1. **SVM Addresses**: All Solana addresses (program IDs, PDAs, wallet addresses) must be properly encoded to bytes32 format
+1. **ExtraArgs Structure**: The SVMExtraArgsV1 structure must be ABI-encoded with the correct type tag
+1. **Message Data**: Any payload data must be properly hex-encoded with the `0x` prefix
+1. **Accounts Array**: All accounts must be in the exact order expected by the receiving program
+
+</Aside>
+
 ## Implementation by Message Type
 
 ### Token Transfer
