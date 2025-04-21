@@ -14,7 +14,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 <Aside type="note" title="Launch or upgrade your CCT in just a few clicks">
   Did you know about the [Token Manager](https://tokenmanager.chain.link/)? This newly released app gives you the
   ability to launch new tokens or upgrade existing tokens into CCTs, no code required. Read more in the
-  [docs](/ccip/tutorials/token-manager).
+  [docs](/ccip/tutorials/evm/token-manager).
 </Aside>
 
 The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling an [ERC20-compatible](#requirements-for-cross-chain-tokens) token in CCIP.
@@ -134,11 +134,11 @@ When CCIP interacts with your token pools, it expects the presence of the follow
 
 1. **Source Blockchain**: This must include the following function:
 
-   - `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`: This function locks or burns tokens on the source blockchain. See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/api-reference/v1.5.1/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract#lockorburn).
+   - `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`: This function locks or burns tokens on the source blockchain. See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/tools-resources/api-reference/evm/v1.5.1/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/tools-resources/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#lockorburn).
 
 1. **Destination Blockchain**: This must include the following function:
 
-   - `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`: This function releases or mints tokens on the destination blockchain. See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/api-reference/v1.5.1/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/api-reference/v1.5.1/burn-mint-token-pool-abstract#releaseormint).
+   - `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`: This function releases or mints tokens on the destination blockchain. See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/tools-resources/api-reference/evm/v1.5.1/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/tools-resources/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#releaseormint).
 
 #### Gas Requirements
 
@@ -219,11 +219,11 @@ Consider a token developer who deployed their token across three blockchains wit
 
 Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/). For most use cases, you should use either:
 
-- [BurnMintTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol): This token pool is used to burn or mint tokens. You can read the API reference [here](/ccip/api-reference/v1.5.1/burn-mint-token-pool).
-- [BurnFromMintTokenPool](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol): This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference [here](/ccip/api-reference/v1.5.1/burn-mint-token-pool). **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
-- [LockReleaseTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol): This token pool is used to lock or release tokens. You can read the API reference [here](/ccip/api-reference/v1.5.1/lock-release-token-pool).
+- [BurnMintTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol): This token pool is used to burn or mint tokens. You can read the API reference [here](/ccip/tools-resources/api-reference/evm/v1.5.1/burn-mint-token-pool).
+- [BurnFromMintTokenPool](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol): This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference [here](/ccip/tools-resources/api-reference/evm/v1.5.1/burn-mint-token-pool). **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
+- [LockReleaseTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol): This token pool is used to lock or release tokens. You can read the API reference [here](/ccip/tools-resources/api-reference/evm/v1.5.1/lock-release-token-pool).
 
-**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates) function, which is used to configure the token pool. You can read the API reference [here](/ccip/api-reference/v1.5.1/token-pool).
+**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the [`applyChainUpdates`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#applychainupdates) function, which is used to configure the token pool. You can read the API reference [here](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool).
 
 ### Token Handling Mechanisms and Token Pool Deployment
 
@@ -255,8 +255,8 @@ Here are some examples of use cases that may require custom token pools:
 
   - **Use Case**: Rebasing tokens are a unique type of token that adjusts its supply in response to specific parameters (e.g., price). These tokens require custom logic to handle rebasing events during cross-chain transfers.
   - **Solution**:
-    - **Source Blockchain**: When initiating a cross-chain transfer of rebasing tokens, the TokenPool on the source blockchain should lock or burn the underlying shares rather than a fixed amount of tokens. This ensures that the value is consistently represented, regardless of changes in supply. The number of shares being locked or burned is recorded in the [`destPoolData`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) and passed to the destination blockchain via CCIP.
-    - **Destination Blockchain**: On the destination blockchain, the TokenPool should accurately convert the number of underlying shares to tokens using the current share-to-token ratio. The calculated token amount should then be minted on the destination blockchain and returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
+    - **Source Blockchain**: When initiating a cross-chain transfer of rebasing tokens, the TokenPool on the source blockchain should lock or burn the underlying shares rather than a fixed amount of tokens. This ensures that the value is consistently represented, regardless of changes in supply. The number of shares being locked or burned is recorded in the [`destPoolData`](/ccip/tools-resources/api-reference/evm/v1.5.1/pool#lockorburnoutv1) and passed to the destination blockchain via CCIP.
+    - **Destination Blockchain**: On the destination blockchain, the TokenPool should accurately convert the number of underlying shares to tokens using the current share-to-token ratio. The calculated token amount should then be minted on the destination blockchain and returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/tools-resources/api-reference/evm/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
 
 - **Tokens with different decimals across blockchains**:
 
@@ -270,8 +270,8 @@ Here are some examples of use cases that may require custom token pools:
 
   - **Use Case**: Some tokens have different decimal values across various blockchains.
   - **Solution**:
-    - **Source Blockchain**: During the lock or burn process on the source blockchain, the TokenPool should include a shared denomination in the `destPoolData` field of the [`LockOrBurnOutV1`](/ccip/api-reference/v1.5.1/pool#lockorburnoutv1) struct (returned by the `lockOrBurn` function) to represent the value in a standard format. This data is then passed to the destination blockchain via CCIP.
-    - **Destination Blockchain**: On the destination blockchain, the TokenPool should use the information contained in the `sourcePoolData` of the [`ReleaseOrMintInV1`](/ccip/api-reference/v1.5.1/pool#releaseormintinv1) struct (used by the `releaseOrMint` function) to convert the value into the local denomination. The correct number of tokens should then be minted based on the destination blockchain's decimal format. The minted amount is returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/api-reference/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
+    - **Source Blockchain**: During the lock or burn process on the source blockchain, the TokenPool should include a shared denomination in the `destPoolData` field of the [`LockOrBurnOutV1`](/ccip/tools-resources/api-reference/evm/v1.5.1/pool#lockorburnoutv1) struct (returned by the `lockOrBurn` function) to represent the value in a standard format. This data is then passed to the destination blockchain via CCIP.
+    - **Destination Blockchain**: On the destination blockchain, the TokenPool should use the information contained in the `sourcePoolData` of the [`ReleaseOrMintInV1`](/ccip/tools-resources/api-reference/evm/v1.5.1/pool#releaseormintinv1) struct (used by the `releaseOrMint` function) to convert the value into the local denomination. The correct number of tokens should then be minted based on the destination blockchain's decimal format. The minted amount is returned in the `destinationAmount` field of the [`ReleaseOrMintOutV1`](/ccip/tools-resources/api-reference/evm/v1.5.1/pool#releaseormintoutv1) struct, which is returned by the `releaseOrMint` function.
 
 ### Token Pool Upgradability
 
@@ -338,7 +338,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
 
    Configure both new pools to accept messages from both the old and new pools. This dual configuration ensures that after the upgrade, the new pools can still process any in-flight messages sent from the old pools before the upgrade.
 
-   Use [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates) to set up the new pools:
+   Use [`applyChainUpdates`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#applychainupdates) to set up the new pools:
 
    On Ethereum's new pool:
 
@@ -370,7 +370,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
 
    Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools.
 
-   Use [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.0/token-pool#setchainratelimiterconfig) on both existing pools:
+   Use [`setChainRateLimiterConfig`](/ccip/tools-resources/api-reference/evm/v1.5.0/token-pool#setchainratelimiterconfig) on both existing pools:
 
    On Ethereum's old pool:
 
@@ -392,7 +392,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
 
 1. Update Token Admin Registry
 
-   Use [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) to update the registry on both blockchains. This step switches token transfers to use the new pools.
+   Use [`setPool`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry#setpool) to update the registry on both blockchains. This step switches token transfers to use the new pools.
 
    On Ethereum:
 
@@ -414,7 +414,7 @@ Here's a detailed example of upgrading pools between Ethereum and Polygon:
 
    After verifying all transactions are processed successfully:
 
-   - Use [`removeRemotePool`](/ccip/api-reference/v1.5.1/token-pool#removeremotepool) to remove old pool addresses
+   - Use [`removeRemotePool`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#removeremotepool) to remove old pool addresses
    - This prevents future messages from using the old pools
    - Only proceed with cleanup after confirming:
      - No pending transactions in CCIP Explorer
@@ -460,8 +460,8 @@ In the Cross-Chain Token (CCT) standard, several key contracts work together to 
 
 The **Registry contracts** manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
 
-- [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry): This contract stores the token administrators and pools for all registered cross-chain tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
-- [`RegistryModuleOwnerCustom`](/ccip/api-reference/v1.5.1/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
+- [`TokenAdminRegistry`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry): This contract stores the token administrators and pools for all registered cross-chain tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
+- [`RegistryModuleOwnerCustom`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom): This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
 
 #### Token Contract
 
@@ -489,13 +489,13 @@ If the token contract includes any of the necessary functions (`getCCIPAdmin()`,
 
 1. **Admin Initiates Registration**: The token administrator begins the process by calling one of these functions on the **RegistryModuleOwnerCustom** contract:
 
-   - [`registerAdminViaGetCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
-   - [`registerAdminViaOwner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+   - [`registerAdminViaGetCCIPAdmin()`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - [`registerAdminViaOwner()`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom#registeradminviaowner)
 
 1. **Determine Administrator**: The **RegistryModuleOwnerCustom** contract retrieves the administrator from the token contract using the appropriate method:
 
-   - Via [`getCCIPAdmin()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
-   - Via [`owner()`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner)
+   - Via [`getCCIPAdmin()`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom#registeradminviagetccipadmin)
+   - Via [`owner()`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom#registeradminviaowner)
 
 1. **Propose Administrator**: The retrieved administrator is then proposed to the **TokenAdminRegistry** using the `proposeAdministrator()` function, placing the administrator in a pending state.
 
@@ -564,9 +564,9 @@ The sequence diagram below shows how the token administrator sets or updates the
 
 ### Configuring the Token Pool
 
-The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following functions from the [`TokenPool`](/ccip/api-reference/v1.5.1/token-pool) contract are used for configuring token pools:
+The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following functions from the [`TokenPool`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool) contract are used for configuring token pools:
 
-1. [`applyChainUpdates`](/ccip/api-reference/v1.5.1/token-pool#applychainupdates):
+1. [`applyChainUpdates`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#applychainupdates):
    - **Purpose**: This function is the primary method for configuring which blockchains the token pool supports and defining rate limits for cross-chain transfers.
    - **Details**:
      - It allows the token pool owner to add new chains or remove existing ones.
@@ -575,7 +575,7 @@ The configuration of token pools includes adding new blockchains, setting remote
    - **Usage**:
      - To add a new blockchain, the pool owner provides the remote chain selector, pool address, token address, and rate limiter configurations.
      - To remove a blockchain, the `allowed` flag is set to `false`, and the chain is removed from the list of supported chains.
-1. [`addRemotePool`](/ccip/api-reference/v1.5.1/token-pool#addremotepool):
+1. [`addRemotePool`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#addremotepool):
 
    - **Purpose**: Adds a new remote pool address for a specific blockchain, enabling support for multiple pools per chain.
    - **Details**:
@@ -585,7 +585,7 @@ The configuration of token pools includes adding new blockchains, setting remote
      - Each pool address is hashed and stored for efficient lookup
    - **Usage**: This function is particularly useful during pool upgrades, allowing seamless transitions between pool versions while maintaining transaction support.
 
-1. [`setChainRateLimiterConfig`](/ccip/api-reference/v1.5.1/token-pool#setchainratelimiterconfig):
+1. [`setChainRateLimiterConfig`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#setchainratelimiterconfig):
 
    - **Purpose**: Configures the rate limits for outbound and inbound token transfers between blockchains.
    - **Details**:
@@ -595,7 +595,7 @@ The configuration of token pools includes adding new blockchains, setting remote
    - **Notes on Rate Limit Admin**: The rate limit admin is a designated address that is authorized to configure the rate limits for a token pool. This admin can be set by the pool owner using the `setRateLimitAdmin` function. If no rate limit admin is set, only the pool owner can modify the rate limits. You can retrieve the current rate limit admin address using the `getRateLimitAdmin` function.
    - **Usage**: This function adjusts rate limits to prevent excessive token transfers or overload of the token pool. **Note**: This function also supports disabling rate limits.
 
-1. [`applyAllowListUpdates`](/ccip/api-reference/v1.5.1/token-pool#applyallowlistupdates):
+1. [`applyAllowListUpdates`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-pool#applyallowlistupdates):
    - **Purpose**: Manages an allowlist of addresses permitted to interact with the token pool.
    - **Details**:
      - This function is only relevant if the token pool is access-controlled (i.e., an allowlist is enabled).

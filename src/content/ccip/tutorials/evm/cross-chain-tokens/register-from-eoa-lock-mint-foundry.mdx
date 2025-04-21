@@ -13,12 +13,12 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
   pages={[
     {
       name: "Hardhat (Lock & Mint)",
-      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
     },
     {
       name: "Foundry (Lock & Mint)",
-      url: "/ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
     },
   ]}
@@ -165,7 +165,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
 
-The script reads the [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
@@ -232,7 +232,7 @@ In this step, you will use the `DeployLockReleaseTokenPool.s.sol` to deploy a lo
 
 In this step, you will use the `ClaimAdmin.s.sol` script to register your EOA as the administrator for the deployed tokens on both Avalanche Fuji and Arbitrum Sepolia testnets. This process involves interacting with the `RegistryModuleOwnerCustom` contract to set up your EOA as the admin.
 
-The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
+The script will claim the admin role using using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
 
 1. Claim the Admin role for the token on Avalanche Fuji:
 
@@ -386,7 +386,7 @@ Each `ChainUpdate` struct in the `chainUpdates` array includes the following fie
 
 In this step, you will use the `MintTokens.s.sol` script to mint tokens to your Externally Owned Account (EOA) on Avalanche Fuji. Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
 
-The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
+The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
 
 Mint tokens for your EOA on Avalanche Fuji:
 
@@ -407,7 +407,7 @@ Current balance of receiver is 1000000000000000000000 BnMkh
 
 In this step, you will use the `TransferTokens.s.sol` script to transfer tokens from Avalanche Fuji to Arbitrum Sepolia using CCIP. You can choose to pay CCIP fees using LINK tokens or the native gas token.
 
-The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
+The scripts reads the `tokenAmountToTransfer`, the `feeType`, and the `destinationChainId` from your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). It prepares the transfer by approving the token transfer and estimating the CCIP fees based on your `feeType`. The script then calls the `ccipSend()` function on the `IRouterClient` contract to initiate the cross-chain transfer.
 
 Transfer tokens from Avalanche Fuji to Arbitrum Sepolia:
 

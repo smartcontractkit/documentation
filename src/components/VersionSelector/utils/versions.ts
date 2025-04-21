@@ -112,7 +112,7 @@ export const buildVersionUrl = (
  *
  * @example
  * // Returns { isApiReference: true, product: "ccip", isVersioned: true }
- * detectApiReference("/ccip/api-reference/v1.5.1/client")
+ * detectApiReference("/XXX/api-reference/v1.5.1/client")
  *
  * // Also handles extended paths:
  * detectApiReference("/ccip/tools-resources/api-reference/evm/v1.5.1/client")

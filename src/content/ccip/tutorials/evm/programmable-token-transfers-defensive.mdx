@@ -6,7 +6,7 @@ metadata:
   description: "Learn defensive coding for Chainlink CCIP. Tutorial covers handling errors, locking tokens on failure, and recovering locked tokens in cross-chain transfers."
 whatsnext:
   {
-    "Transfer Tokens Between EOAs": "/ccip/tutorials/transfer-tokens-from-eoa",
+    "Transfer Tokens Between EOAs": "/ccip/tutorials/evm/transfer-tokens-from-eoa",
     "See example cross-chain dApps and tools": "/ccip/examples",
     "CCIP Directory": "/ccip/directory",
     "Learn CCIP best practices": "/ccip/best-practices",
@@ -16,7 +16,7 @@ whatsnext:
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-This tutorial extends the [programmable token transfers example](/ccip/tutorials/programmable-token-transfers). It uses Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains, and focuses on defensive coding in the receiver contract. In the event of a specified error during the CCIP message reception, the contract locks the tokens. Locking the tokens allows the owner to recover and redirect them as needed. Defensive coding is crucial as it enables the recovery of locked tokens and ensures the protection of your users' assets.
+This tutorial extends the [programmable token transfers example](/ccip/tutorials/evm/programmable-token-transfers). It uses Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains, and focuses on defensive coding in the receiver contract. In the event of a specified error during the CCIP message reception, the contract locks the tokens. Locking the tokens allows the owner to recover and redirect them as needed. Defensive coding is crucial as it enables the recovery of locked tokens and ensures the protection of your users' assets.
 
 <Aside type="caution" title="Transferring tokens">
   This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
@@ -32,7 +32,7 @@ This tutorial extends the [programmable token transfers example](/ccip/tutorials
 1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
 1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
-1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
+1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/evm/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
 
 ## Tutorial
 
@@ -191,13 +191,13 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
 <CcipCommon callout="importCCIPPackage" />
 
-The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/programmable-token-transfers#explanation). We will only explain the main differences.
+The smart contract featured in this tutorial is designed to interact with CCIP to transfer and receive tokens and data. The contract code is similar to the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. Hence, you can refer to its [code explanation](/ccip/tutorials/evm/programmable-token-transfers#explanation). We will only explain the main differences.
 
 ### Sending messages
 
 <CcipCommon callout="senderContractCallout" />
 
-The `sendMessagePayLINK` function is similar to the `sendMessagePayLINK` function in the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. The main difference is the increased gas limit to account for the additional gas required to process the error-handling logic.
+The `sendMessagePayLINK` function is similar to the `sendMessagePayLINK` function in the [_Transfer Tokens with Data_](/ccip/tutorials/evm/programmable-token-transfers) tutorial. The main difference is the increased gas limit to account for the additional gas required to process the error-handling logic.
 
 ### Receiving and processing messages
 
@@ -207,7 +207,7 @@ Here's the step-by-step breakdown of the process:
 
 1. Entrance through `ccipReceive`:
 
-   - The `ccipReceive` function is invoked with an `Any2EVMMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage) containing the message to be processed.
+   - The `ccipReceive` function is invoked with an `Any2EVMMessage` [struct](/ccip/tools-resources/api-reference/evm/v1.5.1/client#any2evmmessage) containing the message to be processed.
    - Security checks ensure the call is from the authorized router, an allowlisted source chain, and an allowlisted sender.
 
 1. Processing Message:

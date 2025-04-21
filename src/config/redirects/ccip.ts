@@ -16,9 +16,9 @@ const API_FILES = [
 export const ccipRedirects = API_FILES.reduce(
   (redirects, file) => {
     // Only create one redirect without trailing slash
-    redirects[`/ccip/api-reference/${file}`] = {
+    redirects[`/ccip/tools-resources/api-reference/evm/${file}`] = {
       status: 301,
-      destination: `/ccip/api-reference/v1.5.1/${file}`,
+      destination: `/ccip/tools-resources/api-reference/evm/v1.5.1/${file}`,
     }
     return redirects
   },

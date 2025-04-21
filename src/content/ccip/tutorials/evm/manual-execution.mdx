@@ -6,7 +6,7 @@ metadata:
   description: "Learn how to manually execute failed Chainlink CCIP transactions. Tutorial covers low gas limit scenarios, investigation with Tenderly, and triggering manual execution."
 whatsnext:
   {
-    "Learn how to handle errors gracefully when making CCIP transactions": "/ccip/tutorials/programmable-token-transfers-defensive",
+    "Learn how to handle errors gracefully when making CCIP transactions": "/ccip/tutorials/evm/programmable-token-transfers-defensive",
     "See example cross-chain dApps and tools": "/ccip/examples",
     "CCIP Directory": "/ccip/directory",
     "Learn CCIP best practices": "/ccip/best-practices",
@@ -21,7 +21,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
   works under the hood.
 </Aside>
 
-This tutorial is similar to the [programmable token transfers example](/ccip/tutorials/programmable-token-transfers). It demonstrates the use of Chainlink CCIP for transferring tokens and arbitrary data between smart contracts on different blockchains. A distinctive feature of this tutorial is that we intentionally set a very low gas limit when using CCIP to send our message. This low gas limit is designed to cause the execution on the destination chain to fail, providing an opportunity to demonstrate the manual execution feature. Here's how you will proceed:
+This tutorial is similar to the [programmable token transfers example](/ccip/tutorials/evm/programmable-token-transfers). It demonstrates the use of Chainlink CCIP for transferring tokens and arbitrary data between smart contracts on different blockchains. A distinctive feature of this tutorial is that we intentionally set a very low gas limit when using CCIP to send our message. This low gas limit is designed to cause the execution on the destination chain to fail, providing an opportunity to demonstrate the manual execution feature. Here's how you will proceed:
 
 1. Initiate a Transfer: You'll transfer tokens and arbitrary data from your source contract on Avalanche Fuji to a receiver contract on Ethereum Sepolia. You will notice that the CCIP message has a very low gas limit, causing the execution on the receiver contract to fail.
 1. Failure of CCIP Message Delivery: Once the transaction is finalized on the source chain (Avalanche Fuji), CCIP will deliver your message to the receiver contract on the destination chain (Ethereum Sepolia). You can follow the progress of your transaction using the [CCIP explorer](https://ccip.chain.link/). Here, you'll observe that the execution on the receiver contract failed due to the low gas limit.
@@ -35,7 +35,7 @@ This tutorial is similar to the [programmable token transfers example](/ccip/tut
 1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
 1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
-1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
+1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/evm/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
 1. Create a free account on [Tenderly](https://tenderly.co/). You will use Tenderly to investigate the failed execution of the receiver contract.
 
 ## Tutorial
@@ -233,7 +233,7 @@ You will increase the gas limit and trigger manual execution:
 
 <CcipCommon callout="importCCIPPackage" />
 
-The smart contract used in this tutorial is configured to use CCIP for transferring and receiving tokens with data, similar to the contract in the [_Transfer Tokens with Data_](/ccip/tutorials/programmable-token-transfers) tutorial. For a detailed understanding of the contract code, refer to the [code explanation](/ccip/tutorials/programmable-token-transfers#explanation) section of that tutorial.
+The smart contract used in this tutorial is configured to use CCIP for transferring and receiving tokens with data, similar to the contract in the [_Transfer Tokens with Data_](/ccip/tutorials/evm/evm/programmable-token-transfers#explanation) section of that tutorial.
 
 A key distinction in this tutorial is the intentional setup of a low gas limit of `20,000` for building the CCIP message. This specific gas limit setting is expected to fail the message delivery on the receiver contract in the destination chain:
 

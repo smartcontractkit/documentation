@@ -47,7 +47,7 @@ In this tutorial, we'll use a **2-of-3 multi-signature** setup as an example, wh
 In Safe smart accounts, the **Smart Account Owners** are responsible for approving actions. Transactions are signed off-chain by the required number of owners, which improves efficiency and reduces gas costs. Once the necessary threshold is met, the signed transactions are submitted to the blockchain for execution. The Safe smart account (a smart contract) verifies the signatures and enforces the required number of approvals before executing the transaction.
 This process enhances security, particularly for sensitive tasks such as registering a token administrator or configuring a token pool. Multi-signature ensures that no single owner can act alone.
 
-The steps for enabling your tokens in CCIP follow the same flow as the [previous tutorials](/ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat) that used externally owned accounts (EOA). The key difference here is that for sensitive actions like token administrator registration or token pool configuration, we assume your project uses a Safe multisig. Therefore, multiple signatures are required off-chain; in some cases, a batch of transactions will be submitted to save on gas costs.
+The steps for enabling your tokens in CCIP follow the same flow as the [previous tutorials](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat) that used externally owned accounts (EOA). The key difference here is that for sensitive actions like token administrator registration or token pool configuration, we assume your project uses a Safe multisig. Therefore, multiple signatures are required off-chain; in some cases, a batch of transactions will be submitted to save on gas costs.
 
 The following sequence diagram illustrates the multisig transaction flow in a Safe smart account, from off-chain signature collection to on-chain execution:
 
@@ -72,17 +72,17 @@ We will cover the following key steps:
 
 1. **Deploying Tokens**: You will deploy your [`BurnMintERC677`](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/shared/token/ERC677/BurnMintERC677.sol) tokens on the Ethereum Sepolia and BASE Sepolia testnets and transfer ownership to the Safe account.
 
-1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/v1.5.1/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/tools-resources/api-reference/evm/v1.5.1/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
 
 1. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
 
-   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/v1.5.1/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/api-reference/v1.5.1/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
+   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom) contract's [`registerAdminViaOwner`](/ccip/tools-resources/api-reference/evm/v1.5.1/registry-module-owner-custom#registeradminviaowner) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
 
-   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/v1.5.1/token-admin-registry#acceptadminrole) function to complete the registration process.
+   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry) contract's [`acceptAdminRole`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry#acceptadminrole) function to complete the registration process.
 
    Meta-transactions are used here to batch these two actions, allowing both steps to be executed efficiently. The meta-transactions are created off-chain and signed by each of the two required Safe owners. This off-chain signing process reduces gas costs and enhances security, as the transactions are only broadcasted to the blockchain once all required signatures are collected.
 
-1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/v1.5.1/token-admin-registry) contract's [`setPool`](/ccip/api-reference/v1.5.1/token-admin-registry#setpool) function to associate each token with its respective token pool.
+1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry) contract's [`setPool`](/ccip/tools-resources/api-reference/evm/v1.5.1/token-admin-registry#setpool) function to associate each token with its respective token pool.
 
 1. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
 
