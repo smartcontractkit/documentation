@@ -9,4 +9,31 @@ metadata:
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-XXX
+**TODO**: crate(s) to import?
+
+## Errors
+
+### Router
+
+#### ccip_send
+
+| Error Code | Symbol                                    | Description                                                                                                                                               |
+| ---------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **7001**   | `InvalidInputsMint`                       | The mint account input is invalid.                                                                                                                        |
+| **7002**   | `InvalidVersion`                          | The on-chain state has a version number higher than expected or zero (uninitialized) when it shouldn't be.                                                |
+| **7003**   | `FeeTokenMismatch`                        | The fee token doesn't match the minted token used for the transfer.                                                                                       |
+| **7005**   | `ReachedMaxSequenceNumber`                | The sequence number cannot be incremented further (u64 overflow). This is very unlikely.                                                                  |
+| **7006**   | `InvalidInputsTokenIndices`               | The sub-slice token index calculations are invalid, or `token_indexes.len()` doesn't match the number of tokens.                                          |
+| **7007**   | `InvalidInputsPoolAccounts`               | The passed "pool sub-slice" accounts do not match the expected PDAs for the token pool's configuration.                                                   |
+| **7008**   | `InvalidInputsTokenAccounts`              | The user token or pool token account is invalid (wrong ATAs or minted by a different token).                                                              |
+| **7009**   | `InvalidInputsConfigAccounts`             | The required config PDAs do not match (e.g., the "billing" config or the "pool chain config" for that chain).                                             |
+| **7010**   | `InvalidInputsTokenAdminRegistryAccounts` | The `token_admin_registry` passed does not match the expected PDA.                                                                                        |
+| **7011**   | `InvalidInputsLookupTableAccounts`        | The Address Lookup Table (ALT) provided is invalid or does not match what the `token_admin_registry` expects.                                             |
+| **7012**   | `InvalidInputsLookupTableAccountWritable` | One or more accounts in the lookup table are incorrectly marked as writable / non-writable.                                                               |
+| **7013**   | `InvalidInputsTokenAmount`                | An attempt was made to send a token amount of zero.                                                                                                       |
+| **7015**   | `InvalidInputsAtaAddress`                 | The associated token account address does not match what was expected.                                                                                    |
+| **7016**   | `InvalidInputsAtaWritable`                | If the user's fee-token ATA is not flagged as writable, we need to debit it.                                                                              |
+| **7018**   | `InsufficientLamports`                    | Users paying with native SOL have insufficient lamports to cover the required fee transfer.                                                               |
+| **7019**   | `InsufficientFunds`                       | Insufficient funds in a token account.                                                                                                                    |
+| **7020**   | `SourceTokenDataTooLarge`                 | The returned "dest_pool_data" from `lockOrBurnOut` is larger than the allowed `CCIP_LOCK_OR_BURN_V1_RET_BYTES`, or larger than the `dest_bytes_overhead`. |
+| **7023**   | `SenderNotAllowed`                        | The sender (caller) is not in the `allowed_senders` list for that destination chain, and the allow-list is enabled.                                       |
