@@ -9,14 +9,19 @@ metadata:
 ---
 
 import { Aside } from "@components"
-import { Tabs, Fragment } from "@components/Tabs"
+import { Tabs } from "@components/Tabs"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <Aside type="note" title="Prerequisites">
-  This reference guide assumes familiarity with: - [Rust](https://www.rust-lang.org/) and the [Anchor
-  framework](https://www.anchor-lang.com/) - [Solana program
-  development](https://docs.solana.com/developing/programming-model/overview) - [CCIP architecture](/ccip/architecture)
-  and [CCIP messaging to Solana](/ccip/tutorials/evm-to-solana-messaging)
+
+This reference guide assumes familiarity with:
+
+- [Rust](https://www.rust-lang.org/) and the [Anchor
+  framework](https://www.anchor-lang.com/)
+- [Solana program
+  development](https://solana.com/docs)
+- [CCIP architecture](/ccip/architecture)
+
 </Aside>
 
 # Implementing CCIP Receivers for Solana
@@ -25,44 +30,63 @@ This reference guide explains the key components and security patterns required 
 
 ## Introduction
 
-A CCIP Receiver is a Solana program that implements the `ccip_receive` function, allowing it to process incoming cross-chain messages from EVM chains. It can handle both arbitrary data payloads and token transfers, serving as the destination endpoint for CCIP messages.
+A CCIP Receiver is a Solana program that implements the `ccip_receive` function, allowing it to process incoming cross-chain messages. It can handle both arbitrary data payloads and/or token transfers, serving as the destination endpoint for CCIP messages.
 
-## CCIP Receiver Architecture
+## Security Architecture
 
-Before examining the code, it's essential to understand the architectural components that secure cross-chain messaging in CCIP.
+To build a secure CCIP receiver, you need to understand how it interacts with the broader CCIP infrastructure.
 
-### The Security Triangle
-
-CCIP Receivers operate within a security triangle formed by three key entities:
+Your receiver program interacts with two external CCIP components:
 
 <Tabs client:visible>
-  <Fragment slot="tab.1">Entities</Fragment>
-  <Fragment slot="tab.2">Message Flow</Fragment>
-  <Fragment slot="tab.3">Security Model</Fragment>
+  <Fragment slot="tab.1">Architectural Components</Fragment>
+  <Fragment slot="tab.2">Security Model</Fragment>
 
-<Fragment slot="panel.1">
-  The CCIP security model involves: 1. **Receiver Program** (your Solana program) - Implements the `ccip_receive`
-  function - Validates that messages come from authorized sources 2. **CCIP Router** - Central coordinator of
-  cross-chain communication - Manages allowed offramps for each chain - Creates PDAs that verify offramp authorization
-  3. **CCIP Offramp** - Delivers messages to the destination chain - Uses a specific PDA to sign transactions calling
-  your program Your receiver program must validate both the offramp and its relationship with the router.
-</Fragment>
+  <Fragment slot="panel.1">
 
-<Fragment slot="panel.2">
-  When a message is sent from an EVM chain to your Solana program: 1. The message is sent to the CCIP Router on the
-  source chain 2. The Router notifies CCIP validators about the message 3. Validators reach consensus and prepare
-  message execution 4. The Offramp program on Solana receives the message 5. The Offramp calls your program's
-  `ccip_receive` function with: - The Offramp's authority PDA as a signer - The message data and token transfers -
-  Access to the "allowed offramp" PDA created by the Router
-</Fragment>
+    The CCIP security architecture consists of:
 
-  <Fragment slot="panel.3">
-    The security model relies on three critical validations: 1. **Authority Validation** - Verify the calling authority
-    is a legitimate Offramp PDA - This prevents unauthorized programs from sending fake messages 2. **Router
-    Validation** - Verify the Offramp is authorized by the Router - This ensures only trusted Offramps approved by the
-    Router can deliver messages 3. **Optional Sender Validation** - Optionally validate the source chain and sender
-    address - This provides an additional layer of security by restricting which sources can send messages
+    1. **Receiver Program** (your SVM program)
+
+        - Implements the `ccip_receive`
+        function
+        - Validates that messages come from an authorized OffRamp program
+
+    1. **CCIP Router**
+
+        - Central coordinator of cross-chain communication
+        - Manages allowed OffRamps
+        - Creates PDAs that verify OffRamp authorization
+
+    1. **CCIP Offramp**
+
+        - Delivers messages to the receiver program
+        - Uses a specific PDA to sign transactions calling your program
+
   </Fragment>
+
+  <Fragment slot="panel.2">
+
+    The security model relies on three critical validations:
+
+    1. **Authority Validation**
+
+        - Verify the calling authority
+        - is a legitimate Offramp PDA
+        - This prevents unauthorized programs from sending fake messages
+
+    1. **Router Validation**
+
+        - Verify the Offramp is authorized by the Router
+        - This ensures only trusted Offramps approved by the Router can deliver messages
+
+    1. **Optional Sender Validation**
+
+        - Optionally validate the source chain and sender address
+        - This provides an additional layer of security by restricting which sources can send messages
+
+  </Fragment>
+
 </Tabs>
 
 ## Core Components of a CCIP Receiver
@@ -225,28 +249,24 @@ Your CCIP Receiver can be designed to handle different types of cross-chain scen
   <Fragment slot="tab.2">Cross-Chain Oracle</Fragment>
   <Fragment slot="tab.3">Governance</Fragment>
   <Fragment slot="tab.4">NFT Bridge</Fragment>
-
-<Fragment slot="panel.1">
-  **Token Bridge** Receive tokens from other chains and distribute them to users. The receiver program: - Stores records
-  of cross-chain transfers - May forward tokens to specific recipients - Could implement custom token distribution logic
-  - Might handle token swaps or conversions The critical requirement is ensuring your program has authority over the
-  token accounts to perform these operations securely.
-</Fragment>
-
-<Fragment slot="panel.2">
-  **Cross-Chain Oracle** Receive price data or other information from other chains. The receiver program: - Updates
-  state with the latest data from other chains - May verify data against multiple sources - Could implement
-  time-weighted calculations - Might provide interfaces for other programs to access this data This pattern is useful
-  for bringing external data on-chain in a decentralized manner.
-</Fragment>
-
-<Fragment slot="panel.3">
-  **Governance** Implement cross-chain governance mechanisms. The receiver program: - Records votes or proposals from
-  other chains - Aggregates cross-chain governance decisions - May implement timelock or multi-stage governance - Could
-  trigger on-chain actions based on cross-chain votes This enables protocols that operate across multiple chains to have
-  unified governance.
-</Fragment>
-
+  <Fragment slot="panel.1">
+    **Token Bridge** Receive tokens from other chains and distribute them to users. The receiver program: - Stores
+    records of cross-chain transfers - May forward tokens to specific recipients - Could implement custom token
+    distribution logic - Might handle token swaps or conversions The critical requirement is ensuring your program has
+    authority over the token accounts to perform these operations securely.
+  </Fragment>
+  <Fragment slot="panel.2">
+    **Cross-Chain Oracle** Receive price data or other information from other chains. The receiver program: - Updates
+    state with the latest data from other chains - May verify data against multiple sources - Could implement
+    time-weighted calculations - Might provide interfaces for other programs to access this data This pattern is useful
+    for bringing external data on-chain in a decentralized manner.
+  </Fragment>
+  <Fragment slot="panel.3">
+    **Governance** Implement cross-chain governance mechanisms. The receiver program: - Records votes or proposals from
+    other chains - Aggregates cross-chain governance decisions - May implement timelock or multi-stage governance -
+    Could trigger on-chain actions based on cross-chain votes This enables protocols that operate across multiple chains
+    to have unified governance.
+  </Fragment>
   <Fragment slot="panel.4">
     **NFT Bridge** Bridge NFTs across chains. The receiver program: - Records information about NFTs on other chains -
     Mints corresponding NFTs on Solana - Maintains the link between cross-chain NFT identities - Handles NFT metadata
