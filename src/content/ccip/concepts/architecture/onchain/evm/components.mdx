@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Onchain Architecture - Components (EVM)"
+metadata:
+  description: "Explore the onchain components of CCIP architecture on EVM chains: Sender/Receiver, Router, OnRamp, OffRamp, FeeQuoter, NonceManager, Token Admin Registry, Tokens, Token Pools, and RMN Contract."
 ---
 
 import { Aside } from "@components"
@@ -153,7 +155,7 @@ The NonceManager helps order messages in CCIP by tracking outbound nonces on the
    - **Non-zero Nonces:** When an OnRamp identifies a message that must preserve ordering, it increments and assigns a non-zero outbound nonce.
    - **Inbound Validation:** On the destination blockchain, the OffRamp checks that the incoming message's nonce matches the expected inbound nonce. If there is a mismatch, the message is skipped or deferred for later retry.
 1. **Out-of-Order Messages**
-   - **Zero Nonces:** For messages marked “out of order,” the OnRamp sets the nonce to **0**.
+   - **Zero Nonces:** For messages marked "out of order," the OnRamp sets the nonce to **0**.
    - **No Sequence Checks:** Because `nonce == 0` indicates no ordering, the OffRamp does not validate or increment inbound nonces. These messages can execute immediately without waiting for earlier messages.
 
 ## Token Admin Registry

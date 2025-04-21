@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "CCIP Execution Latency"
+metadata:
+  description: "Learn about CCIP execution latency factors like blockchain finality, network congestion, and gas. See CCIP's finality methods per chain."
 ---
 
 import { Aside } from "@components"
@@ -13,7 +15,7 @@ As depicted in the [CCIP detailed architecture](/ccip/architecture#detailed-arch
 **Source blockchain:**
 
     1. A sender contract or externally owned account (EOA) sends a CCIP message.
-    1. The transaction is included in a block and processed by “network participants” (validators in PoS and miners in PoW blockchains).
+    1. The transaction is included in a block and processed by "network participants" (validators in PoS and miners in PoW blockchains).
     1. The Committing Decentralized Oracle Network (DON) waits for the block containing the transaction to achieve finality.
 
 **Destination blockchain:**
@@ -41,7 +43,7 @@ Different blockchains employ various consensus mechanisms, leading to different 
 
 #### Finality on L1 PoA/PoS Chains
 
-Typically, Proof of Authority / Proof of Stake (PoA/PoS) chains use a deterministic model to determine when a block/transaction is considered final. The consensus protocol utilized in such a system is usually designed to be Byzantine Fault Tolerant (BFT). This means that under the assumption that some subset (usually between 51% - 67%) of the participating nodes/stake are honest, and there are no errors in the protocol’s implementation, the system works as expected and finality assurances are upheld.
+Typically, Proof of Authority / Proof of Stake (PoA/PoS) chains use a deterministic model to determine when a block/transaction is considered final. The consensus protocol utilized in such a system is usually designed to be Byzantine Fault Tolerant (BFT). This means that under the assumption that some subset (usually between 51% - 67%) of the participating nodes/stake are honest, and there are no errors in the protocol's implementation, the system works as expected and finality assurances are upheld.
 
 **Examples:**
 
@@ -59,7 +61,7 @@ Layer 2 blockchains, or L2s, are implementations of blockchain systems built on 
 
 **Optimistic Rollups:**
 
-Most of the popular optimistic rollups that exist today are run through a centralized sequencer. The sequencer is responsible for ordering incoming transactions, including them in blocks, batching them together and posting them as a bundle to the underlying blockchain they settle on. These bundles serve as commitments and once posted provide more certainty on the finalized state of the rollup. Given that the sequencer is centralized, users are faced with the choice to trust that it won’t change the order of the transactions or wait until these commitments are posted to the underlying L1 blockchain.
+Most of the popular optimistic rollups that exist today are run through a centralized sequencer. The sequencer is responsible for ordering incoming transactions, including them in blocks, batching them together and posting them as a bundle to the underlying blockchain they settle on. These bundles serve as commitments and once posted provide more certainty on the finalized state of the rollup. Given that the sequencer is centralized, users are faced with the choice to trust that it won't change the order of the transactions or wait until these commitments are posted to the underlying L1 blockchain.
 
 The optimistic model means that the commitment is valid by default when it is posted to the Layer 1 (L1) blockchain. This is why optimistic rollups typically provide a challenge period, during which a commitment can be challenged if it turns out to be fraudulent. If a challenge is successful, the commitment is replaced and the rollup state is updated to the correct one.
 
@@ -67,10 +69,10 @@ The optimistic model means that the commitment is valid by default when it is po
 
     1. Transaction is included in an L2 block by the sequencer.
     1. Transaction is included in a batch that is committed to the L1.
-    1. Challenge period during which a batch can be challenged if it’s invalid - usually lasts a week or more.
+    1. Challenge period during which a batch can be challenged if it's invalid - usually lasts a week or more.
     1. Transaction is finalized on the L1 - at this point it is considered irreversible.
 
-In the popular optimistic rollup implementations that exist (e.g. OP, Arbitrum, etc.), a commitment can only be challenged if it contains an invalid state root. If the commitment is a valid continuation of the L2, it cannot be challenged. Therefore, seeing a commitment and verifying that it is valid is sufficient certainty for most users to assume finality on this type of L2s, as long as they trust the finality guarantees of the underlying L1. Importantly, this guarantee is supported by waiting for the commitment to the L1 to be finalized according to the L1’s finality model.
+In the popular optimistic rollup implementations that exist (e.g. OP, Arbitrum, etc.), a commitment can only be challenged if it contains an invalid state root. If the commitment is a valid continuation of the L2, it cannot be challenged. Therefore, seeing a commitment and verifying that it is valid is sufficient certainty for most users to assume finality on this type of L2s, as long as they trust the finality guarantees of the underlying L1. Importantly, this guarantee is supported by waiting for the commitment to the L1 to be finalized according to the L1's finality model.
 
 **ZK Rollups:**
 

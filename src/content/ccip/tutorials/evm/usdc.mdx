@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Transfer USDC with Data"
+metadata:
+  description: "Learn how Chainlink CCIP enables native & bridged USDC transfers. Tutorial: Transfer USDC & data from Avalanche Fuji to Ethereum Sepolia using CCIP."
 ---
 
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
@@ -42,14 +44,14 @@ Chainlink CCIP maintains a consistent [API](/ccip/api-reference/v1.5.1/i-router-
 
 #### Native USDC (CCTP-enabled)
 
-The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle’s contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/architecture#detailed-architecture).
+The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle's contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/architecture#detailed-architecture).
 
 <ClickToZoom src="/images/ccip/usdc-diagram.png" alt="Chainlink CCIP Detailed Architecture for usdc" />
 
 The following describes the operational process:
 
 1. On the source blockchain:
-   1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP’s contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
+   1. When the sender initiates a transfer of USDC, the USDC token pool interacts with CCTP's contract to burn USDC tokens and specifies the USDC token pool address on the destination blockchain as the authorized caller to mint them.
    1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
 1. Offchain:
    1. The Circle attestation service listens to CCTP events on the source blockchain.
@@ -288,7 +290,7 @@ The smart contracts featured in this tutorial are designed to interact with CCIP
 
 <CodeSample src="samples/CCIP/usdc/Sender.sol" />
 
-The Sender contract is responsible for initiating the transfer of USDC tokens and data. Here’s how it works:
+The Sender contract is responsible for initiating the transfer of USDC tokens and data. Here's how it works:
 
 1. Initializing the contract:
 
@@ -299,9 +301,9 @@ The Sender contract is responsible for initiating the transfer of USDC tokens an
 
    - This function sends USDC tokens, the encoded function signature of the `stake` function, and arguments (beneficiary address and amount) to the Receiver contract on the destination chain.
    - Constructs a CCIP message using the `EVM2AnyMessage` struct.
-   - Computes the necessary fees using the router’s `getFee` function.
+   - Computes the necessary fees using the router's `getFee` function.
    - Ensures the contract has enough LINK to cover the fees and approves the router transfer of LINK on its behalf.
-   - Dispatches the CCIP message to the destination chain by executing the router’s `ccipSend` function.
+   - Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` function.
    - Emits a `MessageSent` event.
 
    <CcipCommon callout="senderContractCallout" />
@@ -310,7 +312,7 @@ The Sender contract is responsible for initiating the transfer of USDC tokens an
 
 <CodeSample src="samples/CCIP/usdc/Staker.sol" />
 
-The Staker contract manages the staking and redemption of USDC tokens. Here’s how it works:
+The Staker contract manages the staking and redemption of USDC tokens. Here's how it works:
 
 1. Initializing the contract:
 
@@ -331,7 +333,7 @@ The Staker contract manages the staking and redemption of USDC tokens. Here’s 
 
 <CodeSample src="samples/CCIP/usdc/Receiver.sol" />
 
-The Receiver contract handles incoming cross-chain messages, processes them, and interacts with the Staker contract to stake USDC on behalf of the beneficiary. Here’s how it works:
+The Receiver contract handles incoming cross-chain messages, processes them, and interacts with the Staker contract to stake USDC on behalf of the beneficiary. Here's how it works:
 
 1. Initializing the Contract:
 
@@ -345,7 +347,7 @@ The Receiver contract handles incoming cross-chain messages, processes them, and
 
 1. Processing Message:
 
-   - Calls the `processMessage` function, which is external to leverage Solidity’s try/catch error handling mechanism.
+   - Calls the `processMessage` function, which is external to leverage Solidity's try/catch error handling mechanism.
    - Inside `processMessage`, it calls the `_ccipReceive` function for further message processing.
 
 1. `_ccipReceive` function:

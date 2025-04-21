@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Tokens (SVM)"
+metadata:
+  description: "Learn CCIP integration requirements for SPL tokens on SVM chains. Covers compatibility (SPL Token, Token-2022), registration (mint authority), and transfer functions."
 ---
 
 This document provides comprehensive guidance for integrating tokens with Chainlink CCIP on SVM-based blockchains, such as Solana, using the Cross-Chain Token (CCT) standard. It outlines the compatibility requirements, registration processes, and transfer functions essential for ensuring that tokens operate seamlessly with CCIP.
@@ -42,7 +44,7 @@ Token developers can alternatively implement their own custom Token Pool Program
 
 ## Registration Functions
 
-To enable a CCT in CCIP, ensure you can assign or confirm the token administrator. On SVM-based blockchains (e.g., Solana), this typically means having control over the `mint_authority` of the token's Mint account. The CCIP Router program uses this authority to verify that you can set a “token administrator” in its onchain registry.
+To enable a CCT in CCIP, ensure you can assign or confirm the token administrator. On SVM-based blockchains (e.g., Solana), this typically means having control over the `mint_authority` of the token's Mint account. The CCIP Router program uses this authority to verify that you can set a "token administrator" in its onchain registry.
 
 ### Self-Registration
 
@@ -62,7 +64,7 @@ If the token's `mint_authority` is no longer accessible—for example, if it was
 
 ## Mint Authority for Burn and Mint
 
-In the “Burn and Mint” token handling mechanism, the same token pool type (BurnMint) is used on both source and destination blockchains. For this process to function correctly, the token pool program must hold the mint authority, which is required to mint tokens on the destination blockchain.
+In the "Burn and Mint" token handling mechanism, the same token pool type (BurnMint) is used on both source and destination blockchains. For this process to function correctly, the token pool program must hold the mint authority, which is required to mint tokens on the destination blockchain.
 
 On SVM-based blockchains, only a single public key can serve as the mint authority. There are two approaches for managing mint authority in the BurnMint setup, with the multisig approach being strongly recommended for production environments.
 
@@ -144,8 +146,8 @@ In this token handling mechanism, the same token pool type (BurnMint) is used on
 
 1. **Burning Tokens**
 
-   - Solana’s SPL Token Program has no separate “burn” permission. Instead, the token pool program must own the token account that holds the tokens to be burned.
-   - Users typically transfer their tokens to the token pool’s associated token account (ATA), which the pool program controls. Once the tokens reside in that ATA, the pool program can execute burn as needed.
+   - Solana's SPL Token Program has no separate "burn" permission. Instead, the token pool program must own the token account that holds the tokens to be burned.
+   - Users typically transfer their tokens to the token pool's associated token account (ATA), which the pool program controls. Once the tokens reside in that ATA, the pool program can execute burn as needed.
    - Because the pool program does not automatically create this ATA, the token administrator must ensure it is initialized beforehand. This one-time setup guarantees that tokens can be safely sent to the token pool ATA.
 
 1. **Minting Tokens**

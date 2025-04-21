@@ -2,10 +2,11 @@
 section: ccip
 date: Last Modified
 title: "Onchain Architecture - Upgradability (EVM)"
-whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
+metadata:
+  description: "Learn about CCIP's upgradability approach for EVM onchain architecture, focusing on configuration changes, contract redeployments, and the timelock process."
 ---
 
-Chainlink Cross‐Chain Interoperability Protocol (CCIP) is designed to evolve in response to new emerging feature requests, security considerations, and the need to support additional blockchains over time. This requires a secure upgrade process that preserves CCIP’s robust security while allowing for iterative improvements.
+Chainlink Cross‐Chain Interoperability Protocol (CCIP) is designed to evolve in response to new emerging feature requests, security considerations, and the need to support additional blockchains over time. This requires a secure upgrade process that preserves CCIP's robust security while allowing for iterative improvements.
 
 **Note**: The Router contract is intentionally immutable. It remains the primary user entry point on both source and destination blockchains—unmodifiable to preserve reliability, stability, and developer predictability over time.
 
@@ -44,7 +45,7 @@ All onchain configuration changes must pass through a Role-Based Access Control 
 
 1. **Execution**
 
-   - Once the timelock finishes (with no veto), the proposal transitions to an “executable” state.
+   - Once the timelock finishes (with no veto), the proposal transitions to an "executable" state.
    - Any party can call the timelock contract to finalize the proposal (e.g., via a [timelock-worker](https://github.com/smartcontractkit/timelock-worker) script).
    - The timelock then calls the target CCIP contracts with the specified changes.
 
