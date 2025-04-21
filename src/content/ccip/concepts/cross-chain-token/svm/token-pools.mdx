@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Token Pools (SVM)"
+metadata:
+  description: "Learn about CCIP Token Pools for SVM chains like Solana. Covers requirements (instructions, PDAs, decimals), standard pools, and custom pool use cases."
 ---
 
 import { Aside } from "@components"
@@ -161,7 +163,7 @@ The `lockrelease-token-pool` token pool implements a program that:
 
 1. **Releases Tokens**:
 
-   - The pool program transfers tokens from its ATA to the user's ATA, effectively “unlocking” them on the destination side.
+   - The pool program transfers tokens from its ATA to the user's ATA, effectively "unlocking" them on the destination side.
 
 In this scenario, **no mint authority** is needed.
 
@@ -186,5 +188,5 @@ Below is an example of a token rebasing use case that requires building your own
 - **Use Case**:
   - Rebasing tokens are a unique type of token that adjusts their supply in response to specific parameters (e.g., price or yield distribution). These tokens require custom logic to handle rebasing events during cross-chain transfers.
 - **Solution**:
-  - **Source Blockchain**: Instead of burning or locking a specific amount of tokens, you might track “underlying shares” that map to a rebase or a fee adjustment. In `lock_or_burn_tokens`, convert the user's tokens into an internal share count and store that in `LockOrBurnOutV1.dest_pool_data` for the destination token pool.
+  - **Source Blockchain**: Instead of burning or locking a specific amount of tokens, you might track "underlying shares" that map to a rebase or a fee adjustment. In `lock_or_burn_tokens`, convert the user's tokens into an internal share count and store that in `LockOrBurnOutV1.dest_pool_data` for the destination token pool.
   - **Destination Blockchain**: In `release_or_mint_tokens`, parse the share count from `ReleaseOrMintInV1.source_pool_data` and then convert those shares back into the appropriate number of tokens. If your token supply has been rebased upward/downward, recalculate before minting or transferring to the user's ATA.

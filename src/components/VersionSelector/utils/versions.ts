@@ -77,8 +77,8 @@ export const validateVersion = <T extends string>(
  * @returns Complete URL path for the new version
  *
  * @example
- * // Current: /ccip/tools-resources/api-reference/evm/v1.5.0/client
- * // Returns: /ccip/tools-resources/api-reference/evm/v1.5.1/client
+ * // Current: /ccip/api-reference/evm/v1.5.0/client
+ * // Returns: /ccip/api-reference/evm/v1.5.1/client
  */
 export const buildVersionUrl = (
   product: ProductConfig,
@@ -112,19 +112,19 @@ export const buildVersionUrl = (
  *
  * @example
  * // Returns { isApiReference: true, product: "ccip", isVersioned: true }
- * detectApiReference("/ccip/api-reference/v1.5.1/client")
+ * detectApiReference("/XXX/api-reference/v1.5.1/client")
  *
  * // Also handles extended paths:
- * detectApiReference("/ccip/tools-resources/api-reference/evm/v1.5.1/client")
+ * detectApiReference("/ccip/api-reference/evm/v1.5.1/client")
  */
 export const detectApiReference = (
   path: string
 ): { isApiReference: boolean; product?: Collection; isVersioned: boolean } => {
   // Match both standard and extended API reference paths
   // Standard: /product/api-reference/v1.5.1/client
-  // Extended: /ccip/tools-resources/api-reference/evm/v1.5.1/client
+  // Extended: /ccip/api-reference/evm/v1.5.1/client
   const standardMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
-  const extendedMatch = path.match(/^\/([^/]+)\/tools-resources\/api-reference\/(?:[^/]+)(?:\/v\d+\.\d+\.\d+)?/)
+  const extendedMatch = path.match(/^\/([^/]+)\/api-reference\/(?:[^/]+)(?:\/v\d+\.\d+\.\d+)?/)
 
   const match = standardMatch || extendedMatch
   if (!match) return { isApiReference: false, isVersioned: false }
@@ -136,7 +136,7 @@ export const detectApiReference = (
   // Matches both standard and extended paths with versions
   const isVersioned =
     path.match(/^\/[^/]+\/api-reference\/v\d+\.\d+\.\d+/) !== null ||
-    path.match(/^\/[^/]+\/tools-resources\/api-reference\/[^/]+\/v\d+\.\d+\.\d+/) !== null
+    path.match(/^\/[^/]+\/api-reference\/[^/]+\/v\d+\.\d+\.\d+/) !== null
 
   return {
     isApiReference: true,

@@ -2,11 +2,13 @@
 section: ccip
 date: Last Modified
 title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A"
+metadata:
+  description: "Learn to track Chainlink CCIP messages. Tutorial covers sending data (A->B) and receiving acknowledgment (B->A) between EVM chains using message tracking."
 whatsnext:
   {
     "See example cross-chain dApps and tools": "/ccip/examples",
     "CCIP Directory": "/ccip/directory",
-    "Learn about CCIP Architecture and Billing": "/ccip/architecture",
+    "Learn about CCIP Architecture and Billing": "/ccip/concepts/architecture",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
 ---
@@ -20,7 +22,7 @@ This tutorial will teach you how to use Chainlink CCIP to send arbitrary data be
 
 ## Before you begin
 
-- This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data) tutorial.
+- This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/tutorials/evm/send-arbitrary-data) tutorial.
 - Your account must have some AVAX tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_.
 - Learn how to [Acquire testnet LINK](/resources/acquire-link) and [Fund your contract with LINK](/resources/fund-your-contract).
 
@@ -42,7 +44,7 @@ Deploy the `MessageTracker.sol` contract on _Avalanche Fuji_ and enable it to se
 
    <CodeSample src="samples/CCIP/MessageTracker.sol" showButtonOnly={true} />
 
-   Note: The contract code is also available in the [Examine the code](/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment#messagetrackersol) section.
+   Note: The contract code is also available in the [Examine the code](/ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment#messagetrackersol) section.
 
 1. Compile the contract.
 
@@ -79,7 +81,7 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
 
     <CodeSample src="samples/CCIP/Acknowledger.sol" showButtonOnly={true} />
 
-    Note: The contract code is also available in the [Examine the code](/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment#acknowledgersol) section.
+    Note: The contract code is also available in the [Examine the code](/ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment#acknowledgersol) section.
 
 1.  Compile the contract.
 
@@ -195,7 +197,7 @@ At this point, you have one _message tracker_ (sender) contract on _Avalanche Fu
 
 #### Acknowledgment message
 
-The _acknowledger_ contract processes the message, sends an acknowledgment message containing the initial message ID back to the _message tracker_ contract, and emits an `AcknowledgmentSent` event. Read this [explanation](/ccip/tutorials/send-arbitrary-data-receipt-acknowledgment#acknowledger-contract) for further description.
+The _acknowledger_ contract processes the message, sends an acknowledgment message containing the initial message ID back to the _message tracker_ contract, and emits an `AcknowledgmentSent` event. Read this [explanation](/ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment#acknowledger-contract) for further description.
 
 ```solidity
 // Emitted when an acknowledgment message is successfully sent back to the sender contract.
@@ -275,7 +277,7 @@ When the _message tracker_ receives the acknowledgment message, the `ccipReceive
 
 The smart contracts featured in this tutorial are designed to interact with CCIP to send and receive messages with an acknowledgment of receipt mechanism. The contract code across both contracts contains supporting comments clarifying the functions, events, and underlying logic.
 
-Refer to the [Send Arbitrary Data](/ccip/tutorials/send-arbitrary-data#explanation) tutorial for more explanation about [initializing the contracts](/ccip/tutorials/send-arbitrary-data#initializing-of-the-contract), [sending data, paying in LINK](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link), and [receiving data](/ccip/tutorials/send-arbitrary-data#receiving-data).
+Refer to the [Send Arbitrary Data](/ccip/tutorials/evm/send-arbitrary-data#explanation) tutorial for more explanation about [initializing the contracts](/ccip/tutorials/evm/send-arbitrary-data#initializing-of-the-contract), [sending data, paying in LINK](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link), and [receiving data](/ccip/tutorials/evm/send-arbitrary-data#receiving-data).
 
 Here, we will further explain the acknowledgment of receipt mechanism.
 
@@ -311,7 +313,7 @@ mapping(bytes32 => MessageInfo) public messagesInfo;
 
 The _message tracker_ contract acts as the sender, initiating cross-chain communication. It performs the following operations:
 
-- **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function. On top of its [five primary operations](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link), the [`sendMessagePayLINK`](/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function also updates the message status upon sending.
+- **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link) function. On top of its [five primary operations](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link), the [`sendMessagePayLINK`](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link) function also updates the message status upon sending.
 
 - **Status tracking**:
 
@@ -333,9 +335,9 @@ The _message tracker_ contract acts as the sender, initiating cross-chain commun
 
 The _acknowledger_ contract receives the message, sends back an acknowledgment message, and emits an event. It performs the following operations:
 
-- **Message receipt**: Upon receiving a message via CCIP, the `ccipReceive` function decodes it and calls the `acknowledgePayLINK` function nested within the [`ccipReceive`](/ccip/tutorials/send-arbitrary-data#receiving-data) function.
+- **Message receipt**: Upon receiving a message via CCIP, the `ccipReceive` function decodes it and calls the `acknowledgePayLINK` function nested within the [`ccipReceive`](/ccip/tutorials/evm/send-arbitrary-data#receiving-data) function.
 
-- **Acknowledgment sending**: The `acknowledgePayLINK` function acts as a custom [`sendMessagePayLINK`](https://docs.chain.link/ccip/tutorials/send-arbitrary-data#sending-data-and-pay-in-link) function nested within the `ccipReceive` function. It sends
+- **Acknowledgment sending**: The `acknowledgePayLINK` function acts as a custom [`sendMessagePayLINK`](https://docs.chain.link/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link) function nested within the `ccipReceive` function. It sends
   an acknowledgment (a CCIP message) to the _message tracker_ contract upon the initial message receipt. The data transferred in this acknowledgment message is the initial message ID. It then emits an `AcknowledgmentSent` event.
 
 ### Security and integrity

@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Offchain Architecture - Overview"
+metadata:
+  description: "Overview of Chainlink CCIP's offchain architecture. Learn about the Role DON (Commit & Executing OCR plugins) and the Risk Management Network (RMN)."
 ---
 
 import { ClickToZoom } from "@components"
@@ -36,12 +38,12 @@ The Risk Management Network (RMN) is a unique architectural feature of CCIP that
 
 - **Separate Implementation**: RMN runs a minimal, separate implementation of the Chainlink node software, which uses a different programming language than the primary CCIP system. This design provides an extra layer of independent attestation, enhancing overall security.
 - **Distinct Node Operators**: A dedicated set of node operators—separate from those managing the core CCIP DONs—participates in RMN functions.
-- **Blessing Mechanism**: On blockchains where RMN blessing is enabled, RMN nodes “bless” CCIP messages by providing independent attestations of the source chain observation.
+- **Blessing Mechanism**: On blockchains where RMN blessing is enabled, RMN nodes "bless" CCIP messages by providing independent attestations of the source chain observation.
 
 ### Interaction
 
 - **Commit OCR and RMN Blessings**: The Commit OCR plugin interacts directly with RMN nodes to query for observations and receive independent RMN blessings. These blessings serve as attestations of the validity of source chain observations and are used to form a consolidated set of merkle roots.
-- **Configuration and Role Validation**: The roles of nodes are defined and managed on the “Home Chain” (i.e., Ethereum) through specific contracts. Each node software reads from these contracts to verify that nodes are authorized for their roles.
+- **Configuration and Role Validation**: The roles of nodes are defined and managed on the "Home Chain" (i.e., Ethereum) through specific contracts. Each node software reads from these contracts to verify that nodes are authorized for their roles.
   - The **CCIP Home** contract contains the configuration required to bootstrap the CCIP network (Role DON) and includes both chain-level and Role DON-level details.
   - The **RMN Home** contract maintains the configuration for RMN nodes.
 
@@ -49,12 +51,12 @@ The Risk Management Network (RMN) is a unique architectural feature of CCIP that
 
 <ClickToZoom src="/images/ccip/concepts/architecture/ccip-offchain-architecture.jpg" alt="CCIP Offchain Architecture" />
 
-Let’s take an example from the diagram above to understand the key components. The diagram shows a Commit OCR instance configured for a destination chain (Chain C). Key details include:
+Let's take an example from the diagram above to understand the key components. The diagram shows a Commit OCR instance configured for a destination chain (Chain C). Key details include:
 
 - **Commit Role DON**
 
   - Represents all participating nodes.
-  - Within the Role DON, a specific group of nodes—sometimes called a “sub-committee”—may be assigned chain-specific roles.
+  - Within the Role DON, a specific group of nodes—sometimes called a "sub-committee"—may be assigned chain-specific roles.
 
 - **Chain-Specific Roles** (as illustrated)
   - **Green Rectangle**: Nodes observe Chain A (i.e., they read from Chain A).

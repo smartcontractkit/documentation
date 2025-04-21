@@ -2,6 +2,8 @@
 section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Registration & Administration (SVM)"
+metadata:
+  description: "Register and administer SPL tokens for CCIP on SVM chains. Learn the two-step process, role transfers, setting token pools, and configuring pool parameters."
 ---
 
 When token administrators want to register their SPL token for Cross‐Chain Token (CCT) operations, they interact with the Router program.
@@ -72,10 +74,10 @@ On SVM-based blockchains (e.g., Solana), the `set_pool` instruction enables a to
 1. **Set Token Pool:** The current administrator calls the `set_pool` instruction on the Router program, passing in:
    - The token mint (for which we are configuring cross-chain transfers).
    - The `pool_lookuptable` account (the Address Lookup Table containing the mandatory PDAs and program addresses for that token pool).
-   - A list of “writable indexes” indicating which lookup table entries should be marked as writable during cross-chain transfers. These indexes specify positions in the ALT that require write permission for successful transaction execution.
+   - A list of "writable indexes" indicating which lookup table entries should be marked as writable during cross-chain transfers. These indexes specify positions in the ALT that require write permission for successful transaction execution.
 1. **Reset Old Pool, Apply New Settings:** Under the hood, the Router updates the `TokenAdminRegistry` PDA:
    - Overwrites any previously stored Address Lookup Table reference.
-   - Resets the old permission bits, then enables the specified “writable indexes.”
+   - Resets the old permission bits, then enables the specified "writable indexes."
    - This ensures the new token pool has the correct set of PDAs with the correct writable permissions.
 1. **Validate or Delist:**
    - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. This includes the token mint, pool program, token program, pool configuration PDA, and any other mandatory accounts specified by the pool implementation. If valid, the token becomes enabled for cross-chain transfers.

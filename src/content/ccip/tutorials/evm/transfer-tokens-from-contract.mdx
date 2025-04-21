@@ -2,9 +2,11 @@
 section: ccip
 date: Last Modified
 title: "Transfer Tokens"
+metadata:
+  description: "Learn to transfer tokens between EVM chains using Chainlink CCIP from a smart contract. Tutorial covers sending CCIP-BnM, paying fees in LINK or native gas."
 whatsnext:
   {
-    "Learn how to transfer tokens and send data in a single CCIP transaction": "/ccip/tutorials/programmable-token-transfers",
+    "Learn how to transfer tokens and send data in a single CCIP transaction": "/ccip/tutorials/evm/programmable-token-transfers",
     "See example cross-chain dApps and tools": "/ccip/examples",
     "CCIP Directory": "/ccip/directory",
     "Learn CCIP best practices": "/ccip/best-practices",
@@ -23,8 +25,8 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens from a smart co
 <Aside type="caution" title="Transferring tokens">
   This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
   they are locked or burned on the source chain and then unlocked or minted on the destination chain. Read the [Token
-  Pools](/ccip/architecture#token-pools) section to understand the various mechanisms that are used to transfer value
-  across chains.
+  Pools](/ccip/concepts/cross-chain-token/evm/token-pools) section to understand the various mechanisms that are used to
+  transfer value across chains.
 </Aside>
 
 ## Before you begin
@@ -205,11 +207,11 @@ When you deploy the contract, you define the router address and LINK contract ad
 
 The `transferTokensPayLINK` function undertakes six primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
-   - The `tokenAmounts` is an array, with each element comprising a [`EVMTokenAmount` struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) that contains the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayLINK` function.
+   - The `tokenAmounts` is an array, with each element comprising a [`EVMTokenAmount` struct](/ccip/api-reference/evm/v1.5.1/client#evmtokenamount) that contains the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayLINK` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
@@ -217,11 +219,11 @@ The `transferTokensPayLINK` function undertakes six primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in LINK is enough to cover the fees.
 1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend).
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.5.1/i-router-client#ccipsend).
 
 **Note**: As a security measure, the `transferTokensPayLINK` function is protected by the `onlyAllowlistedChain` to ensure the contract owner has allowlisted a destination chain.
 
@@ -229,11 +231,11 @@ The `transferTokensPayLINK` function undertakes six primary operations:
 
 The `transferTokensPayNative` function undertakes five primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage):
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.5.1/client#any2evmmessage):
 
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is empty because you only transfer tokens.
-   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
+   - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.5.1/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `0` because the contract only transfers tokens and does not expect function calls on the destination blockchain.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
@@ -241,10 +243,10 @@ The `transferTokensPayNative` function undertakes five primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.5.1/i-router-client#getfee).
 1. Ensures your contract balance in native gas is enough to cover the fees.
 1. Grants the router contract permission to deduct the amount from the contract's _CCIP-BnM_ balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.5.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
 **Note**: As a security measure, the `transferTokensPayNative` function is protected by the `onlyAllowlistedChain`, ensuring the contract owner has allowlisted a destination chain.
 

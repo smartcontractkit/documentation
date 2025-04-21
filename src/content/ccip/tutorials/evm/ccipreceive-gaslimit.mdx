@@ -2,13 +2,15 @@
 section: ccip
 date: Last Modified
 title: "Optimizing Gas Limit Settings in CCIP Messages"
+metadata:
+  description: "Optimize Chainlink CCIP gas costs. Learn to estimate the ccipReceive gas limit using local setups (Hardhat/Foundry), testnets, and offchain tools."
 ---
 
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-When constructing a [CCIP message](/ccip/api-reference/v1.5.1/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
+When constructing a [CCIP message](/ccip/api-reference/evm/v1.5.1/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/evm/v1.5.1/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
-- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, which requires a manual re-execution with an increased gas limit. For more details about this scenario, read the [Manual Execution](/ccip/tutorials/manual-execution) guide.
+- Setting the gas limit too low will cause the transaction to revert when CCIP calls `ccipReceive` on the CCIP Receiver, which requires a manual re-execution with an increased gas limit. For more details about this scenario, read the [Manual Execution](/ccip/tutorials/evm/manual-execution) guide.
 - Conversely, an excessively high gas limit leads to higher fees.
 
 This tutorial shows you how to estimate the gas limit for the `ccipReceive` function using various methods. You will learn how to use a CCIP Receiver where the gas consumption of the `ccipReceive` function varies based on the input data. This example emphasizes the need for testing under diverse conditions. This tutorial includes tasks for the following environments:
