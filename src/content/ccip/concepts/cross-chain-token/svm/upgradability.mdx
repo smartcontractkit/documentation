@@ -2,7 +2,42 @@
 section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Upgradability (SVM)"
-whatsnext: { "1": "/ccip/#", "2": "/ccip/#", "3": "/ccip/#" }
 ---
 
-XXX
+On SVM-based blockchains (e.g., Solana), token pools can be upgraded in place by token developers to preserve both the mint authority (for Burn and Mint pools) and the transaction workflow (for any token pool). Rather than deploying a brand-new program ID each time you change pool logic, you can push new code to the existing ID and maintain stability for all users referencing that pool.
+
+## In-Place Upgrades
+
+1. **Retain Mint Authority (Burn and Mint Pools):** SPL tokens have a single `mint_authority`. When you delegate this authority to a Burn and Mint token pool program, that program holds the exclusive rights to mint tokens. As detailed in the [Mint Authority for Burn and Mint](/ccip/concepts/cross-chain-token/svm/tokens#mint-authority-for-burn-and-mint) section of the Tokens page, while it is possible to deploy a new pool program and reassign the mint authority, doing so involves extra overhead. In-place upgrades allow you to:
+
+   - **Maintain Control:** Upgrade the pool code without reassigning the mint authority, which avoids the complexity of modifying the multisig membership or reconfiguring authorities.
+   - **Reduce Overhead:** Avoid manual reassignments, such as adding a new pool to the multisig and removing the old one, thereby simplifying maintenance and reducing the risk of errors.
+
+1. **Preserve User Workflow (All Pools):** On SVM-based blockchains, instructions require specifying all involved accounts, including the token pool program ID. If you redeploy your pool to a new Program ID, users and integrators must update their transaction code to reference it. In-place upgrades keep the original ID so that existing references and account parameters remain valid.
+
+## Best Practices
+
+1. **Set Yourself as the Upgrade Authority**
+
+   - When first deploying your pool program, configure its upgrade authority to your key or a trusted multisig.
+   - This ensures you can publish new code to the same program ID whenever changes are needed.
+
+1. **Upgrade Instead of Redeploy**
+
+   - Replacing your token pool with an entirely new Program ID forces you to re-register, reassign mint authority, or force all your users to update their references.
+   - An in-place upgrade seamlessly updates functionality without breaking the existing references or token authority.
+
+1. **Plan Governance and Access Controls**
+
+   - Because the upgrade authority can make impactful changes, ensure your upgrade authority follows strict best security practices and governance rules.
+   - Consider using a multisig wallet or a governance program for managing the upgrade authority.
+
+1. **Test Before Upgrading**
+
+   - Develop and validate your pool updates in a test environment.
+   - When ready, use the Solana CLI or Anchor tooling to execute an upgrade transaction that pushes your new code to the existing Program ID.
+   - Perform thorough testing after upgrade to verify all functionality works as expected.
+
+1. **Backward Compatibility**
+
+   - Design your upgrades to maintain compatibility with existing state accounts and PDAs.
