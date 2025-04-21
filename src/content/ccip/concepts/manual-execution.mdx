@@ -14,16 +14,16 @@ whatsnext:
 import { Aside, ClickToZoom, CopyText } from "@components"
 
 <Aside type="note" title="Prerequisites">
-  Read the CCIP [Concepts](/ccip/concepts) and [Architecture](/ccip/architecture) pages to understand all the concepts
-  discussed on this page.
+  Read the CCIP [Concepts](/ccip/concepts) and [Architecture](/ccip/concepts/architecture) pages to understand all the
+  concepts discussed on this page.
 </Aside>
 
-In general, messages are successfully delivered and processed via CCIP as described in the [Architecture](/ccip/architecture) page. CCIP has a built-in gas bumping mechanism called _Smart Execution_ to ensure that messages are reliably delivered to the destination blockchain. Read the [CCIP Execution latency](/ccip/architecture#ccip-execution-latency) section to learn more about _Smart Execution_. However, some exceptional conditions might require users to manually execute the transaction on the destination blockchain:
+In general, messages are successfully delivered and processed via CCIP as described in the [Architecture](/ccip/concepts/architecture) page. CCIP has a built-in gas bumping mechanism called _Smart Execution_ to ensure that messages are reliably delivered to the destination blockchain. Read the [CCIP Execution latency](/ccip/architecture#ccip-execution-latency) section to learn more about _Smart Execution_. However, some exceptional conditions might require users to manually execute the transaction on the destination blockchain:
 
      - The receiver contract on the destination blockchain reverted due to an unhandled exception such as a logical error.
      - For token pools, if the combined execution of the required functions (`balanceOf` checks and `releaseOrMint`) exceeds the default gas limit of **90,000 gas** on the destination blockchain, CCIP execution will fail. Read the Token pools [common requirements](/ccip/concepts/cross-chain-tokens#common-requirements) to learn more.
      - The receiver contract on the destination blockchain reverted due to the gas limit being insufficient to execute the triggered function (Note: The gas limit value is set in the [extraArgs](/ccip/tools-resources/api-reference/evm/v1.5.1/client#evmextraargsv1) param of the message).
-     - The message could not be executed on the destination chain within CCIP’s Smart Execution time window, which is currently set to 8 hours. This could happen, for example, during extreme network congestion and resulting gas spikes.
+     - The message could not be executed on the destination chain within CCIP's Smart Execution time window, which is currently set to 8 hours. This could happen, for example, during extreme network congestion and resulting gas spikes.
 
 The flowchart below displays the process of a cross-chain transaction, detailing the steps involved in the manual execution:
 
@@ -68,7 +68,7 @@ Depending on the situation, you can take one of the following steps:
 - Unhandled exception (logical error) in the receiver contract: If the receiver contract is [upgradeable](https://blog.chain.link/upgradable-smart-contracts/), developers must correct the logic, re-deploy the logic contract, and then manually execute the same transaction. If the receiver contract is not upgradeable, developers must deploy a new receiver contract, and then users can send a new CCIP message. Non-upgradable contracts will not benefit from manual execution. **Note:** Always make sure to test your smart contracts thoroughly. As a best practice, implement fallback mechanisms in the CCIP receiver contracts to manage unhandled exceptions gracefully. Read the [Defensive example](/ccip/tutorials/evm/programmable-token-transfers-defensive) to learn more.
 - If the issue was due to extreme gas spikes or network conditions, and CCIP was not able to successfully transfer the message despite gas bumping for the entire duration of the Smart Execution time window (currently 8 hours), then you can try manual execution.
 
-When manual execution is initiated, a Merkle proof is generated for the message to be executed. During execution, the CCIP explorer submits the Merkle proof and the new gas limit (if the initial failure was due to a low gas limit). This Merkle proof is verified by the [OffRamp contract](/ccip/architecture#offramp) against the Merkle root in the [CommitStore contract](/ccip/architecture#commit-store), and that was blessed by the [Risk Management Network](/ccip/architecture#risk-management-network). This mirrors the automated execution performed by the [CCIP Executing DON](/ccip/architecture#executing-don), with the addition that the execution is resubmitted using the gas limit you provide.
+When manual execution is initiated, a Merkle proof is generated for the message to be executed. During execution, the CCIP explorer submits the Merkle proof and the new gas limit (if the initial failure was due to a low gas limit). This Merkle proof is verified by the [OffRamp contract](/ccip/concepts/architecture/onchain/evm/components#offramp) against the Merkle root in the [CommitStore contract](/ccip/concepts/architecture/onchain/evm/components#offramp), and that was blessed by the [Risk Management Network](/ccip/concepts/architecture/offchain/risk-management-network). This mirrors the automated execution performed by the [CCIP Executing DON](/ccip/concepts/architecture/offchain/overview#executing-ocr-process), with the addition that the execution is resubmitted using the gas limit you provide.
 
 ## Frequently asked questions
 
@@ -86,7 +86,7 @@ When manual execution is initiated, a Merkle proof is generated for the message 
 
 1. **If the maximum gas limit is 3M (3,000,000) on mainnet, but it turns out that the destination blockchain requires more than that, will an override of > 3M still work?**
 
-   Yes, but only for this execution. This works because the gas limit for this execution instance isn’t passing through the CCIP validation for the gas limit, for which the CCIP executing DON pays the gas. However, if you consistently need more than 3M for your use case, please reach out to us via this [contact form](https://chain.link/ccip-contact).
+   Yes, but only for this execution. This works because the gas limit for this execution instance isn't passing through the CCIP validation for the gas limit, for which the CCIP executing DON pays the gas. However, if you consistently need more than 3M for your use case, please reach out to us via this [contact form](https://chain.link/ccip-contact).
 
    <br />
 

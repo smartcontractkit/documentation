@@ -44,7 +44,7 @@ Chainlink CCIP maintains a consistent [API](/ccip/tools-resources/api-reference/
 
 #### Native USDC (CCTP-enabled)
 
-The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle's contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/architecture#detailed-architecture).
+The diagram below shows that the USDC token pools and Executing DON handle the integration with Circle's contracts and offchain CCTP Attestation API. As with any other supported ERC-20 token, USDC has a linked token pool on each supported blockchain to facilitate OnRamp and OffRamp operations. To learn more about these components, read the [architecture page](/ccip/concepts/architecture/onchain/evm/overview).
 
 <ClickToZoom src="/images/ccip/usdc-diagram.png" alt="Chainlink CCIP Detailed Architecture for usdc" />
 
@@ -55,12 +55,12 @@ The following describes the operational process:
    1. CCTP burns the specified USDC tokens and emits an associated CCTP event.
 1. Offchain:
    1. The Circle attestation service listens to CCTP events on the source blockchain.
-   1. The CCIP [Executing DON](/ccip/architecture#executing-don) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
+   1. The CCIP [Executing DON](/ccip/concepts/architecture/offchain/overview#executing-ocr-process) listens to relevant CCTP events on the source blockchain. When it captures such an event, it calls the Circle Attestation service API to request an attestation. An attestation is a signed authorization to mint the specified amount of USDC on the destination blockchain.
 1. On the destination blockchain:
-   1. The [Executing DON](/ccip/architecture#executing-don) provides the attestation to the [OffRamp contract](/ccip/architecture#offramp).
+   1. The [Executing DON](/ccip/concepts/architecture/offchain/overview#executing-ocr-process) provides the attestation to the [OffRamp contract](/ccip/concepts/architecture/onchain/evm/components#offramp).
    1. The OffRamp contract calls the USDC token pool with the USDC amount to be minted, the Receiver address, and the Circle attestation.
    1. The USDC token pool calls the CCTP contract. The CCTP contract verifies the attestation signature before minting the specified USDC amount into the Receiver.
-   1. If there is data in the CCIP message and the Receiver is not an EOA, then the OffRamp contract transmits the CCIP message via the [Router](/ccip/architecture#router) contract to the Receiver.
+   1. If there is data in the CCIP message and the Receiver is not an EOA, then the OffRamp contract transmits the CCIP message via the [Router](/ccip/concepts/architecture/onchain/evm/components#router) contract to the Receiver.
 
 #### Bridged USDC (non-CCTP-enabled)
 
@@ -70,10 +70,10 @@ The following describes the operational process:
   form](https://chain.link/ccip-contact?v=General%20Technical%20Support) to discuss integration options.
 </Aside>
 
-To facilitate USDC transfers between a blockchain that issues native USDC and another that only supports Bridged USDC, Chainlink CCIP employs the [Lock and Mint mechanism](/ccip/architecture#token-pools). This approach ensures that each Bridged USDC token on the destination blockchain is fully backed by an equivalent amount of native USDC locked on the source blockchain. Accounting for Non-CCTP-Enabled USDC is isolated on a per-blockchain basis for security and risk mitigation.
+To facilitate USDC transfers between a blockchain that issues native USDC and another that only supports Bridged USDC, Chainlink CCIP employs the [Lock and Mint mechanism](/ccip/concepts/cross-chain-token/evm/token-pools#token-handling-mechanisms). This approach ensures that each Bridged USDC token on the destination blockchain is fully backed by an equivalent amount of native USDC locked on the source blockchain. Accounting for Non-CCTP-Enabled USDC is isolated on a per-blockchain basis for security and risk mitigation.
 
 1. **Lock native USDC on Source**: The [Lock and Release token pool](https://github.com/smartcontractkit/ccip/blob/ccip-develop/contracts/src/v0.8/ccip/pools/USDC/HybridLockReleaseUSDCTokenPool.sol) locks the specified USDC tokens.
-2. **Mint Bridged USDC on Destination**: This Bridged USDC serves as a proxy for the original USDC, enabling liquidity and user adoption without direct integration with CCTP. A [Burn and Mint token pool](/ccip/concepts/cross-chain-tokens#standard-token-pools) is recommended for the Destination Chain; it will mint Bridged USDC for incoming transfers and burn Bridged USDC for outgoing transfers. Other token pools are also supported, depending on the preferences and constraints of the Destination Chain.
+2. **Mint Bridged USDC on Destination**: This Bridged USDC serves as a proxy for the original USDC, enabling liquidity and user adoption without direct integration with CCTP. A [Burn and Mint token pool](/ccip/concepts/cross-chain-token/evm/token-pools#standard-token-pools) is recommended for the Destination Chain; it will mint Bridged USDC for incoming transfers and burn Bridged USDC for outgoing transfers. Other token pools are also supported, depending on the preferences and constraints of the Destination Chain.
 
 ## Example
 
