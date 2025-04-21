@@ -1,0 +1,290 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Transfers: SVM to EVM"
+isIndex: false
+metadata:
+  description: "Learn how to transfer tokens from Solana to Ethereum using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This step-by-step tutorial guides you through setting up and executing a basic token transfer from a Solana wallet to an Ethereum address."
+  excerpt: "cross-chain token transfer solana to ethereum ccip tutorial svm to evm solana devnet ethereum sepolia"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to transfer tokens from a Solana Virtual Machine (SVM) to an Ethereum Virtual Machine (EVM) chain using Chainlink CCIP. You will learn how to build a CCIP message on Solana, send it to the CCIP router, and verify the transfer on the destination chain.
+
+<Aside title="Prerequisites">
+  Make sure you have completed all steps in the [SVM to EVM Prerequisites](/ccip/tutorials/svm/source/prerequisites)
+  guide before beginning this tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial covers transferring tokens from Solana Devnet to Ethereum Sepolia without any additional data payload or program execution. When you transfer tokens using CCIP:
+
+1. Tokens are burned or locked in pools on the source pool
+1. Equivalent tokens are minted or released from the destination pool
+1. The process is managed by CCIP
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Configure a CCIP message for token-only transfers
+- Send BnM test tokens from Solana Devnet to an Ethereum Sepolia address
+- Pay for CCIP transaction fees using native SOL
+- Monitor and verify your cross-chain transfer
+
+<Aside title="Minimum Requirements">
+
+To successfully complete this tutorial, ensure you have:
+
+- SOL for transaction fees
+- BnM tokens to transfer
+- Properly configured Solana wallet with keypair
+- All delegation approvals completed
+
+All these requirements are covered in the [prerequisites guide](/ccip/tutorials/svm/source/prerequisites).
+
+</Aside>
+
+## Understanding Token Transfers from SVM to EVM
+
+This tutorial focuses on token-only transfers from your wallet on Solana Devnet to an address on Ethereum Sepolia. Key points specific to token-only transfers:
+
+- **Burn and Mint**: In this tutorial, tokens are burned on Solana Devnet, and equivalent tokens are minted on Ethereum Sepolia
+- **Fee Payment**: Transaction fees are paid in native SOL on Solana plus CCIP fees for cross-chain processing. Note that you can pay for CCIP fees using LINK or wrapped SOL
+- **Token Delegation**: Requires pre-delegation of token authority to allow the CCIP Router to transfer your tokens
+
+## CCIP Message Configuration
+
+The most important part of implementing a token transfer is configuring the CCIP message correctly. Here's the key configuration from the script:
+
+```typescript
+const CCIP_MESSAGE_CONFIG: CCIPMessageConfig = {
+  destinationChainSelector: CHAIN_SELECTORS[ChainId.ETHEREUM_SEPOLIA].toString(),
+  evmReceiverAddress: "0x9d087fC03ae39b088326b67fA3C788236645b717", // Change this to your Ethereum address
+
+  // Token transfers configuration - supports multiple tokens
+  tokenAmounts: [
+    {
+      tokenMint: config.tokenMint, // BnM token on Solana Devnet
+      amount: "10000000", // 0.01 tokens with 9 decimals
+    },
+  ],
+
+  // Fee configuration
+  feeToken: ConfigFeeTokenType.NATIVE, // Use SOL for fees
+
+  // Message data (empty for token transfers)
+  messageData: "", // Empty data for token transfer only
+
+  // Extra arguments configuration
+  extraArgs: {
+    gasLimit: 0, // No execution on destination for token transfers
+    allowOutOfOrderExecution: true, // Allow out-of-order execution
+  },
+}
+```
+
+<Aside type="tip" title="Two Ways to Customize the Receiver Address">
+
+You have two options for customizing the Ethereum recipient address:
+
+1. **Edit the script directly**: Modify the `evmReceiverAddress` value in the code by changing `"0x9d087fC03ae39b088326b67fA3C788236645b717"` to your own Ethereum wallet address.
+
+1. **Use command-line parameters**: Run the script with the `--evm-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
+
+</Aside>
+
+<Aside type="caution" title="Critical Settings">
+
+- `gasLimit`: **MUST** be 0 for token-only transfers
+- `evmReceiverAddress`: Must be a valid Ethereum address (starting with "0x")
+- `messageData`: Empty string for token-only transfers
+
+</Aside>
+
+### Understanding the Configuration Fields
+
+- **`destinationChainSelector`**: CCIP identifier for the destination chain (Ethereum Sepolia)
+- **`evmReceiverAddress`**: Ethereum wallet address that will receive the tokens
+- **`tokenAmounts`**: Array of tokens to transfer with their amounts
+  - `tokenMint`: The Solana token mint address (BnM token: `7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh`)
+  - `amount`: Token amount in raw format (10000000 = 0.01 BnM with 9 decimals)
+- **`feeToken`**: Token used to pay CCIP fees (NATIVE = SOL)
+- **`messageData`**: Empty for token-only transfers
+- **`extraArgs`**: Additional configuration for cross-chain execution
+  - `gasLimit`: Set to 0 for token transfers (no execution needed)
+  - `allowOutOfOrderExecution`: Set to true to allow out of order execution
+
+## Customizing Your Token Transfer
+
+### Customize Token Amount
+
+The token amount format needs to account for token decimals:
+
+- Solana BnM has 9 decimals
+- `10000000` represents 0.01 BnM (10,000,000 / 10^9)
+
+## How the Script Works
+
+The token transfer script handles the interaction with the CCIP Router program without requiring you to write any code. Here's what happens behind the scenes:
+
+1. **Context Initialization**:
+
+   - The script initializes the Solana connection
+   - Loads your keypair
+   - Sets up CCIP configuration
+
+1. **Balance Validation**:
+
+   - Checks SOL balance (minimum 0.005 SOL required)
+   - Validates token balances for all tokens being transferred
+   - Verifies token delegation approvals
+
+1. **Fee Calculation**:
+
+   - Queries the Router program to calculate cross-chain fees
+   - Validates sufficient balance for fees
+
+1. **Message Construction**:
+
+   - Builds the `SVM2AnyMessage` structure with token amounts, receiver, etc.
+   - Encodes the message according to CCIP standards
+   - Sets extra arguments for Ethereum compatibility
+
+1. **Transaction Building**:
+
+   - Builds the CCIP send transaction with all necessary accounts
+   - Includes all token accounts in the correct order
+
+1. **Execution**:
+   - Signs and sends the transaction to the Solana Devnet network
+   - Parses the transaction result to extract the message ID
+   - Provides links to track the cross-chain message
+
+## Running the Token Transfer
+
+### Prerequisites Check
+
+Before running the script:
+
+1. Ensure you've completed all steps in the [prerequisites guide](/ccip/tutorials/svm/source/prerequisites)
+1. Verify your token delegations are set up correctly: `yarn svm:check-tokens`
+1. Make sure you have sufficient SOL and BnM token balances
+
+### Execute the Script
+
+Run the script using one of the following options:
+
+1. **Option A: Run with default settings** (if you modified the script directly):
+
+   ```bash
+   npx ts-node ccip-scripts/svm/router/1_token-transfer.ts
+   ```
+
+1. **Option B: Run with your Ethereum address as a parameter**:
+
+   ```bash
+   npx ts-node ccip-scripts/svm/router/1_token-transfer.ts --evm-receiver YOUR_ETHEREUM_ADDRESS
+   ```
+
+### Understanding the Output
+
+When the script executes successfully, you'll see output similar to this:
+
+```
+[2025-04-21T23:36:20.533Z]
+==== Environment Information ====
+[2025-04-21T23:36:20.535Z] Solana Cluster: devnet
+[2025-04-21T23:36:20.535Z] Keypair Path: /Users/user/.config/solana/id.json
+[2025-04-21T23:36:20.535Z] Log Level: INFO
+[2025-04-21T23:36:20.535Z] Skip Preflight: No
+[2025-04-21T23:36:20.573Z] Wallet public key: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+
+[2025-04-21T23:36:20.574Z]
+==== Wallet Balance Information ====
+[2025-04-21T23:36:21.177Z] SOL Balance: 8.612343317 SOL
+[2025-04-21T23:36:21.177Z] Lamports Balance: 8612343317 lamports
+
+[2025-04-21T23:36:21.177Z]
+==== CCIP Router Information ====
+[2025-04-21T23:36:21.178Z] CCIP Router Program ID: Ccip8ZTcM2qHjVt8FYHtuCAqjc637yLKnsJ5q5r2e6eL
+[2025-04-21T23:36:21.178Z] Fee Quoter Program ID: FeeQhewH1cd6ZyHqhfMiKAQntgzPT6bWwK26cJ5qSFo6
+[2025-04-21T23:36:21.178Z] RMN Remote Program ID: RmnAZiCJdaYtwR1f634Ba7yNJXuK3pS6kHuX4FgNgX8
+
+[2025-04-21T23:36:21.178Z]
+==== CCIP Send Configuration ====
+[2025-04-21T23:36:21.178Z] Destination Chain Selector: 16015286601757825753
+[2025-04-21T23:36:21.178Z] Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+
+[2025-04-21T23:36:21.178Z]
+==== Token Transfer Details ====
+[2025-04-21T23:36:21.178Z] Getting mint account info for 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh to determine token program ID...
+[2025-04-21T23:36:21.303Z] Detected Token-2022 Program: TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
+[2025-04-21T23:36:21.303Z] Fetching token decimals for 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
+[2025-04-21T23:36:21.429Z] Token 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh has 9 decimals
+[2025-04-21T23:36:21.470Z] Token 1: 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
+[2025-04-21T23:36:21.470Z] Amount 1: 10000000 raw units (0,01 tokens with 9 decimals)
+[2025-04-21T23:36:21.470Z] Fee Token: native
+
+[2025-04-21T23:36:21.733Z] Fee calculation complete: 5 tokens
+[2025-04-21T23:36:21.733Z] Estimated fee: 5e-9 SOL
+[2025-04-21T23:36:21.733Z] Fee in Juels: 52000000000
+
+[2025-04-21T23:36:21.861Z]
+==== Token Balance Validation ====
+[2025-04-21T23:36:22.242Z] ✅ Balance validation passed for token: 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
+[2025-04-21T23:36:22.242Z] ✅ All balance validations passed. Proceeding with transaction.
+
+[2025-04-21T23:36:22.242Z]
+==== Sending CCIP Message ====
+[2025-04-21T23:36:22.242Z] ⏳ This may take a minute...
+[2025-04-21T23:36:23.747Z] CCIP message sent successfully: 45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL
+[2025-04-21T23:36:24.386Z] Successfully extracted messageId: 0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
+
+[2025-04-21T23:36:24.386Z]
+==== CCIP Message Sent Successfully ====
+[2025-04-21T23:36:24.386Z] Transaction signature: 45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL
+[2025-04-21T23:36:24.386Z] Message ID: 0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
+[2025-04-21T23:36:24.386Z] Open the CCIP explorer: https://ccip-ui-staging.vercel.app/msg/0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
+[2025-04-21T23:36:24.386Z]
+View transaction on explorer:
+[2025-04-21T23:36:24.386Z] https://explorer.solana.com/tx/45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL?cluster=devnet
+```
+
+The output provides important information to track your transfer:
+
+- **Environment Information**: Your Solana configuration and wallet details
+- **Wallet Balance**: Confirms you have sufficient SOL
+- **CCIP Router Information**: The program IDs used for the transaction
+- **Token Transfer Details**: The tokens and amounts being transferred
+- **Fee Calculation**: The estimated fees of the cross-chain transfer
+- **Balance Validation**: Confirmation that all required balances are sufficient
+- **Transaction Details**: The signature, message ID, and explorer links
+
+## Verification and Monitoring
+
+After sending your token transfer, you'll need to track it across chains:
+
+1. **Track progress with Message ID**: Use the CCIP Explorer link provided in the output to track your message status:
+
+   ```
+   https://ccip-ui-staging.vercel.app/msg/YOUR_MESSAGE_ID
+   ```
+
+2. **Solana Explorer**: Verify the transaction on Solana:
+
+   ```
+   https://explorer.solana.com/tx/YOUR_TRANSACTION_SIGNATURE?cluster=devnet
+   ```
+
+3. **Ethereum Explorer**: Once the transfer is successful, verify token receipt on Ethereum:
+   ```
+   https://sepolia.etherscan.io/address/YOUR_ETHEREUM_ADDRESS
+   ```
+   Look for the transferred token in the "Tokens" section.
+
+<CcipCommon callout="educationalDisclaimer" />

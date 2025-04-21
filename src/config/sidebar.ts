@@ -1372,6 +1372,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "Prerequisites",
                   url: "ccip/tutorials/svm/source/prerequisites",
                 },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/svm/source/token-transfers",
+                },
               ],
             },
             {
