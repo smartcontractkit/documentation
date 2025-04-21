@@ -1365,6 +1365,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/svm/receivers",
             },
             {
+              title: "SVM as Source",
+              url: "ccip/tutorials/svm/source",
+            },
+            {
               title: "SVM as Destination",
               url: "ccip/tutorials/svm/destination",
               children: [
