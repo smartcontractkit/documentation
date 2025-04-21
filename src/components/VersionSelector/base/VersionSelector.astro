@@ -15,18 +15,30 @@ interface Props {
 
 const { product, currentPath, enableEnhanced = true } = Astro.props
 
-// Get version config for the product
-const versionConfig = getProductVersionConfig(product)
-if (!versionConfig) {
-  throw new Error(`No version configuration found for product: ${product}`)
-}
-
 // Support multiple path patterns for version detection
 const standardPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
 const extendedPathMatch = currentPath.match(
   new RegExp(`/${product}/tools-resources/api-reference/(?:evm|svm)/(v[^/]+)`)
 )
-const pathVersion = extendedPathMatch?.[1] || standardPathMatch?.[1] || versionConfig.LATEST
+let pathVersion = extendedPathMatch?.[1] || standardPathMatch?.[1]
+
+// Extract VM type from the path (for CCIP)
+let vmType: string | undefined = undefined
+if (extendedPathMatch) {
+  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/tools-resources/api-reference/(evm|svm)/`))
+  vmType = vmTypeMatch?.[1]
+}
+
+// Get version config for the product with VM type
+const versionConfig = getProductVersionConfig(product, vmType)
+if (!versionConfig) {
+  throw new Error(`No version configuration found for product: ${product}${vmType ? ` and VM type: ${vmType}` : ""}`)
+}
+
+// Use the latest version as fallback if path version is not found
+if (!pathVersion) {
+  pathVersion = versionConfig.LATEST
+}
 
 // Server-side computations
 const validatedVersion = validateVersion(pathVersion, versionConfig.ALL)
@@ -37,9 +49,6 @@ const isDeprecated = versionConfig.DEPRECATED?.includes(validatedVersion) ?? fal
 // Determine base path for version links based on path pattern
 let basePath = `/${product}/api-reference`
 if (extendedPathMatch) {
-  // Extract VM type from the path (for CCIP)
-  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/tools-resources/api-reference/(evm|svm)/`))
-  const vmType = vmTypeMatch?.[1] || "evm"
   basePath = `/${product}/tools-resources/api-reference/${vmType}`
 }
 
@@ -64,7 +73,7 @@ const clientConfig: VersionSelectorConfig<string> = {
 }
 
 // Get release date for the current version
-const releaseDate = getVersionReleaseDate(product, validatedVersion)
+const releaseDate = getVersionReleaseDate(product, validatedVersion, vmType)
 ---
 
 <div
@@ -73,6 +82,7 @@ const releaseDate = getVersionReleaseDate(product, validatedVersion)
   data-version={validatedVersion}
   data-latest={clientConfig.versions.latest}
   data-enhanced={enableEnhanced}
+  data-vm-type={vmType}
 >
   {/* Static version display - visible before hydration */}
   <div class={`${styles.staticVersion} animate-fade-in`} data-client-hidden>

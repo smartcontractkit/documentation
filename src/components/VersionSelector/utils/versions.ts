@@ -56,8 +56,11 @@ export const getVersionLabel = <T extends string>(version: T, isLatest: boolean)
  * @param availableVersions - List of valid versions
  * @returns Valid version string
  */
-export const validateVersion = <T extends string>(version: T, availableVersions: ReadonlyArray<T> | T[]): T => {
-  if (!availableVersions.includes(version)) {
+export const validateVersion = <T extends string>(
+  version: T | undefined,
+  availableVersions: ReadonlyArray<T> | T[]
+): T => {
+  if (!version || !availableVersions.includes(version)) {
     console.warn(`Invalid version ${version}. Falling back to first available version.`)
     return availableVersions[0]
   }
@@ -146,16 +149,26 @@ export const detectApiReference = (
  * Gets the version configuration for a specific product.
  *
  * @param product - The product identifier
+ * @param vmType - Optional VM type (evm, svm) for products that have VM-specific versions
  * @returns Version configuration if product has versioned docs, undefined otherwise
  *
  * @example
- * const config = getProductVersionConfig("ccip")
+ * const config = getProductVersionConfig("ccip", "svm")
  * if (config) {
- *   console.log(config.LATEST) // "v1.5.1"
+ *   console.log(config.LATEST) // "v1.6.0"
  * }
  */
-export function getProductVersionConfig(product: Collection) {
-  return VERSIONS[product]
+export function getProductVersionConfig(product: Collection, vmType?: string | undefined) {
+  const productConfig = VERSIONS[product]
+  if (!productConfig) return undefined
+
+  // If VM type specified and product has VM-specific configs, return that config
+  if (vmType && "evm" in productConfig && "svm" in productConfig) {
+    return productConfig[vmType as keyof typeof productConfig] || productConfig
+  }
+
+  // Otherwise return the product config
+  return productConfig
 }
 
 /**
@@ -163,14 +176,20 @@ export function getProductVersionConfig(product: Collection) {
  *
  * @param product - The product identifier
  * @param version - The version string (e.g., "v1.5.1")
+ * @param vmType - Optional VM type (evm, svm) for products that have VM-specific versions
  * @returns ISO date string of the release date if found, undefined otherwise
  *
  * @example
- * const releaseDate = getVersionReleaseDate("ccip", "v1.5.1")
- * // Returns: "2023-12-04T00:00:00Z"
+ * const releaseDate = getVersionReleaseDate("ccip", "v1.6.0", "svm")
+ * // Returns: "2024-05-15T00:00:00Z"
  */
-export function getVersionReleaseDate(product: Collection, version: string): string | undefined {
-  return VERSIONS[product]?.RELEASE_DATES[version]
+export function getVersionReleaseDate(
+  product: Collection,
+  version: string,
+  vmType?: string | undefined
+): string | undefined {
+  const productConfig = getProductVersionConfig(product, vmType)
+  return productConfig?.RELEASE_DATES[version]
 }
 
 /**

@@ -7,8 +7,7 @@ import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
-import svmCcipV150Contents from "./sidebar/ccip/api-reference/svm/v1_5_0.json" with { type: "json" }
-import svmCcipV151Contents from "./sidebar/ccip/api-reference/svm/v1_5_1.json" with { type: "json" }
+import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -1429,16 +1428,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tools-resources/api-reference/svm",
               children: [
                 {
-                  title: "v1.5.1 (Latest)",
-                  url: "ccip/tools-resources/api-reference/svm/v1.5.1",
+                  title: "v1.6.0",
+                  url: "ccip/tools-resources/api-reference/svm/v1.6.0",
                   isCollapsible: true,
-                  children: svmCcipV151Contents,
-                },
-                {
-                  title: "v1.5.0",
-                  url: "ccip/tools-resources/api-reference/svm/v1.5.0",
-                  isCollapsible: true,
-                  children: svmCcipV150Contents,
+                  children: svmCcipV160Contents,
                 },
               ],
             },
