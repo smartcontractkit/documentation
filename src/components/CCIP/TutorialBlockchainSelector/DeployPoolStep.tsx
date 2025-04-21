@@ -94,7 +94,10 @@ export const DeployPoolStep = ({ chain }: DeployPoolStepProps) => {
           <Callout type="note" title="Understanding Pool Types">
             Each pool type serves different use cases and has specific requirements. Learn more about pool types and
             their characteristics in the{" "}
-            <a href="/ccip/concepts/cross-chain-tokens#standard-token-pools">token pools documentation</a>.
+            <a href="/ccip/concepts/cross-chain-token/evm/token-pools#standard-token-pools">
+              token pools documentation
+            </a>
+            .
           </Callout>
           <div className={styles.selectionDescription}>
             Select the appropriate pool type based on your token's characteristics and requirements

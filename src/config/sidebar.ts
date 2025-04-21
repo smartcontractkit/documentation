@@ -1085,7 +1085,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Execution Latency",
-          url: "ccip/concepts/ccip-execution-latency",
+          url: "ccip/ccip-execution-latency",
         },
         {
           title: "Billing",
