@@ -1,0 +1,384 @@
+---
+section: ccip
+date: Last Modified
+title: "Implementing CCIP Receivers"
+isIndex: false
+metadata:
+  description: "Learn how to build secure Solana programs that can receive cross-chain messages and tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This reference guide covers the ccip_receive function, security validation patterns, and flexible message handling approaches."
+  excerpt: "solana ccip receiver program implementation cross-chain messaging token handling rust anchor"
+---
+
+import { Aside } from "@components"
+import { Tabs, Fragment } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Prerequisites">
+  This reference guide assumes familiarity with: - [Rust](https://www.rust-lang.org/) and the [Anchor
+  framework](https://www.anchor-lang.com/) - [Solana program
+  development](https://docs.solana.com/developing/programming-model/overview) - [CCIP architecture](/ccip/architecture)
+  and [CCIP messaging to Solana](/ccip/tutorials/evm-to-solana-messaging)
+</Aside>
+
+# Implementing CCIP Receivers for Solana
+
+This reference guide explains the key components and security patterns required for building Solana programs that can receive cross-chain messages via Chainlink's Cross-Chain Interoperability Protocol (CCIP).
+
+## Introduction
+
+A CCIP Receiver is a Solana program that implements the `ccip_receive` function, allowing it to process incoming cross-chain messages from EVM chains. It can handle both arbitrary data payloads and token transfers, serving as the destination endpoint for CCIP messages.
+
+## CCIP Receiver Architecture
+
+Before examining the code, it's essential to understand the architectural components that secure cross-chain messaging in CCIP.
+
+### The Security Triangle
+
+CCIP Receivers operate within a security triangle formed by three key entities:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Entities</Fragment>
+  <Fragment slot="tab.2">Message Flow</Fragment>
+  <Fragment slot="tab.3">Security Model</Fragment>
+
+<Fragment slot="panel.1">
+  The CCIP security model involves: 1. **Receiver Program** (your Solana program) - Implements the `ccip_receive`
+  function - Validates that messages come from authorized sources 2. **CCIP Router** - Central coordinator of
+  cross-chain communication - Manages allowed offramps for each chain - Creates PDAs that verify offramp authorization
+  3. **CCIP Offramp** - Delivers messages to the destination chain - Uses a specific PDA to sign transactions calling
+  your program Your receiver program must validate both the offramp and its relationship with the router.
+</Fragment>
+
+<Fragment slot="panel.2">
+  When a message is sent from an EVM chain to your Solana program: 1. The message is sent to the CCIP Router on the
+  source chain 2. The Router notifies CCIP validators about the message 3. Validators reach consensus and prepare
+  message execution 4. The Offramp program on Solana receives the message 5. The Offramp calls your program's
+  `ccip_receive` function with: - The Offramp's authority PDA as a signer - The message data and token transfers -
+  Access to the "allowed offramp" PDA created by the Router
+</Fragment>
+
+  <Fragment slot="panel.3">
+    The security model relies on three critical validations: 1. **Authority Validation** - Verify the calling authority
+    is a legitimate Offramp PDA - This prevents unauthorized programs from sending fake messages 2. **Router
+    Validation** - Verify the Offramp is authorized by the Router - This ensures only trusted Offramps approved by the
+    Router can deliver messages 3. **Optional Sender Validation** - Optionally validate the source chain and sender
+    address - This provides an additional layer of security by restricting which sources can send messages
+  </Fragment>
+</Tabs>
+
+## Core Components of a CCIP Receiver
+
+A complete CCIP Receiver implementation contains several key components, each serving a specific purpose in the cross-chain messaging system.
+
+### 1. Message Structure
+
+CCIP messages follow a standardized structure that your program must be prepared to receive:
+
+```rust
+#[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
+pub struct Any2SVMMessage {
+    pub message_id: [u8; 32],
+    pub source_chain_selector: u64,
+    pub sender: Vec<u8>,
+    pub data: Vec<u8>,
+    pub token_amounts: Vec<SVMTokenAmount>,
+}
+
+#[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize, Default)]
+pub struct SVMTokenAmount {
+    pub token: Pubkey,
+    pub amount: u64, // solana local token amount
+}
+```
+
+These structures contain:
+
+- `message_id`: A unique identifier for the message
+- `source_chain_selector`: The chain ID of the source chain
+- `sender`: The address of the sender on the source chain
+- `data`: The arbitrary data payload
+- `token_amounts`: An array of tokens and amounts being transferred
+
+### 2. The CcipReceive Context
+
+The account context for the `ccip_receive` instruction is the most critical security component of your program. It must follow this exact pattern:
+
+```rust
+#[derive(Accounts, Debug)]
+#[instruction(message: Any2SVMMessage)]
+pub struct CcipReceive<'info> {
+    // Offramp CPI signer PDA must be first.
+    #[account(
+        seeds = [EXTERNAL_EXECUTION_CONFIG_SEED, crate::ID.as_ref()],
+        bump,
+        seeds::program = offramp_program.key(),
+    )]
+    pub authority: Signer<'info>,
+
+    /// CHECK offramp program: exists only to derive the allowed offramp PDA
+    pub offramp_program: UncheckedAccount<'info>,
+
+    /// CHECK PDA of the router program verifying the signer is an allowed offramp.
+    #[account(
+        owner = state.router @ CcipReceiverError::InvalidCaller,
+        seeds = [
+            ALLOWED_OFFRAMP,
+            message.source_chain_selector.to_le_bytes().as_ref(),
+            offramp_program.key().as_ref()
+        ],
+        bump,
+        seeds::program = state.router,
+    )]
+    pub allowed_offramp: UncheckedAccount<'info>,
+
+    // Program-specific accounts follow...
+    #[account(
+        seeds = [STATE],
+        bump,
+    )]
+    pub state: Account<'info, BaseState>,
+
+    // Additional program accounts as needed...
+}
+```
+
+<Aside type="caution" title="Critical Security Pattern">
+  The account structure above implements the required security pattern for CCIP Receivers: 1. The first three accounts
+  (`authority`, `offramp_program`, and `allowed_offramp`) are provided by the CCIP Offramp program 2. These three
+  accounts form the security validation chain 3. The `state` account and any additional accounts are provided by the
+  message sender and are specific to your program's needs 4. It's critical to have the router stored in a state PDA so
+  it can be used to verify the `allowed_offramp` PDA 5. Depending on your program's functionality, the context can
+  include additional accounts that are specific to your use case This exact pattern is required for secure CCIP message
+  reception. Do not alter the order or validation logic of the first three accounts.
+</Aside>
+
+### 3. Program State
+
+Your program needs state accounts to store configuration information, most importantly the router address:
+
+```rust
+#[account]
+#[derive(InitSpace, Default, Debug)]
+pub struct BaseState {
+    pub owner: Pubkey,
+    pub proposed_owner: Pubkey,
+    pub router: Pubkey,
+}
+```
+
+This is a basic example of state storage, but your program can have more complex state structures with additional data. The critical requirement is that the state must store the router address for verification of the `allowed_offramp` PDA.
+
+<Aside type="note" title="Additional Program Instructions">
+  While this guide focuses on the `ccip_receive` instruction, a comprehensive CCIP Receiver should also implement
+  several administrative instructions: - `initialize`: Set up initial state with router address and owner -
+  `update_router`: Update the router address (restricted to owner) - `transfer_ownership`: Begin ownership transfer
+  process - `accept_ownership`: Complete ownership transfer - `withdraw_tokens`: Allow controlled withdrawal of received
+  tokens These administrative functions are not directly related to receiving messages but are important for proper
+  program management and security.
+</Aside>
+
+### 4. The ccip_receive Instruction
+
+The core instruction that implements the CCIP receiver interface:
+
+```rust
+/// This instruction is called by the CCIP Offramp to execute the CCIP message.
+/// The method name needs to be ccip_receive with Anchor encoding.
+/// If not using Anchor, the discriminator needs to be [0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Process message data
+    if !message.data.is_empty() {
+        // Custom data processing logic here
+    }
+
+    // Process token transfers
+    if !message.token_amounts.is_empty() {
+        // Custom token handling logic here
+    }
+
+    // Emit event for tracking
+    emit!(MessageReceived {
+        message_id: message.message_id,
+        source_chain_selector: message.source_chain_selector,
+        sender: message.sender.clone(),
+    });
+
+    Ok(())
+}
+```
+
+<Aside title="Instruction Name and Discriminator">
+  When using Anchor, the instruction name must be exactly `ccip_receive`. If not using Anchor, the instruction
+  discriminator must be `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`. This exact name/discriminator is required
+  for the CCIP Offramp to identify your program as a valid receiver.
+</Aside>
+
+## Use Cases and Implementation Approaches
+
+CCIP Receivers can be implemented for various cross-chain applications, with the implementation details varying based on your specific needs.
+
+### Message Processing Use Cases
+
+Your CCIP Receiver can be designed to handle different types of cross-chain scenarios:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Token Bridge</Fragment>
+  <Fragment slot="tab.2">Cross-Chain Oracle</Fragment>
+  <Fragment slot="tab.3">Governance</Fragment>
+  <Fragment slot="tab.4">NFT Bridge</Fragment>
+
+<Fragment slot="panel.1">
+  **Token Bridge** Receive tokens from other chains and distribute them to users. The receiver program: - Stores records
+  of cross-chain transfers - May forward tokens to specific recipients - Could implement custom token distribution logic
+  - Might handle token swaps or conversions The critical requirement is ensuring your program has authority over the
+  token accounts to perform these operations securely.
+</Fragment>
+
+<Fragment slot="panel.2">
+  **Cross-Chain Oracle** Receive price data or other information from other chains. The receiver program: - Updates
+  state with the latest data from other chains - May verify data against multiple sources - Could implement
+  time-weighted calculations - Might provide interfaces for other programs to access this data This pattern is useful
+  for bringing external data on-chain in a decentralized manner.
+</Fragment>
+
+<Fragment slot="panel.3">
+  **Governance** Implement cross-chain governance mechanisms. The receiver program: - Records votes or proposals from
+  other chains - Aggregates cross-chain governance decisions - May implement timelock or multi-stage governance - Could
+  trigger on-chain actions based on cross-chain votes This enables protocols that operate across multiple chains to have
+  unified governance.
+</Fragment>
+
+  <Fragment slot="panel.4">
+    **NFT Bridge** Bridge NFTs across chains. The receiver program: - Records information about NFTs on other chains -
+    Mints corresponding NFTs on Solana - Maintains the link between cross-chain NFT identities - Handles NFT metadata
+    and attributes This requires careful handling of uniqueness and ownership across chains.
+  </Fragment>
+</Tabs>
+
+### Implementation Considerations
+
+When implementing your CCIP Receiver, consider these key aspects:
+
+1. **Account Structure**: Ensure all accounts needed for your use case are properly defined in the `CcipReceive` context and provided in the CCIP message
+
+2. **State Management**: Design your program state to efficiently store and retrieve the data relevant to your use case
+
+3. **Token Security**: For token-related use cases, use PDAs with proper token authority
+
+4. **External Interactions**: Your receiver may need to interact with other programs through CPI (Cross-Program Invocation)
+
+5. **Custom Logic**: Implement your business logic according to your specific requirements
+
+<Aside type="danger" title="Token Security">
+  When implementing a receiver that handles tokens: - Always use a PDA that your program controls as the `tokenReceiver`
+  in CCIP messages - Ensure your program is the authority for any token accounts that need to be modified - Remember
+  that tokens sent to a PDA that your program cannot sign for will be permanently locked - Implement proper access
+  controls for any functions that move tokens
+</Aside>
+
+## Security Considerations
+
+Building secure CCIP Receivers requires attention to several key areas:
+
+### 1. Caller Validation
+
+The most critical security aspect is validating that the caller is a legitimate CCIP Offramp. This is handled by the account constraints in the `CcipReceive` context:
+
+```rust
+// Offramp CPI signer PDA must be first.
+#[account(
+    seeds = [EXTERNAL_EXECUTION_CONFIG_SEED, crate::ID.as_ref()],
+    bump,
+    seeds::program = offramp_program.key(),
+)]
+pub authority: Signer<'info>,
+```
+
+This constraint ensures that the transaction is signed by a PDA derived from the offramp program using a specific seed. Only the legitimate CCIP Offramp can produce this signature.
+
+### 2. Router Authorization
+
+The second critical validation is ensuring that the offramp is authorized by the CCIP Router:
+
+```rust
+#[account(
+    owner = state.router @ CcipReceiverError::InvalidCaller,
+    seeds = [
+        ALLOWED_OFFRAMP,
+        message.source_chain_selector.to_le_bytes().as_ref(),
+        offramp_program.key().as_ref()
+    ],
+    bump,
+    seeds::program = state.router,
+)]
+pub allowed_offramp: UncheckedAccount<'info>,
+```
+
+This validates that:
+
+1. The `allowed_offramp` PDA exists and is owned by the router program
+2. The PDA is derived using the correct seeds that include the source chain and offramp program ID
+3. This proves the router has authorized this specific offramp for this specific source chain
+
+### 3. Optional Sender Validation
+
+For additional security, you can implement sender validation:
+
+```rust
+// Optional additional validation in ccip_receive
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Verify sender is approved (if implementing allowlist)
+    let is_approved = is_sender_approved(
+        ctx.accounts.state,
+        message.source_chain_selector,
+        &message.sender
+    );
+
+    require!(is_approved, CcipReceiverError::InvalidChainAndSender);
+
+    // Continue with message processing...
+    Ok(())
+}
+```
+
+### 4. Message Deduplication
+
+To prevent replay attacks, consider tracking processed message IDs:
+
+```rust
+// In your ccip_receive function:
+
+// Check if message has already been processed
+let is_duplicate = ctx.accounts.processed_messages
+    .messages
+    .contains(&message.message_id);
+
+require!(!is_duplicate, CcipReceiverError::DuplicateMessage);
+
+// Record the message ID to prevent reprocessing
+ctx.accounts.processed_messages.messages.push(message.message_id);
+if ctx.accounts.processed_messages.messages.len() > MAX_STORED_MESSAGES {
+    ctx.accounts.processed_messages.messages.remove(0);
+}
+```
+
+## Best Practices
+
+When implementing CCIP Receivers, follow these best practices:
+
+1. **Follow the Security Pattern**: Always use the exact account validation pattern shown in the `CcipReceive` context
+
+2. **Store the Router Address**: Store and validate the router address to ensure only allowed offramps can call your program
+
+3. **Handle Token Security**: Use PDAs with proper token authority for receiving and managing tokens
+
+4. **Consider Message Deduplication**: Track message IDs to prevent replaying the same message
+
+5. **Implement Proper Error Handling**: Use specific error codes and messages for better debugging and security
+
+6. **Use Events for Tracking**: Emit events when processing messages to facilitate off-chain tracking and indexing
+
+7. **Consider Rate Limiting**: Implement rate limiting if your application is sensitive to message frequency
+
+8. **Test Thoroughly**: Test your receiver with various message types, token amounts, and edge cases
+
+<CcipCommon callout="educationalDisclaimer" />
