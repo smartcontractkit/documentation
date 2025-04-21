@@ -185,4 +185,47 @@ The `sendMessage` function completes several operations:
 1. Construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/v1.5.1/client#evm2anymessage):
 
    - The `receiver` address is encoded in bytes format to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `data`
+   - The `data` is encoded from a string text to bytes using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
+   - The `tokenAmounts` is an array. Each element comprises a [struct](/ccip/api-reference/v1.5.1/client#evmtokenamount) that contains the token address and amount. In this example, the array is empty because no tokens are sent.
+   - The `extraArgs` specify the `gasLimit` for relaying the CCIP message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000`.
+   - The `feeToken` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
+
+1. Compute the fees by invoking the router's `getFee` [function](/ccip/api-reference/v1.5.1/i-router-client#getfee).
+1. Ensure that your contract balance in LINK is enough to cover the fees.
+1. Grant the router contract permission to deduct the fees from the contract's LINK balance.
+1. Dispatch the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/v1.5.1/i-router-client#ccipsend).
+
+<CcipCommon callout="senderContractCallout" />
+
+### Receiver code
+
+The smart contract in this tutorial is designed to interact with CCIP to receive data. The contract code includes comments to clarify the various functions, events, and underlying logic. However, this section explains the key elements. You can see the full contract code below.
+
+<CodeSample src="samples/CCIP/Receiver.sol" />
+
+#### Initializing the contract
+
+When you deploy the contract, you define the router address. The receiver contract inherits from the [CCIPReceiver.sol](/ccip/api-reference/v1.5.1/ccip-receiver) contract, which uses the router address.
+
+#### Receiving data
+
+On the destination blockchain:
+
+1. The CCIP Router invokes the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive). **Note**: This function is protected by the `onlyRouter` [modifier](/ccip/api-reference/v1.5.1/ccip-receiver#onlyrouter), which ensures that only the router can call the receiver contract.
+1. The `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive) calls an internal function `_ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#_ccipreceive). The receiver contract implements this function.
+1. This `_ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#_ccipreceive) expects an `Any2EVMMessage` [struct](/ccip/api-reference/v1.5.1/client#any2evmmessage) that contains the following values:
+
+   - The CCIP `messageId`.
+   - The `sourceChainSelector`.
+   - The `sender` address in bytes format. The sender is a contract deployed on an EVM-compatible blockchain, so the address is decoded from bytes to an Ethereum address using the [ABI specification](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).
+   - The `data` is also in bytes format. A `string` is expected, so the data is decoded from bytes to a string using the [ABI specification](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).
+
+<Aside type="caution" title="Recommendations Receiver contract">
+The example was simplified for learning purposes. For production code, use the following best practices:
+
+    - Validate the source chain.
+    - Depending on your use case, analyze whether you should validate the sender address.
+
+Note that the receiver contract in this example inherits from the base contract [CCIPReceiver.sol](/ccip/api-reference/v1.5.1/ccip-receiver), which uses the `onlyRouter` [modifier](/ccip/api-reference/v1.5.1/ccip-receiver#onlyrouter) to ensure that only the router can call the `ccipReceive` [function](/ccip/api-reference/v1.5.1/ccip-receiver#ccipreceive).
+
+</Aside>
