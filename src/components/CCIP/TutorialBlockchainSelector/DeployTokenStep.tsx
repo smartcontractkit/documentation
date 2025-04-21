@@ -47,7 +47,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
 
       <Callout type="note" title="Already Have a Token?">
         If you have an existing token that meets the{" "}
-        <a href="/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens">CCT requirements</a>:
+        <a href="/ccip/concepts/cross-chain-token/evm/tokens">CCT requirements</a>:
         <ul>
           <li>Skip the "Deploy Token" section</li>
           <li>Enter your existing token address in the address field below</li>

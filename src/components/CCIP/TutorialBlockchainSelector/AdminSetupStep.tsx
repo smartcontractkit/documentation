@@ -37,7 +37,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
             use <code>registerAdminViaOwner()</code> in this tutorial because our deployed BurnMintERC677 token
             implements the <code>owner()</code> function. For other token implementations, you might use different
             registration methods. See the{" "}
-            <a href="/ccip/concepts/cross-chain-tokens#self-service-registration-flow">
+            <a href="/ccip/concepts/cross-chain-token/evm/registration-administration#self-service-registration-flow">
               self-service registration documentation
             </a>{" "}
             for all available options.
