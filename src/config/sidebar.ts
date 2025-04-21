@@ -1167,10 +1167,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/concepts/architecture/offchain/capability-registry",
                 },
                 {
-                  title: "Decentralized Oracle Network",
-                  url: "ccip/concepts/architecture/offchain/decentralized-oracle-network",
-                },
-                {
                   title: "Risk Management Network",
                   url: "ccip/concepts/architecture/offchain/risk-management-network",
                 },
