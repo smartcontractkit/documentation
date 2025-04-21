@@ -34,7 +34,7 @@ A CCIP Receiver is a Solana program that implements the `ccip_receive` function,
 
 ## Security Architecture
 
-To build a secure CCIP receiver, you need to understand how it interacts with the broader CCIP infrastructure.
+To build a secure CCIP receiver program, you need to understand how it interacts with the core CCIP programs.
 
 Your receiver program interacts with two external CCIP components:
 
@@ -93,7 +93,7 @@ Your receiver program interacts with two external CCIP components:
 
 A complete CCIP Receiver implementation contains several key components, each serving a specific purpose in the cross-chain messaging system.
 
-### 1. Message Structure
+### Message Structure
 
 CCIP messages follow a standardized structure that your program must be prepared to receive:
 
@@ -122,7 +122,7 @@ These structures contain:
 - `data`: The arbitrary data payload
 - `token_amounts`: An array of tokens and amounts being transferred
 
-### 2. The CcipReceive Context
+### The CcipReceive Context
 
 The account context for the `ccip_receive` instruction is the most critical security component of your program. It must follow this exact pattern:
 
@@ -166,16 +166,19 @@ pub struct CcipReceive<'info> {
 ```
 
 <Aside type="caution" title="Critical Security Pattern">
-  The account structure above implements the required security pattern for CCIP Receivers: 1. The first three accounts
-  (`authority`, `offramp_program`, and `allowed_offramp`) are provided by the CCIP Offramp program 2. These three
-  accounts form the security validation chain 3. The `state` account and any additional accounts are provided by the
-  message sender and are specific to your program's needs 4. It's critical to have the router stored in a state PDA so
-  it can be used to verify the `allowed_offramp` PDA 5. Depending on your program's functionality, the context can
-  include additional accounts that are specific to your use case This exact pattern is required for secure CCIP message
-  reception. Do not alter the order or validation logic of the first three accounts.
+
+The account structure above implements the required security pattern for CCIP Receivers:
+
+1. The first three accounts
+   (`authority`, `offramp_program`, and `allowed_offramp`) are provided by the CCIP Offramp program
+1. These three accounts form the security validation chain
+1. The `state` account and any additional accounts are provided by the message sender and are specific to your program's needs
+1. It's critical to have the router stored in a state PDA so it can be used to verify the `allowed_offramp` PDA
+1. Depending on your program's functionality, the context can include additional accounts that are specific to your use case
+
 </Aside>
 
-### 3. Program State
+### Program State
 
 Your program needs state accounts to store configuration information, most importantly the router address:
 
