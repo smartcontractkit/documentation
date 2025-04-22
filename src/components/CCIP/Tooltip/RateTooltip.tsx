@@ -6,11 +6,13 @@ function RateTooltip({
   inOutbound,
   symbol,
   decimals,
+  position,
 }: {
   destinationLane: SupportedTokenConfig
   inOutbound: LaneFilter
   symbol: string
   decimals: number
+  position?: "top" | "bottom" | "left" | "right"
 }) {
   if (!destinationLane.rateLimiterConfig?.[inOutbound === LaneFilter.Inbound ? "in" : "out"]?.isEnabled) {
     return <span>N/A</span>
@@ -34,6 +36,7 @@ function RateTooltip({
         verticalAlign: "middle",
         marginBottom: "2px",
       }}
+      position={position}
     />
   )
 }

@@ -74,10 +74,10 @@ function LaneDrawer({
           <table className="ccip-table">
             <thead>
               <tr>
-                <th>Ticker</th>
-                <th>Token address (Source)</th>
-                <th>Decimals</th>
-                <th>
+                <th style={{ width: "100px" }}>Ticker</th>
+                <th style={{ width: "150px" }}>Token address (Source)</th>
+                <th style={{ width: "80px" }}>Decimals</th>
+                <th style={{ width: "100px" }}>
                   Mechanism
                   <Tooltip
                     label=""
@@ -92,7 +92,7 @@ function LaneDrawer({
                     }}
                   />
                 </th>
-                <th>
+                <th style={{ width: "150px" }}>
                   Rate limit capacity
                   <Tooltip
                     label=""
@@ -107,7 +107,7 @@ function LaneDrawer({
                     }}
                   />
                 </th>
-                <th>
+                <th style={{ width: "180px" }}>
                   Rate limit refill rate
                   <Tooltip
                     label=""
@@ -184,13 +184,14 @@ function LaneDrawer({
                               ]
                             )}
                         </td>
-                        <td>
+                        <td className="rate-tooltip-cell">
                           {lane.supportedTokens && (
                             <RateTooltip
                               destinationLane={lane.supportedTokens[token]}
                               inOutbound={inOutbound}
                               symbol={token}
                               decimals={data[sourceNetwork.key].decimals}
+                              position="left"
                             />
                           )}
                         </td>
