@@ -88,23 +88,21 @@ const CCIP_MESSAGE_CONFIG: CCIPMessageConfig = {
 }
 ```
 
-<Aside type="tip" title="Two Ways to Customize the Receiver Address">
+### Customizing the Receiver Address
 
 You have two options for customizing the Ethereum recipient address:
 
 1. **Edit the script directly**: Modify the `evmReceiverAddress` value in the code by changing `"0x9d087fC03ae39b088326b67fA3C788236645b717"` to your own Ethereum wallet address.
 
-1. **Use command-line parameters**: Run the script with the `--evm-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
+2. **Use command-line parameters**: Run the script with the `--evm-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
 
-</Aside>
+### Critical Configuration Settings
 
-<Aside type="caution" title="Critical Settings">
+When setting up your CCIP message for token transfers, these parameters are crucial:
 
 - `gasLimit`: **MUST** be 0 for token-only transfers
 - `evmReceiverAddress`: Must be a valid Ethereum address (starting with "0x")
 - `messageData`: Empty string for token-only transfers
-
-</Aside>
 
 ### Understanding the Configuration Fields
 
@@ -164,6 +162,10 @@ The token transfer script handles the interaction with the CCIP Router program w
    - Signs and sends the transaction to the Solana Devnet network
    - Parses the transaction result to extract the message ID
    - Provides links to track the cross-chain message
+
+## Source Code Reference
+
+For those interested in implementation details, the script is thoroughly documented with step-by-step comments. You can examine the complete source code at `ccip-scripts/svm/router/1_token-transfer.ts` in the starter kit repository to understand the precise mechanics of building and sending CCIP messages from Solana.
 
 ## Running the Token Transfer
 
