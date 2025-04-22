@@ -1055,10 +1055,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "EVM",
               url: "ccip/getting-started/getting-started-evm",
             },
-            {
-              title: "SVM",
-              url: "ccip/getting-started/getting-started-svm",
-            },
           ],
         },
         {
