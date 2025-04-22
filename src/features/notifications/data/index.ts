@@ -1,8 +1,8 @@
 import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "You're Invited: Introduction to Chainlink and Solidity Bootcamp.",
+  description: "Finance is on at SmartCon in NYC.",
   type: "info",
-  linkText: "Register now.",
-  linkUrl: "https://go.chain.link/bootcamps/intro-to-chainlink-and-solidity?utm_source=docs",
+  linkText: "Get notified when tickets go live.",
+  linkUrl: "https://smartcon.chain.link?utm_source=docs",
 }
