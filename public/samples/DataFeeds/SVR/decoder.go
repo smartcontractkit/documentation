@@ -1,4 +1,4 @@
-decoded, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(tx.CallData), "0x"))
+decoded, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(tx.CallData.String()), "0x"))
 contractAddress := "0x" + strings.ToLower(strings.TrimLeft(hex.EncodeToString(decoded[4:36]), "0"))
 
 ff := strings.ToLower(strings.TrimLeft(hex.EncodeToString(decoded[100:104]), "0"))
