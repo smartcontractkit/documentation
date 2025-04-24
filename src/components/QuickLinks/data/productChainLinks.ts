@@ -317,4 +317,5 @@ export const chainNames: Record<string, string> = {
   zora: "ZORA",
   mint: "MINT",
   superseed: "SUPERSEED",
+  metal: "METAL_L2",
 }

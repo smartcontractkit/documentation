@@ -378,6 +378,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SUPERSEED_MAINNET"
     case "superseed-testnet":
       return "SUPERSEED_TESTNET"
+    case "metal-mainnet":
+      return "METAL_MAINNET"
+    case "metal-testnet":
+      return "METAL_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -615,6 +619,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "superseed-mainnet"
     case "SUPERSEED_TESTNET":
       return "superseed-testnet"
+    case "METAL_MAINNET":
+      return "metal-mainnet"
+    case "METAL_TESTNET":
+      return "metal-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

@@ -184,6 +184,8 @@ export type SupportedChain =
   | "MINT_MAINNET"
   | "SUPERSEED_TESTNET"
   | "SUPERSEED_MAINNET"
+  | "METAL_TESTNET"
+  | "METAL_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string
