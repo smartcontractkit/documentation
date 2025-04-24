@@ -159,6 +159,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Gnosis",
+    logoUrl: "/assets/chains/gnosis-chain.svg",
+    mainnet: {
+      label: "Gnosis Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://gnosis.blockscout.com/address/%s",
+    },
+    testnet: {
+      label: "Gnosis Chiado",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://gnosis-chiado.blockscout.com/address/%s",
+    },
+  },
+  {
     network: "HashKey Chain",
     logoUrl: "/assets/chains/hashkey.svg",
     mainnet: {
