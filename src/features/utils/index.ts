@@ -382,6 +382,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "METAL_MAINNET"
     case "metal-testnet":
       return "METAL_TESTNET"
+    case "ethereum-testnet-sepolia-lisk-1":
+      return "LISK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -606,7 +608,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "LISK_MAINNET":
       return "lisk-mainnet"
     case "LISK_TESTNET":
-      return "lisk-testnet"
+      return "ethereum-testnet-sepolia-lisk-1"
     case "ZORA_MAINNET":
       return "zora-mainnet"
     case "ZORA_TESTNET":
