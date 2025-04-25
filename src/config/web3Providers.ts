@@ -128,6 +128,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SUPERSEED_TESTNET: () => new JsonRpcProvider("https://sepolia.superseed.xyz"),
   METAL_MAINNET: () => new JsonRpcProvider("https://rpc.metall2.com"),
   METAL_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.metall2.com"),
+  ROOTSTOCK_MAINNET: () => new JsonRpcProvider("https://public-node.rsk.co"),
+  ROOTSTOCK_TESTNET: () => new JsonRpcProvider("https://public-node.testnet.rsk.co"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

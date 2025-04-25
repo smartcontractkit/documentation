@@ -331,4 +331,5 @@ export const chainNames: Record<string, string> = {
   mint: "Mint",
   superseed: "Superseed",
   metal: "Metal L2",
+  rootstock: "Rootstock",
 }
