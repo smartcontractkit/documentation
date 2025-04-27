@@ -14,7 +14,7 @@ import { Aside, ClickToZoom } from "@components"
   [here](/ccip/tools-resources/token-manager).
 </Aside>
 
-The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling compatible token in CCIP.
+The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling a compatible token in CCIP.
 
 ## Motivations
 
@@ -60,7 +60,7 @@ Token developers are provided access to pre-audited token pool contracts that en
 
 #### Ease of Cross-Chain Integration
 
-With CCT, existing ERC20-compatible tokens can be easily extended to support cross-chain functionality. This makes it possible for token developers to extend their token's reach across multiple blockchains with minimal effort, avoiding the complexities associated with traditional bridging solutions.
+With CCT, existing compatible tokens can be easily extended to support cross-chain functionality. This makes it possible for token developers to extend their token's reach across multiple blockchains with minimal effort, avoiding the complexities associated with traditional bridging solutions.
 
 ## Key Concepts
 
@@ -86,7 +86,7 @@ A blockchain account represented by a smart contract, offering advanced function
 
 ### Compatible Token
 
-Cross-Chain tokens need to adhere to specific requirements to ensure interoperability across different blockchain ecosystems. The specific requirements for each blockchain family (EVM, SVM..Etc) can be found under the Token pages (e.g., You can read [EVM token requirements](/ccip/#)).
+Cross-Chain tokens need to adhere to specific requirements to ensure interoperability across different blockchain ecosystems. The specific requirements for each blockchain family (EVM, SVM..Etc) can be found under the Token pages (e.g., You can read [EVM token requirements](/ccip/concepts/cross-chain-token/evm/tokens)).
 
 ### Token Pool
 
@@ -108,25 +108,25 @@ The setup of token pools on source and destination blockchain results in four pr
 
 Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain. This keeps the total supply of the token constant across blockchains.
 
-<ClickToZoom src="/images/ccip/cct/handling/burn-mint.png" alt="CCIP Burn and Mint mechanism" />
+<ClickToZoom src="/images/ccip/cct/handling/burn-mint.jpg" alt="CCIP Burn and Mint mechanism" />
 
 ### Lock and Mint
 
 This mechanism is suitable for projects with existing tokens on a single blockchain that have already been minted and lack functionality to control the supply via burn and mint functions on the source blockchain. In this approach, tokens are locked on the issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens, which must support burn and mint functionality, can subsequently be transferred across other non-issuing blockchains using the Burn and Mint mechanism.
 
-<ClickToZoom src="/images/ccip/cct/handling/lock-mint.png" alt="CCIP Lock and Mint mechanism" />
+<ClickToZoom src="/images/ccip/cct/handling/lock-mint.jpg" alt="CCIP Lock and Mint mechanism" />
 
 ### Burn and Unlock
 
 Tokens are burned on the source blockchain (which is the non-issuing blockchain), and an equivalent amount of tokens are released on the destination blockchain (the issuing blockchain). This mechanism is the inverse of the Lock and Mint mechanism and applies when you send tokens back to their issuing source blockchain.
 
-<ClickToZoom src="/images/ccip/cct/handling/burn-unlock.png" alt="CCIP Burn and Unlock mechanism" />
+<ClickToZoom src="/images/ccip/cct/handling/burn-unlock.jpg" alt="CCIP Burn and Unlock mechanism" />
 
 ### Lock and Unlock
 
 Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. This use case is not recommended, as it implies multiple issuing blockchains, which results in fragmented liquidity as well as the requirement of managing liquidity to ensure liveness of lanes. For additional guidance on Lock and Unlock configuration, please review best practices.
 
-<ClickToZoom src="/images/ccip/cct/handling/lock-unlock.png" alt="CCIP Lock and Unlock mechanism" />
+<ClickToZoom src="/images/ccip/cct/handling/lock-unlock.jpg" alt="CCIP Lock and Unlock mechanism" />
 
 ### Token-Specific Transfer Mechanisms
 
