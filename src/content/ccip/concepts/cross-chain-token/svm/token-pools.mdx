@@ -98,10 +98,17 @@ Consider a token developer who deployed their token across three blockchains wit
 | **Low to High Precision ✅** | B → A         | • **Send from B**: 1.123456789<br/>• **Receive on A**: 1.123456789000000000                                      | • No precision loss                                                                                                          |
 | **Equal Precision ✅**       | A → C         | • **Send from A**: 1.123456789123456789<br/>• **Receive on C**: 1.123456789123456789                             | • No precision loss                                                                                                          |
 
-#### Best Practices
+#### Recommended Practices
+
+<Aside>
+  You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
+  Chainlink Labs does not take responsibility for the use of Chainlink software. Neither Chainlink Labs, the Chainlink
+  Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in
+  code.
+</Aside>
 
 - Deploy tokens with the same number of decimals across all blockchains whenever possible.
-  - This prevents any loss of precision during cross-chain transfers.
+  - This prevents loss of precision during cross-chain transfers.
   - Different decimals should only be used when required by blockchain limitations (e.g., non-EVM chains with decimal constraints).
 - Verify decimal configurations on both source and destination blockchains before transfers.
 - Consider implementing UI warnings for transfers that might be affected by rounding.
@@ -111,7 +118,7 @@ Consider a token developer who deployed their token across three blockchains wit
 
 ## Standard Token Pools
 
-Depending on your use case (i.e., token handling mechanism), you must deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool programs that you can use to deploy your token pools in minutes. These token pool programs are fully audited and ready for deployment on your blockchains, but should be validated that they meet your use case requirements. Each program inherits the same underlying `base-token-pool` library, which provides shared data structures, rate-limiting logic, and other core functionality.
+Depending on your use case (i.e., token handling mechanism), you must deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of [token pool programs](https://github.com/smartcontractkit/chainlink-ccip/tree/main/chains/solana/contracts/programs) that you can use to deploy your token pools in minutes. These token pool programs are fully audited and ready for deployment on your blockchains, but should be validated that they meet your use case requirements. Each program inherits the same underlying `base-token-pool` library, which provides shared data structures, rate-limiting logic, and other core functionality.
 
 ### Base Token Pool
 
