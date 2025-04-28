@@ -20,7 +20,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "ccip",
     logo: ccipLogo,
     chains: {
-      abstract: "/ccip/directory/testnet/chain/abstract-testnet",
+      abstract: "/ccip/directory/mainnet/chain/abstract-mainnet",
       arbitrum: "/ccip/directory/mainnet/chain/ethereum-mainnet-arbitrum-1",
       astar: "/ccip/directory/mainnet/chain/polkadot-mainnet-astar",
       avalanche: "/ccip/directory/mainnet/chain/avalanche-mainnet",
@@ -71,11 +71,11 @@ export const productChainLinks: ProductChainLinks = {
       hemi: "/ccip/directory/mainnet/chain/hemi-mainnet",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
       megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
-      lisk: "/ccip/directory/testnet/chain/ethereum-testnet-sepolia-lisk-1",
+      lisk: "/ccip/directory/mainnet/chain/lisk-mainnet",
       zora: "/ccip/directory/testnet/chain/zora-testnet",
-      mint: "/ccip/directory/testnet/chain/mint-testnet",
+      mint: "/ccip/directory/mainnet/chain/mint-mainnet",
       superseed: "/ccip/directory/testnet/chain/superseed-testnet",
-      metal: "/ccip/directory/testnet/chain/metal-testnet",
+      metal: "/ccip/directory/mainnet/chain/metal-mainnet",
     },
   },
   "Data Feeds": {
