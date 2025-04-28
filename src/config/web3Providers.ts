@@ -106,7 +106,6 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   CRONOS_ZKEVM_MAINNET: () => new JsonRpcProvider("https://mainnet.zkevm.cronos.org"),
   HEMI_SEPOLIA: () => new JsonRpcProvider("https://testnet.rpc.hemi.network/rpc"),
   HEMI_MAINNET: () => new JsonRpcProvider("https://rpc.hemi.network/rpc"),
-  TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
   MIND_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc-testnet.mindnetwork.xyz"),
   MIND_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc-mainnet.mindnetwork.xyz"),
   MEGAETH_TESTNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
@@ -115,6 +114,20 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TAIKO_TESTNET: () => new JsonRpcProvider("https://rpc.hekla.taiko.xyz"),
   PLUME_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
   PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
+  TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
+  TRON_TESTNET: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
+  ABSTRACT_MAINNET: () => new JsonRpcProvider("https://api.mainnet.abs.xyz"),
+  ABSTRACT_TESTNET: () => new JsonRpcProvider("https://api.testnet.abs.xyz"),
+  LISK_MAINNET: () => new JsonRpcProvider("https://rpc.api.lisk.com"),
+  LISK_TESTNET: () => new JsonRpcProvider("https://rpc.sepolia-api.lisk.com"),
+  ZORA_MAINNET: () => new JsonRpcProvider("https://rpc.zora.energy/"),
+  ZORA_TESTNET: () => new JsonRpcProvider("https://sepolia.rpc.zora.energy"),
+  MINT_MAINNET: () => new JsonRpcProvider("https://rpc.mintchain.io"),
+  MINT_TESTNET: () => new JsonRpcProvider("https://sepolia-testnet-rpc.mintchain.io"),
+  SUPERSEED_MAINNET: () => new JsonRpcProvider("https://mainnet.superseed.xyz"),
+  SUPERSEED_TESTNET: () => new JsonRpcProvider("https://sepolia.superseed.xyz"),
+  METAL_MAINNET: () => new JsonRpcProvider("https://rpc.metall2.com"),
+  METAL_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.metall2.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
