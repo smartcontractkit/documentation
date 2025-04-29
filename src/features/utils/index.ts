@@ -348,10 +348,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_MAINNET"
     case "taiko-mainnet":
       return "TAIKO_MAINNET"
-    case "taiko-testnet":
-      return "TAIKO_TESTNET"
-    case "plume-testnet":
-      return "PLUME_TESTNET"
+    case "ethereum-testnet-holesky-taiko-1":
+      return "TAIKO_HEKLA"
+    case "plume-testnet-sepolia":
+      return "PLUME_SEPOLIA"
     case "plume-mainnet":
       return "PLUME_MAINNET"
     case "tron-mainnetTRON_MAINNET":
@@ -595,10 +595,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "mind-mainnet"
     case "TAIKO_MAINNET":
       return "taiko-mainnet"
-    case "TAIKO_TESTNET":
-      return "taiko-testnet"
-    case "PLUME_TESTNET":
-      return "plume-testnet"
+    case "TAIKO_HEKLA":
+      return "ethereum-testnet-holesky-taiko-1"
+    case "PLUME_SEPOLIA":
+      return "plume-testnet-sepolia"
     case "PLUME_MAINNET":
       return "plume-mainnet"
     case "TRON_MAINNET":
