@@ -34,42 +34,6 @@ In this tutorial, you will:
 
 <CcipCommon callout="evmToSvmPrerequisites" />
 
-<Aside title="Additional Requirement">
-  For this token transfer tutorial, you'll also need a Solana wallet address to receive the transferred tokens.
-</Aside>
-
-<Aside title="Obtaining Test Tokens">
-
-- Get ETH and LINK from the [Chainlink Faucet](https://faucets.chain.link/)
-- Get CCIP-BnM from the [CCIP test tokens
-  page](/ccip/test-tokens)
-
-</Aside>
-
-## Setup Instructions
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit-private.git
-cd solana-starter-kit-private
-```
-
-### Install Dependencies
-
-```bash
-yarn install
-```
-
-### Configure Environment Variables
-
-Create a `.env` file in the project root based on the provided example:
-
-```
-EVM_PRIVATE_KEY=your_private_key_here
-EVM_RPC_URL=your_rpc_url_here
-```
-
 ## Understanding Token Transfers to SVM
 
 This tutorial focuses on token-only transfers from EVM chains to Solana wallets. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
@@ -115,25 +79,21 @@ const MESSAGE_CONFIG = {
 }
 ```
 
-<Aside type="tip" title="Two Ways to Customize the Wallet Address">
+<Aside type="tip" title="Customize the Wallet Address">
 
-You have two options for customizing the recipient wallet:
+**Edit the script directly**: Modify the `tokenReceiver`
+value in the code by changing `"EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB"` to your own Solana wallet address. You can get your Solana address by running `solana address` in your terminal.
 
-1. **Edit the script directly**: Modify the `tokenReceiver`
-   value in the code by changing `"EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB"` to your own Solana wallet address. You can get your Solana address by running `solana address` in your terminal.
+```bash
+solana address
+```
 
-   ```bash
-   solana address
-   ```
+Example output:
 
-   Example output:
-
-   ```
-   $ solana address
-   EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-   ```
-
-1. **Use command-line parameters**: Run the script with the `--token-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
+```
+$ solana address
+EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
 
 </Aside>
 
@@ -170,18 +130,10 @@ For those interested in implementation details, the script is well-commented and
 
 ### Execute the Script
 
-Run the script using one of the following options:
-
-**Option A: Run with default settings** (if you modified the script directly):
+Run the following command after modifying the script directly:
 
 ```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts
-```
-
-**Option B: Run with your wallet address as a parameter**:
-
-```bash
-npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SOLANA_WALLET_ADDRESS
+yarn evm:transfer
 ```
 
 ### Understanding the Output
@@ -189,38 +141,67 @@ npx ts-node ccip-scripts/evm/router/1_token-transfer.ts --token-receiver YOUR_SO
 When the script executes successfully, you'll see output similar to this:
 
 ```
-[token-transfer] [INFO] ==== Environment Information ====
-[token-transfer] [INFO] Router Address: 0xFf0614d1c51a89729dfa69bf6f7f8e33f47CEC6C
+==== Environment Information ====
+chainId ethereum-sepolia
+[token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+chainId ethereum-sepolia
+[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
 [token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[token-transfer] [INFO] Native Balance: 3.725863461812024622 ETH
+[token-transfer] [INFO] Native Balance: 600.023652720198652224 ETH
 [token-transfer] [INFO] Token: CCIP-BnM (0x316496C5dA67D052235B9952bc42db498d6c520b)
-[token-transfer] [INFO] Token Balance: 21.189 CCIP-BnM
-[token-transfer] [INFO] Transfer Amount: 0.001 CCIP-BnM
-
-[token-transfer] [INFO] ==== Transfer Summary ====
+[token-transfer] [INFO] Token Balance: 25.129 CCIP-BnM
+[token-transfer] [INFO] Transfer Amount: 0.1 CCIP-BnM
+[token-transfer] [INFO] Creating CCIP message request
+[token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO]
+==== Transfer Summary ====
 [token-transfer] [INFO] Source Chain: Ethereum Sepolia
 [token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
 [token-transfer] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
 [token-transfer] [INFO] Receiver: 11111111111111111111111111111111
 [token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 [token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
-
-[token-transfer] [INFO] Token Transfers:
-[token-transfer] [INFO]   1. 0.001 CCIP-BnM (0x316496C5dA67D052235B9952bc42db498d6c520b)
-
-[token-transfer] [INFO] Transaction Hash: 0x997b1eb218834b2d9c4ae53fa9867e0ed2fbb168ac1e8acaa683c4703023880a
-[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x997b1eb218834b2d9c4ae53fa9867e0ed2fbb168ac1e8acaa683c4703023880a
-[token-transfer] [INFO] Message ID: 0xe5e1596601a07e917a00e52f5acd11866d82aba6a7ddbde03e2ae47507dd3da6
-[token-transfer] [INFO] CCIP Explorer: https://ccip.chain.link/msg/0xe5e1596601a07e917a00e52f5acd11866d82aba6a7ddbde03e2ae47507dd3da6
-
-[token-transfer] [INFO] ✅ Cross-chain transfer completed
+[token-transfer] [INFO]
+Token Transfers:
+[token-transfer] [INFO]   1. 0.1 CCIP-BnM (0x316496C5dA67D052235B9952bc42db498d6c520b)
+[token-transfer] [INFO]
+Extra Args: Solana-specific, 458 bytes
+[token-transfer] [INFO]
+Sending CCIP message...
+[ccip-messenger] [INFO] Estimated fee: 27526004358896610
+[ccip-messenger] [INFO] Approving 0.033031205230675932 LINK for CCIP Router
+[ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
+[ccip-messenger] [INFO] Approving 33031205230675932 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] LINK approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.033031205230675932 (required: 0.033031205230675932)
+[ccip-messenger] [INFO] Approving 0.1 CCIP-BnM for CCIP Router
+[ccip-messenger] [INFO] Approving 100000000000000000 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] CCIP-BnM approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for CCIP-BnM: 0.1 (required: 0.1)
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Transaction sent: 0x0c90bf80c1f7ff161adbe0846df5026bf78944a3aa46019d97a05bda2b94f014
+[ccip-messenger] [INFO] Transaction sent: 0x0c90bf80c1f7ff161adbe0846df5026bf78944a3aa46019d97a05bda2b94f014
+[ccip-messenger] [INFO] Message ID: 0x29ec89a867da8ebde045f30bddd663396a4abc0e8374ac2d8083612805fa7fb4
+[token-transfer] [INFO]
+==== Transfer Results ====
+[token-transfer] [INFO] Transaction Hash: 0x0c90bf80c1f7ff161adbe0846df5026bf78944a3aa46019d97a05bda2b94f014
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x0c90bf80c1f7ff161adbe0846df5026bf78944a3aa46019d97a05bda2b94f014
+[token-transfer] [INFO] Message ID: 0x29ec89a867da8ebde045f30bddd663396a4abc0e8374ac2d8083612805fa7fb4
+[token-transfer] [INFO] CCIP Explorer: https://ccip.chain.link/msg/0x29ec89a867da8ebde045f30bddd663396a4abc0e8374ac2d8083612805fa7fb4
+[token-transfer] [INFO] Destination Chain Selector: 16423721717087811551
+[token-transfer] [INFO] Sequence Number: 12
+[token-transfer] [INFO]
+Message tracking for Solana destinations:
+[token-transfer] [INFO] Please check the CCIP Explorer link to monitor your message status.
+[token-transfer] [INFO]
+✅ Transaction completed on the source chain
 ```
 
 The output provides important information to track your transfer:
 
 - Transaction hash and URL for viewing on Etherscan
-- Message ID for tracking in the CCIP Explorer
-- Confirmation of transfer completion
+- Message ID for tracking in the CCIP Explorer. In this example, the message ID is `0x29ec89a867da8ebde045f30bddd663396a4abc0e8374ac2d8083612805fa7fb4`.
 
 ## Behind the Scenes: Message Encoding for Token Transfers
 

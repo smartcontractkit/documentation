@@ -32,9 +32,9 @@ struct EVM2AnyMessage {
 
 ### receiver
 
-- For SVM destinations: This is the receiver program ID that will execute the CCIP message
-- For token-only transfers: Should be set to the default PublicKey (11111111111111111111111111111111)
-- For arbitrary messaging or programmatic token transfers: Must be the exact program ID of the SVM program that implements `ccip_receive`
+- This is the receiver program ID that will execute the CCIP message
+- **For token-only transfers**: Should be set to the default PublicKey (`11111111111111111111111111111111`)
+- **For arbitrary messaging** or **programmatic token transfers**: Must be the exact program ID of the SVM program that implements `ccip_receive`
 
 <Aside type="caution" title="Program ID Format">
   When providing a SVM program ID as the receiver, it must be in the correct format - a 32-byte SVM public key.
@@ -43,19 +43,19 @@ struct EVM2AnyMessage {
 ### data
 
 - Contains the payload that will be passed to the receiving program
-- For token-only transfers: Can be empty (`0x`)
-- For arbitrary messaging and programmatic token transfers: Contains the data the receiver program will process
-- Encoding consideration: The SVM receiver program must be able to correctly decode this data
+- **For token-only transfers**: Can be empty (`0x`)
+- **For arbitrary messaging** or **programmatic token transfers**: Contains the data the receiver program will process
+- **Encoding consideration**: The SVM receiver program must be able to correctly decode this data
 
 <Aside type="tip" title="Data Encoding">
-  Ensure the SVM program on the destination chain can properly decode the data format you're sending.
+  Ensure the SVM program on the destination chain can properly decode the data format you are sending.
 </Aside>
 
 ### tokenAmounts
 
 - An array of token addresses and amounts to transfer
-- For data-only messages: Should be an empty array
-- For token transfers or programmatic token transfers: Each entry specifies a token address and amount
+- **For data-only messages**: Should be an empty array
+- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount
 - **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
 
 ### feeToken
@@ -63,6 +63,7 @@ struct EVM2AnyMessage {
 - Specifies which token to use for paying CCIP fees
 - `address(0)` means use the source chain native gas token (ETH on Ethereum)
 - Can also specify an ERC-20 token address for fee payment
+- **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported fee tokens on your source chain
 
 ## extraArgs
 
@@ -89,10 +90,10 @@ Specifies the amount of compute units allowed for calling the `ccip_receive` ins
 
 <Aside title="Setting Compute Units">
 
-- For token transfers only: **MUST** be set to 0
+- **For token transfers only**: **MUST** be set to 0
 
-- For arbitrary messaging or programmatic token transfers: Must be
-  determined through proper testing
+- **For arbitrary messaging** or **programmatic token transfers**: Must be
+  determined through comprehensive testing of the receiver program under different conditions
 
 </Aside>
 
@@ -182,7 +183,7 @@ The Solana account that will initially receive tokens, represented as a 32-byte 
     For transfers to wallets or multi-sig wallets: 
     
         - Set to the user's wallet address 
-        - **Note**: Do not use an Associated Token Account (ATA) as the `tokenReceiver`. Instead, use the user's wallet address directly. The ATA will be automatically derived by the CCIP nodes.
+        - **Note**: Do not use an Associated Token Account (ATA) as the `tokenReceiver`. Instead, **use the user's wallet address directly**. The ATA will be automatically derived by the CCIP nodes.
 
   </Fragment>
   <Fragment slot="panel.2">
@@ -250,7 +251,7 @@ Use this configuration when sending only tokens from EVM to Solana:
       extraArgs: encodeExtraArgs({
         computeUnits: 0,
         allowOutOfOrderExecution: true,
-        tokenReceiver: "DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA",  // Recipient wallet
+        tokenReceiver: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // Recipient wallet
         accountIsWritableBitmap: 0,
         accounts: []
       })
@@ -263,9 +264,10 @@ Use this configuration when sending only tokens from EVM to Solana:
 
 - `computeUnits` **MUST** be 0
 - `receiver` should be the default PublicKey
-- For user transfers, `tokenReceiver`
-  should be the user's wallet
-- For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over
+- `tokenReceiver`:
+  - For user transfers, `tokenReceiver` should be the user's wallet address
+  - For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over
+- `allowOutOfOrderExecution` **MUST** be set to `true`
 
 </Aside>
 
@@ -335,6 +337,7 @@ Use this configuration when sending only data messages to SVM:
 - `computeUnits` must be determined through testing of the receiver program
 - `accounts` must include all accounts required by the receiver program
 - `accountIsWritableBitmap` must correctly identify writable accounts
+- `allowOutOfOrderExecution` **MUST** be set to `true`
 
 </Aside>
 
@@ -372,7 +375,7 @@ Use this configuration when sending both tokens and data in a single message:
       "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  // account3 (not writable)
       "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // account4 (writable)
       "H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT",  // account5 (not writable)
-      "DvSgNMRxVSMBpT8YGgEjrThS9NSGxDCwiyfNxeU6hwyA",  // account6 (writable)
+      "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // account6 (writable)
       "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"     // account7 (not writable)
     ];
 
@@ -416,6 +419,7 @@ Use this configuration when sending both tokens and data in a single message:
 - `tokenReceiver` must be a PDA the program has authority over
 - `accounts` must include all accounts required by the receiver program
 - The program must contain logic to handle the received data and tokens
+- `allowOutOfOrderExecution` **MUST** be set to `true`
 
 </Aside>
 

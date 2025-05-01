@@ -34,30 +34,6 @@ In this tutorial, you will:
 
 <CcipCommon callout="evmToSvmBasicPrerequisites" />
 
-## Setup Instructions
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit-private.git
-cd solana-starter-kit-private
-```
-
-### 2. Install Dependencies
-
-```bash
-yarn install
-```
-
-### 3. Configure Environment Variables
-
-Create a `.env` file in the project root based on the provided example:
-
-```
-EVM_PRIVATE_KEY=your_private_key_here
-EVM_RPC_URL=your_rpc_url_here
-```
-
 ## Understanding Arbitrary Messaging to SVM
 
 This tutorial focuses on arbitrary messaging from EVM chains to SVM programs. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to SVM](/ccip/tutorials/svm/destination).
@@ -133,7 +109,7 @@ For more details on the CCIP message structure, `extraArgs`, and how the SVM acc
 
 ### The CCIP Basic Receiver Program
 
-This tutorial uses the [Basic Receiver program](https://github.com/smartcontractkit/solana-starter-kit-private/tree/main/programs/ccip-basic-receiver) deployed on [Solana Devnet](https://explorer.solana.com/address/BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq?cluster=devnet) as the destination program.
+This tutorial uses the [Basic Receiver program](https://github.com/smartcontractkit/solana-starter-kit/tree/ccip/programs/ccip-basic-receiver) deployed on [Solana Devnet](https://explorer.solana.com/address/BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq?cluster=devnet) as the destination program.
 
 <Aside title="Scope Clarification">
   Learning how to write, deploy, and initialize a SVM program is outside the scope of this tutorial. This guide focuses
@@ -291,10 +267,12 @@ The script includes detailed comments that explain its implementation and follow
 
 ## Running the Arbitrary Messaging Script
 
+### Run the Script
+
 Now that you understand how the arbitrary messaging script works, let's execute it to send a message:
 
 ```bash
-npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
+yarn evm:arbitrary-messaging
 ```
 
 ### Expected Output
@@ -302,15 +280,17 @@ npx ts-node ccip-scripts/evm/router/2_arbitrary-messaging.ts
 When you run the script, it will display detailed information about the message being sent. You should see output similar to this:
 
 ```
-[arbitrary-messaging] [INFO] ==== Environment Information ====
-[arbitrary-messaging] [INFO] Router Address: 0xFf0614d1c51a89729dfa69bf6f7f8e33f47CEC6C
+==== Environment Information ====
+chainId ethereum-sepolia
+[arbitrary-messaging] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+chainId ethereum-sepolia
+[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
 [arbitrary-messaging] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[arbitrary-messaging] [INFO] Native Balance: 3.725785150177999963 ETH
-
+[arbitrary-messaging] [INFO] Native Balance: 600.023603232108193848 ETH
 [arbitrary-messaging] [INFO] Creating CCIP message request
 [arbitrary-messaging] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
-
-[arbitrary-messaging] [INFO] ==== Transfer Summary ====
+[arbitrary-messaging] [INFO]
+==== Transfer Summary ====
 [arbitrary-messaging] [INFO] Source Chain: Ethereum Sepolia
 [arbitrary-messaging] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
 [arbitrary-messaging] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
@@ -318,33 +298,94 @@ When you run the script, it will display detailed information about the message 
 [arbitrary-messaging] [INFO] Token Receiver: 11111111111111111111111111111111
 [arbitrary-messaging] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
 [arbitrary-messaging] [INFO] No tokens being transferred
-[arbitrary-messaging] [INFO] Message Data: 0x48656c6c6f20576f726c64
+[arbitrary-messaging] [INFO]
+Message Data: 0x48656c6c6f20576f726c64
+[arbitrary-messaging] [INFO] Message Data Size: 11 bytes
 [arbitrary-messaging] [INFO] Message Data (decoded): Hello World
-[arbitrary-messaging] [INFO] Extra Args: Solana-specific, 586 bytes
+[arbitrary-messaging] [INFO]
+Extra Args: Solana-specific, 292 bytes
 [arbitrary-messaging] [INFO] Additional Accounts: 9XDoTJ5mYNnxqdtWV5dA583VCiGUhmL3oEMWirqys3tF, CB7ptrDkY9EgwqHoJwa3TF8u4rhwYmTob2YqzaSpPMtE
 [arbitrary-messaging] [INFO] Account Is Writable Bitmap: 2
-
-[arbitrary-messaging] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Estimated fee: 4500001834950675
-[ccip-messenger] [INFO] Approving 0.00540000220194081 LINK for CCIP Router
+[arbitrary-messaging] [INFO]
+Sending CCIP message...
+[ccip-messenger] [INFO] Estimated fee: 12417653034565940
+[ccip-messenger] [INFO] Approving 0.014901183641479128 LINK for CCIP Router
+[ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
+[ccip-messenger] [INFO] Approving 14901183641479128 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] LINK approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified onchain allowance for LINK
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.014901183641479128 (required: 0.014901183641479128)
 [ccip-messenger] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Transaction sent: 0x8c0c0d0e25ce9609480bcf0d24a5ca29828cd7eba8d8027d9965d4a41f2a91b2
-[ccip-messenger] [INFO] Message ID: 0xddff06d48acba059d3d6741e9f1ec1c190680340fe4c4b1fee55f572d983eff9
-
-[arbitrary-messaging] [INFO] ==== Transfer Results ====
-[arbitrary-messaging] [INFO] Transaction Hash: 0x8c0c0d0e25ce9609480bcf0d24a5ca29828cd7eba8d8027d9965d4a41f2a91b2
-[arbitrary-messaging] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x8c0c0d0e25ce9609480bcf0d24a5ca29828cd7eba8d8027d9965d4a41f2a91b2
-[arbitrary-messaging] [INFO] Message ID: 0xddff06d48acba059d3d6741e9f1ec1c190680340fe4c4b1fee55f572d983eff9
-[arbitrary-messaging] [INFO] CCIP Explorer: https://ccip.chain.link/msg/0xddff06d48acba059d3d6741e9f1ec1c190680340fe4c4b1fee55f572d983eff9
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Transaction sent: 0x6181d2d3d033698149f8dd439df5a5b6753c741e5378761567d013746845213f
+[ccip-messenger] [INFO] Transaction sent: 0x6181d2d3d033698149f8dd439df5a5b6753c741e5378761567d013746845213f
+[ccip-messenger] [INFO] Message ID: 0x1ebd6f5b23b23613e6ba277c1b4e8ce2a04c6c03e8db20474e97c040a01b3f0b
+[arbitrary-messaging] [INFO]
+==== Transfer Results ====
+[arbitrary-messaging] [INFO] Transaction Hash: 0x6181d2d3d033698149f8dd439df5a5b6753c741e5378761567d013746845213f
+[arbitrary-messaging] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x6181d2d3d033698149f8dd439df5a5b6753c741e5378761567d013746845213f
+[arbitrary-messaging] [INFO] Message ID: 0x1ebd6f5b23b23613e6ba277c1b4e8ce2a04c6c03e8db20474e97c040a01b3f0b
+[arbitrary-messaging] [INFO] CCIP Explorer: https://ccip.chain.link/msg/0x1ebd6f5b23b23613e6ba277c1b4e8ce2a04c6c03e8db20474e97c040a01b3f0b
 [arbitrary-messaging] [INFO] Destination Chain Selector: 16423721717087811551
-[arbitrary-messaging] [INFO] Sequence Number: 498
-
-[arbitrary-messaging] [INFO] Message tracking for Solana destinations:
+[arbitrary-messaging] [INFO] Sequence Number: 13
+[arbitrary-messaging] [INFO]
+Message tracking for Solana destinations:
 [arbitrary-messaging] [INFO] Please check the CCIP Explorer link to monitor your message status.
-[arbitrary-messaging] [INFO] ✅ Cross-chain transfer completed
+[arbitrary-messaging] [INFO]
+✅ Transaction completed on the source chain
 ```
+
+### Check the Message Status
+
+The output indicates that the transaction was completed on the source chain. In this example, the message ID is `0x1ebd6f5b23b23613e6ba277c1b4e8ce2a04c6c03e8db20474e97c040a01b3f0b`. You can use the [CCIP Explorer](https://ccip.chain.link/) to monitor the message status.
+
+Wait for the message to be shown as successful on the CCIP Explorer. This may take several minutes to complete.
+
+## Verification: Retrieving the Message
+
+Make sure to wait for the message to be shown as successful on the CCIP Explorer before retrieving the message.
+
+### Query the Receiver Program
+
+After sending your message, you'll want to verify that it was received and processed by the receiver program. The CCIP Basic Receiver program stores messages, allowing you to retrieve them:
+
+```bash
+yarn svm:receiver:get-message
+```
+
+This script queries the program's message storage PDA, deserializes the data, and displays the content of the most recently received cross-chain message.
+
+### Expected Verification Output
+
+When you run the verification script, you'll see output that confirms your message was received:
+
+```
+[2025-05-01T22:20:48.307Z] CCIP Basic Receiver - Get Latest Message
+[2025-05-01T22:20:48.310Z] Program ID: BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq
+[2025-05-01T22:20:48.337Z] Wallet public key: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-05-01T22:20:48.343Z] Messages Storage PDA: CB7ptrDkY9EgwqHoJwa3TF8u4rhwYmTob2YqzaSpPMtE
+[2025-05-01T22:20:52.088Z] Fetching latest message...
+[2025-05-01T22:20:52.693Z]
+======== LATEST MESSAGE ========
+[2025-05-01T22:20:52.693Z] Message ID: 0x1ebd6f5b23b23613e6ba277c1b4e8ce2a04c6c03e8db20474e97c040a01b3f0b
+[2025-05-01T22:20:52.695Z] Source Chain Selector: 16015286601757825753
+[2025-05-01T22:20:52.695Z] Sender: 0x9d087fc03ae39b088326b67fa3c788236645b717
+[2025-05-01T22:20:52.695Z] Message Type: Arbitrary Messaging
+[2025-05-01T22:20:52.696Z] Received Timestamp: 2025-05-01T22:20:09.000Z
+[2025-05-01T22:20:52.696Z] Data (hex): 0x48656c6c6f20576f726c64
+[2025-05-01T22:20:52.696Z] Data (text): Hello World
+[2025-05-01T22:20:52.696Z] No tokens transferred in this message
+```
+
+<Aside  title="Verifying Message Details">
+
+In the output, check that:
+
+    - The **Message ID** matches the one from your arbitrary messaging script
+    - The **Source Chain Selector** indicates Ethereum Sepolia (16015286601757825753)
+    - The **Sender** matches your EVM wallet address
+    - The **Data** shows your message correctly decoded
+
+</Aside>
 
 ## Behind the Scenes: Message and Account Encoding
 
@@ -354,7 +395,7 @@ Key utilities used include:
 
 - `deriveReceiverPDAs()`: Calculates Program Derived Addresses using the same seeds as the SVM program
 - `createCCIPMessageRequest()`: Builds the properly formatted CCIP message with all required fields
-- Hex encoding utilities: Convert string data to properly formatted hex with 0x prefix
+- Hex encoding utilities: Convert string data to properly formatted hex with `0x` prefix
 - `accountIsWritableBitmap` calculation: Determines which accounts can be written to by the program
 
 These utilities handle essential tasks such as:
@@ -371,61 +412,5 @@ If you're building your own implementation, you should review these key files:
 - `ccip-lib/evm/core/models.ts`
 
 Understanding these encoding details becomes especially important when working with your own SVM programs, as each program will have its own PDA structure and account requirements.
-
-## Verification: Retrieving the Message
-
-### Generate Receiver Program Interface Definitions
-
-Before running the verification script, you need to build the project to generate essential Solana program interface definitions:
-
-```bash
-anchor build
-```
-
-This generates the necessary IDL files that Solana scripts need to interact with the deployed programs.
-
-### Query the Receiver Program
-
-After sending your message, you'll want to verify that it was received and processed by the receiver program. The CCIP Basic Receiver program stores messages, allowing you to retrieve them:
-
-```bash
-npx ts-node ccip-scripts/svm/receiver/get-latest-message.ts
-```
-
-This script queries the program's message storage PDA, deserializes the data, and displays the content of the most recently received cross-chain message.
-
-### Expected Verification Output
-
-When you run the verification script, you'll see output that confirms your message was received:
-
-```
-[2025-04-20T21:49:42.648Z] CCIP Basic Receiver - Get Latest Message
-[2025-04-20T21:49:42.651Z] Program ID: BqmcnLFSbKwyMEgi7VhVeJCis1wW26VySztF34CJrKFq
-[2025-04-20T21:49:42.651Z] Loading keypair from /Users/aelmanaa/.config/solana/id.json...
-[2025-04-20T21:49:42.684Z] Wallet public key: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-04-20T21:49:42.692Z] Messages Storage PDA: CB7ptrDkY9EgwqHoJwa3TF8u4rhwYmTob2YqzaSpPMtE
-[2025-04-20T21:49:43.271Z] Fetching latest message...
-[2025-04-20T21:49:43.533Z]
-======== LATEST MESSAGE ========
-[2025-04-20T21:49:43.534Z] Message ID: 0xddff06d48acba059d3d6741e9f1ec1c190680340fe4c4b1fee55f572d983eff9
-[2025-04-20T21:49:43.534Z] Source Chain Selector: 16015286601757825753
-[2025-04-20T21:49:43.534Z] Sender: 0x9d087fc03ae39b088326b67fa3c788236645b717
-[2025-04-20T21:49:43.534Z] Message Type: Arbitrary Messaging
-[2025-04-20T21:49:43.534Z] Received Timestamp: 2025-04-20T19:20:23.000Z
-[2025-04-20T21:49:43.534Z] Data (hex): 0x48656c6c6f20576f726c64
-[2025-04-20T21:49:43.534Z] Data (text): Hello World
-[2025-04-20T21:49:43.534Z] No tokens transferred in this message
-```
-
-<Aside  title="Verifying Message Details">
-
-In the output, check that:
-
-    - The **Message ID** matches the one from your arbitrary messaging script
-    - The **Source Chain Selector** indicates Ethereum Sepolia (16015286601757825753)
-    - The **Sender** matches your EVM wallet address
-    - The **Data** shows your message correctly decoded
-
-</Aside>
 
 <CcipCommon callout="educationalDisclaimer" />
