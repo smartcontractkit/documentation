@@ -32,9 +32,10 @@ pub struct SVM2AnyMessage {
 
 ### receiver
 
-- For EVM destinations: This is the hex-encoded address of the contract or wallet that will receive the message
-- Must be properly formatted as a 20-byte Ethereum address
-- Can target smart contracts that implement `ccipReceive` function or user wallets for token-only transfers
+- For EVM destinations:
+  - This is the hex-encoded address of the contract or wallet that will receive the message
+  - Must be properly formatted as a 20-byte Ethereum address
+  - Can target smart contracts that implement `ccipReceive` function or user wallets for token-only transfers
 
 <Aside type="caution" title="Receiver Format">
   When providing an EVM address as the receiver, it must be properly encoded as a byte array without the '0x' prefix.
@@ -45,7 +46,7 @@ pub struct SVM2AnyMessage {
 - Contains the payload that will be passed to the receiving contract on the destination chain
 - For token-only transfers: Must be empty
 - For arbitrary messaging or programmatic token transfers: Contains the data the receiver contract will process
-- Encoding consideration: The EVM receiver must be able to correctly decode this data
+- Encoding consideration: The receiver on the destination chain must be able to correctly decode this data.
 
 ### tokenAmounts
 
@@ -77,10 +78,13 @@ struct GenericExtraArgsV2 {
 - `gas_limit`: Specifies the amount of gas allocated for calling the receiving contract on the destination chain
 - `allow_out_of_order_execution`: Flag that determines if messages can be executed out of order
 
-<Aside title="Setting Gas Limits">
+<Aside title="Setting Extra Args">
 
-- For token transfers only: Gas limit must be set to 0
-- For arbitrary messaging or programmatic token transfers: gas limit must be set based on the receiving contract's complexity.
+- Gas limit:
+  - For token transfers only: Gas limit must be set to 0
+  - For arbitrary messaging or programmatic token transfers: gas limit must be set based on the receiving contract's complexity.
+- Allow out of order execution:
+  - Must always be set to true.
 
 </Aside>
 
@@ -98,7 +102,7 @@ Use this configuration when sending only tokens from SVM to EVM chains:
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
       extraArgs: encodeExtraArgs({
         gasLimit: 0, // Must be 0 for token-only transfers
-        allowOutOfOrderExecution: true
+        allowOutOfOrderExecution: true // Must be true for all messages
       })
     };
     ```
@@ -108,6 +112,7 @@ Use this configuration when sending only tokens from SVM to EVM chains:
 - `gasLimit` **MUST** be 0 for token-only transfers
 - `data` must be empty
 - The receiver must be properly formatted as a 20-byte Ethereum address
+- `allowOutOfOrderExecution` must be true for all messages
 - Check the [CCIP Directory](/ccip/directory) for the list of supported tokens for the lane you are using
 
 </Aside>
@@ -124,7 +129,7 @@ Use this configuration when sending only data to EVM chains:
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
       extraArgs: encodeExtraArgs({
         gasLimit: 200000, // Appropriate gas limit for the receiving contract
-        allowOutOfOrderExecution: true
+        allowOutOfOrderExecution: true // Must be true for all messages
       })
     };
     ```
@@ -134,6 +139,7 @@ Use this configuration when sending only data to EVM chains:
 - `gasLimit` must be sufficient for the receiving contract to process the message
 - `data` must be properly encoded to be compatible with the receiving contract
 - `tokenAmounts` must be an empty array
+- `allowOutOfOrderExecution` must be true for all messages
 - The receiver must be a contract that implements `ccipReceive` function
 
 </Aside>
@@ -150,7 +156,7 @@ Use this configuration when sending both tokens and data in a single message:
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
       extraArgs: encodeExtraArgs({
         gasLimit: 300000, // Higher gas limit for complex operations
-        allowOutOfOrderExecution: true
+        allowOutOfOrderExecution: true // Must be true for all messages
       })
     };
     ```
@@ -161,6 +167,7 @@ Use this configuration when sending both tokens and data in a single message:
 - `data` must be properly encoded to be compatible with the receiving contract
 - `tokenAmounts` must be an array of tokens to transfer
 - The receiving contract must implement logic to handle both tokens and data
+- `allowOutOfOrderExecution` must be true for all messages
 - Check the [CCIP Directory](/ccip/directory) for the list of supported tokens for the lane you are using
 
 </Aside>
@@ -184,7 +191,7 @@ When sending data from SVM to EVM chains, proper encoding is crucial:
 
 <Fragment slot="tab.1">Encoding Data for EVM Chains</Fragment>
 
-<Fragment slot="tab.2">Example: String Encoding</Fragment>
+<Fragment slot="tab.2">Example: String Encoding for EVM Receivers</Fragment>
 
   <Fragment slot="panel.1">
 
@@ -323,7 +330,7 @@ For EVM destinations, you must encode the `extraArgs` field with gas limit and e
 
 1. Create a tag for GenericExtraArgsV2 `0x181dcf10`
 1. Serialize the `gasLimit` as a 32-byte big-endian number
-1. Add a flags byte for execution order (`0x00` for strict order, `0x01` for allowing out of order)
+1. Add a flags byte for execution order (`0x00` for strict order, `0x01` for allowing out of order). **Note**: Must be `0x01` (allowing out of order) for all messages.
 1. Concatenate the tag, gas limit bytes, and flags byte
 
 ```typescript
