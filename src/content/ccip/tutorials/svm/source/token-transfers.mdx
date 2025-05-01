@@ -90,11 +90,11 @@ const CCIP_MESSAGE_CONFIG: CCIPMessageConfig = {
 
 ### Customizing the Receiver Address
 
-You have two options for customizing the Ethereum recipient address:
+To send tokens to your own Ethereum wallet, you must update the destination address in the script:
 
-1. **Edit the script directly**: Modify the `evmReceiverAddress` value in the code by changing `"0x9d087fC03ae39b088326b67fA3C788236645b717"` to your own Ethereum wallet address.
-
-2. **Use command-line parameters**: Run the script with the `--evm-receiver` parameter as shown in the [Running the Token Transfer](#running-the-token-transfer) section below. The command-line parameter will override any value in the code.
+1. Open the file `ccip-scripts/svm/router/1_token-transfer.ts` in the starter kit
+2. Locate the `CCIP_MESSAGE_CONFIG` object
+3. Edit the value of the `evmReceiverAddress` property to your Ethereum wallet address
 
 ### Critical Configuration Settings
 
@@ -115,7 +115,7 @@ When setting up your CCIP message for token transfers, these parameters are cruc
 - **`messageData`**: Empty for token-only transfers
 - **`extraArgs`**: Additional configuration for cross-chain execution
   - `gasLimit`: Set to 0 for token transfers (no execution needed)
-  - `allowOutOfOrderExecution`: Set to true to allow out of order execution
+  - `allowOutOfOrderExecution`: Set to true to allow out of order execution. **Note**: This is mandatory when sending CCIP messages from Solana as the source chain.
 
 ## Customizing Your Token Transfer
 
@@ -174,87 +174,94 @@ For those interested in implementation details, the script is thoroughly documen
 Before running the script:
 
 1. Ensure you've completed all steps in the [prerequisites guide](/ccip/tutorials/svm/source/prerequisites)
-1. Verify your token delegations are set up correctly: `yarn svm:check-tokens`
+1. Verify your token delegations are set up correctly: `yarn svm:token:check`
 1. Make sure you have sufficient SOL and BnM token balances
 
 ### Execute the Script
 
 Run the script using one of the following options:
 
-1. **Option A: Run with default settings** (if you modified the script directly):
-
-   ```bash
-   npx ts-node ccip-scripts/svm/router/1_token-transfer.ts
-   ```
-
-1. **Option B: Run with your Ethereum address as a parameter**:
-
-   ```bash
-   npx ts-node ccip-scripts/svm/router/1_token-transfer.ts --evm-receiver YOUR_ETHEREUM_ADDRESS
-   ```
+```bash
+yarn svm:token-transfer
+```
 
 ### Understanding the Output
 
 When the script executes successfully, you'll see output similar to this:
 
 ```
-[2025-04-21T23:36:20.533Z]
 ==== Environment Information ====
-[2025-04-21T23:36:20.535Z] Solana Cluster: devnet
-[2025-04-21T23:36:20.535Z] Keypair Path: /Users/user/.config/solana/id.json
-[2025-04-21T23:36:20.535Z] Log Level: INFO
-[2025-04-21T23:36:20.535Z] Skip Preflight: No
-[2025-04-21T23:36:20.573Z] Wallet public key: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-04-21T23:36:20.574Z]
+[2025-05-01T20:46:55.763Z] Solana Cluster: devnet
+[2025-05-01T20:46:55.763Z] Keypair Path: /Users/aelmanaa/.config/solana/id.json
+[2025-05-01T20:46:55.763Z] Log Level: INFO
+[2025-05-01T20:46:55.763Z] Skip Preflight: No
+[2025-05-01T20:46:55.790Z] Wallet public key: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-05-01T20:46:55.791Z]
 ==== Wallet Balance Information ====
-[2025-04-21T23:36:21.177Z] SOL Balance: 8.612343317 SOL
-[2025-04-21T23:36:21.177Z] Lamports Balance: 8612343317 lamports
-
-[2025-04-21T23:36:21.177Z]
+[2025-05-01T20:46:59.331Z] SOL Balance: 13.224536955 SOL
+[2025-05-01T20:46:59.332Z] Lamports Balance: 13224536955 lamports
+[2025-05-01T20:46:59.332Z]
 ==== CCIP Router Information ====
-[2025-04-21T23:36:21.178Z] CCIP Router Program ID: Ccip8ZTcM2qHjVt8FYHtuCAqjc637yLKnsJ5q5r2e6eL
-[2025-04-21T23:36:21.178Z] Fee Quoter Program ID: FeeQhewH1cd6ZyHqhfMiKAQntgzPT6bWwK26cJ5qSFo6
-[2025-04-21T23:36:21.178Z] RMN Remote Program ID: RmnAZiCJdaYtwR1f634Ba7yNJXuK3pS6kHuX4FgNgX8
-
-[2025-04-21T23:36:21.178Z]
+[2025-05-01T20:46:59.332Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-05-01T20:46:59.332Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
+[2025-05-01T20:46:59.332Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-05-01T20:46:59.332Z]
 ==== CCIP Send Configuration ====
-[2025-04-21T23:36:21.178Z] Destination Chain Selector: 16015286601757825753
-[2025-04-21T23:36:21.178Z] Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-
-[2025-04-21T23:36:21.178Z]
+[2025-05-01T20:46:59.332Z] Destination Chain Selector: 16015286601757825753
+[2025-05-01T20:46:59.332Z] Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-05-01T20:46:59.332Z]
 ==== Token Transfer Details ====
-[2025-04-21T23:36:21.178Z] Getting mint account info for 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh to determine token program ID...
-[2025-04-21T23:36:21.303Z] Detected Token-2022 Program: TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
-[2025-04-21T23:36:21.303Z] Fetching token decimals for 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
-[2025-04-21T23:36:21.429Z] Token 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh has 9 decimals
-[2025-04-21T23:36:21.470Z] Token 1: 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
-[2025-04-21T23:36:21.470Z] Amount 1: 10000000 raw units (0,01 tokens with 9 decimals)
-[2025-04-21T23:36:21.470Z] Fee Token: native
-
-[2025-04-21T23:36:21.733Z] Fee calculation complete: 5 tokens
-[2025-04-21T23:36:21.733Z] Estimated fee: 5e-9 SOL
-[2025-04-21T23:36:21.733Z] Fee in Juels: 52000000000
-
-[2025-04-21T23:36:21.861Z]
+[2025-05-01T20:46:59.333Z] Getting mint account info for 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6 to determine token program ID...
+[2025-05-01T20:46:59.467Z] Detected Token-2022 Program: TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
+[2025-05-01T20:46:59.467Z] Fetching token decimals for 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6
+[2025-05-01T20:46:59.607Z] Token 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6 has 9 decimals
+[2025-05-01T20:46:59.639Z] Token 1: 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6
+[2025-05-01T20:46:59.639Z] Amount 1: 10000000 raw units (0,01 tokens with 9 decimals)
+[2025-05-01T20:46:59.639Z] Fee Token: native
+[2025-05-01T20:46:59.639Z]
+==== Fee Token Configuration ====
+[2025-05-01T20:46:59.639Z] Using native SOL as fee token
+[2025-05-01T20:46:59.639Z] No gasLimit provided in extraArgs, using default value: 0
+[2025-05-01T20:46:59.641Z]
+==== CCIP Message Request Created ====
+[2025-05-01T20:46:59.641Z]
+==== Compute Budget Configuration ====
+[2025-05-01T20:46:59.642Z] Added compute budget instruction with limit: 1400000 units
+[2025-05-01T20:46:59.642Z]
+==== Fee Calculation ====
+[2025-05-01T20:46:59.642Z] Calculating fee for this transaction...
+[2025-05-01T20:46:59.642Z] Calculating fee for destination chain 16015286601757825753
+[2025-05-01T20:46:59.950Z] Fee calculation complete: 9716055 tokens
+[2025-05-01T20:46:59.950Z] Estimated fee: 0.009716055 SOL
+[2025-05-01T20:46:59.951Z] Fee in Juels: 97863982000000000
+[2025-05-01T20:46:59.951Z]
+==== Balance Validation ====
+[2025-05-01T20:47:00.085Z] SOL Balance: 13.224536955 SOL
+[2025-05-01T20:47:00.085Z]
 ==== Token Balance Validation ====
-[2025-04-21T23:36:22.242Z] ✅ Balance validation passed for token: 7AC59PVvR64EoMnLX45FHnJAYzPsxdViyYBsaGEQPFvh
-[2025-04-21T23:36:22.242Z] ✅ All balance validations passed. Proceeding with transaction.
-
-[2025-04-21T23:36:22.242Z]
+[2025-05-01T20:47:00.085Z] Getting mint account info for 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6 to determine token program ID...
+[2025-05-01T20:47:00.220Z] Detected Token-2022 Program: TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
+[2025-05-01T20:47:00.220Z] Fetching token decimals for 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6
+[2025-05-01T20:47:00.358Z] Token 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6 has 9 decimals
+[2025-05-01T20:47:00.359Z] Validating token 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6: 0,01 tokens (10000000 raw units)
+[2025-05-01T20:47:00.509Z] ✅ Balance validation passed for token: 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6
+[2025-05-01T20:47:00.510Z] ✅ All balance validations passed. Proceeding with transaction.
+[2025-05-01T20:47:00.511Z]
 ==== Sending CCIP Message ====
-[2025-04-21T23:36:22.242Z] ⏳ This may take a minute...
-[2025-04-21T23:36:23.747Z] CCIP message sent successfully: 45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL
-[2025-04-21T23:36:24.386Z] Successfully extracted messageId: 0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
-
-[2025-04-21T23:36:24.386Z]
+[2025-05-01T20:47:00.511Z] ⏳ This may take a minute...
+[2025-05-01T20:47:00.512Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-05-01T20:47:00.512Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-05-01T20:47:02.693Z] CCIP message sent successfully: 51Tpaa5Hxu4dwRNeHr7wqPwkXmroq1bDKSUmVHHPtNbDEhJ6b7Sf9Wkzuau9qDDfh34MKDWPtuMRaq3WGdt9Qz3L
+[2025-05-01T20:47:02.694Z] Parsing CCIP message sent event for transaction: 51Tpaa5Hxu4dwRNeHr7wqPwkXmroq1bDKSUmVHHPtNbDEhJ6b7Sf9Wkzuau9qDDfh34MKDWPtuMRaq3WGdt9Qz3L
+[2025-05-01T20:47:02.863Z] Successfully extracted messageId: 0xf5a11db94f15b15b77d582e4a0ed3ff709b2fbf2464d1c7d1ed73620000260d9
+[2025-05-01T20:47:02.863Z]
 ==== CCIP Message Sent Successfully ====
-[2025-04-21T23:36:24.386Z] Transaction signature: 45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL
-[2025-04-21T23:36:24.386Z] Message ID: 0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
-[2025-04-21T23:36:24.386Z] Open the CCIP explorer: https://ccip-ui-staging.vercel.app/msg/0x8e5763789ff88fa7d09c07cca0e3c04b4ee0c934461cf0bcc05318a5df4d546b
-[2025-04-21T23:36:24.386Z]
+[2025-05-01T20:47:02.863Z] Transaction signature: 51Tpaa5Hxu4dwRNeHr7wqPwkXmroq1bDKSUmVHHPtNbDEhJ6b7Sf9Wkzuau9qDDfh34MKDWPtuMRaq3WGdt9Qz3L
+[2025-05-01T20:47:02.863Z] Message ID: 0xf5a11db94f15b15b77d582e4a0ed3ff709b2fbf2464d1c7d1ed73620000260d9
+[2025-05-01T20:47:02.863Z] Open the CCIP explorer: https://ccip.chain.link/msg/0xf5a11db94f15b15b77d582e4a0ed3ff709b2fbf2464d1c7d1ed73620000260d9
+[2025-05-01T20:47:02.863Z]
 View transaction on explorer:
-[2025-04-21T23:36:24.386Z] https://explorer.solana.com/tx/45vw7pz8CpNyBiSUPKh1qwagRycfNP2LJztLCuGRWqLdxBdZBrgb7qgjBi8Rivs1wFHu1ijGGWs6UW9s7VBhBqqL?cluster=devnet
+[2025-05-01T20:47:02.863Z] https://explorer.solana.com/tx/51Tpaa5Hxu4dwRNeHr7wqPwkXmroq1bDKSUmVHHPtNbDEhJ6b7Sf9Wkzuau9qDDfh34MKDWPtuMRaq3WGdt9Qz3L?cluster=devnet
 ```
 
 The output provides important information to track your transfer:
@@ -274,7 +281,7 @@ After sending your token transfer, you'll need to track it across chains:
 1. **Track progress with Message ID**: Use the CCIP Explorer link provided in the output to track your message status:
 
    ```
-   https://ccip-ui-staging.vercel.app/msg/YOUR_MESSAGE_ID
+   https://ccip.chain.link/msg/YOUR_MESSAGE_ID
    ```
 
 2. **Solana Explorer**: Verify the transaction on Solana:
@@ -287,6 +294,6 @@ After sending your token transfer, you'll need to track it across chains:
    ```
    https://sepolia.etherscan.io/address/YOUR_ETHEREUM_ADDRESS
    ```
-   Look for the transferred token in the "Tokens" section.
+   Look for the transferred token in the "Token Transfers" section.
 
 <CcipCommon callout="educationalDisclaimer" />
