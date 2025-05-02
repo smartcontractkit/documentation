@@ -58,7 +58,7 @@ This section provides more detail on the Onchain components.
 
 **Additional Resources**:
 
-- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/main/chains/solana/contracts/programs).
+- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs).
 
 ## Router
 
@@ -66,7 +66,7 @@ The Router program serves as the entry point for sending cross-chain messages fr
 
 1. **Key Functions**
 
-   - `get_fee`: Retrieves the CCIP fee for a given message by calling the Fee Quoter program.
+   - `get_fee`: Retrieves the CCIP fees for a given message by calling the Fee Quoter program.
    - `ccip_send`: Sends a cross-chain message, emits a CCIPMessageSent event, and returns a unique message ID.
 
 1. **Key Responsibilities**
@@ -95,71 +95,74 @@ The Router program serves as the entry point for sending cross-chain messages fr
 
 The OffRamp program operates on the destination SVM chain and processes incoming cross-chain messages. It has two distinct phases: Commit and Execute.
 
-### 1. **Key Functions**
+1. **Key Functions**
 
-- `commit`: Receives and verifies commit reports from the Committing DON containing merkle roots of message batches.
-- `execute`: Processes individual messages with their merkle proofs against previously committed roots.
-- `manually_execute`: Provides a fallback mechanism for permissionlessly executing messages after a waiting period. Read the manual execution page to learn more.
+   - `commit`: Receives and verifies commit reports from the Committing DON containing merkle roots of message batches.
+   - `execute`: Processes individual messages with their merkle proofs against previously committed roots.
+   - `manually_execute`: Provides a fallback mechanism for permissionlessly executing messages after a waiting period. Read the manual execution page to learn more.
 
-### 2. **Key Responsibilities**
+1. **Key Responsibilities**
 
-#### Commit Phase
+   1. **Commit Phase**
 
-     - Validates nodes' signatures from the Committing DON.
-     - Verifies with the RMN program that the source chain is not cursed.
-     - Stores the merkle root.
-     - Processes optional price updates by calling the Fee Quoter program.
-     - Emits a `CommitReportAccepted` event.
+      - Validates nodes' signatures from the Committing DON.
+      - Verifies with the RMN program that the source chain is not cursed.
+        - Stores the merkle root.
+        - Processes optional price updates by calling the Fee Quoter program.
+        - Emits a `CommitReportAccepted` event.
 
-#### Execute Phase
+   1. **Execute Phase**
 
-- Processes one message per transaction.
-- Verifies the merkle proof against the stored Merkle root.
-- Sequence Management:
+      - Processes one message per transaction.
+      - Verifies the merkle proof against the stored Merkle root.
+      - Sequence Management:
 
-  - Tracks and validates message sequence numbers to ensure proper ordering.
-  - For sequential messages (non-zero nonce), checks that the message's nonce matches the expected inbound nonce.
-  - If a nonce mismatch is detected, skips the message until the correct sequenced message is received.
-  - Updates the nonce PDA after successful execution to maintain sequence integrity.
+        - Tracks and validates message sequence numbers to ensure proper ordering.
+        - For sequential messages (non-zero nonce), checks that the message's nonce matches the expected inbound nonce.
+        - If a nonce mismatch is detected, skips the message until the correct sequenced message is received.
+        - Updates the nonce PDA after successful execution to maintain sequence integrity.
 
-- **Token Handling (if applicable)**, for each token:
+      - **Token Handling (if applicable)**, for each token:
 
-  - Verifies that token pool addresses are correct by checking with the Router's token admin registry PDA, which maps token mints to an Address Lookup Table (ALT) containing the approved token pool accounts.
-  - Records initial token balances of receiver ATAs.
-  - Makes CPI call to the corresponding token pool `release_or_mint_tokens` function to mint or release tokens to the receiver token account (ATA).
-  - Verifies that post-execution token balances match expected increases.
+        - Verifies that token pool addresses are correct by checking with the Router's token admin registry PDA, which maps token mints to an Address Lookup Table (ALT) containing the approved token pool accounts.
+        - Records initial token balances of receiver ATAs.
+        - Makes CPI call to the corresponding token pool `release_or_mint_tokens` function to mint or release tokens to the receiver token account (ATA).
+        - Verifies that post-execution token balances match expected increases.
 
-- **Data Delivery (if applicable)**:
+      - **Data Delivery (if applicable)**:
 
-  - Verifies that the Receiver program ID matches what was specified in the original message by including the program ID in the merkle proof verification.
-  - Verifies that all accounts match exactly those specified in the original message on the source chain—any mismatch will cause execution to fail, potentially resulting in blocked funds.
-  - Creates an instruction with:
-    - The `ccip_receive` discriminator `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`.
-    - The serialized `Any2SVMMessage` struct (containing the message ID, source chain selector, sender, data payload and token amounts). Read the API reference to learn more.
-    - Makes a CPI call to the receiver program using the accounts specified in the original message.
+        - Verifies that the Receiver program ID matches what was specified in the original message by including the program ID in the merkle proof verification.
+        - Verifies that all accounts match exactly those specified in the original message on the source chain—any mismatch will cause execution to fail, potentially resulting in blocked funds.
+        - Creates an instruction with:
+          - The `ccip_receive` discriminator `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`.
+          - The serialized `Any2SVMMessage` struct (containing the message ID, source chain selector, sender, data payload and token amounts). Read the API reference to learn more.
+          - Makes a CPI call to the receiver program using the accounts specified in the original message.
 
-- **Completion**:
-  - Marks the message as “Success” in the commit report's state tracking.
-  - Emits an `ExecutionStateChanged` event with details, including the source chain selector, sequence number, message ID, message hash and the new state.
-  - **Note**: If any part of the execution process fails, the entire transaction will revert. This means no state changes are persisted, no tokens are transferred, and no events are emitted. The message will remain in the previous state, allowing for retry.
+      - **Completion**:
+        - Marks the message as “Success” in the commit report's state tracking.
+        - Emits an `ExecutionStateChanged` event with details, including the source chain selector, sequence number, message ID, message hash and the new state.
+        - **Note**: If any part of the execution process fails, the entire transaction will revert. This means no state changes are persisted, no tokens are transferred, and no events are emitted. The message will remain in the previous state, allowing for retry.
 
-#### Manual Execution
+   1. **Manual Execution (fallback mechanism)**
 
-- Allows any user to permissionlessly execute messages through the `manually_execute` function after a waiting period set by the CCIP admin.
-- This mechanism primarily addresses where automated execution fails due to:
-  - Temporary network congestion.
-  - Messages requiring more compute units than allocated in the transaction.
-- Important points about compute units:
-  - Manual executors can allocate more computer units to their transactions.
-  - No modification of the message itself is needed: The same message and execution report are used.
-  - The `compute_units` field in the message specifies the compute units allocated to the Receiver's program `ccip_receive` execution. During manual execution, users can allocate more compute units to their overall transaction, potentially allowing messages that exceeded compute limits during DON execution to complete successfully.
-- Manual execution follows exactly the same verification and execution process as the Execute Phase:
-  - Validate the source chain is not cursed via a CPI call to the RMN program.
-  - Validates the merkle proof against the committed root.
-  - Verifies accounts.
-  - Processes token transfers and data delivery.
-  - Updates message state and emits `ExecutionStateChanged` event.
-- This mechanism cannot fix fundamental issues with the CCIP message payload. If accounts are incorrectly specified in the source chain, even manual execution will fail and funds may remain locked.
+      - Allows any user to permissionlessly execute messages through the `manually_execute` function after a waiting period set by the CCIP admin.
+      - This mechanism primarily addresses where automated execution fails due to:
+
+        - Temporary network congestion.
+        - Messages requiring more compute units than allocated in the transaction.
+        - Important points about compute units:
+
+      - Manual executors can allocate more computer units to their transactions.
+      - No modification of the message itself is needed: The same message and execution report are used.
+      - The `compute_units` field in the message specifies the compute units allocated to the Receiver's program `ccip_receive` execution. During manual execution, users can allocate more compute units to their overall transaction, potentially allowing messages that exceeded compute limits during DON execution to complete successfully.
+
+      - Manual execution follows exactly the same verification and execution process as the Execute Phase:
+        - Validate the source chain is not cursed via a CPI call to the RMN program.
+        - Validates the merkle proof against the committed root.
+        - Verifies accounts.
+        - Processes token transfers and data delivery.
+        - Updates message state and emits `ExecutionStateChanged` event.
+      - **Note**: This mechanism cannot fix fundamental issues with the CCIP message payload. If accounts are incorrectly specified in the source chain, even manual execution will fail and funds may remain locked.
 
 ## FeeQuoter
 
@@ -192,12 +195,24 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 
 - Token Pools are deployed by token developers and exist independently of the core CCIP programs.
 - Token Pools are programs that interact with SPL token programs.
-- Most token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the CCIP repository.
+- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
 ## Risk Management Network
 
 The Risk Management Network (RMN) adds an additional security layer to CCIP by performing offchain risk validation and maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
+
+### Blessing and Verification
+
+- Offchain RMN nodes generate ECDSA signatures over merkle roots representing cross-chain message batches.
+- CCIP programs (such as Router or OffRamp) make CPI calls to the `verify_not_cursed` function to check whether the relevant chain (source or destination) is cursed.
+- The RMN program checks its `Curses` account to verify the subject isn't cursed before allowing the transaction to proceed.
+
+### Cursing Mechanism
+
+- The RMN program lets an owner curse any blockchain (by chain selector) or declare a global curse through the `curse` instruction that halts all CCIP traffic.
+- Once cursed, any CCIP transaction that performs the verification check for that chain selector (or the global curse) will revert, preventing cross-chain message processing.
+- The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
 
 <Aside type="caution" title="Phased Deployments">
   Certain blockchains may be integrated with CCIP in a phased approach, with the Committing and Executing DONs deployed
@@ -206,17 +221,3 @@ The Risk Management Network (RMN) adds an additional security layer to CCIP by p
   blockchain. Please see the [CCIP Directory](/ccip/directory) for which integrations utilize a phased approach. Please
   review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
 </Aside>
-
-### Key Responsibilities
-
-#### Blessing and Verification
-
-- Offchain RMN nodes generate ECDSA signatures over merkle roots representing cross-chain message batches.
-- CCIP programs (such as Router or OffRamp) make CPI calls to the `verify_not_cursed` function to check whether the relevant chain (source or destination) is cursed.
-- The RMN program checks its `Curses` account to verify the subject isn't cursed before allowing the transaction to proceed.
-
-#### Cursing Mechanism
-
-- The RMN program lets an owner curse any blockchain (by chain selector) or declare a global curse through the `curse` instruction that halts all CCIP traffic.
-- Once cursed, any CCIP transaction that performs the verification check for that chain selector (or the global curse) will revert, preventing cross-chain message processing.
-- The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
