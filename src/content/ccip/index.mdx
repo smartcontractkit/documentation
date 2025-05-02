@@ -45,27 +45,29 @@ CCIP provides several key security benefits:
 
 <ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Architecture" />
 
-To understand how Chainlink CCIP works, refer to the [concepts](/ccip/concepts), [architecture](/ccip/concepts/architecture), and [best practices](/ccip/best-practices). If you are new to using Chainlink CCIP, read these guides before you deploy any contracts that use CCIP.
+To understand how Chainlink CCIP works, refer to the [architecture](/ccip/concepts/architecture) section. If you are new to using Chainlink CCIP, read these guides before you deploy any contracts that use CCIP.
 
 ## Chainlink CCIP core capabilities
 
 Chainlink CCIP supports three main capabilities:
 
 - **Arbitrary Messaging**: is the ability to send arbitrary data (encoded as bytes) to a receiving smart contract on a different blockchain. The developer is free to encode any data they wish to send. Typically, developers use arbitrary messaging to trigger an informed action on the receiving smart contract, such as rebalancing an index, minting a specific NFT, or calling an arbitrary function with the sent data as custom parameters. Developers can encode multiple instructions in a single message, enabling them to orchestrate complex, multi-step, multi-chain tasks.
-- **Token Transfer:** You can transfer tokens to a smart contract or directly to an [Externally Owned Account(EOA)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) on a different blockchain.
+- **Token Transfer:** You can transfer tokens to an account on a different blockchain.
 - **Programmable Token Transfer**: is the ability to simultaneously transfer tokens and arbitrary data (encoded as bytes) within a single transaction. This mechanism allows users to transfer tokens and send instructions on what to do with those tokens. For example, a user could transfer tokens to a lending protocol with instructions to leverage those tokens as collateral for a loan, borrowing another asset to be sent back to the user.
 
 It is recommended that token developers use CCIP's native Token Transfer capabilities to enable the transfer of their tokens across blockchains. CCIP Token Transfers offer rigorously audited Token Pool contracts and provide configurable rate-limiting functionalities for an enhanced developer experience and risk management. In addition, Token Transfers also improve the composability of tokens with other dApps and token bridges that are integrated with the standardized CCIP interface.
 
 ### Receiving account types
 
-With CCIP, you send transactions with data, tokens, or both data and tokens. The receiver of a CCIP transaction is either a smart contract or an [externally owned account (EOA)](https://ethereum.org/en/developers/docs/accounts/#types-of-account). Smart contracts can receive both data and tokens, while EOAs can only receive tokens:
+With CCIP, you send transactions with data, tokens, or both data and tokens. The receiver of a CCIP transaction varies by blockchain type:
 
-| CCIP capability             | What is sent    | Type of receiving account supported                                                                    |
-| --------------------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
-| Arbitrary Messaging         | Data            | Smart contracts only. EOAs on EVM blockchains cannot receive messages.                                 |
-| Token Transfer              | Tokens          | Smart contracts and EOAs                                                                               |
-| Programmable Token Transfer | Data and tokens | Smart contracts only. If you send data and transfer tokens to an EOA, only tokens will be transferred. |
+| CCIP capability             | What is sent    | Receiving account types                                                                 |
+| --------------------------- | --------------- | --------------------------------------------------------------------------------------- |
+| Arbitrary Messaging         | Data            | EVM: Smart contracts only<br />SVM: Programs only                                       |
+| Token Transfer              | Tokens          | EVM: Smart contracts and EOAs<br />SVM: User wallets or program-controlled PDAs         |
+| Programmable Token Transfer | Data and tokens | EVM: Smart contracts only<br />SVM: Data to programs, tokens to program-controlled PDAs |
+
+**Note**: On EVM chains, EOAs cannot receive messages. On Solana (SVM), programs work with Program Derived Addresses (PDAs) to manage token reception.
 
 ## Common use cases
 
