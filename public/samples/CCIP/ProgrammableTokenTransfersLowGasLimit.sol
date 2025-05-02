@@ -159,7 +159,7 @@ contract ProgrammableTokenTransfersLowGasLimit is CCIPReceiver, OwnerIsCreator {
                 // Additional arguments, setting gas limit and allowing out-of-order execution.
                 // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
                 // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
-                // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/best-practices#using-extraargs
+                // and ensures compatibility with future CCIP upgrades. Read more about it here: https://docs.chain.link/ccip/concepts/best-practices/evm#using-extraargs
                 Client.EVMExtraArgsV2({
                     gasLimit: 20_000, // Gas limit for the callback on the destination chain
                     allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
