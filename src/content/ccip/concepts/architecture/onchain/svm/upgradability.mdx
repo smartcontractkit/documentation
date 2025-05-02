@@ -34,29 +34,14 @@ Once the program code is upgraded, external references (such as PDAs or user acc
 
 ## Implementation Process
 
-All security-critical onchain configuration changes to CCIP on Solana must pass through a secure upgrade process consisting of the ManyChainMultiSig (MCMS) and Timelock programs. This mechanism helps ensure security, transparency, and proper authorization for all protocol modifications.
+All security-critical onchain configuration changes to CCIP on Solana pass through a secure upgrade process using the ManyChainMultiSig (MCMS) and Timelock programs.
 
-1. **Proposals**
+Any proposal must follow one of two paths:
 
-   - All proposals originate from the MCMS program, which enforces multi-signature requirements.
-   - Proposals require multiple independent signers from Chainlink node operators with established track records within the Chainlink Network, as well as from Chainlink Labs.
-   - Signers are distributed across multiple global locations and may be rotated periodically to mitigate concentration risks.
-   - Two distinct paths exist for a proposal to succeed:
-     - Time-locked Review: Each proposal submitted to the Timelock program enters a mandatory review period delay. During this window, node operators securing CCIP can veto the proposal by calling the cancel instruction. If no veto occurs, the proposal proceeds to execution after the delay expires.
-     - Expedited Approval: A quorum of independent signers (including Chainlink node operators) actively endorse the proposal, allowing for time-sensitive upgrades.
+1. **Time-locked Review**: The proposal is submitted to the Timelock program and enters a mandatory review period. During this window, node operators securing CCIP can veto the proposal. If no veto occurs, the proposal becomes executable after the delay expires.
 
-1. **Review & Veto Window**
+2. **Expedited Approval**: The proposal receives explicit approval from a quorum of independent signers, providing an alternative path for time-sensitive circumstances.
 
-   During the timelock review period, CCIP node operators can inspect the onchain proposal (e.g., adjusting a rate limit) and choose to reject it, preventing the proposal from being executed.
+Any onchain update that passes the timelock review period without a veto becomes executable and can be implemented by accounts with the Executor role calling the `execute_batch` instruction.
 
-1. **Execution**
-
-   - Once the review period delay expires, accounts with the Executor role can call the `execute_batch` instruction on the Timelock program.
-   - The Timelock program verifies the operation is ready and executes each instruction sequentially.
-   - The Timelock uses a Program Derived Address (PDA) as a transaction signer to authorize actions in target programs.
-
-1. **Public Verifiability**
-
-   - The MCMS program's configuration, including registered signers and group quorums, is stored in public PDAs that anyone can inspect.
-   - All scheduled operations, their content, and execution status are visible in onchain accounts.
-   - The Access Controller program maintains public records of all accounts granted specific roles (Proposer, Executor, Cancellers, and Bypasser).
+The MCMS program's configuration and all scheduled operations are stored in public accounts that anyone can inspect for transparency and verification.
