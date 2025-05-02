@@ -6,20 +6,25 @@ metadata:
   description: "Get a high-level overview of Chainlink CCIP architecture. Learn about its core capabilities, offchain and onchain components."
 ---
 
-import { ClickToZoom } from "@components"
+import { Aside, ClickToZoom } from "@components"
 
 CCIP is a cross-chain messaging protocol built on Chainlink and secured by its decentralized oracle networks (DONs). It provides the following core capabilities:
 
-- **ERC20 Token Transfers**: Transfer ERC20 tokens to an externally owned account (EOA) or a receiving contract.
+- **Token Transfers**: Transfer tokens to an externally owned account (EOA) or a receiving contract.
 - **Data Transmission**: Send arbitrary data (i.e., bytes) to a receiving contract.
 - **Programmable Token Transfers**: Transfer tokens along with instructions for handling them to a receiving contract (referred to as a programmable token transfer or PTT).
 
 CCIP supports several token transfer mechanisms—including Burn-and-Mint, Lock-and-Mint, and Lock-and-Unlock—using a common interface. Token developers can enable permissionless cross-chain transfers of their tokens via the Chainlink CCT (Cross-Chain Token) standard (detailed documentation is available here). Additionally, CCIP includes an independent Risk Management Network (RMN) that provides layered security through a defense-in-depth approach.
 
+<Aside title="Terminology">
+
 While this documentation references concepts like "smart contracts" and "Externally Owned Accounts (EOAs)", the implementation of these ideas varies across different blockchain families (e.g., EVM-based, Move-based, SVM-based). For instance:
 
-- In EVM-based chains such as Ethereum, "smart contracts" running on the EVM and [Externally Owned Accounts (EOAs)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) are user-controlled addresses with private keys.
-- In SVM-based chains such as Solana, the equivalent to a "contract" is often called a "program," and EOAs are data accounts.
+- In **EVM-based chains** such as Ethereum, "smart contracts" are code deployed on the EVM with logic called via functions. Smart contracts are stateful (they store their state internally), can receive both data and tokens directly, and execute code when called. [Externally Owned Accounts (EOAs)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) are user-controlled addresses with private keys that can hold tokens but cannot execute code.
+
+- In **SVM-based chains** such as Solana, the equivalent to "smart contracts" are "programs," but they function differently. Programs are deployed code that executes when invoked through "instructions." Unlike EVM contracts, Solana programs are stateless—they store state in separate "accounts" that they have authority over (often [Program Derived Addresses or PDAs](https://solana.com/docs/core/pda)). On Solana, wallet accounts can hold tokens, but programs themselves cannot directly receive tokens. Instead, tokens are held in token accounts (often [PDAs](https://solana.com/docs/core/pda)) that programs can control. This separation of code, state, and token ownership is a fundamental architectural difference from EVM chains.
+
+</Aside>
 
 ## High-level Architecture
 
