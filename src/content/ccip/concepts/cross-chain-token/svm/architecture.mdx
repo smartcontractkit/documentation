@@ -18,14 +18,14 @@ The architecture diagrams below provide an overview of how CCT fits within the C
 
 <ClickToZoom
   src="/images/ccip/concepts/architecture/ccip-svm-source-chain.jpg"
-  alt="Cross-Chain Token Standard - Architecture (EVM)"
+  alt="Cross-Chain Token Standard - Architecture (SVM) - Source Chain"
 />
 
 **Destination Chain**
 
 <ClickToZoom
   src="/images/ccip/concepts/architecture/ccip-svm-destination-chain.jpg"
-  alt="Cross-Chain Token Standard - Architecture (EVM)"
+  alt="Cross-Chain Token Standard - Architecture (SVM) - Destination Chain"
 />
 
 The CCIP architecture for SVM-based blockchains (e.g., Solana) is described on this page, where we focus specifically on cross-chain token management.
@@ -39,9 +39,9 @@ The CCIP Router program is central to cross-chain token management. It has two f
    - **TokenAdminRegistry (one PDA per mint):** Stores the designated CCIP token administrator public key for a specific token mint (distinct from the SPL token's own mint authority) and references the token's pool address lookup table (ALT).
    - **Token Pool Address Lookup Table:** A Solana address lookup table that precisely defines the set of account addresses (including pool configuration PDAs, pool signer PDAs, and other required accounts) that are authorized for cross-chain operations with this token.
    - **Administrator Methods:** The token administrator can register or update cross-chain support for their mint through a sequence of instructions:
-     - `owner_propose_administrator`: Initiated by the mint authority to designate a token administrator.
-     - `accept_admin_role_token_admin_registry`: Confirmation by the proposed administrator to accept the role.
-     - `set_pool`: Links the token to a specific token pool configuration via the address lookup table.
+     1. `owner_propose_administrator`: Initiated by the mint authority to designate a token administrator.
+     1. `accept_admin_role_token_admin_registry`: Confirmation by the proposed administrator to accept the role.
+     1. `set_pool`: Links the token to a specific token pool configuration via an address lookup table.
    - **Pool configuration:** The TokenAdminRegistry maps each mint to exactly one token pool configuration. This ensures that during cross-chain transfers, only the authorized token pool implementation can interact with the token.
 
 1. **Lock or Burn Flow (when sending tokens cross-chain)**
@@ -72,7 +72,7 @@ To learn more , read the [Tokens compatibility requirements](/ccip/concepts/cros
 
 ## Token Pool
 
-A Token Pool is a self-contained program responsible for executing cross-chain token transfers for a specific CCT. Depending on your chosen bridging model, it manages token operations on both source and destination chains through specialized lock/burn and release/mint mechanisms.
+A Token Pool is a self-contained program responsible for executing cross-chain token transfers for a specific token.
 
 <Aside type="caution" title="Token Pool Ownership">
   Self-Administered Token Pools are deployed and managed directly by token developers and are not controlled by
@@ -86,13 +86,11 @@ A Token Pool is a self-contained program responsible for executing cross-chain t
 - Separate Token Pools Per Blockchain
   - You deploy a corresponding pool program for each blockchain that interacts with your token, then configure remote chains information to enable cross-chain transfers.
 - Token Pool Operations
-  - When acting as a source chain pool (called by the Router in ccip_send):
-    - BurnMint Token Pool: Transfers tokens from the sender's ATA to the pool's ATA, then burns them from the pool's ATA.
-    - Lock Release Token Pool: Locks tokens by transferring them from the sender ATA to the pool's ATA.
+  - When acting as a source chain pool (called by the Router in `ccip_send`):
+    - BurnMint token pool: Transfers tokens from the sender's ATA to the pool's ATA, then burns them from the pool's ATA.
+    - LockRelease token pool: Locks tokens by transferring them from the sender ATA to the pool's ATA.
   - When acting as a destination chain pool (called by the OffRamp):
-    - BurnMint Token Pool: Mints tokens to a receiver's ATA.
-    - LockRelease Token Pool: Transfers (releases) tokens from the pool's ATA to the receiver's ATA.
+    - BurnMint token pool: Mints tokens to a receiver's ATA.
+    - LockRelease token pool: Transfers (releases) tokens from the pool's ATA to the receiver's ATA.
 
-Either way, the Token Pool uses PDAs (program-derived addresses) as authorized signers to perform token operations. These PDAs are derived using specific seeds (like the `ccip_tokenpool_signer` seed and the mint address) to create deterministic signers that either have mint authority (for burn/mint pools) or sign transfers of locked tokens (for lock/release pools).
-Token pools also implement rate limiting controls for both inbound and outbound transfers and maintain configuration state in PDAs that track remote chain information and pool settings.
-For an in-depth overview of available pool programs, see the Token Pools page.
+For an in-depth overview of token pool programs, see the [Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools) page.
