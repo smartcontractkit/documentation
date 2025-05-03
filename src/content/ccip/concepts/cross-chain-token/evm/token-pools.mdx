@@ -8,7 +8,7 @@ metadata:
 
 import { Aside } from "@components"
 
-Learn about the standard token pool contracts for facilitating CCT transfers on EVM chains. This page covers common requirements like mandatory functions, gas limit considerations, and token decimal handling. It details the various token handling mechanisms (Burn/Mint, Lock/Mint, etc.) and provides guidelines and use cases for building custom token pools.
+Learn about standard and custom token pool contracts for facilitating CCT transfers on EVM chains. This page covers common requirements like mandatory functions, gas limit considerations, and token decimal handling.
 
 ## Common Requirements
 
@@ -18,27 +18,47 @@ All token pools, whether standard or custom, must adhere to the following guidel
 
 When CCIP interacts with your token pools, it expects the presence of the following functions:
 
-1. **Source Blockchain**: This must include the following function:
+1. **Sending Tokens (Source)**:
 
-   `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`: This function locks or burns tokens on the source blockchain. See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/api-reference/evm/v1.5.1/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#lockorburn).
+   - This must include the following function: `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`.
+   - This function locks or burns tokens depending on the implementation of the token pool.
+   - See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/api-reference/evm/v1.5.1/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#lockorburn).
 
-1. **Destination Blockchain**: This must include the following function:
+1. **Receiving Tokens (Destination)**:
 
-   `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`: This function releases or mints tokens on the destination blockchain. See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/api-reference/evm/v1.5.1/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#releaseormint).
+   - This must include the following function: `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`.
+   - This function releases or mints tokens depending on the implementation of the token pool.
+   - See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/api-reference/evm/v1.5.1/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/api-reference/evm/v1.5.1/burn-mint-token-pool-abstract#releaseormint).
 
 ### Gas Requirements
 
-On the destination blockchain, the CCIP OffRamp contract performs three key calls when releasing or minting tokens:
+On the destination blockchain, the CCIP OffRamp contract performs three key calls:
 
 1. **`balanceOf` before minting/releasing tokens**: To check the token balance of the receiver before the minting or releasing operation.
-1. **`releaseOrMint` to mint or release tokens**: To execute the minting or releasing of tokens on the destination blockchain. **Note**: The total execution of the `releaseOrMint` function includes both the _token pool's logic_ and the _token's execution logic_. For example, if minting tokens is part of the process, the gas consumed by the minting operation is included in the total gas consumed by the `releaseOrMint` function.
+1. **`releaseOrMint` to mint or release tokens**: To execute the minting or releasing of tokens on the destination blockchain.
+
+   <Aside>
+     The total execution of the `releaseOrMint` function includes both the _token pool's logic_ and the _token's
+     execution logic_. For example, if minting tokens is part of the process, the gas consumed by the minting operation
+     is included in the total gas consumed by the `releaseOrMint` function.
+   </Aside>
+
 1. **`balanceOf` after minting/releasing tokens**: To verify the token balance of the receiver after the operation is complete.
 
-#### Gas limit considerations
+#### Default Gas Limits
 
-- The combined execution of these three calls should not exceed the default gas limit of 90,000 gas. To verify this cost, it is recommended to perform a token transfer on testnet.
-- If the default gas limit of **90,000 gas** is exceeded and a custom limit has not been configured, the CCIP execution on the destination blockchain will fail. In such cases, manual intervention by the user will be required to execute the transaction. For more information, see the [manual execution page](/ccip/concepts/manual-execution). The resulting transaction can be inspected for the amount of gas that was used.
-- If the combined execution requires consistently more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure. However, it is highly recommended to design your token pool to stay within the 90,000 gas limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
+- The combined execution of these three calls should not exceed the default gas limit of 90,000 gas.
+- To verify this cost, it is recommended to perform a token transfer on testnet.
+
+#### Handling Execution Failures
+
+- If the default gas limit of **90,000 gas** is exceeded and a custom limit has not been configured, the CCIP execution on the destination blockchain will fail.
+- In such cases, manual intervention by the user will be required to execute the transaction. For more information, see the [manual execution page](/ccip/concepts/manual-execution). - The resulting transaction can be inspected for the amount of gas that was used.
+
+#### Requesting Gas Limit Adjustments
+
+- If the combined execution requires consistently more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure.
+- It is highly recommended to design your token pool to stay within the 90,000 gas limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
 
 ### Token Decimal Handling
 
@@ -103,24 +123,13 @@ Consider a token developer who deployed their token across three blockchains wit
 
 ## Standard Token Pools
 
-Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/). For most use cases, you should use either:
+Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/evm/contracts/pools). For most use cases, you should use either:
 
-- **[BurnMintTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnMintTokenPool.sol)**: This token pool is used to burn or mint tokens. You can read the API reference here.
-- **[BurnFromMintTokenPool](https://github.com/smartcontractkit/ccip/blob/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/BurnFromMintTokenPool.sol)**: This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference here. **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
-- **[LockReleaseTokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/LockReleaseTokenPool.sol)**: This token pool is used to lock or release tokens. You can read the API reference here.
+- **[BurnMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/BurnMintTokenPool.sol)**: This token pool is used to burn or mint tokens. You can read the API reference here.
+- **[BurnFromMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/BurnFromMintTokenPool.sol)**: This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference here. **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
+- **[LockReleaseTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/LockReleaseTokenPool.sol)**: This token pool is used to lock or release tokens. You can read the API reference here.
 
-**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the `applyChainUpdates` function, which is used to configure the token pool. You can read the API reference here.
-
-## Token Handling Mechanisms
-
-To facilitate cross-chain token transfers, you need to choose the appropriate token handling mechanism and deploy the correct combination of token pools for the source and destination blockchains. The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.1/contracts/src/v0.8/ccip/pools) to deploy for each scenario, ensuring a seamless token transfer process.
-
-| Token Handling Mechanism | Source Blockchain Token Pool | Destination Blockchain Token Pool | Notes                                                                                                                                                                                                                 |
-| ------------------------ | ---------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Burn and Mint            | BurnMintTokenPool            | BurnMintTokenPool                 | - Standard burn and mint mechanism for cross-chain token transfers.                                                                                                                                                   |
-| Lock and Mint            | LockReleaseTokenPool         | BurnMintTokenPool                 | - The source blockchain is the issuing blockchain.<br />- LockReleaseTokenPool must be deployed on the issuing blockchain.                                                                                            |
-| Burn and Unlock          | BurnMintTokenPool            | LockReleaseTokenPool              | - The destination blockchain is the issuing blockchain.<br />- BurnMintTokenPool is used to burn tokens on the source blockchain, and LockReleaseTokenPool is used to unlock tokens on the issuing blockchain.        |
-| Lock and Unlock          | LockReleaseTokenPool         | LockReleaseTokenPool              | - Tokens are locked on the source blockchain and unlocked on the destination blockchain.<br />- Not recommended due to fragmented liquidity and requires careful management of liquidity across multiple blockchains. |
+**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the `applyChainUpdates` function, which is used to configure the token pool. You can read the API reference here.
 
 ## Custom Token Pools
 

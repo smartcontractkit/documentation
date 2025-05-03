@@ -37,6 +37,7 @@ registration flow:
 <ClickToZoom
   src="/images/ccip/cct/cct-evm-diagrams/cct-evm-proposing-administrator.webp"
   alt="Cross-Chain Token Standard - Proposing Administrator"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />
 
 ### Accepting the Administrator Role
@@ -51,6 +52,7 @@ Once the administrator has been proposed and is in a pending state, the final st
 <ClickToZoom
   src="/images/ccip/cct/cct-evm-diagrams/cct-evm-accepting-administrator-role.webp"
   alt="Cross-Chain Token Standard - Accepting Administrator Role"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />
 
 ### Transfer Administrator Role
@@ -66,6 +68,7 @@ The following sequence diagram illustrates the process of transferring the admin
 <ClickToZoom
   src="/images/ccip/cct/cct-evm-diagrams/cct-evm-transfer-administrator-role.webp"
   alt="Cross-Chain Token Standard - Transfer Administrator Role"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />
 
 ### Setting the Token Pool
@@ -81,13 +84,14 @@ The sequence diagram below shows how the token administrator sets or updates the
 <ClickToZoom
   src="/images/ccip/cct/cct-evm-diagrams/cct-evm-set-update-token-pool.webp"
   alt="Cross-Chain Token Standard - Set/Update Token Pool"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />
 
 ## Configuring the Token Pool
 
 The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following functions from the `TokenPool` contract are used for configuring token pools:
 
-### 1. `applyChainUpdates`
+### `applyChainUpdates`
 
 - **Purpose**: This function is the primary method for configuring which blockchains the token pool supports and defining rate limits for cross-chain transfers.
 - **Details**:
@@ -98,7 +102,7 @@ The configuration of token pools includes adding new blockchains, setting remote
   - To add a new blockchain, the pool owner provides the remote chain selector, pool address, token address, and rate limiter configurations.
   - To remove a blockchain, the `allowed` flag is set to `false`, and the chain is removed from the list of supported chains.
 
-### 2. `addRemotePool`
+### `addRemotePool`
 
 - **Purpose**: Adds a new remote pool address for a specific blockchain, enabling support for multiple pools per chain.
 - **Details**:
@@ -108,7 +112,7 @@ The configuration of token pools includes adding new blockchains, setting remote
   - Each pool address is hashed and stored for efficient lookup
 - **Usage**: This function is particularly useful during pool upgrades, allowing seamless transitions between pool versions while maintaining transaction support.
 
-### 3. `setChainRateLimiterConfig`
+### `setChainRateLimiterConfig`
 
 - **Purpose**: Configures the rate limits for outbound and inbound token transfers between blockchains.
 - **Details**:
@@ -118,7 +122,7 @@ The configuration of token pools includes adding new blockchains, setting remote
 - **Notes on Rate Limit Admin**: The rate limit admin is a designated address that is authorized to configure the rate limits for a token pool. This admin can be set by the pool owner using the `setRateLimitAdmin` function. If no rate limit admin is set, only the pool owner can modify the rate limits. You can retrieve the current rate limit admin address using the `getRateLimitAdmin` function.
 - **Usage**: This function adjusts rate limits to prevent excessive token transfers or overload of the token pool. Note: This function also supports disabling rate limits.
 
-### 4. `applyAllowListUpdates`
+### `applyAllowListUpdates`
 
 - **Purpose**: Manages an allowlist of addresses permitted to interact with the token pool.
 - **Details**:
