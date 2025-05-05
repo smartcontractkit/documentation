@@ -1361,6 +1361,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/svm/source",
               children: [
                 {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/svm/source/build-messages",
+                },
+                {
                   title: "Prerequisites",
                   url: "ccip/tutorials/svm/source/prerequisites",
                 },
