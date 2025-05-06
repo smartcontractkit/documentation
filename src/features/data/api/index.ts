@@ -29,6 +29,7 @@ export interface ChainMetadata {
   pair: string[]
   path: string
   proxyAddress: null | string
+  secondaryProxyAddress?: string
   threshold: number
   valuePrefix: string
   assetName: string
