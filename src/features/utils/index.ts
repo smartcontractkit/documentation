@@ -346,7 +346,7 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
       return "MIND_NETWORK_MAINNET"
-    case "taiko-mainnet":
+    case "ethereum-mainnet-taiko-1":
       return "TAIKO_MAINNET"
     case "ethereum-testnet-holesky-taiko-1":
       return "TAIKO_HEKLA"
@@ -386,7 +386,7 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "LISK_TESTNET"
     case "rootstock-mainnet":
       return "ROOTSTOCK_MAINNET"
-    case "rootstoc-testnet":
+    case "bitcoin-testnet-rootstock":
       return "ROOTSTOCK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -594,7 +594,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "MIND_NETWORK_MAINNET":
       return "mind-mainnet"
     case "TAIKO_MAINNET":
-      return "taiko-mainnet"
+      return "ethereum-mainnet-taiko-1"
     case "TAIKO_HEKLA":
       return "ethereum-testnet-holesky-taiko-1"
     case "PLUME_SEPOLIA":
@@ -632,7 +632,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "ROOTSTOCK_MAINNET":
       return "rootstock-mainnet"
     case "ROOTSTOCK_TESTNET":
-      return "rootstock-testnet"
+      return "bitcoin-testnet-rootstock"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
