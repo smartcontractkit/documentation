@@ -388,6 +388,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ROOTSTOCK_MAINNET"
     case "bitcoin-testnet-rootstock":
       return "ROOTSTOCK_TESTNET"
+    case "gravity-mainnet":
+      return "GRAVITY_MAINNET"
+    case "gravity-testnet":
+      return "GRAVITY_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -633,6 +637,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "rootstock-mainnet"
     case "ROOTSTOCK_TESTNET":
       return "bitcoin-testnet-rootstock"
+    case "GRAVITY_MAINNET":
+      return "gravity-mainnet"
+    case "GRAVITY_TESTNET":
+      return "gravity-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
