@@ -338,8 +338,6 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_TESTNET"
     case "cronos-zkevm-mainnet":
       return "CRONOS_ZKEVM_MAINNET"
-    case "tron-mainnet":
-      return "TRON_MAINNET"
     case "0g-testnet-newton":
       return "0G_NEWTON_TESTNET"
     case "megaeth-testnet":
@@ -348,14 +346,48 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
       return "MIND_NETWORK_MAINNET"
-    case "taiko-mainnet":
+    case "ethereum-mainnet-taiko-1":
       return "TAIKO_MAINNET"
-    case "taiko-testnet":
-      return "TAIKO_TESTNET"
-    case "plume-testnet":
-      return "PLUME_TESTNET"
+    case "ethereum-testnet-holesky-taiko-1":
+      return "TAIKO_HEKLA"
+    case "plume-testnet-sepolia":
+      return "PLUME_SEPOLIA"
     case "plume-mainnet":
       return "PLUME_MAINNET"
+    case "tron-mainnetTRON_MAINNET":
+      return "TRON_MAINNET"
+    case "tron-testnet":
+      return "TRON_TESTNET"
+    case "abstract-mainnet":
+      return "ABSTRACT_MAINNET"
+    case "abstract-testnet":
+      return "ABSTRACT_TESTNET"
+    case "lisk-mainnet":
+      return "LISK_MAINNET"
+    case "lisk-testnet":
+      return "LISK_TESTNET"
+    case "zora-mainnet":
+      return "ZORA_MAINNET"
+    case "zora-testnet":
+      return "ZORA_TESTNET"
+    case "mint-mainnet":
+      return "MINT_MAINNET"
+    case "mint-testnet":
+      return "MINT_TESTNET"
+    case "superseed-mainnet":
+      return "SUPERSEED_MAINNET"
+    case "superseed-testnet":
+      return "SUPERSEED_TESTNET"
+    case "metal-mainnet":
+      return "METAL_MAINNET"
+    case "metal-testnet":
+      return "METAL_TESTNET"
+    case "ethereum-testnet-sepolia-lisk-1":
+      return "LISK_TESTNET"
+    case "rootstock-mainnet":
+      return "ROOTSTOCK_MAINNET"
+    case "bitcoin-testnet-rootstock":
+      return "ROOTSTOCK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -553,8 +585,6 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-testnet-sepolia"
     case "CRONOS_ZKEVM_MAINNET":
       return "cronos-zkevm-mainnet"
-    case "TRON_MAINNET":
-      return "tron-mainnet"
     case "0G_NEWTON_TESTNET":
       return "0g-testnet-newton"
     case "MEGAETH_TESTNET":
@@ -564,13 +594,45 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "MIND_NETWORK_MAINNET":
       return "mind-mainnet"
     case "TAIKO_MAINNET":
-      return "taiko-mainnet"
-    case "TAIKO_TESTNET":
-      return "taiko-testnet"
-    case "PLUME_TESTNET":
-      return "plume-testnet"
+      return "ethereum-mainnet-taiko-1"
+    case "TAIKO_HEKLA":
+      return "ethereum-testnet-holesky-taiko-1"
+    case "PLUME_SEPOLIA":
+      return "plume-testnet-sepolia"
     case "PLUME_MAINNET":
       return "plume-mainnet"
+    case "TRON_MAINNET":
+      return "tron-mainnet"
+    case "TRON_TESTNET":
+      return "tron-testnet"
+    case "ABSTRACT_MAINNET":
+      return "abstract-mainnet"
+    case "ABSTRACT_TESTNET":
+      return "abstract-testnet"
+    case "LISK_MAINNET":
+      return "lisk-mainnet"
+    case "LISK_TESTNET":
+      return "ethereum-testnet-sepolia-lisk-1"
+    case "ZORA_MAINNET":
+      return "zora-mainnet"
+    case "ZORA_TESTNET":
+      return "zora-testnet"
+    case "MINT_MAINNET":
+      return "mint-mainnet"
+    case "MINT_TESTNET":
+      return "mint-testnet"
+    case "SUPERSEED_MAINNET":
+      return "superseed-mainnet"
+    case "SUPERSEED_TESTNET":
+      return "superseed-testnet"
+    case "METAL_MAINNET":
+      return "metal-mainnet"
+    case "METAL_TESTNET":
+      return "metal-testnet"
+    case "ROOTSTOCK_MAINNET":
+      return "rootstock-mainnet"
+    case "ROOTSTOCK_TESTNET":
+      return "bitcoin-testnet-rootstock"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
