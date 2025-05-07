@@ -130,6 +130,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   METAL_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.metall2.com"),
   ROOTSTOCK_MAINNET: () => new JsonRpcProvider("https://public-node.rsk.co"),
   ROOTSTOCK_TESTNET: () => new JsonRpcProvider("https://public-node.testnet.rsk.co"),
+  GRAVITY_MAINNET: () => new JsonRpcProvider("https://rpc.gravity.xyz"),
+  GRAVITY_TESTNET: () => new JsonRpcProvider("https://rpc-sepolia.gravity.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
