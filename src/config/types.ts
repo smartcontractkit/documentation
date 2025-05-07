@@ -61,6 +61,7 @@ export type SupportedTechnology =
   | "ZORA"
   | "MINT"
   | "SUPERSEED"
+  | "GRAVITY"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -188,6 +189,8 @@ export type SupportedChain =
   | "METAL_MAINNET"
   | "ROOTSTOCK_TESTNET"
   | "ROOTSTOCK_MAINNET"
+  | "GRAVITY_MAINNET"
+  | "GRAVITY_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
