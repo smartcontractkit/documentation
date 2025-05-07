@@ -197,6 +197,7 @@ export const productChainLinks: ProductChainLinks = {
       fantom: "/vrf/v2/subscription/supported-networks#fantom-mainnet",
       optimism: "/vrf/v2-5/supported-networks#op",
       polygon: "/vrf/v2-5/supported-networks#polygon",
+      ronin: "/vrf/v2-5/supported-networks#ronin",
       soneium: "/vrf/v2-5/supported-networks#soneium",
     },
   },
