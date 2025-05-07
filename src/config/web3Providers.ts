@@ -111,8 +111,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MEGAETH_TESTNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
   "0G_NEWTON_TESTNET": () => new JsonRpcProvider("https://evmrpc-testnet.0g.ai"),
   TAIKO_MAINNET: () => new JsonRpcProvider("https://rpc.mainnet.taiko.xyz"),
-  TAIKO_TESTNET: () => new JsonRpcProvider("https://rpc.hekla.taiko.xyz"),
-  PLUME_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
+  TAIKO_HEKLA: () => new JsonRpcProvider("https://rpc.hekla.taiko.xyz"),
+  PLUME_SEPOLIA: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
   PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
   TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
   TRON_TESTNET: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
@@ -128,6 +128,10 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SUPERSEED_TESTNET: () => new JsonRpcProvider("https://sepolia.superseed.xyz"),
   METAL_MAINNET: () => new JsonRpcProvider("https://rpc.metall2.com"),
   METAL_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.metall2.com"),
+  ROOTSTOCK_MAINNET: () => new JsonRpcProvider("https://public-node.rsk.co"),
+  ROOTSTOCK_TESTNET: () => new JsonRpcProvider("https://public-node.testnet.rsk.co"),
+  GRAVITY_MAINNET: () => new JsonRpcProvider("https://rpc.gravity.xyz"),
+  GRAVITY_TESTNET: () => new JsonRpcProvider("https://rpc-sepolia.gravity.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

@@ -346,12 +346,12 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
       return "MIND_NETWORK_MAINNET"
-    case "taiko-mainnet":
+    case "ethereum-mainnet-taiko-1":
       return "TAIKO_MAINNET"
-    case "taiko-testnet":
-      return "TAIKO_TESTNET"
-    case "plume-testnet":
-      return "PLUME_TESTNET"
+    case "ethereum-testnet-holesky-taiko-1":
+      return "TAIKO_HEKLA"
+    case "plume-testnet-sepolia":
+      return "PLUME_SEPOLIA"
     case "plume-mainnet":
       return "PLUME_MAINNET"
     case "tron-mainnetTRON_MAINNET":
@@ -384,6 +384,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "METAL_TESTNET"
     case "ethereum-testnet-sepolia-lisk-1":
       return "LISK_TESTNET"
+    case "rootstock-mainnet":
+      return "ROOTSTOCK_MAINNET"
+    case "bitcoin-testnet-rootstock":
+      return "ROOTSTOCK_TESTNET"
+    case "gravity-mainnet":
+      return "GRAVITY_MAINNET"
+    case "gravity-testnet":
+      return "GRAVITY_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -590,11 +598,11 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "MIND_NETWORK_MAINNET":
       return "mind-mainnet"
     case "TAIKO_MAINNET":
-      return "taiko-mainnet"
-    case "TAIKO_TESTNET":
-      return "taiko-testnet"
-    case "PLUME_TESTNET":
-      return "plume-testnet"
+      return "ethereum-mainnet-taiko-1"
+    case "TAIKO_HEKLA":
+      return "ethereum-testnet-holesky-taiko-1"
+    case "PLUME_SEPOLIA":
+      return "plume-testnet-sepolia"
     case "PLUME_MAINNET":
       return "plume-mainnet"
     case "TRON_MAINNET":
@@ -625,6 +633,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "metal-mainnet"
     case "METAL_TESTNET":
       return "metal-testnet"
+    case "ROOTSTOCK_MAINNET":
+      return "rootstock-mainnet"
+    case "ROOTSTOCK_TESTNET":
+      return "bitcoin-testnet-rootstock"
+    case "GRAVITY_MAINNET":
+      return "gravity-mainnet"
+    case "GRAVITY_TESTNET":
+      return "gravity-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

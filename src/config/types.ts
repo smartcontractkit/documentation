@@ -61,6 +61,7 @@ export type SupportedTechnology =
   | "ZORA"
   | "MINT"
   | "SUPERSEED"
+  | "GRAVITY"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -169,9 +170,9 @@ export type SupportedChain =
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
   | "TAIKO_MAINNET"
-  | "TAIKO_TESTNET"
+  | "TAIKO_HEKLA"
   | "PLUME_MAINNET"
-  | "PLUME_TESTNET"
+  | "PLUME_SEPOLIA"
   | "TRON_MAINNET"
   | "TRON_TESTNET"
   | "ABSTRACT_TESTNET"
@@ -186,6 +187,10 @@ export type SupportedChain =
   | "SUPERSEED_MAINNET"
   | "METAL_TESTNET"
   | "METAL_MAINNET"
+  | "ROOTSTOCK_TESTNET"
+  | "ROOTSTOCK_MAINNET"
+  | "GRAVITY_MAINNET"
+  | "GRAVITY_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
