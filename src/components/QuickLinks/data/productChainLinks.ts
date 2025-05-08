@@ -98,6 +98,7 @@ export const productChainLinks: ProductChainLinks = {
       linea: "/data-feeds/price-feeds/addresses?page=1&network=linea#networks",
       mantle: "/data-feeds/price-feeds/addresses?page=1&network=mantle#networks",
       metis: "/data-feeds/price-feeds/addresses?page=1&network=metis#networks",
+      monad: "/data-feeds/price-feeds/addresses?page=1&network=monad#networks",
       moonbeam: "/data-feeds/price-feeds/addresses?page=1&network=moonbeam#networks",
       moonriver: "/data-feeds/price-feeds/addresses?page=1&network=moonriver#networks",
       optimism: "/data-feeds/price-feeds/addresses?page=1&network=optimism#networks",
