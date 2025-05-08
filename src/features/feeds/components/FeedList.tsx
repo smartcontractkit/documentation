@@ -67,6 +67,34 @@ export const FeedList = ({
     }
   }, [currentNetwork, isStreams])
 
+  // Force initial sync with URL
+  useEffect(() => {
+    // Get the latest network from URL
+    const latestNetworkFromURL = getNetworkFromURL()
+    if (latestNetworkFromURL !== currentNetwork) {
+      setCurrentNetwork(latestNetworkFromURL)
+    }
+
+    // Force a redraw after a short delay
+    if (typeof window !== "undefined") {
+      // execute after the DOM is fully loaded
+      window.addEventListener("load", () => {
+        const networkFromURL = getNetworkFromURL()
+        setCurrentNetwork(networkFromURL)
+
+        // Force a repaint of aria-selected attributes
+        document.querySelectorAll(".network-button").forEach((button) => {
+          const buttonId = button.getAttribute("id")
+          if (buttonId === networkFromURL) {
+            button.setAttribute("aria-selected", "true")
+          } else {
+            button.setAttribute("aria-selected", "false")
+          }
+        })
+      })
+    }
+  }, [])
+
   // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch", "")
@@ -135,7 +163,7 @@ export const FeedList = ({
           // Use scrollIntoView with behavior: auto to ensure proper positioning
           targetElement.scrollIntoView({ behavior: "auto" })
         }
-      }, 100)
+      }, 200)
     }
   }, [chainMetadata.loading, chainMetadata.processedData])
 
