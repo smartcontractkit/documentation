@@ -44,34 +44,6 @@ export const FeedList = ({
     return networkParam || initialNetwork
   }
 
-  // Force initial sync with URL
-  useEffect(() => {
-    // Get the latest network from URL
-    const latestNetworkFromURL = getNetworkFromURL()
-    if (latestNetworkFromURL !== currentNetwork) {
-      setCurrentNetwork(latestNetworkFromURL)
-    }
-
-    // Force a redraw after a short delay
-    if (typeof window !== "undefined") {
-      // execute after the DOM is fully loaded
-      window.addEventListener("load", () => {
-        const networkFromURL = getNetworkFromURL()
-        setCurrentNetwork(networkFromURL)
-
-        // Force a repaint of aria-selected attributes
-        document.querySelectorAll(".network-button").forEach((button) => {
-          const buttonId = button.getAttribute("id")
-          if (buttonId === networkFromURL) {
-            button.setAttribute("aria-selected", "true")
-          } else {
-            button.setAttribute("aria-selected", "false")
-          }
-        })
-      })
-    }
-  }, [])
-
   // Sync with URL when it changes externally (browser back/forward)
   useEffect(() => {
     if (!isStreams && typeof window !== "undefined") {
@@ -106,7 +78,9 @@ export const FeedList = ({
 
     const params = new URLSearchParams(window.location.search)
     params.set("network", network)
-    const newUrl = window.location.pathname + "?" + params.toString()
+    // Preserve the hash fragment if it exists
+    const hashFragment = window.location.hash
+    const newUrl = window.location.pathname + "?" + params.toString() + hashFragment
     window.history.replaceState({ path: newUrl }, "", newUrl)
     setCurrentNetwork(network)
   }
@@ -146,6 +120,24 @@ export const FeedList = ({
   const wrapperRef = useRef(null)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
 
+  // Scroll restoration handler - re-scroll to hash target after content loads
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.location.hash) return
+
+    // Check if chainMetadata has loaded (content is ready)
+    if (!chainMetadata.loading && chainMetadata.processedData) {
+      // Wait for any DOM updates to finish
+      setTimeout(() => {
+        const targetId = window.location.hash.substring(1)
+        const targetElement = document.getElementById(targetId)
+        if (targetElement) {
+          // Use scrollIntoView with behavior: auto to ensure proper positioning
+          targetElement.scrollIntoView({ behavior: "auto" })
+        }
+      }, 100)
+    }
+  }, [chainMetadata.loading, chainMetadata.processedData])
+
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
     if (!isStreams) {
@@ -174,7 +166,8 @@ export const FeedList = ({
     if (searchValue === "") {
       const searchParams = new URLSearchParams(window.location.search)
       searchParams.delete("search")
-      const newUrl = window.location.pathname + "?" + searchParams.toString()
+      const hashFragment = window.location.hash
+      const newUrl = window.location.pathname + "?" + searchParams.toString() + hashFragment
       window.history.replaceState({ path: newUrl }, "", newUrl)
       const inputElement = document.getElementById("search") as HTMLInputElement
       if (inputElement) {
