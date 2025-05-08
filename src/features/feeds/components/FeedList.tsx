@@ -96,6 +96,7 @@ export const FeedList = ({
 
   // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
+  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [currentPage, setCurrentPage] = useQueryString("page", "1")
 
@@ -117,6 +118,14 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
+
+  // Pagination for testnet table
+  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
+  const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
+  const testnetAddrPerPage = 8
+  const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
+  const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
+
   const dataFeedCategory = [
     { key: "low", name: "Low Market Risk" },
     { key: "medium", name: "Medium Market Risk" },
@@ -305,9 +314,33 @@ export const FeedList = ({
         </SectionWrapper>
 
         <SectionWrapper title={streamsTestnetSectionTitle} depth={2}>
+          <div className={feedList.tableFilters}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="testnetSearch"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                onInput={(event) => {
+                  setTestnetSearchValue((event.target as HTMLInputElement).value)
+                  setTestnetCurrentPage("1")
+                }}
+              />
+            </form>
+          </div>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (
-              <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+              <TestnetTable
+                key={network.name}
+                network={network}
+                showExtraDetails={showExtraDetails}
+                dataFeedType={dataFeedType}
+                firstAddr={testnetFirstAddr}
+                lastAddr={testnetLastAddr}
+                addrPerPage={testnetAddrPerPage}
+                currentPage={Number(testnetCurrentPage)}
+                paginate={testnetPaginate}
+                searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+              />
             ))
           ) : (
             <p>No Testnet feeds available.</p>
@@ -573,7 +606,17 @@ export const FeedList = ({
                         Show more details
                       </label>
                     )}
-                    <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+                    <TestnetTable
+                      network={network}
+                      showExtraDetails={showExtraDetails}
+                      dataFeedType={dataFeedType}
+                      firstAddr={testnetFirstAddr}
+                      lastAddr={testnetLastAddr}
+                      addrPerPage={testnetAddrPerPage}
+                      currentPage={Number(testnetCurrentPage)}
+                      paginate={testnetPaginate}
+                      searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                    />
                   </>
                 )}
               </SectionWrapper>
@@ -585,6 +628,37 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
+
+      {!isDeprecating &&
+        chainMetadata.processedData?.testnetProcessedData &&
+        chainMetadata.processedData?.testnetProcessedData.length > 0 && (
+          <SectionWrapper title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"} depth={2} updateTOC={true}>
+            <div className={feedList.tableFilters}>
+              <form class={feedList.filterDropdown_search}>
+                <input
+                  id="testnetSearch"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search"
+                  onInput={(event) => {
+                    setTestnetSearchValue((event.target as HTMLInputElement).value)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+              </form>
+            </div>
+            <TestnetTable
+              network={chainMetadata.processedData.testnetNetwork}
+              showExtraDetails={showExtraDetails}
+              dataFeedType={dataFeedType}
+              firstAddr={testnetFirstAddr}
+              lastAddr={testnetLastAddr}
+              addrPerPage={testnetAddrPerPage}
+              currentPage={Number(testnetCurrentPage)}
+              paginate={testnetPaginate}
+              searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+            />
+          </SectionWrapper>
+        )}
     </SectionWrapper>
   )
 }
