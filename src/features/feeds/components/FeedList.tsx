@@ -589,15 +589,45 @@ export const FeedList = ({
                       </>
                     )}
                     {!isStreams && (
-                      <label>
-                        <input
-                          type="checkbox"
-                          style="width:15px;height:15px;display:inline;"
-                          checked={showExtraDetails}
-                          onChange={() => setShowExtraDetails((old) => !old)}
-                        />{" "}
-                        Show more details
-                      </label>
+                      <div className={feedList.tableFilters}>
+                        <div className={feedList.checkboxContainer}>
+                          <label className={feedList.detailsLabel}>
+                            <input
+                              type="checkbox"
+                              style="width:15px;height:15px;display:inline;"
+                              checked={showExtraDetails}
+                              onChange={() => setShowExtraDetails((old) => !old)}
+                            />
+                            Show more details
+                          </label>
+                        </div>
+                        <form class={feedList.filterDropdown_search}>
+                          <input
+                            id="testnetSearch"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search"
+                            onInput={(event) => {
+                              setTestnetSearchValue((event.target as HTMLInputElement).value)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                        </form>
+                      </div>
+                    )}
+                    {isStreams && (
+                      <div className={feedList.tableFilters}>
+                        <form class={feedList.filterDropdown_search}>
+                          <input
+                            id="testnetSearch"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search"
+                            onInput={(event) => {
+                              setTestnetSearchValue((event.target as HTMLInputElement).value)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                        </form>
+                      </div>
                     )}
                     <TestnetTable
                       network={network}
@@ -638,6 +668,19 @@ export const FeedList = ({
                   }}
                 />
               </form>
+              {!isStreams && (
+                <div className={feedList.checkboxContainer}>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;"
+                      checked={showExtraDetails}
+                      onChange={() => setShowExtraDetails((old) => !old)}
+                    />
+                    Show more details
+                  </label>
+                </div>
+              )}
             </div>
             <TestnetTable
               network={chainMetadata.processedData.testnetNetwork}
