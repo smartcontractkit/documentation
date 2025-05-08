@@ -45,7 +45,6 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 ## Requirements
 
-- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
 - **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
 
@@ -65,12 +64,12 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
    cargo init
    ```
 
-1. Add the Data Streams SDK to your `Cargo.toml`:
+1. Add the following dependencies to your `Cargo.toml` file:
 
    ```toml
    [dependencies]
-   data-streams-sdk = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/sdk" }
-   data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+   chainlink-data-streams-sdk = "1.0.0"
+   chainlink-data-streams-report = "1.0.0"
    tokio = { version = "1.4", features = ["full"] }
    hex = "0.4"
    tracing = "0.1"
@@ -82,70 +81,70 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 1. Replace the contents of `src/main.rs` with the following code:
 
    ```rust
-   use data_streams_report::feed_id::ID;
-   use data_streams_report::report::{decode_full_report, v4::ReportDataV4}; // Import the v4 report schema for RWA streams
-   use data_streams_sdk::config::Config;
-   use data_streams_sdk::stream::Stream;
+   use chainlink_data_streams_report::feed_id::ID;
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 }; // Import the v4 report schema for RWA streams
+   use chainlink_data_streams_sdk::config::Config;
+   use chainlink_data_streams_sdk::stream::Stream;
    use std::env;
    use std::error::Error;
-   use tracing::{info, warn};
+   use tracing::{ info, warn };
    use tracing_subscriber::fmt::time::UtcTime;
 
    #[tokio::main]
    async fn main() -> Result<(), Box<dyn Error>> {
-       // Initialize logging with UTC timestamps
-       tracing_subscriber::fmt()
-           .with_timer(UtcTime::rfc_3339())
-           .with_max_level(tracing::Level::INFO)
-           .init();
+      // Initialize logging with UTC timestamps
+      tracing_subscriber
+         ::fmt()
+         .with_timer(UtcTime::rfc_3339())
+         .with_max_level(tracing::Level::INFO)
+         .init();
 
-       // Get feed IDs from command line arguments
-       let args: Vec<String> = env::args().collect();
-       if args.len() < 2 {
-           eprintln!("Usage: cargo run [StreamID1] [StreamID2] ...");
-           std::process::exit(1);
-       }
+      // Get feed IDs from command line arguments
+      let args: Vec<String> = env::args().collect();
+      if args.len() < 2 {
+         eprintln!("Usage: cargo run [StreamID1] [StreamID2] ...");
+         std::process::exit(1);
+      }
 
-       // Get API credentials from environment variables
-       let api_key = env::var("API_KEY").expect("API_KEY must be set");
-       let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+      // Get API credentials from environment variables
+      let api_key = env::var("API_KEY").expect("API_KEY must be set");
+      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
 
-       // Parse feed IDs from command line arguments
-       let mut feed_ids = Vec::new();
-       for arg in args.iter().skip(1) {
-           let feed_id = ID::from_hex_str(arg)?;
-           feed_ids.push(feed_id);
-       }
+      // Parse feed IDs from command line arguments
+      let mut feed_ids = Vec::new();
+      for arg in args.iter().skip(1) {
+         let feed_id = ID::from_hex_str(arg)?;
+         feed_ids.push(feed_id);
+      }
 
-       // Initialize the configuration
-       let config = Config::new(
-           api_key,
-           api_secret,
-           "https://api.testnet-dataengine.chain.link".to_string(),
-           "wss://ws.testnet-dataengine.chain.link".to_string(),
-       )
-       .build()?;
+      // Initialize the configuration
+      let config = Config::new(
+         api_key,
+         api_secret,
+         "https://api.testnet-dataengine.chain.link".to_string(),
+         "wss://ws.testnet-dataengine.chain.link".to_string()
+      ).build()?;
 
-       // Create and initialize the stream
-       let mut stream = Stream::new(&config, feed_ids).await?;
-       stream.listen().await?;
+      // Create and initialize the stream
+      let mut stream = Stream::new(&config, feed_ids).await?;
+      stream.listen().await?;
 
-       info!("WebSocket connection established. Listening for reports...");
+      info!("WebSocket connection established. Listening for reports...");
 
-       // Process incoming reports
-       loop {
-           match stream.read().await {
+      // Process incoming reports
+      loop {
+         match stream.read().await {
                Ok(response) => {
-                   info!("\nRaw report data: {:?}\n", response.report);
+                  info!("\nRaw report data: {:?}\n", response.report);
 
-                   // Decode the report
-                   let full_report = hex::decode(&response.report.full_report[2..])?;
-                   let (_report_context, report_blob) = decode_full_report(&full_report)?;
-                   let report_data = ReportDataV4::decode(&report_blob)?;
+                  // Decode the report
+                  let full_report = hex::decode(&response.report.full_report[2..])?;
+                  let (_report_context, report_blob) = decode_full_report(&full_report)?;
+                  let report_data = ReportDataV4::decode(&report_blob)?;
 
-                   // Print decoded report details
-                   info!(
-                       "\n--- Report Stream ID: {} ---\n\
+                  // Print decoded report details
+                  info!(
+                     "\n--- Report Stream ID: {} ---\n\
                         ------------------------------------------\n\
                         Observations Timestamp : {}\n\
                         Benchmark Price       : {}\n\
@@ -155,28 +154,28 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
                         Native Fee           : {}\n\
                         Market Status        : {}\n\
                         ------------------------------------------",
-                       response.report.feed_id.to_hex_string(),
-                       response.report.observations_timestamp,
-                       report_data.price,
-                       response.report.valid_from_timestamp,
-                       report_data.expires_at,
-                       report_data.link_fee,
-                       report_data.native_fee,
-                       report_data.market_status
-                   );
+                     response.report.feed_id.to_hex_string(),
+                     response.report.observations_timestamp,
+                     report_data.price,
+                     response.report.valid_from_timestamp,
+                     report_data.expires_at,
+                     report_data.link_fee,
+                     report_data.native_fee,
+                     report_data.market_status
+                  );
 
-                   // Print stream stats
-                   info!(
-                       "\n--- Stream Stats ---\n{:#?}\n\
+                  // Print stream stats
+                  info!(
+                     "\n--- Stream Stats ---\n{:#?}\n\
                         --------------------------------------------------------------------------------------------------------------------------------------------",
-                       stream.get_stats()
-                   );
+                     stream.get_stats()
+                  );
                }
                Err(e) => {
-                   warn!("Error reading from stream: {:?}", e);
+                  warn!("Error reading from stream: {:?}", e);
                }
-           }
-       }
+         }
+      }
    }
    ```
 
@@ -270,7 +269,7 @@ The example above demonstrates streaming data from a single RWA stream. For prod
 
 2. Enabling HA mode in the configuration:
    ```rust
-   use data_streams_sdk::config::WebSocketHighAvailability;
+   use chainlink_data_streams_sdk::config::WebSocketHighAvailability;
    // ...
    .with_ws_ha(WebSocketHighAvailability::Enabled)
    ```
