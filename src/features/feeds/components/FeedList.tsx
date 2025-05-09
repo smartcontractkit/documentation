@@ -11,6 +11,7 @@ import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
+import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 
 export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({
@@ -136,23 +137,119 @@ export const FeedList = ({
   const wrapperRef = useRef(null)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
 
-  // Scroll restoration handler - re-scroll to hash target after content loads
+  // scroll handler
   useEffect(() => {
-    if (typeof window === "undefined" || !window.location.hash) return
-
-    // Check if chainMetadata has loaded (content is ready)
     if (!chainMetadata.loading && chainMetadata.processedData) {
-      // Wait for any DOM updates to finish
+      if (typeof window === "undefined") return
+
+      // Get the anchor from URL if present
+      const hash = window.location.hash.substring(1) // Remove the # character
+
+      // Force a delay to ensure DOM elements are rendered before updating
       setTimeout(() => {
-        const targetId = window.location.hash.substring(1)
-        const targetElement = document.getElementById(targetId)
-        if (targetElement) {
-          // Use scrollIntoView with behavior: auto to ensure proper positioning
-          targetElement.scrollIntoView({ behavior: "auto" })
+        let hasUpdatedAnyId = false
+
+        // Find all section elements that need their IDs updated
+        chainMetadata.processedData?.networks.forEach((network) => {
+          const sectionId = network.name.toLowerCase().replace(/\s+/g, "-")
+          const existingSection = document.getElementById(sectionId)
+
+          // If section exists with correct ID, no need to update
+          if (existingSection) return
+
+          // Find section with network name title and update its ID
+          document.querySelectorAll("h3").forEach((heading) => {
+            if (heading.textContent === network.name) {
+              const section = heading.closest("section")
+              if (section) {
+                const oldId = section.id
+                section.id = sectionId
+                heading.id = sectionId
+                hasUpdatedAnyId = true
+
+                // Update anchor links inside the heading
+                const anchor = heading.querySelector("a")
+                if (anchor) {
+                  anchor.href = `#${sectionId}`
+                }
+
+                // If we're updating the ID that matches our hash, we need to scroll to it
+                if (hash && (hash === oldId || hash === sectionId)) {
+                  setTimeout(() => section.scrollIntoView({ behavior: "auto" }), 100)
+                }
+              }
+            }
+          })
+        })
+
+        // Also update testnet section if it exists
+        if (chainMetadata.processedData?.testnetNetwork) {
+          const testnetId =
+            chainMetadata.processedData.testnetNetwork.name.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
+          document.querySelectorAll("h2").forEach((heading) => {
+            if (heading.textContent === "Testnet Feeds" || heading.textContent?.includes("Testnet")) {
+              const section = heading.closest("section")
+              if (section) {
+                const oldId = section.id
+                section.id = testnetId
+                heading.id = testnetId
+                hasUpdatedAnyId = true
+
+                // Update anchor links inside the heading
+                const anchor = heading.querySelector("a")
+                if (anchor) {
+                  anchor.href = `#${testnetId}`
+                }
+
+                // If we're updating the ID that matches our hash, we need to scroll to it
+                if (hash && (hash === oldId || hash === testnetId)) {
+                  setTimeout(() => section.scrollIntoView({ behavior: "auto" }), 100)
+                }
+              }
+            }
+          })
         }
-      }, 200)
+
+        // If we have a hash but haven't scrolled yet, try to find the element with that ID
+        if (hash && hasUpdatedAnyId) {
+          const targetElement = document.getElementById(hash)
+          if (targetElement) {
+            setTimeout(() => targetElement.scrollIntoView({ behavior: "auto" }), 100)
+          }
+        } else if (hash) {
+          // Basic fallback if we didnt update any IDs but still have a hash
+          const targetElement = document.getElementById(hash)
+          if (targetElement) {
+            setTimeout(() => targetElement.scrollIntoView({ behavior: "auto" }), 200)
+          }
+        }
+
+        // Update TOC links if we made any ID changes
+        if (hasUpdatedAnyId) {
+          // Find the TOC container and update its links
+          const tocLinks = document.querySelectorAll(".toc-item a")
+          tocLinks.forEach((link) => {
+            const href = link.getAttribute("href")
+            if (href) {
+              const currentHash = href.split("#")[1]
+              if (currentHash) {
+                // Try to find element with this ID
+                const targetHeading = document.getElementById(currentHash)
+                if (targetHeading) {
+                  // Update the TOC link to point to the correct ID
+                  const updatedHref = window.location.pathname + window.location.search + "#" + currentHash
+                  link.setAttribute("href", updatedHref)
+                }
+              }
+            }
+          })
+
+          // Trigger a TOC update
+          updateTableOfContents()
+        }
+      }, 300)
     }
-  }, [chainMetadata.loading, chainMetadata.processedData])
+  }, [chainMetadata.loading, chainMetadata.processedData, currentNetwork])
 
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
@@ -304,7 +401,11 @@ export const FeedList = ({
           <StreamsNetworkAddressesTable />
         </SectionWrapper>
 
-        <SectionWrapper title={streamsMainnetSectionTitle} depth={2}>
+        <SectionWrapper
+          title={streamsMainnetSectionTitle}
+          depth={2}
+          idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+        >
           <div className={feedList.tableFilters}>
             <form class={feedList.filterDropdown_search}>
               <input
@@ -363,7 +464,11 @@ export const FeedList = ({
           )}
         </SectionWrapper>
 
-        <SectionWrapper title={streamsTestnetSectionTitle} depth={2}>
+        <SectionWrapper
+          title={streamsTestnetSectionTitle}
+          depth={2}
+          idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+        >
           <div className={feedList.tableFilters}>
             <form class={feedList.filterDropdown_search}>
               <input
@@ -493,7 +598,12 @@ export const FeedList = ({
         .map((network: ChainNetwork) => {
           return (
             <>
-              <SectionWrapper title={network.name} depth={3} key={network.name}>
+              <SectionWrapper
+                title={network.name}
+                depth={3}
+                key={network.name}
+                idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
+              >
                 {network.networkType === "mainnet" ? (
                   <>
                     {!isStreams && chain.l2SequencerFeed && (
@@ -780,7 +890,14 @@ export const FeedList = ({
       {!isDeprecating &&
         chainMetadata.processedData?.testnetProcessedData &&
         chainMetadata.processedData?.testnetProcessedData.length > 0 && (
-          <SectionWrapper title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"} depth={2} updateTOC={true}>
+          <SectionWrapper
+            title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"}
+            depth={2}
+            updateTOC={true}
+            idOverride={
+              chainMetadata.processedData.testnetNetwork?.name?.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
+            }
+          >
             <div className={feedList.tableFilters}>
               <form class={feedList.filterDropdown_search}>
                 <input
