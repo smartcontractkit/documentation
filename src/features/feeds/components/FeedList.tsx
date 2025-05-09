@@ -10,6 +10,7 @@ import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
+import button from "@chainlink/design-system/button.module.css"
 
 export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
 export const FeedList = ({
@@ -44,6 +45,28 @@ export const FeedList = ({
     return networkParam || initialNetwork
   }
 
+  // Sync with URL when it changes externally (browser back/forward)
+  useEffect(() => {
+    if (!isStreams && typeof window !== "undefined") {
+      const handleUrlChange = () => {
+        const networkFromURL = getNetworkFromURL()
+        if (networkFromURL !== currentNetwork) {
+          setCurrentNetwork(networkFromURL)
+        }
+      }
+
+      // Listen for popstate events (back/forward navigation)
+      window.addEventListener("popstate", handleUrlChange)
+
+      // Also check immediately in case URL was changed externally
+      handleUrlChange()
+
+      return () => {
+        window.removeEventListener("popstate", handleUrlChange)
+      }
+    }
+  }, [currentNetwork, isStreams])
+
   // Force initial sync with URL
   useEffect(() => {
     // Get the latest network from URL
@@ -72,43 +95,11 @@ export const FeedList = ({
     }
   }, [])
 
-  // Sync with URL when it changes externally (browser back/forward)
-  useEffect(() => {
-    if (!isStreams && typeof window !== "undefined") {
-      const handleUrlChange = () => {
-        const networkFromURL = getNetworkFromURL()
-        if (networkFromURL !== currentNetwork) {
-          setCurrentNetwork(networkFromURL)
-        }
-      }
-
-      // Listen for popstate events (back/forward navigation)
-      window.addEventListener("popstate", handleUrlChange)
-
-      // Also check immediately in case URL was changed externally
-      handleUrlChange()
-
-      return () => {
-        window.removeEventListener("popstate", handleUrlChange)
-      }
-    }
-  }, [currentNetwork, isStreams])
-
   // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
+  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [currentPage, setCurrentPage] = useQueryString("page", "1")
-
-  // Update URL when network changes
-  const updateNetworkInURL = (network: string) => {
-    if (typeof window === "undefined") return
-
-    const params = new URLSearchParams(window.location.search)
-    params.set("network", network)
-    const newUrl = window.location.pathname + "?" + params.toString()
-    window.history.replaceState({ path: newUrl }, "", newUrl)
-    setCurrentNetwork(network)
-  }
 
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
@@ -117,6 +108,14 @@ export const FeedList = ({
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
+
+  // Pagination for testnet table
+  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
+  const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
+  const testnetAddrPerPage = 8
+  const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
+  const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
+
   const dataFeedCategory = [
     { key: "low", name: "Low Market Risk" },
     { key: "medium", name: "Medium Market Risk" },
@@ -137,10 +136,33 @@ export const FeedList = ({
   const wrapperRef = useRef(null)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
 
+  // Scroll restoration handler - re-scroll to hash target after content loads
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.location.hash) return
+
+    // Check if chainMetadata has loaded (content is ready)
+    if (!chainMetadata.loading && chainMetadata.processedData) {
+      // Wait for any DOM updates to finish
+      setTimeout(() => {
+        const targetId = window.location.hash.substring(1)
+        const targetElement = document.getElementById(targetId)
+        if (targetElement) {
+          // Use scrollIntoView with behavior: auto to ensure proper positioning
+          targetElement.scrollIntoView({ behavior: "auto" })
+        }
+      }, 200)
+    }
+  }, [chainMetadata.loading, chainMetadata.processedData])
+
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
     if (!isStreams) {
-      updateNetworkInURL(chain.page)
+      const params = new URLSearchParams(window.location.search)
+      params.set("network", chain.page)
+      // Remove hash fragment when changing networks to avoid mismatched anchors
+      const newUrl = window.location.pathname + "?" + params.toString()
+      window.history.replaceState({ path: newUrl }, "", newUrl)
+      setCurrentNetwork(chain.page)
     }
     setSearchValue("")
     setSelectedFeedCategories([])
@@ -165,7 +187,8 @@ export const FeedList = ({
     if (searchValue === "") {
       const searchParams = new URLSearchParams(window.location.search)
       searchParams.delete("search")
-      const newUrl = window.location.pathname + "?" + searchParams.toString()
+      const hashFragment = window.location.hash
+      const newUrl = window.location.pathname + "?" + searchParams.toString() + hashFragment
       window.history.replaceState({ path: newUrl }, "", newUrl)
       const inputElement = document.getElementById("search") as HTMLInputElement
       if (inputElement) {
@@ -196,6 +219,25 @@ export const FeedList = ({
 
   const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : "Testnet RWA Streams"
+
+  // Initialize search input fields with URL parameter values
+  useEffect(() => {
+    // mainnet
+    if (searchValue) {
+      const searchInputElement = document.getElementById("search") as HTMLInputElement
+      if (searchInputElement) {
+        searchInputElement.value = typeof searchValue === "string" ? searchValue : ""
+      }
+    }
+
+    // testnet
+    if (testnetSearchValue) {
+      const testnetInputElement = document.getElementById("testnetSearch") as HTMLInputElement
+      if (testnetInputElement) {
+        testnetInputElement.value = typeof testnetSearchValue === "string" ? testnetSearchValue : ""
+      }
+    }
+  }, [searchValue, testnetSearchValue, chainMetadata.loading])
 
   // handles button selection based on URL
   const NetworkSelectionUpdater = () => {
@@ -274,6 +316,23 @@ export const FeedList = ({
                   setCurrentPage("1")
                 }}
               />
+              {searchValue && (
+                <button
+                  type="button"
+                  className={clsx(button.secondary, feedList.clearFilterBtn)}
+                  onClick={() => {
+                    setSearchValue("")
+                    setCurrentPage("1")
+                    const inputElement = document.getElementById("search") as HTMLInputElement
+                    if (inputElement) {
+                      inputElement.value = ""
+                    }
+                  }}
+                  aria-label="Clear search filter"
+                >
+                  Clear filter
+                </button>
+              )}
             </form>
           </div>
           {mainnetFeeds.length ? (
@@ -305,9 +364,50 @@ export const FeedList = ({
         </SectionWrapper>
 
         <SectionWrapper title={streamsTestnetSectionTitle} depth={2}>
+          <div className={feedList.tableFilters}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="testnetSearch"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                onInput={(event) => {
+                  setTestnetSearchValue((event.target as HTMLInputElement).value)
+                  setTestnetCurrentPage("1")
+                }}
+              />
+              {testnetSearchValue && (
+                <button
+                  type="button"
+                  className={clsx(button.secondary, feedList.clearFilterBtn)}
+                  onClick={() => {
+                    setTestnetSearchValue("")
+                    setTestnetCurrentPage("1")
+                    const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                    if (inputElement) {
+                      inputElement.value = ""
+                    }
+                  }}
+                  aria-label="Clear search filter"
+                >
+                  Clear filter
+                </button>
+              )}
+            </form>
+          </div>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (
-              <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+              <TestnetTable
+                key={network.name}
+                network={network}
+                showExtraDetails={showExtraDetails}
+                dataFeedType={dataFeedType}
+                firstAddr={testnetFirstAddr}
+                lastAddr={testnetLastAddr}
+                addrPerPage={testnetAddrPerPage}
+                currentPage={Number(testnetCurrentPage)}
+                paginate={testnetPaginate}
+                searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+              />
             ))
           ) : (
             <p>No Testnet feeds available.</p>
@@ -489,6 +589,23 @@ export const FeedList = ({
                             setCurrentPage("1")
                           }}
                         />
+                        {searchValue && (
+                          <button
+                            type="button"
+                            className={clsx(button.secondary, feedList.clearFilterBtn)}
+                            onClick={() => {
+                              setSearchValue("")
+                              setCurrentPage("1")
+                              const inputElement = document.getElementById("search") as HTMLInputElement
+                              if (inputElement) {
+                                inputElement.value = ""
+                              }
+                            }}
+                            aria-label="Clear search filter"
+                          >
+                            Clear filter
+                          </button>
+                        )}
                       </form>
                       {!isStreams && (
                         <div className={feedList.checkboxContainer}>
@@ -563,17 +680,91 @@ export const FeedList = ({
                       </>
                     )}
                     {!isStreams && (
-                      <label>
-                        <input
-                          type="checkbox"
-                          style="width:15px;height:15px;display:inline;"
-                          checked={showExtraDetails}
-                          onChange={() => setShowExtraDetails((old) => !old)}
-                        />{" "}
-                        Show more details
-                      </label>
+                      <div className={feedList.tableFilters}>
+                        <div className={feedList.checkboxContainer}>
+                          <label className={feedList.detailsLabel}>
+                            <input
+                              type="checkbox"
+                              style="width:15px;height:15px;display:inline;"
+                              checked={showExtraDetails}
+                              onChange={() => setShowExtraDetails((old) => !old)}
+                            />
+                            Show more details
+                          </label>
+                        </div>
+                        <form class={feedList.filterDropdown_search}>
+                          <input
+                            id="testnetSearch"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search"
+                            onInput={(event) => {
+                              setTestnetSearchValue((event.target as HTMLInputElement).value)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                          {testnetSearchValue && (
+                            <button
+                              type="button"
+                              className={clsx(button.secondary, feedList.clearFilterBtn)}
+                              onClick={() => {
+                                setTestnetSearchValue("")
+                                setTestnetCurrentPage("1")
+                                const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                                if (inputElement) {
+                                  inputElement.value = ""
+                                }
+                              }}
+                              aria-label="Clear search filter"
+                            >
+                              Clear filter
+                            </button>
+                          )}
+                        </form>
+                      </div>
                     )}
-                    <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+                    {isStreams && (
+                      <div className={feedList.tableFilters}>
+                        <form class={feedList.filterDropdown_search}>
+                          <input
+                            id="testnetSearch"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search"
+                            onInput={(event) => {
+                              setTestnetSearchValue((event.target as HTMLInputElement).value)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                          {testnetSearchValue && (
+                            <button
+                              type="button"
+                              className={clsx(button.secondary, feedList.clearFilterBtn)}
+                              onClick={() => {
+                                setTestnetSearchValue("")
+                                setTestnetCurrentPage("1")
+                                const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                                if (inputElement) {
+                                  inputElement.value = ""
+                                }
+                              }}
+                              aria-label="Clear search filter"
+                            >
+                              Clear filter
+                            </button>
+                          )}
+                        </form>
+                      </div>
+                    )}
+                    <TestnetTable
+                      network={network}
+                      showExtraDetails={showExtraDetails}
+                      dataFeedType={dataFeedType}
+                      firstAddr={testnetFirstAddr}
+                      lastAddr={testnetLastAddr}
+                      addrPerPage={testnetAddrPerPage}
+                      currentPage={Number(testnetCurrentPage)}
+                      paginate={testnetPaginate}
+                      searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                    />
                   </>
                 )}
               </SectionWrapper>
@@ -585,6 +776,54 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
+
+      {!isDeprecating &&
+        chainMetadata.processedData?.testnetProcessedData &&
+        chainMetadata.processedData?.testnetProcessedData.length > 0 && (
+          <SectionWrapper title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"} depth={2} updateTOC={true}>
+            <div className={feedList.tableFilters}>
+              <form class={feedList.filterDropdown_search}>
+                <input
+                  id="testnetSearch"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search"
+                  onInput={(event) => {
+                    setTestnetSearchValue((event.target as HTMLInputElement).value)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+                {testnetSearchValue && (
+                  <button
+                    type="button"
+                    className={clsx(button.secondary, feedList.clearFilterBtn)}
+                    onClick={() => {
+                      setTestnetSearchValue("")
+                      setTestnetCurrentPage("1")
+                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ""
+                      }
+                    }}
+                    aria-label="Clear search filter"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </form>
+            </div>
+            <TestnetTable
+              network={chainMetadata.processedData.testnetNetwork}
+              showExtraDetails={showExtraDetails}
+              dataFeedType={dataFeedType}
+              firstAddr={testnetFirstAddr}
+              lastAddr={testnetLastAddr}
+              addrPerPage={testnetAddrPerPage}
+              currentPage={Number(testnetCurrentPage)}
+              paginate={testnetPaginate}
+              searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+            />
+          </SectionWrapper>
+        )}
     </SectionWrapper>
   )
 }
