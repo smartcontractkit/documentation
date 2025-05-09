@@ -101,19 +101,6 @@ export const FeedList = ({
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [currentPage, setCurrentPage] = useQueryString("page", "1")
 
-  // Update URL when network changes
-  const updateNetworkInURL = (network: string) => {
-    if (typeof window === "undefined") return
-
-    const params = new URLSearchParams(window.location.search)
-    params.set("network", network)
-    // Preserve the hash fragment if it exists
-    const hashFragment = window.location.hash
-    const newUrl = window.location.pathname + "?" + params.toString() + hashFragment
-    window.history.replaceState({ path: newUrl }, "", newUrl)
-    setCurrentNetwork(network)
-  }
-
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
@@ -170,7 +157,12 @@ export const FeedList = ({
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
     if (!isStreams) {
-      updateNetworkInURL(chain.page)
+      const params = new URLSearchParams(window.location.search)
+      params.set("network", chain.page)
+      // Remove hash fragment when changing networks to avoid mismatched anchors
+      const newUrl = window.location.pathname + "?" + params.toString()
+      window.history.replaceState({ path: newUrl }, "", newUrl)
+      setCurrentNetwork(chain.page)
     }
     setSearchValue("")
     setSelectedFeedCategories([])
