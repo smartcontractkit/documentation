@@ -604,13 +604,14 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       name: string
       logo: string
       key: string
-      chainType?: ChainType
+      chainType: ChainType
     }
     destinationNetwork: {
       name: string
       logo: string
       key: string
       explorer: ExplorerInfo
+      chainType: ChainType
     }
     lane: LaneConfig
   }[] = []
@@ -625,10 +626,10 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
       const destinationSupportedChain = directoryToSupportedChain(destinationChain)
       const destinationChainTitle = getTitle(destinationSupportedChain)
       const destinationChainLogo = getChainIcon(destinationSupportedChain)
-
+      const { chainType: destinationChainType } = getChainTypeAndFamily(destinationSupportedChain)
       const lane = lanes[sourceChain][destinationChain]
-      const explorer = getExplorer(destinationSupportedChain)
-      if (!explorer) throw Error(`Explorer not found for ${destinationSupportedChain}`)
+      const destinationExplorer = getExplorer(destinationSupportedChain)
+      if (!destinationExplorer) throw Error(`Explorer not found for ${destinationSupportedChain}`)
       allLanes.push({
         sourceNetwork: {
           name: sourceChainTitle || "",
@@ -640,7 +641,8 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
           name: destinationChainTitle || "",
           logo: destinationChainLogo || "",
           key: destinationChain,
-          explorer,
+          explorer: destinationExplorer,
+          chainType: destinationChainType,
         },
         lane,
       })

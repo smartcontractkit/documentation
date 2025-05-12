@@ -3,8 +3,8 @@ import AddressComponent from "~/components/AddressReact.tsx"
 import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import CopyValue from "../CopyValue/CopyValue.tsx"
-import { LaneFilter, ChainType } from "~/config/data/ccip/types.ts"
-import { ExplorerInfo } from "~/config/types.ts"
+import { LaneFilter } from "~/config/data/ccip/types.ts"
+import { ChainType, ExplorerInfo } from "@config/types.ts"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
@@ -105,10 +105,6 @@ function LaneDetailsHero({
    * 3. Otherwise, fallback to the source network's rmnPermeable setting
    */
   const isRmnVerificationEnabled = () => {
-    if (destinationNetwork.chainType === ChainType.SVM) {
-      return false
-    }
-
     if (laneRmnPermeable !== undefined) {
       return laneRmnPermeable === false
     }
@@ -145,7 +141,7 @@ function LaneDetailsHero({
           <DetailItem
             label="OnRamp address"
             clipboardType="onramp"
-            tooltip={sourceNetwork.chainType === ChainType.SVM ? <StyledTooltip tip="Same as Router." /> : undefined}
+            tooltip={sourceNetwork.chainType === "solana" ? <StyledTooltip tip="Same as Router." /> : undefined}
           >
             <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
           </DetailItem>

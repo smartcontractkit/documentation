@@ -182,7 +182,7 @@ export type ExplorerInfo = {
 }
 
 export type ChainInfo = {
-  chainId: number
+  chainId: number | string
   title: string
   explorer: ExplorerInfo
   nativeCurrency: {

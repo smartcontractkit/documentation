@@ -33,12 +33,14 @@ interface ChainHeroProps {
       name: string
       logo: string
       key: string
+      chainType: ChainType
     }
     destinationNetwork: {
       name: string
       logo: string
       key: string
       explorer: ExplorerInfo
+      chainType: ChainType
     }
     lane: LaneConfig
   }[]
