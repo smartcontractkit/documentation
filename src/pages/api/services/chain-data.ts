@@ -1,6 +1,6 @@
 import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip/types/index.ts"
 import { ChainsConfig } from "@config/data/ccip/index.ts"
-import { SelectorsConfig } from "@config/data/ccip/selectors.ts"
+import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 import { resolveChainOrThrow, LogLevel, structuredLog } from "../ccip/utils.ts"
 import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "../../../features/utils/index.ts"
 import { SupportedChain, ChainType, ChainFamily } from "~/config/index.ts"
@@ -324,25 +324,21 @@ class ChainStrategyFactory {
  */
 export class ChainDataService {
   private chainConfig: ChainsConfig
-  private selectorConfig: SelectorsConfig
   private errors: ChainConfigError[] = []
   private readonly requestId: string
 
   /**
    * Creates a new instance of ChainDataService
    * @param chainConfig - Configuration for supported chains
-   * @param selectorConfig - Configuration for chain selectors
    */
-  constructor(chainConfig: ChainsConfig, selectorConfig: SelectorsConfig) {
+  constructor(chainConfig: ChainsConfig) {
     this.chainConfig = chainConfig
-    this.selectorConfig = selectorConfig
     this.requestId = crypto.randomUUID()
 
     structuredLog(LogLevel.DEBUG, {
       message: "ChainDataService initialized",
       requestId: this.requestId,
       chainCount: Object.keys(chainConfig).length,
-      selectorCount: Object.keys(selectorConfig.selectors).length,
     })
   }
 
@@ -390,12 +386,10 @@ export class ChainDataService {
       return null
     }
 
-    // Get chain type for strategy selection
-    const { chainType } = getChainTypeAndFamily(supportedChain)
-
     // Get chain ID and selector
     const chainId = getChainId(supportedChain)
-    const selectorEntry = chainId ? this.selectorConfig.selectors[String(chainId)] : undefined
+    const { chainType } = getChainTypeAndFamily(supportedChain)
+    const selectorEntry = chainId ? getSelectorEntry(chainId, chainType) : undefined
 
     // Get appropriate strategy based on chain type
     const strategy = ChainStrategyFactory.getStrategy(chainType, this.requestId)

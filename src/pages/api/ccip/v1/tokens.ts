@@ -68,7 +68,7 @@ export const GET: APIRoute = async ({ request }) => {
       chainCount: Object.keys(config.chainsConfig).length,
     })
 
-    const tokenDataService = new TokenDataService(config.selectorConfig)
+    const tokenDataService = new TokenDataService()
     const {
       tokens,
       errors,

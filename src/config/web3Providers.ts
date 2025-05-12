@@ -130,6 +130,8 @@ export const getRpcUrlForChain = (chain: SupportedChain): string => {
   return rpcUrl
 }
 
+// TODO: This is a temporary function to get a provider for a chain depending on chainType
+// Supports only evm chains for now
 export const getProviderForChain = (chain: SupportedChain): JsonRpcProvider => {
   const rpcUrl = getRpcUrlForChain(chain)
   const chainId = getChainId(chain)
@@ -144,7 +146,7 @@ export const getProviderForChain = (chain: SupportedChain): JsonRpcProvider => {
 
   // Create a Network instance for static configuration
   const network = Network.from({
-    chainId,
+    chainId: chainId as number,
     name: chain.toLowerCase(),
   })
 

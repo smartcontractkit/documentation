@@ -71,7 +71,7 @@ export const GET: APIRoute = async ({ request }) => {
       chainCount: Object.keys(config.chainsConfig).length,
     })
 
-    const chainDataService = new ChainDataService(config.chainsConfig, config.selectorConfig)
+    const chainDataService = new ChainDataService(config.chainsConfig)
     const { data, errors, metadata: serviceMetadata } = await chainDataService.getFilteredChains(environment, filters)
 
     structuredLog(LogLevel.INFO, {

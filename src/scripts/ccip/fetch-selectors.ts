@@ -1,7 +1,7 @@
 /**
  * This script fetches and processes the CCIP chain selectors from the official chain-selectors repository.
- * It ensures all selector values are stored as strings to maintain consistency and prevent potential
- * number precision issues with large values.
+ * It downloads selector files for all supported chain types (EVM, Solana, Aptos) and ensures all selector
+ * values are stored as strings to maintain consistency and prevent potential number precision issues.
  *
  * @module CCIPSelectorsFetcher
  */
@@ -9,7 +9,12 @@
 import fs from "fs/promises"
 import fetch from "node-fetch"
 import prettier from "prettier"
-import { SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH, SELECTORS_SOURCE_URL } from "~/config/data/ccip/paths.js"
+import {
+  SELECTORS_SOURCE_BASE_URL,
+  SELECTOR_FILES,
+  SELECTOR_CONFIG_PATHS,
+  SELECTOR_BACKUP_PATHS,
+} from "~/config/data/ccip/paths.js"
 
 /**
  * Downloads content from a URL with timeout handling.
@@ -43,6 +48,7 @@ async function downloadFile(url: string, timeout = 10000): Promise<string> {
  * The backup will have the same name as the original file with '.backup' appended.
  *
  * @param filePath - Path to the file to backup
+ * @param backupPath - Path where the backup should be saved
  * @returns Promise that resolves when backup is complete
  */
 async function backupExistingFile(filePath: string, backupPath: string): Promise<void> {
@@ -61,44 +67,126 @@ async function backupExistingFile(filePath: string, backupPath: string): Promise
 }
 
 /**
+ * Processes and saves selector content for a specific chain type.
+ * Ensures all selectors are stored as strings to prevent precision loss.
+ *
+ * @param chainType - The chain type (e.g., "evm", "solana")
+ * @param sourceContent - The downloaded YAML content
+ * @param configPath - Where to save the processed file
+ * @param backupPath - Where to save the backup
+ */
+async function processAndSaveSelectors(
+  chainType: string,
+  sourceContent: string,
+  configPath: string,
+  backupPath: string
+): Promise<void> {
+  // Create backup of existing file
+  await backupExistingFile(configPath, backupPath)
+
+  // Process the content using regex to convert selectors to strings
+  // CRITICAL: This ensures large numbers maintain precision and are consistently handled as strings
+  console.log(`Processing ${chainType} selectors...`)
+  const processedContent = sourceContent.replace(/selector:\s*([0-9]+)/g, 'selector: "$1"')
+
+  // Format using project's Prettier config
+  const prettierConfig = await prettier.resolveConfig(process.cwd())
+  const formattedContent = await prettier.format(processedContent, {
+    ...prettierConfig,
+    parser: "yaml",
+  })
+
+  // Write the processed content
+  console.log(`Writing to ${configPath}...`)
+  await fs.writeFile(configPath, formattedContent, "utf8")
+  console.log(`Successfully updated ${chainType} selectors`)
+}
+
+/**
+ * Verifies that all selectors in the file are stored as strings.
+ * This helps catch any parsing issues or new selector formats.
+ */
+async function verifySelectorStrings(configPath: string, chainType: string): Promise<void> {
+  try {
+    // Define interface for selector values
+    interface SelectorValue {
+      selector?: unknown
+      name?: string
+      [key: string]: unknown
+    }
+
+    const fileContent = await fs.readFile(configPath, "utf8")
+    // We need to dynamically import js-yaml for parsing
+    const jsYaml = await import("js-yaml").catch(() => ({
+      load: (content: string) => JSON.parse(content), // Fallback if js-yaml not available
+    }))
+
+    const parsed = jsYaml.load(fileContent) as { selectors?: Record<string, SelectorValue> }
+
+    let nonStringFound = false
+
+    // Check each selector
+    if (parsed?.selectors) {
+      Object.entries(parsed.selectors).forEach(([key, value]: [string, SelectorValue]) => {
+        if (value?.selector && typeof value.selector !== "string") {
+          console.error(`Warning: Non-string selector found in ${chainType} config for key ${key}: ${value.selector}`)
+          nonStringFound = true
+        }
+      })
+    }
+
+    if (!nonStringFound) {
+      console.log(`✓ Verified all ${chainType} selectors are strings`)
+    } else {
+      console.error(`⚠ Some ${chainType} selectors are not strings - fixing may be required`)
+    }
+  } catch (error) {
+    console.error(`Error verifying selectors in ${configPath}:`, error.message)
+  }
+}
+
+/**
  * Main execution function that orchestrates the selector update process:
- * 1. Creates a backup of the existing file
- * 2. Downloads the latest selectors
- * 3. Processes the selectors (converts numbers to strings)
- * 4. Saves the updated content
+ * 1. Downloads the latest selectors for all chain types
+ * 2. Processes the selectors (converts numbers to strings)
+ * 3. Saves the updated content
+ * 4. Verifies all selectors are stored as strings
  *
  * @throws {Error} If any step in the process fails
  */
 async function main() {
   try {
-    console.log("Starting selectors update process...")
+    console.log("Starting multi-chain selectors update process...")
 
-    // Create backup of existing file
-    await backupExistingFile(SELECTOR_CONFIG_PATH, SELECTOR_BACKUP_PATH)
+    // Get the list of chain types from the SELECTOR_FILES object
+    const chainTypes = Object.keys(SELECTOR_FILES) as Array<keyof typeof SELECTOR_FILES>
 
-    // Download the file
-    console.log("Downloading selectors.yml...")
-    const content = await downloadFile(SELECTORS_SOURCE_URL)
+    // Process each chain type
+    for (const chainType of chainTypes) {
+      const fileName = SELECTOR_FILES[chainType]
+      const configPath = SELECTOR_CONFIG_PATHS[chainType]
+      const backupPath = SELECTOR_BACKUP_PATHS[chainType]
+      const sourceUrl = `${SELECTORS_SOURCE_BASE_URL}/${fileName}`
 
-    // Process the content using regex to convert selectors to strings
-    console.log("Processing selectors...")
-    const processedContent = content.replace(/selector:\s*([0-9]+)/g, 'selector: "$1"')
+      try {
+        console.log(`\n--- Processing ${chainType} selectors ---`)
+        console.log(`Downloading ${fileName} from ${sourceUrl}...`)
 
-    // Format using project's Prettier config
-    const prettierConfig = await prettier.resolveConfig(process.cwd())
-    const formattedContent = await prettier.format(processedContent, {
-      ...prettierConfig,
-      parser: "yaml",
-    })
+        const content = await downloadFile(sourceUrl)
+        await processAndSaveSelectors(chainType, content, configPath, backupPath)
+        await verifySelectorStrings(configPath, chainType)
 
-    // Write the processed content
-    console.log(`Writing to ${SELECTOR_CONFIG_PATH}...`)
-    await fs.writeFile(SELECTOR_CONFIG_PATH, formattedContent, "utf8")
+        console.log(`✓ ${chainType} selectors updated successfully`)
+      } catch (error) {
+        console.error(`❌ Failed to process ${chainType} selectors:`, error.message)
+        // Continue with other chain types
+      }
+    }
 
-    console.log("Successfully updated selectors.yml")
+    console.log("\n✓ Successfully completed selectors update process")
     process.exit(0)
   } catch (error) {
-    console.error("Failed to update selectors:", error.message)
+    console.error("\n❌ Failed to update selectors:", error.message)
     process.exit(1)
   }
 }
