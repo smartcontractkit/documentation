@@ -5,6 +5,8 @@ import {
   SupportedChain,
   SupportedTechnology,
   web3Providers,
+  ChainType,
+  ChainFamily,
 } from "@config/index.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
@@ -75,6 +77,46 @@ export const getTitle = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return
   return chains[technology]?.chains[supportedChain]?.title
+}
+
+export type ChainTypeAndFamily = {
+  chainType: ChainType
+  chainFamily: ChainFamily
+}
+
+export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainTypeAndFamily => {
+  const technology = chainToTechnology[supportedChain]
+  if (!technology) {
+    throw new Error(`Technology not found for chain: ${supportedChain}`)
+  }
+
+  const chainType = chains[technology]?.chainType
+  if (!chainType) {
+    throw new Error(`Chain type not found for technology: ${technology}`)
+  }
+
+  let chainFamily: ChainFamily
+  switch (chainType) {
+    case "evm":
+      chainFamily = "evm"
+      break
+    case "aptos":
+      chainFamily = "mvm"
+      break
+    case "solana":
+      chainFamily = "svm"
+      break
+    default:
+      throw new Error(`Unknown chain type: ${chainType}`)
+  }
+
+  return { chainType, chainFamily }
+}
+
+// Helper function to determine if a chain is Solana-based
+export const isSolanaChain = (chain?: string): boolean => {
+  if (!chain) return false
+  return chain.toLowerCase().includes("solana")
 }
 
 /**

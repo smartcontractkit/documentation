@@ -1,4 +1,4 @@
-import { Environment, LaneConfig, Version, ChainType } from "~/config/data/ccip/types.ts"
+import { Environment, LaneConfig, Version } from "~/config/data/ccip/types.ts"
 import { getTokenData } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
@@ -13,7 +13,7 @@ import {
   fallbackTokenIconUrl,
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
   chains: {
@@ -48,7 +48,7 @@ interface ChainHeroProps {
     totalLanes: number
     totalTokens: number
     chain: string
-    chainType?: ChainType
+    chainType: ChainType
     tokenAdminRegistry?: string
     registryModule?: string
     router?: {
@@ -68,7 +68,7 @@ interface ChainHeroProps {
       address: string
       version: string
     }
-    feeQuoterProgram?: string
+    feeQuoter?: string
     rmnPermeable?: boolean
   }
   token?: {
@@ -230,7 +230,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             </div>
 
             {/* Conditional rendering based on chain type */}
-            {(!network.chainType || network.chainType === ChainType.EVM) && (
+            {network.chainType === "evm" && (
               <>
                 <div className="ccip-chain-hero__details__item">
                   <div className="ccip-chain-hero__details__label">
@@ -291,7 +291,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </>
             )}
 
-            {network.chainType === ChainType.SVM && (
+            {network.chainType === "solana" && (
               <div className="ccip-chain-hero__details__item">
                 <div className="ccip-chain-hero__details__label">
                   Fee Quoter Program
@@ -309,11 +309,11 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   />
                 </div>
                 <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter">
-                  {network.feeQuoterProgram ? (
+                  {network.feeQuoter ? (
                     <Address
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(network.explorer)(network.feeQuoterProgram)}
-                      address={network.feeQuoterProgram}
+                      contractUrl={getExplorerAddressUrl(network.explorer)(network.feeQuoter)}
+                      address={network.feeQuoter}
                     />
                   ) : (
                     "n/a"

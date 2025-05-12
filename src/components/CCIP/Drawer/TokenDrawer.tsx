@@ -15,7 +15,7 @@ import {
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
 import { useState } from "react"
-import { ExplorerInfo, SupportedChain } from "~/config/index.ts"
+import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
@@ -38,6 +38,7 @@ function TokenDrawer({
     name: string
     key: string
     logo: string
+    chainType: ChainType
     tokenId: string
     tokenLogo: string
     tokenName: string

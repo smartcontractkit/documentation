@@ -1,6 +1,6 @@
 import Address from "~/components/AddressReact.tsx"
 import "../Tables/Table.css"
-import { Environment, LaneConfig, LaneFilter, Version, ChainType } from "~/config/data/ccip/types.ts"
+import { Environment, LaneConfig, LaneFilter, Version } from "~/config/data/ccip/types.ts"
 import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
 import { displayCapacity, determineTokenMechanism } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
@@ -9,7 +9,7 @@ import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import RateTooltip from "../Tooltip/RateTooltip.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "@config/types.ts"
 
 function LaneDrawer({
   lane,
@@ -20,7 +20,7 @@ function LaneDrawer({
   explorer,
 }: {
   lane: LaneConfig
-  sourceNetwork: { name: string; logo: string; key: string; chainType?: ChainType }
+  sourceNetwork: { name: string; logo: string; key: string; chainType: ChainType }
   destinationNetwork: { name: string; logo: string; key: string }
   explorer: ExplorerInfo
   environment: Environment

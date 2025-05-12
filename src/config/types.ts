@@ -57,6 +57,10 @@ export type SupportedTechnology =
   | "TAIKO"
   | "PLUME"
 
+export type ChainType = "evm" | "solana" | "aptos"
+
+export type ChainFamily = "evm" | "mvm" | "svm"
+
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
@@ -193,6 +197,7 @@ export type Chains = Record<
   {
     title: string
     icon: string
+    chainType: ChainType
     chains: Partial<Record<SupportedChain, ChainInfo>>
   }
 >

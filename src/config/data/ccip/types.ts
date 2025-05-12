@@ -1,4 +1,4 @@
-import { ExplorerInfo } from "~/config/types.ts"
+import { ExplorerInfo, ChainType } from "~/config/types.ts"
 
 export type RateLimiterConfig = {
   capacity: string
@@ -70,7 +70,7 @@ export type ChainConfig = {
     address: string
     version: string
   }
-  feeQuoterProgram?: string
+  feeQuoter?: string
   rmnPermeable?: boolean
   nativeToken?: {
     name: string
@@ -162,11 +162,6 @@ export enum LaneStatus {
   CURSED = "CURSED",
 }
 
-export enum ChainType {
-  EVM = "evm", // Ethereum Virtual Machine
-  SVM = "svm", // Solana Virtual Machine
-}
-
 export interface Network {
   name: string
   chain: string
@@ -175,7 +170,7 @@ export interface Network {
   totalLanes: number
   totalTokens: number
   key: string
-  chainType?: ChainType
+  chainType: ChainType
   tokenAdminRegistry?: string
   explorer: ExplorerInfo
   registryModule?: string
@@ -197,6 +192,6 @@ export interface Network {
     version: string
   }
   routerExplorerUrl: string
-  feeQuoterProgram?: string
+  feeQuoter?: string
   rmnPermeable: boolean
 }

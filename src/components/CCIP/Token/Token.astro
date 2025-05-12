@@ -13,7 +13,14 @@ import {
 } from "~/config/data/ccip"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
-import { directoryToSupportedChain, getChainIcon, getExplorer, getTitle, getTokenIconUrl } from "~/features/utils"
+import {
+  directoryToSupportedChain,
+  getChainIcon,
+  getChainTypeAndFamily,
+  getExplorer,
+  getTitle,
+  getTokenIconUrl,
+} from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 
 interface Props {
@@ -96,11 +103,12 @@ const searchLanes = getSearchLanes({ environment })
         environment={environment}
         networks={Object.keys(tokenLanes)
           .map((key) => {
-            const directory = directoryToSupportedChain(key || "")
-            const title = getTitle(directory) || ""
-            const networkLogo = getChainIcon(directory) || ""
-            const explorer = getExplorer(directory)
+            const supportedChain = directoryToSupportedChain(key || "")
+            const title = getTitle(supportedChain) || ""
+            const networkLogo = getChainIcon(supportedChain) || ""
+            const explorer = getExplorer(supportedChain)
             if (!explorer) throw new Error(`Explorer not found for ${key}`)
+            const { chainType } = getChainTypeAndFamily(supportedChain)
 
             return {
               name: title,
@@ -115,6 +123,7 @@ const searchLanes = getSearchLanes({ environment })
               tokenPoolType: data[key]?.poolType,
               tokenPoolAddress: data[key]?.poolAddress ?? "",
               explorer: explorer,
+              chainType: chainType,
             }
           })
           .sort((a, b) => a.name.localeCompare(b.name))}

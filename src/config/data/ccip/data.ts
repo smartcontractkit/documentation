@@ -10,16 +10,16 @@ import {
   NetworkFees,
   LaneConfig,
   Network,
-  ChainType,
 } from "./types.ts"
-import { determineTokenMechanism, getVMTypeFromChain } from "./utils.ts"
-import { ExplorerInfo, SupportedChain } from "@config/types.ts"
+import { determineTokenMechanism } from "./utils.ts"
+import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
 import {
   directoryToSupportedChain,
   getChainIcon,
   getExplorer,
   getExplorerAddressUrl,
   getTitle,
+  getChainTypeAndFamily,
   supportedChainToChainInRdd,
 } from "@features/utils/index.ts"
 
@@ -387,22 +387,22 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
   const allChains: Network[] = []
 
   for (const chain of chains) {
-    const directory = directoryToSupportedChain(chain)
-    const title = getTitle(directory)
-    if (!title) throw Error(`Title not found for ${directory}`)
+    const supportedChain = directoryToSupportedChain(chain)
+    const title = getTitle(supportedChain)
+    if (!title) throw Error(`Title not found for ${supportedChain}`)
 
     const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
     const chains = Environment.Mainnet === filter ? chainsMainnetv120 : chainsTestnetv120
-    const logo = getChainIcon(directory)
-    if (!logo) throw Error(`Logo not found for ${directory}`)
+    const logo = getChainIcon(supportedChain)
+    if (!logo) throw Error(`Logo not found for ${supportedChain}`)
     const token = getTokensOfChain({ chain, filter })
-    const explorer = getExplorer(directory)
+    const explorer = getExplorer(supportedChain)
     const router = chains[chain].router
-    if (!explorer) throw Error(`Explorer not found for ${directory}`)
+    if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
     const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
 
     // Determine chain type based on chain name
-    const chainType = getVMTypeFromChain(chain)
+    const { chainType } = getChainTypeAndFamily(supportedChain)
 
     allChains.push({
       name: title,
@@ -425,7 +425,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       },
       feeTokens: chains[chain].feeTokens,
       armProxy: chains[chain].armProxy,
-      feeQuoterProgram: chainType === ChainType.SVM ? chains[chain]?.feeQuoterProgram : undefined,
+      feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
       rmnPermeable: chains[chain]?.rmnPermeable,
     })
   }
@@ -452,14 +452,11 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
 
       const chainDetails = chainsReferenceData[chain]
 
-      // Get VM type based on the chain name
-      const chainType = getVMTypeFromChain(chain)
-
       return {
         name: network.name,
         logo: network.logo,
         explorer: network.explorer,
-        chainType,
+        chainType: network.chainType,
         rmnPermeable: chainDetails?.rmnPermeable,
         ...chainDetails,
       }
@@ -619,19 +616,19 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
   }[] = []
 
   for (const sourceChain in lanes) {
-    const sourceChainDirectory = directoryToSupportedChain(sourceChain)
-    const sourceChainTitle = getTitle(sourceChainDirectory)
-    const sourceChainLogo = getChainIcon(sourceChainDirectory)
-    const sourceChainType = getVMTypeFromChain(sourceChain)
+    const sourceSupportedChain = directoryToSupportedChain(sourceChain)
+    const sourceChainTitle = getTitle(sourceSupportedChain)
+    const sourceChainLogo = getChainIcon(sourceSupportedChain)
+    const { chainType: sourceChainType } = getChainTypeAndFamily(sourceSupportedChain)
 
     for (const destinationChain in lanes[sourceChain]) {
-      const destinationChainDirectory = directoryToSupportedChain(destinationChain)
-      const destinationChainTitle = getTitle(destinationChainDirectory)
-      const destinationChainLogo = getChainIcon(destinationChainDirectory)
+      const destinationSupportedChain = directoryToSupportedChain(destinationChain)
+      const destinationChainTitle = getTitle(destinationSupportedChain)
+      const destinationChainLogo = getChainIcon(destinationSupportedChain)
 
       const lane = lanes[sourceChain][destinationChain]
-      const explorer = getExplorer(destinationChainDirectory)
-      if (!explorer) throw Error(`Explorer not found for ${destinationChainDirectory}`)
+      const explorer = getExplorer(destinationSupportedChain)
+      if (!explorer) throw Error(`Explorer not found for ${destinationSupportedChain}`)
       allLanes.push({
         sourceNetwork: {
           name: sourceChainTitle || "",
