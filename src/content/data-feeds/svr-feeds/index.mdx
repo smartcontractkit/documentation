@@ -11,7 +11,7 @@ whatsnext:
   }
 ---
 
-import { Aside, ClickToZoom, CodeSample } from "@components"
+import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
 import { CHAINS } from "@features/data/chains"
 
@@ -198,7 +198,7 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 #### 1. High-Level Steps for Searchers
 
-1. **Monitor SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool.
+1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
 
 1. **Bundle and Bid**
 
@@ -232,7 +232,12 @@ Below are code examples for setting up a listener that monitors the MEV-Share ev
 
 #### 3. Decode `callData` for `forward` and `transmitSecondary`
 
-Once you've identified a potential SVR feed update transaction, you'll need to decode its payload to extract the new price data. Extracting this price information is essential for determining if profitable liquidation opportunities exist. The decoding process involves understanding two function calls:
+Once you've identified a potential SVR feed update transaction, you'll need to decode its payload. This step allows you to extract:
+
+- The **feed address**: This is required to determine which SVR data feed is being updated.
+- The **new price data**: This is essential for determining if profitable liquidation opportunities exist.
+
+The decoding process involves understanding two function calls:
 
 1. First, the transaction calls the `forward` function:
 
@@ -287,7 +292,7 @@ The following code samples demonstrate the complete decoding process, including 
 
 #### 4. Detect SVR-enabled Feeds for the Aave Protocol
 
-When processing forward calls, verify that the `to` address (the destination of the forward call) matches one of these feed addresses:
+When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
 
 <table>
   <thead>
@@ -302,7 +307,7 @@ When processing forward calls, verify that the `to` address (the destination of 
         <tr key={feed.address}>
           <td>{feed.name}</td>
           <td>
-            <code>{feed.address}</code>
+            <CopyText text={feed.address} code />
           </td>
         </tr>
       ))}

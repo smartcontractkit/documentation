@@ -800,7 +800,11 @@ export const MainnetTable = ({
           ?.toLowerCase()
           .replaceAll(" ", "")
           .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+        pair.docs.porSource
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
@@ -854,16 +858,31 @@ export const TestnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
+  firstAddr = 0,
+  lastAddr = 1000,
+  addrPerPage = 8,
+  currentPage = 1,
+  paginate = (page: number) => {
+    /* Default no-op function */
+  },
+  searchValue = "",
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
+  firstAddr?: number
+  lastAddr?: number
+  addrPerPage?: number
+  currentPage?: number
+  paginate?: (page: number) => void
+  searchValue?: string
 }) => {
   if (!network.metadata) return null
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDefault = !isSmartData && !isRates && !isStreams
+
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((proxy) => {
@@ -888,25 +907,63 @@ export const TestnetTable = ({
         proxy.docs.productType !== "SmartAUM"
       )
     })
+    .filter(
+      (pair) =>
+        !searchValue ||
+        pair.name?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.assetName?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+    )
+
+  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
   return (
-    <div className={tableStyles.tableWrapper}>
-      <table className={tableStyles.table}>
-        {isStreams && <StreamsTHead />}
-        {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
-        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
-        <tbody>
-          {filteredMetadata.map((proxy) => (
-            <>
-              {isStreams && <StreamsTr proxy={proxy} isMainnet={false} />}
-              {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
-              {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
-            </>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className={tableStyles.tableWrapper}>
+        <table className={tableStyles.table}>
+          {isStreams && <StreamsTHead />}
+          {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
+          {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+          {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+          <tbody>
+            {slicedFilteredMetadata.length === 0 ? (
+              <tr>
+                <td style={{ textAlign: "center" }} colSpan={5}>
+                  <img
+                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    style={{ height: "160px" }}
+                  />
+                  <h4>No results found</h4>
+                  <p>There are no testnet data feeds in this category at the moment.</p>
+                </td>
+              </tr>
+            ) : (
+              slicedFilteredMetadata.map((proxy) => (
+                <>
+                  {isStreams && <StreamsTr proxy={proxy} isMainnet={false} />}
+                  {isSmartData && <SmartDataTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                  {isDefault && (
+                    <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
+                  )}
+                  {isRates && (
+                    <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
+                  )}
+                </>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <Pagination
+        addrPerPage={addrPerPage}
+        totalAddr={filteredMetadata.length}
+        currentPage={currentPage}
+        firstAddr={firstAddr}
+        lastAddr={lastAddr}
+        paginate={paginate}
+      />
+    </>
   )
 }
