@@ -113,12 +113,6 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
   return { chainType, chainFamily }
 }
 
-// Helper function to determine if a chain is Solana-based
-export const isSolanaChain = (chain?: string): boolean => {
-  if (!chain) return false
-  return chain.toLowerCase().includes("solana")
-}
-
 /**
  * Transforms a token name according to the following rules:
  * 1. Convert to lowercase
