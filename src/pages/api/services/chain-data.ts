@@ -2,62 +2,15 @@ import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip
 import { ChainsConfig } from "@config/data/ccip/index.ts"
 import { SelectorsConfig } from "@config/data/ccip/selectors.ts"
 import { resolveChainOrThrow, LogLevel, structuredLog } from "../ccip/utils.ts"
-import { getChainId, getNativeCurrency, getTitle } from "../../../features/utils/index.ts"
-import { SupportedChain } from "~/config/index.ts"
+import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "../../../features/utils/index.ts"
+import { SupportedChain, ChainType, ChainFamily } from "~/config/index.ts"
 
 export const prerender = false
 
-/**
- * Service class for handling CCIP chain data operations
- * Provides functionality to validate and filter chain configurations
- */
-export class ChainDataService {
-  private chainConfig: ChainsConfig
-  private selectorConfig: SelectorsConfig
-  private errors: ChainConfigError[] = []
-  private readonly requestId: string
-
-  /**
-   * Creates a new instance of ChainDataService
-   * @param chainConfig - Configuration for supported chains
-   * @param selectorConfig - Configuration for chain selectors
-   */
-  constructor(chainConfig: ChainsConfig, selectorConfig: SelectorsConfig) {
-    this.chainConfig = chainConfig
-    this.selectorConfig = selectorConfig
-    this.requestId = crypto.randomUUID()
-
-    structuredLog(LogLevel.DEBUG, {
-      message: "ChainDataService initialized",
-      requestId: this.requestId,
-      chainCount: Object.keys(chainConfig).length,
-      selectorCount: Object.keys(selectorConfig.selectors).length,
-    })
-  }
-
-  /**
-   * Validates chain data and ensures all required fields are present
-   *
-   * @param chainId - Numeric identifier for the chain
-   * @param networkId - Network identifier string
-   * @param chainConfig - Chain configuration object
-   * @param selectorEntry - Chain selector configuration
-   * @param supportedChain - Supported chain identifier
-   *
-   * @returns Validation result containing:
-   * - isValid: boolean indicating if validation passed
-   * - missingFields: array of missing required fields
-   * - validatedData: validated chain data if validation passed
-   *
-   * @remarks
-   * This method performs comprehensive validation of chain data including:
-   * - Presence of required fields (chainId, selector, etc.)
-   * - Validation of contract addresses
-   * - Verification of fee tokens
-   * - Addition of native token to fee tokens if not present
-   */
-  private validateChainData(
-    chainId: number | undefined,
+// Strategy interface for chain processing
+interface IChainProcessingStrategy {
+  validateChainData(
+    chainId: number | string | undefined,
     networkId: string,
     chainConfig: ChainsConfig[string],
     selectorEntry?: { selector: string; name: string },
@@ -66,31 +19,41 @@ export class ChainDataService {
     isValid: boolean
     missingFields: string[]
     validatedData?: ChainDetails
-  } {
-    structuredLog(LogLevel.DEBUG, {
-      message: "Starting chain data validation",
-      requestId: this.requestId,
-      chainId,
-      networkId,
-      hasSelectorEntry: !!selectorEntry,
-      hasSupportedChain: !!supportedChain,
-    })
+  }
+}
 
+// Base strategy with common validation logic
+abstract class BaseChainStrategy implements IChainProcessingStrategy {
+  protected requestId: string
+
+  constructor(requestId: string) {
+    this.requestId = requestId
+  }
+
+  protected validateBaseFields(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    baseData?: Partial<ChainDetails>
+  } {
     const missingFields: string[] = []
 
     // Early validation for required dependencies
     if (!selectorEntry || !chainConfig || !supportedChain) {
-      const missing = {
-        selectorEntry: !selectorEntry,
-        chainConfig: !chainConfig,
-        supportedChain: !supportedChain,
-      }
-
       structuredLog(LogLevel.WARN, {
         message: "Missing required dependencies for chain validation",
         requestId: this.requestId,
         networkId,
-        missing,
+        missing: {
+          selectorEntry: !selectorEntry,
+          chainConfig: !chainConfig,
+          supportedChain: !supportedChain,
+        },
       })
 
       return {
@@ -147,15 +110,13 @@ export class ChainDataService {
       }
     }
 
-    // Validate required contract addresses and configuration
+    // Common required fields
     const requiredFields = {
       selector: !selectorEntry.selector,
       internalId: !selectorEntry.name,
       feeTokens: !chainConfig.feeTokens,
       router: !chainConfig.router?.address,
       rmn: !chainConfig.armProxy?.address,
-      registryModule: !chainConfig.registryModule?.address,
-      tokenAdminRegistry: !chainConfig.tokenAdminRegistry?.address,
     }
 
     Object.entries(requiredFields).forEach(([field, isMissing]) => {
@@ -176,64 +137,213 @@ export class ChainDataService {
       }
     }
 
-    // Type guard for optional fields
-    if (
-      !chainConfig.router ||
-      !chainConfig.armProxy ||
-      !chainConfig.registryModule ||
-      !chainConfig.tokenAdminRegistry
-    ) {
-      structuredLog(LogLevel.ERROR, {
-        message: "Unexpected undefined fields after validation",
-        requestId: this.requestId,
-        networkId,
-        chainConfig: {
-          hasRouter: !!chainConfig.router,
-          hasArmProxy: !!chainConfig.armProxy,
-          hasRegistryModule: !!chainConfig.registryModule,
-          hasTokenAdminRegistry: !!chainConfig.tokenAdminRegistry,
-        },
-      })
-
-      return {
-        isValid: false,
-        missingFields: ["Unexpected undefined fields after validation"],
-      }
-    }
-
     // Prepare fee tokens array with native token
     const feeTokens = [...chainConfig.feeTokens]
     if (!feeTokens.includes(nativeTokenSymbol.symbol)) {
       feeTokens.push(nativeTokenSymbol.symbol)
     }
 
-    const validatedData: ChainDetails = {
-      chainId,
-      displayName,
-      selector: selectorEntry.selector,
-      internalId: selectorEntry.name,
-      feeTokens,
-      router: chainConfig.router.address,
-      rmn: chainConfig.armProxy.address,
-      registryModule: chainConfig.registryModule.address,
-      tokenAdminRegistry: chainConfig.tokenAdminRegistry.address,
-      tokenPoolFactory: chainConfig.tokenPoolFactory?.address,
+    // Get chain type and family
+    const { chainType, chainFamily } = getChainTypeAndFamily(supportedChain)
+
+    return {
+      isValid: true,
+      missingFields: [],
+      baseData: {
+        chainId,
+        displayName,
+        selector: selectorEntry.selector,
+        internalId: selectorEntry.name,
+        feeTokens,
+        router: chainConfig.router.address,
+        rmn: chainConfig.armProxy.address,
+        chainType,
+        chainFamily,
+        rmnPermeable: chainConfig.rmnPermeable,
+      },
+    }
+  }
+
+  abstract validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  }
+}
+
+// EVM Chain Strategy
+class EvmChainStrategy extends BaseChainStrategy {
+  validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  } {
+    // Validate base fields first
+    const baseValidation = this.validateBaseFields(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+
+    if (!baseValidation.isValid || !baseValidation.baseData) {
+      return {
+        isValid: false,
+        missingFields: baseValidation.missingFields,
+      }
     }
 
-    structuredLog(LogLevel.DEBUG, {
-      message: "Chain data validation successful",
-      requestId: this.requestId,
-      networkId,
-      chainId,
-      selector: selectorEntry.selector,
-      feeTokenCount: feeTokens.length,
+    // EVM-specific validation
+    const evmRequiredFields = {
+      registryModule: !chainConfig.registryModule?.address,
+      tokenAdminRegistry: !chainConfig.tokenAdminRegistry?.address,
+    }
+
+    const missingFields: string[] = []
+
+    Object.entries(evmRequiredFields).forEach(([field, isMissing]) => {
+      if (isMissing) missingFields.push(field)
     })
+
+    if (missingFields.length > 0) {
+      structuredLog(LogLevel.WARN, {
+        message: "Missing EVM-specific fields in chain configuration",
+        requestId: this.requestId,
+        networkId,
+        missingFields,
+      })
+
+      return {
+        isValid: false,
+        missingFields,
+      }
+    }
+
+    // Construct the complete EVM chain details
+    const validatedData: ChainDetails = {
+      ...(baseValidation.baseData as unknown as ChainDetails),
+      registryModule: chainConfig.registryModule?.address,
+      tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address,
+      tokenPoolFactory: chainConfig.tokenPoolFactory?.address,
+    }
 
     return {
       isValid: true,
       missingFields: [],
       validatedData,
     }
+  }
+}
+
+// Solana Chain Strategy
+class SolanaChainStrategy extends BaseChainStrategy {
+  validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  } {
+    // Validate base fields first
+    const baseValidation = this.validateBaseFields(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+
+    if (!baseValidation.isValid || !baseValidation.baseData) {
+      return {
+        isValid: false,
+        missingFields: baseValidation.missingFields,
+      }
+    }
+
+    // Solana-specific validation
+    const solanaRequiredFields = {
+      feeQuoter: !chainConfig.feeQuoter,
+    }
+
+    const missingFields: string[] = []
+
+    Object.entries(solanaRequiredFields).forEach(([field, isMissing]) => {
+      if (isMissing) missingFields.push(field)
+    })
+
+    if (missingFields.length > 0) {
+      structuredLog(LogLevel.WARN, {
+        message: "Missing Solana-specific fields in chain configuration",
+        requestId: this.requestId,
+        networkId,
+        missingFields,
+      })
+
+      return {
+        isValid: false,
+        missingFields,
+      }
+    }
+
+    // Construct the complete Solana chain details
+    const validatedData: ChainDetails = {
+      ...(baseValidation.baseData as unknown as ChainDetails),
+      feeQuoter: chainConfig.feeQuoter,
+    }
+
+    return {
+      isValid: true,
+      missingFields: [],
+      validatedData,
+    }
+  }
+}
+
+// Strategy Factory
+class ChainStrategyFactory {
+  static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
+    switch (chainType) {
+      case "evm":
+        return new EvmChainStrategy(requestId)
+      case "solana":
+        return new SolanaChainStrategy(requestId)
+      default:
+        throw new Error(`Unsupported chain type: ${chainType}`)
+    }
+  }
+}
+
+/**
+ * Service class for handling CCIP chain data operations
+ * Provides functionality to validate and filter chain configurations
+ */
+export class ChainDataService {
+  private chainConfig: ChainsConfig
+  private selectorConfig: SelectorsConfig
+  private errors: ChainConfigError[] = []
+  private readonly requestId: string
+
+  /**
+   * Creates a new instance of ChainDataService
+   * @param chainConfig - Configuration for supported chains
+   * @param selectorConfig - Configuration for chain selectors
+   */
+  constructor(chainConfig: ChainsConfig, selectorConfig: SelectorsConfig) {
+    this.chainConfig = chainConfig
+    this.selectorConfig = selectorConfig
+    this.requestId = crypto.randomUUID()
+
+    structuredLog(LogLevel.DEBUG, {
+      message: "ChainDataService initialized",
+      requestId: this.requestId,
+      chainCount: Object.keys(chainConfig).length,
+      selectorCount: Object.keys(selectorConfig.selectors).length,
+    })
   }
 
   /**
@@ -247,7 +357,7 @@ export class ChainDataService {
    * This method:
    * 1. Resolves the chain identifier
    * 2. Gets the chain ID and selector
-   * 3. Validates the chain configuration
+   * 3. Validates the chain configuration using appropriate strategy
    * 4. Returns formatted chain details
    */
   private async getChainDetails(chainConfig: ChainsConfig[string], chainKey: string): Promise<ChainDetails | null> {
@@ -280,12 +390,18 @@ export class ChainDataService {
       return null
     }
 
+    // Get chain type for strategy selection
+    const { chainType } = getChainTypeAndFamily(supportedChain)
+
     // Get chain ID and selector
     const chainId = getChainId(supportedChain)
-    const selectorEntry = chainId ? this.selectorConfig.selectors[chainId] : undefined
+    const selectorEntry = chainId ? this.selectorConfig.selectors[String(chainId)] : undefined
 
-    // Validate chain data
-    const validation = this.validateChainData(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+    // Get appropriate strategy based on chain type
+    const strategy = ChainStrategyFactory.getStrategy(chainType, this.requestId)
+
+    // Validate using the strategy
+    const validation = strategy.validateChainData(chainId, networkId, chainConfig, selectorEntry, supportedChain)
 
     if (!validation.isValid || !validation.validatedData) {
       structuredLog(LogLevel.WARN, {
@@ -297,7 +413,7 @@ export class ChainDataService {
       })
 
       this.errors.push({
-        chainId: chainId || 0,
+        chainId: typeof chainId === "number" ? chainId : 0,
         networkId,
         reason: "Missing required chain configuration data",
         missingFields: validation.missingFields,
@@ -321,26 +437,21 @@ export class ChainDataService {
    *
    * @param environment - Network environment (mainnet/testnet)
    * @param filters - Chain filters (chainId, selector, internalId)
-   * @returns Filtered chain information with metadata
+   * @returns Filtered chain information grouped by chain family with metadata
    *
    * @remarks
    * This method:
    * 1. Processes all chain configurations
    * 2. Applies specified filters
-   * 3. Returns filtered results with metadata
-   * 4. Tracks any errors encountered during processing
-   *
-   * @example
-   * ```typescript
-   * const service = new ChainDataService(chainConfig, selectorConfig);
-   * const result = await service.getFilteredChains("mainnet", { chainId: "1" });
-   * ```
+   * 3. Groups results by chain family
+   * 4. Returns filtered results with metadata
+   * 5. Tracks any errors encountered during processing
    */
   public async getFilteredChains(
     environment: Environment,
     filters: FilterType
   ): Promise<{
-    chains: ChainDetails[]
+    data: Record<ChainFamily, ChainDetails[]>
     errors: ChainConfigError[]
     metadata: { validChainCount: number; ignoredChainCount: number }
   }> {
@@ -367,18 +478,18 @@ export class ChainDataService {
       const originalCount = filteredChains.length
 
       if (filters.chainId) {
-        const chainIds = filters.chainId.split(",").map((id) => parseInt(id.trim()))
-        filteredChains = chains.filter((chain) => chainIds.includes(chain.chainId))
+        const chainIds = filters.chainId.split(",").map((id) => id.trim())
+        filteredChains = chains.filter((chain) => chainIds.includes(String(chain.chainId)))
       }
 
       if (filters.selector) {
         const selectors = filters.selector.split(",").map((s) => s.trim())
-        filteredChains = chains.filter((chain) => selectors.includes(chain.selector))
+        filteredChains = filteredChains.filter((chain) => selectors.includes(chain.selector))
       }
 
       if (filters.internalId) {
         const internalIds = filters.internalId.split(",").map((id) => id.trim())
-        filteredChains = chains.filter((chain) => internalIds.includes(chain.internalId))
+        filteredChains = filteredChains.filter((chain) => internalIds.includes(chain.internalId))
       }
 
       structuredLog(LogLevel.DEBUG, {
@@ -394,6 +505,17 @@ export class ChainDataService {
       })
     }
 
+    // Group by chain family
+    const groupedChains: Record<ChainFamily, ChainDetails[]> = {
+      evm: [],
+      mvm: [],
+      svm: [],
+    }
+
+    for (const chain of filteredChains) {
+      groupedChains[chain.chainFamily].push(chain)
+    }
+
     const metadata = {
       validChainCount: filteredChains.length,
       ignoredChainCount: this.errors.length,
@@ -407,7 +529,7 @@ export class ChainDataService {
     })
 
     return {
-      chains: filteredChains,
+      data: groupedChains,
       errors: this.errors,
       metadata,
     }

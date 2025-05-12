@@ -34,6 +34,7 @@ jest.mock("../features/utils", () => ({
   getNativeCurrency: jest.fn(() => ({ symbol: "ETH" })),
   getTitle: jest.fn(() => "Ethereum"),
   directoryToSupportedChain: jest.fn(() => "ETHEREUM_MAINNET"),
+  getChainTypeAndFamily: jest.fn(() => ({ chainType: "evm", chainFamily: "evm" })),
 }))
 
 // Define environment values that match the Environment type
@@ -129,26 +130,26 @@ describe("ChainDataService", () => {
   describe("getFilteredChains", () => {
     it("should return mainnet chains for mainnet environment", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, {})
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].chainId).toBe(1)
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].chainId).toBe(1)
     })
 
     it("should filter by chainId", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { chainId: "1" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].chainId).toBe(1)
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].chainId).toBe(1)
     })
 
     it("should filter by selector", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { selector: "5009297550715157269" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].selector).toBe("5009297550715157269")
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].selector).toBe("5009297550715157269")
     })
 
     it("should filter by internalId", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { internalId: "ethereum-mainnet" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].internalId).toBe("ethereum-mainnet")
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].internalId).toBe("ethereum-mainnet")
     })
   })
 })

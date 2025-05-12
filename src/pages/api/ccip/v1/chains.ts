@@ -72,12 +72,12 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     const chainDataService = new ChainDataService(config.chainsConfig, config.selectorConfig)
-    const { chains, errors, metadata: serviceMetadata } = await chainDataService.getFilteredChains(environment, filters)
+    const { data, errors, metadata: serviceMetadata } = await chainDataService.getFilteredChains(environment, filters)
 
     structuredLog(LogLevel.INFO, {
       message: "Chain data retrieved successfully",
       requestId,
-      validChainCount: chains.length,
+      validChainCount: serviceMetadata.validChainCount,
       errorCount: errors.length,
       filters,
     })
@@ -86,18 +86,25 @@ export const GET: APIRoute = async ({ request }) => {
     metadata.ignoredChainCount = serviceMetadata.ignoredChainCount
     metadata.validChainCount = serviceMetadata.validChainCount
 
-    const response: ChainApiResponse = {
-      metadata,
-      data: {
-        evm: chains.reduce(
-          (acc, chain) => {
+    // Convert each chain family's array to a keyed object structure as required by the API
+    const formattedData = Object.entries(data).reduce(
+      (acc, [family, chainList]) => {
+        acc[family] = chainList.reduce(
+          (familyAcc, chain) => {
             const key = outputKey ? chain[outputKey].toString() : chain.internalId
-            acc[key] = chain
-            return acc
+            familyAcc[key] = chain
+            return familyAcc
           },
           {} as Record<string, ChainDetails>
-        ),
+        )
+        return acc
       },
+      {} as Record<string, Record<string, ChainDetails>>
+    )
+
+    const response: ChainApiResponse = {
+      metadata,
+      data: formattedData,
       ignored: errors,
     }
 

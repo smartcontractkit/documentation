@@ -324,11 +324,11 @@ export class TokenDataService {
     }
 
     if (filters.chain_id) {
-      const chainIds = filters.chain_id.split(",").map((id) => parseInt(id.trim()))
+      const chainIds = filters.chain_id.split(",").map((id) => id.trim())
       filteredTokens = Object.entries(filteredTokens)
         .filter(([, tokenData]) => {
           return Object.values(tokenData).some((chainInfo: TokenChainData) => {
-            return chainIds.includes(chainInfo.chainId)
+            return chainIds.includes(chainInfo.chainId.toString())
           })
         })
         .reduce<TokenDataResponse>((acc, [key, token]) => {
