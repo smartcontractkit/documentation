@@ -53,8 +53,8 @@ Add the SDK to your project by including it in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-data-streams-sdk = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/sdk" }
-data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+chainlink-data-streams-sdk = "1.0.0"
+chainlink-data-streams-report = "1.0.0"
 ```
 
 ### Feature Flags
@@ -78,7 +78,7 @@ Below are basic code snippets for decoding these reports with the SDK:
 ### V3 Reports (Crypto Streams)
 
 ```rust
-use data_streams_report::report::v3::ReportDataV3;
+use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
 
 // After you get 'report_blob' (for example, from 'decode_full_report' or a contract call):
 let report_data = ReportDataV3::decode(&report_blob)?;
@@ -96,7 +96,7 @@ For more details on every field in V3 (Crypto) reports, see the [V3 report schem
 ### V4 Reports (RWA Streams)
 
 ```rust
-use data_streams_report::report::v4::ReportDataV4;
+use chainlink_data_streams_report::report::v4::ReportDataV4;
 
 let report_data = ReportDataV4::decode(&report_blob)?;
 
@@ -113,7 +113,7 @@ For more details on every field in V4 (RWA) reports, see the [V4 report schema p
 The SDK uses HMAC authentication for all API requests. Configure your credentials:
 
 ```rust
-use data_streams_sdk::config::Config;
+use chainlink_data_streams_sdk::config::Config;
 use std::env;
 
 let api_key = env::var("API_KEY").expect("API_KEY must be set");
@@ -140,7 +140,7 @@ Security best practices:
 ### High Availability Mode
 
 ```rust
-use data_streams_sdk::config::{Config, WebSocketHighAvailability};
+use chainlink_data_streams_sdk::config::{Config, WebSocketHighAvailability};
 
 let ws_urls = "wss://ws1.dataengine.chain.link,wss://ws2.dataengine.chain.link";
 let config = Config::new(api_key, api_secret, rest_url, ws_urls)
@@ -166,7 +166,7 @@ The SDK allows you to:
 Example:
 
 ```rust
-use data_streams_sdk::config::{Config, InsecureSkipVerify, WebSocketHighAvailability};
+use chainlink_data_streams_sdk::config::{Config, InsecureSkipVerify, WebSocketHighAvailability};
 
 let ws_urls = "wss://ws.testnet-dataengine.chain.link";
 
@@ -192,8 +192,8 @@ The SDK defines distinct error types:
 Example:
 
 ```rust
-use data_streams_sdk::client::Client;
-use data_streams_sdk::client::ClientError;
+use chainlink_data_streams_sdk::client::Client;
+use chainlink_data_streams_sdk::client::ClientError;
 
 match client.get_latest_report(feed_id).await {
     Ok(report_response) => {
