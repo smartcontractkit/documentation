@@ -82,15 +82,62 @@ function buildIconUrl(baseAsset: string): string {
  * @returns URL to the feed's data page
  */
 function buildFeedUrl(item: DataItem): string {
+  // Special case for TRON network - redirect to docs.chain.link
+  if (item.network === "tron") {
+    const searchParam = (item.baseAsset || "").toLowerCase()
+    return `https://docs.chain.link/data-feeds/price-feeds/addresses?page=1&network=tron&search=${searchParam}`
+  }
+
+  // For data streams
   if (item.deliveryChannelCode === "DS") {
     const base = (item.baseAsset || "BASE").toLowerCase()
     const quote = (item.quoteAsset || "QUOTE").toLowerCase()
     return `https://data.chain.link/streams/${base}-${quote}`
   }
-  // otherwise, it's "https://data.chain.link/feeds/<network>/mainnet/<suffix>"
-  const feedSuffix = item.feedID.split("-").slice(1).join("-")
+
+  // Network name mapping for URL paths
+  const NETWORK_NAME_MAPPING: Record<string, string> = {
+    "bnb-chain": "bsc",
+    "gnosis-chain": "xdai",
+    polygonzkevm: "polygon-zkevm",
+    // Add more mappings as needed
+  }
+
+  // Networks that use their own name instead of "mainnet" in URLs
+  const NETWORK_PATH_EXCEPTIONS: Record<string, string> = {
+    sonic: "sonic",
+    base: "base",
+    hedera: "hedera",
+    mantle: "mantle",
+    polygonzkevm: "polygon-zkevm",
+    ronin: "ronin",
+    soneium: "soneium",
+    xlayer: "xlayer",
+    zksync: "zksync",
+    // Add more exceptions as they're discovered
+  }
+
+  // Map the network name if needed
+  const networkUrlPath = NETWORK_NAME_MAPPING[item.network] || item.network
+
+  // Process the feed suffix - handle special cases
+  let feedSuffix = ""
+  const feedParts = item.feedID.split("-")
+
+  // For BNB Chain feeds, if the first part after network is "chain", remove it
+  if (item.network === "bnb-chain" && feedParts.length > 1 && feedParts[1] === "chain") {
+    feedSuffix = feedParts.slice(2).join("-")
+  } else {
+    feedSuffix = feedParts.slice(1).join("-")
+  }
+
+  // Remove any spaces for URL safety
   const safeSuffix = feedSuffix.replace(/\s/g, "%20")
-  return `https://data.chain.link/feeds/${item.network}/mainnet/${safeSuffix}`
+
+  // Use the network-specific path or fall back to 'mainnet'
+  const networkPath = NETWORK_PATH_EXCEPTIONS[item.network] || "mainnet"
+
+  return `https://data.chain.link/feeds/${networkUrlPath}/${networkPath}/${safeSuffix}`
 }
 
 /**

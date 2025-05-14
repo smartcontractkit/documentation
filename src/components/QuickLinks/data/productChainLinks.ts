@@ -78,6 +78,7 @@ export const productChainLinks: ProductChainLinks = {
       superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
+      rootstock: "/ccip/directory/mainnet/chain/rootstock-mainnet",
     },
   },
   "Data Feeds": {
