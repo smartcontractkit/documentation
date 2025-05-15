@@ -195,7 +195,7 @@ const DEFAULT_LOG_LEVEL = "INFO"
 /** URL constants */
 const URL_CONSTANTS = {
   /** Template URL for token documentation */
-  DOC_URL_TEMPLATE: "https://docs.chain.link/ccip/directory/mainnet/token/",
+  DOC_URL_TEMPLATE: "https://docs.chain.link/ccip/directory/mainnet",
 }
 
 /** Paths for temporary and output files */
