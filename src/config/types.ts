@@ -173,6 +173,7 @@ export type SupportedChain =
   | "PLUME_MAINNET"
   | "PLUME_TESTNET"
   | "SOLANA_DEVNET"
+  | "SOLANA_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

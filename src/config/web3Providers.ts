@@ -116,6 +116,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   PLUME_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
   PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
   SOLANA_DEVNET: () => new JsonRpcProvider("https://api.devnet.solana.com"),
+  SOLANA_MAINNET: () => new JsonRpcProvider("https://api.mainnet-beta.solana.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

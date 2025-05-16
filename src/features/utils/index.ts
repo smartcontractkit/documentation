@@ -394,6 +394,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLUME_MAINNET"
     case "solana-devnet":
       return "SOLANA_DEVNET"
+    case "solana-mainnet":
+      return "SOLANA_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -611,6 +613,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plume-mainnet"
     case "SOLANA_DEVNET":
       return "solana-devnet"
+    case "SOLANA_MAINNET":
+      return "solana-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
