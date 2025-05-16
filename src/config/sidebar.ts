@@ -1067,6 +1067,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Service Limits",
           url: "ccip/service-limits",
+          children: [
+            {
+              title: "EVM",
+              url: "ccip/service-limits/evm",
+            },
+            {
+              title: "SVM",
+              url: "ccip/service-limits/svm",
+            },
+          ],
         },
         {
           title: "Service Responsibility",
