@@ -6,7 +6,7 @@ metadata:
   description: "API documentation for CCIP router on SVM-based blockchains like Solana."
 ---
 
-import { Aside } from "@components"
+import { Aside, ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Router
@@ -28,11 +28,11 @@ fn ccip_send(
 
 #### Parameters
 
-| Name                  | Type             | Description                                                                                                            |
-| --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `dest_chain_selector` | `u64`            | The unique CCIP blockchain identifier of the destination blockchain.                                                   |
-| `message`             | `SVM2AnyMessage` | Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details.                              |
-| `token_indexes`       | `Vec<u8>`        | Index offsets slicing the remaining accounts so each token's subset can be grouped (see [Context](#context-accounts)). |
+| Name                               | Type                          | Description                                                                                                            |
+| ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`dest_chain_selector`</nobr> | <nobr>`u64`</nobr>            | The unique CCIP blockchain identifier of the destination blockchain.                                                   |
+| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details.                              |
+| <nobr>`token_indexes`</nobr>       | <nobr>`Vec<u8>`</nobr>        | Index offsets slicing the remaining accounts so each token's subset can be grouped (see [Context](#context-accounts)). |
 
 #### Context (Accounts)
 
@@ -71,7 +71,7 @@ When you call the Router's `ccip_send` instruction, you pass:
 
 ##### Reason for `remaining_accounts`
 
-On Solana, each Anchor instruction has a fixed set of named accounts. However, CCIP must handle any number of tokens, each requiring many PDAs. Rather than define a massive static context, the Router uses Anchor's dynamic `ctx.remaining_accounts`: All token-specific PDAs are packed into one slice.
+On Solana, each Anchor instruction has a fixed set of named accounts. However, CCIP must handle any number of tokens, each requiring many accounts. Rather than define a massive static context, the Router uses Anchor's dynamic `ctx.remaining_accounts`: All token-specific accounts are packed into one slice.
 
 ##### Reason for `token_indexes`
 
@@ -79,7 +79,7 @@ The Router must figure out which segment of that slice corresponds to token #0, 
 
 The Router:
 
-- Slices out `[start..end)` for the `i`th token's PDAs. The subslice is from start up to but **not** including end. This is how you indicate that the token i's accounts occupy positions start, start+1, …, end-1.
+- Slices out `[start..end)` for the `i`th token's accounts. The subslice is from start up to but **not** including end. This is how you indicate that the token i's accounts occupy positions start, start+1, …, end-1.
 - Validates each account.
 - Calls the appropriate token pool to the lock-or-burn operation on them.
 
@@ -124,6 +124,11 @@ Suppose you want to send **one token** (`myMint`) cross-chain:
    - **12** pool-related accounts (pool config, chain config, token program, etc.).
      That is **13** total.
 
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/svm-tokens/remaining-accounts-one.svg"
+  alt="Example of remaining accounts for one token"
+/>
+
 ###### Two Token Transfers
 
 Suppose you want to send **two tokens** (`mintA` and `mintB`) cross-chain:
@@ -140,3 +145,8 @@ Suppose you want to send **two tokens** (`mintA` and `mintB`) cross-chain:
    - **12** pool accounts for `mintB`.
 
 Thus `2 + 12 + 12 = 26` accounts in `remaining_accounts`.
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/svm-tokens/remaining-accounts-two.svg"
+  alt="Example of remaining accounts for two tokens"
+/>
