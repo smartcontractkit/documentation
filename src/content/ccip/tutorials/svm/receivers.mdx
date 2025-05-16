@@ -197,7 +197,7 @@ This is a basic example of state storage, but your program can have more complex
 
 While the first three accounts in the CcipReceive context are mandatory and must follow the exact security pattern shown above, **you must extend this structure with additional program-specific accounts** based on your specific use case.
 
-These additional accounts will be provided when your program is called through the CCIP Offramp. In your `ccip_receive` function, you should validate these accounts according to your application's security requirements before using them.
+These additional accounts will be provided when your program is called through the CCIP Offramp. In your `ccip_receive` instruction, you should validate these accounts according to your application's security requirements before using them.
 
 ### The `ccip_receive` Instruction
 
@@ -322,7 +322,7 @@ pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Resul
 To prevent replay attacks, consider tracking processed message IDs:
 
 ```rust
-// In your ccip_receive function:
+// In your ccip_receive instruction:
 
 // Check if message has already been processed
 let is_duplicate = ctx.accounts.processed_messages
@@ -337,6 +337,56 @@ if ctx.accounts.processed_messages.messages.len() > MAX_STORED_MESSAGES {
     ctx.accounts.processed_messages.messages.remove(0);
 }
 ```
+
+## Token Handling for Receivers
+
+CCIP receivers that handle tokens need to understand how tokens are delivered and how to properly manage them.
+
+### Token Delivery Process
+
+When tokens are sent via CCIP to a Solana program:
+
+1. The tokens are initially delivered to a token account specified as the `tokenReceiver` in the CCIP message
+1. For programmatic token transfers, this `tokenReceiver` must be a PDA that your program has authority over
+1. Your program must implement the logic to handle the received tokens
+
+<Aside type="caution" title="Token Ownership">
+  The `tokenReceiver` PDA must be controlled by your program, or the tokens will be inaccessible.
+</Aside>
+
+### Token Admin PDA
+
+Create a dedicated PDA to serve as your program's token administrator:
+
+```rust
+#[account(
+    init,
+    seeds = [TOKEN_ADMIN_SEED],
+    bump,
+    payer = authority,
+    space = ANCHOR_DISCRIMINATOR,
+)]
+/// CHECK: CPI signer for tokens
+pub token_admin: UncheckedAccount<'info>,
+```
+
+This token_admin PDA should:
+
+1. Be initialized during program setup
+1. Be used as the authority for token accounts that will receive CCIP tokens
+1. Sign token transfer instructions (e.g., for forwarding tokens to their final destination)
+
+### remaining_accounts
+
+For each token being transferred, your `remaining_accounts` typically needs:
+
+1. `token_mint`: The mint account of the token
+1. `source_token_account`: The account that received tokens from CCIP
+1. `token_admin`: Your program's PDA with authority over the source account
+1. `recipient_token_account`: The final destination for the tokens
+1. `token_program`: The SPL Token program (Token or Token-2022)
+
+**Note**: The pattern may vary depending on your specific implementation needs.
 
 ## Best Practices
 
