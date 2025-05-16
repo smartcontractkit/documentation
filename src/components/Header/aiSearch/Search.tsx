@@ -1,23 +1,33 @@
-import { SearchButton } from "chainlink-algolia-search"
+// src/components/Header/aiSearch/SearchReact.tsx
+import React, { useEffect, useState, ComponentType } from "react"
+import { SearchButtonProps } from "chainlink-algolia-search"
 import "chainlink-algolia-search/dist/index.css"
 
-export const Search = ({
-  algoliaVars: { algoliaAppId, algoliaPublicApiKey },
-}: {
-  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
-}) => {
+function AlgoliaSearch({ algoliaVars, categoryOrder, popularCards }) {
+  // Only render the component on the client side
+  const [isClient, setIsClient] = useState(false)
+  const [SearchButtonComponent, setSearchButtonComponent] = useState<ComponentType<SearchButtonProps> | null>(null)
+
+  useEffect(() => {
+    setIsClient(true)
+    import("chainlink-algolia-search").then((module) => {
+      setSearchButtonComponent(() => module.SearchButton)
+    })
+  }, [])
+
+  // Return null during server-side rendering
+  if (!isClient || !SearchButtonComponent) {
+    return <div></div>
+  }
+
   return (
-    <SearchButton
-      algoliaAppId={algoliaAppId}
-      algoliaPublicApiKey={algoliaPublicApiKey}
-      popularCards={[
-        {
-          url: "https://dev.chain.link/resources/quickstarts",
-          imgSrc: "/images/algolia/quick-start.png",
-          label: "Quickstarts",
-        },
-        { url: "https://dev.chain.link/tools", imgSrc: "/images/algolia/tools.png", label: "Tools" },
-      ]}
+    <SearchButtonComponent
+      algoliaAppId={algoliaVars.algoliaAppId}
+      algoliaPublicApiKey={algoliaVars.algoliaPublicApiKey}
+      categoryOrder={categoryOrder}
+      popularCards={popularCards}
     />
   )
 }
+
+export default AlgoliaSearch
