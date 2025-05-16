@@ -18,7 +18,7 @@ This guide explains how to construct CCIP Messages from SVM chains (e.g. Solana)
 
 ## CCIP Message Structure
 
-CCIP messages from SVM are built using the [`SVM2AnyMessage` struct](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/ccip-router/src/messages.rs#L51) from the CCIP Router program. The `SVM2AnyMessage` struct is defined as follows:
+CCIP messages from SVM are built using the [`SVM2AnyMessage`](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/ccip-router/src/messages.rs#L51) struct from the CCIP Router program. The `SVM2AnyMessage` struct is defined as follows:
 
 ```rust
 pub struct SVM2AnyMessage {
@@ -33,12 +33,35 @@ pub struct SVM2AnyMessage {
 ### receiver
 
 - For EVM destinations:
-  - This is the hex-encoded address of the contract or wallet that will receive the message
-  - Must be properly formatted as a 20-byte Ethereum address
-  - Can target smart contracts that implement `ccipReceive` function or user wallets for token-only transfers
+  - This is the address of the contract or wallet that will receive the message
+  - Target either smart contracts that implement `ccipReceive` function or user wallets for token-only transfers
+  - **Must be properly formatted as a 32-byte Solana-compatible byte array**
 
-<Aside type="caution" title="Receiver Format">
-  When providing an EVM address as the receiver, it must be properly encoded as a byte array without the '0x' prefix.
+<Aside title="Converting EVM Addresses for Solana">
+  EVM addresses (20 bytes) must be converted to Solana-compatible format (32 bytes) for CCIP messages. This format difference exists because Solana accounts are always 32 bytes.
+  
+  **The conversion process:**
+  
+  1. Start with a standard EVM address (0x-prefixed, 20 bytes)
+  1. Remove the 0x prefix and convert to a byte array
+  1. Left-pad with zeros to reach 32 bytes
+  
+  ```javascript
+  function evmAddressToSolanaBytes(evmAddress) {
+    // Remove 0x prefix if present
+    const hex = evmAddress.startsWith('0x') ? evmAddress.slice(2) : evmAddress;
+    
+    // Convert hex to bytes (assumes valid Ethereum address)
+    const addressBytes = Buffer.from(hex, 'hex');
+    
+    // Left-pad to 32 bytes
+    const paddedBytes = Buffer.alloc(32);
+    paddedBytes.set(addressBytes, 32 - addressBytes.length);
+    
+    return paddedBytes;
+  }
+  ```
+  
 </Aside>
 
 ### data
@@ -96,7 +119,7 @@ Use this configuration when sending only tokens from SVM to EVM chains:
 
     ```typescript
     const message = {
-      receiver: evmReceiverAddressBytes, // 20-byte EVM address as byte array
+      receiver: evmAddressToSolanaBytes(evmReceiverAddress), // 32-byte padded EVM address
       data: new Uint8Array(), // Empty data for token-only transfer
       tokenAmounts: [{ token: tokenMint, amount: amount }],
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
@@ -111,7 +134,7 @@ Use this configuration when sending only tokens from SVM to EVM chains:
 
 - `gasLimit` **MUST** be 0 for token-only transfers
 - `data` must be empty
-- The receiver must be properly formatted as a 20-byte Ethereum address
+- The receiver must be properly formatted as a 32-byte left-padded Ethereum address
 - `allowOutOfOrderExecution` must be true for all messages
 - Check the [CCIP Directory](/ccip/directory) for the list of supported tokens for the lane you are using
 
@@ -123,7 +146,7 @@ Use this configuration when sending only data to EVM chains:
 
     ```typescript
     const message = {
-      receiver: evmReceiverAddressBytes, // 20-byte EVM address as byte array
+      receiver: evmAddressToSolanaBytes(evmReceiverAddress), // 32-byte padded EVM address
       data: messageData, // Encoded data to send
       tokenAmounts: [], // Empty array for data-only messages
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
@@ -150,7 +173,7 @@ Use this configuration when sending both tokens and data in a single message:
 
     ```typescript
     const message = {
-      receiver: evmReceiverAddressBytes, // 20-byte EVM address as byte array
+      receiver: evmAddressToSolanaBytes(evmReceiverAddress), // 32-byte padded EVM address
       data: messageData, // Encoded data to send
       tokenAmounts: [{ token: tokenMint, amount: amount }],
       feeToken: feeTokenMint, // Or Pubkey.default() for native SOL
