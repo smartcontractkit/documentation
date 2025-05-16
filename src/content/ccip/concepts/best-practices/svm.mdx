@@ -2,11 +2,515 @@
 section: ccip
 date: Last Modified
 title: "CCIP Best Practices (SVM)"
+metadata:
+  description: "Comprehensive security guide for CCIP on SVM chains covering message verification, compute optimization, token administration, liquidity management, multi-signature protection, and Solana-specific considerations for building secure cross-chain applications."
 ---
 
 import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<Aside type="note" title="Work in Progress">
-  This documentation is currently under development. Best practices for CCIP on SVM-based blockchains will be available
-  soon.
+<CcipCommon callout="talkToExpert" />
+
+<Aside type="note" title="Interfaces and Applications">
+  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
 </Aside>
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Verify destination chain
+
+Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v1.6.0/router#ccip_send), ensure that your code allows users to send CCIP messages only to trusted destination chains.
+
+**Example**: Create a list of approved destination chain selectors and check against it:
+
+```javascript
+// Example in JavaScript client code
+const APPROVED_DESTINATIONS = [
+  16015286601757825753n, // Ethereum Sepolia
+  5790810961207155433n, // Avalanche Fuji
+]
+
+if (!APPROVED_DESTINATIONS.includes(destinationChainSelector)) {
+  throw new Error("Destination chain not supported")
+}
+```
+
+## Verify source chain
+
+When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+**Example in Rust**:
+
+```rust
+// Example in program code
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Check if the source chain is in our allowed list
+    let allowed_chains = vec![
+        16015286601757825753u64, // Ethereum Sepolia
+        5790810961207155433u64,  // Avalanche Fuji
+    ];
+
+    if !allowed_chains.contains(&message.source_chain_selector) {
+        return Err(ErrorCode::SourceChainNotAllowed.into());
+    }
+
+    // Continue processing the message
+    // ...
+
+    Ok(())
+}
+```
+
+## Verify sender
+
+When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+
+**Note**: Depending on your use case, this verification might not always be necessary.
+
+**Example in Rust**:
+
+```rust
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Extract the sender address from the message
+    let sender = message.sender.clone();
+
+    // For EVM senders (20 bytes), verify against trusted addresses
+    if sender.len() == 20 {
+        let trusted_evm_sender = [/* 20-byte EVM address */];
+        if sender != trusted_evm_sender {
+            return Err(ErrorCode::UntrustedSender.into());
+        }
+    }
+
+    // For SVM senders (32 bytes), verify against trusted Solana public keys
+    if sender.len() == 32 {
+        let mut sender_pubkey = [0u8; 32];
+        sender_pubkey.copy_from_slice(&sender);
+
+        let trusted_svm_sender = Pubkey::new_from_array([/* 32-byte Solana pubkey */]);
+        if Pubkey::new_from_array(sender_pubkey) != trusted_svm_sender {
+            return Err(ErrorCode::UntrustedSender.into());
+        }
+    }
+
+    // Continue processing the message
+    // ...
+
+    Ok(())
+}
+```
+
+## Verify authority and allowed offramp
+
+When you implement the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
+
+**Example in Rust**:
+
+```rust
+#[derive(Accounts)]
+#[instruction(message: Any2SVMMessage)]
+pub struct CcipReceive<'info> {
+    // Offramp CPI signer PDA must be first
+    #[account(
+        seeds = [EXTERNAL_EXECUTION_CONFIG_SEED, crate::ID.as_ref()],
+        bump,
+        seeds::program = offramp_program.key(),
+    )]
+    pub authority: Signer<'info>,
+
+    /// CHECK: Offramp program exists only to derive the allowed offramp PDA
+    pub offramp_program: UncheckedAccount<'info>,
+
+    /// CHECK: PDA owned by the router program verifying this is an allowed offramp
+    #[account(
+        owner = state.router @ CcipReceiverError::InvalidCaller,
+        seeds = [
+            ALLOWED_OFFRAMP,
+            message.source_chain_selector.to_le_bytes().as_ref(),
+            offramp_program.key().as_ref()
+        ],
+        bump,
+        seeds::program = state.router,
+    )]
+    pub allowed_offramp: UncheckedAccount<'info>,
+
+    // Your state account containing the router address
+    #[account(seeds = [STATE_SEED], bump)]
+    pub state: Account<'info, ProgramState>,
+
+    // Additional accounts as needed
+    // ...
+}
+```
+
+## Using `extra_args`
+
+<Aside type="note">
+  The purpose of `extra_args` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that
+  `extra_args` is mutable in production deployments. This allows you to build it offchain and pass it in a call to an
+  instruction or store it in a variable that you can update on-demand.
+</Aside>
+
+Depending on your destination chain, you'll use either `EVMExtraArgsV2` (for EVM destinations) or `SVMExtraArgsV1` (for SVM destinations). Each starts with a 4-byte tag followed by the serialized structure.
+
+### Setting `compute_units` (SVM destinations)
+
+When sending to another SVM-based blockchain, the `compute_units` field in `SVMExtraArgsV1` specifies the maximum compute budget the CCIP OffRamp can consume to execute `ccip_receive()` on the destination program. It is the main factor in determining the fee to send a message. Unspent compute units are not refunded.
+
+To transfer tokens directly to a wallet without a `ccip_receive()` implementation, the `compute_units` should be set lower since there is no receiver program execution.
+
+To estimate the accurate compute budget for your destination program, consider the following options:
+
+- Using the [Solana simulator](https://docs.solana.com/developing/on-chain-programs/debugging) to measure compute unit consumption
+- Analyzing previous similar transactions using [Solana Explorer](https://explorer.solana.com/) or [Solscan](https://solscan.io/)
+- Adding a safety margin for varying network conditions (typically 10-20% extra)
+
+**Example**: Creating `extra_args` for an SVM destination:
+
+```javascript
+// JavaScript example for SVMExtraArgsV1
+function createSvmExtraArgs(
+  computeUnits = 200000,
+  accountIsWritableBitmap = 0n,
+  allowOutOfOrder = false,
+  tokenReceiver = new Uint8Array(32), // Zero array if no tokens
+  accounts = [] // Array of 32-byte pubkeys
+) {
+  // 1. Start with the 4-byte tag in big-endian (0x1f3b3aba)
+  const SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba
+  const buffer = Buffer.alloc(4)
+  buffer.writeUInt32BE(SVM_EXTRA_ARGS_V1_TAG, 0)
+
+  // 2. Serialize the compute_units (u32)
+  const computeBuffer = Buffer.alloc(4)
+  computeBuffer.writeUInt32LE(computeUnits, 0)
+
+  // 3. Serialize accountIsWritableBitmap (u64)
+  const bitmapBuffer = Buffer.alloc(8)
+  if (typeof accountIsWritableBitmap === "bigint") {
+    bitmapBuffer.writeBigUInt64LE(accountIsWritableBitmap, 0)
+  } else {
+    bitmapBuffer.writeBigUInt64LE(BigInt(accountIsWritableBitmap), 0)
+  }
+
+  // 4. Serialize allowOutOfOrder (bool)
+  const oooBuffer = Buffer.from([allowOutOfOrder ? 1 : 0])
+
+  // 5. Serialize tokenReceiver ([u8; 32])
+  const tokenReceiverBuffer = Buffer.from(tokenReceiver)
+
+  // 6. Serialize accounts vector length (u32)
+  const accountsLenBuffer = Buffer.alloc(4)
+  accountsLenBuffer.writeUInt32LE(accounts.length, 0)
+
+  // 7. Serialize accounts
+  const accountsBuffer = Buffer.concat(accounts.map((acct) => Buffer.from(acct)))
+
+  // 8. Combine all parts
+  return Buffer.concat([
+    buffer,
+    computeBuffer,
+    bitmapBuffer,
+    oooBuffer,
+    tokenReceiverBuffer,
+    accountsLenBuffer,
+    accountsBuffer,
+  ])
+}
+```
+
+### Setting `gas_limit` (EVM destinations)
+
+When sending to an EVM-based blockchain, the `gas_limit` in `EVMExtraArgsV2` specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain.
+
+To transfer tokens directly to an EOA as a _receiver_ on the destination blockchain, the `gas_limit` should be set lower since there is no `ccipReceive()` implementation to call.
+
+**Example**: Creating `extra_args` for an EVM destination:
+
+```javascript
+// JavaScript example for EVMExtraArgsV2
+function createEvmExtraArgs(gasLimit = 200000n, allowOutOfOrderExecution = false) {
+  // 1. Start with the 4-byte tag in big-endian (0x181dcf10)
+  const EVM_EXTRA_ARGS_V2_TAG = 0x181dcf10
+  const buffer = Buffer.alloc(4)
+  buffer.writeUInt32BE(EVM_EXTRA_ARGS_V2_TAG, 0)
+
+  // 2. Serialize the gas_limit (u128)
+  const gasLimitBuffer = Buffer.alloc(16)
+  // Convert bigint to little-endian byte array
+  if (typeof gasLimit === "bigint") {
+    let tempGasLimit = gasLimit
+    for (let i = 0; i < 16; i++) {
+      gasLimitBuffer[i] = Number(tempGasLimit & 0xffn)
+      tempGasLimit >>= 8n
+    }
+  } else {
+    let tempGasLimit = BigInt(gasLimit)
+    for (let i = 0; i < 16; i++) {
+      gasLimitBuffer[i] = Number(tempGasLimit & 0xffn)
+      tempGasLimit >>= 8n
+    }
+  }
+
+  // 3. Serialize allowOutOfOrderExecution (bool)
+  const oooBuffer = Buffer.from([allowOutOfOrderExecution ? 1 : 0])
+
+  // 4. Combine all parts
+  return Buffer.concat([buffer, gasLimitBuffer, oooBuffer])
+}
+```
+
+### Setting `allowOutOfOrderExecution`
+
+The `allowOutOfOrderExecution` parameter is available in both `EVMExtraArgsV2` and `SVMExtraArgsV1`, enabling you to control the execution order of your messages on the destination blockchain. Refer to the [CCIP Directory](/ccip/directory) to determine if your target lane supports this feature.
+
+#### Best Practices
+
+- **When `allowOutOfOrderExecution` is Optional:**
+
+  - You can set it to either `true` or `false`, depending on your application's requirements.
+    - **`true`:** Messages can be executed in any order relative to other messages from the same sender.
+    - **`false`:** Messages are executed in order, ensuring preceding messages are processed first.
+
+- **When `allowOutOfOrderExecution` is Required:**
+  - You **must** set it to `true`. This setting acknowledges that messages may be executed out of order.
+
+## Decoupling CCIP Message Reception and Business Logic
+
+In Solana programs, clearly separate the `ccip_receive` handler from your core business logic:
+
+```rust
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Validate the message
+    if !is_valid_message(&message) {
+        return Err(ErrorCode::InvalidMessage.into());
+    }
+
+    // Store message in program state for later processing
+    let message_id = message.message_id;
+    ctx.accounts.program_state.pending_messages.push(message_id);
+
+    // Emit event for off-chain monitoring
+    emit!(MessageReceived {
+        message_id,
+        source_chain: message.source_chain_selector,
+        sender: message.sender,
+    });
+
+    // Note: Primary business logic is handled in a separate process_message instruction
+    // to avoid compute unit limitations and provide fallback options
+
+    Ok(())
+}
+```
+
+## Account Structure and Bitmap Encoding
+
+When using the `ccip_send` instruction, pay careful attention to account ordering and writable account bitmap encoding:
+
+1. **Account Ordering**: Follow the exact order specified in the [Router API](/ccip/api-reference/svm/v1.6.0/router#context-accounts).
+
+2. **Writable Bitmap**: In the `SVMExtraArgsV1`, the `account_is_writable_bitmap` field uses little-endian bit ordering where:
+   - Bit 0 (least significant bit) corresponds to the first account in the `accounts` array
+   - Bit 1 corresponds to the second account, and so on
+   - Set a bit to 1 if the corresponding account should be writable
+
+**Example**: For an `accounts` array where the 1st and 3rd accounts should be writable:
+
+```
+Bitmap: 0b00000101 (decimal 5)
+```
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your programs, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before securing value with programs that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/directory). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Best Practices for Cross-Chain Token (CCT) Administration
+
+When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
+
+### Securely Manage Admin Roles
+
+The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
+
+- **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/service-responsibility#token-developers-responsibilities).
+- **Assign Admin Roles with Caution**: Only trusted wallets or multisig authorities should be assigned the **token admin** role.
+- **Use Multi-Signature Authorities**: For added security, consider using a multisig program like [Squads](https://squads.so/) or [Cardinal Multisig](https://docs.cardinal.so/multisig/multisig-docs) as the authority for token admin operations.
+
+### Protect Against Unauthorized Admin Actions
+
+- **Monitor Admin Activity**: Implement monitoring systems to track any actions taken by **token admins**, **token pool owners**, and **rate limit admins**. This helps detect unauthorized attempts to modify configurations or execute cross-chain transfers.
+
+- **Limit Admin Privileges When Possible**: For example, instead of giving full owner access to manage rate limits, consider assigning the **rate limit admin** role, which is specifically responsible for updating rate limits.
+
+- **Leverage Program Audits**: Ensure your tokens and token pools are audited and follow secure development practices specific to Solana.
+
+### Best Practices for Token Pool Owners and Rate Limit Admins
+
+- **Token Pool Owner Responsibilities**: The **token pool owner** can enable remote chains, set remote pool addresses for a given chain selector, and configure rate limits. Ensure that this role is assigned to a trusted wallet or multisig, and monitor activity regularly.
+
+- **Set Rate Limits Appropriately**: Ensure that you set appropriate rate limits for outbound and inbound token transfers when configuring token pools.
+
+- **Delegate Rate Limit Admin Role**: The rate limit admin is an optional role that the token pool owner can assign to another trusted entity. The rate limit admin can only manage rate limits, so this role provides a way to delegate responsibility without giving full access to the token pool configuration.
+
+## Best Practices for Liquidity Management
+
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in **Lock and Release** token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver.
+
+### Ensure Sufficient Liquidity
+
+When a **Lock and Release** token pool operates in **reception mode** (on the destination blockchain), it releases the tokens locked in the token pool. The pool **_must_** have sufficient liquidity to ensure that tokens can be released to the receiver.
+
+- **Best Practice**: Estimate expected volume when preparing to add and manage liquidity to ensure sustainable operations.
+- **Best Practice**: Regularly monitor the liquidity available in your token pool and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
+
+### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+
+Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
+
+- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+
+### Monitor Liquidity Health and Automate Alerts
+
+Monitoring the health of your token pool's liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+
+### Use the `provide_liquidity` and `withdraw_liquidity` Functions Properly
+
+In token pool programs, liquidity providers can add and remove liquidity using the `provide_liquidity` and `withdraw_liquidity` instructions.
+
+- **Best Practice**: Only trusted entities, such as a designated rebalancer, should be allowed to manage liquidity. Make sure to configure liquidity controls securely to prevent unauthorized liquidity manipulation.
+
+### Set and Manage the Rebalancer Role
+
+The **rebalancer** is responsible for managing the liquidity of the pool and ensuring that there is always sufficient liquidity when needed. They can rebalance liquidity between different pools or pool versions if necessary.
+
+- **Best Practice**: Assign the rebalancer role to a trusted entity and ensure they understand the responsibilities, such as maintaining liquidity in the pool to support token releases.
+
+## Multi-Signature Authorities
+
+Multi-signature authorities, such as [Squads Protocol](https://squads.so/) or [Cardinal Multisig](https://docs.cardinal.so/multisig/multisig-docs), enhance security for managing token pools by requiring multiple signatures to authorize transactions.
+
+### Threshold configuration
+
+Set an optimal threshold for signers based on the trust level of participants and the required security.
+
+### Role-based access control
+
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware wallets for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and authority settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks.
+
+### Security tooling
+
+Tools such as [Helius](https://helius.dev/) or [Solana Explorer](https://explorer.solana.com/) can provide additional layers of security related to transaction simulation, monitoring, and alerting.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.
+
+## Solana-Specific Considerations
+
+### Account Padding and Message Size Limits
+
+Solana has a transaction size limit that affects how much data can be included in a CCIP message:
+
+- Maximum transaction size: 1232 bytes
+- Maximum instruction data size: ~1000 bytes (after accounting for transaction overhead)
+
+When constructing CCIP messages:
+
+1. Keep message payloads compact
+2. For larger data needs, consider splitting across multiple messages or using off-chain storage with on-chain references
+
+### Compute Budget Management
+
+Messages with complex operations may require additional compute units. Use a compute budget instruction to increase the limit:
+
+```javascript
+// JavaScript example
+const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+  units: 400000, // Adjust based on transaction complexity
+})
+
+// Include this instruction before the ccip_send instruction
+transaction.add(modifyComputeUnits, ccipSendInstruction)
+```
+
+### Token Decimals Handling
+
+When bridging tokens between Solana and EVM chains, be aware of decimal differences:
+
+- Most Solana SPL tokens use **9 decimals** (though this can vary)
+- Most EVM tokens use **18 decimals**
+
+You must account for this difference when displaying amounts to users and when setting amounts in messages:
+
+```javascript
+// Converting from Solana amount to EVM-equivalent display amount
+function convertSolanaToEvmAmount(solanaAmount, solanaDecimals = 9, evmDecimals = 18) {
+  const decimalDiff = evmDecimals - solanaDecimals
+  if (decimalDiff > 0) {
+    return solanaAmount * BigInt(10 ** decimalDiff)
+  } else if (decimalDiff < 0) {
+    return solanaAmount / BigInt(10 ** Math.abs(decimalDiff))
+  }
+  return solanaAmount
+}
+```
+
+### Address Format Conversions
+
+When sending messages between Solana and EVM chains, address formats differ:
+
+- Solana addresses are 32 bytes
+- EVM addresses are 20 bytes
+
+For SVM → EVM messages, the destination address should be a 20-byte EVM address.
+For EVM → SVM messages, the destination address should be a 32-byte Solana public key.
+
+```javascript
+// Convert Ethereum address to Solana public key format (for display/verification)
+function ethAddressToSolanaAddress(ethAddress) {
+  // Remove 0x prefix if present
+  const cleanAddress = ethAddress.startsWith("0x") ? ethAddress.slice(2) : ethAddress
+
+  // Ethereum addresses are 20 bytes, Solana expects 32 bytes
+  // Left-pad with zeros to convert to Solana format
+  const paddedAddress = "0".repeat(24) + cleanAddress
+
+  return new solanaWeb3.PublicKey(Buffer.from(paddedAddress, "hex"))
+}
+```
+
+<CcipCommon callout="educationalDisclaimer" />
