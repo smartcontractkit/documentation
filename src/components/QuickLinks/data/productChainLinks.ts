@@ -70,6 +70,7 @@ export const productChainLinks: ProductChainLinks = {
       hemi: "/ccip/directory/testnet/chain/hemi-testnet-sepolia",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
       megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
+      solana: "/ccip/directory/mainnet/chain/solana-mainnet",
     },
   },
   "Data Feeds": {
