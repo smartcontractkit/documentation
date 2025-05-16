@@ -38,6 +38,8 @@ import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" wit
 import * as errors_v1_5_0 from "./errors/v1_5_0/index.ts"
 // eslint-disable-next-line camelcase
 import * as errors_v1_5_1 from "./errors/v1_5_1/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_0 from "./errors/v1_6_0/index.ts"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -57,9 +59,14 @@ type ErrorTypesV151 = ErrorTypesV150 & {
   burnMintERC20CCIPSendErrors: CCIPSendErrorEntry[]
 }
 
+type ErrorTypesV160 = ErrorTypesV151 & {
+  feequoterCCIPSendErrors: CCIPSendErrorEntry[]
+}
+
 type VersionedErrors = {
   v1_5_0: ErrorTypesV150
   v1_5_1: ErrorTypesV151
+  v1_6_0: ErrorTypesV160
 }
 
 // Export errors by version with type safety
@@ -68,6 +75,8 @@ export const errors: VersionedErrors = {
   v1_5_0: errors_v1_5_0 as ErrorTypesV150,
   // eslint-disable-next-line camelcase
   v1_5_1: errors_v1_5_1 as ErrorTypesV151,
+  // eslint-disable-next-line camelcase
+  v1_6_0: errors_v1_6_0 as ErrorTypesV160,
 }
 
 export const networkFees: NetworkFees = {
