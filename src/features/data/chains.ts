@@ -517,7 +517,7 @@ export const CHAINS: Chain[] = [
         name: "Ronin Saigon testnet",
         explorerUrl: "https://saigon-app.roninchain.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-saigon-testnet.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-testnet-saigon.json",
         queryString: "ronin-testnet",
       },
     ],
