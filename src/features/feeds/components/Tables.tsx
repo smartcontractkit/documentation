@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
+import { Fragment } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { ChainNetwork } from "~/features/data/chains.ts"
@@ -122,6 +123,47 @@ const handleClick = (e, additionalInfo) => {
   }
   window.dataLayer = window.dataLayer || []
   window.dataLayer.push(dataLayerEvent)
+}
+
+const CopyableAddress = ({
+  address,
+  explorerUrl,
+  network,
+  environment,
+}: {
+  address?: string
+  explorerUrl: string
+  network: NetworkData
+  environment: string
+}) => {
+  if (!address) return null
+
+  return (
+    <div className={tableStyles.compactAddressContainer}>
+      <a
+        className={tableStyles.compactAddressLink}
+        href={explorerUrl.replace("%s", address)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {address}
+      </a>
+      <button
+        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+        data-clipboard-text={address}
+        onClick={(e) =>
+          handleClick(e, {
+            product: "STREAMS",
+            action: "verifierProxyAddress_copied",
+            extraInfo1: environment,
+            extraInfo2: network.network,
+          })
+        }
+      >
+        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+      </button>
+    </div>
+  )
 }
 
 const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
@@ -406,159 +448,176 @@ const SmartDataTr = ({ network, proxy, showExtraDetails }) => (
 )
 
 export const StreamsNetworkAddressesTable = () => {
-  const [activeNetwork, setActiveNetwork] = useState<string | null>(null)
+  const [searchValue, setSearchValue] = useState("")
 
-  const toggleNetwork = (network: string) => {
-    setActiveNetwork(activeNetwork === network ? null : network)
-  }
+  const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
+
+  const match = (value?: string) => !!value && value.toLowerCase().replaceAll(" ", "").includes(normalizedSearch)
+
+  const filteredNetworks = StreamsNetworksData.filter((network) => {
+    if (!normalizedSearch) return true
+
+    const networkMatch = match(network.network)
+
+    const mainnetLabel = network.mainnet?.label
+    const testnetLabel = network.testnet?.label
+
+    const mainnetAddr = network.isSolana ? network.mainnet?.verifierProgramId : network.mainnet?.verifierProxy
+    const testnetAddr = network.isSolana ? network.testnet?.verifierProgramId : network.testnet?.verifierProxy
+
+    return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
+  })
 
   return (
-    <div className={tableStyles.networksContainer}>
-      {StreamsNetworksData.map((network: NetworkData) => (
-        <div key={network.network} className={tableStyles.networkCard}>
-          <button
-            className={clsx(tableStyles.networkHeader, activeNetwork === network.network && tableStyles.active)}
-            onClick={() => toggleNetwork(network.network)}
-          >
-            <div className={tableStyles.networkInfo}>
-              <img src={network.logoUrl} alt={`${network.network} logo`} width={32} height={32} />
-              <span>{network.network}</span>
-            </div>
-            <span className={tableStyles.expandIcon}>{activeNetwork === network.network ? "−" : "+"}</span>
+    <div className={tableStyles.compactNetworksTable}>
+      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+        <input
+          type="text"
+          placeholder="Search"
+          className={feedList.filterDropdown_searchInput}
+          value={searchValue}
+          onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+        />
+        {searchValue && (
+          <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+            Clear filter
           </button>
+        )}
+      </div>
 
-          {activeNetwork === network.network && (
-            <div className={tableStyles.networkDetails}>
-              <>
-                {network.mainnet && (
-                  <div className={tableStyles.networkEnvironment}>
-                    <h4>{network.mainnet.label}</h4>
-                    {network.isSolana ? (
-                      <>
-                        <div className={tableStyles.solanaAddress}>
-                          <span>Verifier Program ID:</span>
+      <table className={tableStyles.networksTable}>
+        <thead>
+          <tr>
+            <th className={tableStyles.networkColumn}>Network</th>
+            <th className={tableStyles.environmentColumn}></th>
+            <th className={tableStyles.addressColumn}>Verifier Proxy Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredNetworks.map((network: NetworkData, index: number) => {
+            return (
+              <Fragment key={network.network}>
+                {network.mainnet &&
+                  (!normalizedSearch ||
+                    match(network.network) ||
+                    match(network.mainnet.label) ||
+                    match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy)) && (
+                    <tr
+                      key={`${network.network}-mainnet`}
+                      className={index > 0 ? tableStyles.firstNetworkRow : undefined}
+                    >
+                      <td className={tableStyles.networkColumn}>
+                        <div className={tableStyles.networkInfo}>
+                          <img src={network.logoUrl} alt={`${network.network} logo`} />
+                          <span>{network.network}</span>
+                        </div>
+                      </td>
+                      <td>{network.mainnet.label}</td>
+                      <td className={tableStyles.addressColumn}>
+                        {network.isSolana ? (
+                          <>
+                            <div>
+                              <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
+                              <CopyableAddress
+                                address={network?.mainnet?.verifierProgramId}
+                                explorerUrl={network?.mainnet?.explorerUrl}
+                                network={network}
+                                environment="Mainnet"
+                              />
+                            </div>
+                            <div className={tableStyles.mt1}>
+                              <small className={tableStyles.addressLabel}>Access Controller:</small>
+                              <CopyableAddress
+                                address={network?.mainnet?.accessController}
+                                explorerUrl={network?.mainnet?.explorerUrl}
+                                network={network}
+                                environment="Mainnet"
+                              />
+                            </div>
+                          </>
+                        ) : (
                           <CopyableAddress
-                            address={network?.mainnet?.verifierProgramId}
-                            explorerUrl={network?.mainnet?.explorerUrl}
+                            address={network.mainnet.verifierProxy}
+                            explorerUrl={network.mainnet.explorerUrl}
                             network={network}
                             environment="Mainnet"
                           />
-                        </div>
-                        <div className={tableStyles.solanaAddress}>
-                          <span>Access Controller Account:</span>
-                          <CopyableAddress
-                            address={network?.mainnet?.accessController}
-                            explorerUrl={network?.mainnet?.explorerUrl}
-                            network={network}
-                            environment="Mainnet"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className={tableStyles.evmAddress}>
-                        <span>Verifier Proxy Address:</span>
-                        <CopyableAddress
-                          address={network.mainnet.verifierProxy}
-                          explorerUrl={network.mainnet.explorerUrl}
-                          network={network}
-                          environment="Mainnet"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+                        )}
+                      </td>
+                    </tr>
+                  )}
 
-                {network.testnet && (
-                  <div className={tableStyles.networkEnvironment}>
-                    <h4>{network.testnet.label}</h4>
-                    {network.isSolana ? (
-                      <>
-                        <div className={tableStyles.solanaAddress}>
-                          <span>Verifier Program ID:</span>
+                {network.testnet &&
+                  (!normalizedSearch ||
+                    match(network.network) ||
+                    match(network.testnet.label) ||
+                    match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy)) && (
+                    <tr
+                      key={`${network.network}-testnet`}
+                      className={!network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                    >
+                      <td className={tableStyles.networkColumn}>
+                        {!network.mainnet && (
+                          <div className={tableStyles.networkInfo}>
+                            <img src={network.logoUrl} alt={`${network.network} logo`} />
+                            <span>{network.network}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td>{network.testnet.label}</td>
+                      <td className={tableStyles.addressColumn}>
+                        {network.isSolana ? (
+                          <>
+                            <div>
+                              <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
+                              <CopyableAddress
+                                address={network?.testnet?.verifierProgramId}
+                                explorerUrl={network?.testnet?.explorerUrl}
+                                network={network}
+                                environment="Testnet"
+                              />
+                            </div>
+                            <div className={tableStyles.mt1}>
+                              <small className={tableStyles.addressLabel}>Access Controller:</small>
+                              <CopyableAddress
+                                address={network?.testnet?.accessController}
+                                explorerUrl={network?.testnet?.explorerUrl}
+                                network={network}
+                                environment="Testnet"
+                              />
+                            </div>
+                          </>
+                        ) : (
                           <CopyableAddress
-                            address={network?.testnet?.verifierProgramId}
-                            explorerUrl={network?.testnet?.explorerUrl}
+                            address={network.testnet.verifierProxy}
+                            explorerUrl={network.testnet.explorerUrl}
                             network={network}
                             environment="Testnet"
                           />
-                        </div>
-                        <div className={tableStyles.solanaAddress}>
-                          <span>Access Controller Account:</span>
-                          <CopyableAddress
-                            address={network?.testnet?.accessController}
-                            explorerUrl={network?.testnet?.explorerUrl}
-                            network={network}
-                            environment="Testnet"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className={tableStyles.evmAddress}>
-                        <span>Verifier Proxy Address:</span>
-                        <CopyableAddress
-                          address={network.testnet.verifierProxy}
-                          explorerUrl={network.testnet.explorerUrl}
-                          network={network}
-                          environment="Testnet"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+                        )}
+                      </td>
+                    </tr>
+                  )}
 
                 {network.networkStatus && (
-                  <div className={tableStyles.networkStatus}>
-                    <a href={network.networkStatus} target="_blank" rel="noopener noreferrer">
-                      View Network Status →
-                    </a>
-                  </div>
+                  <tr key={`${network.network}-status`} className={tableStyles.statusRow}>
+                    <td colSpan={3} className={tableStyles.statusCell}>
+                      <a
+                        href={network.networkStatus}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={tableStyles.statusLink}
+                      >
+                        View {network.network} Network Status →
+                      </a>
+                    </td>
+                  </tr>
                 )}
-              </>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const CopyableAddress = ({
-  address,
-  explorerUrl,
-  network,
-  environment,
-}: {
-  address?: string
-  explorerUrl: string
-  network: NetworkData
-  environment: string
-}) => {
-  if (!address) return null
-
-  return (
-    <div className={tableStyles.addressContainer}>
-      <a
-        className={tableStyles.addressLink}
-        href={explorerUrl.replace("%s", address)}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {address}
-      </a>
-      <button
-        className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-        data-clipboard-text={address}
-        onClick={(e) =>
-          handleClick(e, {
-            product: "STREAMS",
-            action: "verifierProxyAddress_copied",
-            extraInfo1: environment,
-            extraInfo2: network.network,
-          })
-        }
-      >
-        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
-      </button>
+              </Fragment>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
