@@ -7,6 +7,7 @@ import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
+import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
 import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -139,10 +140,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/historical-data",
         },
         {
-          title: "Using Feed Registry",
-          url: "data-feeds/feed-registry",
-        },
-        {
           title: "Using ENS with Data Feeds",
           url: "data-feeds/ens",
         },
@@ -207,10 +204,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
-        },
-        {
-          title: "Feed Registry API Reference",
-          url: "data-feeds/feed-registry/feed-registry-functions",
         },
       ],
     },
@@ -1300,17 +1293,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 {
                   title: "Register from an EOA (Burn & Mint)",
                   url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
                 },
                 {
                   title: "Register from an EOA (Lock & Mint)",
                   url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
                 },
                 {
                   title: "Set Token Pool rate limits",
                   url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/cross-chain-tokens/update-rate-limiters-foundry"],
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
                 },
                 {
                   title: "Register from a Safe Smart Account (Burn & Mint)",
@@ -1392,6 +1385,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 },
               ],
             },
+            {
+              title: "Cross-Chain Token (CCT) standard",
+              url: "ccip/tutorials/svm/cross-chain-tokens",
+            },
           ],
         },
       ],
@@ -1412,15 +1409,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/api-reference",
           children: [
             {
-              title: "Overview",
-              url: "ccip/api-reference/overview",
-            },
-            {
               title: "EVM",
               url: "ccip/api-reference/evm",
               children: [
                 {
-                  title: "v1.5.1 (Latest)",
+                  title: "v1.6.0 (Latest)",
+                  url: "ccip/api-reference/evm/v1.6.0",
+                  isCollapsible: true,
+                  children: evmCcipV160Contents,
+                },
+                {
+                  title: "v1.5.1",
                   url: "ccip/api-reference/evm/v1.5.1",
                   isCollapsible: true,
                   children: evmCcipV151Contents,
@@ -1438,7 +1437,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/svm",
               children: [
                 {
-                  title: "v1.6.0",
+                  title: "v1.6.0 (Latest)",
                   url: "ccip/api-reference/svm/v1.6.0",
                   isCollapsible: true,
                   children: svmCcipV160Contents,

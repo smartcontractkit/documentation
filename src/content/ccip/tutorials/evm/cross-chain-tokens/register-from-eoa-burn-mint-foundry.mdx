@@ -121,11 +121,11 @@ Example `config.json` file:
     "symbol": "BnMkh",
     "decimals": 18,
     "maxSupply": 0,
-    "withGetCCIPAdmin": false,
-    "ccipAdminAddress": "0x0000000000000000000000000000000000000000"
+    "preMint": 100000000000000000000,
+    "ccipAdminAddress": "0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA"
   },
   "tokenAmountToMint": 1000000000000000000000,
-  "tokenAmountToTransfer": 10000,
+  "tokenAmountToTransfer": 100000000000000000000,
   "feeType": "link",
   "remoteChains": {
     "43113": 421614,
@@ -142,8 +142,8 @@ The `config.json` file contains the following parameters:
 | `symbol`                | The symbol of the token. Replace `"BnMkh"` with your desired token symbol.                                                                                                                                                                                                                                                                               |
 | `decimals`              | The number of decimals for the token (usually `18` for standard ERC tokens).                                                                                                                                                                                                                                                                             |
 | `maxSupply`             | The maximum supply of tokens (in the smallest unit, based on `decimals`). When `maxSupply` is 0, the supply is unlimited.                                                                                                                                                                                                                                |
-| `withGetCCIPAdmin`      | A boolean to determine whether the token contract has a `getCCIPAdmin()` function. If set to `true`, a CCIP admin is required. When `false`, token admin registration will use the token `owner()` function.                                                                                                                                             |
-| `ccipAdminAddress`      | The address of the CCIP admin, only applicable if `withgetccipadmin` is set to `true`.                                                                                                                                                                                                                                                                   |
+| `preMint`               | The amount of tokens to be minted to the owner at the time of deployment, specified (in the smallest unit, based on `decimals`). When `preMint` is 0, no tokens will be minted to the owner during deployment.                                                                                                                                           |
+| `ccipAdminAddress`      | The address of the CCIP admin. Replace the address value `0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA` with your token deployer account address.                                                                                                                                                                                                          |
 | ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
 | `tokenAmountToMint`     | The amount of tokens to mint when running the minting script. This value should be specified in wei (1 token with 18 decimals = `1000000000000000000` wei).                                                                                                                                                                                              |
 | ---                     | -----                                                                                                                                                                                                                                                                                                                                                    |
@@ -165,7 +165,7 @@ The `config.json` file contains the following parameters:
 
 In this step, you will use the `DeployToken.s.sol` script to deploy your tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia.
 
-The script reads the [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and whether to include CCIP admin functionality. Based on these configurations, it deploys the appropriate token contract — either with or without CCIP admin features — and optionally sets the CCIP admin. It then deploys the token contract and grants mint and burn roles to your EOA.
+The script reads the [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) to get the token name, symbol, decimals, maximum supply, and pre-mint amount. Based on these configurations, it deploys the appropriate token contract and grants mint and burn roles to your EOA.
 
 1. Deploy tokens on Avalanche Fuji:
 
@@ -176,8 +176,8 @@ The script reads the [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
-   Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Deployed BurnMintERC20 at: 0x56e4CFf5009908D8d8C5Aac5479574f9aC66e145
+   Granted mint and burn roles to: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
    Writing deployed token address to file: ./script/output/deployedToken_avalancheFuji.json
    ```
 
@@ -190,8 +190,8 @@ The script reads the [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens
    Example output:
 
    ```bash
-   Deployed BurnMintERC677 at: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
-   Granted mint and burn roles to: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Deployed BurnMintERC20 at: 0x8E9A370Ff35E9A5C081818B5C9EcC3E3EA89396b
+   Granted mint and burn roles to: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
    Writing deployed token address to file: ./script/output/deployedToken_arbitrumSepolia.json
    ```
 
@@ -210,8 +210,8 @@ In this step, you will use the `DeployBurnMintTokenPool.s.sol` script to deploy 
    Example output:
 
    ```bash
-   Burn & Mint token pool deployed to: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
-   Granted mint and burn roles to token pool: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Burn & Mint token pool deployed to: 0xeB841acbc25549D4deB6Ed9401f3CbB529F3DC3e
+   Granted mint and burn roles to token pool: 0xeB841acbc25549D4deB6Ed9401f3CbB529F3DC3e
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_avalancheFuji.json
    ```
 
@@ -224,8 +224,8 @@ In this step, you will use the `DeployBurnMintTokenPool.s.sol` script to deploy 
    Example output:
 
    ```bash
-   Burn & Mint token pool deployed to: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
-   Granted mint and burn roles to token pool: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Burn & Mint token pool deployed to: 0x346e11C1a869b88A8033e40B18Efdc4eCD9FFd02
+   Granted mint and burn roles to token pool: 0x346e11C1a869b88A8033e40B18Efdc4eCD9FFd02
    Writing deployed token pool address to file: ./script/output/deployedTokenPool_arbitrumSepolia.json
    ```
 
@@ -233,7 +233,7 @@ In this step, you will use the `DeployBurnMintTokenPool.s.sol` script to deploy 
 
 In this step, you will use the `ClaimAdmin.s.sol` script to register your EOA as the administrator for the deployed tokens on both Avalanche Fuji and Arbitrum Sepolia testnets. This process involves interacting with the `RegistryModuleOwnerCustom` contract to set up your EOA as the admin.
 
-The script will claim the admin role using `getCCIPAdmin()` function if the `withGetCCIPAdmin` field is set to `true` in your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). Otherwise, the script will use the standard `owner()` function to claim the admin role.
+The script will claim the admin role using `getCCIPAdmin()` function and validate by comparing the returned value with the value of the `ccipAdminAddress` field of your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file). So, make sure to replace the value of the `ccipAdminAddress` field with your EOA or token deployer account address.
 
 1. Claim the Admin role for the token on Avalanche Fuji:
 
@@ -244,9 +244,9 @@ The script will claim the admin role using `getCCIPAdmin()` function if the `wit
    Example output:
 
    ```bash
-   Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   Current token admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   Claiming admin of the token via getCCIPAdmin() for CCIP admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Admin claimed successfully for token: 0x56e4CFf5009908D8d8C5Aac5479574f9aC66e145
    ```
 
 1. Claim the Admin role for the token on Arbitrum Sepolia:
@@ -258,9 +258,9 @@ The script will claim the admin role using `getCCIPAdmin()` function if the `wit
    Example output:
 
    ```bash
-   Current token owner: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Claiming admin of the token via owner() for signer: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Admin claimed successfully for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   Current token admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   Claiming admin of the token via getCCIPAdmin() for CCIP admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+   Admin claimed successfully for token: 0x8E9A370Ff35E9A5C081818B5C9EcC3E3EA89396b
    ```
 
 ### Accept Admin Role
@@ -276,7 +276,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
+   Accepted admin role for token: 0x56e4CFf5009908D8d8C5Aac5479574f9aC66e145
    ```
 
 1. Accept the admin role for the token on Arbitrum Sepolia:
@@ -288,7 +288,7 @@ In this step, you will use the `AcceptAdminRole.s.sol` script to accept the admi
    Example output:
 
    ```bash
-   Accepted admin role for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
+   Accepted admin role for token: 0x8E9A370Ff35E9A5C081818B5C9EcC3E3EA89396b
    ```
 
 ### Set Token Pool
@@ -304,10 +304,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0
-   New pool address: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
-   Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0x9D790447F01Aa2FC97848Bb6C56B2F2670eC6aE0 to 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Setting pool for token: 0x56e4CFf5009908D8d8C5Aac5479574f9aC66e145
+   New pool address: 0xeB841acbc25549D4deB6Ed9401f3CbB529F3DC3e
+   Action performed by admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   Pool set for token 0x56e4CFf5009908D8d8C5Aac5479574f9aC66e145 to 0xeB841acbc25549D4deB6Ed9401f3CbB529F3DC3e
    ```
 
 1. Link the token to its respective token pool on Arbitrum Sepolia:
@@ -319,10 +319,10 @@ In this step, you will use the `SetPool.s.sol` script to link each token with it
    Example output:
 
    ```bash
-   Setting pool for token: 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd
-   New pool address: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
-   Action performed by admin: 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
-   Pool set for token 0x12641799Ba40D2829A8e0Ef4245f02E7A5aE19Fd to 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Setting pool for token: 0x8E9A370Ff35E9A5C081818B5C9EcC3E3EA89396b
+   New pool address: 0x346e11C1a869b88A8033e40B18Efdc4eCD9FFd02
+   Action performed by admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   Pool set for token 0x8E9A370Ff35E9A5C081818B5C9EcC3E3EA89396b to 0x346e11C1a869b88A8033e40B18Efdc4eCD9FFd02
    ```
 
 ### Configure Token Pools
@@ -368,7 +368,7 @@ Each `ChainUpdate` struct in the `chainUpdates` array includes the following fie
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0x42995568BeD95b7FA235fE1Fe00f8C60f6d00476
+   Chain update applied to pool at address: 0xeB841acbc25549D4deB6Ed9401f3CbB529F3DC3e
    ```
 
 1. Configure the token pool on Arbitrum Sepolia:
@@ -380,14 +380,14 @@ Each `ChainUpdate` struct in the `chainUpdates` array includes the following fie
    Example output:
 
    ```bash
-   Chain update applied to pool at address: 0xc86c173fb9a7d331C74dd9039B1854877452fb09
+   Chain update applied to pool at address: 0x346e11C1a869b88A8033e40B18Efdc4eCD9FFd02
    ```
 
 ### Mint Tokens
 
 In this step, you will use the `MintTokens.s.sol` script to mint tokens to your Externally Owned Account (EOA) on Avalanche Fuji. Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
 
-The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC677` token contract to mint the tokens to your EOA.
+The script will read the amount to mint from the `tokenAmountToMint` field in your [`config.json` file](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry#optional-configure-your-configjson-file) and call the `mint()` function of the `BurnMintERC20` token contract to mint the tokens to your EOA.
 
 Mint tokens for your EOA on Avalanche Fuji:
 
@@ -398,9 +398,9 @@ forge script script/MintTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $PRIV
 Example output:
 
 ```bash
-Minting 1000000000000000000000 tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+Minting 1000000000000000000000 tokens to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
 Waiting for confirmations...
-Minted 1000000000000000000000 tokens to 0x45C90FBb5acC1a5c156a401B56Fea55e69E7669d
+Minted 1000000000000000000000 tokens to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
 Current balance of receiver is 1000000000000000000000 BnMkh
 ```
 
@@ -419,10 +419,10 @@ forge script script/TransferTokens.s.sol --rpc-url $RPC_URL_FUJI --private-key $
 Example output:
 
 ```bash
-Estimated fees: 17658138577908911
+Estimated fees: 22153771891999418
 Message ID:
-0x2895eae406f09dd2a99975fa8eb5e597678ebbfc2e12cbe74447f2cb341c495f
-Check status of the message at https://ccip.chain.link/msg/2895eae406f09dd2a99975fa8eb5e597678ebbfc2e12cbe74447f2cb341c495f
+0x7097afbbf87e803653f0b4d116369f91a6118153d183f466f86f1080ee7dd578
+Check status of the message at https://ccip.chain.link/msg/7097afbbf87e803653f0b4d116369f91a6118153d183f466f86f1080ee7dd578
 ```
 
 You can check the status of the message on the [Chainlink CCIP Explorer](https://ccip.chain.link/) using the message ID provided in the output.
