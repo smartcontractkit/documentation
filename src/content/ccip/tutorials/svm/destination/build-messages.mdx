@@ -18,7 +18,7 @@ This guide explains how to construct CCIP Messages from Ethereum Virtual Machine
 
 ## CCIP Message Structure
 
-CCIP messages are built using the [`EVM2AnyMessage` struct](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/libraries/Client.sol#L21) from the `Client.sol` library. The `EVM2AnyMessage` struct is defined as follows:
+CCIP messages are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.0/client) library. The `EVM2AnyMessage` struct is defined as follows:
 
 ```solidity
 struct EVM2AnyMessage {
@@ -32,43 +32,62 @@ struct EVM2AnyMessage {
 
 ### receiver
 
-- This is the receiver program ID that will execute the CCIP message
-- **For token-only transfers**: Should be set to the default PublicKey (`11111111111111111111111111111111`)
-- **For arbitrary messaging** or **programmatic token transfers**: Must be the exact program ID of the SVM program that implements `ccip_receive`
+- **Definition**:This is the receiver program ID that will execute the CCIP message
+- **For token-only transfers**: Should be set to the default value for the `Pubkey` type in Solana (`11111111111111111111111111111111`)
+- **For arbitrary messaging** or **programmatic token transfers**: Must be the exact program ID of the SVM program that implements the `ccip_receive` instruction
 
-<Aside type="caution" title="Program ID Format">
-  When providing a SVM program ID as the receiver, it must be in the correct format - a 32-byte SVM public key.
+<Aside  title="Program ID Format">
+  When providing a SVM program ID as the receiver, it must be converted from [Solana's base58 format](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex format for CCIP messages. 
+  
+  Below is a JavaScript example using the [bs58](https://www.npmjs.com/package/bs58) library:
+  
+  1. Decode the base58 Solana address to its raw bytes (Solana addresses are already 32 bytes when decoded)
+  2. Convert those bytes to a hex string with "0x" prefix
+  
+  For example:
+  ```javascript
+  function encodeSolanaAddressToBytes32(solanaAddress) {
+    const addressBytes = bs58.decode(solanaAddress);
+    return `0x${Buffer.from(addressBytes).toString("hex")}`;
+  }
+  ```
 </Aside>
 
 ### data
 
-- Contains the payload that will be passed to the receiving program
-- **For token-only transfers**: Can be empty (`0x`)
+- **Definition**: Contains the payload that will be passed to the receiving program
+- **For token-only transfers**: Empty (`0x`)
 - **For arbitrary messaging** or **programmatic token transfers**: Contains the data the receiver program will process
-- **Encoding consideration**: The SVM receiver program must be able to correctly decode this data
+- **Encoding requirement**: Must be encoded as a hex string with `0x`· prefix
 
 <Aside type="tip" title="Data Encoding">
-  Ensure the SVM program on the destination chain can properly decode the data format you are sending.
+
+Data must be converted to bytes, then to a hex string with `0x` prefix. For example:
+
+```javascript
+const messageData = `0x${Buffer.from("Hello World").toString("hex")}`
+```
+
+**Note**: Ensure the SVM program on the destination chain can properly decode this format.
+
 </Aside>
 
 ### tokenAmounts
 
-- An array of token addresses and amounts to transfer
-- **For data-only messages**: Should be an empty array
-- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount
-- **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
+- **Definition**: An array of token addresses and amounts to transfer
+- **For data-only messages**: Must be an empty array
+- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
 
 ### feeToken
 
-- Specifies which token to use for paying CCIP fees
-- `address(0)` means use the source chain native gas token (ETH on Ethereum)
-- Can also specify an ERC-20 token address for fee payment
-- **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported fee tokens on your source chain
+- **Definition**: Specifies which token to use for paying CCIP fees
+- **For native gas token**: Use `address(0)` to specify the source chain's native gas token (e.g. ETH on Ethereum)
+- **For ERC-20 tokens**: Can specify an ERC-20 token address for fee payment. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported fee tokens on your source chain
 
 ## extraArgs
 
 The most critical component for SVM-bound messages is the [`SVMExtraArgsV1`
-structure](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/libraries/Client.sol#L61) structure:
+](/ccip/api-reference/evm/v1.6.0/client#svmextraargsv1) structure:
 
 ```solidity
 struct SVMExtraArgsV1 {
@@ -101,10 +120,10 @@ Specifies the amount of compute units allowed for calling the `ccip_receive` ins
 
 Unlike EVM chains where smart contracts manage their own storage, SVM blockchains (e.g. Solana) use an account-based architecture where:
 
-- All data is stored in accounts: There's no dedicated storage for programs
-- Programs are stateless: They can only read from and write to accounts passed to them
-- Explicit account access: Every account a program needs to access must be explicitly provided
-- Access permissions: Each account must be marked as either "readable" or "writable"
+- **All data is stored in accounts**: There's no dedicated storage for programs
+- **Programs are stateless**: They can only read from and write to accounts passed to them
+- **Explicit account access**: Every account a program needs to access must be explicitly provided
+- **Access permissions**: Each account must be marked as either _readable_ or _writable_
 
 <Aside type="note" title="Why Accounts Matter">
   In SVM blockchains, you must provide an accounts array because programs cannot access any data without explicitly
@@ -136,16 +155,17 @@ A 64-bit bitmap indicating which accounts in the `accounts` array should be mark
   <Fragment slot="panel.1">
     - **What does "writable" mean?**
     
-            In Solana, marking an account as "writable":
+            In Solana, marking an account as _writable_ means:
             - Allows the program to modify the account's data
             - Permits lamport balance mutations
     
     - **How the bitmap works:**
 
             - Each bit corresponds to an account in the `accounts` array
-            - Bit position matches account array index (0-indexed)
-            - Setting bit at position N makes the Nth account writable
-            - Critical for `ccip_receive` instruction success
+            - Uses little endian bit ordering, where the least significant bit (rightmost) is at position 0
+            - Bit position matches account array index (0-indexed) - bit 0 corresponds to accounts[0], bit 1 to accounts[1], etc.
+            - Setting bit at position N to 1 makes the Nth account writable
+            - When represented as a decimal value, the binary bits are read right-to-left (e.g., binary `0000110` = decimal `6`)
 
   </Fragment>
   <Fragment slot="panel.2">
@@ -177,8 +197,9 @@ A 64-bit bitmap indicating which accounts in the `accounts` array should be mark
 The Solana account that will initially receive tokens, represented as a 32-byte Solana public key.
 
 <Tabs client:visible>
-  <Fragment slot="tab.1">User Transfer</Fragment>
-  <Fragment slot="tab.2">Program Transfer</Fragment>
+  <Fragment slot="tab.1">Transfer to Wallet</Fragment>
+  <Fragment slot="tab.2">Transfer to Program</Fragment>
+  <Fragment slot="tab.3">Arbitrary Messaging</Fragment>
   <Fragment slot="panel.1">
     For transfers to wallets or multi-sig wallets: 
     
@@ -193,7 +214,31 @@ The Solana account that will initially receive tokens, represented as a 32-byte 
         - **Note**: If the receiver program does not have authority over the provided `tokenReceiver`, the tokens will be inaccessible.
 
   </Fragment>
+  <Fragment slot="panel.3">
+    For data-only messaging (no tokens): 
+    
+        - **MUST** set to the default Solana PublicKey (`11111111111111111111111111111111`)
+        - This is required even though no tokens are being transferred
+
+  </Fragment>
 </Tabs>
+
+<Aside title="Encoding tokenReceiver">
+  Similar to the receiver field, the tokenReceiver must be properly encoded as a 32-byte hex string:
+  
+  - **For token transfers and programmatic transfers**: Convert the Solana wallet address or PDA from [base58](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex string
+  - **For arbitrary messaging (data-only)**: Use the default Solana PublicKey (`11111111111111111111111111111111`) encoded as a 32-byte hex string
+
+Below is a JavaScript example using the [bs58](https://www.npmjs.com/package/bs58) library:
+
+```javascript
+function encodeSolanaAddressToBytes32(solanaAddress) {
+  const addressBytes = bs58.decode(solanaAddress)
+  return `0x${Buffer.from(addressBytes).toString("hex")}`
+}
+```
+
+</Aside>
 
 ## Message Encoding Requirements
 
@@ -322,7 +367,7 @@ Use this configuration when sending only data messages to SVM:
       extraArgs: encodeExtraArgs({
         computeUnits: 200000,  // compute units required by the program for executing the ccip_receive instruction
         allowOutOfOrderExecution: true,
-        tokenReceiver: "11111111111111111111111111111111",  // Default PubKey
+        tokenReceiver: "0x0000000000000000000000000000000000000000000000000000000000000000",  // Default PubKey encoded in 32-byte hex format
         accountIsWritableBitmap: 2,  // Decimal representation of bitmap
         accounts: accounts // accounts required by the program for executing the ccip_receive instruction
       })
