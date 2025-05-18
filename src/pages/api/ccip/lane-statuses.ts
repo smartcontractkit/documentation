@@ -91,10 +91,10 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     // Check if the source chain is cursed
-    const sourceProvider = getProviderForChain(sourceChain)
     let isSourceChainCursed = false
     if (sourceChainType === "evm") {
       try {
+        const sourceProvider = getProviderForChain(sourceChain)
         isSourceChainCursed = await withTimeout(
           checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
           timeoutCurseCheck,

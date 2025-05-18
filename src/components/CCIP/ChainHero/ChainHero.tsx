@@ -210,6 +210,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )}
               </div>
             </div>
+            {/*
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">
                 RMN Blessing
@@ -230,6 +231,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network?.rmnPermeable === false ? "Enabled" : "Disabled"}
               </div>
             </div>
+            */}
 
             {/* Conditional rendering based on chain type */}
             {network.chainType === "evm" && (
@@ -324,54 +326,57 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             )}
 
-            {feeTokensWithAddress &&
-              feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
-                <div key={`fee-token-${index}`} className="ccip-chain-hero__details__item">
-                  <div className="ccip-chain-hero__details__label">{index === 0 ? "Fee tokens" : <>&nbsp;</>}</div>
-                  <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-token">
-                    <div className="ccip-chain-hero__feeTokens__item">
-                      <object
-                        data={logo}
-                        type="image/png"
-                        width="20px"
-                        height="20px"
-                        className="ccip-chain-hero__feeTokens__item__logo"
-                      >
-                        <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
-                      </object>
-                      <div>{token}</div>
-                      <Address endLength={4} contractUrl={contractUrl} address={address} />
+            {/* Start of new Fee Tokens Group */}
+            {network &&
+              ((feeTokensWithAddress && feeTokensWithAddress.length > 0) ||
+                (!nativeTokenHasAddress() && nativeCurrency)) && (
+                <div className="ccip-chain-hero__details__item ccip-chain-hero__fee-tokens-group-item">
+                  <div className="ccip-chain-hero__details__label">Fee tokens</div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-tokens-group">
+                    <div className="ccip-chain-hero__feeTokens__list">
+                      {" "}
+                      {/* This new div will hold all token items */}
+                      {feeTokensWithAddress &&
+                        feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
+                          <div key={`fee-token-${index}`} className="ccip-chain-hero__feeTokens__item">
+                            <object
+                              data={logo}
+                              type="image/png"
+                              width="20px"
+                              height="20px"
+                              className="ccip-chain-hero__feeTokens__item__logo"
+                            >
+                              <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
+                            </object>
+                            <div>{token}</div>
+                            <Address endLength={4} contractUrl={contractUrl} address={address} />
+                          </div>
+                        ))}
+                      {!nativeTokenHasAddress() && nativeCurrency && (
+                        <div className="ccip-chain-hero__feeTokens__item">
+                          <object
+                            data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                            type="image/png"
+                            width="20px"
+                            height="20px"
+                            className="ccip-chain-hero__feeTokens__item__logo"
+                          >
+                            <img
+                              src={fallbackTokenIconUrl}
+                              alt={`${nativeCurrency.symbol} icon`}
+                              width="20px"
+                              height="20px"
+                            />
+                          </object>
+                          <div>{nativeCurrency.symbol}</div>
+                          <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
-            {!nativeTokenHasAddress() && nativeCurrency && (
-              <div className="ccip-chain-hero__details__item">
-                <div className="ccip-chain-hero__details__label">
-                  {!feeTokensWithAddress || feeTokensWithAddress.length === 0 ? "Fee tokens" : <>&nbsp;</>}
-                </div>
-                <div className="ccip-chain-hero__details__value">
-                  <div className="ccip-chain-hero__feeTokens__item">
-                    <object
-                      data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
-                      type="image/png"
-                      width="20px"
-                      height="20px"
-                      className="ccip-chain-hero__feeTokens__item__logo"
-                    >
-                      <img
-                        src={fallbackTokenIconUrl}
-                        alt={`${nativeCurrency.symbol} icon`}
-                        width="20px"
-                        height="20px"
-                      />
-                    </object>
-                    <div>{nativeCurrency.symbol}</div>
-                    <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
+            {/* End of new Fee Tokens Group */}
           </div>
         )}
       </div>
