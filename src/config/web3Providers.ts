@@ -117,7 +117,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SOLANA_DEVNET: () => new JsonRpcProvider("https://api.devnet.solana.com"),
   SOLANA_MAINNET: () => new JsonRpcProvider("https://api.mainnet-beta.solana.com"),
   TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
-  TRON_TESTNET: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
+  TRON_SHASTA: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
   ABSTRACT_MAINNET: () => new JsonRpcProvider("https://api.mainnet.abs.xyz"),
   ABSTRACT_TESTNET: () => new JsonRpcProvider("https://api.testnet.abs.xyz"),
   LISK_MAINNET: () => new JsonRpcProvider("https://rpc.api.lisk.com"),

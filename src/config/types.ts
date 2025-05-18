@@ -180,7 +180,7 @@ export type SupportedChain =
   | "SOLANA_DEVNET"
   | "SOLANA_MAINNET"
   | "TRON_MAINNET"
-  | "TRON_TESTNET"
+  | "TRON_SHASTA"
   | "ABSTRACT_TESTNET"
   | "ABSTRACT_MAINNET"
   | "LISK_TESTNET"

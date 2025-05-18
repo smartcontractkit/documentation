@@ -6,13 +6,13 @@ import {
   createMetadata,
   CCIPError,
   handleApiError,
-} from "../pages/api/ccip/utils.ts"
-import type { Environment } from "@config/data/ccip/types.ts"
-import { ChainDataService } from "../pages/api/services/chain-data.ts"
-import { mockReferenceData } from "../__mocks__/chainMock.ts"
+} from "../pages/api/ccip/utils.js"
+import type { Environment } from "../config/data/ccip/types.js"
+import { ChainDataService } from "../pages/api/services/chain-data.js"
+import { mockReferenceData } from "../__mocks__/chainMock.js"
 
 // Mock the Environment enum
-jest.mock("@config/data/ccip/types", () => ({
+jest.mock("../config/data/ccip/types", () => ({
   Environment: {
     Mainnet: "mainnet",
     Testnet: "testnet",
@@ -20,7 +20,7 @@ jest.mock("@config/data/ccip/types", () => ({
 }))
 
 // Mock the loadReferenceData function
-jest.mock("@config/data/ccip", () => ({
+jest.mock("../config/data/ccip", () => ({
   loadReferenceData: jest.fn(() => mockReferenceData),
   Environment: {
     Mainnet: "mainnet",

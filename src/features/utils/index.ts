@@ -396,8 +396,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SOLANA_MAINNET"
     case "tron-mainnetTRON_MAINNET":
       return "TRON_MAINNET"
-    case "tron-testnet":
-      return "TRON_TESTNET"
+    case "tron-testnet-shasta-evm":
+      return "TRON_SHASTA"
     case "abstract-mainnet":
       return "ABSTRACT_MAINNET"
     case "abstract-testnet":
@@ -651,8 +651,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "solana-mainnet"
     case "TRON_MAINNET":
       return "tron-mainnet"
-    case "TRON_TESTNET":
-      return "tron-testnet"
+    case "TRON_SHASTA":
+      return "tron-testnet-shasta-evm"
     case "ABSTRACT_MAINNET":
       return "abstract-mainnet"
     case "ABSTRACT_TESTNET":
