@@ -46,7 +46,6 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 ## Requirements
 
-- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
 - **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
 
@@ -68,12 +67,12 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
    cargo init
    ```
 
-1. Add the Data Streams SDK to your `Cargo.toml`:
+1. Add the following dependencies to your `Cargo.toml` file:
 
    ```toml
    [dependencies]
-   data-streams-sdk = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/sdk" }
-   data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+   chainlink-data-streams-sdk = "1.0.0"
+   chainlink-data-streams-report = "1.0.0"
    tokio = { version = "1.4", features = ["full"] }
    hex = "0.4"
    ```
@@ -83,64 +82,63 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 1. Replace the contents of `src/main.rs` with the following code:
 
    ```rust
-   use data_streams_report::feed_id::ID;
-   use data_streams_report::report::{decode_full_report, v4::ReportDataV4}; // Import the v4 report schema for RWA streams
-   use data_streams_sdk::client::Client;
-   use data_streams_sdk::config::Config;
+   use chainlink_data_streams_report::feed_id::ID;
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+   use chainlink_data_streams_sdk::client::Client;
+   use chainlink_data_streams_sdk::config::Config;
    use std::env;
    use std::error::Error;
 
    #[tokio::main]
    async fn main() -> Result<(), Box<dyn Error>> {
-       // Get feed ID from command line arguments
-       let args: Vec<String> = env::args().collect();
-       if args.len() < 2 {
-           eprintln!("Usage: cargo run [FeedID]");
-           std::process::exit(1);
-       }
-       let feed_id_input = &args[1];
+      // Get feed ID from command line arguments
+      let args: Vec<String> = env::args().collect();
+      if args.len() < 2 {
+         eprintln!("Usage: cargo run [FeedID]");
+         std::process::exit(1);
+      }
+      let feed_id_input = &args[1];
 
-       // Get API credentials from environment variables
-       let api_key = env::var("API_KEY").expect("API_KEY must be set");
-       let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+      // Get API credentials from environment variables
+      let api_key = env::var("API_KEY").expect("API_KEY must be set");
+      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
 
-       // Initialize the configuration
-       let config = Config::new(
-           api_key,
-           api_secret,
-           "https://api.testnet-dataengine.chain.link".to_string(),
-           "wss://api.testnet-dataengine.chain.link/ws".to_string(),
-       )
-       .build()?;
+      // Initialize the configuration
+      let config = Config::new(
+         api_key,
+         api_secret,
+         "https://api.testnet-dataengine.chain.link".to_string(),
+         "wss://api.testnet-dataengine.chain.link/ws".to_string()
+      ).build()?;
 
-       // Initialize the client
-       let client = Client::new(config)?;
+      // Initialize the client
+      let client = Client::new(config)?;
 
-       // Parse the feed ID
-       let feed_id = ID::from_hex_str(feed_id_input)?;
+      // Parse the feed ID
+      let feed_id = ID::from_hex_str(feed_id_input)?;
 
-       // Fetch the latest report
-       let response = client.get_latest_report(feed_id).await?;
-       println!("\nRaw report data: {:?}\n", response.report);
+      // Fetch the latest report
+      let response = client.get_latest_report(feed_id).await?;
+      println!("\nRaw report data: {:?}\n", response.report);
 
-       // Decode the report
-       let full_report = hex::decode(&response.report.full_report[2..])?;
-       let (_report_context, report_blob) = decode_full_report(&full_report)?;
-       let report_data = ReportDataV4::decode(&report_blob)?;
+      // Decode the report
+      let full_report = hex::decode(&response.report.full_report[2..])?;
+      let (_report_context, report_blob) = decode_full_report(&full_report)?;
+      let report_data = ReportDataV4::decode(&report_blob)?;
 
-       // Print decoded report details
-       println!("\nDecoded Report for Stream ID {}:", feed_id_input);
-       println!("------------------------------------------");
-       println!("Observations Timestamp: {}", response.report.observations_timestamp);
-       println!("Benchmark Price       : {}", report_data.price);
-       println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
-       println!("Expires At            : {}", report_data.expires_at);
-       println!("Link Fee              : {}", report_data.link_fee);
-       println!("Native Fee            : {}", report_data.native_fee);
-       println!("Market Status         : {}", report_data.market_status);
-       println!("------------------------------------------");
+      // Print decoded report details
+      println!("\nDecoded Report for Stream ID {}:", feed_id_input);
+      println!("------------------------------------------");
+      println!("Observations Timestamp: {}", response.report.observations_timestamp);
+      println!("Benchmark Price       : {}", report_data.price);
+      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
+      println!("Expires At            : {}", report_data.expires_at);
+      println!("Link Fee              : {}", report_data.link_fee);
+      println!("Native Fee            : {}", report_data.native_fee);
+      println!("Market Status         : {}", report_data.market_status);
+      println!("------------------------------------------");
 
-       Ok(())
+      Ok(())
    }
    ```
 

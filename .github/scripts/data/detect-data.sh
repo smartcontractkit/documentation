@@ -155,8 +155,8 @@ node <<EOF
     // === data-streams networks
     const STREAMS_NETWORKS = [
       "apechain", "arbitrum", "avalanche", "base", "berachain", "blast",
-      "bnb-chain", "bob", "ethereum", "hashkey", "hyperliquid",
-      "ink", "lens", "linea", "mantle", "opbnb", "optimism", "ronin",
+      "bnb-chain", "bob", "ethereum", "gnosis-chain", "gravity", "hashkey", "hyperliquid",
+      "ink", "lens", "linea", "mantle", "opbnb", "optimism", "polygon", "ronin",
       "scroll", "shibarium", "soneium", "sonic",
       "solana", "taiko", "unichain", "worldchain", "zksync"
     ];
@@ -164,15 +164,13 @@ node <<EOF
     // === Build relatedTokens for FEEDS
     function buildDataFeedTokens(feedItems) {
       return feedItems.map(i => {
-        // The baseAsset is guaranteed if the item passed the TS checks
         const baseLower = i.baseAsset.toLowerCase();
         return {
           assetName: i.assetName,
           baseAsset: i.baseAsset,
-          // data feeds keep the quoteAsset if it exists
           quoteAsset: i.quoteAsset || "",
           network: i.network,
-          url: buildFeedUrl(i),
+          url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
@@ -185,16 +183,14 @@ node <<EOF
         return {
           assetName: i.assetName,
           baseAsset: i.baseAsset,
-          // streams keep the quoteAsset if present
           quoteAsset: i.quoteAsset || "",
-          url: buildFeedUrl(i),
+          url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
     // === Build relatedTokens for SMARTDATA
-    // no quoteAsset, but we *do* store productTypeCode
     function buildSmartDataTokens(smartItems) {
       return smartItems.map(i => {
         const baseLower = i.baseAsset.toLowerCase();
@@ -203,22 +199,10 @@ node <<EOF
           baseAsset: i.baseAsset,
           network: i.network,
           productTypeCode: i.productTypeCode,
-          url: buildFeedUrl(i),
+          url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
-    }
-
-    function buildFeedUrl(item) {
-      if (item.deliveryChannelCode === 'DS') {
-        // data-stream
-        const base = (item.baseAsset || 'BASE').toLowerCase();
-        const quote = (item.quoteAsset || 'QUOTE').toLowerCase();
-        return \`https://data.chain.link/streams/\${base}-\${quote}\`;
-      }
-      // else => data feed or smartdata => "https://data.chain.link/feeds/<network>/mainnet/<suffix>"
-      const feedSuffix = item.feedID.split('-').slice(1).join('-');
-      return \`https://data.chain.link/feeds/\${item.network}/mainnet/\${feedSuffix}\`;
     }
 
     // === Now build each group

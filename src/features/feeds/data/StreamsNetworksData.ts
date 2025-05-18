@@ -159,6 +159,34 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Gnosis",
+    logoUrl: "/assets/chains/gnosis-chain.svg",
+    mainnet: {
+      label: "Gnosis Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://gnosis.blockscout.com/address/%s",
+    },
+    testnet: {
+      label: "Gnosis Chiado",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://gnosis-chiado.blockscout.com/address/%s",
+    },
+  },
+  {
+    network: "Gravity",
+    logoUrl: "/assets/chains/gravity.svg",
+    mainnet: {
+      label: "Gravity Alpha Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://explorer.gravity.xyz/address/%s",
+    },
+    testnet: {
+      label: "Gravity Alpha Testnet Sepolia",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://explorer-sepolia.gravity.xyz/address/%s",
+    },
+  },
+  {
     network: "HashKey Chain",
     logoUrl: "/assets/chains/hashkey.svg",
     mainnet: {
@@ -292,6 +320,21 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "OP Sepolia",
       verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
       explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "Polygon",
+    logoUrl: "/assets/chains/polygon.svg",
+    networkStatus: "https://polygonscan.freshstatus.io/",
+    mainnet: {
+      label: "Polygon Mainnet",
+      verifierProxy: "0xF276a4BC8Da323EA3E8c3c195a4E2E7615a898d1",
+      explorerUrl: "https://polygonscan.com/address/%s",
+    },
+    testnet: {
+      label: "Polygon Amoy Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://amoy.polygonscan.com/address/%s",
     },
   },
   {
