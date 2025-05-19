@@ -47,7 +47,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
 
       <Callout type="note" title="Already Have a Token?">
         If you have an existing token that meets the{" "}
-        <a href="/ccip/concepts/cross-chain-tokens#requirements-for-cross-chain-tokens">CCT requirements</a>:
+        <a href="/ccip/concepts/cross-chain-token/evm/tokens">CCT requirements</a>:
         <ul>
           <li>Skip the "Deploy Token" section</li>
           <li>Enter your existing token address in the address field below</li>
@@ -62,7 +62,7 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
             <li>Open the "Deploy & Run Transactions" tab</li>
             <li>Set Environment to "Injected Provider - MetaMask"</li>
             <li>
-              Select <strong>BurnMintERC677</strong> contract
+              Select <strong>BurnMintERC20</strong> contract
             </li>
           </ul>
         </TutorialStep>
@@ -114,6 +114,12 @@ export const DeployTokenStep = ({ chain }: DeployTokenStepProps) => {
               name="maxSupply"
               type="uint256"
               description="The maximum amount of tokens that can ever exist (0 means unlimited)"
+              example="0"
+            />
+            <SolidityParam
+              name="preMint"
+              type="uint256"
+              description="The amount of tokens to be minted to the owner at the time of deployment"
               example="0"
             />
           </div>

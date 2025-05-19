@@ -11,8 +11,8 @@ import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
 import { LogLevel, structuredLog, resolveChainOrThrow } from "../ccip/utils.ts"
-import { getChainId, getTitle } from "../../../features/utils/index.ts"
-import { SelectorsConfig } from "@config/data/ccip/selectors.ts"
+import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
+import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 
 /**
  * Service class for handling CCIP token data operations
@@ -22,14 +22,12 @@ export class TokenDataService {
   private errors: TokenConfigError[] = []
   private readonly requestId: string
   private skippedTokensCount = 0
-  private selectorConfig: SelectorsConfig
 
   /**
    * Creates a new instance of TokenDataService
    */
-  constructor(selectorConfig: SelectorsConfig) {
+  constructor() {
     this.requestId = crypto.randomUUID()
-    this.selectorConfig = selectorConfig
 
     structuredLog(LogLevel.DEBUG, {
       message: "TokenDataService initialized",
@@ -113,6 +111,7 @@ export class TokenDataService {
 
           const supportedChain: SupportedChain = resolveChainOrThrow(chainId)
           const numericChainId = getChainId(supportedChain)
+          const { chainType } = getChainTypeAndFamily(supportedChain)
 
           if (!numericChainId) {
             structuredLog(LogLevel.WARN, {
@@ -132,16 +131,17 @@ export class TokenDataService {
             .map((destChainId) => {
               const destSupportedChain = resolveChainOrThrow(destChainId)
               const destNumericChainId = getChainId(destSupportedChain)
+              const { chainType } = getChainTypeAndFamily(destSupportedChain)
 
               if (!destNumericChainId) return destChainId
 
               if (outputKey === "chainId") {
                 return destNumericChainId.toString()
               } else if (outputKey === "selector") {
-                const selectorEntry = this.selectorConfig?.selectors[destNumericChainId]
+                const selectorEntry = getSelectorEntry(destNumericChainId, chainType)
                 return selectorEntry?.selector || destChainId
               } else if (outputKey === "internalId") {
-                const selectorEntry = this.selectorConfig?.selectors[destNumericChainId]
+                const selectorEntry = getSelectorEntry(destNumericChainId, chainType)
                 return selectorEntry?.name || destChainId
               }
               return destChainId
@@ -153,12 +153,12 @@ export class TokenDataService {
           if (outputKey === "chainId") {
             chainKey = numericChainId.toString()
           } else if (outputKey === "selector") {
-            const selectorEntry = this.selectorConfig?.selectors[numericChainId]
+            const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.selector
             }
           } else if (outputKey === "internalId") {
-            const selectorEntry = this.selectorConfig?.selectors[numericChainId]
+            const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.name
             }
@@ -324,11 +324,11 @@ export class TokenDataService {
     }
 
     if (filters.chain_id) {
-      const chainIds = filters.chain_id.split(",").map((id) => parseInt(id.trim()))
+      const chainIds = filters.chain_id.split(",").map((id) => id.trim())
       filteredTokens = Object.entries(filteredTokens)
         .filter(([, tokenData]) => {
           return Object.values(tokenData).some((chainInfo: TokenChainData) => {
-            return chainIds.includes(chainInfo.chainId)
+            return chainIds.includes(chainInfo.chainId.toString())
           })
         })
         .reduce<TokenDataResponse>((acc, [key, token]) => {

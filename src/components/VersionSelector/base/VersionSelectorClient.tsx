@@ -98,11 +98,21 @@ export const VersionSelectorClient = <T extends string>({
       setIsChanging(true)
 
       try {
-        // Extract the page path from current URL with improved regex
-        const pathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
+        // Extract the page path from current URL with improved regex that handles both patterns
+        // Handle both patterns:
+        // 1. Standard: /{product}/api-reference/v{version}/{page}
+        // 2. Extended: /{product}/api-reference/{vm_type}/v{version}/{page}
+        const standardPathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
+        const extendedPathMatch = currentPath.match(
+          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
+        )
+
+        const pagePath = extendedPathMatch?.[1] || standardPathMatch?.[1]
+        const hasTrailingSlash = currentPath.endsWith("/")
+        const productAvailability = PAGE_AVAILABILITY[config.product.name]
 
         // If no specific page (e.g., index), proceed normally
-        if (!pathMatch) {
+        if (!pagePath) {
           window.location.href = buildVersionUrl(
             { ...config.product, name: config.product.name as Collection },
             currentPath,
@@ -111,10 +121,6 @@ export const VersionSelectorClient = <T extends string>({
           )
           return
         }
-
-        const pagePath = pathMatch[1] // Path without trailing slash
-        const hasTrailingSlash = currentPath.endsWith("/")
-        const productAvailability = PAGE_AVAILABILITY[config.product.name]
 
         if (productAvailability) {
           const pageConfig = productAvailability[pagePath]

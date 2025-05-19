@@ -1,0 +1,53 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Standard - Architecture (EVM)"
+metadata:
+  description: "Understand the architecture of Chainlink's Cross-Chain Token (CCT) standard on EVM chains. Learn about key components like registry, token, and token pool contracts."
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+The Cross-Chain Token (CCT) architecture offers a streamlined, self-service approach to enabling cross-chain operations. This system integrates tightly with Chainlink's Cross-Chain Interoperability Protocol (CCIP), allowing token developers to configure, manage, and transfer tokens across multiple blockchains without requiring the support of third parties.
+
+The detailed architecture diagram below provides a comprehensive view of how CCT fits within the CCIP ecosystem, illustrating the interaction between key components such as token contracts, token pools, and registry modules. While you can explore the full details of these components in the CCIP Architecture document, the key takeaway for Cross-Chain Token (CCT) is understanding how the `TokenAdminRegistry` contract is used.
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/onchain-evm-architecture.jpg"
+  alt="Cross-Chain Token Standard - Architecture (EVM)"
+/>
+
+The **TokenAdminRegistry** contract is essential when transferring tokens across blockchains. CCIP's `onRamp` and `offRamp` contracts interact with it to fetch the token pool associated with a given token. For cross-chain transfers to work, token administrators need a way to set or configure the token pool linked to a token.
+
+In the following sections, we will explore how token administrators can register their tokens in the TokenAdminRegistry, link them to the relevant token pools, and configure them for use in CCIP.
+
+In the Cross-Chain Token (CCT) standard, several key contracts work together to facilitate the secure transfer and management of tokens across multiple blockchains. These contracts can be categorized into three main groups:
+
+## Registry
+
+The Registry contracts manage the registration tokens within the CCT system. They ensure that the correct entities have control over cross-chain operations.
+
+- `TokenAdminRegistry`: This contract stores the token administrators and pools for all registered cross-chain tokens. It allows tokens to be registered in a self-service manner and handles administrator role changes via a two-step process (transfer request and acceptance).
+- `RegistryModuleOwnerCustom`: This contract facilitates the registration of token administrators. It works with the TokenAdminRegistry to ensure that only authorized administrators are assigned to manage cross-chain operations.
+
+## Token
+
+The Token contract represents the actual token being managed and transferred across blockchains. This contract must be ERC20-compatible and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, refer to the Tokens page.
+
+## Token Pool
+
+The Token Pool contract is responsible for executing the cross-chain token transfers. It manages how tokens are locked, burned, minted, or unlocked across blockchains.
+
+<Aside type="caution" title="Token Pool Ownership">
+  Self-Administered Token Pools are deployed and managed directly by token developers, and are not controlled by
+  Chainlink Labs, the Chainlink Foundation, or Chainlink node operators. Such token pools exist outside of the CCIP
+  protocol and must be evaluated by users on a case-by-case basis. Please review CCIP Service Responsibility for more
+  information.
+</Aside>
+
+Each blockchain has its own token pool that interacts with the token contract. Depending on the token handling mechanism (e.g., Burn & Mint or Lock & Mint), different token pool contracts will be deployed. For example:
+
+- `BurnMintTokenPool`: Handles the burning, or minting of tokens depending whether it is the source or destination blockchain.
+- `LockReleaseTokenPool`: Handles the locking or releasing of tokens depending on whether it is the source or destination blockchain.
+
+For more information on the token pool contracts and their functionalities, refer to the [Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools) page.

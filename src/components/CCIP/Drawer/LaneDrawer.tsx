@@ -9,7 +9,7 @@ import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import RateTooltip from "../Tooltip/RateTooltip.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "@config/types.ts"
 
 function LaneDrawer({
   lane,
@@ -20,7 +20,7 @@ function LaneDrawer({
   explorer,
 }: {
   lane: LaneConfig
-  sourceNetwork: { name: string; logo: string; key: string }
+  sourceNetwork: { name: string; logo: string; key: string; chainType: ChainType }
   destinationNetwork: { name: string; logo: string; key: string }
   explorer: ExplorerInfo
   environment: Environment
@@ -32,6 +32,11 @@ function LaneDrawer({
     chain: destinationNetwork.key,
   })
 
+  const sourceNetworkDetails = getNetwork({
+    filter: environment,
+    chain: sourceNetwork.key,
+  })
+
   return (
     <>
       <h2 className="ccip-table__drawer-heading">Lane details</h2>
@@ -39,18 +44,21 @@ function LaneDrawer({
         sourceNetwork={{
           logo: sourceNetwork.logo,
           name: sourceNetwork.name,
+          chainType: sourceNetwork.chainType,
+          rmnPermeable: sourceNetworkDetails?.rmnPermeable,
         }}
         destinationNetwork={{
           logo: destinationNetwork.logo,
           name: destinationNetwork.name,
+          chainType: destinationNetworkDetails?.chainType,
         }}
         onRamp={lane.onRamp.address}
         offRamp={lane.offRamp.address}
         enforceOutOfOrder={lane.onRamp.enforceOutOfOrder}
         explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
-        rmnPermeable={lane.rmnPermeable}
         inOutbound={inOutbound}
+        laneRmnPermeable={lane.rmnPermeable}
       />
 
       <div className="ccip-table__drawer-container">
@@ -66,10 +74,10 @@ function LaneDrawer({
           <table className="ccip-table">
             <thead>
               <tr>
-                <th>Ticker</th>
-                <th>Token address (Source)</th>
-                <th>Decimals</th>
-                <th>
+                <th style={{ width: "100px" }}>Ticker</th>
+                <th style={{ width: "150px" }}>Token address (Source)</th>
+                <th style={{ width: "80px" }}>Decimals</th>
+                <th style={{ width: "100px" }}>
                   Mechanism
                   <Tooltip
                     label=""
@@ -84,11 +92,11 @@ function LaneDrawer({
                     }}
                   />
                 </th>
-                <th>
+                <th style={{ width: "150px" }}>
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Maximum amount per transaction"
+                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
                     labelStyle={{
                       marginRight: "5px",
                     }}
@@ -99,7 +107,7 @@ function LaneDrawer({
                     }}
                   />
                 </th>
-                <th>
+                <th style={{ width: "180px" }}>
                   Rate limit refill rate
                   <Tooltip
                     label=""
@@ -176,13 +184,14 @@ function LaneDrawer({
                               ]
                             )}
                         </td>
-                        <td>
+                        <td className="rate-tooltip-cell">
                           {lane.supportedTokens && (
                             <RateTooltip
                               destinationLane={lane.supportedTokens[token]}
                               inOutbound={inOutbound}
                               symbol={token}
                               decimals={data[sourceNetwork.key].decimals}
+                              position="left"
                             />
                           )}
                         </td>

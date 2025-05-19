@@ -201,7 +201,7 @@ export const ChainUpdateBuilderWrapper = ({ chain }: ChainUpdateBuilderWrapperPr
               <li>
                 Select your token pool contract:
                 <div className={styles.contractInfo}>
-                  <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong>
+                  <strong>{poolType === "burn" ? "BurnMintTokenPool" : "LockReleaseTokenPool"}</strong> at{" "}
                   <ReactCopyText text={poolAddress || ""} code />
                 </div>
               </li>

@@ -12,8 +12,8 @@ interface ErrorParameter {
 
 // Props with literal types - use the same keys as in data.ts
 interface Props {
-  type: "erc20" | "router" | "onramp" | "rate-limiter" | "price-registry" | "pool" | "burnMintERC20"
-  version: "v1_5_0" | "v1_5_1"
+  type: "erc20" | "router" | "onramp" | "rate-limiter" | "price-registry" | "pool" | "burnMintERC20" | "feequoter"
+  version: "v1_5_0" | "v1_5_1" | "v1_6_0"
 }
 
 const { type, version } = Astro.props
@@ -27,6 +27,7 @@ const typeToErrorKey = {
   "price-registry": "priceregistryCCIPSendErrors",
   pool: "poolCCIPSendErrors",
   burnMintERC20: "burnMintERC20CCIPSendErrors",
+  feequoter: "feequoterCCIPSendErrors",
 } as const
 
 const selectedErrors = errors[version]?.[typeToErrorKey[type]] || []
