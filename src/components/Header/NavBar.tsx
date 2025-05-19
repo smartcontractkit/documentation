@@ -1,6 +1,5 @@
 import React from "react"
 import { NavBar as Nav } from "./Nav/index.ts"
-import { Search } from "./aiSearch/Search.tsx"
 import { useNavBar } from "./useNavBar/useNavBar.ts"
 import styles from "./scroll.module.css"
 import { ProductsNav, SubProductsNav } from "./Nav/config.tsx"
@@ -11,12 +10,16 @@ export const NavBar = ({
   path,
   showSearch = true,
   algoliaVars,
+  categoryOrder,
+  popularCards,
 }: {
   productsNav: ProductsNav
   subProductsNav: SubProductsNav
   path: string
   showSearch?: boolean
   algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+  categoryOrder: string[]
+  popularCards: Array<{ url: string; imgSrc: string; label: string }>
 }) => {
   const navRef = React.useRef(null)
 
@@ -60,7 +63,10 @@ export const NavBar = ({
         productsNav={productsNav}
         subProductsNav={subProductsNav}
         path={path}
-        searchTrigger={showSearch ? <Search algoliaVars={algoliaVars} /> : undefined}
+        showSearch={showSearch}
+        algoliaVars={algoliaVars}
+        categoryOrder={categoryOrder}
+        popularCards={popularCards}
         onHideChange={onHideChange}
         doubleNavbar={doubleNavbar()}
       />

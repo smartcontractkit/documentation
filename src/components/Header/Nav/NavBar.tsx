@@ -7,11 +7,15 @@ import { useScrollPosition } from "./useScrollPosition.tsx"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
 import { useHideHeader } from "./useHideHeader.tsx"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
+import AlgoliaSearch from "../aiSearch/Search.tsx"
 
 export type SearchTrigger = React.ReactNode
 
 export type NavBarProps = {
-  searchTrigger?: SearchTrigger
+  showSearch: boolean
+  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+  categoryOrder: string[]
+  popularCards: Array<{ url: string; imgSrc: string; label: string }>
   path: string
   onHideChange?: (hidden: boolean) => void
   productsNav: ProductsNav
@@ -23,7 +27,9 @@ export const navBarHeight = 64
 
 export const NavBar = ({
   path,
-  searchTrigger,
+  algoliaVars,
+  categoryOrder,
+  popularCards,
   onHideChange,
   productsNav,
   subProductsNav,
@@ -76,7 +82,6 @@ export const NavBar = ({
             <div className={styles.menuSection}>
               <ProductNavigation
                 path={path}
-                searchTrigger={searchTrigger}
                 setNavMenuOpen={setIsMenuOpen}
                 productsNav={productsNav}
                 subProductsNav={subProductsNav}
@@ -86,7 +91,7 @@ export const NavBar = ({
               />
             </div>
             <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
-              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
+              <AlgoliaSearch algoliaVars={algoliaVars} categoryOrder={categoryOrder} popularCards={popularCards} />
             </div>
           </div>
         </div>

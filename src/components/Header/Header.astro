@@ -8,8 +8,19 @@ const { productsNav, subProductsNav } = getNavigationProps()
 const path = Astro.url.pathname
 const algoliaVars = {
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_SEARCH_APP_ID || "",
-  algoliaPublicApiKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY || "",
+  algoliaPublicApiKey: import.meta.env.ALGOLIA_PUBLIC_SEARCH_PUBLIC_API_KEY || "",
 }
+
+const categoryOrder = ["Documentation"]
+
+const popularCards = [
+  {
+    url: "https://dev.chain.link/resources/quickstarts",
+    imgSrc: "/images/algolia/quick-start.png",
+    label: "Quickstarts",
+  },
+  { url: "https://dev.chain.link/tools", imgSrc: "/images/algolia/tools.png", label: "Tools" },
+]
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -19,6 +30,14 @@ const algoliaVars = {
   width="0"
   style="display:none;visibility:hidden"></iframe>
 <!-- End Google Tag Manager (noscript) -->
-<NavBar path={path} productsNav={productsNav} subProductsNav={subProductsNav} algoliaVars={algoliaVars} client:idle />
+<NavBar
+  path={path}
+  productsNav={productsNav}
+  subProductsNav={subProductsNav}
+  algoliaVars={algoliaVars}
+  categoryOrder={categoryOrder}
+  popularCards={popularCards}
+  client:idle
+/>
 
 <NotificationBanner />
