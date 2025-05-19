@@ -10,15 +10,42 @@ export interface VersionConfig {
   }
 }
 
+// Add VM-specific version configuration type
+export interface VMVersionConfig {
+  evm: VersionConfig
+  svm: VersionConfig
+}
+
 // Registry of all product versions
 export const VERSIONS = {
   // CCIP Versions
   ccip: {
-    LATEST: "v1.5.1",
-    ALL: ["v1.5.1", "v1.5.0"] as const,
-    RELEASE_DATES: {
-      "v1.5.0": "2023-10-04T00:00:00Z", // 4 October 2023
-      "v1.5.1": "2023-12-04T00:00:00Z", // 4 December 2023
+    // Split versions by VM type
+    evm: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0", "v1.5.1", "v1.5.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
+        "v1.5.0": "2023-10-04T00:00:00Z", // 4 October 2023
+        "v1.5.1": "2023-12-04T00:00:00Z", // 4 December 2023
+      },
+    },
+    svm: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
+      },
+    },
+    // Default for backward compatibility
+    get LATEST() {
+      return this.evm.LATEST
+    },
+    get ALL() {
+      return this.evm.ALL
+    },
+    get RELEASE_DATES() {
+      return this.evm.RELEASE_DATES
     },
   },
   // Chainlink Local Versions
@@ -44,7 +71,7 @@ export const VERSIONS = {
 
 // Type helpers
 export type ProductVersions = {
-  [K in Collection]?: VersionConfig
+  [K in Collection]?: VersionConfig | VMVersionConfig
 }
 
 // Re-export for convenience

@@ -1,0 +1,176 @@
+/* 
+ * Override styles for Chainlink tooltips
+ * Applies dark theme to tooltip windows
+ */
+
+/* React Popper, Tippy, and general tooltip styles */
+[data-tippy-root],
+.tippy-box,
+[role="tooltip"],
+[data-popper-escaped="false"],
+[data-popper-reference-hidden="false"],
+.chakra-tooltip {
+  background-color: #121212 !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 8px !important;
+  color: #aaaaaa !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+  filter: none !important;
+  margin-top: -5px !important;
+  transform: translateY(-3px) !important;
+  max-width: 300px !important;
+  width: auto !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* For webkit browsers */
+[role="tooltip"]:before,
+[role="tooltip"]:after {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Content */
+[role="tooltip"] > div,
+.tippy-content,
+[role="tooltip"] > div > div,
+.chakra-tooltip__content {
+  color: #b7b7b7 !important;
+  background-color: black !important;
+  border-radius: 8px !important;
+  border: none !important;
+  outline: none !important;
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  text-align: left !important;
+  padding: var(--space-6x) var(--space-4x) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  width: auto !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
+/* Position adjustments for tooltips */
+[role="tooltip"][style*="position: absolute"] {
+  margin-top: -5px !important;
+}
+
+/* Fix edge tooltips by forcing horizontal centering when necessary */
+[class*="_tooltipContent_"] {
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+  text-align: left !important;
+  max-width: 100% !important;
+}
+
+/* Adjust tooltip placement logic by modifying tippy.js behavior */
+.tippy-box {
+  white-space: normal !important;
+  overflow: visible !important;
+  max-width: 300px !important;
+}
+
+/* Force text wrapping in all tooltip content */
+[role="tooltip"] *,
+.tippy-content,
+[class*="tooltipContent"],
+[class*="_tooltipContent_"] {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Enforce repositioning for tooltips too close to edges */
+[data-tippy-root] {
+  max-width: 300px !important;
+}
+
+/* Larger black arrow styling */
+svg[fill="var(--white)"] {
+  fill: black !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Target SVG in tooltip */
+[role="tooltip"] svg {
+  fill: black !important;
+  width: 18px !important;
+  height: 18px !important;
+  transform-origin: center !important;
+}
+
+/* Make specific arrow class larger */
+svg[class*="_tooltipArrow_"] {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Additional CSS triangle for larger arrow */
+[role="tooltip"] div[class*="_top_"] + svg[class*="_tooltipArrow_"] {
+  top: 100% !important;
+  margin-top: 5px !important; /* Move arrow down a bit to match the tooltip movement */
+}
+
+/* Create a rounded arrow with multiple layers */
+[role="tooltip"]:has(svg[class*="_tooltipArrow_"][class*="_top_"]):before {
+  content: "";
+  position: absolute !important;
+  width: 20px !important;
+  height: 20px !important;
+  bottom: -8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(45deg) !important;
+  background: black !important;
+  border-radius: 0 0 4px 0 !important;
+  z-index: 10 !important;
+}
+
+/* Add extra layer to smooth the transition */
+[role="tooltip"]:has(svg[class*="_tooltipArrow_"][class*="_top_"]):after {
+  content: "";
+  position: absolute !important;
+  width: 100% !important;
+  height: 12px !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  background: black !important;
+  z-index: 11 !important;
+}
+
+/* Hide the original SVG when we're using our custom triangle */
+[role="tooltip"]:has(svg[class*="_tooltipArrow_"][class*="_top_"]) svg[class*="_tooltipArrow_"] {
+  opacity: 0 !important;
+}
+
+/* Apply no white borders to tooltips */
+[role="tooltip"],
+[role="tooltip"] *,
+.tippy-box,
+.tippy-box *,
+[data-tippy-root],
+[data-tippy-root] * {
+  border: none !important;
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Override any box shadows that might create white borders */
+[role="tooltip"] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Add a "fake" border using box-shadow with black color to create depth without white outline */
+[role="tooltip"] > div {
+  box-shadow: 0 0 0 1px #000000 !important;
+}
