@@ -6,7 +6,7 @@ import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts
 import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "~/config/types.ts"
 
 interface SearchProps {
   chains: {
@@ -26,12 +26,14 @@ interface SearchProps {
       name: string
       logo: string
       key: string
+      chainType: ChainType
     }
     destinationNetwork: {
       name: string
       logo: string
       key: string
       explorer: ExplorerInfo
+      chainType: ChainType
     }
     lane: LaneConfig
   }[]
