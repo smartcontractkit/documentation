@@ -1,0 +1,480 @@
+---
+section: ccip
+date: Last Modified
+title: "Building CCIP Messages from EVM to SVM"
+isIndex: false
+metadata:
+  description: "Implement CCIP messages from EVM chains to Solana. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmatic token transfers (data+tokens)."
+  excerpt: "ccip messages evm to solana cross-chain messaging token transfers solana integration blockchain interoperability programmatic token transfers"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Introduction
+
+This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g. Ethereum) to SVM chains (e.g. Solana). We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+
+## CCIP Message Structure
+
+CCIP messages are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.0/client) library. The `EVM2AnyMessage` struct is defined as follows:
+
+```solidity
+struct EVM2AnyMessage {
+    bytes receiver;
+    bytes data;
+    EVMTokenAmount[] tokenAmounts;
+    address feeToken;
+    bytes extraArgs;
+}
+```
+
+### receiver
+
+- **Definition**:This is the receiver program ID that will execute the CCIP message
+- **For token-only transfers**: Should be set to the default value for the `Pubkey` type in Solana (`11111111111111111111111111111111`)
+- **For arbitrary messaging** or **programmatic token transfers**: Must be the exact program ID of the SVM program that implements the `ccip_receive` instruction
+
+<Aside  title="Program ID Format">
+  When providing a SVM program ID as the receiver, it must be converted from [Solana's base58 format](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex format for CCIP messages. 
+  
+  Below is a JavaScript example using the [bs58](https://www.npmjs.com/package/bs58) library:
+  
+  1. Decode the base58 Solana address to its raw bytes (Solana addresses are already 32 bytes when decoded)
+  2. Convert those bytes to a hex string with "0x" prefix
+  
+  For example:
+  ```javascript
+  function encodeSolanaAddressToBytes32(solanaAddress) {
+    const addressBytes = bs58.decode(solanaAddress);
+    return `0x${Buffer.from(addressBytes).toString("hex")}`;
+  }
+  ```
+</Aside>
+
+### data
+
+- **Definition**: Contains the payload that will be passed to the receiving program
+- **For token-only transfers**: Empty (`0x`)
+- **For arbitrary messaging** or **programmatic token transfers**: Contains the data the receiver program will process
+- **Encoding requirement**: Must be encoded as a hex string with `0x`· prefix
+
+<Aside type="tip" title="Data Encoding">
+
+Data must be converted to bytes, then to a hex string with `0x` prefix. For example:
+
+```javascript
+const messageData = `0x${Buffer.from("Hello World").toString("hex")}`
+```
+
+**Note**: Ensure the SVM program on the destination chain can properly decode this format.
+
+</Aside>
+
+### tokenAmounts
+
+- **Definition**: An array of token addresses and amounts to transfer
+- **For data-only messages**: Must be an empty array
+- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
+
+### feeToken
+
+- **Definition**: Specifies which token to use for paying CCIP fees
+- **For native gas token**: Use `address(0)` to specify the source chain's native gas token (e.g. ETH on Ethereum)
+- **For ERC-20 tokens**: Can specify an ERC-20 token address for fee payment. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported fee tokens on your source chain
+
+## extraArgs
+
+The most critical component for SVM-bound messages is the [`SVMExtraArgsV1`
+](/ccip/api-reference/evm/v1.6.0/client#svmextraargsv1) structure:
+
+```solidity
+struct SVMExtraArgsV1 {
+    uint32 computeUnits;
+    uint64 accountIsWritableBitmap;
+    bool allowOutOfOrderExecution;
+    bytes32 tokenReceiver;
+    bytes32[] accounts;
+}
+
+bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
+```
+
+Let's examine each field in detail:
+
+### computeUnits
+
+Specifies the amount of compute units allowed for calling the `ccip_receive` instruction of the receiver program on SVM (similar to gas limit on EVM chains).
+
+<Aside title="Setting Compute Units">
+
+- **For token transfers only**: **MUST** be set to 0
+
+- **For arbitrary messaging** or **programmatic token transfers**: Must be
+  determined through comprehensive testing of the receiver program under different conditions
+
+</Aside>
+
+### Understanding SVM Account Model
+
+Unlike EVM chains where smart contracts manage their own storage, SVM blockchains (e.g. Solana) use an account-based architecture where:
+
+- **All data is stored in accounts**: There's no dedicated storage for programs
+- **Programs are stateless**: They can only read from and write to accounts passed to them
+- **Explicit account access**: Every account a program needs to access must be explicitly provided
+- **Access permissions**: Each account must be marked as either _readable_ or _writable_
+
+<Aside type="note" title="Why Accounts Matter">
+  In SVM blockchains, you must provide an accounts array because programs cannot access any data without explicitly
+  receiving account references. This differs fundamentally from EVM chains where contracts can access their own storage
+  implicitly.
+</Aside>
+
+#### accounts
+
+An array of 32-byte Solana public keys representing additional accounts required for execution.
+
+<Aside type="note" title="Important Considerations">
+
+- Maximum of 64 accounts
+
+- Must be in the exact order expected by the receiving program
+
+- Must include all accounts needed by the receiver (state accounts, token accounts, etc.)
+
+</Aside>
+
+#### accountIsWritableBitmap
+
+A 64-bit bitmap indicating which accounts in the `accounts` array should be marked as writable.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Understanding Writability</Fragment>
+  <Fragment slot="tab.2">Calculation Example</Fragment>
+  <Fragment slot="panel.1">
+    - **What does "writable" mean?**
+    
+            In Solana, marking an account as _writable_ means:
+            - Allows the program to modify the account's data
+            - Permits lamport balance mutations
+    
+    - **How the bitmap works:**
+
+            - Each bit corresponds to an account in the `accounts` array
+            - Uses little endian bit ordering, where the least significant bit (rightmost) is at position 0
+            - Bit position matches account array index (0-indexed) - bit 0 corresponds to accounts[0], bit 1 to accounts[1], etc.
+            - Setting bit at position N to 1 makes the Nth account writable
+            - When represented as a decimal value, the binary bits are read right-to-left (e.g., binary `0000110` = decimal `6`)
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    Suppose your accounts array has 7 accounts and accounts at positions 1 and 2 need to be writable:
+    ```
+    accounts[0]: Not writable (bit 0 = 0)
+    accounts[1]: Writable (bit 1 = 1)
+    accounts[2]: Writable (bit 2 = 1)
+    accounts[3]: Not writable (bit 3 = 0)
+    accounts[4]: Not writable (bit 4 = 0)
+    accounts[5]: Not writable (bit 5 = 0)
+    accounts[6]: Not writable (bit 6 = 0)
+    ```
+    
+    Binary: `0000110` = Decimal `6`
+    
+    ```javascript
+    const accountIsWritableBitmap = 6n; // or BigInt(6) in JavaScript/TypeScript
+    ```
+  </Fragment>
+</Tabs>
+
+### allowOutOfOrderExecution
+
+**MUST** be set to `true` for SVM as a destination chain.
+
+### tokenReceiver
+
+The Solana account that will initially receive tokens, represented as a 32-byte Solana public key.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Transfer to Wallet</Fragment>
+  <Fragment slot="tab.2">Transfer to Program</Fragment>
+  <Fragment slot="tab.3">Arbitrary Messaging</Fragment>
+  <Fragment slot="panel.1">
+    For transfers to wallets or multi-sig wallets: 
+    
+        - Set to the user's wallet address 
+        - **Note**: Do not use an Associated Token Account (ATA) as the `tokenReceiver`. Instead, **use the user's wallet address directly**. The ATA will be automatically derived by the CCIP nodes.
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    For transfers to programs: 
+    
+        - Set to a Program Derived Address (PDA) that the program has authority over 
+        - **Note**: If the receiver program does not have authority over the provided `tokenReceiver`, the tokens will be inaccessible.
+
+  </Fragment>
+  <Fragment slot="panel.3">
+    For data-only messaging (no tokens): 
+    
+        - **MUST** set to the default Solana PublicKey (`11111111111111111111111111111111`)
+        - This is required even though no tokens are being transferred
+
+  </Fragment>
+</Tabs>
+
+<Aside title="Encoding tokenReceiver">
+  Similar to the receiver field, the tokenReceiver must be properly encoded as a 32-byte hex string:
+  
+  - **For token transfers and programmatic transfers**: Convert the Solana wallet address or PDA from [base58](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex string
+  - **For arbitrary messaging (data-only)**: Use the default Solana PublicKey (`11111111111111111111111111111111`) encoded as a 32-byte hex string
+
+Below is a JavaScript example using the [bs58](https://www.npmjs.com/package/bs58) library:
+
+```javascript
+function encodeSolanaAddressToBytes32(solanaAddress) {
+  const addressBytes = bs58.decode(solanaAddress)
+  return `0x${Buffer.from(addressBytes).toString("hex")}`
+}
+```
+
+</Aside>
+
+## Message Encoding Requirements
+
+When implementing CCIP from EVM to SVM, proper encoding of various elements is crucial for successful message delivery and processing.
+
+<Aside  title="Encoding Considerations">
+
+Before sending a CCIP message to Solana, several elements must be correctly encoded:
+
+1. **SVM Addresses**: All Solana addresses (program IDs, PDAs, wallet addresses) must be properly encoded to bytes32 format
+1. **ExtraArgs Structure**: The SVMExtraArgsV1 structure must be ABI-encoded with the correct type tag
+1. **Message Data**: Any payload data must be properly hex-encoded with the `0x` prefix
+1. **Accounts Array**: All accounts must be in the exact order expected by the receiving program
+
+</Aside>
+
+## Implementation by Message Type
+
+### Token Transfer
+
+Use this configuration when sending only tokens from EVM to Solana:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
+      receiver: DEFAULT_PUBKEY,
+      tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
+      feeToken: feeTokenAddress,
+      data: "0x",
+      extraArgs: {
+        computeUnits: 0,
+        allowOutOfOrderExecution: true,
+        tokenReceiver: recipientAddress,
+        accountIsWritableBitmap: 0,
+        accounts: []
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    const message = {
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
+      receiver: "11111111111111111111111111111111",  // Default PubKey
+      tokenAmounts: [{ 
+        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Ethereum Sepolia
+        amount: "1000000000000000000"  // 1 LINK (18 decimals)
+      }],
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789",  // LINK for fees
+      data: "0x",  // No data for token-only transfer
+      extraArgs: encodeExtraArgs({
+        computeUnits: 0,
+        allowOutOfOrderExecution: true,
+        tokenReceiver: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // Recipient wallet
+        accountIsWritableBitmap: 0,
+        accounts: []
+      })
+    };
+    ```
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `computeUnits` **MUST** be 0
+- `receiver` should be the default PublicKey
+- `tokenReceiver`:
+  - For user transfers, `tokenReceiver` should be the user's wallet address
+  - For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over
+- `allowOutOfOrderExecution` **MUST** be set to `true`
+
+</Aside>
+
+### Arbitrary Messaging
+
+Use this configuration when sending only data messages to SVM:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
+      receiver: receiverProgramId,
+      tokenAmounts: [],
+      feeToken: feeTokenAddress,
+      data: messageData,
+      extraArgs: {
+        computeUnits: determinedComputeUnits,
+        allowOutOfOrderExecution: true,
+        tokenReceiver: DEFAULT_PUBKEY,
+        accountIsWritableBitmap: calculatedBitmap,
+        accounts: [PDA, account, another program ID...]
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    // Identify which accounts need to be writable
+    const accounts = [
+      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
+      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
+      "4wBqpRvipCi5k5zCZ4NFPiFPEM5gitBKRiSgZ8NZh3nk"   // account3 (not writable)
+    ];
+
+    // account 1 at index0 , not writable --> bit 0 = 0
+    // account 2 at index1 , writable --> bit 1 = 1
+    // account 3 at index2 , not writable --> bit 2 = 0
+    // bitmap = 00000010
+    // bitmap in decimal = 2
+
+    const bitmap = 2;
+
+    const message = {
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
+      receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
+      tokenAmounts: [],  // No tokens for data-only message
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789",  // LINK for fees
+      data: "0x68656c6c6f", // "hello" in hex
+      extraArgs: encodeExtraArgs({
+        computeUnits: 200000,  // compute units required by the program for executing the ccip_receive instruction
+        allowOutOfOrderExecution: true,
+        tokenReceiver: "0x0000000000000000000000000000000000000000000000000000000000000000",  // Default PubKey encoded in 32-byte hex format
+        accountIsWritableBitmap: 2,  // Decimal representation of bitmap
+        accounts: accounts // accounts required by the program for executing the ccip_receive instruction
+      })
+    };
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `computeUnits` must be determined through testing of the receiver program
+- `accounts` must include all accounts required by the receiver program
+- `accountIsWritableBitmap` must correctly identify writable accounts
+- `allowOutOfOrderExecution` **MUST** be set to `true`
+
+</Aside>
+
+### Programmatic Token Transfer (Data and Tokens)
+
+Use this configuration when sending both tokens and data in a single message:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: SVM_CHAIN_SELECTOR,
+      receiver: receiverProgramId,
+      tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
+      feeToken: feeTokenAddress,
+      data: messageData,
+      extraArgs: {
+        computeUnits: determinedComputeUnits,
+        allowOutOfOrderExecution: true,
+        tokenReceiver: PDA,
+        accountIsWritableBitmap: calculatedBitmap,
+        accounts: [PDA, account, another program ID...]
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    // Identify all required accounts
+    const accounts = [
+      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
+      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
+      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  // account3 (not writable)
+      "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // account4 (writable)
+      "H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT",  // account5 (not writable)
+      "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // account6 (writable)
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"     // account7 (not writable)
+    ];
+
+    // account 1 at index0 , not writable --> bit 0 = 0
+    // account 2 at index1 , writable --> bit 1 = 1
+    // account 3 at index2 , not writable --> bit 2 = 0
+    // account 4 at index3 , writable --> bit 3 = 1
+    // account 5 at index4 , not writable --> bit 4 = 0
+    // account 6 at index5 , writable --> bit 5 = 1
+    // account 7 at index6 , not writable --> bit 6 = 0
+
+    // bitmap = 00101010
+    // bitmap in decimal = 42
+
+    const bitmap = 42;
+
+    const message = {
+      destinationChainSelector: 16423721717087811551,  // Solana Devnet
+      receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
+      tokenAmounts: [{
+        token: "0x779877A7B0D9E8603169DdbD7836e478b4624789",
+        amount: "1000000000000000000" // 1 LINK (18 decimals)
+      }],
+      feeToken: "0x0000000000000000000000000000000000000000",  // Native ETH for fees
+      data: "0x68656c6c6f", // "hello" in hex
+      extraArgs: encodeExtraArgs({
+        computeUnits: 300000,  // compute units required by the program for executing the ccip_receive instruction
+        allowOutOfOrderExecution: true,
+        tokenReceiver: "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ", // a PDA that the program has authority over
+        accountIsWritableBitmap: 42,  // Decimal representation of bitmap
+        accounts: accounts
+      })
+    };
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `tokenReceiver` must be a PDA the program has authority over
+- `accounts` must include all accounts required by the receiver program
+- The program must contain logic to handle the received data and tokens
+- `allowOutOfOrderExecution` **MUST** be set to `true`
+
+</Aside>
+
+## Related Tutorials
+
+To see these concepts in action with step-by-step implementation guides, check out the following tutorials:
+
+- [Token Transfers: EVM to SVM](/ccip/tutorials/svm/destination/token-transfers) - Learn how to implement token-only transfers from EVM chains to Solana wallets
+- [Arbitrary Messaging: EVM to SVM](/ccip/tutorials/svm/destination/arbitrary-messaging) - Learn how to send data messages from EVM chains to Solana programs
+
+These tutorials provide complete, working examples using the concepts covered in this guide.
+
+<CcipCommon callout="educationalDisclaimer" />

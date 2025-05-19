@@ -56,8 +56,11 @@ export const getVersionLabel = <T extends string>(version: T, isLatest: boolean)
  * @param availableVersions - List of valid versions
  * @returns Valid version string
  */
-export const validateVersion = <T extends string>(version: T, availableVersions: ReadonlyArray<T> | T[]): T => {
-  if (!availableVersions.includes(version)) {
+export const validateVersion = <T extends string>(
+  version: T | undefined,
+  availableVersions: ReadonlyArray<T> | T[]
+): T => {
+  if (!version || !availableVersions.includes(version)) {
     console.warn(`Invalid version ${version}. Falling back to first available version.`)
     return availableVersions[0]
   }
@@ -74,8 +77,8 @@ export const validateVersion = <T extends string>(version: T, availableVersions:
  * @returns Complete URL path for the new version
  *
  * @example
- * // Current: /ccip/api-reference/v1.5.0/client
- * // Returns: /ccip/api-reference/v1.5.1/client
+ * // Current: /ccip/api-reference/evm/v1.5.0/client
+ * // Returns: /ccip/api-reference/evm/v1.5.1/client
  */
 export const buildVersionUrl = (
   product: ProductConfig,
@@ -87,7 +90,7 @@ export const buildVersionUrl = (
   const escapedVersion = currentVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
   // Extract the path after version using regex
-  // Example: /ccip/api-reference/v1.5.0/client -> /client
+  // Handle both standard and extended path patterns
   const versionPattern = new RegExp(`${product.basePath}/${escapedVersion}(/.*)?$`)
   const match = currentPath.match(versionPattern)
 
@@ -109,26 +112,31 @@ export const buildVersionUrl = (
  *
  * @example
  * // Returns { isApiReference: true, product: "ccip", isVersioned: true }
- * detectApiReference("/ccip/api-reference/v1.5.1/client")
+ * detectApiReference("/XXX/api-reference/v1.5.1/client")
  *
- * // Returns { isApiReference: true, product: "ccip", isVersioned: false }
- * detectApiReference("/ccip/api-reference/index")
+ * // Also handles extended paths:
+ * detectApiReference("/ccip/api-reference/evm/v1.5.1/client")
  */
 export const detectApiReference = (
   path: string
 ): { isApiReference: boolean; product?: Collection; isVersioned: boolean } => {
-  // First regex: Matches API reference paths and captures product name
-  // Example: /ccip/api-reference/v1.5.1 -> matches, product = "ccip"
-  const versionMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
-  if (!versionMatch) return { isApiReference: false, isVersioned: false }
+  // Match both standard and extended API reference paths
+  // Standard: /product/api-reference/v1.5.1/client
+  // Extended: /ccip/api-reference/evm/v1.5.1/client
+  const standardMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
+  const extendedMatch = path.match(/^\/([^/]+)\/api-reference\/(?:[^/]+)(?:\/v\d+\.\d+\.\d+)?/)
 
-  const product = versionMatch[1] as Collection
+  const match = standardMatch || extendedMatch
+  if (!match) return { isApiReference: false, isVersioned: false }
+
+  const product = match[1] as Collection
   const hasVersions = getProductVersionConfig(product)
 
-  // Second regex: Strictly checks if page is under a version directory
-  // Example: /ccip/api-reference/v1.5.1/client -> matches
-  // Example: /ccip/api-reference/index -> doesn't match
-  const isVersioned = path.match(/^\/[^/]+\/api-reference\/v\d+\.\d+\.\d+/) !== null
+  // Check if page is under a version directory
+  // Matches both standard and extended paths with versions
+  const isVersioned =
+    path.match(/^\/[^/]+\/api-reference\/v\d+\.\d+\.\d+/) !== null ||
+    path.match(/^\/[^/]+\/api-reference\/[^/]+\/v\d+\.\d+\.\d+/) !== null
 
   return {
     isApiReference: true,
@@ -141,16 +149,26 @@ export const detectApiReference = (
  * Gets the version configuration for a specific product.
  *
  * @param product - The product identifier
+ * @param vmType - Optional VM type (evm, svm) for products that have VM-specific versions
  * @returns Version configuration if product has versioned docs, undefined otherwise
  *
  * @example
- * const config = getProductVersionConfig("ccip")
+ * const config = getProductVersionConfig("ccip", "svm")
  * if (config) {
- *   console.log(config.LATEST) // "v1.5.1"
+ *   console.log(config.LATEST) // "v1.6.0"
  * }
  */
-export function getProductVersionConfig(product: Collection) {
-  return VERSIONS[product]
+export function getProductVersionConfig(product: Collection, vmType?: string | undefined) {
+  const productConfig = VERSIONS[product]
+  if (!productConfig) return undefined
+
+  // If VM type specified and product has VM-specific configs, return that config
+  if (vmType && "evm" in productConfig && "svm" in productConfig) {
+    return productConfig[vmType as keyof typeof productConfig] || productConfig
+  }
+
+  // Otherwise return the product config
+  return productConfig
 }
 
 /**
@@ -158,14 +176,20 @@ export function getProductVersionConfig(product: Collection) {
  *
  * @param product - The product identifier
  * @param version - The version string (e.g., "v1.5.1")
+ * @param vmType - Optional VM type (evm, svm) for products that have VM-specific versions
  * @returns ISO date string of the release date if found, undefined otherwise
  *
  * @example
- * const releaseDate = getVersionReleaseDate("ccip", "v1.5.1")
- * // Returns: "2023-12-04T00:00:00Z"
+ * const releaseDate = getVersionReleaseDate("ccip", "v1.6.0", "svm")
+ * // Returns: "2024-05-15T00:00:00Z"
  */
-export function getVersionReleaseDate(product: Collection, version: string): string | undefined {
-  return VERSIONS[product]?.RELEASE_DATES[version]
+export function getVersionReleaseDate(
+  product: Collection,
+  version: string,
+  vmType?: string | undefined
+): string | undefined {
+  const productConfig = getProductVersionConfig(product, vmType)
+  return productConfig?.RELEASE_DATES[version]
 }
 
 /**

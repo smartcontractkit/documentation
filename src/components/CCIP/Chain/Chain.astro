@@ -12,7 +12,6 @@ import {
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import ChainTable from "~/components/CCIP/Tables/ChainTable"
 import { getTokenIconUrl } from "~/features/utils"
-import Drawer from "../Drawer/Drawer"
 import ChainTokenGrid from "./ChainTokenGrid"
 
 interface Props {
@@ -41,7 +40,6 @@ const lanes = await getAllNetworkLanes({
   environment,
   version: Version.V1_2_0,
   chain: network?.chain || "",
-  site: Astro.url.origin || "",
 })
 
 const searchLanes = getSearchLanes({ environment })
@@ -74,13 +72,14 @@ const searchLanes = getSearchLanes({ environment })
           name: network.name,
           logo: network.logo,
           key: network.chain,
+          chainType: network.chainType,
         }}
       />
     </div>
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
-        <a class="button secondary" href="/ccip/tutorials/token-manager#verifying-your-token">Add my token</a>
+        <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">Add my token</a>
       </div>
       <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
     </div>
@@ -126,8 +125,8 @@ const searchLanes = getSearchLanes({ environment })
 
   @media (min-width: 50em) {
     .layout {
-      max-width: min(calc(1440px - 2 * var(--space-4x)), calc(100% - 2 * var(--space-4x)));
-      padding: 0;
+      max-width: 1500px;
+      padding: 0 var(--space-6x);
     }
   }
 
@@ -135,8 +134,7 @@ const searchLanes = getSearchLanes({ environment })
     .layout {
       display: grid;
       --doc-padding: var(--space-10x);
-      padding-top: var(--doc-padding);
-      padding-bottom: var(--doc-padding);
+      padding: var(--doc-padding) var(--space-8x);
       grid-template-columns: 1fr 1fr;
       gap: var(--space-24x);
     }

@@ -1,0 +1,241 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for SVM to EVM Tutorials"
+isIndex: false
+metadata:
+  description: "Prerequisites for the SVM to EVM tutorials."
+  excerpt: "prerequisites for svm to evm tutorials"
+---
+
+import { Aside } from "@components"
+
+Before starting the SVM to EVM tutorials, ensure you have:
+
+## Development Environment
+
+- **Anchor and Solana CLI Tools**: Install Anchor and Solana CLI Tools following the [installation guide](https://www.anchor-lang.com/docs/installation). This requires Rust to be installed.
+- **Node.js v20 or higher**: You can use the [nvm package](https://www.npmjs.com/package/nvm) to install and switch between Node.js versions. Once installed, you can verify the node version with:
+
+  ```bash
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v23.11.0
+  ```
+
+- **Yarn**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP Solana Starter Kit:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+    ```
+
+1.  Checkout to the `ccip` branch:
+
+    ```bash
+    git checkout ccip
+    ```
+
+1.  Install dependencies:
+
+        ```bash
+        yarn install
+        ```
+
+## Wallets
+
+- **Solana Wallet with Private Key**: You'll need a Solana keypair file. If you don't have one, create it with:
+  ```bash
+  solana-keygen new --outfile ~/.config/solana/id.json
+  ```
+- **Ethereum Wallet Address**: You'll need an Ethereum address as the destination for your cross-chain messages. You don't need the private key for these tutorials since you're only sending to, not from, Ethereum.
+
+## Solana RPC URL
+
+- A Solana Devnet RPC URL. You can use the default public endpoint (https://api.devnet.solana.com) or sign up for a personal endpoint from [Helius](https://www.helius.dev/), [Alchemy](https://www.alchemy.com/), or another node provider service.
+
+### Configure Solana CLI for Devnet
+
+Before proceeding, ensure your Solana CLI is configured to use Devnet:
+
+```bash
+# Using the default public endpoint
+solana config set --url https://api.devnet.solana.com
+
+# OR using a custom RPC endpoint if you have one
+# solana config set --url YOUR_CUSTOM_DEVNET_RPC_URL
+```
+
+You can verify your current configuration with:
+
+```bash
+solana config get
+```
+
+You should see your configured Devnet RPC URL in the output. Example output:
+
+```text
+$ solana config get
+Config File: /Users/<username>/.config/solana/cli/config.yml
+RPC URL: https://api.devnet.solana.com
+WebSocket URL: wss://api.devnet.solana.com/ (computed)
+Keypair Path: /Users/<username>/.config/solana/id.json
+Commitment: confirmed
+```
+
+## Native Tokens for Transaction Fees
+
+**SOL** tokens are used for Solana transaction fees. For these tutorials, we will also use SOL to pay for CCIP fees (though LINK and WSOL are alternative payment options).
+
+- Obtain SOL on Devnet using the airdrop command:
+
+  ```bash
+  solana airdrop 3
+  ```
+
+- Example output:
+
+  ```text
+  Requesting airdrop of 3 SOL
+
+  Signature: 2MiFptKYiJQNfzERzNzB4X1tYeBaW1muJ4oNaUpujeaWmgCiwCZ1ftMyYmg9fAitw2Trbsw8yfBNSanLGX4SUAr7
+
+  13.25722618 SOL
+  ```
+
+## Associated Token Accounts (ATAs)
+
+Solana's token model requires an Associated Token Account (ATA) for each token you want to hold. These must be created before you can receive or send tokens.
+
+### Creating ATAs
+
+Create an ATA for each token needed in these tutorials:
+
+```bash
+# Create ATA for BnM token (used for cross-chain token transfers)
+spl-token create-account 3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6
+
+# Create ATA for LINK token (used for CCIP fee payments)
+spl-token create-account GAn1RmBY76BjdqPAFnqM4jhqSSeeo9Zf7ASqHoWLdwZb
+
+# Create ATA for Wrapped SOL (used for wrapped native fee payments)
+spl-token create-account So11111111111111111111111111111111111111112
+```
+
+If using a non-default keypair (other than `~/.config/solana/id.json`), specify it explicitly:
+
+```bash
+spl-token create-account <TOKEN_MINT> --owner <YOUR_KEYPAIR_PATH>
+```
+
+### Verifying ATAs
+
+Confirm your ATAs were created successfully:
+
+```bash
+spl-token accounts
+```
+
+Example output:
+
+```text
+Token                                         Balance
+---------------------------------------------------------------------------------------------------------------
+3PjyGzj1jGVgHSKS4VR1Hr1memm63PmN8L9rtPDKwzZ6  0.09
+GAn1RmBY76BjdqPAFnqM4jhqSSeeo9Zf7ASqHoWLdwZb  0
+So11111111111111111111111111111111111111112   4.440009443
+```
+
+## Token Delegation
+
+Before sending CCIP messages with tokens from Solana, you must delegate authority to the CCIP Router's Program Derived Addresses (PDAs). This allows the router to transfer tokens on your behalf when executing cross-chain messages.
+
+### Understanding Token Delegations
+
+In Solana, unlike Ethereum where you approve a smart contract to spend your tokens, you need to:
+
+1. **Delegate to CCIP Router's Fee Billing Signer PDA**: For fee tokens (LINK and Wrapped SOL)
+1. **Delegate to CCIP Router's Fee Billing Signer PDA**: For tokens you want to send cross-chain (BnM)
+
+### Automating Token Delegation
+
+The `token:delegate` script automates the token delegation process by:
+
+1. Identifying your token accounts for Wrapped SOL, BnM, and LINK
+1. Delegating the maximum possible amount to the CCIP Router's fee-billing PDA (allowing it to use tokens for fees)
+1. Providing transaction confirmations and explorer links for verification
+
+Run the delegation script:
+
+```bash
+yarn svm:token:delegate
+```
+
+After running, verify your token delegations:
+
+```bash
+yarn svm:token:check
+```
+
+The verification shows:
+
+- Your current token balances
+- The delegate address for each token
+- Delegation amounts
+- Status of each delegation (✓ Correct or ✗ Missing/Invalid)
+
+<Aside title="Token Delegation Requirements">
+  You must complete token delegations before attempting token transfers. Skipping this step will result in transaction
+  failures with "insufficient delegated amount" errors.
+</Aside>
+
+## Obtaining Testnet Tokens
+
+### BnM Tokens on Solana Devnet
+
+To complete the cross-chain token transfer examples, you'll need BnM tokens:
+
+1. Bridge BnM tokens from Ethereum Sepolia to your Solana Devnet wallet
+1. Follow the detailed instructions in the [token transfers tutorial](/ccip/tutorials/svm/destination/token-transfers)
+
+### Wrapped SOL (wSOL)
+
+<Aside title="Optional">
+  This step is optional and only required if you want to use wSOL as a fee token instead of native SOL.
+</Aside>
+
+Native SOL must be wrapped into wSOL token format before it can be used with token-based interfaces. To wrap your SOL:
+
+```bash
+yarn svm:token:wrap
+```
+
+This command wraps 0.1 SOL to wSOL by default. To specify a custom amount:
+
+```bash
+yarn svm:token:wrap --amount <LAMPORTS_AMOUNT>
+```
+
+Example:
+
+```text
+$ yarn svm:token:wrap --amount 10000000
+...
+==== Operation Summary ====
+[2025-05-01T20:18:03.134Z] Token: Wrapped SOL (wSOL)
+[2025-05-01T20:18:03.134Z] Amount Wrapped: 10000000 lamports
+[2025-05-01T20:18:03.134Z] New Balance: 4450009443 lamports
+[2025-05-01T20:18:03.134Z]
+SOL wrapping completed successfully
+```
+
+**Note**: All amounts are specified in lamports (1 SOL = 1,000,000,000 lamports).

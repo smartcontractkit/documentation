@@ -1,0 +1,36 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 SVM Events API Reference"
+metadata:
+  description: "API documentation for CCIP events on SVM-based blockchains like Solana."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Events
+
+### Router
+
+#### `ccip_send`
+
+When the `ccip_send` instruction completes successfully, the Router emits a single event, `CCIPMessageSent`.
+
+```rust
+#[event]
+pub struct CCIPMessageSent {
+    /// The chain selector identifying the destination chain.
+    pub dest_chain_selector: u64,
+    /// The sequence number for this message, specific to the destination chain.
+    pub sequence_number: u64,
+    /// The full SVM2AnyRampMessage describing the cross-chain payload and tokens being sent.
+    pub message: SVM2AnyRampMessage,
+}
+```
+
+| Field                 | Type                 | Description                                                                                                                                                                                     |
+| --------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dest_chain_selector` | `u64`                | The **chain selector** for the destination chain. Think of it as the chain's unique ID in the CCIP ecosystem (e.g., 1 for Ethereum Mainnet, 10 for Optimism, etc.).                             |
+| `sequence_number`     | `u64`                | Monotonically increments each time you successfully call `ccip_send` for a particular destination chain. It is unique **per** chain in the sense that each chain has its own separate sequence. |
+| `message`             | `SVM2AnyRampMessage` | The cross-chain message payload itself. It includes: <br/> • The sender's address <br/> • Arbitrary `data` payload <br/> • Token transfer details <br/> • Fees and more                         |

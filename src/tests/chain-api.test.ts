@@ -6,13 +6,13 @@ import {
   createMetadata,
   CCIPError,
   handleApiError,
-} from "../pages/api/ccip/utils.ts"
-import type { Environment } from "@config/data/ccip/types.ts"
-import { ChainDataService } from "../pages/api/services/chain-data.ts"
-import { mockSelectorConfig, mockReferenceData } from "../__mocks__/chainMock.ts"
+} from "../pages/api/ccip/utils.js"
+import type { Environment } from "../config/data/ccip/types.js"
+import { ChainDataService } from "../pages/api/services/chain-data.js"
+import { mockReferenceData } from "../__mocks__/chainMock.js"
 
 // Mock the Environment enum
-jest.mock("@config/data/ccip/types", () => ({
+jest.mock("../config/data/ccip/types", () => ({
   Environment: {
     Mainnet: "mainnet",
     Testnet: "testnet",
@@ -20,7 +20,7 @@ jest.mock("@config/data/ccip/types", () => ({
 }))
 
 // Mock the loadReferenceData function
-jest.mock("@config/data/ccip", () => ({
+jest.mock("../config/data/ccip", () => ({
   loadReferenceData: jest.fn(() => mockReferenceData),
   Environment: {
     Mainnet: "mainnet",
@@ -34,6 +34,7 @@ jest.mock("../features/utils", () => ({
   getNativeCurrency: jest.fn(() => ({ symbol: "ETH" })),
   getTitle: jest.fn(() => "Ethereum"),
   directoryToSupportedChain: jest.fn(() => "ETHEREUM_MAINNET"),
+  getChainTypeAndFamily: jest.fn(() => ({ chainType: "evm", chainFamily: "evm" })),
 }))
 
 // Define environment values that match the Environment type
@@ -124,31 +125,31 @@ describe("CCIP Chain API Utils", () => {
 })
 
 describe("ChainDataService", () => {
-  const service = new ChainDataService(mockReferenceData.chainsReferenceData, mockSelectorConfig)
+  const service = new ChainDataService(mockReferenceData.chainsReferenceData)
 
   describe("getFilteredChains", () => {
     it("should return mainnet chains for mainnet environment", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, {})
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].chainId).toBe(1)
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].chainId).toBe(1)
     })
 
     it("should filter by chainId", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { chainId: "1" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].chainId).toBe(1)
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].chainId).toBe(1)
     })
 
     it("should filter by selector", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { selector: "5009297550715157269" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].selector).toBe("5009297550715157269")
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].selector).toBe("5009297550715157269")
     })
 
     it("should filter by internalId", async () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { internalId: "ethereum-mainnet" })
-      expect(result.chains).toHaveLength(1)
-      expect(result.chains[0].internalId).toBe("ethereum-mainnet")
+      expect(result.data.evm.length).toBe(1)
+      expect(result.data.evm[0].internalId).toBe("ethereum-mainnet")
     })
   })
 })
