@@ -14,10 +14,10 @@ import {
   structuredLog,
   LogLevel,
 } from "./utils.ts"
-import { SupportedChain } from "@config/index.ts"
+import { ChainType, SupportedChain } from "@config/index.ts"
 import { getProviderForChain } from "@config/web3Providers.ts"
-import { Environment, getSelectorConfig, LaneStatus } from "@config/data/ccip/index.ts"
-import { getChainId } from "@features/utils/index.ts"
+import { Environment, getSelectorEntry, LaneStatus } from "@config/data/ccip/index.ts"
+import { getChainId, getChainTypeAndFamily } from "@features/utils/index.ts"
 
 export const prerender = false
 const timeoutCurseCheck = 10000
@@ -67,10 +67,13 @@ export const GET: APIRoute = async ({ request }) => {
     // Resolve the source chain
     let sourceChain: SupportedChain
     let sourceChainAtlas: string
+    let sourceChainType: ChainType
     try {
       sourceChain = resolveChainOrThrow(sourceNetworkId)
+      const { chainType } = getChainTypeAndFamily(sourceChain)
+      sourceChainType = chainType
       const sourceChainId = getChainId(sourceChain)
-      sourceChainAtlas = sourceChainId ? getSelectorConfig(sourceChainId)?.name || "" : ""
+      sourceChainAtlas = sourceChainId ? getSelectorEntry(sourceChainId, chainType)?.name || "" : ""
     } catch (error) {
       structuredLog(LogLevel.ERROR, {
         message: "Error resolving source chain",
@@ -88,22 +91,24 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     // Check if the source chain is cursed
-    const sourceProvider = getProviderForChain(sourceChain)
     let isSourceChainCursed = false
-    try {
-      isSourceChainCursed = await withTimeout(
-        checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
-        timeoutCurseCheck,
-        `Timeout while checking if source chain ${sourceChain} is cursed`
-      )
-    } catch (error) {
-      structuredLog(LogLevel.ERROR, {
-        message: "Error checking if source chain is cursed",
-        requestId,
-        sourceChain,
-        error: error instanceof Error ? error.message : String(error),
-      })
-      // Continue execution instead of returning 500
+    if (sourceChainType === "evm") {
+      try {
+        const sourceProvider = getProviderForChain(sourceChain)
+        isSourceChainCursed = await withTimeout(
+          checkIfChainIsCursed(sourceProvider, sourceChain, sourceRouterAddress),
+          timeoutCurseCheck,
+          `Timeout while checking if source chain ${sourceChain} is cursed`
+        )
+      } catch (error) {
+        structuredLog(LogLevel.ERROR, {
+          message: "Error checking if source chain is cursed",
+          requestId,
+          sourceChain,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        // Continue execution instead of returning 500
+      }
     }
 
     const statuses: Record<string, LaneStatus> = {}
@@ -133,34 +138,39 @@ export const GET: APIRoute = async ({ request }) => {
       const destinationCheck = async () => {
         try {
           const destinationChain = resolveChainOrThrow(id)
+          const { chainType: destinationChainType } = getChainTypeAndFamily(destinationChain)
           const destinationChainId = getChainId(destinationChain)
-          const destinationChainAtlas = destinationChainId ? getSelectorConfig(destinationChainId)?.name || "" : ""
+          const destinationChainAtlas = destinationChainId
+            ? getSelectorEntry(destinationChainId, destinationChainType)?.name || ""
+            : ""
 
           atlasNameToIdMap[destinationChainAtlas] = id
 
           // Attempt to get the provider and check if the chain is cursed
-          try {
-            const provider = getProviderForChain(destinationChain)
-            const destinationRouterAddress = chainsConfig[id].router.address
+          if (destinationChainType === "evm") {
+            try {
+              const provider = getProviderForChain(destinationChain)
+              const destinationRouterAddress = chainsConfig[id].router.address
 
-            const isDestinationCursed = await withTimeout(
-              checkIfChainIsCursed(provider, destinationChain, destinationRouterAddress),
-              timeoutCurseCheck,
-              `Timeout while checking if destination chain ${destinationChain} is cursed`
-            )
+              const isDestinationCursed = await withTimeout(
+                checkIfChainIsCursed(provider, destinationChain, destinationRouterAddress),
+                timeoutCurseCheck,
+                `Timeout while checking if destination chain ${destinationChain} is cursed`
+              )
 
-            if (isDestinationCursed) {
-              statuses[id] = LaneStatus.CURSED
-            } else {
-              validDestinationNetworkIds.push(destinationChainAtlas) // Push if no curse detected
+              if (isDestinationCursed) {
+                statuses[id] = LaneStatus.CURSED
+              } else {
+                validDestinationNetworkIds.push(destinationChainAtlas) // Push if no curse detected
+              }
+            } catch (innerError) {
+              console.error(
+                `Error during provider resolution or curse check for destination network ID ${id}:`,
+                innerError
+              )
+              failedCurseChecks.push(id) // Track failed curse checks
+              validDestinationNetworkIds.push(destinationChainAtlas) // Push if curse check fails
             }
-          } catch (innerError) {
-            console.error(
-              `Error during provider resolution or curse check for destination network ID ${id}:`,
-              innerError
-            )
-            failedCurseChecks.push(id) // Track failed curse checks
-            validDestinationNetworkIds.push(destinationChainAtlas) // Push if curse check fails
           }
         } catch (outerError) {
           console.error(`Error resolving destination chain or mapping to atlas for network ID ${id}:`, outerError)

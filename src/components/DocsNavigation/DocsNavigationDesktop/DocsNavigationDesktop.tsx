@@ -4,10 +4,23 @@ import DocsPickerDesktop from "./DocsPickerDesktop.tsx"
 import styles from "./docsNavigationDesktop.module.css"
 import QuickLinksModal from "../../Header/Nav/QuickLinksModal.tsx"
 import { useState } from "react"
+import { PageIcon, MailIcon } from "./Icons/index.ts"
 
-function DocsNavigationDesktop({ pathname, children }: { pathname: string; children?: React.ReactNode }) {
+function DocsNavigationDesktop({
+  pathname,
+  children,
+  isCcipDirectory = false,
+}: {
+  pathname: string
+  children?: React.ReactNode
+  isCcipDirectory?: boolean
+}) {
   const { $navBarInfo } = useNavBar()
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Check if we're in a CCIP Directory page
+  const isCcipPage = isCcipDirectory || pathname.includes("/ccip/directory/")
+
   return (
     <>
       <nav
@@ -21,19 +34,40 @@ function DocsNavigationDesktop({ pathname, children }: { pathname: string; child
             {children}
           </div>
           <div className={styles.links}>
-            <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)}>
-              <img height={20} width={20} src="/assets/icons/quick-links.svg" />
-              <span>Quick Links</span>
-            </button>
-            <a
-              className={styles.link}
-              href="https://github.com/smartcontractkit/documentation"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img height={20} width={20} src="/assets/icons/github-blue.svg" />
-              <span>Github</span>
-            </a>
+            {isCcipPage ? (
+              /* Custom links for CCIP Directory pages */
+              <>
+                <a className={styles.ccipDirectoryLink} href="/ccip/" target="_blank" rel="noopener noreferrer">
+                  <PageIcon />
+                  <span>Go to CCIP docs</span>
+                </a>
+                <a
+                  className={styles.ccipDirectoryLink}
+                  href="https://chain.link/ccip-contact"
+                  rel="noopener noreferrer"
+                >
+                  <MailIcon />
+                  <span>Talk to a CCIP expert</span>
+                </a>
+              </>
+            ) : (
+              /* Default links for other documentation pages */
+              <>
+                <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)}>
+                  <img height={20} width={20} src="/assets/icons/quick-links.svg" />
+                  <span>Quick Links</span>
+                </button>
+                <a
+                  className={styles.link}
+                  href="https://github.com/smartcontractkit/documentation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img height={20} width={20} src="/assets/icons/github-blue.svg" />
+                  <span>Github</span>
+                </a>
+              </>
+            )}
           </div>
         </div>
       </nav>
