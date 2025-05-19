@@ -8,13 +8,19 @@ import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { Environment, Version, LaneFilter } from "~/config/data/ccip/types.ts"
 import { getLane, getOperationalState } from "~/config/data/ccip/data.ts"
-import { ExplorerInfo, SupportedChain } from "~/config/types.ts"
+import { ExplorerInfo, SupportedChain, ChainType } from "~/config/types.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import SeeMore from "../SeeMore/SeeMore.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 
 interface TableProps {
   environment: Environment
-  sourceNetwork: { name: string; logo: string; key: string }
+  sourceNetwork: {
+    name: string
+    logo: string
+    key: string
+    chainType: ChainType
+  }
   lanes: {
     name: string
     logo: string
@@ -81,7 +87,28 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
           <thead>
             <tr>
               <th>{inOutbound === LaneFilter.Outbound ? "Destination" : "Source"} network</th>
-              <th>{inOutbound === LaneFilter.Outbound ? "OnRamp" : "OffRamp"} address</th>
+              <th>
+                {inOutbound === LaneFilter.Outbound ? (
+                  <>
+                    OnRamp address
+                    {sourceNetwork.chainType === "solana" && (
+                      <Tooltip
+                        label=""
+                        tip="Same as Router"
+                        labelStyle={{
+                          marginLeft: "8px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                        }}
+                      />
+                    )}
+                  </>
+                ) : (
+                  "OffRamp address"
+                )}
+              </th>
               <th>Status</th>
             </tr>
           </thead>

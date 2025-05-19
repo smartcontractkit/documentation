@@ -15,7 +15,7 @@ import {
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
 import { useState } from "react"
-import { ExplorerInfo, SupportedChain } from "~/config/index.ts"
+import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
@@ -38,6 +38,7 @@ function TokenDrawer({
     name: string
     key: string
     logo: string
+    chainType: ChainType
     tokenId: string
     tokenLogo: string
     tokenName: string
@@ -160,7 +161,7 @@ function TokenDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Maximum amount per transaction"
+                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
                     labelStyle={{
                       marginRight: "5px",
                     }}

@@ -8,12 +8,32 @@ import path from "path"
 /** Base directory for all CCIP configuration files */
 export const CCIP_CONFIG_DIR = path.join("src", "config", "data", "ccip")
 
-/** Path for the chain selectors configuration file */
-export const SELECTOR_CONFIG_PATH = path.join(CCIP_CONFIG_DIR, "selectors.yml")
+/** Base URL for chain selectors */
+export const SELECTORS_SOURCE_BASE_URL =
+  "https://raw.githubusercontent.com/smartcontractkit/chain-selectors/refs/heads/main"
 
-/** Path for the backup file when updating selectors */
-export const SELECTOR_BACKUP_PATH = `${SELECTOR_CONFIG_PATH}.backup`
+/** Selector file names by chain type */
+export const SELECTOR_FILES = {
+  evm: "selectors.yml",
+  solana: "selectors_solana.yml",
+  aptos: "selectors_aptos.yml",
+}
 
-/** Source URL for the official chain selectors YAML file */
-export const SELECTORS_SOURCE_URL =
-  "https://raw.githubusercontent.com/smartcontractkit/chain-selectors/refs/heads/main/selectors.yml"
+/** Destination paths for selector files */
+export const SELECTOR_CONFIG_PATHS = {
+  evm: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.evm),
+  solana: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.solana),
+  aptos: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.aptos),
+}
+
+/** Backup paths for selector files */
+export const SELECTOR_BACKUP_PATHS = {
+  evm: `${SELECTOR_CONFIG_PATHS.evm}.backup`,
+  solana: `${SELECTOR_CONFIG_PATHS.solana}.backup`,
+  aptos: `${SELECTOR_CONFIG_PATHS.aptos}.backup`,
+}
+
+// Legacy paths for backward compatibility
+export const SELECTOR_CONFIG_PATH = SELECTOR_CONFIG_PATHS.evm
+export const SELECTOR_BACKUP_PATH = SELECTOR_BACKUP_PATHS.evm
+export const SELECTORS_SOURCE_URL = `${SELECTORS_SOURCE_BASE_URL}/${SELECTOR_FILES.evm}`
