@@ -40,7 +40,7 @@ export const GrantPrivilegesStep = ({ chain }: GrantPrivilegesStepProps) => {
 
           <ol className={styles.instructions}>
             <li>
-              In the list of deployed contracts, select the <strong>BurnMintERC677</strong> at{" "}
+              In the list of deployed contracts, select the <strong>BurnMintERC20</strong> at{" "}
               <StoredContractAddress type="token" chain={chain} />
             </li>
             <li>Click to open the contract details</li>

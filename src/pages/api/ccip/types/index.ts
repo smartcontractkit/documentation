@@ -4,6 +4,10 @@ import { Environment } from "@config/data/ccip/types.ts"
 
 export { Environment }
 
+// Chain type and family declarations
+export type ChainType = "evm" | "solana" | "aptos"
+export type ChainFamily = "evm" | "mvm" | "svm"
+
 export const prerender = false
 
 export type ChainConfigError = {
@@ -20,30 +24,33 @@ export type ChainMetadata = {
   ignoredChainCount: number
 }
 
-export type ChainDetails = {
-  chainId: number
+export interface ChainDetails {
+  chainId: number | string
+  displayName: string
   selector: string
   internalId: string
-  displayName: string
   feeTokens: string[]
   router: string
   rmn: string
-  registryModule: string
-  tokenAdminRegistry: string
+  chainType: ChainType
+  chainFamily: ChainFamily
+  registryModule?: string
+  tokenAdminRegistry?: string
   tokenPoolFactory?: string
-}
-
-export type ChainFamily = {
-  evm: Record<string, ChainDetails>
-  // Future families: svm, mvm, etc.
+  feeQuoter?: string
+  rmnPermeable?: boolean
 }
 
 export type ChainApiResponse = {
   metadata: ChainMetadata
-  data: {
-    evm: Record<string, ChainDetails>
-  }
-  ignored: ChainConfigError[]
+  data: Record<string, Record<string, ChainDetails>>
+  ignored: {
+    chainId: number
+    networkId: string
+    reason: string
+    missingFields: string[]
+    chain_id?: string
+  }[]
 }
 
 export type OutputKeyType = "chainId" | "selector" | "internalId"
@@ -53,7 +60,7 @@ export type ChainApiError = {
   message: string
 }
 
-export type FilterType = {
+export interface FilterType {
   chainId?: string
   selector?: string
   internalId?: string
@@ -85,7 +92,7 @@ export type TokenMetadata = {
 }
 
 export type TokenChainData = {
-  chainId: number
+  chainId: number | string
   chainName: string
   decimals: number
   destinations: string[]

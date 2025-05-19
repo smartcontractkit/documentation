@@ -114,8 +114,10 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TAIKO_HEKLA: () => new JsonRpcProvider("https://rpc.hekla.taiko.xyz"),
   PLUME_SEPOLIA: () => new JsonRpcProvider("https://testnet-rpc.plumenetwork.xyz"),
   PLUME_MAINNET: () => new JsonRpcProvider("https://phoenix-rpc.plumenetwork.xyz"),
+  SOLANA_DEVNET: () => new JsonRpcProvider("https://api.devnet.solana.com"),
+  SOLANA_MAINNET: () => new JsonRpcProvider("https://api.mainnet-beta.solana.com"),
   TRON_MAINNET: () => new JsonRpcProvider("https://api.trongrid.io/jsonrpc"),
-  TRON_TESTNET: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
+  TRON_SHASTA: () => new JsonRpcProvider("https://api.shasta.trongrid.io/jsonrpc"),
   ABSTRACT_MAINNET: () => new JsonRpcProvider("https://api.mainnet.abs.xyz"),
   ABSTRACT_TESTNET: () => new JsonRpcProvider("https://api.testnet.abs.xyz"),
   LISK_MAINNET: () => new JsonRpcProvider("https://rpc.api.lisk.com"),
@@ -146,6 +148,8 @@ export const getRpcUrlForChain = (chain: SupportedChain): string => {
   return rpcUrl
 }
 
+// TODO: This is a temporary function to get a provider for a chain depending on chainType
+// Supports only evm chains for now
 export const getProviderForChain = (chain: SupportedChain): JsonRpcProvider => {
   const rpcUrl = getRpcUrlForChain(chain)
   const chainId = getChainId(chain)
@@ -160,7 +164,7 @@ export const getProviderForChain = (chain: SupportedChain): JsonRpcProvider => {
 
   // Create a Network instance for static configuration
   const network = Network.from({
-    chainId,
+    chainId: chainId as number,
     name: chain.toLowerCase(),
   })
 

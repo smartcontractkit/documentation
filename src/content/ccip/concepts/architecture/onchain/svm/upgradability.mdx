@@ -1,0 +1,47 @@
+---
+section: ccip
+date: Last Modified
+title: "Onchain Architecture - Upgradability (SVM)"
+metadata:
+  description: "Learn about CCIP's upgradability approach for SVM onchain architecture, focusing on configuration changes, program code upgrades, and the timelock process."
+---
+
+Chainlink's Cross-Chain Interoperability Protocol (CCIP) is designed to evolve in response to new security considerations, emerging feature requests, and the need to onboard additional blockchains. This evolution requires a secure, transparent upgrade process that preserves users' trust in CCIP while allowing for iterative improvements.
+
+## What Can Be Upgraded
+
+On SVM-based blockchains, upgradability primarily happens in two ways:
+
+1. **Onchain Configuration**
+
+   Many CCIP programs (e.g., Router, OffRamp) offer public functions that allow for parameter updates without redeploying the entire program. Examples might include:
+
+   - Adding or removing supported blockchains.
+   - Enabling a new fee token.
+
+   Because these modifications only change onchain data, operational parameters can be adjusted without redeploying an entire program.
+
+1. **Program Code Upgrades**
+
+   In SVM-based blockchains, programs are mutable by default (unless the upgrade authority is removed after deploying them). This allows the same program ID to point to new code if an upgrade is published. Developers typically use this mechanism to:
+
+   - Patch vulnerabilities or correct unforeseen implementation errors.
+   - Introduce new features or improved logic for cross-chain messaging.
+
+Once the program code is upgraded, external references (such as PDAs or user accounts) are not broken because they rely on the original program ID.
+
+**Special case:** Unlike other CCIP components, the OffRamp program follows a different upgrade pattern. Instead of upgrading in place, new OffRamp program instances are deployed when upgrades are needed. This approach ensures backward compatibility with in-flight messages that need to be processed by the correct OffRamp version.
+
+## Implementation Process
+
+All security-critical onchain configuration changes to CCIP on Solana pass through a secure upgrade process using the ManyChainMultiSig (MCMS) and Timelock programs.
+
+Any proposal must follow one of two paths:
+
+1. **Time-locked Review**: The proposal is submitted to the Timelock program and enters a mandatory review period. During this window, node operators securing CCIP can veto the proposal. If no veto occurs, the proposal becomes executable after the delay expires.
+
+1. **Expedited Approval**: The proposal receives explicit approval from a quorum of independent signers, providing an alternative path for time-sensitive circumstances.
+
+Any onchain update that passes the timelock review period without a veto becomes executable and can be implemented by accounts with the Executor role calling the `execute_batch` instruction.
+
+The MCMS program's configuration and all scheduled operations are stored in public accounts that anyone can inspect for transparency and verification.
