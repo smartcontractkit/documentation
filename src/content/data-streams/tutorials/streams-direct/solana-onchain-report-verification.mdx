@@ -73,19 +73,23 @@ Before you begin, you should have:
 
 To complete this guide, you'll need:
 
-- **Rust and Cargo**: Install the latest version using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
+- **Rust tool-chain ([rustup](https://rustup.rs/))**: Use `rustc` and `cargo` ≥ 1.73 (the version Anchor 0.31 requires). Run <CopyText text="rustc --version" code/> to verify your installation.
 
-- **Solana CLI tools**: Install the latest version following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
+- **Solana CLI tools**: Use 2.x (Anchor 0.31 is built against the 2.x SDK). Install an appropriate version following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
 
-- **Anchor Framework**: Follow the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code /> to verify your installation.
+- **Anchor Framework**: Use Anchor ≥ 0.31.0 (older 0.29/0.30 will not work with Solana 2.x.). Follow the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code /> to verify your installation.
 
-- **Node.js and npm**: [Install Node.js 20 or later](https://nodejs.org/). Verify your installation with <CopyText text="node --version" code/>.
+- **Node.js and npm**: [Install Node.js ≥ 20](https://nodejs.org/). Verify your installation with <CopyText text="node --version" code/>.
 
-- **ts-node**: Install globally using npm: <CopyText text="npm install -g ts-node" code/>. Verify your installation with <CopyText text="ts-node --version" code/>.
+- **ts-node**: Use ts-node ≥ 10. Install globally using npm: <CopyText text="npm install -g ts-node" code/>. Verify your installation with <CopyText text="ts-node --version" code/>.
 
-- **Devnet SOL**: You'll need devnet SOL for deployment and testing. Use the [Solana CLI](https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started) or the [Solana Faucet](https://faucet.solana.com/) to get devnet SOL.
+- **Devnet SOL**: You'll need ~3-5 SOL in your devnet wallet for deployment and testing. Use the [Solana CLI](https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started) or the [Solana Faucet](https://faucet.solana.com/) to get devnet SOL.
 
-> **Note**: While this guide uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana program framework. The verifier SDK is written in Rust, but you can integrate it into your preferred Rust program structure.
+<Aside type="note" title="Framework agnostic">
+  While this guide uses the Anchor framework for project structure, you can integrate the verification using any
+  Rust-based Solana program framework. The verifier SDK is written in Rust, but you can integrate it into your preferred
+  Rust program structure.
+</Aside>
 
 ### Implementation guide
 
@@ -110,12 +114,14 @@ To complete this guide, you'll need:
 Open your `Anchor.toml` file at the root of your project and update it to use devnet:
 
 ```toml
+[toolchain]
+solana_version = "2.1.0"
+
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
 [programs.devnet]
-# Replace with your program ID
 example_verify = "<YOUR_PROGRAM_ID>"
 
 [registry]
@@ -137,11 +143,11 @@ In your program's manifest file (`programs/example_verify/Cargo.toml`), add the 
 
 ```toml
 [dependencies]
-chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-data-streams-solana", subdir = "crates/chainlink-solana-data-streams" ,tag = "v1.1.0"}
-data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-data-streams-solana", subdir = "crates/chainlink-solana-data-streams", tag = "v1.1.0" }
+chainlink-data-streams-report = "1.0.0"
 
 # Additional required dependencies
-anchor-lang = "0.29.0"
+anchor-lang = { version = "0.31.0", features = ["idl-build"] }
 ```
 
 #### 4. Write the program
@@ -152,13 +158,12 @@ Navigate to your program main file (`programs/example_verify/src/lib.rs`). This 
 // Import required dependencies for Anchor, Solana, and Data Streams
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{
+    instruction::Instruction,
     program::{get_return_data, invoke},
     pubkey::Pubkey,
-    instruction::Instruction,
 };
-use data_streams_report::report::v3::ReportDataV3;
+use chainlink_data_streams_report::report::v3::ReportDataV3;
 use chainlink_solana_data_streams::VerifierInstructions;
-
 
 declare_id!("<YOUR_PROGRAM_ID>");
 
@@ -253,7 +258,12 @@ Replace `<YOUR_PROGRAM_ID>` with your program ID in the `declare_id!` macro. You
 
 Note how the `VerifierInstructions::verify` helper method automatically handles the PDA computations internally. Refer to the [Program Derived Addresses (PDAs)](#program-derived-addresses-pdas) section for more information.
 
-> This example uses the [V3 schema](/data-streams/reference/report-schema) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V4 schema](/data-streams/reference/report-schema-v4) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+<Aside type="note" title="Report schema version">
+  The report schema version is important for decoding the report data correctly. The example uses the [V3
+  schema](/data-streams/reference/report-schema) for crypto streams. If you verify reports for RWA streams, use the [V4
+  schema](/data-streams/reference/report-schema-v4) from the [report
+  crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+</Aside>
 
 #### 5. Deploy your program
 
@@ -261,20 +271,6 @@ Note how the `VerifierInstructions::verify` helper method automatically handles 
 
    ```bash
    anchor build
-   ```
-
-   **Note**: If you run into this error, set the `version` field at the top of your `cargo.lock` file to `3`.
-
-   ```bash
-   warning: virtual workspace defaulting to `resolver = "1"` despite one or more workspace members being on edition 2021 which implies `resolver = "2"`
-   note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
-   note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
-   note: for more details see https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
-   warning: .../example_verify/programs/example_verify/Cargo.toml: unused manifest key: dependencies.data-streams-report.subdir
-   error: failed to parse lock file at: .../example_verify/Cargo.lock
-
-   Caused by:
-   lock file version 4 requires `-Znext-lockfile-bump`
    ```
 
 1. Deploy your program to a Solana cluster (devnet in this example) using:
@@ -290,9 +286,9 @@ Note how the `VerifierInstructions::verify` helper method automatically handles 
    Upgrade authority: ~/.config/solana/id.json
    Deploying program "example_verify"...
    Program path: ~/example_verify/target/deploy/example_verify.so...
-   Program Id: 8XcUbDgY2UaUYNHkirKsWqXJtzPXezBSyj5Yh87dXums
+   Program Id: ET4wvk16BozbiAyja89uHPGZxXzosyBFWcY6E6koCHxF
 
-   Signature: 3ky6VkpebDGq7x1n8JB32daybmjvbRBsD4yR2uCCussSWhokaEESTXuSa5s8NMvKTz2NZjoq9aoQ9pvuw9bYoibt
+   Signature: FoFxJyWEYzwiA8k8W4mh4TC8EJicbvXKWjha2SGpD6EggXJWBRpKoHhiAtsuWJgN9pPDfyrfa92qCKmmPkvt9Ub
 
    Deploy success
    ```
@@ -303,10 +299,7 @@ In this section, you'll write a client script to interact with your deployed pro
 
 1. In the `tests` directory, create a new file <CopyText text="verify_test.ts" code/> to interact with your deployed program.
 
-1. Populate your `verify_tests.ts` file with the example client script below.
-
-   - Replace `<YOUR_PROGRAM_ID>` with your program ID.
-   - This example provides a report payload. To use your own report payload, update the `hexString` variable.
+1. Populate your `verify_test.ts` file with the example client script below. This example provides a report payload. To use your own report payload, update the `hexString` variable.
 
    ```typescript
    import * as anchor from "@coral-xyz/anchor"
@@ -323,12 +316,9 @@ In this section, you'll write a client script to interact with your deployed pro
      const provider = anchor.AnchorProvider.env()
      anchor.setProvider(provider)
 
-     // Initialize your program using the IDL and your program ID
-     const program = new Program<ExampleVerify>(
-       require("../target/idl/example_verify.json"),
-       "<YOUR_PROGRAM_ID>",
-       provider
-     )
+     // Initialize the program using Anchor workspace - this automatically
+     // loads the IDL and program ID from lib.rs (declare_id!)
+     const program = anchor.workspace.ExampleVerify as Program<ExampleVerify>
 
      // Convert the hex string to a Uint8Array
      // This is an example report payload for a crypto stream
@@ -455,7 +445,7 @@ In this section, you'll write a client script to interact with your deployed pro
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    🔑 Signer: 1BZZU8cJsrMSBaQQGUxTE4LQYX2SU2jjs97pkrz7rHD
    ✅ Transaction successful!
-   🔗 Signature: 2CTZ7kgAxTogvMgb7QFDJUAq9xFBUVTEvyjf7UuhoVrHDhYKtHpQmd8hEy9XvLhfgWMdVTpCRvdf18r1ixgtncUc
+   🔗 Signature: 5wVCWAQUs7gZyCzbJDGs7UGHjbr3Z9YwyiV3PcpiJyKwZUVaUBf7BUAqX5CFGGfGWbBRu3PdfBRXCndeoeNPh4Ca
 
    📋 Program Logs
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -463,7 +453,7 @@ In this section, you'll write a client script to interact with your deployed pro
    📍 Instruction: Verify
    📍 Report data found
    📍 FeedId: 0x0003684ea93c43ed7bd00ab3bb189bb62f880436589f1ca58b599cd97d6007fb
-   📍 valid from timestamp: 1733758884
+   📍 Valid from timestamp: 1733758884
    📍 Observations Timestamp: 1733758884
    📍 Native Fee: 84021511714900
    📍 Link Fee: 12978571827423900
