@@ -83,7 +83,11 @@ To complete this guide, you'll need:
 
 - **Allowlisted Account**: Your account must be allowlisted in the Data Streams Access Controller.
 
-> **Note**: While this guide uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana project setup. The verifier SDK and client libraries are written in Rust, but you can integrate them into your preferred Rust project structure.
+<Aside type="note" title="Framework agnostic">
+  While this guide uses the Anchor framework for project structure, you can integrate the verification using any
+  Rust-based Solana program framework. The verifier SDK is written in Rust, but you can integrate it into your preferred
+  Rust program structure.
+</Aside>
 
 ### Implementation guide
 
@@ -128,14 +132,17 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git" }
-sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain"}
+chainlink-data-streams-report = "1.0.0"
+sdk-off-chain = { git = "https://github.com/smartcontractkit/smart-contract-examples.git", branch = "data-streams-solana-integration", package = "sdk-off-chain" }
 
 solana-program = "1.18.26"
 solana-sdk = "1.18.26"
 solana-client = "1.18.26"
+solana-transaction-status = "1.18.26"
 hex = "0.4.3"
 borsh = "0.10.3"
+base64 = "0.22.1"
+snap = "1.1.1"
 ```
 
 #### 3. Implement the verification library
@@ -143,16 +150,16 @@ borsh = "0.10.3"
 Create `programs/example_verify/src/lib.rs` with the verification function:
 
 ```rust
-use data_streams_report::report::v3::ReportDataV3;
-use sdk_off_chain::VerificationClient;
+use chainlink_data_streams_report::report::v3::ReportDataV3;
+use sdk_off_chain::{ VerificationClient, VerificationResult };
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
     pubkey::Pubkey,
-    signature::read_keypair_file,
+    signature::{ read_keypair_file, Keypair },
     signer::Signer,
 };
-use std::{ path::PathBuf, str::FromStr };
+use std::{ path::PathBuf, str::FromStr, fs::File, io::Read };
 
 pub fn default_keypair_path() -> String {
     let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".to_string()));
@@ -160,19 +167,37 @@ pub fn default_keypair_path() -> String {
     path.to_str().unwrap().to_string()
 }
 
+pub fn load_keypair(keypair_path: Option<&str>) -> Result<Keypair, Box<dyn std::error::Error>> {
+    let path = keypair_path.map(|p| p.to_string()).unwrap_or_else(default_keypair_path);
+
+    // Try reading as a file-based keypair first
+    match read_keypair_file(&path) {
+        Ok(keypair) => Ok(keypair),
+        Err(_) => {
+            // If file read fails, try as a JSON string
+            let mut file = File::open(&path)?;
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)?;
+
+            let keypair = Keypair::from_base58_string(&contents);
+            Ok(keypair)
+        }
+    }
+}
+
 pub fn verify_report(
     signed_report: &[u8],
     program_id: &str,
-    access_controller: &str
+    access_controller: &str,
+    keypair_path: Option<&str>,
+    rpc_url: Option<&str>
 ) -> Result<ReportDataV3, Box<dyn std::error::Error>> {
     // Initialize RPC client with confirmed commitment level
-    let rpc_client = RpcClient::new_with_commitment(
-        "https://api.devnet.solana.com",
-        CommitmentConfig::confirmed()
-    );
+    let rpc_url = rpc_url.unwrap_or("https://api.devnet.solana.com");
+    let rpc_client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
     // Load the keypair that will pay for and sign verification transactions
-    let payer = read_keypair_file(default_keypair_path())?;
+    let payer = load_keypair(keypair_path)?;
     println!("Using keypair: {}", payer.pubkey());
 
     // Convert to Pubkey
@@ -191,19 +216,40 @@ pub fn verify_report(
 
     // Verify the report
     println!("Verifying report of {} bytes...", signed_report.len());
-    let result = client.verify(signed_report.to_vec()).map_err(|e| {
-        println!("Verification error: {:?}", e);
-        e
-    })?;
+    let result = verify_and_handle_errors(&client, signed_report)?;
 
     // Decode the returned data into a ReportDataV3 struct
-    let return_data = result.return_data.ok_or("No return data")?;
+    let return_data = result.return_data.ok_or_else(|| {
+        Box::<dyn std::error::Error>::from("No return data from verification")
+    })?;
+
     let report = ReportDataV3::decode(&return_data)?;
     Ok(report)
 }
+
+// Helper function to handle the verification process and errors
+fn verify_and_handle_errors(
+    client: &VerificationClient,
+    signed_report: &[u8]
+) -> Result<VerificationResult, Box<dyn std::error::Error>> {
+    match client.verify(signed_report.to_vec()) {
+        Ok(result) => Ok(result),
+        Err(e) => {
+            println!("Verification error: {:?}", e);
+
+            // Convert ClientError to a boxed Error
+            Err(Box::new(e))
+        }
+    }
+}
 ```
 
-> This example uses the [V3 schema](/data-streams/reference/report-schema) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V4 schema](/data-streams/reference/report-schema-v4) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+<Aside type="note" title="Report schema version">
+  The report schema version is important for decoding the report data correctly. The example uses the [V3
+  schema](/data-streams/reference/report-schema) for crypto streams. If you verify reports for RWA streams, use the [V4
+  schema](/data-streams/reference/report-schema-v4) from the [report
+  crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+</Aside>
 
 #### 4. Create the command-line interface
 
@@ -218,17 +264,26 @@ use solana_sdk::pubkey::Pubkey;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 4 {
-        eprintln!(
-            "Usage: {} <program-id> <access-controller> <hex-encoded-signed-report>",
-            args[0]
-        );
+
+    // Check if help flag is passed
+    if args.len() > 1 && (args[1] == "-h" || args[1] == "--help") {
+        print_usage(&args[0]);
+        return;
+    }
+
+    if args.len() < 4 {
+        eprintln!("Error: Not enough arguments provided.");
+        print_usage(&args[0]);
         std::process::exit(1);
     }
 
     let program_id_str = &args[1];
     let access_controller_str = &args[2];
     let hex_report = &args[3];
+
+    // Optional arguments
+    let keypair_path = args.get(4).map(|s| s.as_str());
+    let rpc_url = args.get(5).map(|s| s.as_str());
 
     // Validate program_id and access_controller
     if Pubkey::from_str(program_id_str).is_err() {
@@ -250,7 +305,9 @@ fn main() {
     };
 
     // Perform verification off-chain
-    match verify_report(&signed_report, program_id_str, access_controller_str) {
+    match
+        verify_report(&signed_report, program_id_str, access_controller_str, keypair_path, rpc_url)
+    {
         Ok(report) => {
             println!("\nVerified Report Data:");
             println!("Feed ID: {}", report.feed_id);
@@ -268,6 +325,20 @@ fn main() {
             std::process::exit(1);
         }
     }
+}
+
+fn print_usage(program_name: &str) {
+    println!("Usage: {} <program-id> <access-controller> <hex-encoded-signed-report> [keypair-path] [rpc-url]", program_name);
+    println!("Arguments:");
+    println!("  program-id                 The Solana program ID for the verification");
+    println!("  access-controller          The access controller public key");
+    println!("  hex-encoded-signed-report  The signed report data in hex format");
+    println!(
+        "  keypair-path               Optional: Path to the keypair file (default: ~/.config/solana/id.json)"
+    );
+    println!(
+        "  rpc-url                    Optional: URL for the Solana RPC endpoint (default: https://api.devnet.solana.com)"
+    );
 }
 ```
 
@@ -306,15 +377,16 @@ fn main() {
    Program ID: Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c
    Access Controller: 2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb
    Verifying report of 736 bytes...
-   FeedId: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+
+   Verified Report Data:
+   Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
    Valid from timestamp: 1734124400
    Observations timestamp: 1734124400
    Native fee: 25614677280600
    Link fee: 3574678975954600
    Expires at: 1734210800
-   Price: 3904011708000000000000
+   Benchmark price: 3904011708000000000000
    Bid: 3903888333211164500000
-   Ask: 3904628100124598400000
    ```
 
 ### Best practices
