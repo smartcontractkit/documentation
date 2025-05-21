@@ -2,68 +2,129 @@
 import { getCollection, render } from "astro:content"
 import type { CollectionEntry } from "astro:content"
 import DocsLayout from "~/layouts/DocsLayout.astro"
-import { VERSIONS, type Collection } from "@config/versions"
+import { VERSIONS, type Collection, type VMVersionConfig } from "@config/versions"
 
-interface MyRoute {
+interface RouteParams {
   params: { product: Collection; id: string }
   props: { entry: CollectionEntry<Collection> }
 }
 
-export async function getStaticPaths(): Promise<MyRoute[]> {
-  const paths: MyRoute[] = []
+export async function getStaticPaths(): Promise<RouteParams[]> {
+  // Helper to check if a version config has VM types (defined inside getStaticPaths)
+  function hasVmTypes(config: any): config is VMVersionConfig {
+    return config && typeof config === "object" && "evm" in config && "svm" in config
+  }
 
-  // Convert version with dots to filesystem version (e.g., v1.5.1 -> v151)
-  const toFileVersion = (version: string) => version.replace(/\./g, "")
+  const paths: RouteParams[] = []
+  const vmTypes = ["evm", "svm"] // VM type list
 
-  for (const [product, versions] of Object.entries(VERSIONS)) {
-    const allEntries = await getCollection(product as Collection)
+  // Handle standard API reference path structure
+  function processStandardApiPaths(
+    product: Collection,
+    version: string,
+    fileVersion: string,
+    apiEntries: CollectionEntry<Collection>[],
+    paths: RouteParams[]
+  ) {
+    // Find version index entry
+    const indexEntry = apiEntries.find(
+      (entry) =>
+        entry.id === `api-reference/${fileVersion}/index.mdx` ||
+        entry.id === `api-reference/${fileVersion}/index.md` ||
+        entry.id === `api-reference/${fileVersion}`
+    )
 
-    // Filter only "api-reference/"
-    const apiEntries = allEntries.filter((e) => e.id.startsWith("api-reference/"))
+    if (!indexEntry) return
 
-    for (const version of versions.ALL) {
-      const fileVersion = toFileVersion(version)
+    // Add version index route
+    paths.push({
+      params: { product, id: version },
+      props: { entry: indexEntry },
+    })
 
-      // First, add a route for the base version URL (e.g., /ccip/api-reference/v1.5.1)
-      const versionIndexEntry = apiEntries.find(
-        (e) =>
-          e.id === `api-reference/${fileVersion}/index.mdx` ||
-          e.id === `api-reference/${fileVersion}/index.md` ||
-          e.id === `api-reference/${fileVersion}`
-      )
+    // Find and add all other docs in this version
+    const versionDocs = apiEntries.filter(
+      (doc) =>
+        doc.id.startsWith(`api-reference/${fileVersion}/`) &&
+        !doc.id.endsWith("/index.mdx") &&
+        !doc.id.endsWith("/index.md") &&
+        doc.id !== `api-reference/${fileVersion}`
+    )
 
-      if (versionIndexEntry) {
-        // Add the version index route
-        paths.push({
-          params: {
-            product: product as Collection,
-            id: version,
-          },
-          props: { entry: versionIndexEntry },
-        })
+    for (const doc of versionDocs) {
+      const docPath = doc.id.replace(`api-reference/${fileVersion}/`, "").replace(/\.(md|mdx)$/, "")
 
-        // Get all other docs for this version
-        const versionDocs = apiEntries.filter(
-          (doc) =>
-            doc.id.startsWith(`api-reference/${fileVersion}/`) &&
-            !doc.id.endsWith("/index.mdx") &&
-            !doc.id.endsWith("/index.md") &&
-            doc.id !== `api-reference/${fileVersion}`
-        )
+      paths.push({
+        params: { product, id: `${version}/${docPath}` },
+        props: { entry: doc },
+      })
+    }
+  }
 
-        for (const doc of versionDocs) {
-          // Extract the doc name without version prefix and extension
-          const docName = doc.id.replace(`api-reference/${fileVersion}/`, "").replace(/\.(md|mdx)$/, "")
+  // Handle extended path structure with VM types
+  function processExtendedApiPaths(
+    product: Collection,
+    version: string,
+    fileVersion: string,
+    apiEntries: CollectionEntry<Collection>[],
+    paths: RouteParams[],
+    vmType: string // Process one VM type at a time
+  ) {
+    // Find version index entry for this VM type
+    const indexEntry = apiEntries.find(
+      (entry) =>
+        entry.id === `api-reference/${vmType}/${fileVersion}/index.mdx` ||
+        entry.id === `api-reference/${vmType}/${fileVersion}/index.md` ||
+        entry.id === `api-reference/${vmType}/${fileVersion}`
+    )
 
-          // Add route for the doc
-          paths.push({
-            params: {
-              product: product as Collection,
-              id: `${version}/${docName}`,
-            },
-            props: { entry: doc },
-          })
+    if (!indexEntry) return // Skip if no index page for this version/vmType
+
+    // Add VM-specific version index route
+    paths.push({
+      params: { product, id: `${vmType}/${version}` },
+      props: { entry: indexEntry },
+    })
+
+    // Find and add all other docs for this VM type + version
+    const versionDocs = apiEntries.filter(
+      (doc) =>
+        doc.id.startsWith(`api-reference/${vmType}/${fileVersion}/`) &&
+        !doc.id.endsWith("/index.mdx") &&
+        !doc.id.endsWith("/index.md") &&
+        doc.id !== `api-reference/${vmType}/${fileVersion}`
+    )
+
+    for (const doc of versionDocs) {
+      const docPath = doc.id.replace(`api-reference/${vmType}/${fileVersion}/`, "").replace(/\.(md|mdx)$/, "")
+
+      paths.push({
+        params: { product, id: `${vmType}/${version}/${docPath}` },
+        props: { entry: doc },
+      })
+    }
+  }
+
+  for (const [product, productConfig] of Object.entries(VERSIONS)) {
+    const entries = await getCollection(product as Collection)
+    const apiEntries = entries.filter((entry) => entry.id.startsWith("api-reference/"))
+
+    if (hasVmTypes(productConfig)) {
+      // Product has EVM/SVM specific versions (like CCIP)
+      for (const vmType of vmTypes) {
+        const vmConfig = productConfig[vmType]
+        if (!vmConfig) continue
+
+        for (const version of vmConfig.ALL) {
+          const fileVersion = version.replace(/\./g, "")
+          processExtendedApiPaths(product as Collection, version, fileVersion, apiEntries, paths, vmType)
         }
+      }
+    } else {
+      // Standard product versioning
+      for (const version of productConfig.ALL) {
+        const fileVersion = version.replace(/\./g, "")
+        processStandardApiPaths(product as Collection, version, fileVersion, apiEntries, paths)
       }
     }
   }
@@ -71,7 +132,7 @@ export async function getStaticPaths(): Promise<MyRoute[]> {
   return paths
 }
 
-// normal page code
+// Page component
 interface Props {
   entry: CollectionEntry<Collection>
 }
@@ -101,6 +162,7 @@ type SectionType =
   | "legacy"
   | "vrf"
   | "chainlinkLocal"
+
 const section = (sectionMap[entry.collection] || "global") as SectionType
 const { Content, headings } = await render(entry)
 ---

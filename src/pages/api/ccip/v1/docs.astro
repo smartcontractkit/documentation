@@ -4,10 +4,23 @@ const jsExample = `// Example 1: Fetch CCIP Chains
 const fetchCcipChains = async () => {
   try {
     const response = await fetch(
-      'https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&chain_id=1'
+      'https://docs.chain.link/api/ccip/v1/chains?environment=mainnet'
     );
     const data = await response.json();
     console.log('Chain data:', data);
+    
+    // Access EVM chains
+    const evmChains = data.data.evm;
+    console.log('EVM chains:', evmChains);
+    
+    // Access Solana VM chains (if available)
+    const solanaChains = data.data.svm || {};
+    console.log('Solana chains:', solanaChains);
+    
+    // Access Move VM chains (if available)
+    const mvmChains = data.data.mvm || {};
+    console.log('Aptos chains:', mvmChains);
+    
     return data;
   } catch (err) {
     console.error('Error fetching CCIP chains:', err);
@@ -25,6 +38,23 @@ const fetchCcipTokens = async () => {
     return data;
   } catch (err) {
     console.error('Error fetching CCIP tokens:', err);
+  }
+}
+
+// Example 3: Fetch Specific Chain Types
+const fetchSolanaChains = async () => {
+  try {
+    const response = await fetch(
+      'https://docs.chain.link/api/ccip/v1/chains?environment=testnet'
+    );
+    const data = await response.json();
+    
+    // Extract just the Solana chains
+    const solanaChains = data.data.svm || {};
+    console.log('Solana chains:', solanaChains);
+    return solanaChains;
+  } catch (err) {
+    console.error('Error fetching Solana chains:', err);
   }
 }`
 
@@ -44,7 +74,10 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
       name="description"
       content="Official documentation for the Cross-Chain Interoperability Protocol (CCIP) API. Explore chains and tokens endpoints, parameters, and response schemas."
     />
-    <meta name="keywords" content="CCIP, Chain API, Token API, Blockchain, Cross-Chain, API Documentation, Chainlink" />
+    <meta
+      name="keywords"
+      content="CCIP, Chain API, Token API, Blockchain, Cross-Chain, API Documentation, Chainlink, EVM, Solana, Aptos"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://docs.chain.link/api/ccip/v1/docs" />
 
@@ -355,7 +388,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
         <h1>CCIP API Documentation <span class="version-badge">v1</span></h1>
         <p class="lead">
           The Cross-Chain Interoperability Protocol (CCIP) API provides comprehensive information about supported
-          blockchain networks, tokens, and their configurations.
+          blockchain networks, tokens, and their configurations across multiple blockchain families including EVM,
+          Solana, and Aptos.
         </p>
 
         <div class="api-overview">
@@ -364,6 +398,7 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
           <ul>
             <li>Available endpoints for retrieving chain and token information</li>
             <li>Chain details including IDs, selectors, and contract addresses</li>
+            <li>Support for multiple blockchain types (EVM, Solana, Aptos)</li>
             <li>Token details including supported chains and transfer lanes</li>
             <li>Supported fee tokens for cross-chain operations</li>
             <li>Error handling and response formats</li>
@@ -395,6 +430,13 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
         <h3>Example: Filter by Chain IDs</h3>
         <pre
           style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>curl -X GET "https://docs.chain.link/api/ccip/v1/chains?environment=mainnet&chainId=1,137" \
+  -H "accept: application/json"</code></pre>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3>Example: Fetch Solana and EVM Chains</h3>
+        <pre
+          style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>curl -X GET "https://docs.chain.link/api/ccip/v1/chains?environment=testnet&chainId=11155111,solana-devnet" \
   -H "accept: application/json"</code></pre>
       </div>
 

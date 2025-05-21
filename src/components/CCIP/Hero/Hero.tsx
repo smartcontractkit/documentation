@@ -1,7 +1,7 @@
 import { Environment, LaneConfig } from "~/config/data/ccip/index.ts"
 import Search from "../Search/Search.tsx"
 import "./Hero.css"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "~/config/types.ts"
 
 interface HeroProps {
   chains: {
@@ -21,12 +21,14 @@ interface HeroProps {
       name: string
       logo: string
       key: string
+      chainType: ChainType
     }
     destinationNetwork: {
       name: string
       logo: string
       key: string
       explorer: ExplorerInfo
+      chainType: ChainType
     }
     lane: LaneConfig
   }[]
