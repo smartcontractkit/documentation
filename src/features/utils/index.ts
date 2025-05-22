@@ -432,6 +432,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "GRAVITY_MAINNET"
     case "gravity-testnet":
       return "GRAVITY_TESTNET"
+    case "etherlink-mainnet":
+      return "ETHERLINK_MAINNET"
+    case "etherlink-testnet":
+      return "ETHERLINK_TESTNET"
+    case "opbnb-mainnet":
+      return "OPBNB_MAINNET"
+    case "opbnb-testnet":
+      return "OPBNB_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -685,6 +693,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "gravity-mainnet"
     case "GRAVITY_TESTNET":
       return "gravity-testnet"
+    case "ETHERLINK_MAINNET":
+      return "etherlink-mainnet"
+    case "ETHERLINK_TESTNET":
+      return "etherlink-testnet"
+    case "OPBNB_MAINNET":
+      return "opbnb-mainnet"
+    case "OPBNB_TESTNET":
+      return "opbnb-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

@@ -62,6 +62,8 @@ export type SupportedTechnology =
   | "MINT"
   | "SUPERSEED"
   | "GRAVITY"
+  | "ETHERLINK"
+  | "OPBNB"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -197,6 +199,10 @@ export type SupportedChain =
   | "ROOTSTOCK_MAINNET"
   | "GRAVITY_MAINNET"
   | "GRAVITY_TESTNET"
+  | "ETHERLINK_TESTNET"
+  | "ETHERLINK_MAINNET"
+  | "OPBNB_MAINNET"
+  | "OPBNB_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

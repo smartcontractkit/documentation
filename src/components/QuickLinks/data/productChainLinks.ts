@@ -269,6 +269,7 @@ export const productChainLinks: ProductChainLinks = {
     taiko: "/resources/link-token-contracts#taiko",
     megaeth: "/resources/link-token-contracts#megaeth",
     zora: "/resources/link-token-contracts#zora",
+    etherlink: "/resources/link-token-contract#etherlink",
   },
 }
 
@@ -344,4 +345,6 @@ export const chainNames: Record<string, string> = {
   superseed: "Superseed",
   metal: "Metal L2",
   rootstock: "Rootstock",
+  etherlink: "Etherlink",
+  opbnb: "opBNB",
 }
