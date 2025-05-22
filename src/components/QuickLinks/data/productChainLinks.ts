@@ -75,6 +75,7 @@ export const productChainLinks: ProductChainLinks = {
       lisk: "/ccip/directory/mainnet/chain/lisk-mainnet",
       zora: "/ccip/directory/mainnet/chain/zora-mainnet",
       mint: "/ccip/directory/mainnet/chain/mint-mainnet",
+      opbnb: "/ccip/directory/mainnet/chain/binance-smart-chain-mainnet-opbnb-1",
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
       superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
@@ -270,6 +271,8 @@ export const productChainLinks: ProductChainLinks = {
     taiko: "/resources/link-token-contracts#taiko",
     megaeth: "/resources/link-token-contracts#megaeth",
     zora: "/resources/link-token-contracts#zora",
+    etherlink: "/resources/link-token-contract#etherlink",
+    opbnb: "/resources/link-token-contracts#opbnb",
   },
 }
 
@@ -345,4 +348,5 @@ export const chainNames: Record<string, string> = {
   superseed: "Superseed",
   metal: "Metal L2",
   rootstock: "Rootstock",
+  etherlink: "Etherlink",
 }
