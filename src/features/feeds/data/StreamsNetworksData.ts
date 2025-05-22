@@ -92,6 +92,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Bitlayer",
+    logoUrl: "/assets/chains/bitlayer.svg",
+    mainnet: {
+      label: "Bitlayer Mainnet",
+      verifierProxy: "0x6FDC15cad4f90a037B7126D7EFff105A9d03D6e7",
+      explorerUrl: "https://www.btrscan.com/address/%s",
+    },
+    testnet: {
+      label: "Bitlayer Testnet",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://testnet.btrscan.com/address/%s",
+    },
+  },
+  {
     network: "Blast",
     logoUrl: "/assets/chains/blast.svg",
     networkStatus: "https://status.blast.io/",

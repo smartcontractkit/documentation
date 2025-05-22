@@ -127,6 +127,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
       berachain: "/data-streams/crypto-streams",
+      bitlayer: "/data-streams/crypto-streams",
       blast: "/data-streams/crypto-streams",
       "bnb-chain": "/data-streams/crypto-streams",
       bob: "/data-streams/crypto-streams",
