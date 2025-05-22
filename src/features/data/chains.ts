@@ -670,9 +670,7 @@ export const CHAINS: Chain[] = [
         name: "TRON Nile Testnet",
         explorerUrl: "https://nile.tronscan.org/#/address/%s",
         networkType: "testnet",
-        // rddUrl: "https://docs.chain.link/files/json/feeds-tron-testnet.json",
-        rddUrl:
-          "https://gist.githubusercontent.com/khadni/1d67c2bb92cc10f1b81c517a2cb9e641/raw/cfd70987a9def017b87e0eaf9c19c8695638c64d/tron-testnet.json",
+        rddUrl: "https://docs.chain.link/files/json/feeds-tron-testnet.json",
         queryString: "tron-testnet",
       },
     ],
