@@ -436,9 +436,9 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ETHERLINK_MAINNET"
     case "etherlink-testnet":
       return "ETHERLINK_TESTNET"
-    case "opbnb-mainnet":
+    case "binance-smart-chain-mainnet-opbnb-1":
       return "OPBNB_MAINNET"
-    case "opbnb-testnet":
+    case "binance-smart-chain-testnet-opbnb-1":
       return "OPBNB_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -698,9 +698,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "ETHERLINK_TESTNET":
       return "etherlink-testnet"
     case "OPBNB_MAINNET":
-      return "opbnb-mainnet"
+      return "binance-smart-chain-mainnet-opbnb-1"
     case "OPBNB_TESTNET":
-      return "opbnb-testnet"
+      return "binance-smart-chain-testnet-opbnb-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
