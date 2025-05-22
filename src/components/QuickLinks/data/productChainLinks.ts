@@ -346,5 +346,4 @@ export const chainNames: Record<string, string> = {
   metal: "Metal L2",
   rootstock: "Rootstock",
   etherlink: "Etherlink",
-  opbnb: "opBNB",
 }
