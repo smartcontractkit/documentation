@@ -105,6 +105,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Flags Contract Registry",
           url: "data-feeds/contract-registry",
         },
+        {
+          title: "Release Notes",
+          url: "data-feeds/release-notes",
+        },
       ],
     },
     {
@@ -528,12 +532,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/service-limits",
         },
         {
-          title: "Release Notes",
-          url: "chainlink-automation/overview/automation-release-notes",
-        },
-        {
           title: "Migrate to Automation v2.1",
           url: "chainlink-automation/guides/migrate-to-v2",
+        },
+        {
+          title: "Release Notes",
+          url: "chainlink-automation/release-notes",
         },
       ],
     },
@@ -712,7 +716,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "chainlink-functions/resources/release-notes",
+          url: "chainlink-functions/release-notes",
         },
       ],
     },
@@ -1577,10 +1581,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-nodes",
         },
         {
-          title: "Release Notes",
-          url: "chainlink-nodes/node-versions",
-        },
-        {
           title: "Run a Chainlink Node",
           url: "chainlink-nodes/v1/running-a-chainlink-node",
         },
@@ -1605,6 +1605,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "System Requirements",
           url: "chainlink-nodes/resources/requirements",
+        },
+        {
+          title: "Release Notes",
+          url: "chainlink-nodes/release-notes",
         },
       ],
     },
