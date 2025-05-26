@@ -1290,6 +1290,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "Checking CCIP Message Status",
                   url: "ccip/tutorials/evm/offchain/get-status-offchain",
                 },
+                {
+                  title: "Get Supported Tokens",
+                  url: "ccip/tutorials/evm/offchain/get-supported-tokens",
+                },
               ],
             },
             {
