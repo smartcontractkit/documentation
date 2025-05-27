@@ -1,9 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "Chainlink Rewards: Genesis Starts With SXT.",
+  description: "Chainlink CCIP is now officially live on Solana.",
   type: "info",
-  linkText: "Learn how to build with SXT.",
+  linkText: "View lanes and tokens.",
   linkUrl:
-    "https://go.chain.link/masterclasses/build-with-space-and-time?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=sxt-linklab",
+    "https://docs.chain.link/ccip/directory/mainnet/chain/solana-mainnet?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=solana-ccip",
 }
