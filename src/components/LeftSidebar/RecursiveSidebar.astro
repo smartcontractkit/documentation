@@ -20,6 +20,19 @@ function removeSlashes(url: string): string {
   return sanitizedUrl
 }
 
+/** Checks if the URL is external (starts with http:// or https://) */
+function isExternalUrl(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://")
+}
+
+/** Builds the correct href based on whether the URL is internal or external */
+function buildHref(url: string): string {
+  if (isExternalUrl(url)) {
+    return url // Return external URLs as-is
+  }
+  return `${Astro.site?.pathname}${url}` // Prepend base path for internal URLs
+}
+
 /**
  * Determines if a page matches the current page or should be highlighted.
  * Handles:
@@ -28,6 +41,9 @@ function removeSlashes(url: string): string {
  */
 function isCurrentPageMatch(sectionUrl: string, currentPage: string, highlightAsCurrent: string[] = []): boolean {
   if (!sectionUrl) return false
+
+  // External URLs should never match the current page
+  if (isExternalUrl(sectionUrl)) return false
 
   const normalizedSectionUrl = removeSlashes(sectionUrl)
   const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
@@ -51,6 +67,12 @@ function isCurrentPageMatch(sectionUrl: string, currentPage: string, highlightAs
  */
 function shouldExpandSection(item: SectionContent, currentPage: string): boolean {
   const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
+
+  // For external URLs, we don't need to expand the section
+  if (item.url && isExternalUrl(item.url)) {
+    return false
+  }
+
   const normalizedItemUrl = item.url ? removeSlashes(item.url) : ""
 
   // If this item has a URL, check if the current page is this item or a descendant
@@ -87,8 +109,10 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
               {item.url ? (
                 <a
                   class={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}
-                  href={`${Astro.site?.pathname}${item.url}`}
+                  href={buildHref(item.url)}
                   aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : "false"}
+                  target={isExternalUrl(item.url) ? "_blank" : undefined}
+                  rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
                 >
                   {item.title}
                 </a>
@@ -103,8 +127,10 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
         ) : (
           <a
             class={`${styles.navLink} ${isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
-            href={`${Astro.site?.pathname}${item.url}`}
+            href={buildHref(item.url)}
             aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : "false"}
+            target={isExternalUrl(item.url) ? "_blank" : undefined}
+            rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
           >
             {item.title}
           </a>
