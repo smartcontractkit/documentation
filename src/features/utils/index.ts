@@ -5,6 +5,8 @@ import {
   SupportedChain,
   SupportedTechnology,
   web3Providers,
+  ChainType,
+  ChainFamily,
 } from "@config/index.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
@@ -75,6 +77,40 @@ export const getTitle = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return
   return chains[technology]?.chains[supportedChain]?.title
+}
+
+export type ChainTypeAndFamily = {
+  chainType: ChainType
+  chainFamily: ChainFamily
+}
+
+export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainTypeAndFamily => {
+  const technology = chainToTechnology[supportedChain]
+  if (!technology) {
+    throw new Error(`Technology not found for chain: ${supportedChain}`)
+  }
+
+  const chainType = chains[technology]?.chainType
+  if (!chainType) {
+    throw new Error(`Chain type not found for technology: ${technology}`)
+  }
+
+  let chainFamily: ChainFamily
+  switch (chainType) {
+    case "evm":
+      chainFamily = "evm"
+      break
+    case "aptos":
+      chainFamily = "mvm"
+      break
+    case "solana":
+      chainFamily = "svm"
+      break
+    default:
+      throw new Error(`Unknown chain type: ${chainType}`)
+  }
+
+  return { chainType, chainFamily }
 }
 
 /**
@@ -354,10 +390,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLUME_SEPOLIA"
     case "plume-mainnet":
       return "PLUME_MAINNET"
+    case "solana-devnet":
+      return "SOLANA_DEVNET"
+    case "solana-mainnet":
+      return "SOLANA_MAINNET"
     case "tron-mainnetTRON_MAINNET":
       return "TRON_MAINNET"
-    case "tron-testnet":
-      return "TRON_TESTNET"
+    case "tron-testnet-shasta-evm":
+      return "TRON_SHASTA"
     case "abstract-mainnet":
       return "ABSTRACT_MAINNET"
     case "abstract-testnet":
@@ -392,6 +432,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "GRAVITY_MAINNET"
     case "gravity-testnet":
       return "GRAVITY_TESTNET"
+    case "etherlink-mainnet":
+      return "ETHERLINK_MAINNET"
+    case "etherlink-testnet":
+      return "ETHERLINK_TESTNET"
+    case "binance-smart-chain-mainnet-opbnb-1":
+      return "OPBNB_MAINNET"
+    case "binance-smart-chain-testnet-opbnb-1":
+      return "OPBNB_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -605,10 +653,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plume-testnet-sepolia"
     case "PLUME_MAINNET":
       return "plume-mainnet"
+    case "SOLANA_DEVNET":
+      return "solana-devnet"
+    case "SOLANA_MAINNET":
+      return "solana-mainnet"
     case "TRON_MAINNET":
       return "tron-mainnet"
-    case "TRON_TESTNET":
-      return "tron-testnet"
+    case "TRON_SHASTA":
+      return "tron-testnet-shasta-evm"
     case "ABSTRACT_MAINNET":
       return "abstract-mainnet"
     case "ABSTRACT_TESTNET":
@@ -641,6 +693,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "gravity-mainnet"
     case "GRAVITY_TESTNET":
       return "gravity-testnet"
+    case "ETHERLINK_MAINNET":
+      return "etherlink-mainnet"
+    case "ETHERLINK_TESTNET":
+      return "etherlink-testnet"
+    case "OPBNB_MAINNET":
+      return "binance-smart-chain-mainnet-opbnb-1"
+    case "OPBNB_TESTNET":
+      return "binance-smart-chain-testnet-opbnb-1"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

@@ -4,7 +4,6 @@ import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/d
 import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
-import { SelectorsConfig, selectorsConfig } from "../../../config/data/ccip/selectors.ts"
 import type { TokenMetadata } from "./types/index.ts"
 
 export const prerender = false
@@ -305,7 +304,6 @@ export const handleApiError = (error: unknown): Response => {
 export type ChainConfigurationResult = {
   environment: Environment
   chainsConfig: ChainsConfig
-  selectorConfig: SelectorsConfig
   destinationNetworkIds: string[]
   sourceRouterAddress?: string
 }
@@ -343,7 +341,6 @@ export const loadChainConfiguration = async (
     return {
       environment,
       chainsConfig: chainsReferenceData,
-      selectorConfig: selectorsConfig,
       destinationNetworkIds,
       sourceRouterAddress,
     }

@@ -1,8 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "Finance is on at SmartCon in NYC.",
+  description: "Chainlink CCIP is now officially live on Solana.",
   type: "info",
-  linkText: "Get notified when tickets go live.",
-  linkUrl: "https://smartcon.chain.link?utm_source=docs",
+  linkText: "View lanes and tokens.",
+  linkUrl:
+    "https://docs.chain.link/ccip/directory/mainnet/chain/solana-mainnet?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=solana-ccip",
 }

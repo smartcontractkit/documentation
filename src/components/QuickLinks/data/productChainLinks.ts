@@ -71,13 +71,16 @@ export const productChainLinks: ProductChainLinks = {
       hemi: "/ccip/directory/mainnet/chain/hemi-mainnet",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
       megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
+      solana: "/ccip/directory/mainnet/chain/solana-mainnet",
       lisk: "/ccip/directory/mainnet/chain/lisk-mainnet",
       zora: "/ccip/directory/mainnet/chain/zora-mainnet",
       mint: "/ccip/directory/mainnet/chain/mint-mainnet",
+      opbnb: "/ccip/directory/mainnet/chain/binance-smart-chain-mainnet-opbnb-1",
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
       superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
+      rootstock: "/ccip/directory/mainnet/chain/rootstock-mainnet",
     },
   },
   "Data Feeds": {
@@ -125,6 +128,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
       berachain: "/data-streams/crypto-streams",
+      bitlayer: "/data-streams/crypto-streams",
       blast: "/data-streams/crypto-streams",
       "bnb-chain": "/data-streams/crypto-streams",
       bob: "/data-streams/crypto-streams",
@@ -267,6 +271,8 @@ export const productChainLinks: ProductChainLinks = {
     taiko: "/resources/link-token-contracts#taiko",
     megaeth: "/resources/link-token-contracts#megaeth",
     zora: "/resources/link-token-contracts#zora",
+    etherlink: "/resources/link-token-contract#etherlink",
+    opbnb: "/resources/link-token-contracts#opbnb",
   },
 }
 
@@ -342,4 +348,5 @@ export const chainNames: Record<string, string> = {
   superseed: "Superseed",
   metal: "Metal L2",
   rootstock: "Rootstock",
+  etherlink: "Etherlink",
 }

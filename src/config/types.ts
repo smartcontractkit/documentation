@@ -62,6 +62,12 @@ export type SupportedTechnology =
   | "MINT"
   | "SUPERSEED"
   | "GRAVITY"
+  | "ETHERLINK"
+  | "OPBNB"
+
+export type ChainType = "evm" | "solana" | "aptos"
+
+export type ChainFamily = "evm" | "mvm" | "svm"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
@@ -173,8 +179,10 @@ export type SupportedChain =
   | "TAIKO_HEKLA"
   | "PLUME_MAINNET"
   | "PLUME_SEPOLIA"
+  | "SOLANA_DEVNET"
+  | "SOLANA_MAINNET"
   | "TRON_MAINNET"
-  | "TRON_TESTNET"
+  | "TRON_SHASTA"
   | "ABSTRACT_TESTNET"
   | "ABSTRACT_MAINNET"
   | "LISK_TESTNET"
@@ -191,6 +199,10 @@ export type SupportedChain =
   | "ROOTSTOCK_MAINNET"
   | "GRAVITY_MAINNET"
   | "GRAVITY_TESTNET"
+  | "ETHERLINK_TESTNET"
+  | "ETHERLINK_MAINNET"
+  | "OPBNB_MAINNET"
+  | "OPBNB_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
@@ -200,7 +212,7 @@ export type ExplorerInfo = {
 }
 
 export type ChainInfo = {
-  chainId: number
+  chainId: number | string
   title: string
   explorer: ExplorerInfo
   nativeCurrency: {
@@ -215,6 +227,7 @@ export type Chains = Record<
   {
     title: string
     icon: string
+    chainType: ChainType
     chains: Partial<Record<SupportedChain, ChainInfo>>
   }
 >

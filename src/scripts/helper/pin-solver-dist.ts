@@ -119,7 +119,7 @@ const packages = ["@chainlink/contracts", "@chainlink/contracts-ccip", "@chainli
 const versions = getPackageVersions("package.json", packages)
 
 // Run the script
-pinVersionsInSolidityFiles(["dist/samples/**/*.sol", ".vercel/output/static/samples/**/*.sol"], versions).catch(
+pinVersionsInSolidityFiles(["dist/client/samples/**/*.sol", ".vercel/output/static/samples/**/*.sol"], versions).catch(
   (error) => {
     console.error("Failed to pin versions:", error)
     process.exit(1)

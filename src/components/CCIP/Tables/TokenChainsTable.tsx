@@ -2,7 +2,7 @@ import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
@@ -13,6 +13,7 @@ interface TableProps {
     name: string
     key: string
     logo: string
+    chainType: ChainType
     tokenId: string
     tokenLogo: string
     tokenName: string

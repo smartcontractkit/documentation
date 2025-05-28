@@ -3,7 +3,7 @@ import { getAllTokenLanes, getTokenData } from "~/config/data/ccip/data.ts"
 import TokenCard from "../Cards/TokenCard.tsx"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
-import { directoryToSupportedChain, getChainIcon, getTitle } from "~/features/utils/index.ts"
+import { directoryToSupportedChain, getChainIcon, getChainTypeAndFamily, getTitle } from "~/features/utils/index.ts"
 import { useState } from "react"
 import "./ChainTokenGrid.css"
 import SeeMore from "../SeeMore/SeeMore.tsx"
@@ -53,9 +53,10 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
               onClick={() => {
                 const selectedNetwork = Object.keys(data)
                   .map((key) => {
-                    const directory = directoryToSupportedChain(key || "")
-                    const title = getTitle(directory) || ""
-                    const networkLogo = getChainIcon(directory) || ""
+                    const supportedChain = directoryToSupportedChain(key || "")
+                    const { chainType } = getChainTypeAndFamily(supportedChain)
+                    const title = getTitle(supportedChain) || ""
+                    const networkLogo = getChainIcon(supportedChain) || ""
                     return {
                       name: title,
                       key,
@@ -69,6 +70,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       tokenPoolType: data[key].poolType,
                       tokenPoolAddress: data[key].poolAddress || "",
                       explorer: network.explorer,
+                      chainType,
                     }
                   })
                   .find((n) => n.key === network.key)

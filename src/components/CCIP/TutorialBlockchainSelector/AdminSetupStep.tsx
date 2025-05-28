@@ -34,10 +34,10 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
         >
           <Callout type="note" title="Admin Registration Options">
             The Cross-Chain Token (CCT) standard supports multiple methods for registering as a token administrator. We
-            use <code>registerAdminViaOwner()</code> in this tutorial because our deployed BurnMintERC677 token
-            implements the <code>owner()</code> function. For other token implementations, you might use different
-            registration methods. See the{" "}
-            <a href="/ccip/concepts/cross-chain-tokens#self-service-registration-flow">
+            use <code>registerAdminViaGetCCIPAdmin()</code> in this tutorial because our deployed BurnMintERC20 token
+            implements the <code>getCCIPAdmin()</code> function. For other token implementations, you might use
+            different registration methods. See the{" "}
+            <a href="/ccip/concepts/cross-chain-token/evm/registration-administration#self-service-registration-flow">
               self-service registration documentation
             </a>{" "}
             for all available options.
@@ -57,16 +57,18 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
             <li>The RegistryModuleOwnerCustom will be displayed in the "Deployed Contracts" section</li>
             <li>Click on the RegistryModuleOwnerCustom contract address to open the contract details</li>
             <li>
-              Call <code>registerAdminViaOwner</code>:
+              Call <code>registerAdminViaGetCCIPAdmin</code>:
               <div className={styles.functionCall}>
                 <div className={styles.functionHeader}>
-                  <code className={styles.functionName}>registerAdminViaOwner</code>
+                  <code className={styles.functionName}>registerAdminViaGetCCIPAdmin</code>
                   <div className={styles.functionPurpose}>
                     Register yourself as the CCIP administrator for your token
                   </div>
                 </div>
 
-                <div className={styles.functionRequirement}>⚠️ You must be the token owner to call this function</div>
+                <div className={styles.functionRequirement}>
+                  ⚠️ You must be the CCIP token administrator (i.e., the default CCIP admin) to call this function
+                </div>
 
                 <div className={styles.parametersSection}>
                   <div className={styles.parametersTitle}>Parameters:</div>
@@ -112,7 +114,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
                 </div>
 
                 <div className={styles.functionRequirement}>
-                  ⚠️ Must be called after registerAdminViaOwner is confirmed
+                  ⚠️ Must be called after registerAdminViaGetCCIPAdmin is confirmed
                 </div>
 
                 <div className={styles.parametersSection}>

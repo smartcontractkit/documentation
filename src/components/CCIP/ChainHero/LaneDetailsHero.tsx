@@ -4,24 +4,27 @@ import "./LaneDetailsHero.css"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import CopyValue from "../CopyValue/CopyValue.tsx"
 import { LaneFilter } from "~/config/data/ccip/types.ts"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ChainType, ExplorerInfo } from "@config/types.ts"
 
 interface LaneDetailsHeroProps {
   sourceNetwork: {
     logo: string
     name: string
+    chainType?: ChainType
+    rmnPermeable?: boolean
   }
   destinationNetwork: {
     logo: string
     name: string
+    chainType?: ChainType
   }
   onRamp: string
   offRamp: string
   destinationAddress: string
   enforceOutOfOrder?: boolean
   explorer: ExplorerInfo
-  rmnPermeable: boolean
   inOutbound: LaneFilter
+  laneRmnPermeable?: boolean
 }
 
 // Arrow component to avoid duplication
@@ -40,8 +43,20 @@ const NetworkDisplay = ({ logo, name }: { logo: string; name: string }) => (
 )
 
 // Reusable tooltip component with consistent styling
-const StyledTooltip = ({ label, tip }: { label: string; tip: string }) => (
-  <Tooltip label={label} tip={tip} labelStyle={{ marginRight: "10px" }} style={{ display: "inline-flex" }} />
+const StyledTooltip = ({ tip, label = "" }: { tip: string; label?: string }) => (
+  <Tooltip
+    label={label}
+    tip={tip}
+    style={{
+      display: "inline-flex",
+      marginLeft: "8px",
+      alignItems: "center",
+      verticalAlign: "middle",
+    }}
+    labelStyle={{
+      marginRight: "8px",
+    }}
+  />
 )
 
 // Detail item component for consistent label-value pairs
@@ -49,13 +64,18 @@ const DetailItem = ({
   label,
   children,
   clipboardType,
+  tooltip,
 }: {
   label: string
   children: React.ReactNode
   clipboardType?: string
+  tooltip?: React.ReactNode
 }) => (
   <>
-    <div className="lane-details-hero__details__label">{label}</div>
+    <div className="lane-details-hero__details__label">
+      {label}
+      {tooltip}
+    </div>
     <div data-clipboard-type={clipboardType}>{children}</div>
   </>
 )
@@ -68,14 +88,28 @@ function LaneDetailsHero({
   destinationAddress,
   enforceOutOfOrder,
   explorer,
-  rmnPermeable,
   inOutbound,
+  laneRmnPermeable,
 }: LaneDetailsHeroProps) {
   // Map boolean values to display strings
   const getOutOfOrderText = (value?: boolean) => {
     if (value === true) return "Required"
     if (value === false) return "Optional"
     return "N/A"
+  }
+
+  /**
+   * Determines if RMN verification is enabled for this lane. Logic:
+   * 1. If the destination chain is Solana (SVM), RMN verification is always disabled
+   * 2. If a lane-specific rmnPermeable value exists, it takes precedence
+   * 3. Otherwise, fallback to the source network's rmnPermeable setting
+   */
+  const isRmnVerificationEnabled = () => {
+    if (laneRmnPermeable !== undefined) {
+      return laneRmnPermeable === false
+    }
+
+    return sourceNetwork.rmnPermeable === false
   }
 
   return (
@@ -104,7 +138,11 @@ function LaneDetailsHero({
             <AddressComponent address={offRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(offRamp)} />
           </DetailItem>
         ) : (
-          <DetailItem label="OnRamp address" clipboardType="onramp">
+          <DetailItem
+            label="OnRamp address"
+            clipboardType="onramp"
+            tooltip={sourceNetwork.chainType === "solana" ? <StyledTooltip tip="Same as Router." /> : undefined}
+          >
             <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
           </DetailItem>
         )}
@@ -113,28 +151,22 @@ function LaneDetailsHero({
           {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
         </DetailItem>
 
-        <DetailItem label="RMN">
-          {rmnPermeable ? (
-            <a href="/ccip/concepts#risk-management-network" target="_blank" rel="noreferrer">
-              <StyledTooltip
-                label="Coming soon"
-                tip="Risk Management Network (RMN) is NOT enabled for this lane at this time."
-              />
-            </a>
-          ) : (
-            <StyledTooltip
-              label="Enabled"
-              tip="This field shows the status of the Risk Management Network (RMN) for this lane."
-            />
-          )}
+        <DetailItem
+          label="RMN Verification"
+          tooltip={<StyledTooltip tip={"Indicates if RMN blessings are verified on the destination chain."} />}
+        >
+          {isRmnVerificationEnabled() ? "Enabled" : "Disabled"}
         </DetailItem>
 
         {inOutbound === LaneFilter.Outbound && (
-          <DetailItem label="Out of Order Execution" clipboardType="out-of-order-execution">
-            <StyledTooltip
-              label={getOutOfOrderText(enforceOutOfOrder)}
-              tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert."
-            />
+          <DetailItem
+            label="Out of Order Execution"
+            clipboardType="out-of-order-execution"
+            tooltip={
+              <StyledTooltip tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert." />
+            }
+          >
+            {getOutOfOrderText(enforceOutOfOrder)}
           </DetailItem>
         )}
       </div>
