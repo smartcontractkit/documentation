@@ -621,23 +621,42 @@ export const FeedList = ({
                           the data you need. For more details, refer to the{" "}
                           <a href="/data-feeds/aptos/">Using Data Feeds on Aptos</a> guide.
                         </p>
-                        <p>
-                          Price feed contract on Aptos Mainnet:{" "}
-                          <a
-                            className={tableStyles.addressLink}
-                            href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b?network=mainnet"
-                            target="_blank"
-                          >
-                            0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
-                          </a>
-                          <button
-                            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                            style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                            data-clipboard-text="0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b"
-                          >
-                            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                          </button>
-                        </p>
+                        <ul>
+                          <li>
+                            ChainlinkDataFeeds address on Aptos Mainnet:{" "}
+                            <a
+                              className={tableStyles.addressLink}
+                              href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b/modules/packages/ChainlinkDataFeeds?network=mainnet"
+                              target="_blank"
+                            >
+                              0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
+                            </a>
+                            <button
+                              className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                              style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                              data-clipboard-text="0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b"
+                            >
+                              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                            </button>
+                          </li>
+                          <li>
+                            ChainlinkPlatform address on Aptos Mainnet:{" "}
+                            <a
+                              className={tableStyles.addressLink}
+                              href="https://explorer.aptoslabs.com/object/0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a/modules/packages/ChainlinkPlatform?network=mainnet"
+                              target="_blank"
+                            >
+                              0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a
+                            </a>
+                            <button
+                              className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                              style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                              data-clipboard-text="0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a"
+                            >
+                              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                            </button>
+                          </li>
+                        </ul>
                       </>
                     )}
                     <div className={feedList.tableFilters}>
@@ -770,23 +789,42 @@ export const FeedList = ({
                   <>
                     {network.name === "Aptos Testnet" && (
                       <>
-                        <p>
-                          Price feed contract on Aptos Testnet:{" "}
-                          <a
-                            className={tableStyles.addressLink}
-                            href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/transactions?network=testnet"
-                            target="_blank"
-                          >
-                            0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
-                          </a>
-                          <button
-                            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                            style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                            data-clipboard-text="0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
-                          >
-                            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                          </button>
-                        </p>
+                        <ul>
+                          <li>
+                            ChainlinkDataFeeds address on Aptos Testnet:{" "}
+                            <a
+                              className={tableStyles.addressLink}
+                              href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/modules/packages/ChainlinkDataFeeds?network=testnet"
+                              target="_blank"
+                            >
+                              0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
+                            </a>
+                            <button
+                              className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                              style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                              data-clipboard-text="0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
+                            >
+                              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                            </button>
+                          </li>
+                          <li>
+                            ChainlinkPlatform address on Aptos Testnet:{" "}
+                            <a
+                              className={tableStyles.addressLink}
+                              href="https://explorer.aptoslabs.com/object/0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99/modules/packages/ChainlinkPlatform?network=testnet"
+                              target="_blank"
+                            >
+                              0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99
+                            </a>
+                            <button
+                              className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                              style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                              data-clipboard-text="0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99"
+                            >
+                              <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                            </button>
+                          </li>
+                        </ul>
                       </>
                     )}
                     {!isStreams && (
