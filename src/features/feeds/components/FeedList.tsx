@@ -623,7 +623,7 @@ export const FeedList = ({
                         </p>
                         <ul>
                           <li>
-                            ChainlinkDataFeeds address on Aptos Mainnet:{" "}
+                            ChainlinkDataFeeds package address on Aptos Mainnet:{" "}
                             <a
                               className={tableStyles.addressLink}
                               href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b/modules/packages/ChainlinkDataFeeds?network=mainnet"
@@ -640,7 +640,7 @@ export const FeedList = ({
                             </button>
                           </li>
                           <li>
-                            ChainlinkPlatform address on Aptos Mainnet:{" "}
+                            ChainlinkPlatform package address on Aptos Mainnet:{" "}
                             <a
                               className={tableStyles.addressLink}
                               href="https://explorer.aptoslabs.com/object/0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a/modules/packages/ChainlinkPlatform?network=mainnet"
@@ -791,7 +791,7 @@ export const FeedList = ({
                       <>
                         <ul>
                           <li>
-                            ChainlinkDataFeeds address on Aptos Testnet:{" "}
+                            ChainlinkDataFeeds package address on Aptos Testnet:{" "}
                             <a
                               className={tableStyles.addressLink}
                               href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/modules/packages/ChainlinkDataFeeds?network=testnet"
@@ -808,7 +808,7 @@ export const FeedList = ({
                             </button>
                           </li>
                           <li>
-                            ChainlinkPlatform address on Aptos Testnet:{" "}
+                            ChainlinkPlatform package address on Aptos Testnet:{" "}
                             <a
                               className={tableStyles.addressLink}
                               href="https://explorer.aptoslabs.com/object/0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99/modules/packages/ChainlinkPlatform?network=testnet"
