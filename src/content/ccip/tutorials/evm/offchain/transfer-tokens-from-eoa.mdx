@@ -60,38 +60,32 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens directly from y
     ./dist/ccip-tools-ts --help
     ```
 
-1.  For higher security, you can use the [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc) to encrypt your environment variables at rest.
+1.  Inside the project's root folder, i.e., `ccip-tools-ts`, create a `.env` file and add two environment variables to store the RPC URLs:
 
-    1.  Set an encryption password for your environment variables.
+    - `AVALANCHE_FUJI_RPC_URL`: Set this to a URL for the _Avalanche Fuji_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider.
 
-        ```shell
-        npx env-enc set-pw
-        ```
+    - `ETHEREUM_SEPOLIA_RPC_URL`: Set this to a URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider.
 
-    1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to _Ethereum Sepolia_.
+1.  Commands of the [`ccip-tools`](https://github.com/smartcontractkit/ccip-tools-ts) that need to send transactions try to get the private key from a `USER_KEY` environment variable. For simplicity (not a recommended practice), if you are using a testnet wallet that only contains test tokens, you can export the `USER_KEY` environment variable into the current terminal session by running the following command:
 
-        - `AVALANCHE_FUJI_RPC_URL`: Set a URL for the _Avalanche Fuji_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+    ```shell
+    export USER_KEY=<YOUR_TESTNET_WALLET_PRIVATE_KEY>
+    ```
 
-        - `ETHEREUM_SEPOLIA_RPC_URL`: Set a URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+    {/* prettier-ignore */}
+    <Aside type="note" title="Note">
 
-        - `USER_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/).**Note**: The offchain script uses your private key to sign any transactions you make such as transferring tokens.
+    If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/).
 
-        {/* prettier-ignore */}
-        <Aside type="note" title="Note">
-        Commands of the [`ccip-tools`](https://github.com/smartcontractkit/ccip-tools-ts) which need to send transactions try to get its private key from a `USER_KEY` environment
-        variable.
+    </Aside>
 
-        An encrypted wallet json can also be passed to `--wallet` option. It'll be decrypted with password
-        from `USER_KEY_PASSWORD` environment variable, or interactively prompted if not set.
+    {/* prettier-ignore */}
+    <Aside type="caution" title="Security Considerations">
+    An encrypted wallet JSON can also be passed to the `--wallet` option. It will be decrypted with the password from the `USER_KEY_PASSWORD` environment variable, or you will be interactively prompted if not set.
 
-        Additionally, `--wallet ledger` (or `--wallet "ledger:<derivationPath>"`) can be used to connect to
-        a Ledger device, using the `@ledgerhq/hw-app-eth` library. The derivation path can be specified, or
-        defaults to `m/44'/60'/0'/0/0`.
-        </Aside>
+    Additionally, `--wallet ledger` (or `--wallet "ledger:<derivationPath>"`) can be used to connect to a Ledger device, using the `@ledgerhq/hw-app-eth` library. The derivation path can be specified, or defaults to `m/44'/60'/0'/0/0`.
 
-        ```shell
-        npx env-enc set
-        ```
+    </Aside>
 
 ## Tutorial
 
@@ -107,6 +101,27 @@ For this example, CCIP fees are paid in LINK tokens. To learn how to pay CCIP fe
     --fee-token <feeTokenAddress> \
     --transfer-tokens <tokenAddress>=<amount>
 ```
+
+<Aside type="note" title="Note">
+If you have Foundry installed and have imported your private key into an encrypted keystore using the [`cast wallet import`](https://book.getfoundry.sh/reference/cast/cast-wallet-import) command, you can pass the path to that keystore file as the value of the `--wallet` flag in your command, like this:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --fee-token <feeTokenAddress> \
+    --transfer-tokens <tokenAddress>=<amount> \
+    --wallet ~/.foundry/keystores/<yourKeystoreFileName>
+```
+
+<br></br>
+It will interactively prompt you to enter your keystore file password to decrypt it, or alternatively, you can set it by
+exporting it as an environment variable in your current terminal session, like:
+
+```shell
+export USER_KEY_PASSWORD=<YOUR_KEYSTORE_FILE_PASSWORD>
+```
+
+</Aside>
 
 - `source`: Source network, chain ID, or name.
 - `router`: Router contract address on the source network.
@@ -219,6 +234,26 @@ To transfer tokens and pay in native, use the following command:
     --receiver <destinationAccount> \
     --transfer-tokens <tokenAddress>=<amount>
 ```
+
+<Aside type="note" title="Note">
+If you have Foundry installed and have imported your private key into an encrypted keystore using the [`cast wallet import`](https://book.getfoundry.sh/reference/cast/cast-wallet-import) command, you can pass the path to that keystore file as the value of the `--wallet` flag in your command, like this:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --transfer-tokens <tokenAddress>=<amount> \
+    --wallet ~/.foundry/keystores/<yourKeystoreFileName>
+```
+
+<br></br>
+It will interactively prompt you to enter your keystore file password to decrypt it, or alternatively, you can set it by
+exporting it as an environment variable in your current terminal session, like:
+
+```shell
+export USER_KEY_PASSWORD=<YOUR_KEYSTORE_FILE_PASSWORD>
+```
+
+</Aside>
 
 Complete the following steps in your terminal:
 
