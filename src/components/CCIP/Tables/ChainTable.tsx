@@ -88,7 +88,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
             rel="noopener noreferrer"
           >
             <img
-              src="/src/assets/icons/external-button-link.svg"
+              src="/public/assets/icons/external-button-link.svg"
               alt="External link"
               style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
             />
