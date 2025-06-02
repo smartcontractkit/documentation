@@ -7,9 +7,8 @@ import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { Environment, Version, LaneFilter } from "~/config/data/ccip/types.ts"
-import { getLane, getOperationalState } from "~/config/data/ccip/data.ts"
+import { getLane } from "~/config/data/ccip/data.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "~/config/types.ts"
-import { clsx } from "~/lib/clsx/clsx.ts"
 import SeeMore from "../SeeMore/SeeMore.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 
@@ -38,14 +37,12 @@ interface TableProps {
   explorer: ExplorerInfo
 }
 
-const BEFORE_SEE_MORE = 12 // Number of networks to show before the "See more" button, 7 rows
+const BEFORE_SEE_MORE = 12
 
 function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps) {
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [search, setSearch] = useState("")
   const [seeMore, setSeeMore] = useState(lanes.length <= BEFORE_SEE_MORE)
-  const [statuses, setStatuses] = useState<Record<string, string>>({})
-  const [loadingStatuses, setLoadingStatuses] = useState<boolean>(true)
 
   useEffect(() => {
     if (search.length > 0) {
@@ -53,20 +50,9 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
     }
   }, [search])
 
-  useEffect(() => {
-    const fetchOperationalState = async (network) => {
-      if (network) {
-        const result = await getOperationalState(network)
-        setStatuses(result)
-        setLoadingStatuses(false)
-      }
-    }
-    fetchOperationalState(sourceNetwork.key)
-  }, [sourceNetwork])
-
   return (
     <>
-      <div className="ccip-table__filters">
+      <div className="ccip-table__filters ccip-table__filters--chain">
         <Tabs
           tabs={[
             {
@@ -80,14 +66,32 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
           ]}
           onChange={(key) => setInOutbound(key as LaneFilter)}
         />
-        <TableSearchInput search={search} setSearch={setSearch} />
+        <div className="ccip-table__filters__actions">
+          <div className="ccip-table__filters__search-container">
+            <TableSearchInput search={search} setSearch={setSearch} />
+          </div>
+          <a
+            className="button secondary ccip-table__filters__external-button"
+            href="https://ccip.chain.link/status"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/assets/icons/external-button-link.svg"
+              alt=""
+              className="ccip-table__filters__external-icon"
+              role="presentation"
+            />
+            View lane status
+          </a>
+        </div>
       </div>
       <div className="ccip-table__wrapper">
         <table className="ccip-table">
           <thead>
             <tr>
               <th>{inOutbound === LaneFilter.Outbound ? "Destination" : "Source"} network</th>
-              <th>
+              <th style={{ textAlign: "right" }}>
                 {inOutbound === LaneFilter.Outbound ? (
                   <>
                     OnRamp address
@@ -95,13 +99,8 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                       <Tooltip
                         label=""
                         tip="Same as Router"
-                        labelStyle={{
-                          marginLeft: "8px",
-                        }}
-                        style={{
-                          display: "inline-block",
-                          verticalAlign: "middle",
-                        }}
+                        labelStyle={{ marginLeft: "8px" }}
+                        style={{ display: "inline-block", verticalAlign: "middle" }}
                       />
                     )}
                   </>
@@ -109,7 +108,6 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                   "OffRamp address"
                 )}
               </th>
-              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -150,7 +148,10 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                       {network.name}
                     </div>
                   </td>
-                  <td data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}>
+                  <td
+                    style={{ textAlign: "right" }}
+                    data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}
+                  >
                     <Address
                       address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                       endLength={4}
@@ -158,26 +159,6 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                         (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
                       )}
                     />
-                  </td>
-                  <td>
-                    {loadingStatuses ? (
-                      "Loading..."
-                    ) : (
-                      <span
-                        className={clsx(
-                          "ccip-table__status",
-                          `ccip-table__status-${statuses[network.key]?.toLocaleLowerCase() || "none"}`
-                        )}
-                      >
-                        {statuses[network.key]?.toLocaleLowerCase() && (
-                          <img
-                            src={`/assets/icons/ccip-${statuses[network.key]?.toLocaleLowerCase()}.svg`}
-                            alt="Cursed"
-                          />
-                        )}
-                        {statuses[network.key]?.toLocaleLowerCase() || "Status unavailable"}
-                      </span>
-                    )}
                   </td>
                 </tr>
               ))}
