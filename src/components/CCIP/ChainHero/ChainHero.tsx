@@ -1,4 +1,4 @@
-import { Environment, LaneConfig, Version } from "~/config/data/ccip/types.ts"
+import { Environment, LaneConfig, Network, Version } from "~/config/data/ccip/types.ts"
 import { getTokenData } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
@@ -44,35 +44,7 @@ interface ChainHeroProps {
     }
     lane: LaneConfig
   }[]
-  network?: {
-    name: string
-    logo: string
-    totalLanes: number
-    totalTokens: number
-    chain: string
-    chainType: ChainType
-    tokenAdminRegistry?: string
-    registryModule?: string
-    router?: {
-      name: string
-      address: string
-    }
-    explorer: ExplorerInfo
-    routerExplorerUrl: string
-    chainSelector: string
-    feeTokens?: string[]
-    nativeToken?: {
-      name: string
-      symbol: string
-      logo: string
-    }
-    armProxy: {
-      address: string
-      version: string
-    }
-    feeQuoter?: string
-    rmnPermeable?: boolean
-  }
+  network?: Network
   token?: {
     id: string
     name: string
@@ -85,11 +57,11 @@ interface ChainHeroProps {
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
   const feeTokensWithAddress =
     network?.feeTokens?.map((feeToken) => {
-      const logo = getTokenIconUrl(feeToken)
+      const logo = feeToken.logo
       const token = getTokenData({
         environment,
         version: Version.V1_2_0,
-        tokenId: feeToken,
+        tokenId: feeToken.name,
       })
       const explorer = network.explorer || {}
       const address = token[network.chain]?.tokenAddress
@@ -113,7 +85,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
     if (!network) return
     // We making sure the Native Currency is not already part of the FeeToken
     return feeTokensWithAddress?.some((feeToken) => {
-      return feeToken.token.toLowerCase() === nativeCurrency?.symbol.toLowerCase()
+      return feeToken.token.name.toLowerCase() === nativeCurrency?.symbol.toLowerCase()
     })
   }
 
@@ -346,9 +318,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                               height="20px"
                               className="ccip-chain-hero__feeTokens__item__logo"
                             >
-                              <img src={fallbackTokenIconUrl} alt={token} width="20px" height="20px" />
+                              <img src={fallbackTokenIconUrl} alt={token.name} width="20px" height="20px" />
                             </object>
-                            <div>{token}</div>
+                            <div>{token.name}</div>
                             <Address endLength={4} contractUrl={contractUrl} address={address} />
                           </div>
                         ))}
