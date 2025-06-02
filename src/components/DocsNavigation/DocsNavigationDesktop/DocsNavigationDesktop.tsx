@@ -44,6 +44,7 @@ function DocsNavigationDesktop({
                 <a
                   className={styles.ccipDirectoryLink}
                   href="https://chain.link/ccip-contact"
+                  target="_blank"
                   rel="noopener noreferrer"
                 >
                   <MailIcon />
