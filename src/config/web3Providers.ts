@@ -138,7 +138,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ETHERLINK_TESTNET: () => new JsonRpcProvider("https://node.ghostnet.etherlink.com"),
   OPBNB_MAINNET: () => new JsonRpcProvider("https://opbnb-mainnet-rpc.bnbchain.org"),
   OPBNB_TESTNET: () => new JsonRpcProvider("https://opbnb-testnet-rpc.bnbchain.org"),
-  JANCTION_MAIINET: () => new JsonRpcProvider("https://rpc.janction.io"),
+  JANCTION_MAINNET: () => new JsonRpcProvider("https://rpc.janction.io"),
   JANCTION_TESTNET: () => new JsonRpcProvider("hhttps://rpc_testnet.janction.io"),
   NEO_X_MAINNET: () => new JsonRpcProvider("https://mainnet-1.rpc.banelabs.org"),
   NEO_X_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.banelabs.org/"),
