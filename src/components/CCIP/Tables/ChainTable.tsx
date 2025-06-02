@@ -9,7 +9,6 @@ import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { Environment, Version, LaneFilter } from "~/config/data/ccip/types.ts"
 import { getLane } from "~/config/data/ccip/data.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "~/config/types.ts"
-import { clsx } from "~/lib/clsx/clsx.ts"
 import SeeMore from "../SeeMore/SeeMore.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 

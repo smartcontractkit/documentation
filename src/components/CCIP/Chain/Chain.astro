@@ -3,6 +3,7 @@ import CcipLayout from "~/layouts/CcipLayout.astro"
 import { getEntry, render } from "astro:content"
 import {
   Environment,
+  Network,
   getAllNetworkLanes,
   getAllNetworks,
   getSearchLanes,
@@ -16,7 +17,7 @@ import ChainTokenGrid from "./ChainTokenGrid"
 
 interface Props {
   environment: Environment
-  network: any
+  network: Network
 }
 const { environment, network } = Astro.props as Props
 
@@ -80,7 +81,7 @@ const searchLanes = getSearchLanes({ environment })
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
         {
-          network.name !== "Solana" && network.name !== "Solana Devnet" && (
+          network.chainType !== "solana" && (
             <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">
               <img
                 src="/assets/icons/plus.svg"

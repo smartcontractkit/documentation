@@ -133,7 +133,7 @@ const transformTokenName = (token: string): string => {
 }
 
 export const getTokenIconUrl = (token: string) => {
-  if (!token) return
+  if (!token) return ""
   return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat`
 }
 
