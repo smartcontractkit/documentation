@@ -52,17 +52,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
 
   return (
     <>
-      <div
-        className="ccip-table__filters"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          gap: "2rem",
-          flexWrap: "nowrap",
-        }}
-      >
+      <div className="ccip-table__filters ccip-table__filters--chain">
         <Tabs
           tabs={[
             {
@@ -76,20 +66,21 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
           ]}
           onChange={(key) => setInOutbound(key as LaneFilter)}
         />
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
-          <div style={{ maxWidth: "150px", flexShrink: 0 }}>
+        <div className="ccip-table__filters__actions">
+          <div className="ccip-table__filters__search-container">
             <TableSearchInput search={search} setSearch={setSearch} />
           </div>
           <a
-            className="button secondary"
+            className="button secondary ccip-table__filters__external-button"
             href="https://ccip.chain.link/status"
             target="_blank"
             rel="noopener noreferrer"
           >
             <img
               src="/assets/icons/external-button-link.svg"
-              alt="External link"
-              style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
+              alt=""
+              className="ccip-table__filters__external-icon"
+              role="presentation"
             />
             View lane status
           </a>
