@@ -273,6 +273,10 @@ export const productChainLinks: ProductChainLinks = {
     zora: "/resources/link-token-contracts#zora",
     etherlink: "/resources/link-token-contract#etherlink",
     opbnb: "/resources/link-token-contracts#opbnb",
+    janction: "/resources/link-token-contracts#janction",
+    neo_x: "/resources/link-token-contracts#neo-x",
+    polygon_katana: "/resources/link-token-contracts#polygon-katana",
+    "0g": "/resources/link-token-contracts#0g",
   },
 }
 
@@ -349,4 +353,7 @@ export const chainNames: Record<string, string> = {
   metal: "Metal L2",
   rootstock: "Rootstock",
   etherlink: "Etherlink",
+  janction: "Janction",
+  neo_x: "Neo X",
+  polygon_katana: "Polygon Katana",
 }
