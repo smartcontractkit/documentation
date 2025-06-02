@@ -1,0 +1,101 @@
+---
+section: ccip
+date: Last Modified
+title: "Checking CCIP Message Status"
+metadata:
+  description: "Learn to check the status of Chainlink CCIP messages offchain using CCIP Tools. Provide CCIP source transaction hash to verify transaction progress."
+whatsnext: { "Get Supported Tokens": "/ccip/tutorials/evm/offchain/get-supported-tokens" }
+---
+
+import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+In this tutorial, you will learn how to verify the status of a Chainlink CCIP transaction offchain using [CCIP Tools](https://github.com/smartcontractkit/ccip-tools-ts). Starting with a CCIP source transaction hash, you'll execute the [`show`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/README.md#show-default-command) command of the `ccip-tools` to query the current status of a cross-chain message.
+
+## Before you begin
+
+1. Initiate a CCIP transaction and note the CCIP source transaction hash (i.e., the transaction hash on the source blockchain). You can obtain the CCIP source transaction hash by running any of the previous CCIP tutorials.
+1. Complete the prerequisite steps of the [Transfer Tokens between EOAs](/ccip/tutorials/evm/offchain/transfer-tokens-from-eoa#before-you-begin) tutorial.
+
+## Tutorial
+
+This tutorial shows you on how to check the status of a Chainlink CCIP transaction using the [`show`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/README.md#show-default-command) command of the `ccip-tools`. By supplying the command with the source transaction hash, you can verify the current status of your cross-chain message.
+
+**Execute the script in your command line:**
+
+```bash
+./dist/ccip-tools-ts show <sourceTransactionHash> --page 500
+```
+
+**The script requires the following parameters:**
+
+- `sourceTransactionHash`: Transaction hash of the request (source) message. For example, the transaction hash on the _Avalanche Fuji_ network in the [Transfer Tokens between EOAs](/ccip/tutorials/evm/offchain/transfer-tokens-from-eoa#before-you-begin) tutorial.
+
+<Aside type="note" title="Note">
+  The `--page` option is used to limit the number of blocks to search for the message. The default value is `10000`
+  which could result in an error due to RPC limitations. Setting it to `500` is a good practice to avoid such issues.
+</Aside>
+
+**Example Usage:**
+
+If you initiated a transaction from _Avalanche Fuji_ to _Ethereum Sepolia_ and received the source transaction hash, you can check the status of your CCIP message with the following command:
+
+```text
+$ ./src/index.ts show 0x980dacf245f9c6919678219e97d6ad20e0c1964795ec3801e688315f1f18defd --page 500
+
+Lane:
+┌────────────────┬──────────────────────────────────────────────┬────────────────────────────┐
+│ (index)        │ source                                       │ dest                       │
+├────────────────┼──────────────────────────────────────────────┼────────────────────────────┤
+│ name           │ 'avalanche-testnet-fuji'                     │ 'ethereum-testnet-sepolia' │
+│ chainId        │ 43113                                        │ 11155111                   │
+│ chainSelector  │ 14767482510784806043n                        │ 16015286601757825753n      │
+│ onRamp/version │ '0x75b9a75Ee1fFef6BE7c4F842a041De7c6153CF4E' │ '1.5.0'                    │
+└────────────────┴──────────────────────────────────────────────┴────────────────────────────┘
+Request (source):
+┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)         │ Values                                                               │
+├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId       │ '0x1ce5213bf9880b18be7f44d5ab1065e603ec3a83eb1bebf76af366ed3c0de0b3' │
+│ origin          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+│ sender          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+│ receiver        │ '0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf'                         │
+│ sequenceNumber  │ 3835                                                                 │
+│ nonce           │ 4                                                                    │
+│ gasLimit        │ 200000                                                               │
+│ transactionHash │ '0x980dacf245f9c6919678219e97d6ad20e0c1964795ec3801e688315f1f18defd' │
+│ logIndex        │ 6                                                                    │
+│ blockNumber     │ 40954056                                                             │
+│ timestamp       │ '2025-05-26 16:34:14 (2h8m33s ago)'                                  │
+│ finalized       │ true                                                                 │
+│ fee             │ '0.040903083926519498 LINK'                                          │
+│ tokens          │ '0.001 CCIP-BnM'                                                     │
+│ data            │ '0x'                                                                 │
+└─────────────────┴──────────────────────────────────────────────────────────────────────┘
+Commit (dest):
+┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)         │ Values                                                               │
+├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ merkleRoot      │ '0x1ce5213bf9880b18be7f44d5ab1065e603ec3a83eb1bebf76af366ed3c0de0b3' │
+│ min             │ 3835                                                                 │
+│ max             │ 3835                                                                 │
+│ origin          │ '0x9e587c646d4f4e46B71a02179Fa8951CFB34A382'                         │
+│ contract        │ '0x139E06b6dBB1a0C41A1686C091795879c943765A'                         │
+│ transactionHash │ '0xbda1e294e59910e2929e6aec08e52426a9125c1ac20509b9d5b9441789b746b0' │
+│ blockNumber     │ 8411619                                                              │
+│ timestamp       │ '2025-05-26 16:35:00 (46s after request)'                            │
+└─────────────────┴──────────────────────────────────────────────────────────────────────┘
+Receipts (dest):
+┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)         │ Values                                                               │
+├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ state           │ '✅ success'                                                         │
+│ returnData      │ '0x'                                                                 │
+│ origin          │ '0xdA743Ce0Eb7cC541093F030A3126bF9e3d427E93'                         │
+│ offRamp         │ '0x1DEBa99dC8e2A77832461BD386d83D9FCb133137'                         │
+│ transactionHash │ '0xe68ae80ed0b77d6e22f066a08c169c873dd22112ef5f27287bbe85e737c6ec60' │
+│ logIndex        │ 114                                                                  │
+│ blockNumber     │ 8411627                                                              │
+│ timestamp       │ '2025-05-26 16:36:36 (2m22s after request)'                          │
+└─────────────────┴──────────────────────────────────────────────────────────────────────┘
+```

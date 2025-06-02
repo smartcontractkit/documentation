@@ -1291,8 +1291,22 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/tutorials/evm/offchain/get-status-offchain",
                 },
                 {
-                  title: "Get Supported Tokens",
-                  url: "ccip/tutorials/evm/offchain/get-supported-tokens",
+                  title: "CCIP Tools",
+                  url: "ccip/tutorials/evm/offchain/ccip-tools",
+                  children: [
+                    {
+                      title: "Transfer Tokens between EOAs",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
+                    },
+                    {
+                      title: "Checking CCIP Message Status",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
+                    },
+                    {
+                      title: "Get Supported Tokens",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
+                    },
+                  ],
                 },
               ],
             },

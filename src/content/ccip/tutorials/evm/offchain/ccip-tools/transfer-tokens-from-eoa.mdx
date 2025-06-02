@@ -1,0 +1,351 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer Tokens between EOAs"
+metadata:
+  description: "Transfer tokens between EOAs across EVM chains with Chainlink CCIP. The tutorial covers sending CCIP-BnM and paying fees in LINK or native gas using CCIP Tools."
+whatsnext: { "Checking CCIP Message Status Off-Chain": "/ccip/tutorials/evm/offchain/get-status-offchain" }
+---
+
+import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+In this tutorial, you will use Chainlink CCIP to transfer tokens directly from your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) to an account on a different blockchain. First, you will pay for CCIP fees on the source blockchain using LINK. Then, you will run the same example paying for CCIP fees in native gas, such as ETH on Ethereum or AVAX on Avalanche.
+
+<Aside type="caution" title="Transferring tokens">
+  This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
+  they are locked or burned on the source chain and then unlocked or minted on the destination chain. Read the [Token
+  Pools](/ccip/concepts/cross-chain-token/evm/token-pools) section to understand the various mechanisms that are used to
+  transfer value across chains.
+</Aside>
+
+## Before you begin
+
+1.  [Install Node.js 18](https://nodejs.org/en/download/). Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions with `nvm use 18`.
+
+    ```shell
+    node -v
+    ```
+
+    ```shell
+    $ node -v
+    v18.7.0
+    ```
+
+1.  Your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) must have both AVAX and LINK tokens on _Avalanche Fuji_ to pay for the gas fees and CCIP fees.
+
+    - [Configure MetaMask to use LINK tokens](/resources/acquire-link#configure-metamask-to-use-link-tokens)
+    - Acquire testnet AVAX and LINK from [faucets.chain.link/fuji](https://faucets.chain.link/fuji)
+
+1.  Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet). Alternatively, you can use the [Get Supported Tokens](/ccip/tutorials/evm/offchain/get-supported-tokens) tutorial to retrieve the list of supported tokens programmatically.
+
+1.  Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). After following this guide, your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+
+1.  In a terminal, clone the [ccip-tools-ts repository](https://github.com/smartcontractkit/ccip-tools-ts) and change to the `ccip-tools-ts` directory.
+
+    ```shell
+    git clone https://github.com/smartcontractkit/ccip-tools-ts && \
+    cd ccip-tools-ts
+    ```
+
+1.  Run `npm install` to install the dependencies.
+
+    ```shell
+    npm install
+    ```
+
+1.  To make sure that the installation is correct and the `ccip-tools` CLI commands are available, run the following command:
+
+    ```shell
+    ./dist/ccip-tools-ts --help
+    ```
+
+1.  Inside the project's root folder, i.e., `ccip-tools-ts`, create a `.env` file and add two environment variables to store the RPC URLs:
+
+    - `AVALANCHE_FUJI_RPC_URL`: Set this to a URL for the _Avalanche Fuji_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider.
+
+    - `ETHEREUM_SEPOLIA_RPC_URL`: Set this to a URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider.
+
+1.  Commands of the [`ccip-tools`](https://github.com/smartcontractkit/ccip-tools-ts) that need to send transactions try to get the private key from a `USER_KEY` environment variable. For simplicity (not a recommended practice), if you are using a testnet wallet that only contains test tokens, you can export the `USER_KEY` environment variable into the current terminal session by running the following command:
+
+    ```shell
+    export USER_KEY=<YOUR_TESTNET_WALLET_PRIVATE_KEY>
+    ```
+
+    {/* prettier-ignore */}
+    <Aside type="note" title="Note">
+
+    If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/).
+
+    </Aside>
+
+    {/* prettier-ignore */}
+    <Aside type="caution" title="Security Considerations">
+    An encrypted wallet JSON can also be passed to the `--wallet` option. It will be decrypted with the password from the `USER_KEY_PASSWORD` environment variable, or you will be interactively prompted if not set.
+
+    Additionally, `--wallet ledger` (or `--wallet "ledger:<derivationPath>"`) can be used to connect to a Ledger device, using the `@ledgerhq/hw-app-eth` library. The derivation path can be specified, or defaults to `m/44'/60'/0'/0/0`.
+
+    </Aside>
+
+## Tutorial
+
+### Transfer tokens and pay in LINK
+
+In this example, you will transfer CCIP-BnM tokens from your EOA on _Avalanche Fuji_ to an account on _Ethereum Sepolia_. The destination account could be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or a smart contract. The example shows how to transfer CCIP-BnM tokens, but you can reuse the same example to transfer other tokens as long as they are supported for your [lane](/ccip/concepts/architecture/key-concepts#lane).
+
+For this example, CCIP fees are paid in LINK tokens. To learn how to pay CCIP fees in native AVAX, read the [Pay in native](#transfer-tokens-and-pay-in-native) section. To transfer tokens and pay in LINK, use the following command:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --fee-token <feeTokenAddress> \
+    --transfer-tokens <tokenAddress>=<amount>
+    --gas-limit 0
+```
+
+<Aside type="note" title="Note">
+If you have Foundry installed and have imported your private key into an encrypted keystore using the [`cast wallet import`](https://book.getfoundry.sh/reference/cast/cast-wallet-import) command, you can pass the path to that keystore file as the value of the `--wallet` flag in your command, like this:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --fee-token <feeTokenAddress> \
+    --transfer-tokens <tokenAddress>=<amount> \
+    --gas-limit 0 \
+    --wallet ~/.foundry/keystores/<yourKeystoreFileName>
+```
+
+<br></br>
+It will interactively prompt you to enter your keystore file password to decrypt it, or alternatively, you can set it by
+exporting it as an environment variable in your current terminal session, like:
+
+```shell
+export USER_KEY_PASSWORD=<YOUR_KEYSTORE_FILE_PASSWORD>
+```
+
+</Aside>
+
+- `source`: Source network, chain ID, or name.
+- `router`: Router contract address on the source network.
+- `dest`: Destination network, chain ID, or name.
+- `destinationAccount`: Address of the destination account on the destination network. Skip this argument to use the same address as the source account.
+- `feeTokenAddress`: Token address used to pay CCIP fees. Supported tokens for paying fees include LINK, the native gas token of the source blockchain (such as ETH for Ethereum), and the wrapped native gas token (such as WETH for Ethereum).
+- `tokenAddress`: Address of the token to be transferred.
+- `amount`: Amount of the token to be transferred.
+- `gasLimit`: Gas limit for the transaction. This is optional and defaults to 200,000, which is the default value in the ramp config. You can set it to 0 when the transaction is directed to an Externally Owned Account (EOA).
+
+You can find the supported network names and chain IDs that can be used for `source` and `dest` in the [`selectors.ts`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/src/lib/selectors.ts) file of the `ccip-tools` repository. Details such as the router contract address, LINK token address, and wrapped native gas token (like WETH) address can be found in the [CCIP Directory](https://docs.chain.link/ccip/directory) by searching for the relevant network.
+
+Complete the following steps in your terminal:
+
+1.  Send 0.001 CCIP-BnM from your EOA on _Avalanche Fuji_ to another account on _Ethereum Sepolia_:
+
+    ```
+    ./src/index.ts send 43113 0xF694E193200268f9a4868e4Aa017A0118C9a8177 11155111 \
+        --receiver 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf \
+        --fee-token 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 \
+        --transfer-tokens 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4=0.001 \
+        --gas-limit 0
+    ```
+
+    Command arguments:
+
+    | Argument                                                           | Explanation                                                                                                                                                                                                                      |
+    | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | <CopyText text="./src/index.ts send" code/>                        | This executes the `send` command of the `ccip-tools`.                                                                                                                                                                            |
+    | <CopyText text="43113" code/>                                      | This specifies the source blockchain, in this case, _Avalanche Fuji_.                                                                                                                                                            |
+    | <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/> | This specifies the router address on the source blockchain, in this case, _Avalanche Fuji_.                                                                                                                                      |
+    | <CopyText text="11155111" code/>                                   | This specifies the destination blockchain, which is _Ethereum Sepolia_ in this case.                                                                                                                                             |
+    | <CopyText text="--receiver" code/>                                 | This specifies the `receiver` flag followed by the account address on the destination blockchain. Skip this argument if you want to use the same address as the source account.                                                  |
+    | `YOUR_ACCOUNT`                                                     | This is the account address on the destination blockchain that is supposed to receive the tokens. You can replace this with your account address.                                                                                |
+    | <CopyText text="--fee-token" code/>                                | This specifies the `fee-token` flag followed by the fee token address on the source blockchain.                                                                                                                                  |
+    | <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/> | Since you will pay for CCIP fees in LINK, this is the LINK token contract address on _Avalanche Fuji_. The LINK contract address can be found on the [Link Token contracts page](/resources/link-token-contracts?parent=ccip).   |
+    | <CopyText text="--transfer-tokens" code/>                          | This specifies the `transfer-tokens` flag, followed by the token address and the amount of tokens to transfer, separated by `=`, as in `--transfer-tokens <tokenAddress>=<amount>`.                                              |
+    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/> | This is the CCIP-BnM token contract address on Avalanche Fuji. The contract addresses for each network can be found on the [CCIP Directory](/ccip/directory).                                                                    |
+    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                                                        |
+    | <CopyText text="--gas-limit 0" code/>                              | This specifies the gas limit for the transaction. This is optional and defaults to `200000`, which is the default value in the ramp config. Set it to `0` when the transaction is directed to an Externally Owned Account (EOA). |
+
+1.  Once you execute the command, you should see the following logs:
+
+        ```
+        $ ./src/index.ts send 43113 0xF694E193200268f9a4868e4Aa017A0118C9a8177 11155111 \
+            --receiver 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf \
+            --fee-token 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 \
+            --transfer-tokens 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4=0.001 \
+            --gas-limit 0
+
+        Approving 1000000000000000n 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4 for 0xF694E193200268f9a4868e4Aa017A0118C9a8177 = 0xa3fd8053a74b71f34c4c280f10fdcba51ea105093998f8349db14485473da912
+        Approving 23112499163862214n 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 for 0xF694E193200268f9a4868e4Aa017A0118C9a8177 = 0xb21d2822c7211a6bd39310ae78f4b59ef54ed6271fea21c949d9be78a30f12a7
+        Sending message to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf @ ethereum-testnet-sepolia , tx_hash = 0x70858cfeadcfbd1404a65dd4116b549801bde3d184eb324f895529286e15249a
+        Lane:
+        ┌────────────────┬──────────────────────────────────────────────┬────────────────────────────┐
+        │ (index)        │ source                                       │ dest                       │
+        ├────────────────┼──────────────────────────────────────────────┼────────────────────────────┤
+        │ name           │ 'avalanche-testnet-fuji'                     │ 'ethereum-testnet-sepolia' │
+        │ chainId        │ 43113                                        │ 11155111                   │
+        │ chainSelector  │ 14767482510784806043n                        │ 16015286601757825753n      │
+        │ onRamp/version │ '0x75b9a75Ee1fFef6BE7c4F842a041De7c6153CF4E' │ '1.5.0'                    │
+        └────────────────┴──────────────────────────────────────────────┴────────────────────────────┘
+        Request (source):
+        ┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+        │ (index)         │ Values                                                               │
+        ├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+        │ messageId       │ '0x934f57925b5d8fbc763c2a06dfe2d003676816f8ea67392d3e7888a45469d4c1' │
+        │ origin          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+        │ sender          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+        │ receiver        │ '0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf'                         │
+        │ sequenceNumber  │ 3859                                                                 │
+        │ nonce           │ 17                                                                   │
+        │ gasLimit        │ 0                                                                    │
+        │ transactionHash │ '0x70858cfeadcfbd1404a65dd4116b549801bde3d184eb324f895529286e15249a' │
+        │ logIndex        │ 6                                                                    │
+        │ blockNumber     │ 41234897                                                             │
+        │ timestamp       │ '2025-06-02 16:19:51 (10s ago)'                                      │
+        │ finalized       │ true                                                                 │
+        │ fee             │ '0.023112499163862214 LINK'                                          │
+        │ tokens          │ '0.001 CCIP-BnM'                                                     │
+        │ data            │ '0x'                                                                 │
+        └─────────────────┴──────────────────────────────────────────────────────────────────────┘
+        ```
+
+1.  Analyze the logs:
+
+    - The script communicates with the router to calculate the transaction fees required to transfer tokens, which amounts to 40,903,083,926,519,498 Juels (equivalent to 0.04 LINK).
+    - The script engages with the Link token contract, authorizing the router contract to spend 40,903,083,926,519,498 Juels for the fees and 1000000000000000 (0.001 CCIP-BnM) from your Externally Owned Account (EOA) balance.
+    - The script initiates a transaction through the router to transfer 1000000000000000 (0.001 CCIP-BnM) to your account on _Ethereum Sepolia_. It also returns the CCIP message ID.
+
+1.  While the script is waiting for the cross-chain transaction to proceed, open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the message ID. Notice that the status is not finalized yet.
+
+1.  After several minutes (the waiting time depends on the [finality of the source blockchain](/ccip/ccip-execution-latency)), the transaction should be finalized on the source chain. Once finalized, the corresponding transaction is executed on the destination chain by the DON. After execution, the status will be shown as `SUCCESS` in the CCIP explorer.
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and use the message ID to find your cross-chain transaction.
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/ccip-explorer-offchain-send-tokens-paylink-tx-details.jpg"
+      alt="Chainlink CCIP Explorer transaction details"
+    />
+
+1.  The data field is empty because only tokens are transferred. The gas limit is set to `0` because, although the default value in the ramp config is `200,000`, you can override it by passing the `--gas-limit` flag. Setting it to `0` is appropriate when the transaction is directed to an Externally Owned Account (EOA). With an empty data field, no function calls on a smart contract are expected on the destination chain.
+
+### Transfer tokens and pay in native
+
+In this example, you will transfer CCIP-BnM tokens from your EOA on _Avalanche Fuji_ to an account on _Ethereum Sepolia_. The destination account could be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or a smart contract. The example shows how to transfer CCIP-BnM tokens, but you can reuse the same example to transfer other tokens as long as they are supported for your [lane](/ccip/concepts/architecture/key-concepts#lane).
+
+For this example, CCIP fees are paid in Avalanche Fuji's native AVAX. To learn how to pay CCIP fees in LINK, read the [Pay in LINK](#transfer-tokens-and-pay-in-link) section.
+
+To transfer tokens and pay in native, use the following command:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --transfer-tokens <tokenAddress>=<amount> \
+    --gas-limit 0
+```
+
+<Aside type="note" title="Note">
+If you have Foundry installed and have imported your private key into an encrypted keystore using the [`cast wallet import`](https://book.getfoundry.sh/reference/cast/cast-wallet-import) command, you can pass the path to that keystore file as the value of the `--wallet` flag in your command, like this:
+
+```
+./src/index.ts send <source> <router> <dest> \
+    --receiver <destinationAccount> \
+    --transfer-tokens <tokenAddress>=<amount> \
+    --gas-limit 0 \
+    --wallet ~/.foundry/keystores/<yourKeystoreFileName>
+
+```
+
+<br></br>
+It will interactively prompt you to enter your keystore file password to decrypt it, or alternatively, you can set it by
+exporting it as an environment variable in your current terminal session, like:
+
+```shell
+export USER_KEY_PASSWORD=<YOUR_KEYSTORE_FILE_PASSWORD>
+```
+
+</Aside>
+
+Complete the following steps in your terminal:
+
+1.  Send 0.001 CCIP-BnM from your EOA on _Avalanche Fuji_ to another account on _Ethereum Sepolia_:
+
+    ```
+    ./src/index.ts send 43113 0xF694E193200268f9a4868e4Aa017A0118C9a8177 11155111 \
+        --receiver 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf \
+        --transfer-tokens 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4=0.001 \
+        --gas-limit 0
+    ```
+
+    Command arguments:
+
+    | Argument                                                           | Explanation                                                                                                                                                                                                                      |
+    | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | <CopyText text="./src/index.ts send" code/>                        | This executes the `send` command of the `ccip-tools`.                                                                                                                                                                            |
+    | <CopyText text="43113" code/>                                      | This specifies the source blockchain, in this case, _Avalanche Fuji_.                                                                                                                                                            |
+    | <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/> | This specifies the router address on the source blockchain, in this case, _Avalanche Fuji_.                                                                                                                                      |
+    | <CopyText text="11155111" code/>                                   | This specifies the destination blockchain, which is _Ethereum Sepolia_ in this case.                                                                                                                                             |
+    | <CopyText text="--receiver" code/>                                 | This specifies the `receiver` flag followed by the account address on the destination blockchain. Skip this argument if you want to use the same address as the source account.                                                  |
+    | `YOUR_ACCOUNT`                                                     | This is the account address on the destination blockchain that is supposed to receive the tokens. You can replace this with your account address.                                                                                |
+    | <CopyText text="--transfer-tokens" code/>                          | This specifies the `transfer-tokens` flag, followed by the token address and the amount of tokens to transfer, separated by `=`, as in `--transfer-tokens <tokenAddress>=<amount>`.                                              |
+    | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/> | This is the CCIP-BnM token contract address on Avalanche Fuji. The contract addresses for each network can be found on the [CCIP Directory](/ccip/directory).                                                                    |
+    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                                                        |
+    | <CopyText text="--gas-limit 0" code/>                              | This specifies the gas limit for the transaction. This is optional and defaults to `200000`, which is the default value in the ramp config. Set it to `0` when the transaction is directed to an Externally Owned Account (EOA). |
+
+1.  After you execute the command, you should see the following logs:
+
+        ```
+        $ ./src/index.ts send 43113 0xF694E193200268f9a4868e4Aa017A0118C9a8177 11155111 \
+            --receiver 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf \
+            --transfer-tokens 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4=0.001 \
+            --gas-limit 0
+
+        Approving 1000000000000000n 0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4 for 0xF694E193200268f9a4868e4Aa017A0118C9a8177 = 0x1ea6d165cf627fd4f6856520fc9afa2e08c4e04f79fd78bf7f4ef7da94692503
+        Sending message to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf @ ethereum-testnet-sepolia , tx_hash = 0x0a00f9240b6860e34a0664ad0aa8f8e86877d70b97e9787e08e270bea564edce
+        Lane:
+        ┌────────────────┬──────────────────────────────────────────────┬────────────────────────────┐
+        │ (index)        │ source                                       │ dest                       │
+        ├────────────────┼──────────────────────────────────────────────┼────────────────────────────┤
+        │ name           │ 'avalanche-testnet-fuji'                     │ 'ethereum-testnet-sepolia' │
+        │ chainId        │ 43113                                        │ 11155111                   │
+        │ chainSelector  │ 14767482510784806043n                        │ 16015286601757825753n      │
+        │ onRamp/version │ '0x75b9a75Ee1fFef6BE7c4F842a041De7c6153CF4E' │ '1.5.0'                    │
+        └────────────────┴──────────────────────────────────────────────┴────────────────────────────┘
+        Request (source):
+        ┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+        │ (index)         │ Values                                                               │
+        ├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+        │ messageId       │ '0xd902134a69bff565005c354996386479f9b1204b1810f49e27abc8c413c64312' │
+        │ origin          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+        │ sender          │ '0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA'                         │
+        │ receiver        │ '0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf'                         │
+        │ sequenceNumber  │ 3861                                                                 │
+        │ nonce           │ 18                                                                   │
+        │ gasLimit        │ 0                                                                    │
+        │ transactionHash │ '0x0a00f9240b6860e34a0664ad0aa8f8e86877d70b97e9787e08e270bea564edce' │
+        │ logIndex        │ 11                                                                   │
+        │ blockNumber     │ 41235059                                                             │
+        │ timestamp       │ '2025-06-02 16:25:12 (7s ago)'                                       │
+        │ finalized       │ true                                                                 │
+        │ fee             │ '0.019124641265363576 WAVAX'                                         │
+        │ tokens          │ '0.001 CCIP-BnM'                                                     │
+        │ data            │ '0x'                                                                 │
+        └─────────────────┴──────────────────────────────────────────────────────────────────────┘
+        ```
+
+1.  Analyze the logs:
+
+    - The script interacts with the CCIP-BnM token contract, authorizing the router contract to deduct 0.001 CCIP-BnM from your Externally Owned Account (EOA) balance.
+    - The script initiates a transaction through the router to transfer 0.001 CCIP-BnM tokens to your destination account on _Ethereum Sepolia_. It also returns the CCIP message ID.
+    - The script continuously monitors the destination blockchain (_Ethereum Sepolia_) to track the progress and completion of the cross-chain transaction.
+
+1.  While the script is waiting for the cross-chain transaction to proceed, open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the message ID. Notice that the status is not finalized yet.
+
+1.  After several minutes (the waiting time depends on the [finality of the source blockchain](/ccip/ccip-execution-latency)), the transaction should be finalized on the source chain. Once finalized, the corresponding transaction is executed on the destination chain by the DON. After execution, the status will be shown as `SUCCESS` in the CCIP explorer.
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and use the message ID to find your cross-chain transaction.
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/ccip-explorer-offchain-send-tokens-tx-details.jpg"
+      alt="Chainlink CCIP Explorer transaction details"
+    />
+
+1.  The data field is empty because only tokens are transferred. The gas limit is set to `0` because, although the default value in the ramp config is `200,000`, you can override it by passing the `--gas-limit` flag. Setting it to `0` is appropriate when the transaction is directed to an Externally Owned Account (EOA). With an empty data field, no function calls on a smart contract are expected on the destination chain.
