@@ -1,4 +1,4 @@
-import { Environment, Version, PoolType } from "~/config/data/ccip/types.ts"
+import { Environment, Version, Network } from "~/config/data/ccip/types.ts"
 import { getAllTokenLanes, getTokenData } from "~/config/data/ccip/data.ts"
 import TokenCard from "../Cards/TokenCard.tsx"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
@@ -7,7 +7,6 @@ import { directoryToSupportedChain, getChainIcon, getChainTypeAndFamily, getTitl
 import { useState } from "react"
 import "./ChainTokenGrid.css"
 import SeeMore from "../SeeMore/SeeMore.tsx"
-import { ExplorerInfo } from "~/config/types.ts"
 
 interface ChainTokenGridProps {
   tokens: {
@@ -15,20 +14,7 @@ interface ChainTokenGridProps {
     logo: string
     totalNetworks: number
   }[]
-  network: {
-    name: string
-    key: string
-    logo: string
-    tokenId: string
-    tokenLogo: string
-    tokenName: string
-    tokenSymbol: string
-    tokenDecimals: number
-    tokenAddress: string
-    tokenPoolType: PoolType
-    tokenPoolAddress: string
-    explorer: ExplorerInfo
-  }
+  network: Network
   environment: Environment
 }
 

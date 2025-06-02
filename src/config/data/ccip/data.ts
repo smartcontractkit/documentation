@@ -21,6 +21,8 @@ import {
   getTitle,
   getChainTypeAndFamily,
   supportedChainToChainInRdd,
+  getTokenIconUrl,
+  getNativeCurrency,
 } from "@features/utils/index.ts"
 
 // For mainnet
@@ -409,6 +411,8 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     const router = chains[chain].router
     if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
     const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
+    const nativeToken = getNativeCurrency(supportedChain)
+    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
     // Determine chain type based on chain name
     const { chainType } = getChainTypeAndFamily(supportedChain)
@@ -428,11 +432,14 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       routerExplorerUrl,
       chainSelector: chains[chain].chainSelector,
       nativeToken: {
-        name: chains[chain]?.nativeToken?.name || "",
-        symbol: chains[chain]?.nativeToken?.symbol || "",
-        logo: chains[chain]?.nativeToken?.logo || "",
+        name: nativeToken.name,
+        symbol: nativeToken.symbol,
+        logo: getTokenIconUrl(nativeToken.symbol),
       },
-      feeTokens: chains[chain].feeTokens,
+      feeTokens: chains[chain].feeTokens?.map((tokenName: string) => ({
+        name: tokenName,
+        logo: getTokenIconUrl(tokenName),
+      })),
       armProxy: chains[chain].armProxy,
       feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
       rmnPermeable: chains[chain]?.rmnPermeable,
@@ -666,13 +673,4 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
     if (a.destinationNetwork.name < b.destinationNetwork.name) return -1
     return 0
   })
-}
-
-export async function getOperationalState(chain: string) {
-  const url = `/api/ccip/lane-statuses?sourceNetworkId=${chain}`
-  const response = await fetch(url)
-  if (response.status !== 200) {
-    return {}
-  }
-  return response.json()
 }
