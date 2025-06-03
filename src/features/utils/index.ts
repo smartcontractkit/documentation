@@ -374,8 +374,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_TESTNET"
     case "cronos-zkevm-mainnet":
       return "CRONOS_ZKEVM_MAINNET"
-    case "0g-testnet-newton":
-      return "0G_NEWTON_TESTNET"
+    case "0g-testnet-galileo":
+      return "0G_GALILEO_TESTNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
     case "mind-testnet":
@@ -440,6 +440,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "OPBNB_MAINNET"
     case "binance-smart-chain-testnet-opbnb-1":
       return "OPBNB_TESTNET"
+    case "janction-mainnet":
+      return "JANCTION_MAINNET"
+    case "janction-testnet-sepolia":
+      return "JANCTION_TESTNET"
+    case "neox-mainnet":
+      return "NEO_X_MAINNET"
+    case "neox-testnet-t4":
+      return "NEO_X_TESTNET"
+    case "polygon-testnet-tatara":
+      return "KATANA_TATARA"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -637,8 +647,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-testnet-sepolia"
     case "CRONOS_ZKEVM_MAINNET":
       return "cronos-zkevm-mainnet"
-    case "0G_NEWTON_TESTNET":
-      return "0g-testnet-newton"
+    case "0G_GALILEO_TESTNET":
+      return "0g-testnet-galileo"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
@@ -701,6 +711,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "binance-smart-chain-mainnet-opbnb-1"
     case "OPBNB_TESTNET":
       return "binance-smart-chain-testnet-opbnb-1"
+    case "JANCTION_MAINNET":
+      return "janction-mainnet"
+    case "JANCTION_TESTNET":
+      return "janction-testnet-sepolia"
+    case "NEO_X_MAINNET":
+      return "neox-mainnet"
+    case "NEO_X_TESTNET":
+      return "neox-testnet-t4"
+    case "KATANA_TATARA":
+      return "polygon-testnet-tatara"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
