@@ -81,6 +81,10 @@ export const productChainLinks: ProductChainLinks = {
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
       rootstock: "/ccip/directory/mainnet/chain/rootstock-mainnet",
+      janction: "/ccip/directory/testnet/chain/janction-testnet-sepolia",
+      neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
+      polygonkatana: "/ccip/directory/testnet/chain/polygon-testnet-tatara",
+      "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
     },
   },
   "Data Feeds": {
@@ -274,8 +278,8 @@ export const productChainLinks: ProductChainLinks = {
     etherlink: "/resources/link-token-contract#etherlink",
     opbnb: "/resources/link-token-contracts#opbnb",
     janction: "/resources/link-token-contracts#janction",
-    neo_x: "/resources/link-token-contracts#neo-x",
-    polygon_katana: "/resources/link-token-contracts#polygon-katana",
+    neox: "/resources/link-token-contracts#neo-x",
+    polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
   },
 }
@@ -354,6 +358,6 @@ export const chainNames: Record<string, string> = {
   rootstock: "Rootstock",
   etherlink: "Etherlink",
   janction: "Janction",
-  neo_x: "Neo X",
-  polygon_katana: "Polygon Katana",
+  neox: "Neo X",
+  polygonkatana: "Polygon Katana",
 }
