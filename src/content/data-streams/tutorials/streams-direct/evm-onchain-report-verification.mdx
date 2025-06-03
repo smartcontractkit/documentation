@@ -105,9 +105,13 @@ Deploy a `ClientReportsVerifier` contract on _Arbitrum Sepolia_. This contract i
 
 ### Fund the verifier contract
 
-In this example, the verifier contract pays for onchain verification of reports in LINK tokens.
+In this example, the client contract pays for onchain verification of reports in LINK tokens when fees are required. The contract automatically detects whether the target network requires fees:
 
-Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier contract address you saved earlier.
+- **Networks with `FeeManager` deployed**: Verification requires token payments. These networks include: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+
+- **Networks without `FeeManager`**: No funding is needed since you can verify reports without fees. The contract skips the fee calculation and approval steps.
+
+For this tutorial on _Arbitrum Sepolia_, fees are required, so you need to fund the contract with LINK tokens. Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier contract address you saved earlier.
 
 ### Verify a report onchain
 
@@ -129,7 +133,7 @@ Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the verifier cont
 
 1.  Click the `verifyReport` button to call the function. MetaMask prompts you to accept the transaction.
 
-1.  Click the `last_decoded_price` getter function to view the decoded price from the verified report. The answer on the ETH/USD stream uses 18 decimal places, so an answer of `3257579704051546000000` indicates an ETH/USD price of 3,257.579704051546. Each stream uses a different number of decimal places for answers. See the [Stream Addresses](/data-streams/crypto-streams) page for more information.
+1.  Click the `lastDecodedPrice` getter function to view the decoded price from the verified report. The answer on the ETH/USD stream uses 18 decimal places, so an answer of `3257579704051546000000` indicates an ETH/USD price of 3,257.579704051546. Each stream uses a different number of decimal places for answers. See the [Stream Addresses](/data-streams/crypto-streams) page for more information.
 
     <ClickToZoom
       src="/images/data-streams/onchain-verification/price-from-verified-report.webp"
@@ -162,20 +166,34 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0004` corresponds to the [report schema v4](/data-streams/reference/report-schema-v4) (Real World Assets).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
 
-- **Fee calculation**:
+- **Fee calculation and handling**:
 
-  - The function interacts with the `FeeManager` contract (accessed via the verifier proxy) to calculate the fees required for verification.
-  - It uses the `getFeeAndReward` function to obtain the fee amount in LINK tokens.
-
-- **Token approval**: It approves the `RewardManager` contract to spend the calculated amount of LINK tokens from the contract's balance.
+  - The function first checks if a `FeeManager` contract exists by querying `s_feeManager()` on the verifier proxy.
+  - **If a `FeeManager` exists** (non-zero address):
+    - It calculates the fees required for verification using the `getFeeAndReward` function.
+    - It approves the `RewardManager` contract to spend the calculated amount of LINK tokens from the contract's balance.
+    - It encodes the fee token address into the `parameterPayload` for the verification call.
+    - `FeeManager` contracts are currently deployed on: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+  - **If no `FeeManager` exists** (zero address):
+    - The function skips the fee calculation and approval steps entirely.
+    - It passes an empty `parameterPayload` to the verification call.
+  - This automatic detection makes the contract compatible with any network, regardless of whether fee management is deployed.
 
 - **Report verification**:
 
   - The `verify` function of the verifier proxy is called to perform the actual verification.
-  - It passes the `unverifiedReport` and the encoded fee token address as parameters.
+  - It passes the `unverifiedReport` and the `parameterPayload` (which contains either the encoded fee token address or empty bytes) as parameters.
 
 - **Data decoding**:
 
   - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3` or `ReportV4`).
   - It emits a `DecodedPrice` event with the price extracted from the verified report.
   - The `lastDecodedPrice` state variable is updated with the new price.
+
+### Additional functionality
+
+The contract also includes:
+
+- **Owner-only token withdrawal**: The `withdrawToken` function allows the contract owner to withdraw any ERC-20 tokens (including LINK) from the contract.
+- **Enhanced error handling**: The contract includes specific error types (`InvalidReportVersion`, `NotOwner`, `NothingToWithdraw`) for better debugging and user experience.
+- **Cross-chain compatibility**: The automatic `FeeManager` detection makes the same contract code work on any supported network, whether fees are required or not.

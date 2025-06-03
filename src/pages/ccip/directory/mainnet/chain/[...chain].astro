@@ -1,6 +1,6 @@
 ---
 import Chain from "~/components/CCIP/Chain/Chain.astro"
-import { Environment, getAllNetworks } from "~/config/data/ccip"
+import { Environment, getAllNetworks, Network } from "~/config/data/ccip"
 
 export async function getStaticPaths() {
   const networks = getAllNetworks({ filter: Environment.Mainnet })
@@ -10,7 +10,7 @@ export async function getStaticPaths() {
     return {
       params: { chain },
       props: {
-        network: networks.find((network) => network.chain === chain),
+        network: networks.find((network) => network.chain === chain) as Network,
         environment: Environment.Mainnet,
       },
     }

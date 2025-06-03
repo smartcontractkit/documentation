@@ -64,6 +64,9 @@ export type SupportedTechnology =
   | "GRAVITY"
   | "ETHERLINK"
   | "OPBNB"
+  | "JANCTION"
+  | "NEO_X"
+  | "POLYGON_KATANA"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -171,7 +174,7 @@ export type SupportedChain =
   | "CRONOS_MAINNET"
   | "CRONOS_ZKEVM_TESTNET"
   | "CRONOS_ZKEVM_MAINNET"
-  | "0G_NEWTON_TESTNET"
+  | "0G_GALILEO_TESTNET"
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
@@ -203,6 +206,11 @@ export type SupportedChain =
   | "ETHERLINK_MAINNET"
   | "OPBNB_MAINNET"
   | "OPBNB_TESTNET"
+  | "JANCTION_MAINNET"
+  | "JANCTION_TESTNET"
+  | "NEO_X_MAINNET"
+  | "NEO_X_TESTNET"
+  | "KATANA_TATARA"
 
 export type ExplorerInfo = {
   baseUrl: string
