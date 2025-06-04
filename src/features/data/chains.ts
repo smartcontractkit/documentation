@@ -655,7 +655,7 @@ export const CHAINS: Chain[] = [
     label: "TRON",
     title: "TRON Data Feeds",
     img: "/assets/chains/tron.svg",
-    networkStatusUrl: "",
+    networkStatusUrl: "https://tronscan.org",
     tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
