@@ -163,7 +163,7 @@ export const StreamsNetworksData: NetworkData[] = [
     logoUrl: "/assets/chains/celo.svg",
     mainnet: {
       label: "Celo Mainnet",
-      verifierProxy: "0x6FDC15cad4f90a037B7126D7EFff105A9d03D6e7",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
       explorerUrl: "https://celoscan.io/address/%s/",
     },
     testnet: {
