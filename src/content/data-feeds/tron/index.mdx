@@ -1,0 +1,235 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using Data Feeds on Tron"
+isIndex: true
+whatsnext: { "Tron Price Feed Addresses": "/data-feeds/price-feeds/addresses?network=tron" }
+metadata:
+  description: "Complete step-by-step tutorial for integrating Chainlink Data Feeds on TRON blockchain. Learn to deploy smart contracts with TronBox, read real-time price data using TronWeb, and build decentralized applications with reliable oracle data on TRON Nile Testnet."
+  excerpt: "TRON blockchain tutorial, Chainlink price feeds, TronBox deployment, TronWeb integration, smart contract development, oracle data, cryptocurrency prices, BTC/USD, ETH/USD, decentralized finance, DeFi development, blockchain oracles, TRON testnet, JavaScript Web3"
+---
+
+import { Aside, CopyText } from "@components"
+
+This tutorial demonstrates how to read Chainlink Data Feeds on the TRON blockchain. You will learn how to deploy a smart contract on TRON Nile Testnet using [TronBox](https://tronbox.io/) and interact with it offchain using [TronWeb](https://tronweb.network/).
+
+Chainlink Data Feeds on TRON provide reliable, decentralized price data for your applications. This tutorial covers:
+
+1. **Smart Contract Development**: Creating and deploying a contract that reads price feeds
+1. **Offchain Interaction**: Using TronWeb to interact with your deployed contract
+
+By the end of this tutorial, you will have a working smart contract that reads real-time price data and a JavaScript application that displays the results.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- **Knowledge of JavaScript and Solidity**
+- **Node.js 20 or higher** - [Install the latest release](https://nodejs.org/en/download/). Optionally, use [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md) to switch between Node.js versions with <CopyText text="nvm use 20" code/>
+  ```bash
+  $ node -v
+  v20.11.0
+  ```
+- **TronBox** (version 3.3 or higher) - Install globally with <CopyText text="npm install -g tronbox" code/>
+
+  Verify your installation using <CopyText text="tronbox version" code/>:
+
+  ```bash
+  $ tronbox version
+  Tronbox v4.2.0
+  Solidity v0.8.23 (tron-solc)
+  ```
+
+- **npm** package manager
+- **A TRON compatible Web3 wallet** (e.g., [TronLink](https://www.tronlink.org/))
+
+### Setting Up Your TRON Wallet
+
+1. Install the TronLink browser extension
+1. Create a new wallet or import an existing one
+1. Export your private key (you will need this for deploying your smart contract):
+   - Open TronLink wallet extension
+   - Open the **Wallet Management** menu
+   - Select **Export Account**
+   - Select **Private Key**
+   - Enter your password
+   - Copy your private key
+
+<Aside type="caution" title="Private Key Security">
+  Never share your private key or commit it to version control. Store it securely and only use testnet accounts for
+  development.
+</Aside>
+
+### Getting Test Tokens
+
+Fund your wallet with test TRX from the TRON Nile Testnet faucet:
+
+1. Visit [https://nileex.io/join/getJoinPage](https://nileex.io/join/getJoinPage)
+1. Enter your TRON wallet address
+1. Complete the verification and receive 2000 test TRX
+
+## Setup
+
+### Clone the Example Repository
+
+```bash
+git clone https://github.com/smartcontractkit/smart-contract-examples.git && cd smart-contract-examples/data-feeds/tron/getting-started
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Configure Environment
+
+Create a `.env` file by copying the sample:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file and add your private key:
+
+```bash
+export PRIVATE_KEY_NILE=your_nile_testnet_private_key_here
+```
+
+## Part 1: Smart Contract Development and Deployment
+
+### Understanding the Smart Contract
+
+The `DataFeedReader.sol` contract provides four key functions to interact with Chainlink Data Feeds on TRON:
+
+- **`getChainlinkDataFeedLatestAnswer()`**: Returns complete round data including price, timestamps, and round IDs
+- **`getLatestPrice()`**: Returns only the current price for simplified usage
+- **`getDecimals()`**: Returns the number of decimal places for proper price formatting
+- **`getDescription()`**: Returns human-readable feed description (e.g., "BTC / USD")
+
+The contract uses the [`AggregatorV3Interface`](/data-feeds/api-reference#aggregatorv3interface) to interact with Chainlink data feeds.
+
+**View the complete contract code**: [DataFeedReader.sol](https://github.com/smartcontractkit/smart-contract-examples/blob/32bb95e558bdd6a4ebab4b6c1eadbfc83668c539/data-feeds/tron/getting-started/contracts/DataFeedReader.sol)
+
+### Price Feeds Used in This Tutorial
+
+This tutorial uses the following price feeds on TRON Nile Testnet:
+
+| Asset Pair | Contract Address                     |
+| ---------- | ------------------------------------ |
+| BTC/USD    | `TD3hrfAtPcnkLSsRh4UTgjXBo6KyRfT1AR` |
+| ETH/USD    | `TYaLVmqGzz33ghKEMTdC64dUnde5LZc6Y3` |
+
+<Aside type="note" title="More Price Feeds Available">
+  These are just two examples for the tutorial. For a complete list of all available price feeds on TRON, visit the
+  [Price Feed Addresses](/data-feeds/price-feeds/addresses?network=tron) page.
+</Aside>
+
+### Compile the Contract
+
+```bash
+tronbox compile
+```
+
+### Deploy to TRON Nile Testnet
+
+Load your environment variables and deploy:
+
+```bash
+source .env && tronbox migrate --network nile
+```
+
+After successful deployment, you will see output similar to:
+
+```
+Deploying 'DataFeedReader'
+...
+DataFeedReader: TTZEzaRUfrSm2ENfkhrPzk5mMEkZVwS3eD
+```
+
+<Aside type="note" title="Save Your Contract Address">
+  Copy the deployed contract address - you will need it for the offchain interaction in Part 2.
+</Aside>
+
+## Part 2: Offchain Interaction with TronWeb
+
+### Understanding the TronWeb Script
+
+The `reader.js` script demonstrates how to interact with your deployed contract using [TronWeb](https://tronweb.network/). The script provides several key features:
+
+- **TronWeb Configuration**: Connects to TRON Nile Testnet with proper endpoints
+- **Contract Interaction**: Calls all four functions from your deployed `DataFeedReader` contract
+- **Data Formatting**: Handles BigInt values and formats prices with proper decimals
+- **Error Handling**: Comprehensive error handling and troubleshooting guidance
+- **Multiple Examples**: Shows both detailed and simplified price reading patterns
+
+The script includes helper functions for formatting timestamps, prices, and round IDs, plus demonstrates reading from multiple price feeds with structured console output.
+
+**View the complete script code**: [reader.js](https://github.com/smartcontractkit/smart-contract-examples/blob/32bb95e558bdd6a4ebab4b6c1eadbfc83668c539/data-feeds/tron/getting-started/offchain/reader.js)
+
+### Update the Contract Address
+
+Edit `offchain/reader.js` and replace `YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE` with your actual contract address from the deployment step.
+
+### Run the Price Reader
+
+```
+node offchain/reader.js
+```
+
+### Expected Output
+
+When you run the script, you should see output similar to:
+
+```
+🚀 Starting Chainlink Data Feed Reader
+🌐 Network: TRON Nile Testnet
+📋 Contract: TTZEzaRUfrSm2ENfkhrPzk5mMEkZVwS3eD
+════════════════════════════════════════════════════════════
+
+🔍 Reading BTC/USD Price Feed Data...
+📍 Feed Address: TD3hrfAtPcnkLSsRh4UTgjXBo6KyRfT1AR
+──────────────────────────────────────────────────
+📊 BTC / USD
+💰 Current Price: $105,191.97
+🔢 Raw Price Value: 10519197220314
+📏 Decimals: 8
+🆔 Round ID: 18446744073709556841
+🕐 Started At: 04/06/2025 13:55:40
+🕒 Updated At: 04/06/2025 13:55:45
+✅ Answered In Round: 18446744073709556841
+⏰ Data Age: 96 minutes ago
+
+🔍 Reading ETH/USD Price Feed Data...
+📍 Feed Address: TYaLVmqGzz33ghKEMTdC64dUnde5LZc6Y3
+──────────────────────────────────────────────────
+📊 ETH / USD
+💰 Current Price: $3,845.12
+🔢 Raw Price Value: 384512000000
+📏 Decimals: 8
+🆔 Round ID: 18446744073709556789
+🕐 Started At: 04/06/2025 13:54:15
+🕒 Updated At: 04/06/2025 13:54:20
+✅ Answered In Round: 18446744073709556789
+⏰ Data Age: 98 minutes ago
+```
+
+## Understanding the Results
+
+Each price feed returns several important pieces of data:
+
+- **Current Price**: The formatted price in USD
+- **Raw Price Value**: The unformatted price value from the contract
+- **Decimals**: Number of decimal places to properly format the price
+- **Round ID**: Unique identifier for this price update
+- **Timestamps**: When the price round started and was last updated
+- **Data Age**: How long ago the price was last updated
+
+## Next Steps
+
+### Explore More Data Feeds
+
+Now that you have successfully deployed and interacted with Chainlink Data Feeds on TRON, you can:
+
+- **Browse All Available Feeds**: Check out the complete list of [price feeds available on TRON](/data-feeds/price-feeds/addresses?network=tron)
+- **Access Historical Data**: Getting the latest price is not the only data that aggregators can retrieve. You can also retrieve historical price data. To learn more, see the [Historical Price Data](/data-feeds/historical-data) page.
