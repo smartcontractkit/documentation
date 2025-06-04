@@ -203,6 +203,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Tron Guides",
+      contents: [
+        {
+          title: "Data Feeds on Tron",
+          url: "data-feeds/tron",
+        },
+      ],
+    },
+    {
       section: "API Reference",
       contents: [
         {
