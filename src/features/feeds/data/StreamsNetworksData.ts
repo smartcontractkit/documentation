@@ -164,7 +164,7 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "Celo Mainnet",
       verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
-      explorerUrl: "https://celoscan.io/address/%s/",
+      explorerUrl: "https://celoscan.io/address/%s",
     },
     testnet: {
       label: "Celo Testnet Alfajores",
