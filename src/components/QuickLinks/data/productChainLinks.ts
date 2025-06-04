@@ -137,6 +137,7 @@ export const productChainLinks: ProductChainLinks = {
       "bnb-chain": "/data-streams/crypto-streams",
       bob: "/data-streams/crypto-streams",
       botanix: "/data-streams/crypto-streams",
+      celo: "/data-streams/crypto-streams",
       ethereum: "/data-streams/crypto-streams",
       "gnosis-chain": "/data-streams/crypto-streams",
       gravity: "/data-streams/crypto-streams",
