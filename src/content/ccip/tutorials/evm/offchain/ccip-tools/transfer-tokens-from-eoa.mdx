@@ -4,7 +4,7 @@ date: Last Modified
 title: "Transfer Tokens between EOAs"
 metadata:
   description: "Transfer tokens between EOAs across EVM chains with Chainlink CCIP. The tutorial covers sending CCIP-BnM and paying fees in LINK or native gas using CCIP Tools."
-whatsnext: { "Checking CCIP Message Status Off-Chain": "/ccip/tutorials/evm/offchain/get-status-offchain" }
+whatsnext: { "Checking CCIP Message Status Off-Chain": "/ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain" }
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
@@ -125,16 +125,31 @@ export USER_KEY_PASSWORD=<YOUR_KEYSTORE_FILE_PASSWORD>
 
 </Aside>
 
-- `source`: Source network, chain ID, or name.
+- `source`: Chain ID or network name.
+
+  For example, `43113` for _Avalanche Fuji_ or `11155111` for _Ethereum Sepolia_. You can also use the network name, such as `avalanche-testnet-fuji` or `ethereum-testnet-sepolia`.
+
+  You can find the supported network names and chain IDs that can be used for `source` in the
+  [`selectors.ts`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/src/lib/selectors.ts) file of the
+  `ccip-tools` repository.
+
 - `router`: Router contract address on the source network.
-- `dest`: Destination network, chain ID, or name.
+
+- `dest`: Chain ID or network name.
+
+  For example, `43113` for _Avalanche Fuji_ or `11155111` for _Ethereum Sepolia_. You can also use the network name, such as `avalanche-testnet-fuji` or `ethereum-testnet-sepolia`.
+
+  You can find the supported network names and chain IDs that can be used for `dest` in the
+  [`selectors.ts`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/src/lib/selectors.ts) file of the
+  `ccip-tools` repository.
+
 - `destinationAccount`: Address of the destination account on the destination network. Skip this argument to use the same address as the source account.
 - `feeTokenAddress`: Token address used to pay CCIP fees. Supported tokens for paying fees include LINK, the native gas token of the source blockchain (such as ETH for Ethereum), and the wrapped native gas token (such as WETH for Ethereum).
 - `tokenAddress`: Address of the token to be transferred.
 - `amount`: Amount of the token to be transferred.
 - `gasLimit`: Gas limit for the transaction. This is optional and defaults to 200,000, which is the default value in the ramp config. You can set it to 0 when the transaction is directed to an Externally Owned Account (EOA).
 
-You can find the supported network names and chain IDs that can be used for `source` and `dest` in the [`selectors.ts`](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/src/lib/selectors.ts) file of the `ccip-tools` repository. Details such as the router contract address, LINK token address, and wrapped native gas token (like WETH) address can be found in the [CCIP Directory](https://docs.chain.link/ccip/directory) by searching for the relevant network.
+Details such as the router contract address, LINK token address, and wrapped native gas token (like WETH) address can be found in the [CCIP Directory](https://docs.chain.link/ccip/directory) by searching for the relevant network.
 
 Complete the following steps in your terminal:
 
@@ -162,7 +177,7 @@ Complete the following steps in your terminal:
     | <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/> | Since you will pay for CCIP fees in LINK, this is the LINK token contract address on _Avalanche Fuji_. The LINK contract address can be found on the [Link Token contracts page](/resources/link-token-contracts?parent=ccip).   |
     | <CopyText text="--transfer-tokens" code/>                          | This specifies the `transfer-tokens` flag, followed by the token address and the amount of tokens to transfer, separated by `=`, as in `--transfer-tokens <tokenAddress>=<amount>`.                                              |
     | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/> | This is the CCIP-BnM token contract address on Avalanche Fuji. The contract addresses for each network can be found on the [CCIP Directory](/ccip/directory).                                                                    |
-    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                                                        |
+    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred. The CCIP-BnM token has 18 decimals, so 0.001 would be `1000000000000000` in 18-decimal format.                         |
     | <CopyText text="--gas-limit 0" code/>                              | This specifies the gas limit for the transaction. This is optional and defaults to `200000`, which is the default value in the ramp config. Set it to `0` when the transaction is directed to an Externally Owned Account (EOA). |
 
 1.  Once you execute the command, you should see the following logs:
@@ -287,7 +302,7 @@ Complete the following steps in your terminal:
     | `YOUR_ACCOUNT`                                                     | This is the account address on the destination blockchain that is supposed to receive the tokens. You can replace this with your account address.                                                                                |
     | <CopyText text="--transfer-tokens" code/>                          | This specifies the `transfer-tokens` flag, followed by the token address and the amount of tokens to transfer, separated by `=`, as in `--transfer-tokens <tokenAddress>=<amount>`.                                              |
     | <CopyText text="0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4" code/> | This is the CCIP-BnM token contract address on Avalanche Fuji. The contract addresses for each network can be found on the [CCIP Directory](/ccip/directory).                                                                    |
-    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                                                        |
+    | <CopyText text="0.001" code/>                                      | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred. The CCIP-BnM token has 18 decimals, so 0.001 would be `1000000000000000` in 18-decimal format.                         |
     | <CopyText text="--gas-limit 0" code/>                              | This specifies the gas limit for the transaction. This is optional and defaults to `200000`, which is the default value in the ramp config. Set it to `0` when the transaction is directed to an Externally Owned Account (EOA). |
 
 1.  After you execute the command, you should see the following logs:
