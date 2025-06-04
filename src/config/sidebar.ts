@@ -150,6 +150,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
+        },
+      ],
+    },
+    {
       section: "Solana Guides",
       contents: [
         {
@@ -190,15 +199,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs",
             },
           ],
-        },
-      ],
-    },
-    {
-      section: "Aptos Guides",
-      contents: [
-        {
-          title: "Data Feeds on Aptos",
-          url: "data-feeds/aptos",
         },
       ],
     },
