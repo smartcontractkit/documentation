@@ -11,7 +11,6 @@ import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
-import { getLastModifiedDate } from "./src/utils/lastModified"
 import redirectsJson from "./src/features/redirects/redirects.json"
 
 // Prepare set of redirect source URLs to exclude from sitemap
@@ -46,6 +45,20 @@ export default defineConfig({
     }),
     sitemap({
       changefreq: "daily",
+      customPages: [
+        "https://docs.chain.link/llms.txt",
+        "https://docs.chain.link/vrf/llms-full.txt",
+        "https://docs.chain.link/ccip/llms-full.txt",
+        "https://docs.chain.link/data-feeds/llms-full.txt",
+        "https://docs.chain.link/data-streams/llms-full.txt",
+        "https://docs.chain.link/chainlink-functions/llms-full.txt",
+        "https://docs.chain.link/chainlink-automation/llms-full.txt",
+        "https://docs.chain.link/resources/llms-full.txt",
+        "https://docs.chain.link/architecture-overview/llms-full.txt",
+        "https://docs.chain.link/getting-started/llms-full.txt",
+        "https://docs.chain.link/chainlink-nodes/llms-full.txt",
+        "https://docs.chain.link/chainlink-local/llms-full.txt",
+      ],
       filter: (page) => {
         // Exclude redirect source URLs from sitemap to prevent duplicates
         const pathname = new URL(page).pathname
@@ -66,14 +79,6 @@ export default defineConfig({
         if (url.pathname.endsWith("/") && url.pathname !== "/") {
           url.pathname = url.pathname.slice(0, -1)
           item.url = url.toString()
-        }
-
-        // Add last modified date using git commit history
-        // Supports content files, API reference pages, and CCIP directory pages
-        const path = url.pathname
-        const lastModified = getLastModifiedDate(path)
-        if (lastModified) {
-          item.lastmod = lastModified.toISOString()
         }
 
         return item
