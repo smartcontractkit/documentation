@@ -11,6 +11,20 @@ import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
+import { getLastModifiedDate } from "./src/utils/lastModified"
+import redirectsJson from "./src/features/redirects/redirects.json"
+
+// Prepare set of redirect source URLs to exclude from sitemap
+// This prevents duplicate entries and ensures only canonical URLs are indexed
+const redirectSources = new Set(
+  redirectsJson.redirects
+    .map((r) => r.source)
+    .filter((source) => source)
+    .map((source) => {
+      const normalized = source.startsWith("/") ? source : `/${source}`
+      return normalized.endsWith("/") ? normalized.slice(0, -1) : normalized
+    })
+)
 
 // https://astro.build/config
 export default defineConfig({
@@ -30,7 +44,41 @@ export default defineConfig({
     react({
       include: ["**/react/*"],
     }),
-    sitemap({ changefreq: "daily" }),
+    sitemap({
+      changefreq: "daily",
+      filter: (page) => {
+        // Exclude redirect source URLs from sitemap to prevent duplicates
+        const pathname = new URL(page).pathname
+        const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
+
+        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
+        // These are aliases for versioned content - we keep only the canonical long format URLs
+        const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
+        if (shortVersionPattern.test(cleanPath)) {
+          return false
+        }
+
+        return !redirectSources.has(cleanPath)
+      },
+      serialize(item) {
+        // Remove trailing slash from URLs (except for root)
+        const url = new URL(item.url)
+        if (url.pathname.endsWith("/") && url.pathname !== "/") {
+          url.pathname = url.pathname.slice(0, -1)
+          item.url = url.toString()
+        }
+
+        // Add last modified date using git commit history
+        // Supports content files, API reference pages, and CCIP directory pages
+        const path = url.pathname
+        const lastModified = getLastModifiedDate(path)
+        if (lastModified) {
+          item.lastmod = lastModified.toISOString()
+        }
+
+        return item
+      },
+    }),
     mdx(),
   ],
   markdown: {
