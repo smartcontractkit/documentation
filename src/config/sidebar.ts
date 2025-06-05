@@ -150,6 +150,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
+        },
+      ],
+    },
+    {
       section: "Solana Guides",
       contents: [
         {
@@ -194,11 +203,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Aptos Guides",
+      section: "Tron Guides",
       contents: [
         {
-          title: "Data Feeds on Aptos",
-          url: "data-feeds/aptos",
+          title: "Data Feeds on Tron",
+          url: "data-feeds/tron",
         },
       ],
     },
@@ -1293,6 +1302,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 {
                   title: "Checking CCIP Message Status",
                   url: "ccip/tutorials/evm/offchain/get-status-offchain",
+                },
+                {
+                  title: "Using CCIP CLI",
+                  url: "ccip/tutorials/evm/offchain/ccip-tools",
+                  children: [
+                    {
+                      title: "Transfer Tokens between EOAs",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
+                    },
+                    {
+                      title: "Checking CCIP Message Status",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
+                    },
+                    {
+                      title: "Get Supported Tokens",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
+                    },
+                  ],
                 },
               ],
             },
