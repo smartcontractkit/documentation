@@ -1295,7 +1295,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/tutorials/evm/offchain/get-status-offchain",
                 },
                 {
-                  title: "CCIP Tools",
+                  title: "Using CCIP CLI",
                   url: "ccip/tutorials/evm/offchain/ccip-tools",
                   children: [
                     {
