@@ -150,6 +150,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
+        },
+      ],
+    },
+    {
       section: "Solana Guides",
       contents: [
         {
@@ -194,11 +203,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Aptos Guides",
+      section: "Tron Guides",
       contents: [
         {
-          title: "Data Feeds on Aptos",
-          url: "data-feeds/aptos",
+          title: "Data Feeds on Tron",
+          url: "data-feeds/tron",
         },
       ],
     },

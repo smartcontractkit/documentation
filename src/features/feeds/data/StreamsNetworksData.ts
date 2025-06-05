@@ -159,6 +159,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Celo",
+    logoUrl: "/assets/chains/celo.svg",
+    mainnet: {
+      label: "Celo Mainnet",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://celoscan.io/address/%s",
+    },
+    testnet: {
+      label: "Celo Testnet Alfajores",
+      verifierProxy: "0xfa58eE98c9d56A3e6e903f300BE8C60Bf031808D",
+      explorerUrl: "https://alfajores.celoscan.io/address/%s",
+    },
+  },
+  {
     network: "Ethereum",
     logoUrl: "/assets/chains/ethereum.svg",
     mainnet: {
