@@ -2,11 +2,15 @@
 section: dataStreams
 date: Last Modified
 title: "Fetch and decode V4 reports using the Go SDK"
+metadata:
+  title: "Fetch and Decode Real World Asset Data with Go SDK | Chainlink Data Streams"
+  description: "Learn how to use the Go SDK to fetch and decode Real World Asset (RWA) market data reports with V4 schema from Chainlink Data Streams."
+  keywords: ["Go SDK", "Golang", "RWA", "Real World Assets", "V4 Reports", "API Tutorial", "Data Streams"]
 whatsnext:
   {
-    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/streams-direct/streams-direct-ws",
-    "Learn how to verify your data onchain": "/data-streams/reference/streams-direct/streams-direct-onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-rwa-go",
+    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/rwa-streams",
   }
 ---
 
@@ -19,28 +23,28 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   pages={[
     {
       name: "Go SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-api-go",
+      url: "/data-streams/tutorials/api-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
       name: "Go SDK - V4 reports for RWA streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
+      url: "/data-streams/tutorials/api-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
       name: "Rust SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rust",
+      url: "/data-streams/tutorials/api-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
       name: "Rust SDK - V4 reports for RWA streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
+      url: "/data-streams/tutorials/api-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams/streams-direct) implementation_ and the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to fetch and decode [V4 reports](/data-streams/reference/report-schema-v4) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V4 reports](/data-streams/reference/report-schema-v4) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -48,9 +52,9 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
 
-## Guide
+## Tutorial
 
 You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [RWA streams](/data-streams/rwa-streams), and log their attributes to your terminal.
 
@@ -208,9 +212,9 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
      Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-   - `RestURL` is the REST endpoint to poll for specific reports. See the [Streams Direct Interface](/data-streams/reference/streams-direct/streams-direct-interface-api#domains) page for more information.
+   - `RestURL` is the REST endpoint to poll for specific reports. See the [Data Streams Interface](/data-streams/reference/interface-api#domains) page for more information.
 
-   See the [SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) page for more configuration options.
+   See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
 
 1. For this example, you will read from the AUD/USD stream. This stream ID is <CopyText text="0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea" code/>. See the [Data Streams RWA streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
 
@@ -255,9 +259,9 @@ The decoded report details include:
 
 #### Payload for onchain verification
 
-In this guide, you log and decode the `fullReport` payload to extract the report data. In a
+In this tutorial, you log and decode the `fullReport` payload to extract the report data. In a
 production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
 
 ### Fetch and decode reports for multiple streams
 
@@ -440,7 +444,7 @@ production environment, you should verify the data to ensure its integrity and a
 
 In this guide, you log and decode the `fullReport` payloads to extract the report data. In a
 production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) guide.
 
 ## Explanation
 

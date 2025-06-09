@@ -2,10 +2,14 @@
 section: dataStreams
 date: Last Modified
 title: "Verify report data - Offchain integration (Solana)"
+metadata:
+  title: "Verify Data Streams Reports Offchain on Solana | Chainlink Tutorial"
+  description: "Learn how to verify Chainlink Data Streams reports client-side using the Rust SDK on Solana to ensure data authenticity before using it in your application."
+  keywords: ["Offchain Verification", "Solana", "Rust", "Client-side", "Verification", "Data Integrity", "Tutorial"]
 whatsnext:
   {
     "Find the list of available Stream IDs": "/data-streams/crypto-streams",
-    "Learn how to verify reports on Solana onchain": "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+    "Learn how to verify reports on Solana onchain": "/data-streams/tutorials/solana-onchain-report-verification",
   }
 ---
 
@@ -19,17 +23,17 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   pages={[
     {
       name: "EVM Chains (Solidity)",
-      url: "/data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+      url: "/data-streams/tutorials/evm-onchain-report-verification",
       icon: "/images/tutorial-icons/solidity_logo.svg",
     },
     {
-      name: "Solana (Rust) - Onchain integration",
-      url: "/data-streams/tutorials/streams-direct/solana-onchain-report-verification",
+      name: "Solana (Rust) / onchain integration",
+      url: "/data-streams/tutorials/solana-onchain-report-verification",
       icon: "/images/tutorial-icons/solanaLogoMark.svg",
     },
     {
-      name: "Solana (Rust) - Offchain integration",
-      url: "/data-streams/tutorials/streams-direct/solana-offchain-report-verification",
+      name: "Solana (Rust) / offchain integration",
+      url: "/data-streams/tutorials/solana-offchain-report-verification",
       icon: "/images/tutorial-icons/solanaLogoMark.svg",
     },
   ]}
@@ -39,9 +43,9 @@ To verify a Data Streams report, you must confirm the report integrity signed by
 
 You have two options to verify Data Streams reports on Solana:
 
-1. **Onchain integration**: Verify reports directly within your Solana program using [Cross-Program Invocation (CPI)](https://solana.com/docs/core/cpi) to the verifier program. Learn more about this method in the [onchain verification guide](/data-streams/tutorials/streams-direct/solana-onchain-report-verification).
+1. **Onchain integration**: Verify reports directly within your Solana program using [Cross-Program Invocation (CPI)](https://solana.com/docs/core/cpi) to the verifier program. Learn more about this method in the [onchain verification tutorial](/data-streams/tutorials/solana-onchain-report-verification).
 
-1. **Offchain integration**: Verify reports client-side using an SDK. You'll learn how to implement this method in this guide.
+1. **Offchain integration**: Verify reports client-side using an SDK. You'll learn how to implement this method in this tutorial.
 
 Both methods use the same underlying verification logic and security guarantees, differing only in where the verification occurs.
 
@@ -49,7 +53,7 @@ Both methods use the same underlying verification logic and security guarantees,
 
 The offchain integration allows you to verify the authenticity of Data Streams reports from your client-side application. While this method requires sending a transaction to the verifier program, the verification logic and processing of results happens in your client application rather than in a Solana program.
 
-In this guide, you'll learn how to:
+In this tutorial, you'll learn how to:
 
 - Set up an Anchor project
 - Configure the necessary dependencies
@@ -71,7 +75,7 @@ Before you begin, you should have:
 
 ### Requirements
 
-To complete this guide, you'll need:
+To complete this tutorial, you'll need:
 
 - **Rust and Cargo**: Install the latest version using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
 
@@ -83,9 +87,9 @@ To complete this guide, you'll need:
 
 - **Allowlisted Account**: Your account must be allowlisted in the Data Streams Access Controller.
 
-> **Note**: While this guide uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana project setup. The verifier SDK and client libraries are written in Rust, but you can integrate them into your preferred Rust project structure.
+> **Note**: While this tutorial uses the Anchor framework for project structure, you can integrate the verification using any Rust-based Solana project setup. The verifier SDK and client libraries are written in Rust, but you can integrate them into your preferred Rust project structure.
 
-### Implementation guide
+### Implementation tutorial
 
 #### 1. Create a new Anchor project
 

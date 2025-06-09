@@ -2,10 +2,13 @@
 section: dataStreams
 title: "Chainlink Data Streams"
 isIndex: true
+metadata:
+  title: "Chainlink Data Streams | Low-Latency, High-Frequency Market Data"
+  description: "Access high-frequency, low-latency market data offchain that can be cryptographically verified onchain for decentralized applications and DeFi protocols."
+  keywords: ["Chainlink", "Data Streams", "Oracle", "DeFi", "Market Data", "Low Latency", "High Frequency"]
 whatsnext:
   {
-    "Learn how to retrieve Data Streams reports with the Streams Trade implementation": "/data-streams/getting-started",
-    "Learn how to fetch and decode Data Streams reports with the Streams Direct API": "/data-streams/tutorials/streams-direct/streams-direct-api",
+    "Learn how to fetch and decode Data Streams reports with the API": "/data-streams/tutorials/api-go",
     "Find the list of available Stream IDs": "/data-streams/crypto-streams",
     "Find the schema of data to expect from Data Streams reports": "/data-streams/reference/report-schema",
   }
@@ -22,7 +25,7 @@ Traditional push-based oracles update onchain data at set intervals or when cert
 
 ## Sub-Second Data and Commit-and-Reveal
 
-Chainlink Data Streams supports sub-second data resolution for latency-sensitive use cases by retrieving data only when needed. You can combine the data with any transaction in near real time. A “commit-and-reveal” approach mitigates frontrunning by making trade data and stream data visible atomically on-chain.
+Chainlink Data Streams supports sub-second data resolution for latency-sensitive use cases by retrieving data only when needed. You can combine the data with any transaction in near real time. A "commit-and-reveal" approach mitigates frontrunning by making trade data and stream data visible atomically onchain.
 
 ## Comparison to push-based oracles
 
@@ -31,6 +34,7 @@ Chainlink's push-based oracles regularly publish price data onchain. By contrast
 <ClickToZoom
   src="/images/data-streams/push-based-vs-pull-based-oracles.webp"
   alt="Chainlink Data Streams - Push-Based vs Pull-Based Oracles"
+  caption="Push-based and pull-based oracles comparison"
 />
 
 Pull-based oracles also operate more efficiently by retrieving data only when necessary. For example, a decentralized exchange might fetch a Data Streams report and verify it onchain only when a user executes a trade, rather than continuously pushing updates that might not be immediately used.
@@ -43,7 +47,7 @@ Chainlink Data Streams offers price points such as mid prices and [Liquidity-Wei
 
 Data Streams API services use an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) model across multiple distributed and isolated origins. This architecture ensures continuous operations even if one origin fails, delivering robust fault tolerance and high availability.
 
-## Use cases
+## Example use cases
 
 Access to low-latency, high-frequency data enables a variety of onchain applications:
 
@@ -51,16 +55,44 @@ Access to low-latency, high-frequency data enables a variety of onchain applicat
 - **Options:** Pull-based oracles provide timely settlement of options contracts with the added benefit of market liquidity data to support dynamic onchain risk management.
 - **Prediction Markets:** High-frequency updates let participants act on real-time data, ensuring quick reactions to events and accurate settlement.
 
-## Data Streams implementations
+## Key capabilities
 
-### Streams Trade
+- **Sub-second Latency:** Pull data on-demand with minimal delay
+- **Cryptographic Verification:** Verify data authenticity onchain when needed
+- **Multiple Access Methods:** REST API, WebSocket, or SDK integration
+- **Comprehensive Market Data:** Mid prices, LWBA prices, volatility, and liquidity metrics
+- **High Availability:** Multi-site deployment ensures 99.9%+ uptime
 
-Streams Trade combines Chainlink Data Streams with Chainlink Automation to deliver automated trade execution with frontrunning mitigation. This approach suits dApps that require automated, trust-minimized trade execution and high-frequency market data. Chainlink Automation ensures near-instant onchain access to data while keeping the execution of user transactions fair and reliable.
+## How to use Data Streams
 
-[Learn more about Streams Trade](/data-streams/streams-trade)
+You can access Chainlink Data Streams through SDKs and APIs, allowing you to build custom solutions with low-latency, high-frequency data. Fetch reports or subscribe to report updates from the Data Streams Aggregation Network and verify their authenticity onchain.
 
-### Streams Direct
+<ClickToZoom
+  src="/images/data-streams/data-streams-on-demand-offchain-workflows.webp"
+  alt="Chainlink Data Streams - On-Demand Offchain Workflows"
+  caption="Chainlink Data Streams - On-Demand Offchain Workflows"
+/>
 
-Streams Direct provides direct access to Data Streams through SDKs and APIs. This solution suits applications that need programmatic data retrieval and verification, whether for offchain display or onchain settlement. It delivers high-frequency, low-latency data for any custom use case.
+### Integration options
 
-[Learn more about Streams Direct](/data-streams/streams-direct)
+Access data directly through REST APIs or WebSocket connections using our SDKs:
+
+- **[Go SDK](/data-streams/reference/go-sdk)** - Full-featured SDK with comprehensive examples
+- **[Rust SDK](/data-streams/reference/rust-sdk)** - High-performance SDK for Rust applications
+- **[REST API](/data-streams/reference/interface-api)** or **[WebSocket](/data-streams/reference/interface-ws)** - Direct access to Data Streams endpoints
+
+### Getting started
+
+1. Understand the Architecture: Review the [system components and data flow](/data-streams/architecture) to understand how Data Streams works.
+
+1. Explore Available Data: Browse [available Stream IDs](/data-streams/crypto-streams) and [report schemas](/data-streams/reference/report-schema) to see what data is available.
+
+1. Try the API: Follow our [hands-on tutorial](/data-streams/tutorials/api-go) to fetch and decode your first report.
+
+1. Implement Verification: Add [onchain verification](/data-streams/reference/onchain-verification) to ensure data authenticity in your smart contracts.
+
+### Streams Trade: An alternative implementation
+
+For applications that require automated data retrieval and execution, Streams Trade combines Chainlink Data Streams with [Chainlink Automation](/chainlink-automation) to deliver automated trade execution with frontrunning mitigation. This approach suits dApps that require automated, trust-minimized trade execution and high-frequency market data.
+
+[Learn more about Streams Trade](/data-streams/streams-trade).
