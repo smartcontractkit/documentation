@@ -1,0 +1,532 @@
+---
+section: dataStreams
+date: Last Modified
+title: "API Authentication - JavaScript examples"
+metadata:
+  title: "Data Streams API Authentication - JavaScript examples"
+  description: "Learn how to authenticate with the Data Streams API using JavaScript"
+  keywords: ["Data Streams", "API", "Authentication", "JavaScript"]
+---
+
+import { Aside, CopyText } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+Below are complete examples for authenticating with the Data Streams API in JavaScript, using Node.js. Each example shows how to properly generate the required headers and make a request.
+
+To learn more about the Data Streams API authentication, see the [Data Streams Authentication](/data-streams/reference/authentication) page.
+
+**Note**: The Data Streams SDKs handle authentication automatically. If you're using the [Go SDK](/data-streams/reference/go-sdk) or [Rust SDK](/data-streams/reference/rust-sdk), you don't need to implement the authentication logic manually.
+
+## API Authentication Example
+
+<DataStreams section="asideDisclaimer" />
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/) (v20 or later)
+- API credentials from Chainlink Data Streams
+
+### Running the Example
+
+1. Create a file named <CopyText text="auth-example.js" code/> with the example code shown below
+1. Set your API credentials as environment variables:
+   ```bash
+   export STREAMS_API_KEY="your-api-key"
+   export STREAMS_API_SECRET="your-api-secret"
+   ```
+1. Run the example:
+   ```bash
+   node auth-example.js
+   ```
+
+**Example code**:
+
+```javascript
+const crypto = require("crypto")
+const https = require("https")
+const { promisify } = require("util")
+
+/**
+ * SingleReport represents a data feed report structure
+ * @typedef {Object} SingleReport
+ * @property {string} feedID - Feed identifier
+ * @property {number} validFromTimestamp - Timestamp from which the report is valid
+ * @property {number} observationsTimestamp - Timestamp of the observations
+ * @property {string} fullReport - Full report data in hex format
+ */
+
+/**
+ * SingleReportResponse is the response structure for a single report
+ * @typedef {Object} SingleReportResponse
+ * @property {SingleReport} report - Report data
+ */
+
+/**
+ * Generates HMAC signature for API authentication
+ * @param {string} method - HTTP method (GET, POST, etc.)
+ * @param {string} path - Request path including query parameters
+ * @param {Buffer|string} body - Request body (empty string for GET)
+ * @param {string} apiKey - API key for authentication
+ * @param {string} apiSecret - API secret for signature generation
+ * @returns {Object} Object containing signature and timestamp
+ */
+function generateHMAC(method, path, body, apiKey, apiSecret) {
+  // Generate timestamp (milliseconds since Unix epoch)
+  const timestamp = Date.now()
+
+  // Create body hash (empty for GET request)
+  const bodyHash = crypto
+    .createHash("sha256")
+    .update(body || "")
+    .digest("hex")
+
+  // Create string to sign
+  const stringToSign = `${method} ${path} ${bodyHash} ${apiKey} ${timestamp}`
+
+  // Generate HMAC-SHA256 signature
+  const signature = crypto.createHmac("sha256", apiSecret).update(stringToSign).digest("hex")
+
+  return { signature, timestamp }
+}
+
+/**
+ * Generates authentication headers for API requests
+ * @param {string} method - HTTP method
+ * @param {string} path - Request path with query parameters
+ * @param {string} apiKey - API key
+ * @param {string} apiSecret - API secret
+ * @returns {Object} Headers object for the request
+ */
+function generateAuthHeaders(method, path, apiKey, apiSecret) {
+  const { signature, timestamp } = generateHMAC(method, path, "", apiKey, apiSecret)
+
+  return {
+    Authorization: apiKey,
+    "X-Authorization-Timestamp": timestamp.toString(),
+    "X-Authorization-Signature-SHA256": signature,
+  }
+}
+
+/**
+ * Makes an HTTP request and returns a promise resolving to the response
+ * @param {Object} options - HTTP request options
+ * @returns {Promise<string>} Response data as string
+ */
+function makeRequest(options) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = ""
+
+      res.on("data", (chunk) => {
+        data += chunk
+      })
+
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(data)
+        } else {
+          reject(new Error(`API error (status code ${res.statusCode}): ${data}`))
+        }
+      })
+    })
+
+    req.on("error", (error) => {
+      reject(new Error(`Request error: ${error.message}`))
+    })
+
+    req.end()
+  })
+}
+
+/**
+ * Fetches a single report for a specific feed
+ * @param {string} feedID - The feed ID to fetch the report for
+ * @returns {Promise<SingleReport>} Promise resolving to the report data
+ */
+async function fetchSingleReport(feedID) {
+  // Get API credentials from environment variables
+  const apiKey = process.env.STREAMS_API_KEY
+  const apiSecret = process.env.STREAMS_API_SECRET
+
+  // Validate credentials
+  if (!apiKey || !apiSecret) {
+    throw new Error("API credentials not set. Please set STREAMS_API_KEY and STREAMS_API_SECRET environment variables")
+  }
+
+  // API connection details
+  const method = "GET"
+  const host = "api.testnet-dataengine.chain.link"
+  const path = "/api/v1/reports/latest"
+  const queryString = `?feedID=${feedID}`
+  const fullPath = path + queryString
+
+  // Create request options with authentication headers
+  const options = {
+    hostname: host,
+    path: fullPath,
+    method: method,
+    headers: generateAuthHeaders(method, fullPath, apiKey, apiSecret),
+  }
+
+  try {
+    // Make the request
+    const responseData = await makeRequest(options)
+
+    // Parse the response
+    const response = JSON.parse(responseData)
+
+    return response.report
+  } catch (error) {
+    throw new Error(`Failed to fetch report: ${error.message}`)
+  }
+}
+
+// Main execution function to support async/await
+async function main() {
+  try {
+    // Example feed ID (ETH/USD)
+    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+
+    console.log(`Fetching latest report for feed ID: ${feedID}`)
+
+    // Fetch the report
+    const report = await fetchSingleReport(feedID)
+
+    // Display the report
+    console.log("Successfully retrieved report:")
+    console.log(`  Feed ID: ${report.feedID}`)
+    console.log(`  Valid From: ${report.validFromTimestamp}`)
+    console.log(`  Observations Timestamp: ${report.observationsTimestamp}`)
+    console.log(`  Full Report: ${report.fullReport}`)
+  } catch (error) {
+    console.error("Error:", error.message)
+    process.exit(1)
+  }
+}
+
+// Start the main function
+main()
+```
+
+**Expected output**:
+
+```bash
+Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Successfully retrieved report:
+  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Valid From: 1747922906
+  Observations Timestamp: 1747922906
+  Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f183[...]31208430b586890eff87d12750
+```
+
+### Production Considerations
+
+While this example demonstrates the authentication mechanism, production applications should consider:
+
+- **HTTP client libraries**: Use robust libraries like `axios` or `node-fetch` for better error handling and retry capabilities
+- **Retry logic**: Implement exponential backoff for transient failures
+- **Request timeouts**: Add timeout handling to prevent hanging requests
+- **Error types**: Create custom error classes for better error categorization
+- **Logging**: Use structured logging libraries like `winston` or `pino` instead of `console.log`
+- **Configuration**: Use environment configuration libraries like `dotenv` for managing credentials
+- **Input validation**: Validate feed IDs and other inputs before making requests
+- **Testing**: Add unit tests for HMAC generation and integration tests for API calls
+
+## WebSocket Authentication Example
+
+<DataStreams section="asideDisclaimer" />
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/) (v20 or later)
+- API credentials from Chainlink Data Streams
+
+### Project Setup
+
+1. Initialize a new Node.js project in your directory:
+
+   ```bash
+   npm init -y
+   ```
+
+1. Install the required WebSocket dependency:
+
+   ```bash
+   npm install ws
+   ```
+
+### Running the Example
+
+1. Create a file named <CopyText text="ws-auth-example.js" code/> with the example code shown below
+1. Set your API credentials as environment variables:
+   ```bash
+   export STREAMS_API_KEY="your-api-key"
+   export STREAMS_API_SECRET="your-api-secret"
+   ```
+1. Run the example:
+   ```bash
+   node ws-auth-example.js
+   ```
+1. Press Ctrl+C to stop the WebSocket stream when you're done
+
+**Example code**:
+
+```javascript
+const crypto = require("crypto")
+const WebSocket = require("ws")
+const os = require("os")
+const { URL } = require("url")
+
+// Constants for ping/pong intervals and timeouts
+const PING_INTERVAL = 5000 // 5 seconds
+const PONG_TIMEOUT = 10000 // 10 seconds
+const CONNECTION_TIMEOUT = 30000 // 30 seconds
+
+/**
+ * FeedReport represents the data structure received from the WebSocket
+ * @typedef {Object} FeedReport
+ * @property {Object} report - The report object
+ * @property {string} report.feedID - Feed identifier
+ * @property {string} report.fullReport - Full report data in hex format
+ */
+
+/**
+ * Generates HMAC signature for API authentication
+ * @param {string} method - HTTP method (GET for WebSocket connections)
+ * @param {string} path - Request path including query parameters
+ * @param {string} apiKey - API key for authentication
+ * @param {string} apiSecret - API secret for signature generation
+ * @returns {Object} Object containing signature and timestamp
+ */
+function generateHMAC(method, path, apiKey, apiSecret) {
+  // Generate timestamp (milliseconds since Unix epoch)
+  const timestamp = Date.now()
+
+  // Create body hash (empty for WebSocket connection)
+  const bodyHash = crypto.createHash("sha256").update("").digest("hex")
+
+  // Create string to sign
+  const stringToSign = `${method} ${path} ${bodyHash} ${apiKey} ${timestamp}`
+
+  // Generate HMAC-SHA256 signature
+  const signature = crypto.createHmac("sha256", apiSecret).update(stringToSign).digest("hex")
+
+  return { signature, timestamp }
+}
+
+/**
+ * Sets up the WebSocket connection with proper authentication
+ * @param {string} apiKey - API key for authentication
+ * @param {string} apiSecret - API secret for signature generation
+ * @param {string[]} feedIDs - Array of feed IDs to subscribe to
+ * @returns {Promise<WebSocket>} Promise resolving to WebSocket connection
+ */
+function setupWebSocketConnection(apiKey, apiSecret, feedIDs) {
+  return new Promise((resolve, reject) => {
+    // Validate feed IDs
+    if (!feedIDs || feedIDs.length === 0) {
+      reject(new Error("No feed ID(s) provided"))
+      return
+    }
+
+    // WebSocket connection details
+    const host = "ws.testnet-dataengine.chain.link"
+    const path = "/api/v1/ws"
+    const queryString = `?feedIDs=${feedIDs.join(",")}`
+    const fullPath = path + queryString
+
+    // Generate authentication signature and timestamp
+    const { signature, timestamp } = generateHMAC("GET", fullPath, apiKey, apiSecret)
+
+    // Create WebSocket URL
+    const wsURL = `wss://${host}${fullPath}`
+    console.log("Connecting to:", wsURL)
+
+    // Set up the WebSocket connection with authentication headers
+    const ws = new WebSocket(wsURL, {
+      headers: {
+        Authorization: apiKey,
+        "X-Authorization-Timestamp": timestamp.toString(),
+        "X-Authorization-Signature-SHA256": signature,
+      },
+      timeout: CONNECTION_TIMEOUT,
+    })
+
+    // Handle connection errors
+    ws.on("error", (err) => {
+      reject(new Error(`WebSocket connection error: ${err.message}`))
+    })
+
+    // Resolve the promise when the connection is established
+    ws.on("open", () => {
+      console.log("WebSocket connection established")
+      resolve(ws)
+    })
+  })
+}
+
+/**
+ * Sets up ping/pong mechanism to keep the connection alive
+ * @param {WebSocket} ws - WebSocket connection
+ */
+function setupPingPong(ws) {
+  // Set up ping interval
+  const pingInterval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      console.log("Sending ping to keep connection alive...")
+      ws.ping(crypto.randomBytes(8))
+
+      // Set up pong timeout - if we don't receive a pong within timeout, close the connection
+      ws.pongTimeout = setTimeout(() => {
+        console.log("No pong received, closing connection...")
+        ws.terminate()
+      }, PONG_TIMEOUT)
+    }
+  }, PING_INTERVAL)
+
+  // Clear pong timeout when pong is received
+  ws.on("pong", () => {
+    console.log("Received pong from server")
+    clearTimeout(ws.pongTimeout)
+  })
+
+  // Clear intervals on close
+  ws.on("close", () => {
+    clearInterval(pingInterval)
+    clearTimeout(ws.pongTimeout)
+  })
+}
+
+/**
+ * Handle WebSocket messages
+ * @param {WebSocket} ws - WebSocket connection
+ */
+function handleMessages(ws) {
+  ws.on("message", (data) => {
+    try {
+      // Parse the message
+      const message = JSON.parse(data.toString())
+
+      // Check if it has the expected report format
+      if (message.report && message.report.feedID) {
+        const report = message.report
+        console.log("\nReceived new report:")
+        console.log(`  Feed ID: ${report.feedID}`)
+
+        // Display timestamps if available
+        if (report.validFromTimestamp) {
+          console.log(`  Valid From: ${report.validFromTimestamp}`)
+        }
+
+        if (report.observationsTimestamp) {
+          console.log(`  Observations Timestamp: ${report.observationsTimestamp}`)
+        }
+
+        // Display the full report with truncation for readability
+        if (report.fullReport) {
+          const reportPreview =
+            report.fullReport.length > 40 ? `${report.fullReport.substring(0, 40)}...` : report.fullReport
+          console.log(`  Full Report: ${reportPreview}`)
+        }
+      } else {
+        console.log("Received message with unexpected format:", message)
+      }
+    } catch (error) {
+      console.error("Error parsing message:", error)
+      console.log("Raw message:", data.toString())
+    }
+  })
+}
+
+/**
+ * Main function to set up and manage the WebSocket connection
+ */
+async function main() {
+  try {
+    // Get API credentials from environment variables
+    const apiKey = process.env.STREAMS_API_KEY
+    const apiSecret = process.env.STREAMS_API_SECRET
+
+    // Validate credentials
+    if (!apiKey || !apiSecret) {
+      throw new Error(
+        "API credentials not set. Please set STREAMS_API_KEY and STREAMS_API_SECRET environment variables"
+      )
+    }
+
+    // Example feed ID (ETH/USD)
+    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+
+    // Set up WebSocket connection
+    const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
+
+    // Set up ping/pong to keep connection alive
+    setupPingPong(ws)
+
+    // Handle incoming messages
+    handleMessages(ws)
+
+    // Set up graceful shutdown on SIGINT (Ctrl+C)
+    process.on("SIGINT", () => {
+      console.log("\nInterrupt signal received, closing connection...")
+
+      // Close the WebSocket connection gracefully
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close(1000, "Client shutting down")
+      }
+
+      // Allow some time for the close to be sent, then exit
+      setTimeout(() => {
+        console.log("Exiting...")
+        process.exit(0)
+      }, 1000)
+    })
+  } catch (error) {
+    console.error("Error:", error.message)
+    process.exit(1)
+  }
+}
+
+// Start the main function
+main()
+```
+
+**Expected output**:
+
+```bash
+Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+WebSocket connection established
+
+Received new report:
+  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Valid From: 1747929684
+  Observations Timestamp: 1747929684
+  Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
+
+Received new report:
+  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Valid From: 1747929685
+  Observations Timestamp: 1747929685
+  Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
+
+Sending ping to keep connection alive...
+Received pong from server
+^C
+Interrupt signal received, closing connection...
+Exiting...
+```
+
+### Production Considerations
+
+While this example already includes many production-ready features (keepalive, timeouts, graceful shutdown), production applications should additionally consider:
+
+- **Automatic reconnection**: Implement exponential backoff reconnection logic for network disruptions
+- **Message queuing**: Buffer outgoing messages during reconnection attempts
+- **WebSocket libraries**: Consider using libraries like `socket.io-client` or `reconnecting-websocket` for additional features
+- **Structured logging**: Use `winston` or `pino` with log levels instead of `console.log`
+- **Metrics collection**: Track connection status, message rates, and latency
+- **Configuration management**: Use `dotenv` or similar for managing environment variables and timeouts
+- **Error categorization**: Create custom error classes to distinguish between retriable and fatal errors
+- **Testing**: Add unit tests for HMAC generation and mock WebSocket server for integration tests
