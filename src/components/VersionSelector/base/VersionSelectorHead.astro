@@ -109,7 +109,7 @@ const structuredData = {
     versionList: availableVersions.map((version) => ({
       "@type": "SoftwareVersion",
       version: version,
-      url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
+      url: buildVersionUrl(productConfig, currentPath, validatedVersion, version).replace(/\/+$/, ""),
       releaseDate: getVersionReleaseDate(product, version, vmType),
       status: version === versionConfig.LATEST ? "Latest" : isDeprecated ? "Deprecated" : "Stable",
     })),
@@ -118,7 +118,7 @@ const structuredData = {
 
 // SEO: Version alternates with metadata (only for available versions)
 const versions = availableVersions.map((version) => ({
-  url: buildVersionUrl(productConfig, currentPath, validatedVersion, version),
+  url: buildVersionUrl(productConfig, currentPath, validatedVersion, version).replace(/\/+$/, ""),
   version,
   isLatest: version === versionConfig.LATEST,
   isDeprecated: versionConfig.DEPRECATED?.includes(version) ?? false,
