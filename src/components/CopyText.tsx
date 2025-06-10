@@ -60,6 +60,7 @@ const CopyContainer = ({ text, code, format, formatType, eventName, additionalIn
           text-overflow: ellipsis;
           word-break: break-all;
           margin-top: 0;
+          margin-bottom: 0 !important;
         }
 
         .copyBtn {

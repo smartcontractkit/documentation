@@ -1,0 +1,511 @@
+---
+section: dataStreams
+date: Last Modified
+title: "API Authentication - Go examples"
+metadata:
+  title: "Data Streams API Authentication - Go examples"
+  description: "Learn how to authenticate with the Data Streams API using Go"
+  keywords: ["Data Streams", "API", "Authentication", "Go"]
+---
+
+import { Aside, CopyText } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+Below are complete examples for authenticating with the Data Streams API in Go. Each example shows how to properly generate the required headers and make a request.
+
+To learn more about the Data Streams API authentication, see the [Data Streams Authentication](/data-streams/reference/authentication) page.
+
+**Note**: The Data Streams SDKs handle authentication automatically. If you're using the [Go SDK](/data-streams/reference/go-sdk) or [Rust SDK](/data-streams/reference/rust-sdk), you don't need to implement the authentication logic manually.
+
+## API Authentication Example
+
+<DataStreams section="asideDisclaimer" />
+
+### Requirements
+
+- [Go](https://go.dev/doc/install) (v1.18 or later recommended)
+- API credentials from Chainlink Data Streams
+
+### Running the Example
+
+1. Create a file named <CopyText text="auth-example.go" code/> with the example code shown below
+1. Set your API credentials as environment variables:
+   ```bash
+   export STREAMS_API_KEY="your-api-key"
+   export STREAMS_API_SECRET="your-api-secret"
+   ```
+1. Run with <CopyText text="go run auth-example.go" code/>
+
+**Example code**:
+
+```go
+package main
+
+import (
+    "context"
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "encoding/json"
+    "fmt"
+    "io"
+    "log"
+    "net/http"
+    "net/url"
+    "os"
+    "strconv"
+    "time"
+)
+
+// SingleReport represents a data feed report structure
+type SingleReport struct {
+    FeedID                string `json:"feedID"`
+    ValidFromTimestamp    uint32 `json:"validFromTimestamp"`
+    ObservationsTimestamp uint32 `json:"observationsTimestamp"`
+    FullReport            string `json:"fullReport"`
+}
+
+// SingleReportResponse is the response structure for a single report
+type SingleReportResponse struct {
+    Report SingleReport `json:"report"`
+}
+
+// GenerateHMAC creates the signature for authentication
+func GenerateHMAC(method string, path string, body []byte, apiKey string, apiSecret string) (string, int64) {
+    // Generate timestamp (milliseconds since Unix epoch)
+    timestamp := time.Now().UTC().UnixMilli()
+
+    // Generate body hash
+    serverBodyHash := sha256.New()
+    serverBodyHash.Write(body)
+    bodyHashString := hex.EncodeToString(serverBodyHash.Sum(nil))
+
+    // Create string to sign
+    stringToSign := fmt.Sprintf("%s %s %s %s %d",
+        method,
+        path,
+        bodyHashString,
+        apiKey,
+        timestamp)
+
+    // Generate HMAC-SHA256 signature
+    signedMessage := hmac.New(sha256.New, []byte(apiSecret))
+    signedMessage.Write([]byte(stringToSign))
+    signature := hex.EncodeToString(signedMessage.Sum(nil))
+
+    return signature, timestamp
+}
+
+// GenerateAuthHeaders creates HTTP headers with authentication information
+func GenerateAuthHeaders(method string, pathWithParams string, apiKey string, apiSecret string) http.Header {
+    header := http.Header{}
+    signature, timestamp := GenerateHMAC(method, pathWithParams, []byte(""), apiKey, apiSecret)
+
+    header.Add("Authorization", apiKey)
+    header.Add("X-Authorization-Timestamp", strconv.FormatInt(timestamp, 10))
+    header.Add("X-Authorization-Signature-SHA256", signature)
+
+    return header
+}
+
+// FetchSingleReport retrieves a single report for a specific feed
+func FetchSingleReport(ctx context.Context, feedID string) (*SingleReport, error) {
+    // Get API credentials from environment variables
+    apiKey := os.Getenv("STREAMS_API_KEY")
+    apiSecret := os.Getenv("STREAMS_API_SECRET")
+
+    // Validate credentials
+    if apiKey == "" || apiSecret == "" {
+        return nil, fmt.Errorf("API credentials not set. Please set STREAMS_API_KEY and STREAMS_API_SECRET environment variables")
+    }
+
+    // API connection details
+    host := "api.testnet-dataengine.chain.link"
+    path := "/api/v1/reports/latest"
+
+    // Build query parameters
+    params := url.Values{
+        "feedID": {feedID},
+    }
+
+    // Create the request URL
+    reqURL := &url.URL{
+        Scheme:   "https",
+        Host:     host,
+        Path:     path,
+        RawQuery: params.Encode(),
+    }
+
+    // Create the HTTP request
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
+    if err != nil {
+        return nil, fmt.Errorf("error creating request: %w", err)
+    }
+
+    // Add authentication headers
+    req.Header = GenerateAuthHeaders(req.Method, req.URL.RequestURI(), apiKey, apiSecret)
+
+    // Execute the request
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, fmt.Errorf("error sending request: %w", err)
+    }
+    defer resp.Body.Close()
+
+    // Read the response body
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        return nil, fmt.Errorf("error reading response: %w", err)
+    }
+
+    // Check for non-success status code
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("API error (status code %d): %s", resp.StatusCode, string(body))
+    }
+
+    // Parse the response
+    var reportResp SingleReportResponse
+    if err := json.Unmarshal(body, &reportResp); err != nil {
+        return nil, fmt.Errorf("error parsing response: %w", err)
+    }
+
+    return &reportResp.Report, nil
+}
+
+func main() {
+    // Create a context with cancellation
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    // Example feed ID (ETH/USD)
+    feedID := "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+
+    fmt.Printf("Fetching latest report for feed ID: %s\n", feedID)
+
+    // Fetch the report
+    report, err := FetchSingleReport(ctx, feedID)
+    if err != nil {
+        log.Fatalf("Error: %v", err)
+    }
+
+    // Display the report
+    fmt.Println("Successfully retrieved report:")
+    fmt.Printf("  Feed ID: %s\n", report.FeedID)
+    fmt.Printf("  Valid From: %d\n", report.ValidFromTimestamp)
+    fmt.Printf("  Observations Timestamp: %d\n", report.ObservationsTimestamp)
+    fmt.Printf("  Full Report: %s\n", report.FullReport)
+}
+```
+
+**Expected output**:
+
+```bash
+Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Successfully retrieved report:
+  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Valid From: 1747921357
+  Observations Timestamp: 1747921357
+  Full Report: 0x00090d9e8d96765a0c49e03a6ae05c[...]bffd8feddabf120e14bf
+```
+
+### Production Considerations
+
+While this example demonstrates the authentication mechanism, production applications should consider:
+
+- **HTTP client reuse**: Create a single `http.Client` with timeout settings and reuse it
+- **Retry logic**: Implement exponential backoff for transient failures
+- **Structured logging**: Use a logging library like `zap` or `logrus` instead of `fmt.Printf`
+- **Configuration**: Use a configuration library like `viper` for managing settings
+- **Metrics**: Add instrumentation for monitoring API call performance
+- **Error types**: Define custom error types for better error handling
+- **Testing**: Add unit tests for HMAC generation and integration tests
+
+For production use, consider using the [Go SDK](/data-streams/reference/go-sdk) which handles authentication automatically and provides built-in fault tolerance.
+
+## WebSocket Authentication Example
+
+<DataStreams section="asideDisclaimer" />
+
+### Requirements
+
+- [Go](https://go.dev/doc/install) (v1.18 or later recommended)
+- API credentials from Chainlink Data Streams
+
+### Running the Example
+
+1. Create a new directory for the example:
+
+   ```bash
+   mkdir ws-go-example && cd ws-go-example
+   ```
+
+1. Initialize a Go module:
+
+   ```bash
+   go mod init ws-example
+   ```
+
+1. Create a file named <CopyText text="ws-auth-example.go" code/> with the example code shown below
+
+1. Set your API credentials as environment variables:
+   ```bash
+   export STREAMS_API_KEY="your-api-key"
+   export STREAMS_API_SECRET="your-api-secret"
+   ```
+1. Install the required dependencies:
+
+   ```bash
+   go mod tidy
+   ```
+
+1. Run the example
+
+   ```bash
+   go run ws-auth-example.go
+   ```
+
+1. Press Ctrl+C to stop the WebSocket stream when you're done
+
+**Example code**:
+
+```go
+package main
+
+import (
+    "context"
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "encoding/json"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+    "os/signal"
+    "strconv"
+    "strings"
+    "time"
+
+    "github.com/gorilla/websocket"
+)
+
+// Constants for ping interval, pong timeout, and write timeout
+const (
+    pingInterval = 5 * time.Second
+    pongTimeout = 10 * time.Second
+    writeTimeout = 5 * time.Second
+)
+
+// FeedReport represents the data structure received from the WebSocket
+type FeedReport struct {
+    Report struct {
+        FeedID     string `json:"feedID"`
+        FullReport string `json:"fullReport"`
+    } `json:"report"`
+}
+
+// GenerateHMAC creates the signature for authentication
+func GenerateHMAC(method, path string, apiKey string, apiSecret string) (string, int64) {
+    // Generate timestamp (milliseconds since Unix epoch)
+    timestamp := time.Now().UTC().UnixMilli()
+
+    // Generate body hash (empty for this connection)
+    serverBodyHash := sha256.New()
+    bodyHashString := hex.EncodeToString(serverBodyHash.Sum(nil))
+
+    // Create string to sign
+    stringToSign := fmt.Sprintf("%s %s %s %s %d",
+        method,
+        path,
+        bodyHashString,
+        apiKey,
+        timestamp)
+
+    // Generate HMAC-SHA256 signature
+    signedMessage := hmac.New(sha256.New, []byte(apiSecret))
+    signedMessage.Write([]byte(stringToSign))
+    signature := hex.EncodeToString(signedMessage.Sum(nil))
+
+    return signature, timestamp
+}
+
+// pingLoop sends periodic pings to keep the connection alive
+func pingLoop(ctx context.Context, conn *websocket.Conn) {
+    ticker := time.NewTicker(pingInterval)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            log.Println("Sending ping to keep connection alive...")
+            if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeTimeout)); err != nil {
+                log.Printf("Error sending ping: %v", err)
+                return
+            }
+        }
+    }
+}
+
+func main() {
+    // Get API credentials from environment variables
+    apiKey := os.Getenv("STREAMS_API_KEY")
+    apiSecret := os.Getenv("STREAMS_API_SECRET")
+
+    // Validate credentials
+    if apiKey == "" || apiSecret == "" {
+        log.Fatal("API credentials not set. Please set STREAMS_API_KEY and STREAMS_API_SECRET environment variables")
+    }
+
+    // WebSocket connection details
+    host := "ws.testnet-dataengine.chain.link"
+    path := "/api/v1/ws"
+    feedIDs := []string{"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"} // ETH/USD
+
+    // Validate feed IDs
+    if len(feedIDs) == 0 {
+        log.Fatal("No feed ID(s) provided")
+    }
+
+    queryParams := fmt.Sprintf("feedIDs=%s", strings.Join(feedIDs, ","))
+    fullPath := fmt.Sprintf("%s?%s", path, queryParams)
+
+    // Generate authentication signature and timestamp
+    signature, timestamp := GenerateHMAC("GET", fullPath, apiKey, apiSecret)
+
+    // Create HTTP header for WebSocket connection
+    header := http.Header{}
+    header.Add("Authorization", apiKey)
+    header.Add("X-Authorization-Timestamp", strconv.FormatInt(timestamp, 10))
+    header.Add("X-Authorization-Signature-SHA256", signature)
+
+    // Create WebSocket URL
+    wsURL := fmt.Sprintf("wss://%s%s?%s", host, path, queryParams)
+    fmt.Println("Connecting to:", wsURL)
+
+    // Create context for handling cancellation
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Set up channel to handle interrupt signal
+    interrupt := make(chan os.Signal, 1)
+    signal.Notify(interrupt, os.Interrupt)
+
+    // Connect to WebSocket server
+    conn, resp, err := websocket.DefaultDialer.DialContext(ctx, wsURL, header)
+    if err != nil {
+        if resp != nil {
+            log.Fatalf("WebSocket connection error (HTTP %d): %v", resp.StatusCode, err)
+        } else {
+            log.Fatalf("WebSocket connection error: %v", err)
+        }
+    }
+    defer conn.Close()
+
+    // Add pong handler to reset read deadline when pong is received
+    conn.SetPongHandler(func(string) error {
+        log.Println("Received pong from server")
+        return conn.SetReadDeadline(time.Now().Add(pongTimeout))
+    })
+
+    // Start the ping loop in a separate goroutine
+    go pingLoop(ctx, conn)
+
+    // Set initial read deadline
+    err = conn.SetReadDeadline(time.Now().Add(pongTimeout))
+    if err != nil {
+        log.Fatalf("Error setting read deadline: %v", err)
+    }
+
+    fmt.Println("WebSocket connection established")
+
+    // Create channel for done signal
+    done := make(chan struct{})
+
+    // Handle incoming messages in a separate goroutine
+    go func() {
+        defer close(done)
+
+        for {
+            _, message, err := conn.ReadMessage()
+            if err != nil {
+                log.Printf("WebSocket read error: %v", err)
+                return
+            }
+
+            // Parse the message
+            var report FeedReport
+            if err := json.Unmarshal(message, &report); err != nil {
+                log.Printf("Error parsing message: %v", err)
+                fmt.Println("Raw message:", string(message))
+                continue
+            }
+
+            fmt.Printf("Received report for Feed ID: %s\n", report.Report.FeedID)
+        }
+    }()
+
+    // Wait for interrupt signal or error
+    for {
+        select {
+        case <-done:
+            return
+        case <-interrupt:
+            fmt.Println("\nInterrupt signal received, closing connection...")
+
+            // Close the WebSocket connection gracefully
+            err := conn.WriteControl(
+                websocket.CloseMessage,
+                websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+                time.Now().Add(time.Second),
+            )
+            if err != nil {
+                log.Printf("Error sending close message: %v", err)
+            }
+
+            // Wait for message handling to complete or timeout
+            select {
+            case <-done:
+            case <-time.After(time.Second):
+            }
+            return
+        }
+    }
+}
+```
+
+**Expected output**:
+
+```bash
+Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+WebSocket connection established
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+2025/05/22 08:34:20 Sending ping to keep connection alive...
+2025/05/22 08:34:20 Received pong from server
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+```
+
+### Production Considerations
+
+While this example already includes many production-ready features (keepalive, timeouts, graceful shutdown), production applications should additionally consider:
+
+- **Automatic reconnection**: Implement exponential backoff reconnection logic for network disruptions
+- **Message buffering**: Queue outgoing messages during reconnection attempts
+- **Structured logging**: Use `zap` or `logrus` with log levels instead of `log.Printf`
+- **Metrics collection**: Track connection status, message rates, and latency
+- **Configuration management**: Make timeouts and intervals configurable via environment or config files
+- **Error categorization**: Define custom error types to distinguish between retriable and fatal errors
+- **Health checks**: Expose WebSocket connection status for monitoring systems
+- **Testing**: Add unit tests for HMAC generation and mock WebSocket server for integration tests
+
+For production use, consider using the [Go SDK](/data-streams/reference/go-sdk) which handles authentication automatically and provides built-in fault tolerance for streaming connections.
