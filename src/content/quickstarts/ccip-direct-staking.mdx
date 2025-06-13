@@ -95,66 +95,72 @@ The following contract addresses are for the **Lido protocol** as an example imp
 
 ### Available Use Cases
 
-The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides protocol-agnostic implementations for direct staking operations. These implementations include fee encoding, allowance management, and cross-chain tracking functionality:
+The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides protocol-agnostic implementations for direct staking operations. These implementations include fee encoding, allowance management, and cross-chain tracking functionality.
 
 #### Core Estimation Functions
 
-- **[`estimateFastStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/estimate.ts)** - Calculate expected outputs, validate pool liquidity, and get fee breakdowns for fast stake operations
-- **[`estimateSlowStakeFees()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/estimate.ts)** - Estimate cross-chain fees (CCIP + bridge) with automatic encoding for all supported bridge types
+| Function                                                                                                                       | Purpose                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| **[`estimateFastStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/estimate.ts)**     | Calculate expected outputs, validate pool liquidity, and get fee breakdowns for fast stake operations |
+| **[`estimateSlowStakeFees()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/estimate.ts)** | Estimate cross-chain fees (CCIP + bridge) with automatic encoding for all supported bridge types      |
 
 #### Pool Monitoring & Analysis
 
-- **[`getPoolBalances()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/balance.ts)** - Monitor TOKEN_IN/TOKEN_OUT liquidity across all supported chains with pool health indicators
-- **[`getTradingRate()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/trading-rate.ts)** - Get current exchange rates, oracle pricing, and effective rates users receive after fees
+| Function                                                                                                               | Purpose                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **[`getPoolBalances()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/balance.ts)**     | Monitor TOKEN_IN/TOKEN_OUT liquidity across all supported chains with pool health indicators |
+| **[`getTradingRate()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/trading-rate.ts)** | Get current exchange rates, oracle pricing, and effective rates users receive after fees     |
 
 #### Transaction Execution
 
-- **[`executeSlowStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/execute.ts)** - Complete slow staking flow with automatic allowance management for both WETH and LINK tokens
-- **[`executeFastStakeReferral()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/execute.ts)** - Fast stake execution with automatic allowance management for both native ETH and wrapped token payments
+| Function                                                                                                                         | Purpose                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **[`executeSlowStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/execute.ts)**         | Complete slow staking flow with automatic allowance management for both WETH and LINK tokens            |
+| **[`executeFastStakeReferral()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/execute.ts)** | Fast stake execution with automatic allowance management for both native ETH and wrapped token payments |
 
 #### Allowance Management
 
-- **[`checkTokenAllowance()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/allowance/check.ts)** - Token allowance checking that detects staking tokens and provides status analysis
+| Function                                                                                                                  | Purpose                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **[`checkTokenAllowance()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/allowance/check.ts)** | Token allowance checking that detects staking tokens and provides status analysis |
 
-#### Complete Integration Examples
+### Complete Integration Examples
 
 The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides **[comprehensive implementation examples](https://github.com/Aphyla/chainlink-csr/tree/main/offchain/src/examples/lido)** demonstrating different patterns:
 
 <br />
 
-##### Fast Stake Implementation
+#### Fast Stake Implementation
 
-- **[Native ETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeNativeExample.ts)** - Complete implementation using native ETH payment (no allowance management required)
-- **[WETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeWrappedExample.ts)** - Complete implementation using WETH tokens with automatic allowance checking and approval
-
-<br />
-
-##### Slow Stake Implementation
-
-_Native ETH Staking:_
-
-- **[Native ETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeExample.ts)** - Staking ETH with CCIP fees paid in ETH
-- **[Native ETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeLinkExample.ts)** - Staking ETH with CCIP fees paid in LINK
-
-_WETH Staking:_
-
-- **[WETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedNativeExample.ts)** - Staking WETH with CCIP fees paid in ETH
-- **[WETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedLinkExample.ts)** - Staking WETH with CCIP fees paid in LINK
+| Example                                                                                                                             | Description                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **[Native ETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeNativeExample.ts)** | Complete implementation using native ETH payment (no allowance management required)      |
+| **[WETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeWrappedExample.ts)**      | Complete implementation using WETH tokens with automatic allowance checking and approval |
 
 <br />
 
-##### Utility and Analysis
+#### Slow Stake Implementation
 
-_Pool and Rate Analysis:_
+Complete implementations covering all four payment combinations:
 
-- **[Pool Balance Check](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/poolBalanceExample.ts)** - Query liquidity across all supported chains with health indicators
-- **[Trading Rate Analysis](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/tradingRateExample.ts)** - Real-time exchange rates, oracle pricing, and effective rates after fees
-- **[Allowance Management](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/allowanceExample.ts)** - Comprehensive token allowance checking across all chains with detailed status analysis
+| Example                                                                                                                                  | Payment Method | CCIP Fees | Description                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------------------ |
+| **[Native ETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeExample.ts)**   | ETH            | Native    | Most efficient - no token approvals needed |
+| **[Native ETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeLinkExample.ts)** | ETH            | LINK      | ETH payment with LINK for cross-chain fees |
+| **[WETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedNativeExample.ts)**  | WETH           | Native    | Wrapped tokens with native CCIP fees       |
+| **[WETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedLinkExample.ts)**      | WETH           | LINK      | Full wrapped token implementation          |
 
-_Fee Estimation and Analysis:_
+<br />
 
-- **[Fast Stake Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/estimateExample.ts)** - Detailed fee breakdown, liquidity validation, and exchange rate analysis
-- **[Slow Stake Fee Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeEstimateExample.ts)** - Multi-chain fee comparison and optimization analysis for both ETH and LINK payment methods
+#### Utility and Analysis
+
+| Category           | Example                                                                                                                                   | Purpose                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Pool Analysis**  | **[Pool Balance Check](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/poolBalanceExample.ts)**              | Query liquidity across all supported chains with health indicators                         |
+| **Rate Analysis**  | **[Trading Rate Analysis](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/tradingRateExample.ts)**           | Real-time exchange rates, oracle pricing, and effective rates after fees                   |
+| **Allowance**      | **[Allowance Management](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/allowanceExample.ts)**              | Comprehensive token allowance checking across all chains with detailed status analysis     |
+| **Fee Estimation** | **[Fast Stake Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/estimateExample.ts)**              | Detailed fee breakdown, liquidity validation, and exchange rate analysis                   |
+| **Fee Estimation** | **[Slow Stake Fee Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeEstimateExample.ts)** | Multi-chain fee comparison and optimization analysis for both ETH and LINK payment methods |
 
 ### Key Implementation Details
 
