@@ -72,8 +72,13 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/chainlog">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/changelog">
               Changelog
+            </NavigationMenu.Link>
+          </Item>
+          <Item>
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/certification">
+              Get Certified
             </NavigationMenu.Link>
           </Item>
         </List>
