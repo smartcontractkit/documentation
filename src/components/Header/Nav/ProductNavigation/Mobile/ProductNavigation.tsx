@@ -84,8 +84,11 @@ export function ProductNavigation() {
                     <a href="https://dev.chain.link/tools" className={styles.productContentLink}>
                       Tools
                     </a>
-                    <a href="https://dev.chain.link/chainlog" className={styles.productContentLink}>
+                    <a href="https://dev.chain.link/changelog" className={styles.productContentLink}>
                       Changelog
+                    </a>
+                    <a href="https://dev.chain.link/certification" className={styles.productContentLink}>
+                      Get Certified
                     </a>
                   </ul>
                 </div>
