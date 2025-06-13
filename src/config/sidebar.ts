@@ -1515,6 +1515,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Tools",
           url: "ccip/tools-resources/tools",
         },
+        {
+          title: "Cross-chain Examples",
+          url: "ccip/examples",
+        },
       ],
     },
   ],

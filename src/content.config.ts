@@ -59,6 +59,7 @@ const quickstartsFrontmatter = z
   .object({
     title: z.string(),
     description: z.string(),
+    excerpt: z.string().optional(),
     githubSourceCodeUrl: z.string().optional(),
     image: z.string(),
     products: z.array(productEnum),
