@@ -7,11 +7,13 @@ import { useScrollPosition } from "./useScrollPosition.tsx"
 import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
 import { useHideHeader } from "./useHideHeader.tsx"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
+import AlgoliaSearch from "../aiSearch/Search.tsx"
 
 export type SearchTrigger = React.ReactNode
 
 export type NavBarProps = {
-  searchTrigger?: SearchTrigger
+  showSearch: boolean
+  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
   path: string
   onHideChange?: (hidden: boolean) => void
   productsNav: ProductsNav
@@ -21,14 +23,7 @@ export type NavBarProps = {
 
 export const navBarHeight = 64
 
-export const NavBar = ({
-  path,
-  searchTrigger,
-  onHideChange,
-  productsNav,
-  subProductsNav,
-  doubleNavbar,
-}: NavBarProps) => {
+export const NavBar = ({ path, algoliaVars, onHideChange, productsNav, subProductsNav, doubleNavbar }: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isMegaMenuOpen, setShowMegaMenu] = useState(false)
@@ -76,7 +71,6 @@ export const NavBar = ({
             <div className={styles.menuSection}>
               <ProductNavigation
                 path={path}
-                searchTrigger={searchTrigger}
                 setNavMenuOpen={setIsMenuOpen}
                 productsNav={productsNav}
                 subProductsNav={subProductsNav}
@@ -86,7 +80,7 @@ export const NavBar = ({
               />
             </div>
             <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
-              {searchTrigger && <div className={styles.searchTrigger}>{searchTrigger}</div>}
+              <AlgoliaSearch algoliaVars={algoliaVars} />
             </div>
           </div>
         </div>
