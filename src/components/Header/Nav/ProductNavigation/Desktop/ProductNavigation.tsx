@@ -76,6 +76,11 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
               Changelog
             </NavigationMenu.Link>
           </Item>
+          <Item>
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/certification">
+              Get Certified
+            </NavigationMenu.Link>
+          </Item>
         </List>
         {isMegamenuOpen && <MegaMenu cancel={exitMegamenu} />}
       </Root>
