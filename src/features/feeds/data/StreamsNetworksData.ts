@@ -323,7 +323,6 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "opBNB",
     logoUrl: "/assets/chains/opbnb.svg",
-    networkStatus: "https://opbnb-status.bnbchain.org/",
     mainnet: {
       label: "opBNB Mainnet",
       verifierProxy: "0x7D543D1a715ED544f7e3Ae9e3b1777BCdA56bF8e",
