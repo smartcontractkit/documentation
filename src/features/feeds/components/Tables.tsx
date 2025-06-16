@@ -599,20 +599,65 @@ export const StreamsNetworkAddressesTable = () => {
                     </tr>
                   )}
 
-                {network.networkStatus && (
-                  <tr key={`${network.network}-status`} className={tableStyles.statusRow}>
-                    <td colSpan={3} className={tableStyles.statusCell}>
-                      <a
-                        href={network.networkStatus}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={tableStyles.statusLink}
-                      >
-                        View {network.network} Network Status →
-                      </a>
-                    </td>
-                  </tr>
-                )}
+                {/* Status | Explorer row */}
+                <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
+                  <td colSpan={3} className={tableStyles.statusCell}>
+                    <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                      {(() => {
+                        // Labels for status and explorer links
+                        const STATUS_LABEL = "Status ↗"
+                        const EXPLORER_LABEL = "Explorer ↗"
+
+                        return (
+                          <>
+                            {/* Status */}
+                            {network.networkStatus ? (
+                              <a
+                                href={network.networkStatus}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={tableStyles.statusLink}
+                              >
+                                {STATUS_LABEL}
+                              </a>
+                            ) : (
+                              <span
+                                className={tableStyles.statusLinkDisabled}
+                                title="No status page detected. Visit the block explorer page to view recent transactions."
+                              >
+                                {STATUS_LABEL}
+                              </span>
+                            )}
+                            <span style={{ color: "#ccc" }}>|</span>
+                            {/* Explorer */}
+                            {network.mainnet?.explorerUrl ? (
+                              <a
+                                href={(() => {
+                                  // Extract just the protocol and domain from the explorerUrl
+                                  try {
+                                    const url = new URL(network.mainnet.explorerUrl.replace("%s", ""))
+                                    return `${url.protocol}//${url.host}`
+                                  } catch {
+                                    return "#"
+                                  }
+                                })()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={tableStyles.statusLink}
+                              >
+                                {EXPLORER_LABEL}
+                              </a>
+                            ) : (
+                              <span className={tableStyles.statusLinkDisabled} title="No explorer page detected.">
+                                {EXPLORER_LABEL}
+                              </span>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
+                  </td>
+                </tr>
               </Fragment>
             )
           })}
