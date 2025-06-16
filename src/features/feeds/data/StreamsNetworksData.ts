@@ -380,6 +380,7 @@ export const StreamsNetworksData: NetworkData[] = [
   },
   {
     network: "Scroll",
+    networkStatus: "https://status.scroll.io/",
     logoUrl: "/assets/chains/scroll.svg",
     mainnet: {
       label: "Scroll Mainnet",
@@ -469,6 +470,7 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Unichain",
     logoUrl: "/assets/chains/unichain.svg",
+    networkStatus: "https://status.unichain.io/",
     mainnet: {
       label: "Unichain Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
@@ -483,6 +485,7 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "World Chain",
     logoUrl: "/assets/chains/worldchain.svg",
+    networkStatus: "https://worldchain-mainnet-status.alchemy.com/",
     mainnet: {
       label: "World Chain Mainnet",
       verifierProxy: "0x6733e9106094b0C794e8E0297c96611fF60460Bf",
