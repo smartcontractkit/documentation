@@ -470,7 +470,7 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Unichain",
     logoUrl: "/assets/chains/unichain.svg",
-    networkStatus: "https://status.unichain.io/",
+    networkStatus: "https://status.unichain.org/",
     mainnet: {
       label: "Unichain Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
