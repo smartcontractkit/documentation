@@ -166,6 +166,22 @@ const CopyableAddress = ({
   )
 }
 
+const getNetworkStatusUrl = (network: NetworkData): string | null => {
+  if (network.networkStatus) {
+    return network.networkStatus
+  }
+
+  if (network.mainnet?.explorerUrl) {
+    try {
+      return new URL(network.mainnet.explorerUrl.replace("%s", "")).origin
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
 const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
 
@@ -495,6 +511,7 @@ export const StreamsNetworkAddressesTable = () => {
         </thead>
         <tbody>
           {filteredNetworks.map((network: NetworkData, index: number) => {
+            const statusUrl = getNetworkStatusUrl(network)
             return (
               <Fragment key={network.network}>
                 {network.mainnet &&
@@ -598,42 +615,22 @@ export const StreamsNetworkAddressesTable = () => {
                       </td>
                     </tr>
                   )}
-
-                {(() => {
-                  // If network.networkStatus is available, use it
-                  // otherwise, fall back to the explorer URL
-                  const statusUrl = network.networkStatus
-                    ? network.networkStatus
-                    : network.mainnet?.explorerUrl
-                      ? (() => {
-                          try {
-                            const url = new URL(network.mainnet.explorerUrl.replace("%s", ""))
-                            return `${url.protocol}//${url.host}`
-                          } catch {
-                            return null
-                          }
-                        })()
-                      : null
-
-                  if (!statusUrl) return null
-
-                  return (
-                    <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
-                      <td colSpan={3} className={tableStyles.statusCell}>
-                        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                          <a
-                            href={statusUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={tableStyles.statusLink}
-                          >
-                            View {network.network} Network Status →
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })()}
+                {statusUrl && (
+                  <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
+                    <td colSpan={3} className={tableStyles.statusCell}>
+                      <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                        <a
+                          href={statusUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={tableStyles.statusLink}
+                        >
+                          View {network.network} Network Status →
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </Fragment>
             )
           })}
