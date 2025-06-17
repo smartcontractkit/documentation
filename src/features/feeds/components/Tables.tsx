@@ -166,6 +166,22 @@ const CopyableAddress = ({
   )
 }
 
+const getNetworkStatusUrl = (network: NetworkData): string | null => {
+  if (network.networkStatus) {
+    return network.networkStatus
+  }
+
+  if (network.mainnet?.explorerUrl) {
+    try {
+      return new URL(network.mainnet.explorerUrl.replace("%s", "")).origin
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
 const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
 
@@ -495,6 +511,7 @@ export const StreamsNetworkAddressesTable = () => {
         </thead>
         <tbody>
           {filteredNetworks.map((network: NetworkData, index: number) => {
+            const statusUrl = getNetworkStatusUrl(network)
             return (
               <Fragment key={network.network}>
                 {network.mainnet &&
@@ -598,18 +615,19 @@ export const StreamsNetworkAddressesTable = () => {
                       </td>
                     </tr>
                   )}
-
-                {network.networkStatus && (
-                  <tr key={`${network.network}-status`} className={tableStyles.statusRow}>
+                {statusUrl && (
+                  <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
                     <td colSpan={3} className={tableStyles.statusCell}>
-                      <a
-                        href={network.networkStatus}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={tableStyles.statusLink}
-                      >
-                        View {network.network} Network Status →
-                      </a>
+                      <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                        <a
+                          href={statusUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={tableStyles.statusLink}
+                        >
+                          View {network.network} Network Status →
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 )}
