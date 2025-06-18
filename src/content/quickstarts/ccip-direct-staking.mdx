@@ -1,0 +1,644 @@
+---
+title: "Direct Staking Guide for Third-Party Integrators"
+description: "A guide for third-party integrators to integrate with direct staking solutions that allow users to stake L1 assets from L2 networks using Chainlink CCIP."
+excerpt: "Learn how to integrate with direct staking solutions using Chainlink CCIP Programmable Token Transfers. This comprehensive integration guide covers fast stake (instant swaps via liquidity pools) and slow stake (cross-chain bridging) implementations, CCIP fee estimation and encoding, ERC-20 token allowance management, cross-chain transaction tracking, and error handling patterns. Includes hands-on tutorial with Lido wstETH staking on Base Mainnet, TypeScript utilities from chainlink-csr repository, and production-ready reference implementations for third-party integrators building offchain components for liquid staking protocols."
+githubSourceCodeUrl: "https://github.com/Aphyla/chainlink-csr"
+image: "QuickStarts-CCIP-Liquid-Staking.webp"
+products: ["ccip"]
+time: "60 minutes"
+requires: "Wallet with ETH on Base Mainnet"
+---
+
+import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+
+## Overview
+
+Traditionally, staking Layer 1 (L1) assets from a Layer 2 (L2) network has been a complex process for users. It often involves manually bridging assets back to the L1, staking them, and then bridging the resulting liquid staking tokens (LSTs) or liquid restaking tokens (LRTs) back to the L2. This process is slow, expensive, and creates a fragmented user experience.
+
+Chainlink's Cross-Chain Interoperability Protocol (CCIP) and its Programmable Token Transfers feature address this problem. This guide explains how to integrate with direct staking solutions that allow users to stake an L1 asset from an L2 and receive the representative LST or LRT directly on that same L2 in a single transaction. This pattern is used by protocols including [Lido](https://lido.fi/), [Frax](https://frax.finance/), and [EigenPie](https://www.eigenlayer.magpiexyz.io/).
+
+Throughout this guide, we will use Lido's direct staking implementation as a practical example to demonstrate how to integrate this solution.
+
+{/* prettier-ignore */}
+<div class="remix-callout">
+  <a href="https://github.com/Aphyla/chainlink-csr">See the code on GitHub</a>
+</div>
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+Before you start integrating a direct staking solution into your frontend or application, please review the following requirements and resources:
+
+- Familiarize yourself with the architecture, workflow, and cross-chain mechanics by reading the technical blog post: [Scaling Staking Protocols Cross-Chain – Chainlink Blog](https://blog.chain.link/scaling-staking-protocols-cross-chain/).
+- You should be comfortable building web applications that interact with blockchain networks using JavaScript or TypeScript. Experience with popular Web3 libraries (such as ethers.js) is recommended.
+- Confirm that your integration targets the correct contract addresses for the protocol you are integrating. This guide provides addresses for the Lido example.
+- For a practical reference, consider reviewing applications that have already integrated Lido direct staking:
+  - [XSwap](https://xswap.link/direct-staking/lido/lido-cross-chain-staking)
+  - [Interport](https://app.interport.fi/direct-staking/lido/42161/ETH)
+
+## Key Concepts
+
+### Slow Stake (Direct Approach)
+
+This method is ideal when an L2 liquidity pool is depleted or when a protocol prefers not to manage one. A user's (W)ETH is securely bridged to L1, staked, and the resulting LST is then bridged back to the user on the L2. The `slowStake` function in the `CustomSender` contract handles this entire cross-chain workflow.
+
+**Estimated time:** ~40-60mins
+
+<ClickToZoom src="/images/quickstarts/ccip-direct-staking/slow-stake.png" />
+
+### Fast Stake (Liquidity Pool Approach)
+
+This method provides immediate execution. Users swap their (W)ETH for the corresponding LST from a pre-existing liquidity pool on the L2. The `fastStake` function in the `CustomSender` contract facilitates this swap using a Chainlink Price Feed for exchange rate determination.
+
+The (W)ETH that accumulates in the pool is then periodically sent to L1 in batches to be staked. The newly minted LSTs are sent back to the L2 to replenish the pool. This replenishing process is often managed by **Chainlink Automation** to improve cost-efficiency by batching transactions.
+
+**Estimated time:** Instant for amounts less than the total available liquidity
+
+<ClickToZoom src="/images/quickstarts/ccip-direct-staking/fast-stake.png" />
+
+## Integration Guide
+
+As a developer building offchain components, you'll primarily interact with the **Custom Sender contract** (proxy address), which serves as the main entry point for all staking operations.
+
+### Core Functions
+
+The Custom Sender contract provides two key functions:
+
+- **`fastStake()`**: Instant token swaps using L2 liquidity pools
+- **`slowStake()`**: Cross-chain staking when pools lack liquidity
+
+### Contract Addresses
+
+The following contract addresses are for the **Lido protocol** as an example implementation. When integrating a different protocol, ensure you are using their deployed contract addresses.
+
+<Aside type="caution" title="Integration Best Practices">
+  - **Use proxy addresses only**: The addresses below are proxy addresses, not implementation addresses. Always use
+  proxy addresses in your integrations to ensure compatibility during upgrades. - **Get Oracle Pool dynamically**: Call
+  the `getOraclePool()` method on the Custom Sender contract rather than hardcoding pool addresses, as they may change
+  or be upgraded.
+</Aside>
+
+| Network  | Custom Sender Contract Address (Proxy)                                                                       | Oracle Pool Address (Reference Only)                                                                         |
+| :------- | :----------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| Optimism | <Address contractUrl="https://optimistic.etherscan.io/address/0x328de900860816d29D1367F6903a24D8ed40C997" /> | <Address contractUrl="https://optimistic.etherscan.io/address/0x6F357d53d6bE3238180316BA5F8f11467e164588" /> |
+| Base     | <Address contractUrl="https://basescan.org/address/0x328de900860816d29D1367F6903a24D8ed40C997" />            | <Address contractUrl="https://basescan.org/address/0x6F357d53d6bE3238180316BA5F8f11467e164588" />            |
+| Arbitrum | <Address contractUrl="https://arbiscan.io/address/0x72229141D4B016682d3618ECe47c046f30Da4AD1" />             | <Address contractUrl="https://arbiscan.io/address/0x9c27c304cFdf0D9177002ff186A4aE0A5489Aace" />             |
+
+### Available Use Cases
+
+The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides protocol-agnostic implementations for direct staking operations. These implementations include fee encoding, allowance management, and cross-chain tracking functionality.
+
+#### Core Estimation Functions
+
+| Function                                                                                                                       | Purpose                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| **[`estimateFastStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/estimate.ts)**     | Calculate expected outputs, validate pool liquidity, and get fee breakdowns for fast stake operations |
+| **[`estimateSlowStakeFees()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/estimate.ts)** | Estimate cross-chain fees (CCIP + bridge) with automatic encoding for all supported bridge types      |
+
+#### Pool Monitoring & Analysis
+
+| Function                                                                                                               | Purpose                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **[`getPoolBalances()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/balance.ts)**     | Monitor TOKEN_IN/TOKEN_OUT liquidity across all supported chains with pool health indicators |
+| **[`getTradingRate()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/trading-rate.ts)** | Get current exchange rates, oracle pricing, and effective rates users receive after fees     |
+
+#### Transaction Execution
+
+| Function                                                                                                                         | Purpose                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **[`executeSlowStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/execute.ts)**         | Complete slow staking flow with automatic allowance management for both WETH and LINK tokens            |
+| **[`executeFastStakeReferral()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/execute.ts)** | Fast stake execution with automatic allowance management for both native ETH and wrapped token payments |
+
+#### Allowance Management
+
+| Function                                                                                                                  | Purpose                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **[`checkTokenAllowance()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/allowance/check.ts)** | Token allowance checking that detects staking tokens and provides status analysis |
+
+### Complete Integration Examples
+
+The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides **[comprehensive implementation examples](https://github.com/Aphyla/chainlink-csr/tree/main/offchain/src/examples/lido)** demonstrating different patterns:
+
+<br />
+
+#### Fast Stake Implementation
+
+| Example                                                                                                                             | Description                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **[Native ETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeNativeExample.ts)** | Complete implementation using native ETH payment (no allowance management required)      |
+| **[WETH Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeWrappedExample.ts)**      | Complete implementation using WETH tokens with automatic allowance checking and approval |
+
+<br />
+
+#### Slow Stake Implementation
+
+Complete implementations covering all four payment combinations:
+
+| Example                                                                                                                                  | Payment Method | CCIP Fees | Description                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------------------ |
+| **[Native ETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeExample.ts)**   | ETH            | Native    | Most efficient - no token approvals needed |
+| **[Native ETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeLinkExample.ts)** | ETH            | LINK      | ETH payment with LINK for cross-chain fees |
+| **[WETH + Native CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedNativeExample.ts)**  | WETH           | Native    | Wrapped tokens with native CCIP fees       |
+| **[WETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedLinkExample.ts)**      | WETH           | LINK      | Full wrapped token implementation          |
+
+<br />
+
+#### Utility and Analysis
+
+| Category           | Example                                                                                                                                   | Purpose                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Pool Analysis**  | **[Pool Balance Check](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/poolBalanceExample.ts)**              | Query liquidity across all supported chains with health indicators                         |
+| **Rate Analysis**  | **[Trading Rate Analysis](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/tradingRateExample.ts)**           | Real-time exchange rates, oracle pricing, and effective rates after fees                   |
+| **Allowance**      | **[Allowance Management](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/allowanceExample.ts)**              | Comprehensive token allowance checking across all chains with detailed status analysis     |
+| **Fee Estimation** | **[Fast Stake Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/estimateExample.ts)**              | Detailed fee breakdown, liquidity validation, and exchange rate analysis                   |
+| **Fee Estimation** | **[Slow Stake Fee Estimation](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeEstimateExample.ts)** | Multi-chain fee comparison and optimization analysis for both ETH and LINK payment methods |
+
+### Key Implementation Details
+
+This section provides implementation guidance for integrating direct staking functionality into your offchain components. There are two main staking methods:
+
+**Fast Staking:**
+
+- Stake ETH or WETH for instant swaps using L2 liquidity pools
+- Simple payment: just the staking amount (no additional fees for users)
+
+**Slow Staking:**
+
+- Stake ETH or WETH via cross-chain bridging when pools lack liquidity
+- Complex payment structure: staking amount + cross-chain fees
+- **CCIP fees** (L2→L1): Paid in ETH or LINK tokens
+- **Bridge fees** (L1→L2): Always paid in ETH
+
+#### Fast Stake Pool Management
+
+- **Dynamic pool discovery**: Call `getOraclePool()` on Custom Sender to retrieve pool address
+- **Liquidity validation**: Check pool token balances to ensure sufficient liquidity for the desired transaction amount
+- **Pool health monitoring**: Monitor pool composition ratios (WETH vs wstETH balances) to assess pool health
+
+**Reference Implementation**: See [`getPoolBalances()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/balance.ts) in the [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) for a pool monitoring implementation that handles supported chains and provides balance analysis.
+
+#### Fast Stake Exchange Rate & Fee Calculations
+
+- **Get pool fee**: Call `getFee()` on the Oracle Pool to retrieve the current fee rate
+- **Get price oracle**: Call `getOracle()` on the Oracle Pool to get the price oracle address
+- **Fetch exchange rate**: Call `getLatestAnswer()` on the price oracle for the current rate
+- **Understand oracle data**: The oracle returns how much ETH/WETH is needed to get 1 wstETH (e.g., 1.2054 means you need 1.2054 ETH to get 1 wstETH)
+- **Fee application order**: Pool fees are applied to input tokens before price conversion
+- **Account for slippage**: Calculate minimum acceptable output to protect against price changes during transaction execution: `minAmountOut = expectedOutput * (1 - slippageTolerance)` (e.g., for 2% tolerance: `minAmountOut = expectedOutput * 0.98`)
+
+**Reference Implementations**:
+
+- [`estimateFastStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/fastStake/estimate.ts) - Reproduces onchain math for fee calculations and price conversions with liquidity validation
+- [`getTradingRate()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/pool/trading-rate.ts) - Fetches current exchange rates, oracle pricing, and pool fees for display in your UI
+
+#### Slow Stake Fee Management & Encoding
+
+Slow stake involves two types of fees that must be calculated and encoded before calling the `slowStake()` function:
+
+1. **CCIP fees** for bridging from your L2 to Ethereum (paid in ETH or LINK)
+1. **Bridge fees** for the return journey from Ethereum back to your L2 (paid in ETH)
+
+**Implementation approach**: The repository provides ready-to-use functions that handle all the complex encoding for you. Most developers can use these utilities without understanding the low-level implementation.
+
+**Payment Methods:**
+
+- **Staking with native ETH**: Use `address(0)` as token parameter, send ETH value with transaction
+- **Staking with WETH**: Use WETH token address, requires prior WETH allowance approval
+- **Fee payments**: Choose between all-ETH (`ccipFees + bridgeFees`) or ETH+LINK (`bridgeFees` in ETH, `ccipFees` in LINK)
+
+**Reference Implementations**:
+
+- [`estimateSlowStakeFees()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/estimate.ts) - Fee estimation with encoding for supported bridge types and payment methods
+- [`executeSlowStake()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/execute.ts) - Full execution flow with automatic allowance management and cross-chain tracking
+
+<Aside type="tip" title="Technical Implementation Details">
+For developers who need to understand the encoding specifications or implement custom fee logic:
+
+**CCIP Fee Encoding (21 bytes):**
+
+- **Fee estimation**: Call `getFee()` on CCIP Router for current estimates
+- **Encoding format**: `maxFee (16 bytes) + payInLink (1 byte) + gasLimit (4 bytes)`
+- **Gas limit calculation**: `minProcessMessageGas * multiplier` from Custom Sender contract
+
+**Bridge Fee Encoding (varies by chain):**
+
+- **Arbitrum (29 bytes)**: `feeAmount (16) + payInLink (1) + maxGas (4) + gasPriceBid (8)`
+  - Where `feeAmount = maxSubmissionCost + (gasPriceBid * maxGas)`
+- **Optimism/Base (21 bytes)**: `uint136(0) + l2Gas (4 bytes)`
+  - Bridge fees are typically zero, only gas parameter needed
+
+**Reference Implementations:**
+
+- [TypeScript fee encoding utilities](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/fee-codec.ts)
+- [TypeScript fee calculation logic](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/slowStake/fee-calculator.ts)
+- [Solidity FeeCodec.sol specification](https://github.com/Aphyla/chainlink-csr/blob/main/contracts/libraries/FeeCodec.sol)
+
+These implementations ensure exact compatibility between TypeScript and Solidity encoding.
+
+</Aside>
+
+#### Token Allowance Management
+
+ERC-20 tokens (WETH, LINK) require explicit approval before the Custom Sender contract can transfer them on your behalf. Native ETH payments don't require allowances.
+
+**Allowance Scenarios:**
+
+- **Fast Stake with WETH**: Requires WETH allowance equal to staking amount
+- **Slow Stake with WETH + CCIP fees in ETH**: Requires WETH allowance for staking amount only (CCIP fees and Destination→Origin bridge fees both paid in native ETH)
+- **Slow Stake with WETH + CCIP fees in LINK**: Requires both WETH allowance (for staking) and LINK allowance (for CCIP fees). Destination→Origin bridge fees still paid in native ETH
+- **Native ETH payments**: No allowances needed (uses `{value: amount}` in transaction for all costs)
+
+**Best Practices:**
+
+- **Pre-flight checks**: Always verify allowances before prompting user transactions
+- **Approval amount options**: Let users choose between unlimited (`MaxUint256`) for convenience or exact amounts for security
+- **Balance validation**: Check both allowance and actual token balance sufficiency
+- **Error handling**: Provide clear guidance when allowances are insufficient
+
+**Reference Implementation**: See [`checkTokenAllowance()`](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/useCases/allowance/check.ts) for allowance checking that detects the staking token from the Custom Sender contract and provides allowance status analysis.
+
+#### Error Handling & Fallbacks
+
+##### Fast Stake Error Scenarios
+
+- **`OraclePoolInsufficientTokenOut`**: Pool lacks sufficient LST tokens for the swap
+
+  - **User Action**: Display clear message about liquidity shortage and suggest Slow Stake as alternative
+  - **Prevention**: Query Oracle Pool balance before transaction to show real-time availability
+
+- **`OraclePoolInvalidPrice`**: Oracle reports invalid or decreased exchange rate (potential slashing event)
+  - **System Action**: Immediately pause all Fast Stake operations for the protocol
+  - **User Action**: Inform users that Fast Stake is temporarily unavailable and suggest Slow Stake as alternative
+
+<br />
+
+##### Slow Stake Tracking & Monitoring
+
+- **CCIP message tracking**: Use message ID from transaction receipt to track Origin→Destination progress via [CCIP Explorer](https://ccip.chain.link)
+- **Bridge completion timing**:
+  - **Base/Optimism**: Destination→Origin bridge typically completes in ~3 minutes
+  - **Arbitrum**: Destination→Origin bridge typically takes ~8-9 minutes
+- **Native bridge limitations**: Destination→Origin transfers via native bridges don't provide trackable message IDs
+
+<br />
+
+##### Balance & Allowance Errors
+
+- **ETH balance errors**: Show specific shortfall amounts and required totals (staking + fees)
+- **WETH balance errors**: Display both current balance and required amount for staking
+- **LINK balance errors**: Show LINK balance vs required CCIP fee amount
+- **Allowance errors**: Guide users through approval process with clear explanations
+
+<br />
+
+##### Slippage Protection Implementation
+
+**User configuration**: Let users choose their slippage tolerance (typically 1-5%). For added protection against oracle price updates, you can recommend using 3.18% APR as a buffer in your calculations.
+
+```
+minAmountOut = expectedOutput * (1 - slippageTolerance)
+```
+
+<br />
+
+##### Proactive Monitoring
+
+- **Pool health checks**: Regularly query Oracle Pool balance to disable Fast Stake when liquidity is low
+- **Oracle price validation**: Handle `OraclePoolInvalidPrice` errors and implement automatic system pausing
+- **Contract address verification**: Always use proxy addresses (not implementation addresses) to avoid integration errors during upgrades
+
+## Tutorial: Staking with Lido on Base Mainnet
+
+This tutorial guides you through the process of using the offchain library to interact with the Lido Direct Staking solution on Base Mainnet. You will learn how to check pool status, estimate transaction outcomes, and execute both Fast and Slow stakes.
+
+<Accordion title="Setup Your Environment" number={1}>
+
+To begin, you need to set up the chainlink-csr project locally. The repository contains both Solidity contracts and TypeScript offchain utilities.
+
+1.  Clone the repository and navigate into the directory:
+
+    ```shell
+    git clone https://github.com/Aphyla/chainlink-csr.git && \
+    cd chainlink-csr
+    ```
+
+1.  Install dependencies and build the project:
+
+    ```shell
+    yarn install && yarn build
+    ```
+
+1.  Navigate to the offchain directory where the TypeScript utilities are located:
+
+    ```shell
+    cd offchain
+    ```
+
+1.  Set up your environment variables for the offchain utilities:
+
+    ```shell
+    cp .env.example .env
+    ```
+
+1.  Generate contract types from ABIs:
+
+    ```shell
+    yarn typechain
+    ```
+
+1.  Build the offchain project:
+
+    ```shell
+    yarn build
+    ```
+
+1.  Open the newly created `.env` file and configure your private key and RPC URLs:
+
+    ```text
+    PRIVATE_KEY=REPLACE_WITH_YOUR_PRIVATE_KEY
+
+    OPTIMISM_RPC_URL=https://opt-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+    ARBITRUM_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+    BASE_RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+    ```
+
+    <Aside type="caution" title="Private Key Security">
+      Never commit your `.env` file to a public repository. The `.gitignore` file is already configured to ignore it,
+      but always be mindful of your private keys.
+    </Aside>
+
+</Accordion>
+
+<Accordion title="Analyze the Staking Pool for Fast Stake" number={2}>
+
+Before executing any fast staking transactions, you can perform several read-only operations to analyze the state of the Lido staking pool on Base Mainnet.
+
+<br />
+
+#### Check Pool Balances
+
+You can check the current liquidity of WETH (the input token) and wstETH (the output token) in the Fast Stake pool. This helps determine if a Fast Stake is feasible.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:pool
+```
+
+This script executes `getPoolBalances()` and provides a detailed breakdown of the pool's assets.
+
+**Sample Output:**
+
+```shell
+🔍 Checking Base (Chain ID: 8453)
+Explorer: https://basescan.org
+
+📋 Contract Info:
+  Pool Address: 0x6F357d53d6bE3238180316BA5F8f11467e164588
+  Sender Address: 0x328de900860816d29D1367F6903a24D8ed40C997
+
+💰 WETH (Wrapped Ether):
+  Address: 0x4200000000000000000000000000000000000006
+  Balance: 0.152201 WETH
+  Decimals: 18
+
+🪙 wstETH (Wrapped liquid staked Ether 2.0):
+  Address: 0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452
+  Balance: 31.432578849217100358 wstETH
+  Decimals: 18
+
+📊 Pool Composition:
+  Balance Ratio: 206.520 wstETH/WETH
+  Status: ✅ Pool appears healthy
+```
+
+<br />
+
+#### Get the Current Trading Rate
+
+To see the current exchange rate for a Fast Stake, including any fees, run the trading rate analysis script.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:trading
+```
+
+This script executes `getTradingRate()` and shows you the effective rate you would get from a swap.
+
+**Sample Output:**
+
+```shell
+🔍 Checking Base (Chain ID: 8453)
+Explorer: https://basescan.org
+
+🔄 Trading Pair: WETH → wstETH
+
+🔮 Oracle Information:
+  Oracle Price: 1.205291056439143428 (WETH per wstETH)
+  Heartbeat: 86400 seconds (1 day)
+
+💰 Fee Information:
+  Fee Rate: 0.00%
+
+📊 Exchange Rates:
+  Oracle Rate: 1 wstETH = 1.205291056439143428 WETH
+  Effective Rate: 1 WETH = 0.82967511843517208 wstETH
+  Impact: After 0.00% fee
+```
+
+</Accordion>
+
+<Accordion title="Perform a Fast Stake" number={3}>
+
+A Fast Stake allows you to instantly swap ETH for wstETH using the L2 liquidity pool.
+
+<br />
+
+#### Estimate the Outcome
+
+Before executing, it's best practice to estimate the transaction to see the expected output and validate there is enough liquidity.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:estimate-faststake
+```
+
+**Sample Output:**
+
+```shell
+🔍 Testing Lido Fast Stake Estimation on Base
+Explorer: https://basescan.org
+
+💰 Estimating 0.1 WETH...
+
+🏊 Pool Liquidity:
+  Available wstETH: 31.432578849217100358
+  Sufficient Liquidity: ✅ Yes
+
+🎯 Expected Output:
+  You'll receive: 0.082967511843517208 wstETH
+```
+
+<br />
+
+#### Execute the Transaction
+
+Now, execute the Fast Stake using native ETH. This script will perform the swap and provide a detailed receipt.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:fast-stake-native
+```
+
+The script executes `executeFastStakeReferral()` with native ETH. Since you are using native ETH, no token approval is required.
+
+**Sample Output:**
+
+```shell
+🚀 FastStake with Native ETH on Base
+✅ Transaction confirmed in block 31511221
+
+🎉 Transaction Successful!
+════════════════════════════════════════════════════════════════════════════════
+📊 Transaction Details:
+  TX Hash: 0xb70e3baf935dc1784c38bf67972b45a51a969896695fd5478c1e61affc1e387e
+
+💱 Staking Summary:
+  Input: 0.001 ETH (native)
+  Output: 0.000829675118435172 wstETH
+```
+
+</Accordion>
+
+<Accordion title="Perform a Slow Stake" number={4}>
+
+A Slow Stake is used when the L2 pool has insufficient liquidity or for users who prefer the security of the direct cross-chain method. This process is more complex and takes significantly longer (~50 minutes).
+
+<br />
+
+#### Estimate Cross-Chain Fees
+
+Slow Staking involves multiple cross-chain transactions, so it's critical to estimate the fees first. The fees can be significantly higher than the gas for a simple L2 transaction.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:estimate-slowstake
+```
+
+This script runs `estimateSlowStakeFees()` and shows you the required ETH and/or LINK for the entire process.
+
+**Sample Output:**
+
+```shell
+🔍 Estimating fees for Base...
+✅ Fee estimation completed!
+
+💸 Fee Breakdown:
+  Staking Amount: 0.01 ETH
+  CCIP Fee (O→D): 0.003116936361252889 ETH
+  Bridge Fee (D→O): 0.0 ETH
+
+💰 Requirements:
+  ETH Required: 0.013116936361252889 ETH
+```
+
+<br />
+
+#### Execute the Transaction
+
+This script initiates the cross-chain staking process. It sends your ETH from Base to Ethereum, where it is staked, and then the resulting wstETH is bridged back to you on Base.
+
+From the `offchain` directory, run the following command:
+
+```shell
+yarn example:lido:slow-stake-native
+```
+
+After execution, the script provides a CCIP Message ID and instructions for tracking the transaction.
+
+**Sample Output:**
+
+```shell
+🎉 SlowStake Transaction Successful!
+📊 Transaction Details:
+  TX Hash: 0x4aa7d4e4ff650febe32aec89b3132efc582d7d30e42343ec1c99d1ac2dfe67e2
+  Message ID: 0x3e44ae54221139386ca4e22bcfe6600b7d47bc6af446e72ad549ede0a9a2c752
+
+📍 How to Track Your Cross-Chain Transaction:
+🔗 Step 1: Track CCIP Message (Origin → Destination)
+   Monitor: https://ccip.chain.link/msg/0x3e44ae54221139386ca4e22bcfe6600b7d47bc6af446e72ad549ede0a9a2c752
+   Wait for status to show "Success" (usually 10-20 minutes)
+```
+
+</Accordion>
+
+## What's Next?
+
+This tutorial covered the basic scenarios using native ETH, but the chainlink-csr repository provides many more implementation patterns and payment combinations. You can explore further by:
+
+### Additional Fast Stake Scenarios
+
+- **[Wrapped Native Token Fast Stake](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/fastStakeWrappedExample.ts)** - Use WETH instead of native ETH, which includes automatic allowance management
+
+  ```shell
+  yarn example:lido:fast-stake-wrapped
+  ```
+
+### Additional Slow Stake Payment Combinations
+
+This tutorial only showed native ETH staking with native ETH CCIP fees, but there are three more combinations available:
+
+- **[Native ETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeNativeLinkExample.ts)** - Stake ETH but pay CCIP fees with LINK tokens
+
+  ```shell
+  yarn example:lido:slow-stake-native-link
+  ```
+
+- **[WETH + Native ETH CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedNativeExample.ts)** - Stake WETH with CCIP fees paid in ETH
+
+  ```shell
+  yarn example:lido:slow-stake-wrapped-native
+  ```
+
+- **[WETH + LINK CCIP](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeWrappedLinkExample.ts)** - Stake WETH with CCIP fees paid in LINK
+
+  ```shell
+  yarn example:lido:slow-stake-wrapped-link
+  ```
+
+### Additional Analysis Tools
+
+- **[Allowance Management](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/allowanceExample.ts)** - Check token allowances across all supported chains
+
+  ```shell
+  yarn example:lido:allowance
+  ```
+
+- **[Multi-Chain Fee Comparison](https://github.com/Aphyla/chainlink-csr/blob/main/offchain/src/examples/lido/slowStakeEstimateExample.ts)** - Compare slow stake fees across Arbitrum, Optimism, and Base
+  ```shell
+  yarn example:lido:estimate-slowstake
+  ```
+
+### Building Your Own Integration
+
+The [chainlink-csr repository](https://github.com/Aphyla/chainlink-csr) provides reference implementations and utilities that you can adapt for your own applications:
+
+- **Reference patterns** - Use the example files as templates to understand the required transaction flows and error handling
+- **Utility functions** - Leverage the core estimation, validation, and contract interaction utilities in your own code
+- **Contract interfaces** - Generated TypeScript types provide the necessary contract ABIs and type definitions
+- **Implementation guidance** - Each example demonstrates proper allowance management, fee calculation, and cross-chain tracking patterns
+
+Note that this is not a ready-to-use SDK - you'll need to adapt the reference implementations to fit your specific application architecture and requirements.

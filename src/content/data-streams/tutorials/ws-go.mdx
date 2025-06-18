@@ -2,9 +2,13 @@
 section: dataStreams
 date: Last Modified
 title: "Stream and decode V3 reports via WebSocket using the Go SDK"
+metadata:
+  title: "Stream Real-time Cryptocurrency Data with Go SDK | WebSocket Tutorial"
+  description: "Learn how to use the Go SDK to stream and decode real-time cryptocurrency market data via WebSocket connections from Chainlink Data Streams."
+  keywords: ["WebSocket", "Go SDK", "Golang", "Real-time", "Streaming", "Crypto Data", "V3 Reports", "Data Streams"]
 whatsnext:
   {
-    "Learn how to verify your data onchain": "/data-streams/reference/streams-direct/streams-direct-onchain-verification",
+    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
     "Find the list of available Stream IDs": "/data-streams/crypto-streams",
   }
 ---
@@ -18,28 +22,28 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   pages={[
     {
       name: "Go SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-ws-go",
+      url: "/data-streams/tutorials/ws-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
       name: "Go SDK - V4 reports for RWA streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
+      url: "/data-streams/tutorials/ws-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
       name: "Rust SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-ws-rust",
+      url: "/data-streams/tutorials/ws-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
       name: "Rust SDK - V4 reports for RWA streams",
-      url: "/data-streams/tutorials/streams-direct/streams-direct-ws-rwa-rust",
+      url: "/data-streams/tutorials/ws-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams Direct](/data-streams/streams-direct)_ implementation and the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to subscribe to real-time [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) via a [WebSocket connection](/data-streams/reference/streams-direct/streams-direct-interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to subscribe to real-time [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -47,9 +51,9 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to the Streams Direct implementation requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
 
-## Guide
+## Tutorial
 
 ### Set up your Go project
 
@@ -215,9 +219,9 @@ In this guide, you'll learn how to use Chainlink Data Streams with the _[Streams
 
      Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-   - `WsURL` is the [WebSocket URL](/data-streams/reference/streams-direct/streams-direct-interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
 
-   See the [SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) page for more configuration options.
+   See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
 
 1. For this example, you'll subscribe to the ETH/USD Data Streams crypto stream. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Crypto Streams](/data-streams/crypto-streams) page for a complete list of available crypto assets.
 
@@ -311,15 +315,15 @@ The decoded report details include:
 
 #### Payload for onchain verification
 
-In this guide, you log and decode the `fullReport` payload to extract the report data. In a
+In this tutorial, you log and decode the `fullReport` payload to extract the report data. In a
 production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/streams-direct/streams-direct-onchain-verification) guide.
+[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
 
 ## Explanation
 
 ### Establishing a WebSocket connection and listening for reports
 
-Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
 
 Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
 

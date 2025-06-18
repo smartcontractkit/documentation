@@ -342,56 +342,38 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Streams Trade",
+      section: "Tutorials",
       contents: [
         {
           title: "Overview",
-          url: "data-streams/streams-trade",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/getting-started",
-          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
-        },
-        {
-          title: "Handle StreamsLookup errors",
-          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-        },
-      ],
-    },
-    {
-      section: "Streams Direct",
-      contents: [
-        {
-          title: "Overview",
-          url: "data-streams/streams-direct",
+          url: "data-streams/tutorials/overview",
         },
         {
           title: "Fetch and decode reports",
-          url: "data-streams/tutorials/streams-direct/streams-direct-api-go",
+          url: "data-streams/tutorials/api-go",
           highlightAsCurrent: [
-            "data-streams/tutorials/streams-direct/streams-direct-api-rust",
-            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-go",
-            "data-streams/tutorials/streams-direct/streams-direct-api-rwa-rust",
+            "data-streams/tutorials/api-rust",
+            "data-streams/tutorials/api-rwa-go",
+            "data-streams/tutorials/api-rwa-rust",
           ],
         },
         {
           title: "Stream and decode reports (WebSocket)",
-          url: "data-streams/tutorials/streams-direct/streams-direct-ws-go",
+          url: "data-streams/tutorials/ws-go",
           highlightAsCurrent: [
-            "data-streams/tutorials/streams-direct/streams-direct-ws-rust",
-            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
-            "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-rust",
+            "data-streams/tutorials/ws-rust",
+            "data-streams/tutorials/ws-rwa-go",
+            "data-streams/tutorials/ws-rwa-rust",
           ],
         },
         {
           title: "Verify report data (EVM)",
-          url: "data-streams/tutorials/streams-direct/evm-onchain-report-verification",
+          url: "data-streams/tutorials/evm-onchain-report-verification",
         },
         {
           title: "Verify report data (Solana)",
-          url: "data-streams/tutorials/streams-direct/solana-onchain-report-verification",
-          highlightAsCurrent: ["data-streams/tutorials/streams-direct/solana-offchain-report-verification"],
+          url: "data-streams/tutorials/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
         },
       ],
     },
@@ -412,31 +394,69 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Reference",
       contents: [
         {
-          title: "Streams Trade",
-          url: "data-streams/reference/streams-trade-interface",
+          title: "Overview",
+          url: "data-streams/reference/overview",
         },
         {
-          title: "Streams Direct",
-          url: "data-streams/reference/streams-direct",
+          title: "REST API",
+          url: "data-streams/reference/interface-api",
+        },
+        {
+          title: "WebSocket",
+          url: "data-streams/reference/interface-ws",
+        },
+        {
+          title: "Authentication",
+          url: "data-streams/reference/authentication",
           children: [
             {
-              title: "REST API",
-              url: "data-streams/reference/streams-direct/streams-direct-interface-api",
+              title: "JavaScript examples",
+              url: "data-streams/reference/authentication/javascript-examples",
             },
             {
-              title: "WebSocket",
-              url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
+              title: "TypeScript examples",
+              url: "data-streams/reference/authentication/typescript-examples",
             },
             {
-              title: "SDK References",
-              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
-              highlightAsCurrent: ["data-streams/reference/streams-direct/streams-direct-rust-sdk"],
+              title: "Go examples",
+              url: "data-streams/reference/authentication/go-examples",
             },
             {
-              title: "Onchain report verification (EVM chains)",
-              url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
+              title: "Rust examples",
+              url: "data-streams/reference/authentication/rust-examples",
             },
           ],
+        },
+        {
+          title: "SDK References",
+          url: "data-streams/reference/go-sdk",
+          highlightAsCurrent: ["data-streams/reference/rust-sdk"],
+        },
+        {
+          title: "Onchain report verification (EVM chains)",
+          url: "data-streams/reference/onchain-verification",
+        },
+      ],
+    },
+    {
+      section: "Streams Trade",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-trade",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/tutorials/streams-trade/getting-started",
+          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
+        },
+        {
+          title: "Handle StreamsLookup errors",
+          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+        },
+        {
+          title: "Reference (Interfaces)",
+          url: "data-streams/streams-trade/interfaces",
         },
       ],
     },
@@ -1494,6 +1514,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Tools",
           url: "ccip/tools-resources/tools",
+        },
+        {
+          title: "Cross-chain Examples",
+          url: "ccip/examples",
         },
       ],
     },
