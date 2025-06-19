@@ -156,21 +156,21 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
    Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-1. For this example, you will read from the AUD/USD stream. This stream ID is <CopyText text="0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea" code/>. See the [Data Streams RWA streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
+1. For this example, you will read from an RWA stream. See the [Data Streams RWA streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
 
-   Build and run your application:
+   Build and run your application. Replace `[STREAM_ID]` with your stream ID.
 
    ```bash
-   cargo run -- 0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea
+   cargo run -- [STREAM_ID]
    ```
 
    Expect output similar to the following in your terminal:
 
    ```bash
-   Raw report data: Report { feed_id: 0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea, valid_from_timestamp: 1734125487, observations_timestamp: 1734125487, full_report: "0x0006aee203ef23a892e75b579f8c3f26fd933d9ca45de95c2f8ac470f4ddcd76000000000000000000000000000000000000000000000000000000000b3df40a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000026000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea00000000000000000000000000000000000000000000000000000000675ca7af00000000000000000000000000000000000000000000000000000000675ca7af0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000675df92f00000000000000000000000000000000000000000000000008d2f51c75fc000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002a98627fc63e8af57652d69149a23df6fe4d1bccdfcd013a4a9c0faafb4ab3830bdfb30e2d6c6d3f894b5ed7b4761f9236431548efa15f100fd5a61804cef21c0000000000000000000000000000000000000000000000000000000000000000266dc0c7d18ccc26c566df4820fd68cca5a076215d982c74abf7ae089bc24d3520716cfefdd127f522a2f98f90227926ed786479977d99ac9f91d5c99120e3cb3" }
+   Raw report data: Report { feed_id: [STREAM_ID], valid_from_timestamp: 1734125487, observations_timestamp: 1734125487, full_report: "0x..." }
 
 
-   Decoded Report for Stream ID 0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea:
+   Decoded Report for Stream ID [STREAM_ID]:
    ------------------------------------------
    Observations Timestamp: 1734125487
    Benchmark Price       : 635840000000000000
@@ -186,16 +186,16 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
 The decoded report details include:
 
-| Attribute                | Value                                                                | Description                                                                                                                                                                                           |
-| ------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `0x000434a5b30cafe7e853832a458ea1591dc2f5fb5e4cf80b9979b8248065a7ea` | The unique identifier for the stream. In this example, the stream is for AUD/USD.                                                                                                                     |
-| `Observations Timestamp` | `1734125487`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                  |
-| `Benchmark Price`        | `635840000000000000`                                                 | The observed price in the report, with 18 decimals. For readability: `0.63584` USD per AUD.                                                                                                           |
-| `Valid From Timestamp`   | `1734125487`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                               |
-| `Expires At`             | `1734211887`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                      |
-| `Link Fee`               | `0`                                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                         |
-| `Native Fee`             | `0`                                                                  | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
-| `Market Status`          | `2`                                                                  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`).                                                                          |
+| Attribute                | Value                | Description                                                                                                                                                                                           |
+| ------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`        | The unique identifier for the stream.                                                                                                                                                                 |
+| `Observations Timestamp` | `1734125487`         | The timestamp indicating when the data was captured.                                                                                                                                                  |
+| `Benchmark Price`        | `635840000000000000` | The observed price in the report, with 18 decimals. For readability: `0.63584` USD per AUD.                                                                                                           |
+| `Valid From Timestamp`   | `1734125487`         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                               |
+| `Expires At`             | `1734211887`         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                      |
+| `Link Fee`               | `0`                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `0`                  | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`).                                                                          |
 
 #### Payload for onchain verification
 
