@@ -193,6 +193,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/chainlink-automation/overview/supported-networks#polygon",
       polygonzkevm: "/chainlink-automation/overview/supported-networks#polygon-zkevm",
       scroll: "/chainlink-automation/overview/supported-networks#scroll",
+      zksync: "/chainlink-automation/overview/supported-networks#zksync",
     },
   },
   VRF: {
