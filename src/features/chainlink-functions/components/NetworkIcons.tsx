@@ -3,7 +3,7 @@ import { useEffect } from "preact/compat"
 import { normalizeTechnologyName } from "@features/utils/index.ts"
 
 // List of valid network names that should have icons
-const VALID_NETWORKS = ["Arbitrum", "Avalanche", "BASE", "Celo", "Ethereum", "OP", "Polygon", "Soneium"]
+const VALID_NETWORKS = ["Arbitrum", "Avalanche", "BASE", "Celo", "Ethereum", "OP", "Polygon", "Soneium", "ZKSync"]
 
 // Component to add icons to network headings in the Functions supported-networks page
 export default function NetworkIcons() {
@@ -59,6 +59,10 @@ export default function NetworkIcons() {
         const wrapper = document.createElement("span")
         wrapper.style.display = "inline-flex"
         wrapper.style.alignItems = "center"
+        wrapper.style.fontSize = "inherit"
+        wrapper.style.lineHeight = "inherit"
+        wrapper.style.fontFamily = "inherit"
+        wrapper.style.fontWeight = "inherit"
 
         // Move the anchor content to the wrapper
         while (existingAnchor.firstChild) {
@@ -75,6 +79,10 @@ export default function NetworkIcons() {
         const wrapper = document.createElement("span")
         wrapper.style.display = "inline-flex"
         wrapper.style.alignItems = "center"
+        wrapper.style.fontSize = "inherit"
+        wrapper.style.lineHeight = "inherit"
+        wrapper.style.fontFamily = "inherit"
+        wrapper.style.fontWeight = "inherit"
 
         // Move the heading content to the wrapper
         while (heading.firstChild) {

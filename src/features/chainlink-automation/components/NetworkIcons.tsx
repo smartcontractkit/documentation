@@ -23,6 +23,7 @@ export default function NetworkIcons() {
       "POLYGON",
       "POLYGON_ZKEVM",
       "SCROLL",
+      "ZKSYNC",
     ]
 
     // Special mapping for display names to technology identifiers
@@ -71,6 +72,10 @@ export default function NetworkIcons() {
         const wrapper = document.createElement("span")
         wrapper.style.display = "inline-flex"
         wrapper.style.alignItems = "center"
+        wrapper.style.fontSize = "inherit"
+        wrapper.style.lineHeight = "inherit"
+        wrapper.style.fontFamily = "inherit"
+        wrapper.style.fontWeight = "inherit"
 
         // Move the heading content to the wrapper
         while (heading.firstChild) {
@@ -90,6 +95,10 @@ export default function NetworkIcons() {
           const wrapper = document.createElement("span")
           wrapper.style.display = "inline-flex"
           wrapper.style.alignItems = "center"
+          wrapper.style.fontSize = "inherit"
+          wrapper.style.lineHeight = "inherit"
+          wrapper.style.fontFamily = "inherit"
+          wrapper.style.fontWeight = "inherit"
 
           // Move the anchor content to the wrapper
           while (anchor.firstChild) {
@@ -106,6 +115,10 @@ export default function NetworkIcons() {
           const wrapper = document.createElement("span")
           wrapper.style.display = "inline-flex"
           wrapper.style.alignItems = "center"
+          wrapper.style.fontSize = "inherit"
+          wrapper.style.lineHeight = "inherit"
+          wrapper.style.fontFamily = "inherit"
+          wrapper.style.fontWeight = "inherit"
 
           // Move the heading content to the wrapper
           while (heading.firstChild) {
