@@ -2,8 +2,8 @@ import { SupportedChain } from "~/config/types.ts"
 import { chainToTechnology } from "~/config/chains.ts"
 import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
 import { networkFees } from "./data.ts"
-import BigNumberJs from "bignumber.js"
 import { commify } from "~/utils/index.js"
+import { formatUnits } from "ethers"
 
 // Define valid pool type combinations and their corresponding mechanisms
 const POOL_MECHANISM_MAP: Record<string, TokenMechanism> = {
@@ -116,13 +116,6 @@ export const calculateMessaingNetworkFees = (sourceChain: SupportedChain, destin
   return calculateMessagingNetworkFeesDirect(laneSpecificFeeKey)
 }
 
-const normalizeNumber = (bigNum: BigNumberJs, decimals = 18) => {
-  const divisor = new BigNumberJs(10).pow(decimals)
-  const normalized = bigNum.dividedBy(divisor)
-
-  return normalized.toNumber()
-}
-
 const formatTime = (seconds: number) => {
   const minute = 60
   const hour = 3600 // 60*60
@@ -154,25 +147,45 @@ const formatTime = (seconds: number) => {
   }
 }
 
+/**
+ * Modern capacity display using ethers.js v6 formatUnits
+ */
 export const displayCapacity = (decimals = 18, token: string, rateLimiterConfig?: RateLimiterConfig) => {
   if (!rateLimiterConfig?.isEnabled) {
     return "N/A"
   }
 
-  const capacity = String(rateLimiterConfig?.capacity || 0)
-  const numberWithoutDecimals = normalizeNumber(new BigNumberJs(capacity), decimals).toString()
-  return `${commify(numberWithoutDecimals)} ${token}`
+  const capacity = rateLimiterConfig?.capacity || "0"
+  // Use ethers.js formatUnits for precise decimal conversion
+  const formattedCapacity = formatUnits(capacity, decimals)
+
+  // Remove trailing zeros and unnecessary decimal point
+  const cleanedCapacity = formattedCapacity.replace(/\.?0+$/, "")
+
+  return `${commify(cleanedCapacity)} ${token}`
 }
 
+/**
+ * Modern rate display using ethers.js v6 formatUnits
+ */
 export const displayRate = (capacity: string, rate: string, symbol: string, decimals = 18) => {
-  const capacityNormalized = normalizeNumber(new BigNumberJs(capacity), decimals) // normalize capacity
-  const rateNormalized = normalizeNumber(new BigNumberJs(rate), decimals) // normalize capacity
+  // Use ethers.js formatUnits for precise decimal conversion
+  const capacityFormatted = formatUnits(capacity, decimals)
+  const rateFormatted = formatUnits(rate, decimals)
 
-  const totalRefillTime = capacityNormalized / rateNormalized // in seconds
+  // Convert to numbers for time calculation
+  const capacityNum = parseFloat(capacityFormatted)
+  const rateNum = parseFloat(rateFormatted)
+
+  const totalRefillTime = capacityNum / rateNum // in seconds
   const displayTime = `${formatTime(totalRefillTime)}`
 
+  // Clean up formatting
+  const cleanedRate = rateFormatted.replace(/\.?0+$/, "")
+  const cleanedCapacity = capacityFormatted.replace(/\.?0+$/, "")
+
   return {
-    rateSecond: `${commify(rateNormalized)} ${symbol}/second`,
-    maxThroughput: `Refills from 0 to ${commify(capacityNormalized)} ${symbol} in ${displayTime}`,
+    rateSecond: `${commify(cleanedRate)} ${symbol}/second`,
+    maxThroughput: `Refills from 0 to ${commify(cleanedCapacity)} ${symbol} in ${displayTime}`,
   }
 }

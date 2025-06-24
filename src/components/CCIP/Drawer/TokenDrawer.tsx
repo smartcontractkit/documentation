@@ -8,12 +8,12 @@ import {
   SupportedTokenConfig,
   Version,
   LaneFilter,
-  displayCapacity,
   determineTokenMechanism,
   PoolType,
   getTokenData,
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
+import { displayCapacity } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
