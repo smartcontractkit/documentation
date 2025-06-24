@@ -14,6 +14,7 @@ import {
   getTokenData,
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
+import { isTokenPaused } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
@@ -214,11 +215,19 @@ function TokenDrawer({
                 .map(({ networkDetails, laneData, destinationChain, destinationPoolType }) => {
                   if (!laneData || !networkDetails) return null
 
+                  // Check if token is paused on this lane
+                  const tokenPaused = isTokenPaused(
+                    network.tokenDecimals,
+                    destinationLanes[destinationChain].rateLimiterConfig?.[
+                      inOutbound === LaneFilter.Inbound ? "in" : "out"
+                    ]
+                  )
+
                   return (
-                    <tr key={networkDetails.name}>
+                    <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                       <td>
                         <div
-                          className="ccip-table__network-name"
+                          className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
                           role="button"
                           onClick={() => {
                             drawerContentStore.set(() => (
@@ -239,6 +248,14 @@ function TokenDrawer({
                         >
                           <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
                           {networkDetails?.name}
+                          {tokenPaused && (
+                            <span
+                              className="ccip-table__paused-badge"
+                              title="Token transfers are paused (capacity ≤ 1)"
+                            >
+                              ⏸️
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td>
