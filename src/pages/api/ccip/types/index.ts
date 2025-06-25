@@ -5,7 +5,7 @@ import { Environment } from "@config/data/ccip/types.ts"
 export { Environment }
 
 // Chain type and family declarations
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui"
 export type ChainFamily = "evm" | "mvm" | "svm"
 
 export const prerender = false

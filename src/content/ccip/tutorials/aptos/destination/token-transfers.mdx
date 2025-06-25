@@ -1,0 +1,227 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Transfers: EVM to Aptos"
+isIndex: false
+metadata:
+  description: "Learn how to transfer tokens from Ethereum to Aptos using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This step-by-step tutorial guides you through setting up and executing a basic token transfer from an EVM chain to an Aptos wallet."
+  excerpt: "cross-chain token transfer evm to aptos ccip tutorial ethereum sepolia aptos testnet"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to transfer tokens from an Ethereum Virtual Machine (EVM) chain to an Aptos wallet using Chainlink CCIP. You will learn how to build a CCIP message on an EVM chain, send it to the CCIP router, and verify the transfer on the destination chain.
+
+<Aside title="Prerequisites">
+  Make sure you've completed the [prerequisites](/ccip/tutorials/aptos/destination/prerequisites) and understand how to
+  [build CCIP messages from EVM to Aptos](/ccip/tutorials/aptos/destination/build-messages) before beginning this
+  tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial covers transferring tokens from Ethereum Sepolia to an Aptos wallet without any additional data payload.
+
+## What You will Build
+
+In this tutorial, you will:
+
+- Use a script to configure a CCIP message for a token-only transfer.
+- Send CCIP-BnM test tokens from Ethereum Sepolia to an Aptos wallet.
+- Pay for CCIP transaction fees using either native ETH or LINK tokens.
+- Monitor and verify your cross-chain transfer.
+
+<CcipCommon callout="evmToAptosPrerequisites" />
+
+## Understanding Token Transfers to Aptos
+
+This tutorial focuses on token-only transfers from an EVM chain to an Aptos wallet.
+
+Key points specific to token-only transfers to Aptos:
+
+- **No Program Execution**: Tokens are transferred directly to a wallet without executing a custom module.
+- **Mandatory Settings**:
+  - The `receiver` field in the CCIP message must be the **end user's Aptos wallet address**.
+  - The `data` field must be empty (`0x`).
+  - The `extraArgs` field should be encoded with `gasLimit: 0` and `allowOutOfOrderExecution: true`.
+
+## Implementing Token Transfers
+
+In this section, you'll execute a token transfer from Ethereum Sepolia to Aptos Testnet using the example script located at `scripts/evm2aptos/ccipSendTokenRouter.ts` in the starter kit.
+
+### Token Transfer Configuration
+
+The core of the transfer is configuring the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) correctly. The script handles this for you by calling a `buildCCIPMessage` function. Here's what the configuration looks like within the script:
+
+```typescript
+// Inside the transferTokenPayNative function for example:
+const ccipMessage = buildCCIPMessage(
+  recipient, // Your Aptos wallet address from .env
+  "0x", // Data is empty for a token-only transfer
+  tokenAddress, // CCIP-BnM token address on Ethereum Sepolia
+  tokenAmount, // The amount of tokens to send
+  ethers.ZeroAddress, // For paying fees in native ETH
+  encodeExtraArgsV2(0n, true) // gasLimit is 0, allowOutOfOrderExecution is true
+)
+```
+
+<Aside type="tip" title="Customize Your Wallet Address">
+Before running the script, you must obtain your Aptos wallet address, as you will need to provide it as the value for the `--aptosReceiver` argument in the token transfer command.
+
+You can find the address for your active profile by running:
+
+```bash
+aptos config show-profiles
+```
+
+<br></br>
+
+The command will produce an output similar to this:
+
+```json
+{
+  "Result": {
+    "default": {
+      "network": "Testnet",
+      "has_private_key": true,
+      "public_key": "ed25519-pub-0x38b....................d1f",
+      "account": "38d27981.......................7e18ed1beb3fdacf13",
+      "rest_url": "https://fullnode.testnet.aptoslabs.com"
+    }
+  }
+}
+```
+
+<br></br>
+
+Copy the `account` value from the output and **prepend `0x` to it** and note it down. You will need to use this value as the `--aptosReceiver` argument in the token transfer command.
+
+</Aside>
+
+<Aside type="caution" title="Critical Settings">
+
+- **Required Parameters**
+
+  - **`receiver`**: **MUST** be the recipient's 32-byte Aptos wallet address
+  - **`data`**: **MUST** be empty (`0x`) for token-only transfers
+
+- **Aptos Destination Configuration**
+
+  - **`gasLimit`**: Set to `0` (no module execution required)
+  - **`allowOutOfOrderExecution`**: **MUST** be `true` for Aptos destinations
+
+</Aside>
+
+### How the Script Works
+
+The `evm2aptos/ccipSendTokenRouter.ts` script automates the entire cross-chain transfer process. Based on your command-line arguments, it performs the following steps:
+
+1.  **Selects Chain Configuration**: Selects the correct RPC URL and contract addresses for the Ethereum Sepolia testnet based on the `--sourceChain sepolia` argument.
+1.  **Builds the CCIP Message**: Configures the message with the parameters shown above.
+1.  **Calculates Fees**: Calls the [`getFee`](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee) function on the source chain's Router to determine the required CCIP fee.
+1.  **Approves Tokens**:
+    - Approves the Router to spend the CCIP-BnM tokens you are transferring.
+    - If paying with LINK, it also approves the Router to spend the required amount of LINK tokens for the fee.
+1.  **Executes Transfer**: Calls the [`ccipSend`](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend) function on the CCIP Router contract to initiate the cross-chain transfer, sending native tokens for the fee if specified.
+1.  **Returns Message ID**: Parses the transaction receipt to find and display the `CCIPMessageSent` event and its unique `messageId`.
+
+## Running the Token Transfer
+
+### Prerequisites Check
+
+1.  Ensure you've completed the setup steps outlined in the [prerequisites](/ccip/tutorials/aptos/destination/prerequisites).
+1.  Make sure your `.env` file contains your `PRIVATE_KEY` (of your wallet on Ethereum Sepolia from which you're sending CCIP-BnM tokens) and `ETHEREUM_SEPOLIA_RPC_URL`.
+1.  Verify you have sufficient native ETH and CCIP-BnM token balances in your EVM wallet on Ethereum Sepolia network.
+
+### Execute the Script
+
+Run the following command from your terminal to transfer CCIP-BnM tokens from Ethereum Sepolia to Aptos Testnet, paying the fee in native ETH. You can change the value for the `--amount` flag to send a different number of tokens.
+
+```bash
+npx ts-node scripts/evm2aptos/ccipSendTokenRouter.ts --sourceChain sepolia --feeToken native --amount 0.001 --aptosReceiver <0x_YOUR_APTOS_WALLET_ADDRESS>
+```
+
+To pay with LINK instead, change the `feeToken` argument:
+
+```bash
+npx ts-node scripts/evm2aptos/ccipSendTokenRouter.ts --sourceChain sepolia --feeToken link --amount 0.001 --aptosReceiver <0x_YOUR_APTOS_WALLET_ADDRESS>
+```
+
+### Understanding the Output
+
+When the script executes successfully, you'll see output similar to this, showing the steps for a transfer from Ethereum Sepolia:
+
+```
+Base Fee (in WEI): 80690622338859
+Fee with 20% buffer (in WEI): 96828746806630
+Current Allowance of CCIP-BnM token: 0
+Approval tx sent: 0x1a1fb6362f2eac4a6a52e4974e15fa071bc9084ad99273ef8aa5b37a9bc0568d
+Approval transaction confirmed in block 8775988 after 3 confirmations.
+Router contract approved to spend 1000000000000000 of CCIP-BnM token from your account.
+Proceeding with the token transfer...
+Transaction sent: 0x06d2657c1939f5cba4b29052977355a5cee131a6ffefe80550aeb80c383b9450
+Waiting for transaction confirmation...
+Transaction confirmed in block 8775991 after 3 confirmations.
+✅ Transaction successful: https://sepolia.etherscan.io/tx/0x06d2657c1939f5cba4b29052977355a5cee131a6ffefe80550aeb80c383b9450
+🆔 CCIP Message ID: 0x54d2e9fb4b7e852b30fae6617a568e729b714b5d658fa85592def65901b84c56
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/0x54d2e9fb4b7e852b30fae6617a568e729b714b5d658fa85592def65901b84c56
+```
+
+- The output displays the base fee and the fee with a 20% buffer, both shown in the smallest denomination of the fee token (i.e., WEI for the native token).
+- It checks the current allowance of the CCIP-BnM token and approves the Router contract to spend the specified amount if necessary.
+- The transaction hash is displayed, which you can use to track the transfer on Ethereum Sepolia.
+- The output provides the unique `CCIP Message ID`, which is essential for tracking your transfer.
+- The CCIP Explorer URL allows you to monitor the message status across chains.
+
+## Verification and Monitoring
+
+After sending your token transfer, you can verify its arrival on Aptos in the following ways:
+
+### Check Message Execution
+
+#### Use the CCIP Explorer to check the message status
+
+Use the CCIP Explorer link provided in the transaction output to track your message status across chains. The explorer gives an overview of the entire cross-chain transaction life cycle.
+
+```text
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/<YOUR_CCIP_MESSAGE_ID>
+```
+
+#### Programmatically check the message status
+
+After you receive a CCIP Message ID, you can programmatically check if the CCIP message has been successfully executed on the Aptos network. This is done by querying the [`ExecutionStateChanged`](/ccip/api-reference/aptos/v1.6.0/events#execute_single_report) event emitted by the CCIP OffRamp module. The `evm2aptos/checkMsgExecutionStateOnAptos.ts` script is designed for this purpose.
+
+After 15-20 minutes, run the script using the CCIP Message ID you received from the previous step.
+
+<Aside type="note" title="Note">
+  Since end-to-end transaction time depends primarily on the time to finality on the source blockchain (Ethereum Sepolia
+  in this case), it's recommended to wait 15-20 minutes before running the script. For more details, refer to the
+  [Finality by Blockchain](/ccip/ccip-execution-latency#finality-by-blockchain).
+</Aside>
+
+**Command**:
+
+```bash
+npx ts-node scripts/evm2aptos/checkMsgExecutionStateOnAptos.ts --msgId <YOUR_CCIP_MESSAGE_ID>
+```
+
+_Replace `<YOUR_CCIP_MESSAGE_ID>` with the actual CCIP Message ID from the log output._
+
+**Output**:
+When the message has been successfully delivered, you will see the following output:
+
+```text
+Execution state for CCIP message 0x54d2e9fb4b7e852b30fae6617a568e729b714b5d658fa85592def65901b84c56 is SUCCESS
+```
+
+### Verify Token Balance
+
+Once the script confirms a `SUCCESS` state, you can perform a final verification on a block explorer.
+
+- Visit the [Aptos Explorer](https://explorer.aptoslabs.com/?network=testnet).
+- Search for your Aptos wallet address.
+- Under the "Coins" tab, you should see the balance of the CCIP-BnM token you transferred.
+
+<CcipCommon callout="educationalDisclaimer" />

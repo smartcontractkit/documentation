@@ -1,0 +1,384 @@
+---
+section: ccip
+date: Last Modified
+title: "Building CCIP Messages from Aptos to EVM"
+isIndex: false
+metadata:
+  description: "Comprehensive guide for implementing Cross-Chain Interoperability Protocol (CCIP) messages from Aptos to EVM chains. Learn how to structure messages, manage parameters, and implement token transfers, arbitrary data messaging, and programmatic token transfers."
+  excerpt: "ccip messages aptos to evm cross-chain messaging token transfers aptos integration blockchain interoperability programmatic token transfers"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Introduction
+
+This guide explains how to construct CCIP Messages from the Aptos blockchain to EVM chains (e.g., Ethereum, Arbitrum, Base, etc.). We'll cover the message structure by examining the [`ccip_send`](/ccip/api-reference/aptos/v1.6.0/router#ccip_send) entry function from the [`ccip_router::router` module](/ccip/api-reference/aptos/v1.6.0/router), its required parameters, and the implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+
+<Aside title="Note">
+  The code snippets below use the [@aptos-labs/ts-sdk](https://www.npmjs.com/package/@aptos-labs/ts-sdk) and
+  [ethers.js](https://www.npmjs.com/package/ethers) packages for building transactions and encoding data. Ensure these
+  libraries are installed in your project if you are following along with the code examples.
+</Aside>
+
+## CCIP Message Structure on Aptos
+
+CCIP messages from Aptos are initiated by calling the [`ccip_send`](/ccip/api-reference/aptos/v1.6.0/router#ccip_send) entry function in the CCIP Router Move module. This function serves as the single entry point for all cross-chain messages, and internally routes the request to the correct On-Ramp contract version based on the destination chain. See the [CCIP Router API Reference](/ccip/api-reference/aptos/v1.6.0/router) for complete details.
+
+As defined in the `ccip_router::router` module, the `ccip_send` function has the following signature:
+
+```rust
+public entry fun ccip_send(
+    caller: &signer,
+    dest_chain_selector: u64,
+    receiver: vector<u8>,
+    data: vector<u8>,
+    token_addresses: vector<address>,
+    token_amounts: vector<u64>,
+    token_store_addresses: vector<address>,
+    fee_token: address,
+    fee_token_store: address,
+    extra_args: vector<u8>
+)
+```
+
+### receiver
+
+- **Definition**: The address of the contract or wallet on the destination EVM chain that will receive the message.
+- **Formatting**: EVM addresses are 20 bytes long, but Aptos requires this parameter to be a 32-byte array. You must left-pad the 20-byte EVM address with 12 zero-bytes to create a valid 32-byte array.
+
+<Aside title="Converting EVM Addresses for Aptos">
+  EVM addresses (20 bytes) must be converted to a 32-byte format for Aptos CCIP messages.
+
+**The conversion process:**
+
+1.  Start with a standard EVM address (`0x`-prefixed, 20 bytes).
+1.  Remove the `0x` prefix and convert it to a byte array.
+1.  Create a new 32-byte buffer and place the 20-byte address at the end, leaving the first 12 bytes as zeros.
+
+```javascript
+import { Hex } from "@aptos-labs/ts-sdk";
+
+function evmAddressToAptos(evmAddress: string) {
+  // Remove 0x prefix and get the byte array
+  const receiverUint8Array = Hex.hexInputToUint8Array(evmAddress);
+
+  if (receiverUint8Array.length !== 20) {
+      throw new Error("EVM receiver address must be 20 bytes.");
+  }
+
+  // Create a 32-byte array and set the EVM address at an offset of 12
+  const paddedReceiverArray = new Uint8Array(32);
+  paddedReceiverArray.set(receiverUint8Array, 12); // Left-pad with 12 zero-bytes
+
+  return paddedReceiverArray;
+}
+```
+
+</Aside>
+
+### data
+
+- **Definition**: The payload that will be executed by the receiving contract on the destination chain.
+- **Usage**:
+  - **For token-only transfers**: This must be an empty `vector<u8>`.
+  - **For arbitrary messaging** or **programmatic token transfers**: This contains the function selectors and arguments for the receiver contract, typically ABI-encoded.
+- **Encoding**: The receiver contract on the destination EVM chain must be able to decode this data. Standard EVM ABI-encoding is the recommended approach.
+
+<Aside title="Data Encoding for Cross-Chain Messages">
+  When sending data from Aptos to EVM chains, it's best practice to use EVM ABI encoding.
+
+**Example using [ethers.js](https://docs.ethers.org/v6/) for ABI encoding:**
+
+```javascript
+import { ethers } from "ethers"
+import { Hex, MoveVector } from "@aptos-labs/ts-sdk"
+
+// Step 1: Format data for the EVM contract using ABI encoding.
+const messageText = "Hello from Aptos!"
+const encodedDataHex = ethers.AbiCoder.defaultAbiCoder().encode(["string"], [messageText])
+
+// Step 2: Convert the hex string to a Uint8Array for the Aptos transaction.
+const dataForAptos = Hex.hexInputToUint8Array(encodedDataHex)
+
+// Use in your transactionPayload
+const transactionPayload = {
+  function: `${ccipRouterModuleAddr}::router::ccip_send`,
+  functionArguments: [
+    destinationChainSelector,
+    MoveVector.U8(evmAddressToAptos(receiverContractAddress)),
+    MoveVector.U8(dataForAptos), // The encoded data payload
+    [], // Empty token addresses vector
+    MoveVector.U64([]), // Empty token amounts vector
+    [], // Empty token store addresses vector
+    feeTokenAddress,
+    feeTokenStore,
+    encodeGenericExtraArgsV2(200000n, true), // extraArgs with appropriate gasLimit
+  ],
+}
+```
+
+</Aside>
+
+### token_addresses
+
+A vector of Aptos token type addresses to be transferred.
+
+### token_amounts
+
+A vector of amounts to transfer for each corresponding token, in the token's smallest denomination.
+
+### token_store_addresses
+
+A vector of addresses representing the Fungible Asset store from which the tokens will be withdrawn. You could just use `0x0` as the token_store_address, because when using `0x0`, it would retrieve the `primary_store_address` (using `primary_fungible_store::primary_store_address`) of the token corresponding to the sender's account.
+
+For data-only messages, the `token_addresses`, `token_amounts`, and `token_store_addresses` vectors must all be empty.
+
+### fee_token
+
+The address of the token to be used for paying CCIP fees. This can be native APT (`0xa`) or a supported token like LINK.
+
+### fee_token_store
+
+The address of the Fungible Asset store from which the fee will be paid. You can use `0x0` here as well, which will resolve to the primary store for the fee token in the sender's account.
+
+### extra_args
+
+For messages going to an EVM chain, the `extra_args` parameter is a `vector<u8>` that must be encoded according to a specific format for compatibility. While there is no literal `GenericExtraArgsV2` struct in the Aptos modules, the byte vector must be encoded to match the format that EVM-family chains expect.
+
+This format consists of a 4-byte tag (`0x181dcf10`) followed by the BCS-encoded parameters:
+
+- **`gas_limit`**: (`u256`) The gas limit for the execution of the transaction on the destination EVM chain.
+- **`allow_out_of_order_execution`**: (`bool`) A flag that must always be set to `true` for Aptos-to-EVM messages.
+
+<Aside title="Setting Extra Args">
+
+- **Gas limit**:
+  - For token transfers only: Gas limit must be set to `0`
+  - For arbitrary messaging or programmatic token transfers: gas limit must be set **based on the receiving contract's complexity**.
+- **Allow out of order execution**:
+  - Must always be set to `true`.
+
+</Aside>
+
+The [`ccip::client`](/ccip/api-reference/aptos/v1.6.0/client) module provides a helper view function, [`encode_generic_extra_args_v2`](/ccip/api-reference/aptos/v1.6.0/client#encode_generic_extra_args_v2), to perform this encoding on-chain. Off-chain scripts replicate this logic to construct the byte vector correctly.
+
+<Aside title="Encoding extraArgs for EVM Destinations">
+You must precisely encode `extra_args` with a type tag, the gas limit, and the execution flag. The following JavaScript function demonstrates how to perform this encoding off-chain.
+
+```javascript
+// Tag for GenericExtraArgsV2 (0x181dcf10, 4 bytes, required by EVM CCIP)
+const GENERIC_EXTRA_ARGS_V2_TAG: number[] = [0x18, 0x1d, 0xcf, 0x10];
+
+/**
+ * @notice Encodes the extra arguments for a generic message in the V2 format.
+ * @dev This function serializes the gas limit (as u256), a boolean flag for out-of-order execution,
+ *      and prepends a predefined tag to identify the encoding version.
+ * @param gasLimit The gas limit for the message, represented as a bigint (u256).
+ * @param allowOutOfOrderExecution Boolean flag indicating if out-of-order execution is allowed.
+ * @return Uint8Array The encoded extra arguments as a byte array.
+ */
+function encodeGenericExtraArgsV2(gasLimit: bigint, allowOutOfOrderExecution: boolean): Uint8Array {
+    // Initialize an empty array to store the encoded bytes
+    let extraArgs: number[] = [];
+
+    // Append the GENERIC_EXTRA_ARGS_V2_TAG (assuming it's a predefined constant)
+    extraArgs.push(...GENERIC_EXTRA_ARGS_V2_TAG);
+
+    // Encode gasLimit (u256) as bytes
+    // Note: BigInt to bytes conversion might require a library or custom implementation
+    const gasLimitBytes = bigIntToBytes(gasLimit);
+    extraArgs.push(...gasLimitBytes);
+
+    // Encode allowOutOfOrderExecution (boolean) as bytes
+    const boolBytes = [allowOutOfOrderExecution ? 1 : 0];
+    extraArgs.push(...boolBytes);
+
+    // Convert the array to Uint8Array and return
+    return new Uint8Array(extraArgs);
+}
+
+// Example usage:
+// For token transfers (gas limit = 0)
+const tokenTransferExtraArgs = encodeGenericExtraArgsV2(0n, true);
+
+// For arbitrary messaging (specify appropriate gas limit)
+const messagingExtraArgs = encodeGenericExtraArgsV2(200000n, true);
+```
+
+<br></br>
+
+**Buffer Structure Breakdown:**
+
+- **Bytes 0-3**: Type tag (`0x181dcf10`) - Identifies the format.
+- **Bytes 4-35**: Gas limit (`u256`) - 32 bytes, BCS-encoded (little-endian).
+- **Byte 36**: `allow_out_of_order_execution` (`bool`) - 1 byte, BCS-encoded (`0x01` for `true`, `0x00` for `false`).
+
+</Aside>
+
+## Estimating Fees
+
+Before sending a transaction, you must calculate the required fee. The [`ccip_router::router`](/ccip/api-reference/aptos/v1.6.0/router) module provides a [`get_fee`](/ccip/api-reference/aptos/v1.6.0/router#get_fee) view function for this purpose. It takes the exact same arguments as [`ccip_send`](/ccip/api-reference/aptos/v1.6.0/router#ccip_send), allowing you to get a precise fee quote for your intended message.
+
+```typescript
+import { Aptos } from "@aptos-labs/ts-sdk"
+
+async function getCcipFee(aptos: Aptos, messagePayload: any) {
+  const fee = await aptos.view({
+    payload: {
+      function: `${ccipRouterModuleAddr}::router::get_fee`,
+      functionArguments: messagePayload.functionArguments, // Reuse the same arguments as ccip_send
+    },
+  })
+  return fee[0]
+}
+
+// You would call this before submitting your ccip_send transaction.
+const feeAmount = await getCcipFee(aptosClient, transactionPayload)
+console.log(`Required CCIP Fee: ${feeAmount}`)
+```
+
+## Implementation by Message Type
+
+### Token Transfer
+
+Use this configuration when sending only tokens from Aptos to an EVM chain:
+
+<Aside title="Token Transfer Example">
+  This example sends tokens from Aptos to an EVM chain without any data payload. The `data` vector is empty, and the
+  `gas_limit` is set to `0` since no contract execution is required.
+</Aside>
+
+```typescript
+import { MoveVector } from "@aptos-labs/ts-sdk"
+
+const transactionPayload = {
+  function: `${ccipRouterModuleAddr}::router::ccip_send`,
+  functionArguments: [
+    destinationChainSelector, // e.g., "16015286601757825753" for Ethereum Sepolia
+    MoveVector.U8(evmAddressToAptos(receiverAddress)), // Padded 32-byte receiver
+    MoveVector.U8([]), // Empty data vector
+    [ccipBnmTokenAddress], // Vector of token addresses
+    MoveVector.U64([10000000n]), // Vector of token amounts
+    [tokenStoreAddress], // Vector of token store addresses
+    feeTokenAddress, // e.g., LINK or native APT token address
+    feeTokenStore, // Fee token store address
+    encodeGenericExtraArgsV2(0n, true), // extraArgs with gasLimit = 0
+  ],
+}
+```
+
+### Arbitrary Messaging
+
+Use this configuration when sending only data to EVM chains.
+
+<Aside title="Arbitrary Messaging Example">
+  This example sends a message to an EVM contract without transferring tokens. The `data` vector contains the
+  ABI-encoded data payload, while the `token_addresses`, `token_amounts`, and `token_store_addresses` vectors are empty.
+  And, the `gas_limit` is set to a value that covers the execution cost of the receiving contract depending on the
+  complexity of the logic executed.
+</Aside>
+
+```typescript
+import { MoveVector, Hex } from "@aptos-labs/ts-sdk"
+import { ethers } from "ethers"
+
+// ABI-encode the data for the receiver contract
+const encodedData = ethers.AbiCoder.defaultAbiCoder().encode(["string"], ["Hello World"])
+const dataBytes = Hex.hexInputToUint8Array(encodedData)
+
+const transactionPayload = {
+  function: `${ccipRouterModuleAddr}::router::ccip_send`,
+  functionArguments: [
+    destinationChainSelector,
+    MoveVector.U8(evmAddressToAptos(receiverContractAddress)),
+    MoveVector.U8(dataBytes), // The encoded data payload
+    [], // Empty token addresses vector
+    MoveVector.U64([]), // Empty token amounts vector
+    [], // Empty token store addresses vector
+    feeTokenAddress,
+    feeTokenStore,
+    encodeGenericExtraArgsV2(200000n, true), // extraArgs with appropriate gasLimit
+  ],
+}
+```
+
+### Programmatic Token Transfer (Data and Tokens)
+
+Use this configuration when sending both tokens and data in a single message:
+
+<Aside title="Programmatic Token Transfer Example">
+  This example sends tokens along with a data payload to an EVM contract. The `data` vector contains the ABI-encoded
+  data, while the `token_addresses`, `token_amounts`, and `token_store_addresses` vectors specify the tokens to be
+  transferred. And, the `gas_limit` is set to a value that covers the execution cost of the receiving contract depending
+  on the complexity of the logic executed.
+</Aside>
+
+```typescript
+import { MoveVector, Hex } from "@aptos-labs/ts-sdk"
+import { ethers } from "ethers"
+
+// ABI-encode the data for the receiver contract
+const encodedData = ethers.AbiCoder.defaultAbiCoder().encode(["string"], ["Tokens attached"])
+const dataBytes = Hex.hexInputToUint8Array(encodedData)
+
+const transactionPayload = {
+  function: `${ccipRouterModuleAddr}::router::ccip_send`,
+  functionArguments: [
+    destinationChainSelector,
+    MoveVector.U8(evmAddressToAptos(receiverContractAddress)),
+    MoveVector.U8(dataBytes), // The encoded data payload
+    [ccipBnmTokenAddress], // Vector of token addresses
+    MoveVector.U64([10000000n]), // Vector of token amounts
+    [tokenStoreAddress], // Vector of token store addresses
+    feeTokenAddress,
+    feeTokenStore,
+    encodeGenericExtraArgsV2(200000n, true), // extraArgs with appropriate gasLimit
+  ],
+}
+```
+
+## Tracking Messages with Transaction Events
+
+After a successful `ccip_send` transaction, the CCIP Router module emits an event containing the unique identifier for the cross-chain message. On Aptos, this event is emitted by the On-Ramp module (e.g., [`CCIPMessageSent`](/ccip/api-reference/aptos/v1.6.0/events#ccip_send)) and can be found in the `Events` tab of the executed transaction on the [Aptos Explorer](https://explorer.aptoslabs.com/?network=testnet).
+
+```json
+// Example of a CCIPMessageSent event from an Aptos transaction receipt
+{
+  "Type": "0xe9dbf...ac0dd3::onramp::CCIPMessageSent",
+  "Data": {
+    "dest_chain_selector": "16015286601757825753",
+    "message": {
+      "header": {
+        "message_id": "0x06859...2afefea",
+        "nonce": "0",
+        "sequence_number": "14",
+        "source_chain_selector": "743186221051783445"
+      },
+      "receiver": "0x00000...bb14ca",
+      "sender": "0xd0e22...d2fad4",
+      "token_amounts": [
+        {
+          "amount": "10000000",
+          "dest_token_address": "0x00000...fe82a05"
+        }
+      ],
+      "fee_token": "0x8c208...fa3542",
+      "data": "0x",
+      "extra_args": "0x181dc...00000..."
+    },
+    "sequence_number": "14"
+  }
+}
+```
+
+The `message_id` is the critical piece of information that links the source Aptos transaction to the destination EVM transaction.
+
+## Further Resources
+
+- [**CCIP Router API Reference**](/ccip/api-reference/aptos/v1.6.0/router): Complete technical details about the router's functions, parameters, and view functions like [`get_fee`](/ccip/api-reference/aptos/v1.6.0/router#get_fee).
+- [**CCIP Messages API Reference**](/ccip/api-reference/aptos/v1.6.0/messages): Comprehensive documentation of all CCIP message and event structures for Aptos.
+- **Aptos TS-SDK Docs**: For more information on building transactions and interacting with the Aptos blockchain, refer to the [official Aptos TS-SDK docs](https://aptos.dev/en/build/sdks/ts-sdk).
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -62,16 +62,20 @@ export const getNativeCurrency = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.nativeCurrency
 }
 
-export const getExplorerAddressUrl = (explorer: ExplorerInfo) => (contractAddress: string) => {
-  const url = `${explorer.baseUrl}/address/${contractAddress}`
-  if (!explorer.queryParameters) return url
+export const getExplorerAddressUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress: string) => {
+    // Use appropriate path segment based on chain type
+    const pathSegment = chainType === "aptos" ? "object" : "address"
+    const url = `${explorer.baseUrl}/${pathSegment}/${contractAddress}`
+    if (!explorer.queryParameters) return url
 
-  const queryString = Object.entries(explorer.queryParameters)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join("&")
+    const queryString = Object.entries(explorer.queryParameters)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join("&")
 
-  return queryString ? `${url}?${queryString}` : url
-}
+    return queryString ? `${url}?${queryString}` : url
+  }
 
 export const getTitle = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
@@ -104,6 +108,9 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
       chainFamily = "mvm"
       break
     case "solana":
+      chainFamily = "svm"
+      break
+    case "sui":
       chainFamily = "svm"
       break
     default:
@@ -454,6 +461,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "KATANA_TATARA"
     case "bitcoin-mainnet-botanix":
       return "BOTANIX_MAINNET"
+    case "aptos-mainnet":
+      return "APTOS_MAINNET"
+    case "aptos-testnet":
+      return "APTOS_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -729,6 +740,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "polygon-testnet-tatara"
     case "BOTANIX_MAINNET":
       return "bitcoin-mainnet-botanix"
+    case "APTOS_MAINNET":
+      return "aptos-mainnet"
+    case "APTOS_TESTNET":
+      return "aptos-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

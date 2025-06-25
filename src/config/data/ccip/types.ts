@@ -77,6 +77,9 @@ export type ChainConfig = {
     symbol: string
     logo: string
   }
+  mcms?: {
+    address: string
+  }
 }
 
 export type ChainsConfig = {
@@ -194,4 +197,5 @@ export interface Network {
   routerExplorerUrl: string
   feeQuoter?: string
   rmnPermeable: boolean
+  mcms?: string
 }
