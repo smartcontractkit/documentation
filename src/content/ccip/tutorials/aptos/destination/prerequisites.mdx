@@ -1,0 +1,150 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for EVM to Aptos Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for EVM to Aptos cross-chain development. Install Aptos CLI, Node.js, configure wallets, and get testnet tokens for CCIP Chainlink tutorials. Step-by-step instructions for developers building cross-chain applications."
+  excerpt: "Setup guide for EVM to Aptos cross-chain development with CCIP Chainlink. Install Aptos CLI, configure wallets, get testnet tokens for building cross-chain applications"
+---
+
+import { Aside } from "@components"
+
+Before starting the EVM to Aptos tutorials, ensure you have:
+
+## Development Environment
+
+- **Aptos CLI**: Install the Aptos CLI by following the official [installation guide](https://aptos.dev/en/build/cli).
+
+    <Aside type="caution" title="Update Aptos CLI">
+
+  If you have an existing installation of the Aptos CLI, make sure to update it to the latest version to avoid compatibility issues.
+
+    </Aside>
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **Npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP Aptos Starter Kit:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/aptos-starter-kit.git
+    ```
+
+1.  Navigate to the directory:
+
+    ```bash
+    cd aptos-starter-kit
+    ```
+
+1.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+## Wallets
+
+- **EVM Wallet and Private Key**: To send transactions from an EVM chain (like Ethereum Sepolia), you need a wallet and its private key.
+
+  - Set up a wallet like [MetaMask](https://metamask.io/).
+  - You will need to export the private key for the account you intend to send _from_. Follow the [official MetaMask guide](https://support.metamask.io/configure/accounts/how-to-export-an-accounts-private-key/) to obtain your private key and add it to the `.env` file as shown below.
+
+- **Aptos Account**: You'll need an Aptos account. If you don't have one, create it with:
+
+  ```bash
+  aptos init --network testnet
+  ```
+
+  This command will guide you through creating a new account for Testnet and will save the credentials in a `.aptos/config.yaml` file. This also configures your Aptos CLI to use Testnet.
+
+  {/* prettier-ignore */}
+  <Aside type="note" title="Note">
+    If you want to use your existing account from [Petra Wallet](https://petra.app/), you can 
+    [export your account's private key](https://petra.app/docs/use#find-account-phrase-and-keys),
+    copy it, and use it in the following command:
+    ```bash
+    aptos init --private-key <YOUR_PRIVATE_KEY> --network testnet
+    ```
+    <br></br>
+    This command configures your Aptos CLI to use your existing account on Testnet and saves the credentials in a `.aptos/config.yaml` file.
+  </Aside>
+
+  Verify your current configuration with:
+
+  ```bash
+  aptos config show-profiles
+  ```
+
+  This should show your `default` profile configured for Testnet, with the `network` set to `Testnet`.
+
+  Example output:
+
+  ```text
+  $ aptos config show-profiles
+
+  {
+    "Result": {
+      "default": {
+        "network": "Testnet",
+        "has_private_key": true,
+        "public_key": "ed25519-pub-0x2ecdd2d7bc0cbfe2e44c219ef9a9fddc986b384f4a01fb5d821cf0dab5d2fbae",
+        "account": "d0e227835c33932721d54ae401cfaae753c295024fe454aa029b5e2782d2fad4",
+        "rest_url": "https://fullnode.testnet.aptoslabs.com"
+      }
+    }
+  }
+  ```
+
+  Note down the `account` value from the output and **prepend `0x` to it**. You will need to use this value as one of the environment variables in your `.env` file, as shown below.
+
+## Environment Configuration (`.env` file)
+
+The starter kit uses a `.env` file to manage sensitive information like private keys and RPC URLs. Create a new file named `.env` in the root of the `aptos-starter-kit` directory by copying the example file:
+
+```bash
+cp .env.example .env
+```
+
+Next, open the `.env` file and fill in the following values:
+
+- `PRIVATE_KEY`: The private key of your source wallet (EOA) on Ethereum Sepolia from which you're sending CCIP-BnM tokens. You can export your private key from your MetaMask Wallet, as shown in the [Wallets](/ccip/tutorials/aptos/destination/prerequisites#wallets) section above.
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC endpoint for the Ethereum Sepolia testnet. This is required to interact with the Ethereum Sepolia network. You can obtain an RPC URL by signing up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+**Example `.env` file:**
+
+```
+PRIVATE_KEY=<YOUR_EVM_PRIVATE_KEY>
+ETHEREUM_SEPOLIA_RPC_URL=<RPC_URL_FOR_ETHEREUM_SEPOLIA>
+```
+
+## Native Tokens for Transaction Fees
+
+**ETH** tokens are used for Ethereum Sepolia transaction fees. For these tutorials, we will also use **ETH** to pay for CCIP fees.
+
+- You can use the [Chainlink Faucet](https://faucet.chain.link) to get test ETH.
+
+## Obtaining Testnet Tokens
+
+### LINK Tokens on EVM Chains
+
+When using LINK tokens to pay for CCIP fees, you will need LINK tokens on Ethereum Sepolia. You can use the [Chainlink Faucet](https://faucet.chain.link) to get test LINK tokens.
+
+### BnM Tokens on EVM Chains
+
+To obtain CCIP-BnM tokens on Ethereum Sepolia, you can use the [Mint tokens in the documentation](/ccip/test-tokens#mint-tokens-in-the-documentation) section to get test BnM tokens.

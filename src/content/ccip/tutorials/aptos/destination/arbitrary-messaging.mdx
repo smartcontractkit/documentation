@@ -1,0 +1,233 @@
+---
+section: ccip
+date: Last Modified
+title: "Arbitrary Messaging: EVM to Aptos"
+isIndex: false
+metadata:
+  description: "Learn how to send arbitrary data messages from an EVM chain to an Aptos module using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This step-by-step tutorial guides you through configuring and executing data-only cross-chain messages."
+  excerpt: "cross-chain arbitrary messaging evm to aptos ccip tutorial ethereum sepolia aptos module"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to send arbitrary data from an Ethereum Virtual Machine (EVM) chain to a Move module on the Aptos blockchain using Chainlink's Cross-Chain Interoperability Protocol (CCIP). You will learn how to configure a CCIP message that triggers a module execution on the destination chain.
+
+<Aside title="Prerequisites">
+  Make sure you've completed the [prerequisites for EVM to Aptos
+  tutorials](/ccip/tutorials/aptos/destination/prerequisites) and understand how to [build CCIP messages from EVM to
+  Aptos](/ccip/tutorials/aptos/destination/build-messages) before beginning this tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial shows you how to send a data-only message from the Ethereum Sepolia testnet to a receiver module on the Aptos testnet.
+
+## What You will Build
+
+In this tutorial, you will:
+
+- Publish a CCIP receiver module to the Aptos Testnet.
+- Configure a CCIP message for arbitrary data messaging.
+- Send data from Ethereum Sepolia to your Aptos module.
+- Pay for CCIP transaction fees using LINK tokens.
+- Verify that the data was received and processed by the module on Aptos.
+
+## Understanding Arbitrary Messaging to Aptos
+
+This tutorial focuses on arbitrary messaging from EVM chains to Aptos Move modules. For detailed information about CCIP message structure and parameters, refer to the [guide on building CCIP messages from EVM to Aptos](/ccip/tutorials/aptos/destination/build-messages).
+
+### Key Points Specific to Arbitrary Messaging
+
+- **Module Execution**: The message is sent to a specific module on Aptos, triggering the execution of its `ccip_receive` function.
+- **Mandatory Settings**:
+  - The `receiver` field of the CCIP message must be the account address of your destination Aptos module.
+  - The `tokenAmounts` array must be empty (`[]`).
+  - The `extraArgs` field should be encoded with a `gasLimit` and a `allowOutOfOrderExecution` flag.
+  - The `gasLimit` must be a tested value and sufficient for the execution of the `ccip_receive` function of the receiver module (i.e., the destination Aptos module).
+  - The `allowOutOfOrderExecution` flag must be set to `true` when Aptos is the destination chain.
+
+### Key Differences from Token Transfers
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Purpose</Fragment>
+  <Fragment slot="tab.2">Configuration</Fragment>
+  <Fragment slot="tab.3">Destination</Fragment>
+  <Fragment slot="tab.4">Verification</Fragment>
+  <Fragment slot="panel.1">
+    **Token Transfers**:
+    -   Simply moves assets between chains.
+    -   No custom logic execution on the destination.
+
+    **Arbitrary Messaging**:
+    -   Sends a data payload to be processed by a module.
+    -   Triggers module execution on the destination.
+    -   Can update the module's on-chain state or perform complex logic.
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    **Token Transfers**:
+    -   `receiver` is the end-user's Aptos account address.
+    -   `data` is empty (`0x`).
+
+    **Arbitrary Messaging**:
+    -   `receiver` is the Aptos module's account address.
+    -   `data` contains the encoded payload.
+    -   `tokenAmounts` is an empty array.
+
+  </Fragment>
+  <Fragment slot="panel.3">
+    **Token Transfers**:
+    -   Tokens arrive in a user's primary fungible store.
+
+    **Arbitrary Messaging**:
+    -   Data arrives at a specific Move module.
+    -   The module executes logic to process the data.
+
+  </Fragment>
+  <Fragment slot="panel.4">
+    **Token Transfers**:
+    -   Check the token balance in the user's account.
+    -   Use the Aptos Explorer to verify balances.
+
+    **Arbitrary Messaging**:
+    -   Verify the module's state has changed.
+    -   Query the module's events or view functions to retrieve the data.
+
+  </Fragment>
+</Tabs>
+
+### The `ccip_message_receiver` Module
+
+This tutorial uses the `ccip_message_receiver` module from the `aptos-starter-kit` as the destination.
+
+<Aside title="Scope Clarification">
+  This guide focuses on sending messages to an existing, pre-written module. To learn how to write your own receiver
+  from scratch, please refer to the **[Implementing CCIP Receivers on Aptos](/ccip/tutorials/aptos/receivers)** guide.
+</Aside>
+
+The `ccip_message_receiver` is a simple module designed to receive arbitrary data. When its `ccip_receive` function is called, it decodes the data as a string and emits a `ReceivedMessage` event, providing a clear on-chain record that the message was processed.
+
+## Implementing Arbitrary Messaging
+
+In this section, you'll first publish the receiver module to Aptos and then use a script to send a message to it.
+
+### Publish the Receiver Module
+
+Before you can send a message, the destination module must exist on the Aptos Testnet. The starter kit provides a script to create a **Resource Account** and publish the `ccip_message_receiver` module to it.
+
+Run the following command:
+
+```bash
+npx ts-node scripts/deploy/aptos/createResourceAccountAndPublishReceiver.ts
+```
+
+This command will output the address of the newly created resource account. **Copy this address**, as you will need it for the next step.
+
+### Configure and Send the Message
+
+The `evm2aptos/ccipSendMsgRouter.ts` script handles the configuration and sending of the CCIP message. The core of the script builds the message payload:
+
+```typescript
+// From scripts/evm2aptos/ccipSendMsgRouter.ts
+const ccipMessage = buildCCIPMessage(
+  recipient, // The address of your deployed Aptos receiver module
+  hexlify(toUtf8Bytes("Hello Aptos from EVM")), // Your data, hex-encoded
+  networkConfig.sepolia.linkTokenAddress, // Fee token
+  encodeExtraArgsV2(0n, true) // gasLimit is 0, allowOutOfOrderExecution is true
+)
+```
+
+## Running the Arbitrary Messaging Script
+
+### Execute the Script
+
+Run the script from your terminal. You will need to provide the `--aptosReceiver` address you copied from the deployment step. This example sends from **Ethereum Sepolia**.
+
+```bash
+npx ts-node scripts/evm2aptos/ccipSendMsgRouter.ts --sourceChain sepolia --feeToken link --aptosReceiver <YOUR_RECEIVER_MODULE_ADDRESS> --msgString "Hello Aptos from EVM"
+```
+
+### Expected Output
+
+The script will output the progress of the transaction, including approvals and fee calculations, and finish by providing the transaction hash and the CCIP Message ID.
+
+```text
+Base Fee (in LINK JUELS): ...
+Fee with 20% buffer (in LINK JUELS): ...
+Current Allowance of LINK token: 0
+Approval tx sent: 0x...
+Approval transaction confirmed in block ... after 3 confirmations.
+Router contract approved to spend ... of LINK token from your account.
+Proceeding with the message transfer...
+Transaction sent: 0x...
+Waiting for transaction confirmation...
+Transaction confirmed in block 8803642 after 3 confirmations.
+✅ Transaction successful: https://sepolia.etherscan.io/tx/0x...
+🆔 CCIP Message ID: 0x...
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/0x...
+```
+
+## Verification: Retrieving the Message
+
+After sending the message, you can verify its delivery and processing on Aptos.
+
+### Check Message Execution
+
+#### Use the CCIP Explorer to check the message status
+
+Use the CCIP Explorer link provided in the transaction output to track your message status across chains. The explorer gives an overview of the entire cross-chain transaction life cycle.
+
+```text
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/<YOUR_CCIP_MESSAGE_ID>
+```
+
+#### Programmatically check the message status
+
+After you receive a CCIP Message ID, you can programmatically check if the CCIP message has been successfully executed on the Aptos network. This is done by querying the [`ExecutionStateChanged`](/ccip/api-reference/aptos/v1.6.0/events#execute_single_report) event emitted by the CCIP OffRamp module. The `evm2aptos/checkMsgExecutionStateOnAptos.ts` script is designed for this purpose.
+
+After 15-20 minutes, run the script using the CCIP Message ID you received from the previous step.
+
+<Aside type="note" title="Note">
+  Since end-to-end transaction time depends primarily on the time to finality on the source blockchain (Ethereum Sepolia
+  in this case), it's recommended to wait 15-20 minutes before running the script. For more details, refer to the
+  [Finality by Blockchain](/ccip/ccip-execution-latency#finality-by-blockchain).
+</Aside>
+
+**Command**:
+
+```bash
+npx ts-node scripts/evm2aptos/checkMsgExecutionStateOnAptos.ts --msgId <YOUR_CCIP_MESSAGE_ID>
+```
+
+_Replace `<YOUR_CCIP_MESSAGE_ID>` with the actual CCIP Message ID from the log output._
+
+**Output**:
+When the message has been successfully delivered, you will see the following output:
+
+```text
+Execution state for CCIP message <YOUR_CCIP_MESSAGE_ID> is SUCCESS
+```
+
+### Query the Receiver Module
+
+Once the message is successfully executed, you can verify that your receiver module processed it. The `getLatestMessageOnAptos.ts` script queries the `ReceivedMessage` event that your module emitted.
+
+Run the verification script, passing the address of your receiver module:
+
+```bash
+npx ts-node scripts/evm2aptos/getLatestMessageOnAptos.ts --aptosReceiver <YOUR_RECEIVER_MODULE_ADDRESS>
+```
+
+### Expected Verification Output
+
+When you run the verification script, you should see the decoded message that was stored by your module, confirming the end-to-end flow was successful.
+
+```text
+Latest message received on Aptos at <YOUR_RECEIVER_MODULE_ADDRESS>: Hello Aptos from EVM
+```
+
+You can also manually verify this by finding the `offramp::execute` transaction for your module's address in the [Aptos Explorer](https://explorer.aptoslabs.com/?network=testnet) and checking the `Events` tab.
+
+<CcipCommon callout="educationalDisclaimer" />

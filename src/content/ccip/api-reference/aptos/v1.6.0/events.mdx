@@ -1,0 +1,61 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Events API Reference"
+metadata:
+  description: "API documentation for CCIP events on the Aptos blockchain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Events
+
+This document details the events emitted by the core CCIP modules on Aptos.
+
+### onramp
+
+#### `ccip_send`
+
+When the `ccip_send` entry function completes successfully, the `onramp` module emits a single event, `CCIPMessageSent`. This event signifies that a new cross-chain message has been initiated and sent from Aptos.
+
+```rust
+#[event]
+struct CCIPMessageSent has store, drop {
+    dest_chain_selector: u64,
+    sequence_number: u64,
+    message: Aptos2AnyRampMessage
+}
+```
+
+| Field                              | Type                                | Description                                                                                                                                                                                                                                            |
+| ---------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`dest_chain_selector`</nobr> | <nobr>`u64`</nobr>                  | The **chain selector** for the destination chain. This is the unique identifier for the target chain within the CCIP network (e.g., `16015286601757825753` for Ethereum Sepolia).                                                                      |
+| <nobr>`sequence_number`</nobr>     | <nobr>`u64`</nobr>                  | A unique, monotonically increasing number for each message sent to a specific destination chain. This helps in ordering messages and is unique per destination.                                                                                        |
+| <nobr>`message`</nobr>             | <nobr>`Aptos2AnyRampMessage`</nobr> | The complete cross-chain message payload. This struct contains detailed information, including the sender's Aptos address, the receiver's address on the destination chain, the arbitrary `data` payload, token transfer details, and fee information. |
+|                                    |
+
+### offramp
+
+#### `execute_single_report`
+
+After successfully processing an incoming message from a source chain, the `offramp` module emits an `ExecutionStateChanged` event to record the outcome of the message execution on Aptos.
+
+```rust
+#[event]
+struct ExecutionStateChanged has store, drop {
+    source_chain_selector: u64,
+    sequence_number: u64,
+    message_id: vector<u8>,
+    message_hash: vector<u8>,
+    state: u8
+}
+```
+
+| Field                                | Type                      | Description                                                                                                                                                                                 |
+| ------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`source_chain_selector`</nobr> | <nobr>`u64`</nobr>        | The **chain selector** identifying the chain where the message originated.                                                                                                                  |
+| <nobr>`sequence_number`</nobr>       | <nobr>`u64`</nobr>        | The sequence number of the message from the source chain. This corresponds to the `sequence_number` in the `CCIPMessageSent` event that was emitted on the source chain.                    |
+| <nobr>`message_id`</nobr>            | <nobr>`vector<u8>`</nobr> | The unique, global identifier for the cross-chain message. This ID is consistent across both the source and destination chains and is the primary key for tracking a CCIP transaction.      |
+| <nobr>`message_hash`</nobr>          | <nobr>`vector<u8>`</nobr> | The hash of the message leaf in the Merkle tree. This value is used internally for verifying the message against a committed Merkle root, ensuring its authenticity and integrity.          |
+| <nobr>`state`</nobr>                 | <nobr>`u8`</nobr>         | The outcome of the execution. Since Aptos transactions are atomic (either fully succeed or fail), a successfully processed CCIP message will always result in an `EXECUTION_STATE_SUCCESS`. |
