@@ -449,6 +449,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       armProxy: chains[chain].armProxy,
       feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
       rmnPermeable: chains[chain]?.rmnPermeable,
+      mcms: chainType === "aptos" ? chains[chain]?.mcms?.address : undefined,
     })
   }
 

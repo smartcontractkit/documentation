@@ -1,0 +1,182 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for Aptos to EVM Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for Aptos to EVM cross-chain development. Install Aptos CLI, Node.js, configure wallets, and get testnet tokens for CCIP Chainlink tutorials. Step-by-step instructions for developers building cross-chain applications."
+  excerpt: "Setup guide for Aptos to EVM cross-chain development with CCIP Chainlink. Install Aptos CLI, configure wallets, get testnet tokens for building cross-chain applications"
+---
+
+import { Aside } from "@components"
+
+Before starting the Aptos to EVM tutorials, ensure you have:
+
+## Development Environment
+
+- **Aptos CLI**: Install the Aptos CLI by following the official [installation guide](https://aptos.dev/en/build/cli).
+
+    <Aside type="caution" title="Update Aptos CLI">
+
+  If you have an existing installation of the Aptos CLI, make sure to update it to the latest version to avoid compatibility issues.
+
+    </Aside>
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **Npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP Aptos Starter Kit:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/aptos-starter-kit.git
+    ```
+
+1.  Navigate to the directory:
+
+    ```bash
+    cd aptos-starter-kit
+    ```
+
+1.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+## Wallets
+
+- **Aptos Account**: You'll need an Aptos account. If you don't have one, create it with:
+
+  ```bash
+  aptos init --network testnet
+  ```
+
+  This command will guide you through creating a new account for Testnet and will save the credentials in a `.aptos/config.yaml` file. This also configures your Aptos CLI to use Testnet.
+
+  {/* prettier-ignore */}
+  <Aside type="note" title="Note">
+    If you want to use your existing account from [Petra Wallet](https://petra.app/), you can 
+    [export your account's private key](https://petra.app/docs/use#find-account-phrase-and-keys),
+    copy it, and use it in the following command:
+    ```bash
+    aptos init --private-key <YOUR_PRIVATE_KEY> --network testnet
+    ```
+    <br></br>
+    This command configures your Aptos CLI to use your existing account on Testnet and saves the credentials in a `.aptos/config.yaml` file.
+  </Aside>
+
+  Verify your current configuration with:
+
+  ```bash
+  aptos config show-profiles
+  ```
+
+  This should show your `default` profile configured for Testnet, with the `network` set to `Testnet`.
+
+  Example output:
+
+  ```text
+  $ aptos config show-profiles
+
+  {
+    "Result": {
+      "default": {
+        "network": "Testnet",
+        "has_private_key": true,
+        "public_key": "ed25519-pub-0x2ecdd2d7bc0cbfe2e44c219ef9a9fddc986b384f4a01fb5d821cf0dab5d2fbae",
+        "account": "d0e227835c33932721d54ae401cfaae753c295024fe454aa029b5e2782d2fad4",
+        "rest_url": "https://fullnode.testnet.aptoslabs.com"
+      }
+    }
+  }
+  ```
+
+- **EVM Wallet Address**: You'll need an EVM-compatible wallet address to receive tokens on the destination chain (Ethereum Sepolia). You only need the address itself, not the private key, as you are only sending _to_ this address.
+
+## Environment Configuration (`.env` file)
+
+The starter kit uses a `.env` file to manage sensitive information like private keys and RPC URLs. Create a new file named `.env` in the root of the `aptos-starter-kit` directory by copying the example file:
+
+```bash
+cp .env.example .env
+```
+
+Next, open the `.env` file and fill in the following values:
+
+- `PRIVATE_KEY_HEX`: The private key of your source wallet (EOA) on Aptos Testnet from which you're sending CCIP-BnM tokens. You can find this in the `.aptos/config.yaml` file created by the `aptos init --network testnet` command, as shown in the [Wallets](/ccip/tutorials/aptos/source/prerequisites#wallets) section above.
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC endpoint for the Ethereum Sepolia testnet. This is required by the verification script (`aptos2evm/checkMsgExecutionStateOnAptos.ts`) to read the `ExecutionStateChanged` event from the CCIP OffRamp on Ethereum Sepolia. You can obtain an RPC URL by signing up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+**Example `.env` file:**
+
+```
+PRIVATE_KEY_HEX=<YOUR_APTOS_PRIVATE_KEY_HEX>
+ETHEREUM_SEPOLIA_RPC_URL=<RPC_URL_FOR_ETHEREUM_SEPOLIA>
+```
+
+## Native Tokens for Transaction Fees
+
+**APT** tokens are used for Aptos transaction fees. For these tutorials, we will also use **APT** to pay for CCIP fees.
+
+- Obtain **APT** on Testnet using the faucet:
+
+  You can use the official [Aptos Testnet Faucet](https://aptos.dev/en/network/faucet) to get **APT** tokens. Simply enter your Aptos account address and click on **Mint** to request tokens.
+
+- Check your account balance:
+
+  ```bash
+  aptos account balance
+  ```
+
+  Example output:
+
+  ```text
+  $ aptos account balance
+
+  {
+    "Result": [
+      {
+        "asset_type": "coin",
+        "coin_type": "0x1::aptos_coin::AptosCoin",
+        "balance": 100000000
+      }
+    ]
+  }
+  ```
+
+## Obtaining Testnet Tokens
+
+### BnM Tokens on Aptos
+
+To complete the cross-chain token transfer examples, you'll need BnM tokens. To obtain CCIP-BnM tokens on Aptos Testnet, run the `faucets/aptos/dripCCIPBnMToken.ts` script included in the starter kit.
+
+Run the following command in your terminal:
+
+```bash
+npx ts-node scripts/faucets/aptos/dripCCIPBnMToken.ts --to <YOUR_APTOS_WALLET_ADDRESS>
+```
+
+<Aside type="note" title="Note">
+Replace `<YOUR_APTOS_WALLET_ADDRESS>` with your actual Aptos wallet address (the `account` value from the output of the `aptos config show-profiles` command, as shown in the [Wallets](/ccip/tutorials/aptos/source/prerequisites#wallets) section above).
+</Aside>
+
+The output looks like this:
+
+```text
+1 CCIP-BnM token is minted to 0xd0e227835c33932721d54ae401cfaae753c295024fe454aa029b5e2782d2fad4 successfully.
+Please check the transaction at https://explorer.aptoslabs.com/txn/0x7e5d5bae918c97cb086c72023012da2a8a230c91155f8ff697eb29001f606e55?network=testnet
+```

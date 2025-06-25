@@ -135,7 +135,11 @@ function LaneDetailsHero({
         {/* Display address information based on lane type */}
         {inOutbound === LaneFilter.Inbound ? (
           <DetailItem label="OffRamp address" clipboardType="offramp">
-            <AddressComponent address={offRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(offRamp)} />
+            <AddressComponent
+              address={offRamp}
+              endLength={6}
+              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
+            />
           </DetailItem>
         ) : (
           <DetailItem
@@ -143,7 +147,11 @@ function LaneDetailsHero({
             clipboardType="onramp"
             tooltip={sourceNetwork.chainType === "solana" ? <StyledTooltip tip="Same as Router." /> : undefined}
           >
-            <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
+            <AddressComponent
+              address={onRamp}
+              endLength={6}
+              contractUrl={getExplorerAddressUrl(explorer, sourceNetwork.chainType)(onRamp)}
+            />
           </DetailItem>
         )}
 

@@ -12,11 +12,11 @@ interface RouteParams {
 export async function getStaticPaths(): Promise<RouteParams[]> {
   // Helper to check if a version config has VM types (defined inside getStaticPaths)
   function hasVmTypes(config: any): config is VMVersionConfig {
-    return config && typeof config === "object" && "evm" in config && "svm" in config
+    return config && typeof config === "object" && "evm" in config && "svm" in config && "aptos" in config
   }
 
   const paths: RouteParams[] = []
-  const vmTypes = ["evm", "svm"] // VM type list
+  const vmTypes = ["evm", "svm", "aptos"] // VM type list
 
   // Handle standard API reference path structure
   function processStandardApiPaths(

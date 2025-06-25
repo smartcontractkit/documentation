@@ -33,6 +33,7 @@ interface TableProps {
     }
     key: string
     directory: SupportedChain
+    chainType?: ChainType
   }[]
   explorer: ExplorerInfo
 }
@@ -156,7 +157,10 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                     <Address
                       address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(explorer)(
+                      contractUrl={getExplorerAddressUrl(
+                        explorer,
+                        inOutbound === LaneFilter.Outbound ? sourceNetwork.chainType : network.chainType
+                      )(
                         (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
                       )}
                     />

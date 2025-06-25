@@ -145,6 +145,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   KATANA_TATARA: () => new JsonRpcProvider("https://rpc.tatara.katanarpc.com"),
   KATANA_MAINNET: () => new JsonRpcProvider("https://rpc.katanarpc.com"),
   BOTANIX_MAINNET: () => new JsonRpcProvider("https://rpc.botanix.org"),
+  APTOS_MAINNET: () => new JsonRpcProvider("https://fullnode.mainnet.aptoslabs.com/v1"),
+  APTOS_TESTNET: () => new JsonRpcProvider("https://fullnode.testnet.aptoslabs.com/v1"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
