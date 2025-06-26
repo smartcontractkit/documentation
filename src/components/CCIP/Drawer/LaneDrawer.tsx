@@ -163,10 +163,7 @@ function LaneDrawer({
                               />
                               {token}
                               {tokenPaused && (
-                                <span
-                                  className="ccip-table__paused-badge"
-                                  title="Token transfers are paused (capacity ≤ 1)"
-                                >
+                                <span className="ccip-table__paused-badge" title="Transfers are currently paused">
                                   ⏸️
                                 </span>
                               )}
