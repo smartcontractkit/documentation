@@ -77,7 +77,7 @@ Before you start this tutorial, ensure you have the following prerequisites:
 
 ## Project Setup
 
-Data Streams transmitter uses [Docker](https://docs.docker.com/get-started/get-docker/) to run a [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/) instance, and it uses [Node.js](https://nodejs.org/en/download/) to run the application itself. As mentioned in the prerequisites, install all of these tools before proceeding.
+Data Streams Transmitter uses [Docker](https://docs.docker.com/get-started/get-docker/) to run a [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/) instance, and it uses [Node.js](https://nodejs.org/en/download/) to run the application itself. As mentioned in the prerequisites, install all of these tools before proceeding.
 
 Once we clone the repository, we need to set up environment variables which include your Data Streams and Testnet wallet credentials. Without these, Transmitter cannot function properly, _so be sure to have all [requirements](#requirements) ready before proceeding!_
 
@@ -119,7 +119,7 @@ Open your terminal and navigate to your development space, then follow these com
 
 </Aside>
 
-Before running the transmitter you must configure `.env` with Data Streams credentials and your wallet's private key. Transmitter will fail to start if these are not set up correctly, so be sure to double check all values.
+Before running Transmitter you must configure `.env` with Data Streams credentials and your wallet's private key. Transmitter will fail to start if these are not set up correctly, so be sure to double check all values.
 
 We will also create a `config.yaml` file to give the Transmitter a starting point, pre-loading it with a basic configuration for this tutorial. The `config.yaml` file is optional, but allows us to define which feeds we want to monitor, which chains we want to use, and even which smart contracts we want to target for data updates.
 
@@ -164,7 +164,7 @@ Once you have configured the `.env` and `config.yaml` files, you can start the D
 
 1.  Start the Docker daemon.
 
-    The Docker daemon is required to run the Redis instance that the transmitter uses to store data. Starting the daemon depends on your operating system and Docker installation method. Please refer to the [Docker documentation for instructions on how to start the Docker daemon](https://docs.docker.com/engine/daemon/start/).
+    The Docker daemon is required to run the Redis instance that Transmitter uses to store data. Starting the daemon depends on your operating system and Docker installation method. Please refer to the [Docker documentation for instructions on how to start the Docker daemon](https://docs.docker.com/engine/daemon/start/).
 
 1.  Run the following command to start the Data Streams Transmitter:
 
@@ -300,7 +300,7 @@ The **Gas Cap** section lets you set and view the maximum gas limit for transact
 
 ## Contract Deployment
 
-You must deploy a simple contract that will receive the data from the transmitter. This contract will be used to store data pushed by the transmitter, and it will be linked to the transmitter in the next step.
+You must deploy a simple contract that will receive the data from Transmitter. This contract will be used to store data pushed by Transmitter, and it will be linked to the Transmitter in the next step.
 
 {/* TODO: Below is a basic template -- update once contract is available (verify deployment process) */}
 
@@ -318,26 +318,41 @@ You must deploy a simple contract that will receive the data from the transmitte
   </Fragment>
   <Fragment slot="panel.2">
 
-    1. Clone or create a new Foundry or Hardhat project.
-    1. Add the example contract to your `contracts/` directory.
-    1. Configure your `.env` file with your RPC URL and private key.
-    1. Install dependencies and compile the contract:
-       ```sh
-       # For Foundry
-       forge build
+{/* FIXME: These are placeholder steps. Once all scripts and configuration are finalized, review and update. */}
 
-       # For Hardhat
-       npx hardhat compile
-       ```
-    1. Deploy the contract using your preferred tool:
-       ```sh
-       # For Foundry
-       forge script script/Deploy.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast
+1. Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
 
-       # For Hardhat
-       npx hardhat run scripts/deploy.js --network <network>
-       ```
-    1. Copy the deployed contract address for use in the next step.
+1. Clone the `transmitter-foundry-starter` repository:
+
+   ```sh
+   git clone https://github.com/smartcontractkit/transmitter-foundry-starter.git && \
+   cd transmitter-foundry-starter
+   ```
+
+1. Install the dependencies:
+
+   ```sh
+   yarn setup
+   ```
+
+1. Copy the `.env.example` file to `.env` at the root of the directory:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+1. In the `.env` file, set your private key and the RPC URL to the Arbitrum Sepolia network:
+
+   ```env
+   PRIVATE_KEY=your_private_key_here
+   RPC_URL=https://sepolia.arbitrum.io/rpc
+   ```
+
+1. Run the deployment script:
+
+   ```sh
+   npx hardhat deploy --network arbitrum-sepolia
+   ```
 
   </Fragment>
 </TabsContent>
@@ -360,9 +375,9 @@ Now that the contract has been deployed, we can link it to the Transmitter so it
 
 1. Return to the home page to verify the contract has been connected to Transmitter.
 
-   If you have correctly configured the contract, the status should now be **Running**, indicating that the transmitter is actively monitoring the `ETH/USD` feed and pushing updates to your contract.
+   If you have correctly configured the contract, the status should now be **Running**, indicating that Transmitter is actively monitoring the `ETH/USD` feed and pushing updates to your contract.
 
-The transmitter will automatically push updates to your contract every two minutes, or whenever the price changes by more than `0.5%`, as defined in the configuration. However, feel free to change the schedule and price delta in the Transmitter UI to see how they affect the data being pushed on-chain.
+Transmitter will automatically push updates to your contract every two minutes, or whenever the price changes by more than `0.5%`, as defined in the configuration. However, feel free to change the schedule and price delta in the Transmitter UI to see how they affect the data being pushed on-chain.
 
 The latest price will be displayed in the **Saved price** column, and you can view the transaction details in the **Logs** section.
 
