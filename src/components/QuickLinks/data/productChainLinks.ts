@@ -85,6 +85,7 @@ export const productChainLinks: ProductChainLinks = {
       neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
       polygonkatana: "/ccip/directory/testnet/chain/polygon-testnet-tatara",
       "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
+      hyperliquid: "/ccip/directory/mainnet/chain/hyperliquid-mainnet",
     },
   },
   "Data Feeds": {
@@ -283,6 +284,7 @@ export const productChainLinks: ProductChainLinks = {
     neox: "/resources/link-token-contracts#neo-x",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
+    hyperliquid: "/resources/link-token-contracts#hyperliquid",
   },
 }
 
