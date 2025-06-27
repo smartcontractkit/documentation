@@ -23,11 +23,18 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 ## Overview
 
-While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data off-chain, developers are responsible for using the [available SDKs](/data-streams/reference/go-sdk) or [API interface](/data-streams/reference/interface-api) to build, deploy, and maintain their own infrastructure to pull this data and push it on-chain. We know that this can be _a lot_ of work! Developers need to write a service that can reliably connect to the Data Streams API, implement WebSocket reconnection logic, and build the on-chain transaction logic for when and how to push updates.
+<Aside type="tip" title="Community-Built Tool">
+  The Data Streams Transmitter is a community-built tool developed and maintained by
+  [HackBG](https://github.com/hackbg). It is not an official Chainlink product and is not supported by Chainlink Labs.
+  No warranties or guarantees are provided. Please do your own research before using this tool in a production
+  environment.
+</Aside>
 
-The [Data Streams Transmitter][GITHUB_REPO] is for developers who want Data Streams on-chain _without_ the heavy lifting of building and managing a custom backend. Transmitter is a configurable service that handles the complex logic of monitoring off-chain data streams and pushing them to your smart contracts based on predefined conditions, such as time intervals or price deviations. You even get a web interface to manage your feeds and monitor their status!
+While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data off-chain, the process of bringing this data on-chain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the on-chain transaction logic for when and how to push updates.
 
-Think of Transmitter like your own personal node, giving you full control of your on-chain data pipeline, minus the infrastructure hassle.
+The [Data Streams Transmitter][GITHUB_REPO] meets this challenge by offering a robust starting point for the DevOps teams and Infrastructure Managers tasked with building these systems. As a community-led solution, the Transmitter is a configurable service that handles the core logic of monitoring off-chain data streams and pushing them to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+
+Think of the Transmitter as the application core for your on-chain data pipeline. It provides a pre-built engine that lets your team focus on building and securing the surrounding production-grade infrastructure.
 
 ## Requirements
 
@@ -35,10 +42,11 @@ Think of Transmitter like your own personal node, giving you full control of you
 
 Before you start this tutorial, ensure you have the following prerequisites:
 
-- **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
-- **Funded Developer Wallet**: Private key for developer wallet funded with testnet LINK and ETH for your desired chain (e.g., Arbitrum, Avalanche). Both are available via the [Chainlink Faucet](https://faucets.chain.link/).
+- **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Transmitter service. This guide uses your local machine for initial setup and testing.
+- **Software Dependencies**: [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host.
+- **Funded Developer Wallet**: The **private key** for a developer wallet funded with testnet LINK and the network's native gas token (e.g., ETH on Arbitrum Sepolia). Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
 - **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us][DATA_STREAMS_CONTACT] to request mainnet or testnet access.
-- **Project Dependencies**: [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your machine.
+- **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
 
 ## Project setup
 
