@@ -13,6 +13,7 @@ import {
   fallbackTokenIconUrl,
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { InteractiveTooltip } from "~/features/common/Tooltip/InteractiveToolTip.tsx"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
@@ -122,8 +123,28 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               currentTarget.src = fallbackTokenIconUrl
             }}
           />
-          <h1>
-            {network?.name || token?.id} <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+          <h1
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              position: "relative",
+              overflow: "visible",
+            }}
+          >
+            {network?.name || token?.id}
+            <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+
+            {network?.name === "Abstract" && (
+              <InteractiveTooltip
+                tip={
+                  <>
+                    Before using or integrating HyperEVM on CCIP, it is recommended to review{" "}
+                    <a href="/ccip/service-limits/network-specific-limits">Network-Specific Service Limits</a>.
+                  </>
+                }
+              />
+            )}
           </h1>
         </div>
         {network && (
