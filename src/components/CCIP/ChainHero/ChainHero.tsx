@@ -135,7 +135,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             {network?.name || token?.id}
             <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
 
-            {network?.name === "Abstract" && (
+            {network?.name === "Hyperliquid" && (
               <InteractiveTooltip
                 tip={
                   <>
