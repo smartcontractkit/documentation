@@ -145,7 +145,45 @@ We will also create a `config.yaml` file to give the Transmitter a starting poin
 
 1. Open `config.yaml` in a text editor and paste the following content:
 
-   <CodeSample src="samples/Quickstarts/transmitter/config.yml" lang="yaml" />
+   ```yaml
+   # List of Chainlink Data Stream to subscribe to.
+   # Find more feed IDs at https://docs.chain.link/data-streams/
+   # Set to ETH/USD price
+   feeds:
+   - name: "ETH/USD"
+      feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+   # Default chain ID for on-chain transactions.
+   # Set to Arbitrum Sepolia testnet
+   chainId: 421614
+
+   # Maximum gas limit (in wei) for a transaction.
+   gasCap: "150000"
+
+   # Cron expression for how often to check for updates
+   # Set to a 2-minute interval
+   interval: "0 */2 * * * *"
+
+   # Minimum price change % to trigger an on-chain update
+   # Set to .5%
+   priceDeltaPercentage: .5
+
+   # List of chains to support with custom data streams
+   # Currently empty but required for config validator
+   chains: []
+
+   # Verifier contract addresses for a given network
+   # Used to verify the data before sending it on-chain
+   # Set to Arbitrum Sepolia testnet
+   verifierAddresses:
+   - chainId: 421614
+      address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
+
+   # Defines the target smart contracts that will receive the data
+   # Set to the Arbitrum Sepolia testnet
+   targetChains:
+   - chainId: 421614
+      targetContracts: []
+   ```
 
 <Aside type="tip" title="Configure Everything">
   **You can completely configure Transmitter with `config.yaml`.**
@@ -309,50 +347,62 @@ You must deploy a simple contract that will receive the data from Transmitter. T
   <Fragment slot="tab.2">Foundry/Hardhat</Fragment>
   <Fragment slot="panel.1">
 
-    1. Open [Remix IDE](https://remix.ethereum.org/).
-    1. Create a new Solidity file and paste the example contract code.
+{/* FIXME: Update below link to correct path */}
+
+    1. Open the [example contract](https://github.com/smartcontractkit/transmitter-foundry-starter/blob/main/contracts/TransmitterDataFeed.sol) in the Remix IDE.
+
+       <CodeSample src="samples/DataStreams/TransmitterDataFeed.sol" showButtonOnly/>
+
     1. Compile the contract using the Solidity compiler tab.
-    1. Deploy the contract using the "Deploy & Run Transactions" tab, selecting your wallet and network.
-    1. Copy the deployed contract address for use in the next step.
+    1. Deploy the contract using the "Deploy & Run Transactions" tab, selecting your wallet and network (Arbitrum Sepolia).
+    1. In the deployment options, select the `TransmitterDataFeed` contract.
+    1. Check the **Deploy with Proxy** option, then paste your wallet's address in the `initialOwner` field.
+    1. Once deployed, copy the proxy contract address. This address will be used in the next step to link the contract to Transmitter.
 
   </Fragment>
   <Fragment slot="panel.2">
 
 {/* FIXME: These are placeholder steps. Once all scripts and configuration are finalized, review and update. */}
 
-1. Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
+{/* FIXME: These are placeholder steps. Once all scripts and configuration are finalized, review and update. */}
 
-1. Clone the `transmitter-foundry-starter` repository:
+1.  Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
 
-   ```sh
-   git clone https://github.com/smartcontractkit/transmitter-foundry-starter.git && \
-   cd transmitter-foundry-starter
-   ```
+2.  Clone the `transmitter-foundry-starter` repository:
 
-1. Install the dependencies:
+    ```sh
+    git clone [https://github.com/smartcontractkit/transmitter-foundry-starter.git](https://github.com/smartcontractkit/transmitter-foundry-starter.git) && \
+    cd transmitter-foundry-starter
+    ```
 
-   ```sh
-   yarn setup
-   ```
+3.  Install the dependencies:
 
-1. Copy the `.env.example` file to `.env` at the root of the directory:
+    ```sh
+    yarn setup
+    ```
 
-   ```sh
-   cp .env.example .env
-   ```
+4.  Copy the `.env.example` file to `.env` at the root of the directory:
 
-1. In the `.env` file, set your private key and the RPC URL to the Arbitrum Sepolia network:
+    ```sh
+    cp .env.example .env
+    ```
 
-   ```env
-   PRIVATE_KEY=your_private_key_here
-   RPC_URL=https://sepolia.arbitrum.io/rpc
-   ```
+5.  In the `.env` file, set your private key and the RPC URL to the Arbitrum Sepolia network:
 
-1. Run the deployment script:
+    ```env
+    PRIVATE_KEY=your_private_key_here
+    RPC_URL=[https://sepolia.arbitrum.io/rpc](https://sepolia.arbitrum.io/rpc)
+    ```
 
-   ```sh
-   npx hardhat deploy --network arbitrum-sepolia
-   ```
+6.  Run the deployment script:
+
+    ```sh
+    npx hardhat deploy --network arbitrum-sepolia
+    ```
+
+7.  Find and copy the deployed proxy contract address.
+
+    The deployment script creates a file at `deployments/arbitrum-sepolia/TransmitterDataFeed.json`. Open this file and copy the value of the `"address"` key for use in the next step.
 
   </Fragment>
 </TabsContent>
