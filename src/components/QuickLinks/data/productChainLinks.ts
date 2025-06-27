@@ -187,7 +187,6 @@ export const productChainLinks: ProductChainLinks = {
       base: "/chainlink-automation/overview/supported-networks#base",
       "bnb-chain": "/chainlink-automation/overview/supported-networks#bnb-chain",
       ethereum: "/chainlink-automation/overview/supported-networks#ethereum",
-      fantom: "/chainlink-automation/overview/supported-networks#fantom",
       "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis",
       optimism: "/chainlink-automation/overview/supported-networks#op",
       polygon: "/chainlink-automation/overview/supported-networks#polygon",
