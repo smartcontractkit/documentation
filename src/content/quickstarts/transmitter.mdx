@@ -34,7 +34,32 @@ While [Chainlink Data Streams](/data-streams/index) provide access to low-latenc
 
 The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring off-chain data streams and pushing them to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
-Think of the Transmitter as the application core for your on-chain data pipeline. It provides a pre-built engine that lets your team focus on building and securing the surrounding production-grade infrastructure.
+This quick start guide will walk you through the process of setting up the Data Streams Transmitter, configuring it to monitor a specific Data Stream, and linking it to an on-chain contract.
+
+## High-level Architecture
+
+Transmitter relays data from the off-chain Chainlink network to your on-chain contracts in the following sequence:
+
+1.  **Off-chain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the off-chain Data Streams Aggregation Network.
+
+1.  **Off-chain | Monitoring:** Transmitter continuously monitors this stream of reports via a WebSocket connection.
+
+1.  **On-chain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter takes a report from the off-chain stream and pushes its data on-chain into your designated Oracle Contract.
+
+1.  **On-chain | Verification:** Your Oracle Contract validates the report's authenticity by passing it to the Chainlink Verifier Contract, which checks the cryptographic signature from the DON.
+
+1.  **On-chain | Consumption:** Once this on-demand verification is complete, the data in your Oracle Contract is considered trustworthy and is ready to be read and utilized by your dApp or other smart contracts.
+
+<ClickToZoom
+  src="/images/quickstarts/feature/QuickStarts-DataStreams-Transmitter.webp"
+  alt="Data Streams Transmitter Diagram"
+/>
+
+<Aside type="tip" title="Further Reading">
+  This is a high-level overview of the Data Stream Transmitter architecture. For a more detailed overview of the core
+  Data Streams architecture, including its components and pull-based model, refer to the [Data Streams
+  Architecture](/data-streams/architecture) documentation.
+</Aside>
 
 ## Requirements
 
