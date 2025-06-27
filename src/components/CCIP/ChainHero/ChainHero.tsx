@@ -124,6 +124,28 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           />
           <h1>
             {network?.name || token?.id} <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+            {network?.name === "Abstract" && (
+              <Tooltip
+                label=""
+                tip={
+                  <>
+                    Before using or integrating HyperEVM on CCIP, it is recommended to review{" "}
+                    <a href="/ccip/service-limits/network-specific-limits" target="_blank" rel="noopener noreferrer">
+                      Network-Specific Service Limits
+                    </a>
+                    .
+                  </>
+                }
+                labelStyle={{
+                  marginRight: "8px",
+                }}
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  marginBottom: "2px",
+                }}
+              />
+            )}
           </h1>
         </div>
         {network && (
