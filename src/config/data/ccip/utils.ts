@@ -189,3 +189,34 @@ export const displayRate = (capacity: string, rate: string, symbol: string, deci
     maxThroughput: `Refills from 0 to ${commify(cleanedCapacity)} ${symbol} in ${displayTime}`,
   }
 }
+
+// ==============================
+// UTILITY FUNCTIONS FOR TOKEN STATUS
+// ==============================
+
+/**
+ * Determines if a token is paused based on its rate limiter configuration
+ * A token is considered paused if its capacity is <= 1
+ *
+ */
+export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConfig): boolean => {
+  if (!rateLimiterConfig?.isEnabled) {
+    return false // N/A tokens are not considered paused
+  }
+
+  const capacity = rateLimiterConfig?.capacity || "0"
+
+  try {
+    // Convert to BigInt for precise comparison
+    const capacityBigInt = BigInt(capacity)
+    // Calculate threshold: 1 token in smallest units = 10^decimals
+    const oneTokenInSmallestUnits = BigInt(10) ** BigInt(decimals)
+
+    // Direct BigInt comparison - no floating point risks
+    return capacityBigInt <= oneTokenInSmallestUnits
+  } catch (error) {
+    // If capacity is not a valid number, treat as paused for safety
+    console.warn(`Invalid capacity value for rate limiter: ${capacity}`, error)
+    return true
+  }
+}
