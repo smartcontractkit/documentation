@@ -13,7 +13,7 @@ import {
   fallbackTokenIconUrl,
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import { InteractiveTooltip } from "~/features/common/Tooltip/InteractiveToolTip.tsx"
+import { getChainTooltip } from "../Tooltip/index.ts"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
@@ -56,6 +56,9 @@ interface ChainHeroProps {
 }
 
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
+  // Get chain-specific tooltip configuration
+  const chainTooltipConfig = network?.chain ? getChainTooltip(network.chain) : null
+
   const feeTokensWithAddress =
     network?.feeTokens?.map((feeToken) => {
       const logo = feeToken.logo
@@ -89,6 +92,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       return feeToken.token.name.toLowerCase() === nativeCurrency?.symbol.toLowerCase()
     })
   }
+
+  console.log(JSON.stringify(network))
 
   return (
     <section className="ccip-chain-hero">
@@ -135,14 +140,11 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             {network?.name || token?.id}
             <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
 
-            {network?.name === "Hyperliquid" && (
-              <InteractiveTooltip
-                tip={
-                  <>
-                    Before using or integrating HyperEVM on CCIP, it is recommended to review{" "}
-                    <a href="/ccip/service-limits/network-specific-limits">Network-Specific Service Limits</a>.
-                  </>
-                }
+            {chainTooltipConfig && (
+              <Tooltip
+                tip={chainTooltipConfig.content}
+                hoverable={chainTooltipConfig.hoverable}
+                hideDelay={chainTooltipConfig.hideDelay}
               />
             )}
           </h1>
@@ -160,7 +162,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 Chain selector
                 <Tooltip
                   label=""
-                  tip="CCIP Blockchain identifier"
+                  tip="CCIP Blockchain identifier."
                   labelStyle={{
                     marginRight: "8px",
                   }}
