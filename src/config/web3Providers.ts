@@ -141,8 +141,9 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   JANCTION_MAINNET: () => new JsonRpcProvider("https://rpc.janction.io"),
   JANCTION_TESTNET: () => new JsonRpcProvider("hhttps://rpc_testnet.janction.io"),
   NEO_X_MAINNET: () => new JsonRpcProvider("https://mainnet-1.rpc.banelabs.org"),
-  NEO_X_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.banelabs.org/"),
-  KATANA_TATARA: () => new JsonRpcProvider("https://rpc.tatara.katanarpc.com/"),
+  NEO_X_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.banelabs.org"),
+  KATANA_TATARA: () => new JsonRpcProvider("https://rpc.tatara.katanarpc.com"),
+  KATANA_MAINNET: () => new JsonRpcProvider("https://rpc.katanarpc.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
