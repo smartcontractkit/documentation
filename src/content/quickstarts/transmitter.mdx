@@ -340,69 +340,95 @@ The **Gas Cap** section lets you set and view the maximum gas limit for transact
 
 You must deploy a simple contract that will receive the data from Transmitter. This contract will be used to store data pushed by Transmitter, and it will be linked to the Transmitter in the next step.
 
-{/* TODO: Below is a basic template -- update once contract is available (verify deployment process) */}
-
 <TabsContent sharedStore="deployTool" client:visible>
-  <Fragment slot="tab.1">Remix</Fragment>
-  <Fragment slot="tab.2">Foundry/Hardhat</Fragment>
-  <Fragment slot="panel.1">
+  <Fragment slot="tab.1">Foundry/Hardhat</Fragment>
+   <Fragment slot="panel.1">
+         <Aside type="note" title="Prerequisites">
+         This guide uses [Foundry](https://book.getfoundry.sh/getting-started/installation) for contract deployment and `pnpm` for package management. Make sure both are installed before you begin.
 
-{/* FIXME: Update below link to correct path */}
+         For more information, visit the [chainlink-transmitter-contract repository](https://github.com/woogieboogie-jl/chainlink-transmitter-contract/).
+         </Aside>
 
-    1. Open the [example contract](https://github.com/smartcontractkit/transmitter-foundry-starter/blob/main/contracts/DataStreamsFeed.sol) in the Remix IDE.
+      1.  Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup` in your terminal.
 
-       <CodeSample src="samples/DataStreams/DataStreamsFeed.sol" showButtonOnly/>
+      1.  Clone the `chainlink-transmitter-contract` repository and navigate into the directory:
 
-    1. Compile the contract using the Solidity compiler tab.
-    1. Deploy the contract using the "Deploy & Run Transactions" tab, selecting your wallet and network (Arbitrum Sepolia).
-    1. In the deployment options, select the `DataStreamsFeed` contract.
-    1. Check the **Deploy with Proxy** option, then paste your wallet's address in the `initialOwner` field.
-    1. Once deployed, copy the proxy contract address. This address will be used in the next step to link the contract to Transmitter.
+            ```sh
+            git clone https://github.com/woogieboogie-jl/chainlink-transmitter-contract.git
+            cd chainlink-transmitter-contract
+            ```
 
-  </Fragment>
-  <Fragment slot="panel.2">
+      1.  Install the dependencies using `pnpm`. If you don't have `pnpm`, you can install it by running `npm install -g pnpm`.
 
-{/* FIXME: These are placeholder steps. Once all scripts and configuration are finalized, review and update. */}
+            ```sh
+            pnpm add --save-dev @openzeppelin/contracts @chainlink/contracts
+            ```
 
-1.  Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup -v` in your terminal.
+      1.  Create a `.env` file in the project's root directory to store your private key and the Arbitrum Sepolia RPC URL:
 
-2.  Clone the `transmitter-foundry-starter` repository:
+            ```sh
+            cat >.env <<EOF
+            PRIVATE_KEY=0xYOUR_PRIVATE_KEY
+            RPC_URL_ARBITRUM_SEPOLIA=https://sepolia-rollup.arbitrum.io/rpc
+            EOF
+            ```
 
-    ```sh
-    git clone [https://github.com/smartcontractkit/transmitter-foundry-starter.git](https://github.com/smartcontractkit/transmitter-foundry-starter.git) && \
-    cd transmitter-foundry-starter
-    ```
+            Replace `0xYOUR_PRIVATE_KEY` with your actual wallet private key.
 
-3.  Install the dependencies:
+      1.  Load the environment variables into your current shell session:
 
-    ```sh
-    yarn setup
-    ```
+            ```sh
+            source .env
+            ```
 
-4.  Copy the `.env.example` file to `.env` at the root of the directory:
+      1.  Customize the deployment script with the parameters for the `ETH/USD` feed.
 
-    ```sh
-    cp .env.example .env
-    ```
+            Open the file `script/DeployDataStreamsFeedWithRoleAssign.s.sol` and update the `DataStreamsFeed` constructor with the following values:
 
-5.  In the `.env` file, set your private key and the RPC URL to the Arbitrum Sepolia network:
+            | Parameter        | Value                                                                | Description                                                                                                               |
+            | :--------------- | :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+            | `verifierProxy_` | `0x2ff010DEbC1297f19579B4246cad07bd24F2488A`                         | The Verifier Proxy address for Arbitrum Sepolia, used to validate Data Streams reports on-chain.                          |
+            | `_feedId`        | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique `bytes32` identifier for the specific data stream you want to monitor. This example uses the ID for `ETH/USD`. |
+            | `_decimals`      | `18`                                                                 | The number of decimal places for the price data. For most price feeds, this is `18`.                                      |
+            | `_description`   | `"ETH / USD Feed"`                                                   | A human-readable label for the feed, which helps identify it in applications and block explorers.                         |
 
-    ```env
-    PRIVATE_KEY=your_private_key_here
-    RPC_URL=[https://sepolia.arbitrum.io/rpc](https://sepolia.arbitrum.io/rpc)
-    ```
+      1.  Run the deployment script. This command deploys the contract and grants your wallet the necessary `ADMIN` and `REPORT_VERIFIER` roles automatically.
 
-6.  Run the deployment script:
+            ```sh
+            forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol:DeployDataStreamsFeedWithRoleAssign \
+               --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+               --private-key $PRIVATE_KEY \
+               --broadcast
+            ```
 
-    ```sh
-    npx hardhat deploy --network arbitrum-sepolia
-    ```
+      1.  Find the contract address and ABI. You'll need both of these for the next steps.
+            1.  Copy the Deployed Contract Address.
 
-7.  Find and copy the deployed proxy contract address.
+               Find the contract address in your terminal output. It appears in several places, including the `Return` value and the on-chain transaction receipt.
 
-    The deployment script creates a file at `deployments/arbitrum-sepolia/DataStreamsFeed.json`. Open this file and copy the value of the `"address"` key for use in the next step.
+               ```bash
+               user@machine chainlink-transmitter-contract % forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol \
+               --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+               --private-key $PRIVATE_KEY \
+               --broadcast
 
-  </Fragment>
+               [...]
+               == Return ==
+               deployedAddress: address 0xC4bF68ACd705dFDe98DE6639A602B4a89bF84758 # <--- HERE
+               [...]
+               ##### arbitrum-sepolia
+               ✅  [Success] Hash: 0x20bd05f2...cec63dff76
+               Contract Address: 0xC4bF68ACd705dFDe98DE6639A602B4a89bF84758 # <--- ALSO HERE
+               [...]
+               ```
+
+            2.  Find the Contract ABI.
+
+               You will also need the contract's **ABI** (Application Binary Interface) to interact with it. Foundry saves the ABI in a JSON artifact file after compilation.
+
+               - **ABI Path**: `out/DataStreamsFeed.sol/DataStreamsFeed.json`
+
+   </Fragment>
 </TabsContent>
 
 ## Link Contract to Transmitter
@@ -415,9 +441,9 @@ Now that the contract has been deployed, we can link it to the Transmitter so it
    | Field                  | Description                                                                                                                                            |
    | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
    | **Contract**           | The address of the proxy contract you deployed in the previous step.                                                                                   |
-   | **Function**           | The function that will be called to update the data on-chain. For this example, we will use `updatePrice`.                                             |
+   | **Function**           | The function that will be called to update the data on-chain. For this example, we will use `updatePriceReport`.                                       |
    | **Function Arguments** | Report arguments field names in the sequence the contract expects them to be passed in the selected method. For this example, we only use `rawReport`. |
-   | **ABI**                | The ABI of the contract. You can copy it from Remix or your development environment.                                                                   |
+   | **ABI**                | The ABI of the contract.                                                                                                                               |
 
    Be sure to click **Submit** for each field to save your changes.
 
