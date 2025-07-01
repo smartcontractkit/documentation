@@ -212,6 +212,7 @@ export type SupportedChain =
   | "NEO_X_TESTNET"
   | "KATANA_TATARA"
   | "KATANA_MAINNET"
+  | "BOTANIX_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

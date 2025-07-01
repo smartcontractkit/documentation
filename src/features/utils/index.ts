@@ -452,6 +452,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "KATANA_MAINNET"
     case "polygon-testnet-tatara":
       return "KATANA_TATARA"
+    case "bitcoin-mainnet-botanix":
+      return "BOTANIX_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -725,6 +727,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "polygon-mainnet-katana"
     case "KATANA_TATARA":
       return "polygon-testnet-tatara"
+    case "BOTANIX_MAINNET":
+      return "bitcoin-mainnet-botanix"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
