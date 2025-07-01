@@ -144,6 +144,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   NEO_X_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.banelabs.org"),
   KATANA_TATARA: () => new JsonRpcProvider("https://rpc.tatara.katanarpc.com"),
   KATANA_MAINNET: () => new JsonRpcProvider("https://rpc.katanarpc.com"),
+  BOTANIX_MAINNET: () => new JsonRpcProvider("https://rpc.botanix.org"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
