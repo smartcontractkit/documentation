@@ -220,3 +220,40 @@ export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConf
     return true
   }
 }
+
+/**
+ * Determines if all outbound lanes for a token from a specific network are paused
+ * Used to grey out network rows in the token view when all destination lanes are paused
+ *
+ * @example
+ * // Example: LBTC (8 decimals) on Ink with only one destination lane that has capacity "2"
+ * const destinationLanes = {
+ *   "ethereum-mainnet-ink-1": {
+ *     rateLimiterConfig: {
+ *       out: {
+ *         capacity: "2",
+ *         isEnabled: true,
+ *         rate: "1"
+ *       }
+ *     }
+ *   }
+ * }
+ * areAllLanesPaused(8, destinationLanes) // returns true (2 ≤ 10^8)
+ */
+export const areAllLanesPaused = (
+  decimals = 18,
+  destinationLanes: { [destinationChain: string]: { rateLimiterConfig?: { out?: RateLimiterConfig } } }
+): boolean => {
+  const laneKeys = Object.keys(destinationLanes)
+
+  // If no lanes exist, don't consider it paused
+  if (laneKeys.length === 0) {
+    return false
+  }
+
+  // Check if ALL outbound lanes are paused
+  return laneKeys.every((destinationChain) => {
+    const outboundConfig = destinationLanes[destinationChain]?.rateLimiterConfig?.out
+    return isTokenPaused(decimals, outboundConfig)
+  })
+}
