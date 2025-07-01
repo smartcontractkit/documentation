@@ -5,7 +5,7 @@ githubSourceCodeUrl: "https://github.com/hackbg/chainlink-datastreams-transmitte
 image: "QuickStarts-DataStreams-Transmitter.webp"
 products: ["streams"]
 time: "25 minutes"
-requires: "Foundry, Docker, Node.js, pnpm, Redis, Wallet with ETH and LINK, Data Streams credentials."
+requires: "Foundry, Docker, Node.js, pnpm, Redis, Wallet with AVAX and LINK, Data Streams credentials."
 ---
 
 import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
@@ -75,8 +75,8 @@ Before you start this tutorial, ensure you have the following prerequisites:
 - **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Transmitter service. This guide uses your local machine for initial setup and testing.
 - **Software Dependencies**: [Foundry][FOUNDRY_INSTALL], [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host. This guide uses `pnpm` for package management.
 - **Development Wallet**: This guide requires a funded development wallet and its **private key** to send transactions.
-  - **Network Configuration**: This guide uses **Arbitrum Sepolia**. You can find RPC URLs on [Chainlist](https://chainlist.org).
-  - **Testnet Funds**: The wallet must be funded with testnet `LINK` and `ETH` to pay for transaction fees on the **Arbitrum Sepolia** network. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
+  - **Network Configuration**: This guide uses **Avalanche Fuji**. You can find RPC URLs on [Chainlist](https://chainlist.org).
+  - **Testnet Funds**: The wallet must be funded with testnet `LINK` and `AVAX` to pay for transaction fees on the **Avalanche Fuji** network. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
 - **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us][DATA_STREAMS_CONTACT] to request Data Streams access.
 - **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
 
@@ -107,7 +107,7 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
     ```bash
     cat >.env <<EOF
     PRIVATE_KEY=0xYOUR_PRIVATE_KEY
-    RPC_URL_ARBITRUM_SEPOLIA=https://sepolia-rollup.arbitrum.io/rpc
+    RPC_URL_AVAX_FUJI=https://api.avax-test.network/ext/bc/C/rpc
     EOF
     ```
 
@@ -125,7 +125,7 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
 
     | Parameter        | Value                                                                | Description                                |
     | :--------------- | :------------------------------------------------------------------- | :----------------------------------------- |
-    | `verifierProxy_` | `0x2ff010DEbC1297f19579B4246cad07bd24F2488A`                         | Arbitrum Sepolia Verifier                  |
+    | `verifierProxy_` | `0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3`                         | Avalanche Fuji Verifier                    |
     | `_feedId`        | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | ETH/USD                                    |
     | `_decimals`      | `18`                                                                 | The number of decimals for the data.       |
     | `_description`   | `"ETH / USD Feed"`                                                   | A human-readable description for the feed. |
@@ -138,10 +138,10 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
   <Fragment slot="panel.1">
      This is the simplest method. It deploys the contract and automatically grants the `ADMIN` and `REPORT_VERIFIER` roles to the deploying wallet address.
 
-         Run the deployment script to deploy to **Arbitrum Sepolia**:
+         Run the deployment script to deploy to **Avalanche Fuji**:
          ```sh
          forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol:DeployDataStreamsFeedWithRoleAssign \
-            --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+            --rpc-url $RPC_URL_AVAX_FUJI \
             --private-key $PRIVATE_KEY \
             --broadcast
          ```
@@ -157,7 +157,7 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
          1.  Run the deployment script:
             ```sh
             forge script script/DeployDataStreamsFeed.s.sol:DeployDataStreamsFeed \
-                  --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+                  --rpc-url $RPC_URL_AVAX_FUJI \
                   --private-key $PRIVATE_KEY \
                   --broadcast
             ```
@@ -175,19 +175,19 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
             ROLE=0xf9f8c20c4c3b902ac9f63b3ab127d0fa52ad9efa682a9cbbead7833d9777cd4e
 
             cast send $DEPLOYED_FEED_ADDRESS "grantRole(bytes32,address)" $ROLE $TRANSMITTER_WALLET_ADDRESS \
-                  --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+                  --rpc-url $RPC_URL_AVAX_FUJI \
                   --private-key $PRIVATE_KEY
             ```
-         1.  (Optional) Verify your contract on Arbiscan:
+         1.  (Optional) Verify your contract on Snowtrace/Routescan:
             ```sh
             forge verify-contract \
-                  --chain-id 421614 \
+                  --chain-id 43113 \
                   --verifier etherscan \
-                  --verifier-url "https://api-sepolia.arbiscan.io/api" \
+                  --verifier-url "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api" \
                   <DEPLOYED_FEED_ADDRESS> \
                   src/feed/DataStreamsFeed.sol:DataStreamsFeed \
                   --flatten \
-                  --etherscan-api-key <YOUR_ARBISCAN_API_KEY>
+                  --etherscan-api-key <YOUR_API_KEY>
             ```
 
       </Fragment>
@@ -232,7 +232,7 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
     ```bash
     cp config-chainlink-example.yml config.yml
     ```
-1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Arbitrum Sepolia**.
+1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Avalanche Fuji**.
 
     ```yaml
     # --- Feeds (off-chain subscriptions) ----------------------------
@@ -241,31 +241,31 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
         feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
 
     # --- Defaults ---------------------------------------------------
-    chainId: 421614 # Default target chain is Arbitrum Sepolia
+    chainId: 43113 # Default target chain is Avalanche Fuji
     gasCap: "150000"
     interval: "*/30 * * * * *" # Every 30 seconds
     priceDeltaPercentage: 0.01 # 0.01 %
 
     # --- RPC & Currency metadata -----------------------------------
     chains:
-      # Arbitrum Sepolia
-      - id: 421614
-        name: "Arbitrum Sepolia"
-        rpc: "https://sepolia-rollup.arbitrum.io/rpc"
+      # Avalanche Fuji
+      - id: 43113
+        name: "Avalanche Fuji Network"
+        rpc: "[https://api.avax-test.network/ext/bc/C/rpc](https://api.avax-test.network/ext/bc/C/rpc)"
         # ... other chain details
 
     # --- Data-Streams Verifier addresses ----------------------------
     verifierAddresses:
-      - chainId: 421614 # Arbitrum Sepolia
-        address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
+      - chainId: 43113 # Avalanche Fuji
+        address: "0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3"
 
     # --- Target contracts (on-chain writes) -------------------------
     targetChains:
-      - chainId: 421614 # Arbitrum Sepolia
+      - chainId: 43113 # Avalanche Fuji
         targetContracts:
           - feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
             # PASTE YOUR DEPLOYED CONTRACT ADDRESS HERE
-            address: "0xYOUR_ARBITRUM_SEPOLIA_CONTRACT_ADDRESS"
+            address: "0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS"
             functionName: updateReport
             functionArgs: [reportVersion, verifiedReport]
             abi:
@@ -308,7 +308,7 @@ The optional sections below provide a detailed overview of the Transmitter UI, e
 
 <Accordion title="Chain" >
 
-On the upper-right corner of the page you will find the **Chain** section. Since the default chain is configured to `Arbitrum Sepolia`, you should see that network listed along with details for your wallet.
+On the upper-right corner of the page you will find the **Chain** section. Since the default chain is configured to `Avalanche Fuji`, you should see that network listed along with details for your wallet.
 
 | Field                    | Description                                                                          |
 | :----------------------- | :----------------------------------------------------------------------------------- |
@@ -318,7 +318,7 @@ On the upper-right corner of the page you will find the **Chain** section. Since
 | **Native Token Balance** | Your native token balance, which is used to pay for on-chain transaction fees (gas). |
 | **LINK Balance**         | Your `LINK` token balance, used to pay for Chainlink Data Streams transactions.      |
 
-Your balance should reflect the amount of testnet LINK and ETH you have in your wallet. If you need more, you can use the [Chainlink Faucet](https://faucets.chain.link/).
+Your balance should reflect the amount of testnet LINK and AVAX you have in your wallet. If you need more, you can use the [Chainlink Faucet](https://faucets.chain.link/).
 
 </Accordion>
 
