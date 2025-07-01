@@ -4,8 +4,8 @@ description: "Set up and manage a self-hosted, automated relay to push off-chain
 githubSourceCodeUrl: "https://github.com/hackbg/chainlink-datastreams-transmitter"
 image: "QuickStarts-DataStreams-Transmitter.webp"
 products: ["streams"]
-time: "20 minutes"
-requires: "Docker, Node.js, Redis, Wallet with ETH and LINK on Arbitrum Sepolia, Data Streams credentials."
+time: "25 minutes"
+requires: "Foundry, Docker, Node.js, pnpm, Redis, Wallet with ETH and LINK, Data Streams credentials."
 ---
 
 import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
@@ -20,21 +20,24 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 [REDIS_INSTALL]: https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/
 [GITHUB_REPO]: https://github.com/hackbg/chainlink-datastreams-transmitter
 [DATA_STREAMS_CONTACT]: https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs
+[FOUNDRY_INSTALL]: https://book.getfoundry.sh/getting-started/installation
 
 ## Overview
 
 <Aside type="caution" title="Disclaimer">
-  The Data Streams Transmitter is a community-built tool developed and maintained by
-  [HackBG](https://github.com/hackbg). It is not an official Chainlink product and is not supported by Chainlink Labs.
-  No warranties or guarantees are provided. Please do your own research before using this tool in a production
-  environment.
+  The Data Streams Transmitter and the reference consumer contract are community-built tools. The Transmitter is
+  developed and maintained by [HackBG](https://github.com/hackbg) and the contract is a community endeavour. These are
+  not official Chainlink products and are not supported by Chainlink Labs. No warranties or guarantees are provided.
+  Please do your own research and audit the code before using this tool in a production environment.
 </Aside>
 
 While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data off-chain, the process of bringing this data on-chain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the on-chain transaction logic for when and how to push updates.
 
 The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring off-chain data streams and pushing them to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
-This quick start guide will walk you through the process of setting up the Data Streams Transmitter, configuring it to monitor a specific Data Stream, then linking it to an on-chain contract.
+This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Transmitter, and configuring it to monitor a specific Data Stream and relay it to your on-chain contract.
+
+---
 
 ## High-level Architecture
 
@@ -61,6 +64,8 @@ Transmitter relays data from the off-chain Chainlink network to your on-chain co
   alt="Data Streams Transmitter Diagram"
 />
 
+---
+
 ## Requirements
 
 <DataStreams section="dsNotes" />
@@ -68,163 +73,234 @@ Transmitter relays data from the off-chain Chainlink network to your on-chain co
 Before you start this tutorial, ensure you have the following prerequisites:
 
 - **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Transmitter service. This guide uses your local machine for initial setup and testing.
-- **Software Dependencies**: [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host.
-- **Development Wallet**: This guides requires a funded development wallet and its **private key** to send transactions.
-  - **Network Configuration**: If you have not yet set up your wallet for **Arbitrum Sepolia**, you must add it as a custom network. You can find the required details, including the RPC URL and Chain ID, in the [Arbitrum documentation](https://docs.arbitrum.io/for-devs/dev-tools-and-resources/chain-info#arbitrum-public-rpc-endpoints).
+- **Software Dependencies**: [Foundry][FOUNDRY_INSTALL], [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host. This guide uses `pnpm` for package management.
+- **Development Wallet**: This guide requires a funded development wallet and its **private key** to send transactions.
+  - **Network Configuration**: This guide uses **Arbitrum Sepolia**. You can find RPC URLs on [Chainlist](https://chainlist.org).
   - **Testnet Funds**: The wallet must be funded with testnet `LINK` and `ETH` to pay for transaction fees on the **Arbitrum Sepolia** network. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
 - **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us][DATA_STREAMS_CONTACT] to request Data Streams access.
 - **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
 
-## Project Setup
+---
 
-Data Streams Transmitter uses [Docker](https://docs.docker.com/get-started/get-docker/) to run a [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/) instance, and it uses [Node.js](https://nodejs.org/en/download/) to run the application itself. As mentioned in the prerequisites, install all of these tools before proceeding.
+## Steps to implement
 
-Once we clone the repository, we need to set up environment variables which include your Data Streams and Testnet wallet credentials. Without these, Transmitter cannot function properly, _so be sure to have all [requirements](#requirements) ready before proceeding!_
+<Accordion title="Deploy Consumer Contract" number={1}>
+First, deploy a `DataStreamsFeed.sol` contract. This contract receives and stores the data relayed by the Transmitter. This guide uses [Foundry](https://book.getfoundry.sh/) to build and deploy the contract from a pre-configured repository.
 
-<Aside type="tip" title="Latest Instructions">    
-    For the most up to date information, refer to the installation instructions in the [GitHub repository][GITHUB_REPO].
+1.  Install [Foundry][FOUNDRY_INSTALL], or update it to the latest version by running `foundryup` in your terminal.
 
-</Aside>
+1.  Clone the `chainlink-transmitter-contract` repository and navigate into the directory:
 
-### Installation
+    ```bash
+    git clone https://github.com/woogieboogie-jl/chainlink-transmitter-contract.git
+    cd chainlink-transmitter-contract
+    ```
 
-Open your terminal and navigate to your development space, then follow these commands to initialize the Data Streams Transmitter project:
+1.  Install the dependencies using `pnpm`. If you don't have `pnpm`, you can install it by running `npm install -g pnpm`.
 
-1. Create a new directory for your project:
+    ```bash
+    pnpm install
+    ```
 
-   ```bash
-   mkdir my-transmitter-project
-   cd my-transmitter-project
-   ```
+1.  Create a `.env` file in the project's root directory to store your private key and RPC URL:
 
-1. Clone the [Data Stream Transmitter repository][GITHUB_REPO]:
+    ```bash
+    cat >.env <<EOF
+    PRIVATE_KEY=0xYOUR_PRIVATE_KEY
+    RPC_URL_ARBITRUM_SEPOLIA=https://sepolia-rollup.arbitrum.io/rpc
+    EOF
+    ```
 
-   ```bash
-   git clone https://github.com/hackbg/chainlink-datastreams-transmitter.git
-   cd chainlink-datastreams-transmitter
-   ```
+    Replace `0xYOUR_PRIVATE_KEY` with your actual wallet private key.
 
-1. Install the project dependencies:
+1.  Load the environment variables into your current shell session:
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    source .env
+    ```
 
-### Configuration
+1.  Configure `script/DeployDataStreamsFeed.s.sol`.
 
-<Aside type="danger" title="Configuration Warning">
+    This script deploys the `DataStreamsFeed` contract, which is the consumer contract that will receive data from the Transmitter. You need to set the constructor arguments for the contract.
+
+    | Parameter        | Value                                                                | Description                                |
+    | :--------------- | :------------------------------------------------------------------- | :----------------------------------------- |
+    | `verifierProxy_` | `0x2ff010DEbC1297f19579B4246cad07bd24F2488A`                         | Arbitrum Sepolia Verifier                  |
+    | `_feedId`        | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | ETH/USD                                    |
+    | `_decimals`      | `18`                                                                 | The number of decimals for the data.       |
+    | `_description`   | `"ETH / USD Feed"`                                                   | A human-readable description for the feed. |
+
+1.  Choose your deployment method below and run the corresponding script.
+
+   <TabsContent sharedStore="deployType" client:visible>
+  <Fragment slot="tab.1">One-Shot Deploy (Recommended)</Fragment>
+  <Fragment slot="tab.2">Deploy Only</Fragment>
+  <Fragment slot="panel.1">
+     This is the simplest method. It deploys the contract and automatically grants the `ADMIN` and `REPORT_VERIFIER` roles to the deploying wallet address.
+
+         Run the deployment script to deploy to **Arbitrum Sepolia**:
+         ```sh
+         forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol:DeployDataStreamsFeedWithRoleAssign \
+            --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+            --private-key $PRIVATE_KEY \
+            --broadcast
+         ```
+         After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure the Transmitter.
+         - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
+         - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
+
+      </Fragment>
+
+  <Fragment slot="panel.2">
+     This method provides more granular control, deploying the contract first and requiring you to grant roles manually.
+
+         1.  Run the deployment script:
+            ```sh
+            forge script script/DeployDataStreamsFeed.s.sol:DeployDataStreamsFeed \
+                  --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+                  --private-key $PRIVATE_KEY \
+                  --broadcast
+            ```
+         1.  Copy the **Deployed Contract Address** and **ABI** from the output.
+
+         1.  Grant the `REPORT_VERIFIER_ROLE` to the wallet address you will use for your Transmitter service.
+            ```bash
+            # The address of the contract you just deployed
+            DEPLOYED_FEED_ADDRESS=<0xYOUR_DEPLOYED_CONTRACT_ADDRESS>
+
+            # The wallet address of your transmitter service
+            TRANSMITTER_WALLET_ADDRESS=<0xYOUR_TRANSMITTER_WALLET_ADDRESS>
+
+            # REPORT_VERIFIER role hash (= keccak256("REPORT_VERIFIER_ROLE"))
+            ROLE=0xf9f8c20c4c3b902ac9f63b3ab127d0fa52ad9efa682a9cbbead7833d9777cd4e
+
+            cast send $DEPLOYED_FEED_ADDRESS "grantRole(bytes32,address)" $ROLE $TRANSMITTER_WALLET_ADDRESS \
+                  --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
+                  --private-key $PRIVATE_KEY
+            ```
+         1.  (Optional) Verify your contract on Arbiscan:
+            ```sh
+            forge verify-contract \
+                  --chain-id 421614 \
+                  --verifier etherscan \
+                  --verifier-url "https://api-sepolia.arbiscan.io/api" \
+                  <DEPLOYED_FEED_ADDRESS> \
+                  src/feed/DataStreamsFeed.sol:DataStreamsFeed \
+                  --flatten \
+                  --etherscan-api-key <YOUR_ARBISCAN_API_KEY>
+            ```
+
+      </Fragment>
+
+  </TabsContent>
+</Accordion>
+
+<Accordion title="Set Up Transmitter" number={2}>
+With a consumer contract on-chain, you can now set up the Transmitter service to relay data to it.
+
+1.  In a new terminal window, navigate to your development space and clone the [Data Stream Transmitter repository][GITHUB_REPO]:
+    ```bash
+    git clone https://github.com/hackbg/chainlink-datastreams-transmitter.git
+    cd transmitter-app
+    ```
+1.  Install the project dependencies using `npm`:
+
+    ```bash
+    npm install
+    ```
+
+1.  Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+1.  Open your `.env` file in a text editor and provide the required values:
+    | Variable | Description |
+    | :-------------------------- | :------------------------------------------------------------------------------------ |
+    | `PRIVATE_KEY` | The private key of your developer wallet (ensure this is kept secure and not shared). |
+    | `DATASTREAMS_CLIENT_ID` | Your Data Streams client ID. |
+    | `DATASTREAMS_CLIENT_SECRET` | Your Data Streams client secret. |
+
+         <Aside type="danger" title="Configuration Warning">
+
     **These configuration files reference sensitive information**.
 
-    The `.env` file references your Data Streams API credentials and your wallet's private key. It is your responsibility to ensure that you provide these values in a way that you or your organization deems secure.
+            The `.env` file references your Data Streams API credentials and your wallet's private key. It is your responsibility to ensure that you provide these values in a way that you or your organization deems secure.
 
-</Aside>
+         </Aside>
 
-Before running Transmitter you must configure `.env` with Data Streams credentials and your wallet's private key. Transmitter will fail to start if these are not set up correctly, so be sure to double check all values.
+1.  Create the runtime configuration file by copying the example:
+    ```bash
+    cp config-chainlink-example.yml config.yml
+    ```
+1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Arbitrum Sepolia**.
 
-We will also create a `config.yaml` file to give the Transmitter a starting point, pre-loading it with a basic configuration for this tutorial. The `config.yaml` file is optional, but allows us to define which feeds we want to monitor, which chains we want to use, and even which smart contracts we want to target for data updates.
+    ```yaml
+    # --- Feeds (off-chain subscriptions) ----------------------------
+    feeds:
+      - name: "ETH/USD"
+        feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
 
-1. Copy the example environment file:
+    # --- Defaults ---------------------------------------------------
+    chainId: 421614 # Default target chain is Arbitrum Sepolia
+    gasCap: "150000"
+    interval: "*/30 * * * * *" # Every 30 seconds
+    priceDeltaPercentage: 0.01 # 0.01 %
 
-   ```bash
-   cp .env.example .env
-   ```
+    # --- RPC & Currency metadata -----------------------------------
+    chains:
+      # Arbitrum Sepolia
+      - id: 421614
+        name: "Arbitrum Sepolia"
+        rpc: "https://sepolia-rollup.arbitrum.io/rpc"
+        # ... other chain details
 
-1. Open your `.env` file in a text editor and provide the required values:
+    # --- Data-Streams Verifier addresses ----------------------------
+    verifierAddresses:
+      - chainId: 421614 # Arbitrum Sepolia
+        address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
 
-   | Variable                    | Description                                                                           |
-   | :-------------------------- | :------------------------------------------------------------------------------------ |
-   | `PRIVATE_KEY`               | The private key of your developer wallet (ensure this is kept secure and not shared). |
-   | `DATASTREAMS_CLIENT_ID`     | Your Data Streams client ID.                                                          |
-   | `DATASTREAMS_CLIENT_SECRET` | Your Data Streams client secret.                                                      |
-
-1. Create the configuration file:
-
-   ```bash
-   touch config.yaml
-   ```
-
-1. Open `config.yaml` in a text editor and paste the following content:
-
-   ```yaml
-   # List of Chainlink Data Stream to subscribe to.
-   # Find more feed IDs at https://docs.chain.link/data-streams/
-   # Set to ETH/USD price
-   feeds:
-   - name: "ETH/USD"
-      feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
-   # Default chain ID for on-chain transactions.
-   # Set to Arbitrum Sepolia testnet
-   chainId: 421614
-
-   # Maximum gas limit (in wei) for a transaction.
-   gasCap: "150000"
-
-   # Cron expression for how often to check for updates
-   # Set to a 2-minute interval
-   interval: "0 */2 * * * *"
-
-   # Minimum price change % to trigger an on-chain update
-   # Set to .5%
-   priceDeltaPercentage: .5
-
-   # List of chains to support with custom data streams
-   # Currently empty but required for config validator
-   chains: []
-
-   # Verifier contract addresses for a given network
-   # Used to verify the data before sending it on-chain
-   # Set to Arbitrum Sepolia testnet
-   verifierAddresses:
-   - chainId: 421614
-      address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
-
-   # Defines the target smart contracts that will receive the data
-   # Set to the Arbitrum Sepolia testnet
-   targetChains:
-   - chainId: 421614
-      targetContracts: []
-   ```
-
-<Aside type="tip" title="Configure Everything">
-  **You can completely configure Transmitter with `config.yaml`.**
-
-This guide uses a basic configuration to get us started, but later continues configuration within the Transmitter UI.
-
-However, you can fully configure Transmitter via the `config.yaml`, adding more feeds, setting up custom chains, and defining target contracts. Complete customization of `config.yaml` permits programmatic control of Transmitter, allowing it to be integrated into larger systems or automated workflows.
-
-[Learn more about the `config.yaml` schema.](https://github.com/hackbg/chainlink-datastreams-transmitter?tab=readme-ov-file#yaml-configuration-setup)
-
-</Aside>
-
-### Run Transmitter
-
-Once you have configured the `.env` and `config.yaml` files, you can start the Data Streams Transmitter.
+    # --- Target contracts (on-chain writes) -------------------------
+    targetChains:
+      - chainId: 421614 # Arbitrum Sepolia
+        targetContracts:
+          - feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+            # PASTE YOUR DEPLOYED CONTRACT ADDRESS HERE
+            address: "0xYOUR_ARBITRUM_SEPOLIA_CONTRACT_ADDRESS"
+            functionName: updateReport
+            functionArgs: [reportVersion, verifiedReport]
+            abi:
+              - inputs:
+                  [
+                    { internalType: uint16, name: reportVersion, type: uint16 },
+                    { internalType: bytes, name: verifiedReportData, type: bytes },
+                  ]
+                name: updateReport
+                outputs: []
+                stateMutability: nonpayable
+                type: function
+    ```
 
 1.  Start the Docker daemon.
 
-    The Docker daemon is required to run the Redis instance that Transmitter uses to store data. Starting the daemon depends on your operating system and Docker installation method. Please refer to the [Docker documentation for instructions on how to start the Docker daemon](https://docs.docker.com/engine/daemon/start/).
+    The Docker daemon is required to run the Redis instance that Transmitter uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
 
-1.  Run the following command to start the Data Streams Transmitter:
-
+1.  Run the following command to start the Transmitter and its services in the background:
     ```bash
-    docker-compose up
+    docker compose up -d
     ```
+1.  Open your web browser and navigate to `http://localhost:3000` to access the Transmitter UI. Because you pre-configured the contract in `config.yml`, the `ETH/USD` stream on the dashboard should show a `Running` status.
 
-1.  Open your web browser and navigate to `http://localhost:3000` to access the Transmitter UI.
+<Aside type="tip" title="Troubleshooting">
+  If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
+  for common problems and solutions.
+</Aside>
+</Accordion>
 
-    You should see the Transmitter home page, which indicates that the application is running successfully.
-
-### Troubleshooting
-
-If you experience any crashes or issues, check the logs in your terminal for error messages. Common issues include misconfigured environment variables or missing dependencies.
-
-You can quickly restart the application by running `docker compose restart` in your terminal, or restarting the container via Docker Desktop.
-
-[Learn more in the troubleshooting section on Github](https://github.com/hackbg/chainlink-datastreams-transmitter?tab=readme-ov-file#troubleshooting).
+---
 
 ## UI Overview
 
-The Transmitter UI lets you manage your feeds, monitor their status, and define how and where data is pushed on-chain.
+The Transmitter UI lets you manage your feeds, monitor their status, and define how and where data is pushed on-chain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
 
 <ClickToZoom src="/images/quickstarts/transmitter/transmitter_home.png" alt="The Transmitter home page" />
 
@@ -232,9 +308,7 @@ The optional sections below provide a detailed overview of the Transmitter UI, e
 
 <Accordion title="Chain" >
 
-On the upper-right corner of the page you will find the **Chain** section, which indicates the target chain where data will be pushed.
-
-Since we have configured the Transmitter to connect to the `Arbitrum Sepolia` testnet, you should see `Arbitrum Sepolia` along with a few characters from your wallet address. Click to open more details, including:
+On the upper-right corner of the page you will find the **Chain** section. Since the default chain is configured to `Arbitrum Sepolia`, you should see that network listed along with details for your wallet.
 
 | Field                    | Description                                                                          |
 | :----------------------- | :----------------------------------------------------------------------------------- |
@@ -244,222 +318,117 @@ Since we have configured the Transmitter to connect to the `Arbitrum Sepolia` te
 | **Native Token Balance** | Your native token balance, which is used to pay for on-chain transaction fees (gas). |
 | **LINK Balance**         | Your `LINK` token balance, used to pay for Chainlink Data Streams transactions.      |
 
-Your balance should reflect the amount of testnet LINK and native tokens you have in your wallet. If you need more testnet LINK or ETH, you can use the [Chainlink Faucet](https://faucets.chain.link/) to request additional funds.
-
-For this quickstart guide, we are going to be staying on Arbitrum Sepolia. To change chains, you can click the **Switch Chain** button. You are provided with a list of pre-configured chains to select from, or you can click **Add New Chain** to define a custom chain by providing the Chain ID, name, currency details, RPC URL, and testnet.
+Your balance should reflect the amount of testnet LINK and ETH you have in your wallet. If you need more, you can use the [Chainlink Faucet](https://faucets.chain.link/).
 
 </Accordion>
 
 <Accordion title="Logs">
 
-On the top-right corner of the page, you will find the **Logs** section, which contains details for all Transmitter actions.
-
-The logs provide a great space to monitor and view the history of values getting pushed on-chain, reporting any errors or issues Transmitter encounters. You can use this section to debug any problems with your feeds or the data being pushed.
-
-When operating correctly, the log should reflect a clear, step-by-step process for each on-chain update. You should see a trigger, like a `Price deviation detected` message, followed by gas and fee estimations, a `Report verified` confirmation, and finally a `Transaction status: success` message indicating the new price was stored on-chain.
+On the top-right corner of the page, you will find the **Logs** section, which contains details for all Transmitter actions. When operating correctly, the log should reflect a clear, step-by-step process for each on-chain update.
 
 Example log output:
 
 ```
-[2025-06-27 16:48:44] info: 🩺 Health check endpoint running at http://localhost:8081/ready
-[2025-06-27 16:48:44] info: 🚀 running at http://localhost:3000
-[2025-06-27 16:48:44] warn: ℹ️ App already configured
-[2025-06-27 16:48:44] info: 🏁 Streams have been started
-[2025-06-27 16:50:00] info: 🚨 Price deviation detected | ETH/USD: 2435.06$ | 📉 -0.2135% (-5.21$)
-[2025-06-27 16:50:00] info: 📆 Scheduled for writing onchain
-[2025-06-27 16:50:00] info: ⛽️ Estimated fee: 0.024395523392104215 LINK
-[2025-06-27 16:50:01] info: ⛽️ Estimated gas for LINK approval: 0.000000000000046615 ETH
-[2025-06-27 16:50:04] info: ⛽️ Estimated gas for verification: 0.000000000000114483 ETH
-[2025-06-27 16:50:06] info: ✅ Report verified
-[2025-06-27 16:50:06] info: 📝 Prepared verification transaction
-[2025-06-27 16:50:06] info: ⛽️ Estimated gas: 0.000000000000086119 ETH
-[2025-06-27 16:50:07] info: ℹ️ Transaction simulated
-[2025-06-27 16:50:07] info: ⌛️ Sending transaction 0xa59aa3e9c7a2cd020d79bd73e6c7f1aca9a576b77edb43ee35180001709fdf43
-[2025-06-27 16:50:08] info: ℹ️ Transaction status: success
-[2025-06-27 16:50:08] info: 💾 Price stored | ETH/USD: 2435.06$
+[2025-07-01 16:48:44] info: 🩺 Health check endpoint running at http://localhost:8081/ready
+[2025-07-01 16:48:44] info: 🚀 running at http://localhost:3000
+[2025-07-01 16:48:44] warn: ℹ️ App already configured
+[2025-07-01 16:48:44] info: 🏁 Streams have been started
+[2025-07-01 16:50:00] info: 🚨 Price deviation detected | ETH/USD: 3450.06$ | 📉 -0.2135% (-7.36$)
+[2025-07-01 16:50:00] info: 📆 Scheduled for writing onchain
+[2025-07-01 16:50:00] info: ⛽️ Estimated fee: 0.024395523392104215 LINK
+[2025-07-01 16:50:04] info: ✅ Report verified
+[2025-07-01 16:50:06] info: 📝 Prepared verification transaction
+[2025-07-01 16:50:07] info: ⌛️ Sending transaction 0xa59aa3e9c7a2cd020d79bd73e6c7f1aca9a576b77edb43ee35180001709fdf43
+[2025-07-01 16:50:08] info: ℹ️ Transaction status: success
+[2025-07-01 16:50:08] info: 💾 Price stored | ETH/USD: 3450.06$
 ```
 
 </Accordion>
 
 <Accordion title="Data Streams" >
 
-The **Data Streams** section lists all Data Streams, their status, and any related contracts.
+The **Data Streams** section lists all Data Streams, their status, and any related contracts. You should see the `ETH/USD` feed listed here, which was set in the `config.yml` file.
 
-You should see the `ETH/USD` feed listed here, which was set in the `config.yaml` file. The current price of `ETH` should be displayed in the **Last reported** column. However, since we have not yet linked this feed to a contract, its status should be `Stopped`.
-
-| Field             | Description                                                                                                                                                                                                                         |
-| :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Stream**        | The name of the stream. This is the name set by the user for easier tracking and feed identification.                                                                                                                               |
-| **Feed ID**       | The feed ID. Check [Chainlink Data Streams Documentation](/data-streams/crypto-streams) for a list of supported streams.                                                                                                            |
-| **Report Schema** | Currently [Report Schema v3](/data-streams/reference/report-schema) and [Report Schema v4](/data-streams/reference/report-schema-v4) are supported.                                                                                 |
-| **Contract**      | Target contract for the feed on the current chain. Click to open a configuration page where you can define the target contract, functions, and ABI. See the [Contract](#link-contract-to-transmitter) section for more information. |
-| **Saved price**   | The latest price recorded onchain.                                                                                                                                                                                                  |
-| **Last reported** | The latest price reported by the stream.                                                                                                                                                                                            |
-| **Status**        | Current status of the stream. Possible states include: `Running`, `Connecting`, `Stopping` or `Stopped`.                                                                                                                            |
-| **Remove**        | Click to remove the stream.                                                                                                                                                                                                         |
-
-The **Start** button will initialize all feeds with valid consumer contracts, pushing all data on-chain under the defined conditions.
-
-The **Stop** button will stop all feeds.
-
-The **Add new stream** button allows you to specify a new Data Stream by providing the stream name and ID You can find a list of available streams in the [Chainlink Data Streams documentation](/data-streams/crypto-streams).
+| Field             | Description                                                                                                                                         |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stream**        | The name of the stream. This is the name set by the user for easier tracking and feed identification.                                               |
+| **Feed ID**       | The feed ID. Check [Chainlink Data Streams Documentation](/data-streams/crypto-streams) for a list of supported streams.                            |
+| **Contract**      | Target contract for the feed on the current chain. Click to open a configuration page where you can define the target contract, functions, and ABI. |
+| **Saved price**   | The latest price recorded onchain.                                                                                                                  |
+| **Last reported** | The latest price reported by the stream.                                                                                                            |
+| **Status**        | Current status of the stream. Possible states include: `Running`, `Connecting`, `Stopping` or `Stopped`.                                            |
+| **Remove**        | Click to remove the stream.                                                                                                                         |
 
 </Accordion>
 
 <Accordion title="Schedule" >
 
-The **Schedule** section allows you to define and view how often the Transmitter should push data on-chain. We have already defined this as every two minutes in the `config.yaml` file, but you can change it here as well.
-
-You can use a tool like [crontab.guru](https://crontab.guru/) to help you define the schedule expression. The expression is in the format `* * * * *`, where each asterisk represents a time unit (minute, hour, day of month, month, day of week).
+The **Schedule** section allows you to define how often the Transmitter should push data on-chain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
 
 </Accordion>
 
 <Accordion title="Verifier Contracts" >
 
-The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed on chain.
-
-The verifier contract checks the signature from the DON to prove the data hasn't changed between its creation by the oracles and its use in your application. A list of available verifier contracts is displayed on the page.
-
-By default, the verifier contract for your current network will be automatically selected. You can add a new verifier by selecting the chain from the dropdown and providing a contract address.
+The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed on chain. The verifier contract for your current network will be automatically selected based on `config.yml`.
 
 </Accordion>
 
 <Accordion title="Price Delta" >
 
-The **Price Delta** section lets you define the price change threshold that will trigger an on-chain update. We set this to `0.5%` in the `config.yaml` file, meaning that if the price of `ETH/USD` changes by more than `0.5%` since the last update, Transmitter will push the new price on-chain. You can change this value here by submitting a new value in percentage.
+The **Price Delta** section lets you define the price change threshold that will trigger an on-chain update. We set this in the `config.yml` file, but you can change this value here.
 
 </Accordion>
 
 <Accordion title="Gas Cap" >
 
-The **Gas Cap** section lets you set and view the maximum gas limit for transactions. If the estimated gas is greater than the gas cap (in WEI), the transaction will be canceled. We set this to `150000` WEI in the `config.yaml` file, but you can change it here as well by submitting a new value.
+The **Gas Cap** section lets you set the maximum gas limit for transactions. We set this in the `config.yml` file, but you can change it here.
 
 </Accordion>
 
-## Contract Deployment
+---
 
-You must deploy a simple contract that will receive the data from Transmitter. This contract will be used to store data pushed by Transmitter, and it will be linked to the Transmitter in the next step.
+## Troubleshooting
 
-<TabsContent sharedStore="deployTool" client:visible>
-  <Fragment slot="tab.1">Foundry/Hardhat</Fragment>
-   <Fragment slot="panel.1">
-         <Aside type="note" title="Prerequisites">
-         This guide uses [Foundry](https://book.getfoundry.sh/getting-started/installation) for contract deployment and `pnpm` for package management. Make sure both are installed before you begin.
+If you run into issues during setup or operation, refer to these common problems and their solutions.
 
-         For more information, visit the [chainlink-transmitter-contract repository](https://github.com/woogieboogie-jl/chainlink-transmitter-contract/).
-         </Aside>
+---
 
-      1.  Install [Foundry](https://book.getfoundry.sh/getting-started/installation), or update it to the latest version by running `foundryup` in your terminal.
+### Transmitter Service Issues
 
-      1.  Clone the `chainlink-transmitter-contract` repository and navigate into the directory:
+- **Service fails to start or crashes immediately**
 
-            ```sh
-            git clone https://github.com/woogieboogie-jl/chainlink-transmitter-contract.git
-            cd chainlink-transmitter-contract
-            ```
+  - Double-check that your `transmitter-app/.env` file is present and correctly populated with your `PRIVATE_KEY` and Data Streams credentials.
+  - Run `docker compose logs -f` in the `transmitter-app` directory to view real-time logs and identify specific error messages.
 
-      1.  Install the dependencies using `pnpm`. If you don't have `pnpm`, you can install it by running `npm install -g pnpm`.
+- **Data is not updating on your contract**
+  - Review the logs in Transmitter for specific error messages related to the feed or contract interaction.
+  - **Authentication:** Verify that your `DATASTREAMS_CLIENT_ID` and `DATASTREAMS_CLIENT_SECRET` are correct and do not have extra spaces or characters.
+  - **LINK Balance:** Ensure the transmitter's wallet has a sufficient `LINK` balance to pay for on-chain verification fees. Top up at a [faucet](https://faucets.chain.link/) if needed.
+  - **RPC Endpoint:** Confirm the RPC URL in your `config.yml` is correct and the node is reachable.
 
-            ```sh
-            pnpm add --save-dev @openzeppelin/contracts @chainlink/contracts
-            ```
+---
 
-      1.  Create a `.env` file in the project's root directory to store your private key and the Arbitrum Sepolia RPC URL:
+### Contract Deployment & On-Chain Errors
 
-            ```sh
-            cat >.env <<EOF
-            PRIVATE_KEY=0xYOUR_PRIVATE_KEY
-            RPC_URL_ARBITRUM_SEPOLIA=https://sepolia-rollup.arbitrum.io/rpc
-            EOF
-            ```
+- **`Gas estimation too high` error**
 
-            Replace `0xYOUR_PRIVATE_KEY` with your actual wallet private key.
+  - When deploying with Foundry, you can adjust the `gas_limit` in your `foundry.toml` file.
+  - For the transmitter, you can increase the `gasCap` value in your `config.yml` file.
 
-      1.  Load the environment variables into your current shell session:
+- **Transactions failing with a `REPORT_VERIFIER missing` error**
 
-            ```sh
-            source .env
-            ```
+  - This error means the wallet address used by the transmitter has not been granted the `REPORT_VERIFIER_ROLE` on your deployed contract.
+  - Make sure you've granted the role to the correct address.
 
-      1.  Customize the deployment script with the parameters for the `ETH/USD` feed.
+- **Missing private key**
+  - `forge script` will silently fall back to Foundry's default dev key and assign contract roles to `0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`.
+  - Always pass your key via `--private-key` or export it in `.env/shell`.
 
-            Open the file `script/DeployDataStreamsFeedWithRoleAssign.s.sol` and update the `DataStreamsFeed` constructor with the following values:
-
-            | Parameter        | Value                                                                | Description                                                                                                               |
-            | :--------------- | :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-            | `verifierProxy_` | `0x2ff010DEbC1297f19579B4246cad07bd24F2488A`                         | The Verifier Proxy address for Arbitrum Sepolia, used to validate Data Streams reports on-chain.                          |
-            | `_feedId`        | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique `bytes32` identifier for the specific data stream you want to monitor. This example uses the ID for `ETH/USD`. |
-            | `_decimals`      | `18`                                                                 | The number of decimal places for the price data. For most price feeds, this is `18`.                                      |
-            | `_description`   | `"ETH / USD Feed"`                                                   | A human-readable label for the feed, which helps identify it in applications and block explorers.                         |
-
-      1.  Run the deployment script. This command deploys the contract and grants your wallet the necessary `ADMIN` and `REPORT_VERIFIER` roles automatically.
-
-            ```sh
-            forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol:DeployDataStreamsFeedWithRoleAssign \
-               --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
-               --private-key $PRIVATE_KEY \
-               --broadcast
-            ```
-
-      1.  Find the contract address and ABI. You'll need both of these for the next steps.
-            1.  Copy the Deployed Contract Address.
-
-               Find the contract address in your terminal output. It appears in several places, including the `Return` value and the on-chain transaction receipt.
-
-               ```bash
-               user@machine chainlink-transmitter-contract % forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol \
-               --rpc-url $RPC_URL_ARBITRUM_SEPOLIA \
-               --private-key $PRIVATE_KEY \
-               --broadcast
-
-               [...]
-               == Return ==
-               deployedAddress: address 0xC4bF68ACd705dFDe98DE6639A602B4a89bF84758 # <--- HERE
-               [...]
-               ##### arbitrum-sepolia
-               ✅  [Success] Hash: 0x20bd05f2...cec63dff76
-               Contract Address: 0xC4bF68ACd705dFDe98DE6639A602B4a89bF84758 # <--- ALSO HERE
-               [...]
-               ```
-
-            2.  Find the Contract ABI.
-
-               You will also need the contract's **ABI** (Application Binary Interface) to interact with it. Foundry saves the ABI in a JSON artifact file after compilation.
-
-               - **ABI Path**: `out/DataStreamsFeed.sol/DataStreamsFeed.json`
-
-   </Fragment>
-</TabsContent>
-
-## Link Contract to Transmitter
-
-Now that the contract has been deployed, we can link it to the Transmitter so it can receive updates from the `ETH/USD` Data Stream.
-
-1. In the Transmitter UI, click the **Contract** button in the `ETH/USD` Data Stream.
-1. Fill the contract form:
-
-   | Field                  | Description                                                                                                                                            |
-   | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | **Contract**           | The address of the proxy contract you deployed in the previous step.                                                                                   |
-   | **Function**           | The function that will be called to update the data on-chain. For this example, we will use `updatePriceReport`.                                       |
-   | **Function Arguments** | Report arguments field names in the sequence the contract expects them to be passed in the selected method. For this example, we only use `rawReport`. |
-   | **ABI**                | The ABI of the contract.                                                                                                                               |
-
-   Be sure to click **Submit** for each field to save your changes.
-
-1. Return to the home page to verify the contract has been connected to Transmitter.
-
-   If you have correctly configured the contract, the status should now be **Running**, indicating that Transmitter is actively monitoring the `ETH/USD` feed and pushing updates to your contract.
-
-Transmitter will automatically push updates to your contract every two minutes, or whenever the price changes by more than `0.5%`, as defined in the configuration. However, feel free to change the schedule and price delta in the Transmitter UI to see how they affect the data being pushed on-chain.
-
-The latest price will be displayed in the **Saved price** column, and you can view the transaction details in the **Logs** section.
-
-You can also interact with the contract on a block explorer like [Arbiscan](https://sepolia.arbiscan.io/), calling `latestRoundData` to see the latest price stored in the contract.
+---
 
 ## Conclusion
 
-Congratulations! 🎉 You have successfully set up the Data Streams Transmitter and linked it to your smart contract.
+Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Transmitter, and linked them together.
 
 You can now monitor off-chain data streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates on-chain.
 
