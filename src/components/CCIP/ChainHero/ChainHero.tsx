@@ -93,8 +93,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
     })
   }
 
-  console.log(JSON.stringify(network))
-
   return (
     <section className="ccip-chain-hero">
       <div className="ccip-chain-hero__content">
