@@ -82,7 +82,7 @@ Before you start this tutorial, ensure you have the following prerequisites:
 
 ---
 
-## Steps to implement
+## Steps to Implement
 
 <Accordion title="Deploy Consumer Contract" number={1}>
 First, deploy a `DataStreamsFeed.sol` contract. This contract receives and stores the data relayed by the Transmitter. This guide uses [Foundry](https://book.getfoundry.sh/) to build and deploy the contract from a pre-configured repository.
@@ -119,7 +119,7 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
     source .env
     ```
 
-1.  Configure `script/DeployDataStreamsFeedWithRoleAssign.s.sol` (or `script/DeployDataStreamsFeed.s.sol`, if you prefer to use the Deploy Only contract below).
+1.  Configure `script/DeployDataStreamsFeed.s.sol`.
 
     This script deploys the `DataStreamsFeed` contract, which is the consumer contract that will receive data from the Transmitter. You need to set the constructor arguments for the contract.
 
@@ -130,79 +130,43 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
     | `_decimals`      | `18`                                                                 | The number of decimals for the data.       |
     | `_description`   | `"ETH / USD Feed"`                                                   | A human-readable description for the feed. |
 
-1.  Choose your deployment method below and run the corresponding script.
-
-   <TabsContent sharedStore="deployType" client:visible>
-  <Fragment slot="tab.1">One-Shot Deploy (Recommended)</Fragment>
-  <Fragment slot="tab.2">Deploy Only</Fragment>
-  <Fragment slot="panel.1">
-     This is the simplest method. It deploys the contract and automatically grants the `ADMIN` and `REPORT_VERIFIER` roles to the deploying wallet address.
+1.  Deploy the contract via the command line.
 
          Run the deployment script to deploy to **Avalanche Fuji**:
          ```sh
-         forge script script/DeployDataStreamsFeedWithRoleAssign.s.sol:DeployDataStreamsFeedWithRoleAssign \
+          forge script script/DeployDataStreamsFeed.s.sol:DeployDataStreamsFeed \
             --rpc-url $RPC_URL_AVAX_FUJI \
             --private-key $PRIVATE_KEY \
             --broadcast
          ```
          After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure the Transmitter.
-         - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
-         - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
+            - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
+            - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
 
-      </Fragment>
+1.  Fund the contract with `LINK`.
 
-  <Fragment slot="panel.2">
-     This method provides more granular control, deploying the contract first and requiring you to grant roles manually.
+    After deployment, transfer some testnet `LINK` to the feed contract address, which allows the contract to pay for verification fees.
 
-         1.  Run the deployment script:
-            ```sh
-            forge script script/DeployDataStreamsFeed.s.sol:DeployDataStreamsFeed \
-                  --rpc-url $RPC_URL_AVAX_FUJI \
-                  --private-key $PRIVATE_KEY \
-                  --broadcast
-            ```
-         1.  Copy the **Deployed Contract Address** and **ABI** from the output.
+    ```sh
+    # Example using cast to transfer 5 LINK (18 decimals)
+    cast send $LINK_TOKEN "transfer(address,uint256)" \
+        <DEPLOYED_FEED_ADDRESS> 5000000000000000000 \
+        --rpc-url $RPC_URL_AVAX_FUJI \
+        --private-key $PRIVATE_KEY
+    ```
 
-         1.  Grant the `REPORT_VERIFIER_ROLE` to the wallet address you will use for your Transmitter service.
-            ```bash
-            # The address of the contract you just deployed
-            DEPLOYED_FEED_ADDRESS=<0xYOUR_DEPLOYED_CONTRACT_ADDRESS>
-
-            # The wallet address of your transmitter service
-            TRANSMITTER_WALLET_ADDRESS=<0xYOUR_TRANSMITTER_WALLET_ADDRESS>
-
-            # REPORT_VERIFIER role hash (= keccak256("REPORT_VERIFIER_ROLE"))
-            ROLE=0xf9f8c20c4c3b902ac9f63b3ab127d0fa52ad9efa682a9cbbead7833d9777cd4e
-
-            cast send $DEPLOYED_FEED_ADDRESS "grantRole(bytes32,address)" $ROLE $TRANSMITTER_WALLET_ADDRESS \
-                  --rpc-url $RPC_URL_AVAX_FUJI \
-                  --private-key $PRIVATE_KEY
-            ```
-         1.  (Optional) Verify your contract on Snowtrace/Routescan:
-            ```sh
-            forge verify-contract \
-                  --chain-id 43113 \
-                  --verifier etherscan \
-                  --verifier-url "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api" \
-                  <DEPLOYED_FEED_ADDRESS> \
-                  src/feed/DataStreamsFeed.sol:DataStreamsFeed \
-                  --flatten \
-                  --etherscan-api-key <YOUR_API_KEY>
-            ```
-
-      </Fragment>
-
-  </TabsContent>
 </Accordion>
 
 <Accordion title="Set Up Transmitter" number={2}>
 With a consumer contract on-chain, you can now set up the Transmitter service to relay data to it.
 
 1.  In a new terminal window, navigate to your development space and clone the [Data Stream Transmitter repository][GITHUB_REPO]:
+
     ```bash
     git clone https://github.com/hackbg/chainlink-datastreams-transmitter.git
     cd transmitter-app
     ```
+
 1.  Install the project dependencies using `npm`:
 
     ```bash
@@ -210,9 +174,11 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
     ```
 
 1.  Copy the example environment file:
+
     ```bash
     cp .env.example .env
     ```
+
 1.  Open your `.env` file in a text editor and provide the required values:
     | Variable | Description |
     | :-------------------------- | :------------------------------------------------------------------------------------ |
@@ -222,77 +188,114 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
 
          <Aside type="danger" title="Configuration Warning">
 
-    **These configuration files reference sensitive information**.
+        **These configuration files reference sensitive information**.
 
-            The `.env` file references your Data Streams API credentials and your wallet's private key. It is your responsibility to ensure that you provide these values in a way that you or your organization deems secure.
+        The `.env` file references your Data Streams API credentials and your wallet's private key. It is your responsibility to ensure that you provide these values in a way that you or your organization deems secure.
 
-         </Aside>
+        </Aside>
 
 1.  Create the runtime configuration file by copying the example:
+
     ```bash
     cp config-chainlink-example.yml config.yml
     ```
+
 1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Avalanche Fuji**.
 
     ```yaml
-    # --- Feeds (off-chain subscriptions) ----------------------------
     feeds:
       - name: "ETH/USD"
         feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
 
-    # --- Defaults ---------------------------------------------------
-    chainId: 43113 # Default target chain is Avalanche Fuji
-    gasCap: "150000"
-    interval: "*/30 * * * * *" # Every 30 seconds
-    priceDeltaPercentage: 0.01 # 0.01 %
+    # --- Default Global Settings ---
 
-    # --- RPC & Currency metadata -----------------------------------
+    # The default chainId to use for transactions if not specified in a target.
+    chainId: 43113 # Default to Avalanche Fuji
+
+    # The maximum gas limit you are willing to spend on a transaction.
+    gasCap: "250000"
+
+    # Cron expression defining the data update frequency.
+    # This example runs every 30 seconds.
+    interval: "*/30 * * * * *"
+
+    # The minimum price change percentage to trigger an on-chain update.
+    # This example is set to 0.1%
+    priceDeltaPercentage: 0.001
+
+    # --- Chain & Verifier Definitions ---
+
+    # A list of all supported blockchain networks with their RPC URLs.
     chains:
-      # Avalanche Fuji
       - id: 43113
-        name: "Avalanche Fuji Network"
-        rpc: "https://api.avax-test.network/ext/bc/C/rpc"
-        # ... other chain details
+        name: "Avalanche Fuji Testnet"
+        currencyName: "Fuji AVAX"
+        currencySymbol: "AVAX"
+        currencyDecimals: 18
+        rpc: "https://api.avax-test.network/ext/bc/C/rpc" # <-- TODO: Replace with your own reliable RPC URL
+        testnet: true
+      - id: 421614
+        name: "Arbitrum Sepolia"
+        currencyName: "Arbitrum Sepolia Ether"
+        currencySymbol: "ETH"
+        currencyDecimals: 18
+        rpc: "https://sepolia-rollup.arbitrum.io/rpc" # <-- TODO: Replace with your own reliable RPC URL
+        testnet: true
 
-    # --- Data-Streams Verifier addresses ----------------------------
+    # The addresses of the official Chainlink Verifier contracts on each network.
     verifierAddresses:
-      - chainId: 43113 # Avalanche Fuji
+      - chainId: 43113
         address: "0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3"
+      - chainId: 421614
+        address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
 
-    # --- Target contracts (on-chain writes) -------------------------
+    # --- On-Chain Target Configurations ---
+
+    # This section defines which smart contracts to call for each feed on each chain.
+    # You can have multiple targets for the same feed.
     targetChains:
-      - chainId: 43113 # Avalanche Fuji
+      - chainId: 43113 # Target is on Avalanche Fuji
         targetContracts:
+          # This configuration sends ETH/USD data to a contract on Fuji
           - feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
-            # PASTE YOUR DEPLOYED CONTRACT ADDRESS HERE
-            address: "0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS"
-            functionName: updateReport
-            functionArgs: [reportVersion, verifiedReport]
+            address: "0xYourDataStreamsFeedContractOnFuji" # <-- UPDATE WITH YOUR CONTRACT ADDRESS
+            # The name of the function to call on your smart contract
+            functionName: "verifyAndUpdateReport"
+            # The arguments the Transmitter should prepare and send to the function
+            #   • rawReport          = the unverified payload from the Data Streams websocket
+            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by the transmitter
+            functionArgs: ["rawReport", "parameterPayload"]
+            # The ABI for the target function, required to encode the transaction
             abi:
-              - inputs:
-                  [
-                    { internalType: uint16, name: reportVersion, type: uint16 },
-                    { internalType: bytes, name: verifiedReportData, type: bytes },
-                  ]
-                name: updateReport
+              - name: "verifyAndUpdateReport"
+                type: "function"
+                stateMutability: "nonpayable"
+                inputs:
+                  - { "internalType": "bytes", "name": "unverifiedReportData", "type": "bytes" }
+                  - { "internalType": "bytes", "name": "parameterPayload", "type": "bytes" }
                 outputs: []
-                stateMutability: nonpayable
-                type: function
+            # Off-chain verification must run so keep skipVerify false (default)
+            skipVerify: false
     ```
+
+    - Replace `0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS` with the address of the contract you deployed in the previous step.
+    - The `feedId` should match the one you set in the contract deployment.
 
 1.  Start the Docker daemon.
 
     The Docker daemon is required to run the Redis instance that Transmitter uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
 
 1.  Run the following command to start the Transmitter and its services in the background:
+
     ```bash
     docker compose up -d
     ```
+
 1.  Open your web browser and navigate to `http://localhost:3000` to access the Transmitter UI. Because you pre-configured the contract in `config.yml`, the `ETH/USD` stream on the dashboard should show a `Running` status.
 
 <Aside type="tip" title="Troubleshooting">
-  If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
-  for common problems and solutions.
+    If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
+    for common problems and solutions.
 </Aside>
 </Accordion>
 
@@ -414,11 +417,6 @@ If you run into issues during setup or operation, refer to these common problems
 
   - When deploying with Foundry, you can adjust the `gas_limit` in your `foundry.toml` file.
   - For the transmitter, you can increase the `gasCap` value in your `config.yml` file.
-
-- **Transactions failing with a `REPORT_VERIFIER missing` error**
-
-  - This error means the wallet address used by the transmitter has not been granted the `REPORT_VERIFIER_ROLE` on your deployed contract.
-  - Make sure you've granted the role to the correct address.
 
 - **Missing private key**
   - `forge script` will silently fall back to Foundry's default dev key and assign contract roles to `0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`.
