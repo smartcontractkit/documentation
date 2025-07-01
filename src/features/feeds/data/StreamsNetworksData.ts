@@ -152,6 +152,11 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
+    mainnet: {
+      label: "Botanix Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://botanixscan.io/address/%s",
+    },
     testnet: {
       label: "Botanix Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
@@ -255,6 +260,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Ink Sepolia Testnet",
       verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
       explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
+    },
+  },
+  {
+    network: "Katana",
+    logoUrl: "/assets/chains/polygonkatana.svg",
+    mainnet: {
+      label: "Katana Mainnet",
+      verifierProxy: "0x2a644E5AC685112A7Eff0c4d73CD0260546D366F",
+      explorerUrl: "https://explorer.katanarpc.com/address/%s",
+    },
+    testnet: {
+      label: "Katana Testnet (Tatara)",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
     },
   },
   {
