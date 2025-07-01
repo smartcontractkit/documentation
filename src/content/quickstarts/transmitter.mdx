@@ -51,13 +51,13 @@ Transmitter relays data from the off-chain Chainlink network to your on-chain co
 
 1.  **Off-chain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the off-chain Data Streams Aggregation Network.
 
-1.  **Off-chain | Monitoring:** Transmitter continuously monitors this stream of reports via a WebSocket connection.
+1.  **Off-chain | Monitoring:** Transmitter, which you operate, continuously monitors this off-chain network for new reports via a WebSocket connection.
 
-1.  **On-chain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter takes a report from the off-chain stream and pushes its data on-chain into your designated Oracle Contract.
+1.  **On-chain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter bundles the latest report into a transaction and submits it to your designated Oracle Contract.
 
-1.  **On-chain | Verification:** Your Oracle Contract validates the report's authenticity by passing it to the Chainlink Verifier Contract, which checks the cryptographic signature from the DON.
+1.  **On-chain | Verification:** Within that single transaction, your Oracle Contract immediately calls the Chainlink Verifier Contract. The Verifier authenticates the report by checking the DON's cryptographic signature. If verification fails, the entire transaction reverts, ensuring no state change occurs.
 
-1.  **On-chain | Consumption:** Once this on-demand verification is complete, the data in your Oracle Contract is considered trustworthy and is ready to be read and utilized by your dApp or other smart contracts.
+1.  **On-chain | Consumption:** Upon successful verification, the data is written to your Oracle Contract's storage. This freshly verified, low-latency data is now available on-chain for your dApp or other smart contracts to consume.
 
 <ClickToZoom
   src="/images/quickstarts/feature/QuickStarts-DataStreams-Transmitter.webp"
