@@ -492,10 +492,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/create-a-chainlinked-project?parent=dataStreams",
         },
         {
-          title: "Transmitter (Community Tool)",
-          url: "quickstarts/transmitter?parent=dataStreams",
-        },
-        {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataStreams",
         },
