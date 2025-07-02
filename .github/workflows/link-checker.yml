@@ -1,0 +1,24 @@
+# .github/workflows/link-checker.yml
+
+name: "🔗 Broken Link Checker"
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "☁️ Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "🔎 Run Link Checker"
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: "--config ./lychee.toml ./src/content/**/*.md*"
+          # Do not show failed
+          fail: false
+        env:
+          # Required to check GitHub links without being rate-limited
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
