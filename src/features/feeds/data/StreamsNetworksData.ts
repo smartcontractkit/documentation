@@ -331,6 +331,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Metis",
+    logoUrl: "/assets/chains/metis.svg",
+    mainnet: {
+      label: "Metis Andromeda Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+    },
+    testnet: {
+      label: "Metis Sepolia Testnet",
+      verifierProxy: "0xcFC9A8Efad365B04253575326f6A9bcDD8131Eb7",
+      explorerUrl: "https://sepolia-explorer.metisdevops.link/address/%s",
+    },
+  },
+  {
     network: "Monad",
     logoUrl: "/assets/chains/monad.svg",
     testnet: {
