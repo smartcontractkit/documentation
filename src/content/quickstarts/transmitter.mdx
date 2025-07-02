@@ -33,7 +33,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data off-chain, the process of bringing this data on-chain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the on-chain transaction logic for when and how to push updates.
 
-The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring off-chain data streams and pushing them to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring off-chain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
 This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Transmitter, and configuring it to monitor a specific Data Stream and relay it to your on-chain contract.
 
@@ -96,13 +96,13 @@ First, deploy a `DataStreamsFeed.sol` contract. This contract receives and store
     cd chainlink-transmitter-contract
     ```
 
-1.  Install the dependencies using `pnpm` and install/initalize Foundry:
+1.  Install the dependencies using `pnpm` and install/initialize Foundry:
 
     ```bash
       pnpm add --save-dev @openzeppelin/contracts @chainlink/contracts && curl -L https://foundry.paradigm.xyz | bash && forge install
     ```
 
-1.  Create a `.env` file in the project's root directory to store your private key, RPC URL, and link token address.:
+1.  Create a `.env` file in the project's root directory to store your private key, RPC URL, and link token address:
 
     ```bash
     cat >.env <<EOF
@@ -378,7 +378,7 @@ The **Schedule** section allows you to define how often the Transmitter should p
 
 <Accordion title="Verifier Contracts" >
 
-The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed on chain. The verifier contract for your current network will be automatically selected based on `config.yml`.
+The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed on-chain. The verifier contract for your current network will be automatically selected based on `config.yml`.
 
 </Accordion>
 
@@ -434,7 +434,7 @@ If you run into issues during setup or operation, refer to these common problems
 
 Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Transmitter, and linked them together.
 
-You can now monitor off-chain data streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates on-chain.
+You can now monitor off-chain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates on-chain.
 
 For more advanced usage, troubleshooting, or to contribute, visit the [GitHub repository][GITHUB_REPO] or check out the [official Data Streams documentation](/data-streams/index).
 
