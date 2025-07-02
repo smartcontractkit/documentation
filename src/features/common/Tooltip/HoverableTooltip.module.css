@@ -1,0 +1,154 @@
+/**
+ * CSS Module for Hoverable Tooltip Component
+ * 
+ * Provides responsive, accessible styling for both hoverable and standard tooltip modes.
+ * Uses CSS Grid/Flexbox for modern layout and includes mobile-first responsive design.
+ * 
+ * Key Features:
+ * - Responsive width calculations to prevent mobile overflow
+ * - Proper z-index management for overlay positioning  
+ * - Accessible color contrast and focus states
+ * - Cross-browser compatible arrow/caret styling
+ * - CSS specificity management to override conflicting styles
+ * 
+ * @see Tooltip.tsx for usage examples and API documentation
+ */
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.trigger {
+  position: relative;
+  display: inline-block;
+}
+
+/* More specific selector to override .ccip-chain-hero__heading img */
+.container .trigger .icon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+}
+
+.tooltip {
+  background: black;
+  color: #b7b7b7;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: left;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px #000000;
+  border: none;
+  outline: none;
+  z-index: 9999;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+  pointer-events: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  /* Responsive width */
+  width: min(280px, calc(100vw - 32px));
+  max-width: 300px;
+  padding: 12px 8px;
+}
+
+.caret {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid black;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .tooltip {
+    width: min(260px, calc(100vw - 16px));
+    padding: 10px 6px;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+  }
+
+  .caret {
+    bottom: -5px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid black;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+  .tooltip {
+    width: calc(100vw - 24px);
+    max-width: 240px;
+    padding: 8px 6px;
+  }
+}
+
+/* Prevent tooltip from going off-screen on left/right */
+@media (max-width: 320px) {
+  .tooltip {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    transform: none;
+  }
+
+  .caret {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Default tooltip styles (for Chainlink component) */
+.defaultContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.defaultIcon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  object-fit: contain;
+  display: block;
+}
+
+.defaultText {
+  margin-right: 2%;
+}
+
+/* Link styling within tooltip content */
+.tooltip :global(.tooltip-content) a {
+  color: #639cff;
+  text-decoration: none;
+}
+
+.tooltip :global(.tooltip-content) a:hover {
+  text-decoration: underline;
+}

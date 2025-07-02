@@ -2,6 +2,7 @@ import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
+import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
@@ -64,66 +65,79 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
           <tbody>
             {networks
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
-              .map((network, index) => (
-                <tr key={index}>
-                  <td>
-                    <div
-                      className="ccip-table__network-name"
-                      role="button"
-                      onClick={() => {
-                        drawerContentStore.set(() => (
-                          <TokenDrawer
-                            token={token}
-                            network={network}
-                            destinationLanes={lanes[network.key]}
-                            environment={environment}
+              .map((network, index) => {
+                // Check if all lanes for this token on this network are paused
+                const allLanesPaused = areAllLanesPaused(network.tokenDecimals, lanes[network.key] || {})
+
+                return (
+                  <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
+                    <td>
+                      <div
+                        className={`ccip-table__network-name ${allLanesPaused ? "ccip-table__network-name--paused" : ""}`}
+                        role="button"
+                        onClick={() => {
+                          drawerContentStore.set(() => (
+                            <TokenDrawer
+                              token={token}
+                              network={network}
+                              destinationLanes={lanes[network.key]}
+                              environment={environment}
+                            />
+                          ))
+                        }}
+                      >
+                        <span className="ccip-table__logoContainer">
+                          <img
+                            src={network.logo}
+                            alt={network.name}
+                            className="ccip-table__logo"
+                            onError={({ currentTarget }) => {
+                              currentTarget.onerror = null // prevents looping
+                              currentTarget.src = fallbackTokenIconUrl
+                            }}
                           />
-                        ))
-                      }}
-                    >
-                      <span className="ccip-table__logoContainer">
-                        <img
-                          src={network.logo}
-                          alt={network.name}
-                          className="ccip-table__logo"
-                          onError={({ currentTarget }) => {
-                            currentTarget.onerror = null // prevents looping
-                            currentTarget.src = fallbackTokenIconUrl
-                          }}
-                        />
-                        <img
-                          src={network.tokenLogo}
-                          alt={network.tokenId}
-                          className="ccip-table__smallLogo"
-                          onError={({ currentTarget }) => {
-                            currentTarget.onerror = null // prevents looping
-                            currentTarget.src = fallbackTokenIconUrl
-                          }}
-                        />
-                      </span>
-                      {network.name}
-                    </div>
-                  </td>
-                  <td>{network.tokenName}</td>
-                  <td>{network.tokenSymbol}</td>
-                  <td>{network.tokenDecimals}</td>
-                  <td data-clipboard-type="token">
-                    <Address
-                      contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAddress)}
-                      address={network.tokenAddress}
-                      endLength={6}
-                    />
-                  </td>
-                  <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
-                  <td data-clipboard-type="token-pool">
-                    <Address
-                      contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenPoolAddress)}
-                      address={network.tokenPoolAddress}
-                      endLength={6}
-                    />
-                  </td>
-                </tr>
-              ))}
+                          <img
+                            src={network.tokenLogo}
+                            alt={network.tokenId}
+                            className="ccip-table__smallLogo"
+                            onError={({ currentTarget }) => {
+                              currentTarget.onerror = null // prevents looping
+                              currentTarget.src = fallbackTokenIconUrl
+                            }}
+                          />
+                        </span>
+                        {network.name}
+                        {allLanesPaused && (
+                          <span
+                            className="ccip-table__paused-badge"
+                            title="All transfers from this network are currently paused"
+                          >
+                            ⏸️
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{network.tokenName}</td>
+                    <td>{network.tokenSymbol}</td>
+                    <td>{network.tokenDecimals}</td>
+                    <td data-clipboard-type="token">
+                      <Address
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAddress)}
+                        address={network.tokenAddress}
+                        endLength={6}
+                      />
+                    </td>
+                    <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
+                    <td data-clipboard-type="token-pool">
+                      <Address
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenPoolAddress)}
+                        address={network.tokenPoolAddress}
+                        endLength={6}
+                      />
+                    </td>
+                  </tr>
+                )
+              })}
           </tbody>
         </table>
         <div className="ccip-table__notFound">

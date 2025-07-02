@@ -448,8 +448,12 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "NEO_X_MAINNET"
     case "neox-testnet-t4":
       return "NEO_X_TESTNET"
+    case "polygon-mainnet-katana":
+      return "KATANA_MAINNET"
     case "polygon-testnet-tatara":
       return "KATANA_TATARA"
+    case "bitcoin-mainnet-botanix":
+      return "BOTANIX_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -719,8 +723,12 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "neox-mainnet"
     case "NEO_X_TESTNET":
       return "neox-testnet-t4"
+    case "KATANA_MAINNET":
+      return "polygon-mainnet-katana"
     case "KATANA_TATARA":
       return "polygon-testnet-tatara"
+    case "BOTANIX_MAINNET":
+      return "bitcoin-mainnet-botanix"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
