@@ -1109,6 +1109,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "SVM",
               url: "ccip/service-limits/svm",
             },
+            {
+              title: "Network Specific",
+              url: "ccip/service-limits/network-specific-limits",
+            },
           ],
         },
         {

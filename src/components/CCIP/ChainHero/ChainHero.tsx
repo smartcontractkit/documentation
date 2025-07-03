@@ -13,6 +13,7 @@ import {
   fallbackTokenIconUrl,
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { getChainTooltip } from "../Tooltip/index.ts"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
@@ -55,6 +56,9 @@ interface ChainHeroProps {
 }
 
 function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
+  // Get chain-specific tooltip configuration
+  const chainTooltipConfig = network?.chain ? getChainTooltip(network.chain) : null
+
   const feeTokensWithAddress =
     network?.feeTokens?.map((feeToken) => {
       const logo = feeToken.logo
@@ -122,8 +126,25 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               currentTarget.src = fallbackTokenIconUrl
             }}
           />
-          <h1>
-            {network?.name || token?.id} <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+          <h1
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              position: "relative",
+              overflow: "visible",
+            }}
+          >
+            {network?.name || token?.id}
+            <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+
+            {chainTooltipConfig && (
+              <Tooltip
+                tip={chainTooltipConfig.content}
+                hoverable={chainTooltipConfig.hoverable}
+                hideDelay={chainTooltipConfig.hideDelay}
+              />
+            )}
           </h1>
         </div>
         {network && (
@@ -139,7 +160,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 Chain selector
                 <Tooltip
                   label=""
-                  tip="CCIP Blockchain identifier"
+                  tip="CCIP Blockchain identifier."
                   labelStyle={{
                     marginRight: "8px",
                   }}

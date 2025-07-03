@@ -189,3 +189,71 @@ export const displayRate = (capacity: string, rate: string, symbol: string, deci
     maxThroughput: `Refills from 0 to ${commify(cleanedCapacity)} ${symbol} in ${displayTime}`,
   }
 }
+
+// ==============================
+// UTILITY FUNCTIONS FOR TOKEN STATUS
+// ==============================
+
+/**
+ * Determines if a token is paused based on its rate limiter configuration
+ * A token is considered paused if its capacity is <= 1
+ *
+ */
+export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConfig): boolean => {
+  if (!rateLimiterConfig?.isEnabled) {
+    return false // N/A tokens are not considered paused
+  }
+
+  const capacity = rateLimiterConfig?.capacity || "0"
+
+  try {
+    // Convert to BigInt for precise comparison
+    const capacityBigInt = BigInt(capacity)
+    // Calculate threshold: 1 token in smallest units = 10^decimals
+    const oneTokenInSmallestUnits = BigInt(10) ** BigInt(decimals)
+
+    // Direct BigInt comparison - no floating point risks
+    return capacityBigInt <= oneTokenInSmallestUnits
+  } catch (error) {
+    // If capacity is not a valid number, treat as paused for safety
+    console.warn(`Invalid capacity value for rate limiter: ${capacity}`, error)
+    return true
+  }
+}
+
+/**
+ * Determines if all outbound lanes for a token from a specific network are paused
+ * Used to grey out network rows in the token view when all destination lanes are paused
+ *
+ * @example
+ * // Example: LBTC (8 decimals) on Ink with only one destination lane that has capacity "2"
+ * const destinationLanes = {
+ *   "ethereum-mainnet-ink-1": {
+ *     rateLimiterConfig: {
+ *       out: {
+ *         capacity: "2",
+ *         isEnabled: true,
+ *         rate: "1"
+ *       }
+ *     }
+ *   }
+ * }
+ * areAllLanesPaused(8, destinationLanes) // returns true (2 ≤ 10^8)
+ */
+export const areAllLanesPaused = (
+  decimals = 18,
+  destinationLanes: { [destinationChain: string]: { rateLimiterConfig?: { out?: RateLimiterConfig } } }
+): boolean => {
+  const laneKeys = Object.keys(destinationLanes)
+
+  // If no lanes exist, don't consider it paused
+  if (laneKeys.length === 0) {
+    return false
+  }
+
+  // Check if ALL outbound lanes are paused
+  return laneKeys.every((destinationChain) => {
+    const outboundConfig = destinationLanes[destinationChain]?.rateLimiterConfig?.out
+    return isTokenPaused(decimals, outboundConfig)
+  })
+}

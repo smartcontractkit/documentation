@@ -152,6 +152,11 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
+    mainnet: {
+      label: "Botanix Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://botanixscan.io/address/%s",
+    },
     testnet: {
       label: "Botanix Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
@@ -258,6 +263,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Katana",
+    logoUrl: "/assets/chains/polygonkatana.svg",
+    mainnet: {
+      label: "Katana Mainnet",
+      verifierProxy: "0x2a644E5AC685112A7Eff0c4d73CD0260546D366F",
+      explorerUrl: "https://explorer.katanarpc.com/address/%s",
+    },
+    testnet: {
+      label: "Katana Testnet (Tatara)",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
+    },
+  },
+  {
     network: "Lens",
     logoUrl: "/assets/chains/lens.svg",
     mainnet: {
@@ -309,6 +328,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "MegaETH Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
       explorerUrl: "https://www.megaexplorer.xyz/address/%s",
+    },
+  },
+  {
+    network: "Metis",
+    logoUrl: "/assets/chains/metis.svg",
+    mainnet: {
+      label: "Metis Andromeda Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+    },
+    testnet: {
+      label: "Metis Sepolia Testnet",
+      verifierProxy: "0xcFC9A8Efad365B04253575326f6A9bcDD8131Eb7",
+      explorerUrl: "https://sepolia-explorer.metisdevops.link/address/%s",
     },
   },
   {

@@ -175,6 +175,13 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Botanix Mainnet",
+        explorerUrl: "https://botanixscan.io/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-botanix.json",
+        queryString: "botanix-mainnet",
+      },
+      {
         name: "Botanix Testnet",
         explorerUrl: "https://testnet.botanixscan.io/address/%s",
         networkType: "testnet",
@@ -300,6 +307,31 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-hedera-testnet.json",
         queryString: "hedera-testnet",
+      },
+    ],
+  },
+  {
+    page: "katana",
+    label: "Katana",
+    title: "Katana Data Feeds",
+    img: "/assets/chains/polygonkatana.svg",
+    networkStatusUrl: "https://explorer.katanarpc.com",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Katana Mainnet",
+        explorerUrl: "https://explorer.katanarpc.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
+        queryString: "katara-mainnet",
+      },
+      {
+        name: "Katana Testnet Tatara",
+        explorerUrl: "https://explorer.tatara.katana.network/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-tatara.json",
+        queryString: "katara-testnet-tatara",
       },
     ],
   },
