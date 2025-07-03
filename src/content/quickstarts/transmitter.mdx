@@ -1,6 +1,6 @@
 ---
 title: "Automated Data Relay with Data Streams Transmitter"
-description: "Set up and manage a self-hosted, automated relay to push off-chain Data Streams to your smart contracts."
+description: "Set up and manage a self-hosted, automated relay to push offchain Data Streams to your smart contracts."
 githubSourceCodeUrl: "https://github.com/hackbg/chainlink-datastreams-transmitter"
 image: "QuickStarts-DataStreams-Transmitter.webp"
 products: ["streams"]
@@ -31,11 +31,11 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   Please do your own research and audit the code before using this tool in a production environment.
 </Aside>
 
-While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data off-chain, the process of bringing this data on-chain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the on-chain transaction logic for when and how to push updates.
+While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data offchain, the process of bringing this data onchain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the onchain transaction logic for when and how to push updates.
 
-The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring off-chain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring offchain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
-This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Transmitter, and configuring it to monitor a specific Data Stream and relay it to your on-chain contract.
+This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Transmitter, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
 
 ---
 
@@ -47,17 +47,17 @@ This guide walks you through deploying a `DataStreamsFeed` consumer contract, se
   Architecture](/data-streams/architecture) documentation.
 </Aside>
 
-Transmitter relays data from the off-chain Chainlink network to your on-chain contracts in the following sequence:
+Transmitter relays data from the offchain Chainlink network to your onchain contracts in the following sequence:
 
-1.  **Off-chain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the off-chain Data Streams Aggregation Network.
+1.  **Offchain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the offchain Data Streams Aggregation Network.
 
-1.  **Off-chain | Monitoring:** Transmitter, which you operate, continuously monitors this off-chain network for new reports via a WebSocket connection.
+1.  **Offchain | Monitoring:** Transmitter, which you operate, continuously monitors this offchain network for new reports via a WebSocket connection.
 
-1.  **On-chain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter bundles the latest report into a transaction and submits it to your designated Oracle Contract.
+1.  **Onchain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter bundles the latest report into a transaction and submits it to your designated Oracle Contract.
 
-1.  **On-chain | Verification:** Within that single transaction, your Oracle Contract immediately calls the Chainlink Verifier Contract, which uses its `LINK` allowance to submit the verification request. The Verifier authenticates the report by checking the DON's cryptographic signature. If verification fails, the entire transaction reverts, ensuring no state change occurs.
+1.  **Onchain | Verification:** Within that single transaction, your Oracle Contract immediately calls the Chainlink Verifier Contract, which uses its `LINK` allowance to submit the verification request. The Verifier authenticates the report by checking the DON's cryptographic signature. If verification fails, the entire transaction reverts, ensuring no state change occurs.
 
-1.  **On-chain | Consumption:** Upon successful verification, the data is written to your Oracle Contract's storage. This freshly verified, low-latency data is now available on-chain for your dApp or other smart contracts to consume.
+1.  **Onchain | Consumption:** Upon successful verification, the data is written to your Oracle Contract's storage. This freshly verified, low-latency data is now available onchain for your dApp or other smart contracts to consume.
 
 <ClickToZoom
   src="/images/quickstarts/feature/QuickStarts-DataStreams-Transmitter.webp"
@@ -76,7 +76,7 @@ Before you start this tutorial, ensure you have the following prerequisites:
 - **Software Dependencies**: [Foundry][FOUNDRY_INSTALL], [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host. This guide uses `pnpm` for package management.
 - **Development Wallet**: This guide requires a funded development wallet and its **private key** to send transactions.
   - **Network Configuration**: This guide uses **Avalanche Fuji**. You can find RPC URLs on [Chainlist](https://chainlist.org).
-- **Testnet Funds**: The wallet must be funded with testnet `AVAX` to pay for transaction fees on the **Avalanche Fuji** network. Testnet `LINK` must be provided to the deployed contract to pay for on-chain verification fees. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
+- **Testnet Funds**: The wallet must be funded with testnet `AVAX` to pay for transaction fees on the **Avalanche Fuji** network. Testnet `LINK` must be provided to the deployed contract to pay for onchain verification fees. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
 - **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us][DATA_STREAMS_CONTACT] to request Data Streams access.
 - **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
 
@@ -165,7 +165,7 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
 </Accordion>
 
 <Accordion title="Set Up Transmitter" number={2}>
-With a consumer contract on-chain, you can now set up the Transmitter service to relay data to it.
+With a consumer contract onchain, you can now set up the Transmitter service to relay data to it.
 
 1.  In a new terminal window, navigate to your development space and clone the [Data Stream Transmitter repository][GITHUB_REPO]:
 
@@ -204,7 +204,7 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
 1.  Create the runtime configuration file by copying the example:
 
     ```bash
-    cp config-chainlink-example.yml config.yml
+    cp config-chainlink-verify-example.yml config.yml
     ```
 
 1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Avalanche Fuji**.
@@ -287,7 +287,7 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
 
     - Replace `0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS` with the address of the contract you deployed in the previous step.
     - The `feedId` should match the one you set in the contract deployment.
-    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure the Transmitter correctly prepares the transaction for on-chain verification.
+    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure the Transmitter correctly prepares the transaction for onchain verification.
 
 1.  Start the Docker daemon.
 
@@ -311,7 +311,7 @@ With a consumer contract on-chain, you can now set up the Transmitter service to
 
 ## UI Overview
 
-The Transmitter UI lets you manage your feeds, monitor their status, and define how and where data is pushed on-chain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
+The Transmitter UI lets you manage your feeds, monitor their status, and define how and where data is pushed onchain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
 
 <ClickToZoom src="/images/quickstarts/transmitter/transmitter_home.png" alt="The Transmitter home page" />
 
@@ -321,13 +321,13 @@ The optional sections below provide a detailed overview of the Transmitter UI, e
 
 On the upper-right corner of the page you will find the **Chain** section. Since the default chain is configured to `Avalanche Fuji`, you should see that network listed along with details for your wallet.
 
-| Field                    | Description                                                                          |
-| :----------------------- | :----------------------------------------------------------------------------------- |
-| **Current Chain**        | The current chain, which is where data will be pushed.                               |
-| **Chain ID**             | The unique numeric identifier for the current chain.                                 |
-| **Wallet Address**       | Your unique wallet address.                                                          |
-| **Native Token Balance** | Your native token balance, which is used to pay for on-chain transaction fees (gas). |
-| **LINK Balance**         | Your `LINK` token balance, used to pay for Chainlink Data Streams transactions.      |
+| Field                    | Description                                                                         |
+| :----------------------- | :---------------------------------------------------------------------------------- |
+| **Current Chain**        | The current chain, which is where data will be pushed.                              |
+| **Chain ID**             | The unique numeric identifier for the current chain.                                |
+| **Wallet Address**       | Your unique wallet address.                                                         |
+| **Native Token Balance** | Your native token balance, which is used to pay for onchain transaction fees (gas). |
+| **LINK Balance**         | Your `LINK` token balance, used to pay for Chainlink Data Streams transactions.     |
 
 Your balance should reflect the amount of testnet LINK and AVAX you have in your wallet. If you need more, you can use the [Chainlink Faucet](https://faucets.chain.link/).
 
@@ -335,7 +335,7 @@ Your balance should reflect the amount of testnet LINK and AVAX you have in your
 
 <Accordion title="Logs">
 
-On the top-right corner of the page, you will find the **Logs** section, which contains details for all Transmitter actions. When operating correctly, the log should reflect a clear, step-by-step process for each on-chain update.
+On the top-right corner of the page, you will find the **Logs** section, which contains details for all Transmitter actions. When operating correctly, the log should reflect a clear, step-by-step process for each onchain update.
 
 Example log output:
 
@@ -365,7 +365,7 @@ The **Data Streams** section lists all Data Streams, their status, and any relat
 | **Stream**        | The name of the stream. This is the name set by the user for easier tracking and feed identification.                                               |
 | **Feed ID**       | The feed ID. Check [Chainlink Data Streams Documentation](/data-streams/crypto-streams) for a list of supported streams.                            |
 | **Contract**      | Target contract for the feed on the current chain. Click to open a configuration page where you can define the target contract, functions, and ABI. |
-| **Saved price**   | The latest price recorded on-chain.                                                                                                                 |
+| **Saved price**   | The latest price recorded onchain.                                                                                                                  |
 | **Last reported** | The latest price reported by the stream.                                                                                                            |
 | **Status**        | Current status of the stream. Possible states include: `Running`, `Connecting`, `Stopping` or `Stopped`.                                            |
 | **Remove**        | Click to remove the stream.                                                                                                                         |
@@ -374,19 +374,19 @@ The **Data Streams** section lists all Data Streams, their status, and any relat
 
 <Accordion title="Schedule" >
 
-The **Schedule** section allows you to define how often the Transmitter should push data on-chain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
+The **Schedule** section allows you to define how often the Transmitter should push data onchain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
 
 </Accordion>
 
 <Accordion title="Verifier Contracts" >
 
-The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed on-chain. The verifier contract for your current network will be automatically selected based on `config.yml`.
+The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed onchain. The verifier contract for your current network will be automatically selected based on `config.yml`.
 
 </Accordion>
 
 <Accordion title="Price Delta" >
 
-The **Price Delta** section lets you define the price change threshold that will trigger an on-chain update. We set this in the `config.yml` file, but you can change this value here.
+The **Price Delta** section lets you define the price change threshold that will trigger an onchain update. We set this in the `config.yml` file, but you can change this value here.
 
 </Accordion>
 
@@ -414,12 +414,12 @@ If you run into issues during setup or operation, refer to these common problems
 - **Data is not updating on your contract**
   - Review the logs in Transmitter for specific error messages related to the feed or contract interaction.
   - **Authentication:** Verify that your `DATASTREAMS_CLIENT_ID` and `DATASTREAMS_CLIENT_SECRET` are correct and do not have extra spaces or characters.
-  - **LINK Balance:** Ensure the contract holds sufficient `LINK` balance to pay for on-chain verification fees. Top up the contract if needed -- testnet `LINK` can be found at the [Chainlink Faucet](https://faucets.chain.link/).
+  - **LINK Balance:** Ensure the contract holds sufficient `LINK` balance to pay for onchain verification fees. Top up the contract if needed -- testnet `LINK` can be found at the [Chainlink Faucet](https://faucets.chain.link/).
   - **RPC Endpoint:** Confirm the RPC URL in your `config.yml` is correct and the node is reachable.
 
 ---
 
-### Contract Deployment & On-Chain Errors
+### Contract Deployment & Onchain Errors
 
 - **`Gas estimation too high` error**
 
@@ -436,7 +436,7 @@ If you run into issues during setup or operation, refer to these common problems
 
 Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Transmitter, and linked them together.
 
-You can now monitor off-chain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates on-chain.
+You can now monitor offchain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates onchain.
 
 For more advanced usage, troubleshooting, or to contribute, visit the [GitHub repository][GITHUB_REPO] or check out the [official Data Streams documentation](/data-streams/index).
 
