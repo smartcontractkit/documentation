@@ -175,7 +175,7 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "BOB Chain Mainnet",
+        name: "BOB Mainnet",
         explorerUrl: "https://explorer.gobob.xyz/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
