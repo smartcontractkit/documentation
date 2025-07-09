@@ -166,6 +166,24 @@ export const CHAINS: Chain[] = [
     label: "BNB Chain",
   },
   {
+    page: "bob",
+    label: "BOB",
+    title: "BOB Data Feeds",
+    img: "/assets/chains/bob.svg",
+    networkStatusUrl: "https://explorer.gobob.xyz/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "BOB Mainnet",
+        explorerUrl: "https://explorer.gobob.xyz/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
+        queryString: "bob-mainnet",
+      },
+    ],
+  },
+  {
     page: "botanix",
     label: "Botanix",
     title: "Botanix Data Feeds",
