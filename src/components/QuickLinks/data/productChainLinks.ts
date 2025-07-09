@@ -97,6 +97,7 @@ export const productChainLinks: ProductChainLinks = {
       avalanche: "/data-feeds/price-feeds/addresses?page=1&network=avalanche#networks",
       base: "/data-feeds/price-feeds/addresses?page=1&network=base#networks",
       "bnb-chain": "/data-feeds/price-feeds/addresses?page=1&network=bnb-chain#networks",
+      bob: "/data-feeds/price-feeds/addresses?page=1&network=bob#networks",
       botanix: "/data-feeds/price-feeds/addresses?page=1&network=botanix#networks",
       celo: "/data-feeds/price-feeds/addresses?page=1&network=celo#networks",
       ethereum: "/data-feeds/price-feeds/addresses?page=1&network=ethereum#networks",
