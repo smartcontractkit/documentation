@@ -282,7 +282,7 @@ export const productChainLinks: ProductChainLinks = {
     taiko: "/resources/link-token-contracts#taiko",
     megaeth: "/resources/link-token-contracts#megaeth",
     zora: "/resources/link-token-contracts#zora",
-    etherlink: "/resources/link-token-contract#etherlink",
+    etherlink: "/resources/link-token-contracts#etherlink",
     opbnb: "/resources/link-token-contracts#opbnb",
     janction: "/resources/link-token-contracts#janction",
     neox: "/resources/link-token-contracts#neo-x",
