@@ -338,9 +338,9 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BERACHAIN_MAINNET"
     case "berachain-testnet-bartio":
       return "BERACHAIN_BARTIO"
-    case "hyperevm-mainnet":
+    case "hyperliquid-mainnet":
       return "HYPEREVM_MAINNET"
-    case "hyperevm-testnet":
+    case "hyperliquid-testnet":
       return "HYPEREVM_TESTNET"
     case "bitcoin-testnet-merlin":
       return "MERLIN_TESTNET"
@@ -616,9 +616,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "BERACHAIN_BARTIO":
       return "berachain-testnet-bartio"
     case "HYPEREVM_MAINNET":
-      return "hyperevm-mainnet"
+      return "hyperliquid-mainnet"
     case "HYPEREVM_TESTNET":
-      return "hyperevm-testnet"
+      return "hyperliquid-testnet"
     case "MERLIN_TESTNET":
       return "bitcoin-testnet-merlin"
     case "MERLIN_MAINNET":
