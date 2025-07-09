@@ -86,6 +86,7 @@ export const productChainLinks: ProductChainLinks = {
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
       "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
       hyperliquid: "/ccip/directory/mainnet/chain/hyperliquid-mainnet",
+      etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
     },
   },
   "Data Feeds": {
