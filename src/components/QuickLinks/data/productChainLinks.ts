@@ -85,7 +85,7 @@ export const productChainLinks: ProductChainLinks = {
       neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
       "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
-      hyperliquid: "/ccip/directory/mainnet/chain/hyperliquid-mainnet",
+      hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
     },
   },
   "Data Feeds": {
@@ -144,7 +144,7 @@ export const productChainLinks: ProductChainLinks = {
       "gnosis-chain": "/data-streams/crypto-streams",
       gravity: "/data-streams/crypto-streams",
       hashkey: "/data-streams/crypto-streams",
-      hyperliquid: "/data-streams/crypto-streams",
+      hyperevm: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
       lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
@@ -286,7 +286,7 @@ export const productChainLinks: ProductChainLinks = {
     neox: "/resources/link-token-contracts#neo-x",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
-    hyperliquid: "/resources/link-token-contracts#hyperliquid",
+    hyperevm: "/resources/link-token-contracts#hyperevm",
   },
 }
 
@@ -342,7 +342,7 @@ export const chainNames: Record<string, string> = {
   treasure: "Treasure",
   lens: "Lens",
   unichain: "Unichain",
-  hyperliquid: "Hyperliquid",
+  hyperevm: "HyperEVM",
   merlin: "Merlin",
   fraxtal: "Fraxtal",
   zeta: "Zeta",
