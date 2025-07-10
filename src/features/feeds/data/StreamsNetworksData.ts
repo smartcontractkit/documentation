@@ -234,15 +234,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
-    network: "Hyperliquid",
+    network: "HyperEVM",
     logoUrl: "/assets/chains/hyperliquid.svg",
     mainnet: {
-      label: "Hyperliquid Mainnet",
+      label: "HyperEVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
     },
     testnet: {
-      label: "Hyperliquid Testnet",
+      label: "HyperEVM Testnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://evm.hyperstats.xyz/address/%s",
     },
@@ -328,6 +328,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "MegaETH Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
       explorerUrl: "https://www.megaexplorer.xyz/address/%s",
+    },
+  },
+  {
+    network: "Metis",
+    logoUrl: "/assets/chains/metis.svg",
+    mainnet: {
+      label: "Metis Andromeda Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+    },
+    testnet: {
+      label: "Metis Sepolia Testnet",
+      verifierProxy: "0xcFC9A8Efad365B04253575326f6A9bcDD8131Eb7",
+      explorerUrl: "https://sepolia-explorer.metisdevops.link/address/%s",
     },
   },
   {
