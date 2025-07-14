@@ -32,9 +32,13 @@ struct EVM2AnyMessage {
 
 ### receiver
 
-- **Definition**:This is the receiver program ID that will execute the CCIP message
-- **For token-only transfers**: Should be set to the default value for the `Pubkey` type in Solana (`11111111111111111111111111111111`)
-- **For arbitrary messaging** or **programmatic token transfers**: Must be the exact program ID of the SVM program that implements the `ccip_receive` instruction
+- **Definition**: The receiver field specifies which program on the destination chain will process the incoming CCIP message.
+- **Token-only transfers**:
+  - **Use**: `0x0000000000000000000000000000000000000000000000000000000000000000` (32-byte zero address)
+  - **Why**: No program execution needed for token-only transfers.
+- **Arbitrary Messaging** or **Programmatic Token Transfers**:
+  - **Use**: The program ID of the SVM program that implements the `ccip_receive` instruction, converted to a 32-byte hex format.
+  - **Why**: The program will process the incoming CCIP message and execute the `ccip_receive` instruction.
 
 <Aside  title="Program ID Format">
   When providing a SVM program ID as the receiver, it must be converted from [Solana's base58 format](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex format for CCIP messages. 
@@ -194,7 +198,7 @@ A 64-bit bitmap indicating which accounts in the `accounts` array should be mark
 
 ### tokenReceiver
 
-The Solana account that will initially receive tokens, represented as a 32-byte Solana public key.
+The Solana account that will initially receive tokens, represented as a 32-byte hex-encoded Solana public key.
 
 <Tabs client:visible>
   <Fragment slot="tab.1">Transfer to Wallet</Fragment>
@@ -203,31 +207,31 @@ The Solana account that will initially receive tokens, represented as a 32-byte 
   <Fragment slot="panel.1">
     For transfers to wallets or multi-sig wallets: 
     
-        - Set to the user's wallet address 
+        - **Use**: The user's wallet address **converted to 32-byte hex format**.
         - **Note**: Do not use an Associated Token Account (ATA) as the `tokenReceiver`. Instead, **use the user's wallet address directly**. The ATA will be automatically derived by the CCIP nodes.
 
   </Fragment>
   <Fragment slot="panel.2">
     For transfers to programs: 
     
-        - Set to a Program Derived Address (PDA) that the program has authority over 
+        - **Use**: A Program Derived Address (PDA) that the program has authority over, **converted to 32-byte hex format**. 
         - **Note**: If the receiver program does not have authority over the provided `tokenReceiver`, the tokens will be inaccessible.
 
   </Fragment>
   <Fragment slot="panel.3">
     For data-only messaging (no tokens): 
     
-        - **MUST** set to the default Solana PublicKey (`11111111111111111111111111111111`)
-        - This is required even though no tokens are being transferred
+        - **Use**: `0x0000000000000000000000000000000000000000000000000000000000000000` (32-byte zero address).
+        - **Why**: This is required even though no tokens are being transferred.
 
   </Fragment>
 </Tabs>
 
 <Aside title="Encoding tokenReceiver">
-  Similar to the receiver field, the tokenReceiver must be properly encoded as a 32-byte hex string:
+  Similar to the receiver field, the tokenReceiver must be properly encoded as a 32-byte hex format:
   
-  - **For token transfers and programmatic transfers**: Convert the Solana wallet address or PDA from [base58](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex string
-  - **For arbitrary messaging (data-only)**: Use the default Solana PublicKey (`11111111111111111111111111111111`) encoded as a 32-byte hex string
+  - **For token transfers and programmatic transfers**: Convert the Solana wallet address or PDA from [base58](https://solana.com/developers/guides/advanced/exchange#basic-verification) to a 32-byte hex string.
+  - **For arbitrary messaging (data-only)**: Use `0x0000000000000000000000000000000000000000000000000000000000000000` (32-byte zero address).
 
 Below is a JavaScript example using the [bs58](https://www.npmjs.com/package/bs58) library:
 
@@ -268,7 +272,7 @@ Use this configuration when sending only tokens from EVM to Solana:
     ```
     {
       destinationChainSelector: SVM_CHAIN_SELECTOR,
-      receiver: DEFAULT_PUBKEY,
+      receiver: "0x0000000000000000000000000000000000000000000000000000000000000000",
       tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
       feeToken: feeTokenAddress,
       data: "0x",
@@ -286,7 +290,7 @@ Use this configuration when sending only tokens from EVM to Solana:
     ```javascript
     const message = {
       destinationChainSelector: 16423721717087811551,  // Solana Devnet
-      receiver: "11111111111111111111111111111111",  // Default PubKey
+      receiver: "0x0000000000000000000000000000000000000000000000000000000000000000",  
       tokenAmounts: [{ 
         token: "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Ethereum Sepolia
         amount: "1000000000000000000"  // 1 LINK (18 decimals)
@@ -296,7 +300,7 @@ Use this configuration when sending only tokens from EVM to Solana:
       extraArgs: encodeExtraArgs({
         computeUnits: 0,
         allowOutOfOrderExecution: true,
-        tokenReceiver: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // Recipient wallet
+        tokenReceiver: "0xc6ea0f22160ac820ce7cd983587acd07557c7d9c79cc15dd818f50d2c554e848",  // Recipient wallet EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB encoded in 32-byte hex format
         accountIsWritableBitmap: 0,
         accounts: []
       })
@@ -308,10 +312,10 @@ Use this configuration when sending only tokens from EVM to Solana:
 <Aside type="note" title="Key Requirements">
 
 - `computeUnits` **MUST** be 0
-- `receiver` should be the default PublicKey
+- `receiver` should be `0x0000000000000000000000000000000000000000000000000000000000000000` for token-only transfers
 - `tokenReceiver`:
-  - For user transfers, `tokenReceiver` should be the user's wallet address
-  - For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over
+  - For user transfers, `tokenReceiver` should be the user's wallet address, converted to 32-byte hex format
+  - For transfers to programs, `tokenReceiver` must be a PDA that the program has authority over, converted to 32-byte hex format
 - `allowOutOfOrderExecution` **MUST** be set to `true`
 
 </Aside>
@@ -334,7 +338,7 @@ Use this configuration when sending only data messages to SVM:
       extraArgs: {
         computeUnits: determinedComputeUnits,
         allowOutOfOrderExecution: true,
-        tokenReceiver: DEFAULT_PUBKEY,
+        tokenReceiver: "0x0000000000000000000000000000000000000000000000000000000000000000",
         accountIsWritableBitmap: calculatedBitmap,
         accounts: [PDA, account, another program ID...]
       }
@@ -345,9 +349,9 @@ Use this configuration when sending only data messages to SVM:
     ```javascript
     // Identify which accounts need to be writable
     const accounts = [
-      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
-      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
-      "4wBqpRvipCi5k5zCZ4NFPiFPEM5gitBKRiSgZ8NZh3nk"   // account3 (not writable)
+      "0x7632c1560daece8311938a50279740e5a2307aeca65f17d251f96b57a1397d2c",  // account1 (not writable) - 8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM encoded in 32-byte hex format
+      "0xf43d70e10f1177756dfb75ee3a887a2b7d788c6b5161bfba053798db9ef18518",  // account2 (writable) - HSPQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y encoded in 32-byte hex format
+      "0x3a74aee651d257c867d8c08013f228b099e023a978bf6b206b15c568212bb3c5"   // account3 (not writable) - 4wBqpRvipCi5k5zCZ4NFPiFPEM5gitBKRiSgZ8NZh3nk encoded in 32-byte hex format
     ];
 
     // account 1 at index0 , not writable --> bit 0 = 0
@@ -360,7 +364,7 @@ Use this configuration when sending only data messages to SVM:
 
     const message = {
       destinationChainSelector: 16423721717087811551,  // Solana Devnet
-      receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
+      receiver: "0xe54c8b87d7468bcb060b16f10d7ed2d9fb7f3412df32278bae7fc1d8d7716a18",  // Program ID - GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH encoded in 32-byte hex format
       tokenAmounts: [],  // No tokens for data-only message
       feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789",  // LINK for fees
       data: "0x68656c6c6f", // "hello" in hex
@@ -415,13 +419,13 @@ Use this configuration when sending both tokens and data in a single message:
     ```javascript
     // Identify all required accounts
     const accounts = [
-      "8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM",  // account1 (not writable)
-      "HSQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y",  // account2 (writable)
-      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  // account3 (not writable)
-      "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ",  // account4 (writable)
-      "H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT",  // account5 (not writable)
-      "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB",  // account6 (writable)
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"     // account7 (not writable)
+      "0x7632c1560daece8311938a50279740e5a2307aeca65f17d251f96b57a1397d2c",  // account1 (not writable) - 8xPzoFtAL8D2Vea9GZgkPkcLgEr9LEBYoJP2L6WNNjDM encoded in 32-byte hex format
+      "0xf43d70e10f1177756dfb75ee3a887a2b7d788c6b5161bfba053798db9ef18518",  // account2 (writable) - HSPQpP9L7wgJpNYdK2Vp8nTpvbULLqB8quiUXL7AGGS3y encoded in 32-byte hex format
+      "0xc6fa7af3bedbad3a3d65f36aabc97431b1bbe4c2d2f6e0e47ca60203452f5d61",  // account3 (not writable) - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v encoded in 32-byte hex format
+      "0x3d379922db649fe03267da8d2fa5316d9c9e44ebe5ebb9650ba0fb7748a539b3",  // account4 (writable) - 57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ encoded in 32-byte hex format
+      "0xeeaf10b62e59f55bfe88c35074cd8ca9927d1bfb6489660859387f0eef4a6fc4",  // account5 (not writable) - H4irvMb7oLqGRcaC2RDB7r1ynJsmHgbpQeJH8qZkDuiT encoded in 32-byte hex format
+      "0xc6ea0f22160ac820ce7cd983587acd07557c7d9c79cc15dd818f50d2c554e848",  // account6 (writable) - EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB encoded in 32-byte hex format
+      "0x06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9"     // account7 (not writable) - TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA encoded in 32-byte hex format
     ];
 
     // account 1 at index0 , not writable --> bit 0 = 0
@@ -439,7 +443,7 @@ Use this configuration when sending both tokens and data in a single message:
 
     const message = {
       destinationChainSelector: 16423721717087811551,  // Solana Devnet
-      receiver: "GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH",  // Program ID
+      receiver: "0xe54c8b87d7468bcb060b16f10d7ed2d9fb7f3412df32278bae7fc1d8d7716a18",  // Program ID - GS64TXeEb5qDnYK2TpcGZCXBcQpSdVMzJrB8nVTeHJKH encoded in 32-byte hex format
       tokenAmounts: [{
         token: "0x779877A7B0D9E8603169DdbD7836e478b4624789",
         amount: "1000000000000000000" // 1 LINK (18 decimals)
@@ -449,7 +453,7 @@ Use this configuration when sending both tokens and data in a single message:
       extraArgs: encodeExtraArgs({
         computeUnits: 300000,  // compute units required by the program for executing the ccip_receive instruction
         allowOutOfOrderExecution: true,
-        tokenReceiver: "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ", // a PDA that the program has authority over
+        tokenReceiver: "0x3d379922db649fe03267da8d2fa5316d9c9e44ebe5ebb9650ba0fb7748a539b3", // a PDA that the program has authority over - 57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ encoded in 32-byte hex format
         accountIsWritableBitmap: 42,  // Decimal representation of bitmap
         accounts: accounts
       })
