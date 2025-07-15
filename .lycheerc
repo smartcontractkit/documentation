@@ -1,0 +1,77 @@
+# This file is used by the Lychee link checker to validate links in the documentation.
+# The GH action is configured to check documentation source files (./src/content/**/*.md*)
+# The exclude section below contains patterns to ignore certain links that are known to be problematic/not relevant
+# Most notably, blockchain explorers, API endpoints that require authentication, and other support services that block bots or require login
+
+#############################  Display  #############################
+# Show informational output during the run
+verbose = "error"
+no_progress = false
+
+#############################  Runtime  #############################
+# Temporarily accept 429 to get a cleaner list.
+accept = '200, 202, 429'
+
+# Disable caching for clean test runs.
+cache = false
+
+max_concurrency = 10
+max_retries = 3
+retry_wait_time = 5
+
+#############################  Requests  ############################
+base_url = "https://docs.chain.link/"
+timeout = 20
+
+#############################  Exclusions  ##########################
+
+# Exclude private, local, and loopback
+exclude_all_private = true
+
+exclude = [
+    # Exclude all local file paths
+    "^file://",
+
+    # Blockchain Explorers (which cause 403 Forbidden errors)
+    ".*scan\\.com",
+    ".*scan\\.dev",
+    ".*scan\\.io",
+    ".*scan\\.xyz",
+    "basescan\\.org",
+    "snowtrace\\.io",
+    "celoscan\\.io",
+    "explorer\\.celo\\.org",
+    "explorer\\.metis\\.io",
+    "explorer\\.arbitrum\\.io",
+    "sepolia-blockscout\\.scroll\\.io",
+    "lineascan\\.build",
+    "sonicscan\\.org",
+    "worldscan\\.org",
+    "abscan\\.org",
+    "bartio\\.beratrail\\.io",
+    "docs\\.polygon\\.technology",
+
+    # Other Services That Block Bots or Require Login
+    "infura\\.io",
+    "stackoverflow\\.com",
+    "ethereum\\.stackexchange\\.com",
+    "support\\.metamask\\.io",
+    "support\\.chainstack\\.com",
+    "faucet\\.polygon\\.technology",
+    "www\\.forex\\.com",
+    "debridges\\.com",
+    "help\\.phantom\\.app",
+    "app\\.roninchain\\.com",
+    "www\\.tronlink\\.org",
+    "bridge\\.linea\\.build",
+    "www\\.reddit\\.com",
+
+    # API endpoints that require authentication
+    "api\\.dataengine\\.chain\\.link",
+    "api\\.testnet-dataengine\\.chain\\.link",
+    "app\\.dev3\\.sh", # Requires payment
+
+    # Common Local & Invalid Patterns
+    "^http://(localhost|127\\.0\\.0\\.1)(:\\d+)?",
+    "mailto:",
+]
