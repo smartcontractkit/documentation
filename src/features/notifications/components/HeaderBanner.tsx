@@ -32,14 +32,32 @@ const bannerTypes: Record<BannerType, { primaryColour: string; textColour: strin
 }
 
 export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bannerContent }) => {
-  const [isDismissed, setIsDismissed] = useState(true) // Change to false to show banner later to prevent flashing on page load for users who have already dismissed it
+  const [cookieValue, setCookieValue] = useState([])
+  const [isBannerShown, setBannerShown] = useState(false) // Change to false to show banner later to prevent flasing on page load for users who have already dismissed it
+
+  if (!bannerContent) {
+    return null
+  }
+
   useEffect(() => {
-    const isDismissedLocalStorage = localStorage.getItem("headerBannerDismissed")
-    if (!isDismissedLocalStorage || isDismissedLocalStorage !== bannerContent?.description) {
-      setIsDismissed(false)
+    const dismissedBannersCookie = getCookie("headerBannerDismissed")
+    const parsedCookieValue = JSON.parse(dismissedBannersCookie || "[]")
+    setCookieValue(parsedCookieValue)
+    if (!parsedCookieValue.includes(bannerContent.description)) {
+      setBannerShown(true)
     }
-  }, [isDismissed])
-  if (!bannerContent || isDismissed) return null
+  }, [isBannerShown])
+
+  if (!isBannerShown) {
+    return null
+  }
+
+  const handleCloseBanner = () => {
+    const newCookieValue = [...cookieValue, bannerContent.description]
+    setCookie("headerBannerDismissed", JSON.stringify(newCookieValue), 365)
+    setBannerShown(false)
+  }
+
   return (
     <div
       className={clsx(headerbanner.container, headerbannerCustom.container)}
@@ -57,15 +75,46 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
           </a>
         )}
       </p>
-      <button
-        className={headerbannerCustom.dismiss}
-        onClick={() => {
-          localStorage.setItem("headerBannerDismissed", bannerContent.description)
-          setIsDismissed(true)
-        }}
-      >
+      <button className={headerbannerCustom.dismiss} onClick={handleCloseBanner}>
         <CloseIcon />
       </button>
     </div>
   ) as React.ReactElement // Explicitly assigning to ReactElement cause TS is confused otherwise
+}
+
+function getCookie(cname: string) {
+  const name = cname + "="
+  const decodedCookie = decodeURIComponent(document.cookie)
+  const ca = decodedCookie.split(";")
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i]
+    while (c.charAt(0) === " ") {
+      c = c.substring(1)
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length)
+    }
+  }
+  return undefined
+}
+function setCookie(cname: string, cvalue: string, exdays = 365) {
+  const baseDomain = getBaseDomain(window.location.href)
+  const d = new Date()
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+  const expires = "expires=" + d.toUTCString()
+  document.cookie = `${cname}=${cvalue};${expires};path=/;domain=${baseDomain}`
+}
+
+function getBaseDomain(url: string) {
+  try {
+    const hostname = new URL(url).hostname
+    const parts = hostname.split(".").reverse()
+    if (parts.length >= 2) {
+      return `${parts[1]}.${parts[0]}`
+    }
+    return hostname
+  } catch (error) {
+    console.error("Invalid URL:", error)
+    return ""
+  }
 }
