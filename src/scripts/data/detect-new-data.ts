@@ -104,6 +104,7 @@ function buildFeedUrl(item: DataItem): string {
     "bnb-chain": "bsc",
     "gnosis-chain": "xdai",
     polygonzkevm: "polygon-zkevm",
+    polygonkatana: "katana",
     // Add more mappings as needed
   }
 
@@ -114,6 +115,7 @@ function buildFeedUrl(item: DataItem): string {
     hedera: "hedera",
     mantle: "mantle",
     polygonzkevm: "polygon-zkevm",
+    polygonkatana: "polygon-mainnet-katana",
     ronin: "ronin",
     soneium: "soneium",
     xlayer: "xlayer",
