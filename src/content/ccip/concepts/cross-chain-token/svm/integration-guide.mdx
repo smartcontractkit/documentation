@@ -55,7 +55,7 @@ The following diagram visualizes the complete decision process based on your min
 
 The first critical decision point is understanding your mint authority control, as this determines your available options throughout the integration process.
 
-**Why mint authority control matters for token registration:** The Router's `owner_propose_administrator` instruction can only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's `mint_authority` field. If you cannot sign this instruction as the mint authority, the Router cannot verify your authorization onchain, requiring manual governance assistance.
+**Why mint authority control matters for token registration:** The Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction can only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's `mint_authority` field. If you cannot sign this instruction as the mint authority, the Router cannot verify your authorization onchain, requiring manual governance assistance.
 
 **You have direct control when:**
 
@@ -72,9 +72,10 @@ The first critical decision point is understanding your mint authority control, 
 
 <Aside type="caution" title="SPL Token Multisig Limitation">
   **Critical:** While SPL token multisigs can mint tokens, they can only execute SPL token program instructions. They
-  cannot call other program instructions required for CCIP registration (`owner_propose_administrator`) or pool
-  initialization (`initialize`). If your mint authority is an SPL token multisig, you will need Chainlink assistance for
-  both registration and pool initialization.
+  cannot call other program instructions required for CCIP registration
+  ([`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)) or pool
+  initialization ([`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)). If your mint
+  authority is an SPL token multisig, you will need Chainlink assistance for both registration and pool initialization.
 </Aside>
 
 ## Integration Paths
@@ -87,7 +88,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 **Registration Process:**
 
-- **Self-service registration**: Use [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) and [accept_admin_role_token_admin_registry](/ccip/concepts/cross-chain-token/svm/registration-administration#accepting-the-administrator-role) instructions (propose + accept)
+- **Self-service registration**: Use [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) and [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) instructions (propose + accept)
 - **Immediate control**: Complete registration without external assistance
 - **Administrator flexibility**: Choose any address as the CCIP token administrator
 
@@ -96,7 +97,7 @@ Based on your mint authority control, follow the appropriate integration path:
 1. **[Self-Serve Mode](/ccip/concepts/cross-chain-token/svm/token-pools#approach-1-self-serve-mode-recommended) (Recommended)**
 
    - Use Chainlink-deployed standard pool programs
-   - Initialize your pool using [initialize](/ccip/concepts/cross-chain-token/svm/registration-administration#pool-initialization) instruction
+   - Initialize your pool using [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction
    - Automatic governance-controlled upgrades
    - Lowest operational overhead
 
@@ -112,12 +113,12 @@ Based on your mint authority control, follow the appropriate integration path:
 
 ### Path B: Assisted Registration + Self-Serve Pools (Mint Authority Not Controlled)
 
-**When to use:** You want to use self-serve mode pools, but you cannot call `owner_propose_administrator` as the mint authority
+**When to use:** You want to use self-serve mode pools, but you cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) as the mint authority
 
 **Registration Process:**
 
 - **Manual registration required**: Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration)
-- **CCIP governance assistance**: Router upgrade authority will propose the administrator using `ccip_admin_propose_administrator`
+- **CCIP governance assistance**: Router upgrade authority will propose the administrator using [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#ccip_admin_propose_administrator)
 - **Choose administrator**: You specify who should be the CCIP token administrator
 
 **Pool Deployment:**
@@ -128,7 +129,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 ### Path C: Full Manual Process (Custom or Self-Deployed)
 
-**When to use:** You cannot call `owner_propose_administrator` as the mint authority and want self-deployed or custom pools
+**When to use:** You cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) as the mint authority and want self-deployed or custom pools
 
 **Registration Process:**
 
@@ -141,11 +142,12 @@ Based on your mint authority control, follow the appropriate integration path:
 - **Initialize independently**: Use your upgrade authority to initialize pools
 
 <Aside type="note" title="Why Manual Registration is Required">
-  Paths B and C require manual registration because the Router's `owner_propose_administrator` instruction can only be
-  called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's
-  `mint_authority` field. If you cannot sign this instruction as the mint authority (because you don't control it, it's
-  set to `None`, or it's an SPL token multisig), the Router cannot verify your authorization onchain, requiring manual
-  governance assistance.
+  Paths B and C require manual registration because the Router's
+  [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction can
+  only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the
+  token's `mint_authority` field. If you cannot sign this instruction as the mint authority (because you don't control
+  it, it's set to `None`, or it's an SPL token multisig), the Router cannot verify your authorization onchain, requiring
+  manual governance assistance.
 </Aside>
 
 ## Implementation Steps
@@ -163,7 +165,7 @@ Choose your deployment approach:
 
 - **Self-serve mode**: Initialize pool from existing Chainlink-deployed programs
 
-  - **If you can sign as mint authority**: Use the [initialize](/ccip/concepts/cross-chain-token/svm/registration-administration#pool-initialization) instruction directly
+  - **If you can sign as mint authority**: Use the [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction directly
   - **If you cannot sign as mint authority** (mint authority is `None`, held by SPL token multisig, or controlled by another party): Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) for assisted initialization
 
 - **Self-deployed**: Deploy standard pool programs yourself, then initialize pool from your deployed program
@@ -193,7 +195,7 @@ See [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools
 
 ### Step 6: Link Pool to Token Registry
 
-- Call [set_pool](/ccip/concepts/cross-chain-token/svm/registration-administration#setting-the-token-pool) instruction on the Router
+- Call [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction on the Router
 - Links your pool's ALT to your token in the TokenAdminRegistry
 - Enables CCIP to route cross-chain transfers to your pool
 

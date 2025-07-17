@@ -3,7 +3,8 @@ section: ccip
 date: Last Modified
 title: "CCIP v1.6.0 SVM Events API Reference"
 metadata:
-  description: "API documentation for CCIP events on SVM-based blockchains like Solana."
+  description: "Comprehensive API documentation for CCIP events on SVM-based blockchains like Solana. Complete reference covering router events, token pool events, message events, configuration events, and execution events for cross-chain monitoring and debugging."
+  excerpt: "CCIP events, SVM events, Solana events, cross-chain events, router events, token pool events, message events, execution events, event monitoring, blockchain logging"
 ---
 
 import { Aside } from "@components"
@@ -13,9 +14,13 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ### Router
 
-#### `ccip_send`
+The Router program emits various events to provide transparency and enable off-chain monitoring of cross-chain operations.
 
-When the `ccip_send` instruction completes successfully, the Router emits a single event, `CCIPMessageSent`.
+#### Message Events
+
+##### `CCIPMessageSent`
+
+Emitted when a cross-chain message is successfully sent via `ccip_send`.
 
 ```rust
 #[event]
@@ -34,3 +39,472 @@ pub struct CCIPMessageSent {
 | `dest_chain_selector` | `u64`                | The **chain selector** for the destination chain. Think of it as the chain's unique ID in the CCIP ecosystem (e.g., 1 for Ethereum Mainnet, 10 for Optimism, etc.).                             |
 | `sequence_number`     | `u64`                | Monotonically increments each time you successfully call `ccip_send` for a particular destination chain. It is unique **per** chain in the sense that each chain has its own separate sequence. |
 | `message`             | `SVM2AnyRampMessage` | The cross-chain message payload itself. It includes: <br/> • The sender's address <br/> • Arbitrary `data` payload <br/> • Token transfer details <br/> • Fees and more                         |
+
+#### Token Administration Events
+
+##### `AdministratorTransferRequested`
+
+Emitted when a token administrator role transfer is initiated via `owner_propose_administrator`, `ccip_admin_propose_administrator`, or `transfer_admin_role_token_admin_registry`.
+
+```rust
+#[event]
+pub struct AdministratorTransferRequested {
+    pub token: Pubkey,
+    pub current_admin: Pubkey,
+    pub new_admin: Pubkey,
+}
+```
+
+| Field           | Type     | Description                                                     |
+| --------------- | -------- | --------------------------------------------------------------- |
+| `token`         | `Pubkey` | The SPL token mint address                                      |
+| `current_admin` | `Pubkey` | The current administrator (may be zero on initial registration) |
+| `new_admin`     | `Pubkey` | The proposed new administrator                                  |
+
+##### `AdministratorTransferred`
+
+Emitted when a token administrator role transfer is completed via `accept_admin_role_token_admin_registry`.
+
+```rust
+#[event]
+pub struct AdministratorTransferred {
+    pub token: Pubkey,
+    pub new_admin: Pubkey,
+}
+```
+
+| Field       | Type     | Description                  |
+| ----------- | -------- | ---------------------------- |
+| `token`     | `Pubkey` | The SPL token mint address   |
+| `new_admin` | `Pubkey` | The new active administrator |
+
+##### `PoolSet`
+
+Emitted when a token pool Address Lookup Table is configured via `set_pool`.
+
+```rust
+#[event]
+pub struct PoolSet {
+    pub token: Pubkey,
+    pub previous_pool_lookup_table: Pubkey,
+    pub new_pool_lookup_table: Pubkey,
+}
+```
+
+| Field                        | Type     | Description                                             |
+| ---------------------------- | -------- | ------------------------------------------------------- |
+| `token`                      | `Pubkey` | The SPL token mint address                              |
+| `previous_pool_lookup_table` | `Pubkey` | The previous Address Lookup Table (zero if first time)  |
+| `new_pool_lookup_table`      | `Pubkey` | The new Address Lookup Table (zero to delist from CCIP) |
+
+##### `PoolEdited`
+
+Emitted when pool auto-derivation support is modified via `set_pool_supports_auto_derivation`.
+
+```rust
+#[event]
+pub struct PoolEdited {
+    pub token: Pubkey,
+    pub supports_auto_derivation: bool,
+}
+```
+
+| Field                      | Type     | Description                               |
+| -------------------------- | -------- | ----------------------------------------- |
+| `token`                    | `Pubkey` | The SPL token mint address                |
+| `supports_auto_derivation` | `bool`   | Whether the pool supports auto-derivation |
+
+### BurnMint Token Pool
+
+The BurnMint Token Pool program emits events related to pool configuration, token operations, and mint authority management.
+
+#### Global Configuration Events
+
+##### `GlobalConfigUpdated`
+
+Emitted when the global pool configuration is updated via `init_global_config`, `update_self_served_allowed`, `update_default_router`, or `update_default_rmn`.
+
+```rust
+#[event]
+pub struct GlobalConfigUpdated {
+    pub self_served_allowed: bool,
+    pub router: Pubkey,
+    pub rmn_remote: Pubkey,
+}
+```
+
+| Field                 | Type     | Description                                         |
+| --------------------- | -------- | --------------------------------------------------- |
+| `self_served_allowed` | `bool`   | Whether self-service pool initialization is allowed |
+| `router`              | `Pubkey` | The default CCIP Router program address             |
+| `rmn_remote`          | `Pubkey` | The default RMN Remote program address              |
+
+#### Token Operations Events
+
+##### `Burned`
+
+Emitted when tokens are burned via `lock_or_burn_tokens` during cross-chain transfers.
+
+```rust
+#[event]
+pub struct Burned {
+    pub sender: Pubkey,
+    pub amount: u64,
+    pub mint: Pubkey,
+}
+```
+
+| Field    | Type     | Description                         |
+| -------- | -------- | ----------------------------------- |
+| `sender` | `Pubkey` | The account that initiated the burn |
+| `amount` | `u64`    | The amount of tokens burned         |
+| `mint`   | `Pubkey` | The SPL token mint address          |
+
+##### `Minted`
+
+Emitted when tokens are minted via `release_or_mint_tokens` during cross-chain transfers.
+
+```rust
+#[event]
+pub struct Minted {
+    pub sender: Pubkey,
+    pub recipient: Pubkey,
+    pub amount: u64,
+    pub mint: Pubkey,
+}
+```
+
+| Field       | Type     | Description                             |
+| ----------- | -------- | --------------------------------------- |
+| `sender`    | `Pubkey` | The pool signer that authorized minting |
+| `recipient` | `Pubkey` | The account receiving the minted tokens |
+| `amount`    | `u64`    | The amount of tokens minted             |
+| `mint`      | `Pubkey` | The SPL token mint address              |
+
+#### Administrative Events
+
+##### `MintAuthorityTransferred`
+
+Emitted when the mint authority is transferred to a multisig via `transfer_mint_authority_to_multisig`.
+
+```rust
+#[event]
+pub struct MintAuthorityTransferred {
+    pub mint: Pubkey,
+    pub old_mint_authority: Pubkey,
+    pub new_mint_authority: Pubkey,
+}
+```
+
+| Field                | Type     | Description                     |
+| -------------------- | -------- | ------------------------------- |
+| `mint`               | `Pubkey` | The SPL token mint address      |
+| `old_mint_authority` | `Pubkey` | The previous mint authority     |
+| `new_mint_authority` | `Pubkey` | The new multisig mint authority |
+
+##### `RemoteChainRemoved`
+
+Emitted when a remote chain configuration is deleted via `delete_chain_config`.
+
+```rust
+#[event]
+pub struct RemoteChainRemoved {
+    pub chain_selector: u64,
+    pub mint: Pubkey,
+}
+```
+
+| Field            | Type     | Description                |
+| ---------------- | -------- | -------------------------- |
+| `chain_selector` | `u64`    | The removed chain selector |
+| `mint`           | `Pubkey` | The SPL token mint address |
+
+### Lock-Release Token Pool
+
+The Lock-Release Token Pool program emits events related to token locking and releasing operations, as well as liquidity management.
+
+#### Token Operations Events
+
+##### `Locked`
+
+Emitted when tokens are locked in the pool via `lock_or_burn_tokens` during cross-chain transfers.
+
+```rust
+#[event]
+pub struct Locked {
+    pub sender: Pubkey,
+    pub amount: u64,
+    pub mint: Pubkey,
+}
+```
+
+| Field    | Type     | Description                         |
+| -------- | -------- | ----------------------------------- |
+| `sender` | `Pubkey` | The account that initiated the lock |
+| `amount` | `u64`    | The amount of tokens locked         |
+| `mint`   | `Pubkey` | The SPL token mint address          |
+
+##### `Released`
+
+Emitted when tokens are released from the pool via `release_or_mint_tokens` during cross-chain transfers.
+
+```rust
+#[event]
+pub struct Released {
+    pub sender: Pubkey,
+    pub recipient: Pubkey,
+    pub amount: u64,
+    pub mint: Pubkey,
+}
+```
+
+| Field       | Type     | Description                          |
+| ----------- | -------- | ------------------------------------ |
+| `sender`    | `Pubkey` | The pool signer that released tokens |
+| `recipient` | `Pubkey` | The account that received the tokens |
+| `amount`    | `u64`    | The amount of tokens released        |
+| `mint`      | `Pubkey` | The SPL token mint address           |
+
+#### Configuration Events
+
+##### `GlobalConfigUpdated`
+
+This event is shared with the BurnMint Token Pool and is documented in the [BurnMint Token Pool section](#globalconfigupdated).
+
+##### `RemoteChainRemoved`
+
+This event is shared with the BurnMint Token Pool and is documented in the [BurnMint Token Pool section](#remotechainremoved).
+
+## Shared Token Pool Events
+
+The Base Token Pool library defines additional events that are used by both BurnMint and Lock-Release token pool implementations. These events cover configuration management, ownership operations, and rate limiting.
+
+### Pool Configuration Events
+
+#### `RemoteChainConfigured`
+
+Emitted when a remote chain configuration is updated via `edit_chain_remote_config` or `init_chain_remote_config`.
+
+```rust
+#[event]
+pub struct RemoteChainConfigured {
+    pub chain_selector: u64,
+    pub token: RemoteAddress,
+    pub previous_token: RemoteAddress,
+    pub pool_addresses: Vec<RemoteAddress>,
+    pub previous_pool_addresses: Vec<RemoteAddress>,
+    pub mint: Pubkey,
+}
+```
+
+| Field                     | Type                 | Description                        |
+| ------------------------- | -------------------- | ---------------------------------- |
+| `chain_selector`          | `u64`                | The remote chain selector          |
+| `token`                   | `RemoteAddress`      | The new remote token address       |
+| `previous_token`          | `RemoteAddress`      | The previous remote token address  |
+| `pool_addresses`          | `Vec<RemoteAddress>` | The new remote pool addresses      |
+| `previous_pool_addresses` | `Vec<RemoteAddress>` | The previous remote pool addresses |
+| `mint`                    | `Pubkey`             | The SPL token mint address         |
+
+#### `RateLimitConfigured`
+
+Emitted when rate limits are updated via `set_chain_rate_limit`.
+
+```rust
+#[event]
+pub struct RateLimitConfigured {
+    pub chain_selector: u64,
+    pub outbound_rate_limit: RateLimitConfig,
+    pub inbound_rate_limit: RateLimitConfig,
+    pub mint: Pubkey,
+}
+```
+
+| Field                 | Type              | Description                  |
+| --------------------- | ----------------- | ---------------------------- |
+| `chain_selector`      | `u64`             | The remote chain selector    |
+| `outbound_rate_limit` | `RateLimitConfig` | Outbound rate limit settings |
+| `inbound_rate_limit`  | `RateLimitConfig` | Inbound rate limit settings  |
+| `mint`                | `Pubkey`          | The SPL token mint address   |
+
+#### `RemotePoolsAppended`
+
+Emitted when remote pool addresses are added via `append_remote_pool_addresses`.
+
+```rust
+#[event]
+pub struct RemotePoolsAppended {
+    pub chain_selector: u64,
+    pub pool_addresses: Vec<RemoteAddress>,
+    pub previous_pool_addresses: Vec<RemoteAddress>,
+    pub mint: Pubkey,
+}
+```
+
+| Field                     | Type                 | Description                      |
+| ------------------------- | -------------------- | -------------------------------- |
+| `chain_selector`          | `u64`                | The remote chain selector        |
+| `pool_addresses`          | `Vec<RemoteAddress>` | The updated pool addresses list  |
+| `previous_pool_addresses` | `Vec<RemoteAddress>` | The previous pool addresses list |
+| `mint`                    | `Pubkey`             | The SPL token mint address       |
+
+### Administrative Events
+
+#### `TokenPoolInitialized`
+
+Emitted when a new token pool is initialized via the `initialize` instruction.
+
+```rust
+#[event]
+pub struct TokenPoolInitialized {
+    pub mint: Pubkey,
+    pub token_program: Pubkey,
+    pub owner: Pubkey,
+}
+```
+
+| Field           | Type     | Description                |
+| --------------- | -------- | -------------------------- |
+| `mint`          | `Pubkey` | The SPL token mint address |
+| `token_program` | `Pubkey` | The token program ID       |
+| `owner`         | `Pubkey` | The initial pool owner     |
+
+#### `OwnershipTransferRequested`
+
+Emitted when ownership transfer is proposed via `transfer_ownership`.
+
+```rust
+#[event]
+pub struct OwnershipTransferRequested {
+    pub from: Pubkey,
+    pub to: Pubkey,
+    pub mint: Pubkey,
+}
+```
+
+| Field  | Type     | Description                |
+| ------ | -------- | -------------------------- |
+| `from` | `Pubkey` | The current owner          |
+| `to`   | `Pubkey` | The proposed new owner     |
+| `mint` | `Pubkey` | The SPL token mint address |
+
+#### `OwnershipTransferred`
+
+Emitted when ownership transfer is completed via `accept_ownership`.
+
+```rust
+#[event]
+pub struct OwnershipTransferred {
+    pub from: Pubkey,
+    pub to: Pubkey,
+    pub mint: Pubkey,
+}
+```
+
+| Field  | Type     | Description                |
+| ------ | -------- | -------------------------- |
+| `from` | `Pubkey` | The previous owner         |
+| `to`   | `Pubkey` | The new owner              |
+| `mint` | `Pubkey` | The SPL token mint address |
+
+#### `RouterUpdated`
+
+Emitted when the router address is updated via `set_router`.
+
+```rust
+#[event]
+pub struct RouterUpdated {
+    pub old_router: Pubkey,
+    pub new_router: Pubkey,
+    pub mint: Pubkey,
+}
+```
+
+| Field        | Type     | Description                |
+| ------------ | -------- | -------------------------- |
+| `old_router` | `Pubkey` | The previous router        |
+| `new_router` | `Pubkey` | The new router             |
+| `mint`       | `Pubkey` | The SPL token mint address |
+
+#### `RmnRemoteUpdated`
+
+Emitted when the RMN remote address is updated via `set_rmn`.
+
+```rust
+#[event]
+pub struct RmnRemoteUpdated {
+    pub old_rmn_remote: Pubkey,
+    pub new_rmn_remote: Pubkey,
+    pub mint: Pubkey,
+}
+```
+
+| Field            | Type     | Description                |
+| ---------------- | -------- | -------------------------- |
+| `old_rmn_remote` | `Pubkey` | The previous RMN remote    |
+| `new_rmn_remote` | `Pubkey` | The new RMN remote         |
+| `mint`           | `Pubkey` | The SPL token mint address |
+
+### Rate Limiting Events
+
+#### `TokensConsumed`
+
+Emitted when tokens are consumed from the rate limit bucket during transfer operations.
+
+```rust
+#[event]
+pub struct TokensConsumed {
+    pub tokens: u64,
+}
+```
+
+| Field    | Type  | Description                           |
+| -------- | ----- | ------------------------------------- |
+| `tokens` | `u64` | Number of tokens consumed from bucket |
+
+#### `ConfigChanged`
+
+Emitted when rate limit configuration is updated via `set_token_bucket_config`.
+
+```rust
+#[event]
+pub struct ConfigChanged {
+    pub config: RateLimitConfig,
+}
+```
+
+| Field    | Type              | Description                      |
+| -------- | ----------------- | -------------------------------- |
+| `config` | `RateLimitConfig` | The new rate limit configuration |
+
+### OffRamp
+
+The OffRamp program emits events related to message execution during the cross-chain message delivery process.
+
+#### Message Execution Events
+
+##### `ExecutionStateChanged`
+
+Emitted during message execution to track the progress of cross-chain message delivery. This event is emitted twice during the execution process:
+
+1. When the message state changes to `InProgress` (execution started)
+1. When the message state changes to `Success` (execution completed)
+
+```rust
+#[event]
+pub struct ExecutionStateChanged {
+    pub source_chain_selector: u64,
+    pub sequence_number: u64,
+    pub message_id: [u8; 32],
+    pub message_hash: [u8; 32],
+    pub state: MessageExecutionState,
+}
+```
+
+| Field                   | Type                    | Description                                         |
+| ----------------------- | ----------------------- | --------------------------------------------------- |
+| `source_chain_selector` | `u64`                   | The chain selector of the source chain              |
+| `sequence_number`       | `u64`                   | The sequence number of the message being executed   |
+| `message_id`            | `[u8; 32]`              | Unique identifier for the cross-chain message       |
+| `message_hash`          | `[u8; 32]`              | Hash of the message content                         |
+| `state`                 | `MessageExecutionState` | Current execution state (`InProgress` or `Success`) |

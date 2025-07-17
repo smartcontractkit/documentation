@@ -88,9 +88,9 @@ The CCIP Router program is central to cross-chain token management. It has two f
    - **TokenAdminRegistry (one [PDA](https://solana.com/docs/core/pda) per mint):** Stores the designated CCIP [token administrator](/ccip/concepts/cross-chain-token/overview#token-administrator) public key for a specific token mint (distinct from the SPL token's own mint authority) and references the token's pool [address lookup table](https://docs.solana.com/developing/lookup-tables) (ALT). The PDA is derived using seeds `[seed::TOKEN_ADMIN_REGISTRY, mint.key().as_ref()]`. This registry is created during token registration (see [Token section](#token)) and governs all subsequent CCIP operations for that token.
    - **Token Pool Address Lookup Table:** A Solana [address lookup table](https://docs.solana.com/developing/lookup-tables) that precisely defines the set of account addresses (including pool configuration [PDAs](https://solana.com/docs/core/pda), pool signer PDAs, and other required accounts) that are authorized for cross-chain operations with this token. The ALT contains a minimum of 9 required accounts in a specific order.
    - **Administrator Methods:** The token administrator can register or update cross-chain support for their mint through a sequence of instructions:
-     1. `owner_propose_administrator`: Initiated by the mint authority to designate a token administrator.
-     1. `accept_admin_role_token_admin_registry`: Confirmation by the proposed administrator to accept the role.
-     1. `set_pool`: Links the token to a specific token pool configuration via an address lookup table, including writable account indexes for proper permission management.
+     1. [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator): Initiated by the mint authority to designate a token administrator.
+     1. [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry): Confirmation by the proposed administrator to accept the role.
+     1. [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool): Links the token to a specific token pool configuration via an address lookup table, including writable account indexes for proper permission management.
 
      For detailed step-by-step procedures, sequence diagrams, and complete registration workflows, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
 
@@ -102,7 +102,7 @@ The CCIP Router program is central to cross-chain token management. It has two f
    - **Enhanced Account Derivation:** When `supports_auto_derivation` is enabled, token pools can dynamically derive additional accounts during cross-chain operations. This allows pools to handle complex transfer scenarios with varying account requirements while maintaining security through the registry's controlled environment.
 
 1. **Lock or Burn Flow (when sending tokens cross-chain)**
-   - `ccip_send` entrypoint: When a CCIP sender initiates a cross-chain token transfer, they invoke the `ccip_send` instruction on the Router, providing the token mint, amount, destination chain, receiver address, and other transaction parameters.
+   - [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) entrypoint: When a CCIP sender initiates a cross-chain token transfer, they invoke the [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) instruction on the Router, providing the token mint, amount, destination chain, receiver address, and other transaction parameters.
    - **Multi-step Validation:** The Router performs comprehensive validation:
      - Verifies the destination chain is not cursed (via RMN Remote CPI)
      - Checks sender authorization against allow-list if enabled
@@ -110,7 +110,7 @@ The CCIP Router program is central to cross-chain token management. It has two f
      - Ensures proper account relationships and permissions
    - **Registry Validation:** The sender must provide the token pool account addresses as part of the transaction. The Router validates these accounts by checking them against the addresses stored in the address lookup table (ALT) referenced by the mint's TokenAdminRegistry PDA, including proper writable permissions.
    - **Fee Processing:** Before token interaction, the Router handles fee collection either in native SOL (with wrapping to WSOL) or supported fee SPL tokens through the fee quoter program.
-   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to `lock_or_burn_tokens`:** After validation, the Router executes a CPI call to the token pool's `lock_or_burn_tokens` instruction, passing the appropriate context including nonce information and destination chain details for the token pool to either lock tokens in its [Associated Token Account](https://spl.solana.com/associated-token-account) (ATA) or burn them from circulation, depending on the pool implementation (see [Token Pool section](#token-pool) for operation details).
+   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens):** After validation, the Router executes a CPI call to the token pool's [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens) instruction, passing the appropriate context including nonce information and destination chain details for the token pool to either lock tokens in its [Associated Token Account](https://spl.solana.com/associated-token-account) (ATA) or burn them from circulation, depending on the pool implementation (see [Token Pool section](#token-pool) for operation details).
 
 ## OffRamp
 
@@ -128,7 +128,7 @@ During the execute phase, when processing messages containing token transfers, t
 1. **Token Pool Operations**
 
    Once authorization is confirmed, the OffRamp executes token operations:
-   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to `release_or_mint_tokens`**: Makes a cross-program invocation to the token pool's release or mint instruction, passing the validated cross-chain token transfer details.
+   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)**: Makes a cross-program invocation to the token pool's [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens) instruction, passing the validated cross-chain token transfer details.
    - **Authorization Signer**: Uses the `external_token_pools_signer` [PDA](https://solana.com/docs/core/pda) as the CPI signer, derived using seeds `[seed::EXTERNAL_TOKEN_POOLS_SIGNER, pool_program.key().as_ref()]` with the OffRamp as the program ID. Token pools recognize this as an authorized caller from the OffRamp.
    - **Token Balance Verification**: Validates that the recipient's [Associated Token Account](https://spl.solana.com/associated-token-account) receives the correct amount of tokens as specified by the pool's response.
 
