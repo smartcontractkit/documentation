@@ -1,0 +1,219 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Standard - Integration Guide (SVM)"
+metadata:
+  description: "Step-by-step integration guide for CCIP Cross-Chain Tokens on SVM chains like Solana. Determine your integration path based on mint authority control, choose deployment approaches, and understand when self-service vs Chainlink assistance is required."
+  excerpt: "CCIP integration guide, SVM, Solana, mint authority, self-service, Chainlink assistance, deployment approaches, token registration, pool initialization, SPL token multisig, governance multisig, contact form, decision tree, integration path"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This integration guide helps you determine the optimal path for integrating your SPL token with Chainlink CCIP on SVM-based blockchains like Solana. Follow the decision tree below to understand your specific requirements, deployment options, and when you can use self-service versus when you need Chainlink assistance.
+
+<Aside type="note" title="Need Assistance?">
+  If your integration requires Chainlink assistance (manual registration or pool initialization), submit a [registration
+  request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) with details about your token and
+  requirements.
+</Aside>
+
+## Prerequisites
+
+Before starting integration, ensure you meet these requirements:
+
+- **Token Compatibility**: Your token must meet [compatibility requirements](/ccip/concepts/cross-chain-token/svm/tokens#compatibility)
+- **Decimal Planning**: Plan [decimal configuration](/ccip/concepts/cross-chain-token/svm/tokens#decimal-planning) across all target blockchains
+- **Pool Type Selection**: Choose the appropriate token pool type for your use case:
+
+  - **[BurnMint Pools](/ccip/concepts/cross-chain-token/svm/token-pools#burnmint-token-pool)**: Burn tokens on source, mint on destination. Requires transferring mint authority to pool. Best for tokens designed to have variable supply across chains.
+
+  - **[LockRelease Pools](/ccip/concepts/cross-chain-token/svm/token-pools#lockrelease-token-pool)**: Lock tokens on source, release on destination. No mint authority transfer required. Requires liquidity management. Best for retaining mint authority control or capped-supply tokens.
+
+  For detailed comparisons and technical requirements, see [Token Handling Mechanisms](/ccip/concepts/cross-chain-token/svm/token-pools#token-handling-mechanisms).
+
+## Integration Overview
+
+CCIP Cross-Chain Token (CCT) integration involves two key phases:
+
+1. **Token Registration**: Establishing a CCIP token administrator role
+1. **Token Pool Deployment**: Setting up the pool program that handles cross-chain operations
+
+Your path through these phases depends on your **mint authority control** and chosen **[deployment approach](/ccip/concepts/cross-chain-token/svm/token-pools#deployment-approaches)**.
+
+## Decision Flow Diagram
+
+The following diagram visualizes the complete decision process based on your mint authority control:
+
+<ClickToZoom
+  src="/images/ccip/cct/cct-svm-diagrams/solana_cct_flowchart.svg"
+  alt="CCIP Cross-Chain Token integration decision flowchart for SVM chains, showing paths based on mint authority control and deployment approaches"
+  style="display: block; margin: 1rem auto; max-height: 100vh; width: auto;"
+/>
+
+## Mint Authority Assessment
+
+The first critical decision point is understanding your mint authority control, as this determines your available options throughout the integration process.
+
+**Why mint authority control matters for token registration:** The Router's `owner_propose_administrator` instruction can only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's `mint_authority` field. If you cannot sign this instruction as the mint authority, the Router cannot verify your authorization onchain, requiring manual governance assistance.
+
+**You have direct control when:**
+
+- You hold the mint authority private key directly
+- You control a governance multisig that holds the mint authority (non-SPL token multisig)
+- You can execute mint authority operations through your governance process
+
+**You do NOT have direct control when:**
+
+- Mint authority is set to `None` (supply capped)
+- Mint authority is held by an SPL token multisig
+- Mint authority is controlled by another party you cannot coordinate with
+- You have lost access to the mint authority private key
+
+<Aside type="caution" title="SPL Token Multisig Limitation">
+  **Critical:** While SPL token multisigs can mint tokens, they can only execute SPL token program instructions. They
+  cannot call other program instructions required for CCIP registration (`owner_propose_administrator`) or pool
+  initialization (`initialize`). If your mint authority is an SPL token multisig, you will need Chainlink assistance for
+  both registration and pool initialization.
+</Aside>
+
+## Integration Paths
+
+Based on your mint authority control, follow the appropriate integration path:
+
+### Path A: Full Self-Service (Mint Authority Controlled)
+
+**When to use:** You have direct control over the mint authority
+
+**Registration Process:**
+
+- **Self-service registration**: Use [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) and [accept_admin_role_token_admin_registry](/ccip/concepts/cross-chain-token/svm/registration-administration#accepting-the-administrator-role) instructions (propose + accept)
+- **Immediate control**: Complete registration without external assistance
+- **Administrator flexibility**: Choose any address as the CCIP token administrator
+
+**Pool Deployment Options:**
+
+1. **[Self-Serve Mode](/ccip/concepts/cross-chain-token/svm/token-pools#approach-1-self-serve-mode-recommended) (Recommended)**
+
+   - Use Chainlink-deployed standard pool programs
+   - Initialize your pool using [initialize](/ccip/concepts/cross-chain-token/svm/registration-administration#pool-initialization) instruction
+   - Automatic governance-controlled upgrades
+   - Lowest operational overhead
+
+2. **[Self-Deployed Standard Pools](/ccip/concepts/cross-chain-token/svm/token-pools#approach-2-self-deployed-standard-pools)**
+
+   - Deploy standard pool programs yourself
+   - Control upgrade authority and timing
+   - Initialize your own pools
+
+3. **[Custom Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools#approach-3-custom-token-pools)**
+   - Build custom pool logic for specialized requirements
+   - Full control over implementation and upgrades
+
+### Path B: Assisted Registration + Self-Serve Pools (Mint Authority Not Controlled)
+
+**When to use:** You want to use self-serve mode pools, but you cannot call `owner_propose_administrator` as the mint authority
+
+**Registration Process:**
+
+- **Manual registration required**: Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration)
+- **CCIP governance assistance**: Router upgrade authority will propose the administrator using `ccip_admin_propose_administrator`
+- **Choose administrator**: You specify who should be the CCIP token administrator
+
+**Pool Deployment:**
+
+- **Assisted pool initialization**: Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to have the pool program upgrade authority initialize your pool
+- **Self-serve mode benefits**: Once initialized, you become the pool owner with full configuration control
+- **Governance-controlled upgrades**: Benefit from automatic security updates and features
+
+### Path C: Full Manual Process (Custom or Self-Deployed)
+
+**When to use:** You cannot call `owner_propose_administrator` as the mint authority and want self-deployed or custom pools
+
+**Registration Process:**
+
+- Same manual registration process as Path B
+
+**Pool Deployment:**
+
+- **Deploy your own programs**: Full control over pool program deployment
+- **Control upgrade authority**: Manage your own upgrade process
+- **Initialize independently**: Use your upgrade authority to initialize pools
+
+<Aside type="note" title="Why Manual Registration is Required">
+  Paths B and C require manual registration because the Router's `owner_propose_administrator` instruction can only be
+  called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's
+  `mint_authority` field. If you cannot sign this instruction as the mint authority (because you don't control it, it's
+  set to `None`, or it's an SPL token multisig), the Router cannot verify your authorization onchain, requiring manual
+  governance assistance.
+</Aside>
+
+## Implementation Steps
+
+Once you've determined your path, follow these implementation steps:
+
+### Step 1: Complete Registration
+
+- **Self-service path**: Follow [self-service registration](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow)
+- **Assisted path**: Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration)
+
+### Step 2: Deploy and Initialize Token Pool
+
+Choose your deployment approach:
+
+- **Self-serve mode**: Initialize pool from existing Chainlink-deployed programs
+
+  - **If you can sign as mint authority**: Use the [initialize](/ccip/concepts/cross-chain-token/svm/registration-administration#pool-initialization) instruction directly
+  - **If you cannot sign as mint authority** (mint authority is `None`, held by SPL token multisig, or controlled by another party): Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) for assisted initialization
+
+- **Self-deployed**: Deploy standard pool programs yourself, then initialize pool from your deployed program
+
+- **Custom**: Implement and deploy custom pool following [technical requirements](/ccip/concepts/cross-chain-token/svm/token-pools#custom-token-pools), then initialize pool from your deployed program
+
+### Step 3: Create Associated Token Account
+
+- Create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA
+- **Required**: Pool operations cannot begin without this ATA
+- The ATA will hold tokens for LockRelease pools or serve as the burn account for BurnMint pools
+
+### Step 4: Transfer Mint Authority (BurnMint Pools Only)
+
+Choose one of two approaches:
+
+- **Direct Transfer**: Transfer `mint_authority` directly to the Pool Signer PDA (simple, pool-only minting)
+- **Multisig Setup (Recommended)**: Create an [SPL token multisig](https://spl.solana.com/token#multisig-usage) with Pool Signer PDA as one signer (flexible, multiple authorized minters)
+
+See [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management) for detailed configuration options.
+
+### Step 5: Create Address Lookup Table (ALT)
+
+- Create an ALT containing all required accounts for your pool operations
+- Must include minimum 9 required accounts in specific order
+- See [Pool Configuration requirements](/ccip/concepts/cross-chain-token/svm/registration-administration#token-pool-configuration-pool-side) for account list
+
+### Step 6: Link Pool to Token Registry
+
+- Call [set_pool](/ccip/concepts/cross-chain-token/svm/registration-administration#setting-the-token-pool) instruction on the Router
+- Links your pool's ALT to your token in the TokenAdminRegistry
+- Enables CCIP to route cross-chain transfers to your pool
+
+### Step 7: Configure Pool Settings
+
+- Complete [remote chain configuration](/ccip/concepts/cross-chain-token/svm/registration-administration#remote-chain-configuration)
+- Set up [rate limits and security settings](/ccip/concepts/cross-chain-token/svm/registration-administration#rate-limits-and-security)
+- **For LockRelease pools**: Configure [liquidity management](/ccip/concepts/cross-chain-token/svm/registration-administration#liquidity-management-lockrelease-pools-only)
+
+## Next Steps
+
+After determining your integration path:
+
+1. **Review Detailed Documentation**:
+
+   - [Architecture](/ccip/concepts/cross-chain-token/svm/architecture): Understand component interactions
+   - [Tokens](/ccip/concepts/cross-chain-token/svm/tokens): Token requirements and compatibility
+   - [Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools): Pool implementation details
+   - [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration): Complete registration and configuration procedures
+
+1. **For Assisted Paths**: Submit your [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) with detailed information about your token and requirements
+
+1. **For Self-Service Paths**: Begin with token registration following the appropriate workflow for your chosen deployment approach
