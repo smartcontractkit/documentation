@@ -1315,6 +1315,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/concepts/cross-chain-token/svm",
               children: [
                 {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                },
+                {
                   title: "Tokens",
                   url: "ccip/concepts/cross-chain-token/svm/tokens",
                 },
@@ -1323,8 +1327,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/concepts/cross-chain-token/svm/token-pools",
                 },
                 {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                  title: "Integration Guide",
+                  url: "ccip/concepts/cross-chain-token/svm/integration-guide",
                 },
                 {
                   title: "Registration and Administration",
