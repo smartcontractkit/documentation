@@ -1,0 +1,337 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry, render } from "astro:content"
+import { Environment, DecommissionedNetwork, getAllDecommissionedNetworks } from "~/config/data/ccip"
+import Breadcrumb from "~/components/CCIP/Breadcrumb/Breadcrumb"
+import Aside from "~/components/Aside.astro"
+import CopyValue from "~/components/CCIP/CopyValue/CopyValue"
+
+interface Props {
+  environment: Environment
+  network: DecommissionedNetwork
+}
+const { environment, network } = Astro.props as Props
+
+const entry = await getEntry("ccip", "index")
+if (!entry) {
+  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+}
+
+const { headings } = await render(entry)
+
+// CCIP Explorer URL
+const ccipExplorerUrl = `https://ccip.chain.link/`
+
+// Get all networks for potential search context
+const allDecommissionedNetworks = getAllDecommissionedNetworks({ filter: environment })
+---
+
+<CcipLayout
+  frontmatter={{
+    title: `CCIP Decommissioned Network - ${network.name}`,
+    section: "ccip",
+  }}
+  {headings}
+  environment={environment}
+>
+  <!-- Hero Section - Consistent with ChainHero pattern -->
+  <section class="ccip-decom-hero">
+    <div class="ccip-decom-hero__content">
+      <div class="ccip-decom-hero__top">
+        <Breadcrumb
+          items={[
+            {
+              name: "CCIP Directory",
+              url: `/ccip/directory/${environment}`,
+            },
+            {
+              name: network.name,
+              url: `/ccip/directory/${environment}/chain/${network.chain}`,
+            },
+          ]}
+          client:load
+        />
+      </div>
+
+      <!-- Decommissioned Banner -->
+      <Aside type="caution" title="Decommissioned Chain">
+        <p>
+          This chain has been decommissioned from the CCIP network. No new transactions can be initiated, but historical
+          transactions remain accessible in the CCIP Explorer.
+        </p>
+      </Aside>
+
+      <div class="ccip-decom-hero__heading">
+        <img src={network.logo} alt={network.name} class="ccip-decom-hero__logo" />
+        <div class="ccip-decom-hero__title">
+          <h1>{network.name}</h1>
+          <span class="ccip-decom-hero__status">Decommissioned</span>
+        </div>
+      </div>
+
+      <div class="ccip-decom-hero__details">
+        <div class="ccip-decom-hero__details__item">
+          <div class="ccip-decom-hero__details__label">Chain selector</div>
+          <div class="ccip-decom-hero__details__value">
+            <CopyValue value={network.chainSelector} client:load />
+          </div>
+        </div>
+
+        <div class="ccip-decom-hero__details__item">
+          <div class="ccip-decom-hero__details__label">Status</div>
+          <div class="ccip-decom-hero__details__value">
+            <span class="ccip-decom-hero__status-badge">Decommissioned</span>
+          </div>
+        </div>
+
+        <div class="ccip-decom-hero__details__item">
+          <div class="ccip-decom-hero__details__label">Historical data</div>
+          <div class="ccip-decom-hero__details__value">
+            <a href={ccipExplorerUrl} target="_blank" rel="noopener noreferrer" class="ccip-decom-hero__explorer-link">
+              View in CCIP Explorer →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Section -->
+  <section class="layout">
+    <div class="decom-content">
+      <h2>About Decommissioned Chains</h2>
+      <div class="decom-info-grid">
+        <div class="decom-info-item">
+          <h3>🚫 No New Transactions</h3>
+          <p>You cannot initiate new CCIP transactions from or to this chain.</p>
+        </div>
+        <div class="decom-info-item">
+          <h3>📊 Historical Data Available</h3>
+          <p>Past transactions remain accessible through the CCIP Explorer using:</p>
+          <ul>
+            <li><strong>Message ID</strong> or <strong>Transaction Hash</strong></li>
+            <li>
+              <strong>Addresses:</strong> Origin (transaction initiator), From (CCIP Router caller), or To (destination receiver)
+            </li>
+          </ul>
+        </div>
+        <div class="decom-info-item">
+          <h3>🔧 Contract Updates Required</h3>
+          <p>Developers should remove this chain selector from their token pool configurations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</CcipLayout>
+
+<style scoped="false">
+  /* Hero Section - Consistent with ChainHero */
+  .ccip-decom-hero {
+    background-color: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    min-height: 280px;
+  }
+
+  .ccip-decom-hero__content {
+    --gutter: var(--space-6x);
+    --doc-padding: var(--space-6x);
+    gap: var(--gutter);
+    padding: var(--space-6x);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ccip-decom-hero__top {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  /* Heading Section */
+  .ccip-decom-hero__heading {
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--space-6x);
+    padding: var(--space-4x) 0;
+  }
+
+  .ccip-decom-hero__logo {
+    width: 80px;
+    height: 80px;
+  }
+
+  .ccip-decom-hero__title h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .ccip-decom-hero__status {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-warning-text);
+    background: var(--color-warning-background);
+    padding: var(--space-1x) var(--space-2x);
+    border-radius: var(--border-radius);
+    margin-top: var(--space-2x);
+    display: inline-block;
+  }
+
+  /* Details Grid */
+  .ccip-decom-hero__details {
+    display: grid;
+    gap: var(--space-6x);
+    grid-template-columns: 1fr;
+  }
+
+  .ccip-decom-hero__details__label {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 22px;
+    padding-bottom: var(--space-2x);
+    color: var(--gray-500);
+  }
+
+  .ccip-decom-hero__details__value {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    font-feature-settings: "liga" off;
+    color: var(--gray-900);
+  }
+
+  .ccip-decom-hero__status-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-warning-text);
+    background: var(--color-warning-background);
+    padding: var(--space-1x) var(--space-2x);
+    border-radius: var(--border-radius);
+  }
+
+  .ccip-decom-hero__explorer-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .ccip-decom-hero__explorer-link:hover {
+    color: var(--color-accent-dark);
+  }
+
+  /* Content Layout */
+  .layout {
+    --gutter: var(--space-10x);
+    --doc-padding: var(--space-4x);
+    margin: var(--space-8x) auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gutter);
+    padding: var(--doc-padding);
+  }
+
+  .decom-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .decom-content h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+    line-height: var(--space-10x);
+    margin: 0 0 var(--space-6x) 0;
+    text-align: center;
+  }
+
+  .decom-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6x);
+  }
+
+  .decom-info-item {
+    padding: var(--space-6x);
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-10);
+    border: 1px solid var(--gray-200);
+  }
+
+  .decom-info-item h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0 0 var(--space-3x) 0;
+    text-align: center;
+  }
+
+  .decom-info-item p {
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .decom-info-item ul {
+    color: var(--gray-600);
+    margin: var(--space-3x) 0 0 0;
+    padding-left: var(--space-5x);
+    line-height: 1.6;
+    text-align: left;
+    list-style-type: disc;
+    list-style-position: outside;
+  }
+
+  .decom-info-item li {
+    margin-bottom: var(--space-2x);
+    text-align: left;
+  }
+
+  .decom-info-item li strong {
+    color: var(--gray-900);
+  }
+
+  /* Responsive Design */
+  @media (min-width: 40em) {
+    .decom-info-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 50em) {
+    .ccip-decom-hero__content {
+      max-width: 1500px;
+    }
+
+    .layout {
+      padding: 0 var(--space-6x);
+    }
+
+    .decom-info-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .ccip-decom-hero__content {
+      --gutter: var(--space-10x);
+      padding: var(--space-10x) var(--space-8x);
+    }
+
+    .ccip-decom-hero__details {
+      grid-template-columns: 1fr 1fr 1fr;
+      column-gap: var(--space-4x);
+      row-gap: var(--space-12x);
+    }
+
+    .layout {
+      padding: var(--space-10x) var(--space-8x);
+    }
+  }
+</style>

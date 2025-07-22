@@ -10,6 +10,8 @@ import {
   NetworkFees,
   LaneConfig,
   Network,
+  DecomConfig,
+  DecommissionedNetwork,
 } from "./types.ts"
 import { determineTokenMechanism } from "./utils.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
@@ -34,6 +36,10 @@ import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json" wit
 import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json" with { type: "json" }
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json" with { type: "json" }
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" with { type: "json" }
+
+// For decommissioned chains
+import decomMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/decom.json" with { type: "json" }
+import decomTestnetv120 from "@config/data/ccip/v1_2_0/testnet/decom.json" with { type: "json" }
 
 // Import errors by version
 // eslint-disable-next-line camelcase
@@ -673,4 +679,57 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
     if (a.destinationNetwork.name < b.destinationNetwork.name) return -1
     return 0
   })
+}
+
+export const loadDecommissionedData = ({ environment, version }: { environment: Environment; version: Version }) => {
+  let decomReferenceData: DecomConfig
+
+  if (environment === Environment.Mainnet && version === Version.V1_2_0) {
+    decomReferenceData = decomMainnetv120 as unknown as DecomConfig
+  } else if (environment === Environment.Testnet && version === Version.V1_2_0) {
+    decomReferenceData = decomTestnetv120 as unknown as DecomConfig
+  } else {
+    throw new Error(`Invalid environment/version combination for decommissioned chains: ${environment}/${version}`)
+  }
+
+  return { decomReferenceData }
+}
+
+export const getAllDecommissionedNetworks = ({ filter }: { filter: Environment }): DecommissionedNetwork[] => {
+  const { decomReferenceData } = loadDecommissionedData({
+    environment: filter,
+    version: Version.V1_2_0,
+  })
+
+  const decommissionedChains: DecommissionedNetwork[] = []
+
+  for (const chain in decomReferenceData) {
+    const supportedChain = directoryToSupportedChain(chain)
+    const title = getTitle(supportedChain)
+    if (!title) throw Error(`Title not found for decommissioned chain ${supportedChain}`)
+
+    const logo = getChainIcon(supportedChain)
+    if (!logo) throw Error(`Logo not found for decommissioned chain ${supportedChain}`)
+
+    const explorer = getExplorer(supportedChain)
+    if (!explorer) throw Error(`Explorer not found for decommissioned chain ${supportedChain}`)
+
+    const { chainType } = getChainTypeAndFamily(supportedChain)
+
+    decommissionedChains.push({
+      name: title,
+      chain,
+      chainSelector: decomReferenceData[chain].chainSelector,
+      logo,
+      explorer,
+      chainType,
+    })
+  }
+
+  return decommissionedChains.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+export const getDecommissionedNetwork = ({ chain, filter }: { chain: string; filter: Environment }) => {
+  const decommissionedChains = getAllDecommissionedNetworks({ filter })
+  return decommissionedChains.find((network) => network.chain === chain)
 }

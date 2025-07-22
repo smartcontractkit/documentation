@@ -408,8 +408,27 @@ function countTotalLanes(lanesReferenceData: LanesConfig): number {
 function getTokenName(tokenSymbol: string, tokensData: TokensConfig): string {
   // Get token details from the tokens data
   const tokenDetails = tokensData[tokenSymbol]
-  const sampleChain = tokenDetails ? Object.keys(tokenDetails)[0] : null
-  return sampleChain && tokenDetails[sampleChain] ? tokenDetails[sampleChain].name || tokenSymbol : tokenSymbol
+
+  if (!tokenDetails) {
+    logger.warn({ tokenSymbol }, "Token details not found in reference data")
+    return tokenSymbol
+  }
+
+  const availableChains = Object.keys(tokenDetails)
+  if (availableChains.length === 0) {
+    logger.warn({ tokenSymbol }, "No chains found for token")
+    return tokenSymbol
+  }
+
+  const sampleChain = availableChains[0]
+  const chainTokenData = tokenDetails[sampleChain]
+
+  if (!chainTokenData) {
+    logger.warn({ tokenSymbol, sampleChain }, "Chain token data not found")
+    return tokenSymbol
+  }
+
+  return chainTokenData.name || tokenSymbol
 }
 
 /**
@@ -1520,6 +1539,56 @@ function getFileFromGitHistory(filePath: string, date: string): string | null {
 }
 
 /**
+ * Get a robust prettier configuration with fallbacks
+ *
+ * @param {string} filePath - File path to resolve config for
+ * @returns {Promise<prettier.Config>} Prettier configuration object
+ */
+async function getPrettierConfig(filePath: string): Promise<prettier.Config> {
+  try {
+    // Try resolving config for the specific file path first
+    let config = await prettier.resolveConfig(filePath)
+
+    if (!config) {
+      // Fallback: try resolving with the config file directly
+      config = await prettier.resolveConfig(".prettierrc")
+    }
+
+    if (!config) {
+      // Final fallback: use project defaults from .prettierrc
+      logger.warn("Could not resolve prettier config, using fallback defaults")
+      config = {
+        semi: false,
+        singleQuote: false,
+        tabWidth: 2,
+        trailingComma: "es5" as const,
+        printWidth: 120,
+      }
+    }
+
+    logger.debug({ config }, "Resolved prettier configuration")
+    return config
+  } catch (error) {
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        filePath,
+      },
+      "Error resolving prettier config, using fallback"
+    )
+
+    // Return safe fallback configuration
+    return {
+      semi: false,
+      singleQuote: false,
+      tabWidth: 2,
+      trailingComma: "es5" as const,
+      printWidth: 120,
+    }
+  }
+}
+
+/**
  * Generate a changelog entry for newly supported tokens
  *
  * @param {NewlySupportedTokens} newlySupported - Map of newly supported tokens
@@ -1613,16 +1682,17 @@ async function generateChangelogEntry(
       logger.debug(`Created directory: ${changelogDir}`)
     }
 
-    // Format the JSON with prettier using project config
-    const prettierConfig = await prettier.resolveConfig(process.cwd())
+    // Get robust prettier configuration
+    const prettierConfig = await getPrettierConfig(FILE_PATHS.CHANGELOG)
 
-    // Format the JSON content directly before writing (like detect-new-data.ts)
-    const formattedJson = await prettier.format(JSON.stringify(changelog), {
+    // Format the JSON content with proper initial formatting
+    const jsonString = JSON.stringify(changelog, null, 2)
+    const formattedJson = await prettier.format(jsonString, {
       ...prettierConfig,
-      parser: "json", // Explicitly specify JSON parser
+      parser: "json",
     })
 
-    // Write the formatted content directly
+    // Write the formatted content
     fs.writeFileSync(FILE_PATHS.CHANGELOG, formattedJson, "utf8")
 
     const changelogSize = fs.statSync(FILE_PATHS.CHANGELOG).size
@@ -1632,7 +1702,7 @@ async function generateChangelogEntry(
         entriesCount: changelog.data.length,
         sizeBytes: changelogSize,
       },
-      "Changelog file updated and formatted"
+      "Changelog file updated and formatted successfully"
     )
   } catch (error) {
     logger.error(
@@ -1642,6 +1712,7 @@ async function generateChangelogEntry(
       },
       "Error writing changelog file"
     )
+    throw error // Re-throw to handle upstream
   }
 
   return {
