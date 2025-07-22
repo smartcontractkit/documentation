@@ -24,12 +24,12 @@ Understanding who can call which Router instructions is critical for secure toke
 
 | Instruction                                                                                                                  | Mint Authority | Router Upgrade Authority | Current Token Admin | Pending Token Admin |
 | ---------------------------------------------------------------------------------------------------------------------------- | :------------: | :----------------------: | :-----------------: | :-----------------: |
-| [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)                           |       ✅       |            ❌            |         ❌          |         ❌          |
-| [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator)         |       ✅       |            ❌            |         ❌          |         ❌          |
-| [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#ccip_admin_propose_administrator)                 |       ❌       |            ✅            |         ❌          |         ❌          |
-| [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry)     |       ❌       |            ❌            |         ❌          |         ✅          |
-| [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) |       ❌       |            ❌            |         ✅          |         ❌          |
-| [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool)                                                                 |       ❌       |            ❌            |         ✅          |         ❌          |
+| [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator)                           |       ✅       |            ❌            |         ❌          |         ❌          |
+| [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator)         |       ✅       |            ❌            |         ❌          |         ❌          |
+| [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#ccip_admin_propose_administrator)                 |       ❌       |            ✅            |         ❌          |         ❌          |
+| [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry)     |       ❌       |            ❌            |         ❌          |         ✅          |
+| [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) |       ❌       |            ❌            |         ✅          |         ❌          |
+| [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool)                                                                 |       ❌       |            ❌            |         ✅          |         ❌          |
 
 **Notes:**
 
@@ -42,9 +42,9 @@ Understanding who can call which Router instructions is critical for secure toke
 
 ### Self-Service Registration Flow
 
-If your SPL token supports an automatic way to determine an admin using onchain verifiable data (e.g., you hold the mint authority), you can complete self-registration in a permissionless manner by calling the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction:
+If your SPL token supports an automatic way to determine an admin using onchain verifiable data (e.g., you hold the mint authority), you can complete self-registration in a permissionless manner by calling the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction:
 
-1. **Admin Initiates Registration:** The token admin calls the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction, passing in the mint and the proposed administrator's public key. This instruction initializes a `TokenAdminRegistry` PDA for this mint.
+1. **Admin Initiates Registration:** The token admin calls the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction, passing in the mint and the proposed administrator's public key. This instruction initializes a `TokenAdminRegistry` PDA for this mint.
 
 1. **Determine Administrator:** The Router ensures that the caller is the SPL token's mint authority, confirming they have the right to set a CCIP admin.
 
@@ -52,7 +52,7 @@ If your SPL token supports an automatic way to determine an admin using onchain 
 
 **Self-Service Registration Requirements:**
 
-- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)
+- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator)
 - **Registry State**: TokenAdminRegistry PDA must not already exist for this mint
 - **Result**: Creates new TokenAdminRegistry PDA with proposed administrator in pending state
 
@@ -80,9 +80,9 @@ The following sequence diagram illustrates the process of proposing the administ
 
 #### Overriding Pending Administrator
 
-If you need to change the pending administrator before they accept the role, you can use the [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator) instruction. This is useful when you initially proposed the wrong administrator or need to update the pending administrator for other reasons.
+If you need to change the pending administrator before they accept the role, you can use the [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator) instruction. This is useful when you initially proposed the wrong administrator or need to update the pending administrator for other reasons.
 
-1. **Override Pending Administrator:** The mint authority calls the Router's [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator) instruction, passing in the mint and the new proposed administrator's public key.
+1. **Override Pending Administrator:** The mint authority calls the Router's [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator) instruction, passing in the mint and the new proposed administrator's public key.
 
 1. **Validate Authority:** The Router ensures that the caller is the SPL token's mint authority and that no administrator has been accepted yet (the `administrator` field must be zero).
 
@@ -90,7 +90,7 @@ If you need to change the pending administrator before they accept the role, you
 
 **Override Requirements:**
 
-- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator)
+- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator)
 - **Registry State**: TokenAdminRegistry PDA must exist but have no accepted administrator yet (`administrator` field is zero)
 - **Result**: Updates the `pending_administrator` field with the new proposed administrator
 
@@ -104,9 +104,9 @@ If you need to change the pending administrator before they accept the role, you
 
 Once the administrator has been proposed and is pending, they must accept the role to complete the registration process. This step finalizes the administrator's assignment.
 
-1. **Pending Administrator Calls [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry)**
+1. **Pending Administrator Calls [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry)**
 
-   The pending admin invokes [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) on the Router program, specifying the mint account in the transaction context.
+   The pending admin invokes [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry) on the Router program, specifying the mint account in the transaction context.
 
 1. **Finalize Registration**
    - The Router checks that the caller's public key matches the `pending_administrator` field in the `TokenAdminRegistry` PDA.
@@ -122,15 +122,15 @@ Below is the sequence diagram illustrating how the pending administrator interac
 
 #### Transfer Administrator Role
 
-The [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) instruction allows the current token administrator to transfer their role to a new administrator. This transfer process is secure and involves two steps, requiring the new admin to accept it explicitly before finalization.
+The [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) instruction allows the current token administrator to transfer their role to a new administrator. This transfer process is secure and involves two steps, requiring the new admin to accept it explicitly before finalization.
 
 1. **Initiate Role Transfer**
-   - The current admin calls [`transfer_admin_role_token_admin_registry(new_admin)`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) on the Router, passing the new administrator's public key.
+   - The current admin calls [`transfer_admin_role_token_admin_registry(new_admin)`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) on the Router, passing the new administrator's public key.
    - The Router checks that the caller is the token's existing administrator. If so, it sets `pending_administrator = new_admin` in the `TokenAdminRegistry` (PDA).
 1. **Pending Administrator**
    - The registry is now pending. The existing admin will still be active until the new admin accepts.
 1. **Accept the Role**
-   - The new administrator must call [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) to finalize the transfer.
+   - The new administrator must call [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry) to finalize the transfer.
    - If `authority.key()` matches `pending_administrator`, the Router updates `administrator = pending_administrator`. Otherwise, it will fail.
    - Once accepted, the new administrator can set or modify the token pool.
 
@@ -144,9 +144,9 @@ Below is a sequence diagram showing how the transfer is requested, followed by h
 
 ### Setting the Token Pool
 
-On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction enables a token administrator to map a given mint to the pool lookup table that defines how that token is handled in cross-chain transfers. This instruction modifies the `TokenAdminRegistry` PDA so the Route program knows which token pool accounts can lock or burn tokens on the source chain (and release or mint them on the destination).
+On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction enables a token administrator to map a given mint to the pool lookup table that defines how that token is handled in cross-chain transfers. This instruction modifies the `TokenAdminRegistry` PDA so the Route program knows which token pool accounts can lock or burn tokens on the source chain (and release or mint them on the destination).
 
-1. **Set Token Pool:** The current administrator calls the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction on the Router program, passing in:
+1. **Set Token Pool:** The current administrator calls the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction on the Router program, passing in:
    - The token mint (for which we are configuring cross-chain transfers).
    - The `pool_lookuptable` account (the Address Lookup Table containing the mandatory PDAs and program addresses for that token pool).
    - A list of "writable indexes" indicating which lookup table entries should be marked as writable during cross-chain transfers. These indexes specify positions in the ALT that require write permission for successful transaction execution.
@@ -155,10 +155,10 @@ On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/sv
    - Resets the old permission bits, then enables the specified "writable indexes."
    - This ensures the new token pool has the correct set of PDAs with the correct writable permissions.
 1. **Validate or Delist:**
-   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements). If valid, the token becomes enabled for cross-chain transfers.
+   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v0.1.1/router#address-lookup-table-requirements). If valid, the token becomes enabled for cross-chain transfers.
    - If the `pool_lookuptable` is the zero address, the token is effectively delisted from CCIP, meaning no new cross-chain transfers can occur.
 
-The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction updates the `TokenAdminRegistry` PDA and either enables or delists the token for cross-chain transfers.
+The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction updates the `TokenAdminRegistry` PDA and either enables or delists the token for cross-chain transfers.
 
 <ClickToZoom
   src="/images/ccip/cct/cct-svm-diagrams/solana_set_pool.svg"
@@ -181,61 +181,61 @@ Once you have registered your token and set the token pool via the Router, you n
 Before any other configuration can occur, you must initialize your token pool:
 
 1. **Initialize Token Pool**
-   - **Instruction:** [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)
+   - **Instruction:** [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize)
    - **Use Case:** Create the pool state PDA for your specific mint. This is the first mandatory step that must be completed before any other pool configuration operations.
    - **Authorization:** Program upgrade authority can always initialize pools. When self-serve is enabled (`self_served_allowed: true`), the token's mint authority can also initialize pools.
    - **Requirements:** Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin.
-   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) to learn more.
 
 ### Remote Chain Configuration
 
 Configure your token pool for specific destination blockchains:
 
 1.  **Initialize a Remote Configuration**
-    - **Instruction:** [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
+    - **Instruction:** [`init_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)
     - **Use Case:** Create a new onchain account (PDA derived from the chain selector and token pool program ID) holding configuration details for a specific remote blockchain (e.g., remote token address).
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config) to learn more.
 
 1.  **Edit an Existing Remote Configuration**
-    - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
+    - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
     - **Use Case:** Update the entire stored configuration for a remote chain (`RemoteConfig`), including the remote token address and decimals.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to learn more.
 
 1.  **Add Remote Pool Address**
-    - **Instruction:** [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)
+    - **Instruction:** [`append_remote_pool_addresses`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#append_remote_pool_addresses)
     - **Use Case:** Register one or more remote pool addresses for the same remote chain. This can happen when you deploy a new pool version on that blockchain but keep the old address functional until all in-flight messages are processed.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#append_remote_pool_addresses) to learn more.
 
 1.  **Remove Remote Pool Address**
-    - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
+    - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
     - **Use Case:** Remove one or more remote pool addresses from an existing remote chain configuration. Call this instruction with a new `RemoteConfig` that excludes the addresses you want to remove.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to learn more.
 
 1.  **Remove Chain Config**
-    - **Instruction:** [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)
+    - **Instruction:** [`delete_chain_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#delete_chain_config)
     - **Use Case:** Remove the remote blockchain configuration PDA to stop supporting it permanently.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#delete_chain_config) to learn more.
 
 ### Rate Limits and Security
 
 Configure transfer limits and access controls for your token pool:
 
 1.  **Configure Rate Limits**
-    - **Instruction:** [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)
+    - **Instruction:** [`set_chain_rate_limit`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#set_chain_rate_limit)
     - **Use Case:** Apply or modify the remote blockchain's inbound/outbound rate-limit configuration. This uses a token bucket algorithm in which you can configure the capacity (maximum tokens) and rate (tokens per second refill rate) for both inbound and outbound transfers.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#set_chain_rate_limit) to learn more.
 
 1.  **Optional Allowlist**
-    - **Instructions:** [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list), [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)
+    - **Instructions:** [`configure_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#configure_allow_list), [`remove_from_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#remove_from_allow_list)
     - **Use case:** You can add or remove addresses if the pool has an allowlist. When the allowlist is enabled, only addresses that appear on it can initiate cross‐chain transfers. This provides an additional layer of access control for who can initiate cross-chain token transfers.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#configure_allow_list) to learn more.
 
 For detailed authorization requirements, see the access control tables for [BurnMint pools](/ccip/concepts/cross-chain-token/svm/token-pools#access-control) and [LockRelease pools](/ccip/concepts/cross-chain-token/svm/token-pools#access-control-1).
 
@@ -246,31 +246,31 @@ Configure liquidity providers and settings for Lock/Release token pools:
 #### Liquidity Configuration
 
 1.  **Set Rebalancer**
-    - **Instruction:** [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)
+    - **Instruction:** [`set_rebalancer`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_rebalancer)
     - **Use Case:** Configure which public key is authorized to add or withdraw liquidity from the pool.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_rebalancer) to learn more.
 
 1.  **Configure Liquidity Acceptance**
-    - **Instruction:** [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)
-    - **Use Case:** Enable or disable whether the pool can accept incoming liquidity via the [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity) instruction.
+    - **Instruction:** [`set_can_accept_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_can_accept_liquidity)
+    - **Use Case:** Enable or disable whether the pool can accept incoming liquidity via the [`provide_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity) instruction.
     - **Authorization:** Pool Owner only
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_can_accept_liquidity) to learn more.
 
 #### Liquidity Operations
 
 1.  **Provide Liquidity**
-    - **Instruction:** [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)
+    - **Instruction:** [`provide_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity)
     - **Use Case:** Add tokens to the pool's reserves to enable cross-chain releases. The rebalancer transfers tokens from their account to the pool's Associated Token Account.
     - **Authorization:** Rebalancer only
     - **Requirements:** Pool must have `can_accept_liquidity` enabled
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity) to learn more.
 
 1.  **Withdraw Liquidity**
-    - **Instruction:** [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)
+    - **Instruction:** [`withdraw_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#withdraw_liquidity)
     - **Use Case:** Remove tokens from the pool's reserves. Can be used to transfer liquidity between pools by setting the destination as another pool's rebalancer.
     - **Authorization:** Rebalancer only
     - **Requirements:** Pool must have `can_accept_liquidity` enabled
-    - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity) to learn more.
+    - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#withdraw_liquidity) to learn more.
 
 **Note:** Lock/Release token pools require active liquidity management to ensure sufficient tokens are available for releases. Insufficient liquidity will cause cross-chain transfer failures. For complete authorization details, see the [LockRelease Access Control table](/ccip/concepts/cross-chain-token/svm/token-pools#access-control-1).

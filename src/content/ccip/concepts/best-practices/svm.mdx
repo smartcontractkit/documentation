@@ -28,7 +28,7 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
 
 ## Verify destination chain
 
-Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v1.6.0/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
+Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v0.1.1/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
 
 You can programmatically verify destination chain support using Solana PDAs (Program Derived Addresses). Here below is a JavaScript example of how to verify destination chain support:
 
@@ -63,17 +63,17 @@ async function isDestinationChainSupported(connection, routerProgramId, destinat
 
 ## Verify source chain
 
-When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
 
 ## Verify sender
 
-When implementing the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+When implementing the [`ccip_receive`](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
 ## Verify authority and allowed offramp
 
-When you implement the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
+When you implement the [`ccip_receive`](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
 
 **Example in Rust**:
 
@@ -136,7 +136,7 @@ When sending a CCIP message, you must select the appropriate `extra_args` struct
 - `SVMExtraArgsV1`: For Solana and other SVM-based destinations
 - `EVMExtraArgsV2`: For Ethereum and other EVM-based destinations
 
-For the full parameter specification, refer to the [CCIP API Reference](/ccip/api-reference/svm/v1.6.0/messages#extra-args).
+For the full parameter specification, refer to the [CCIP API Reference](/ccip/api-reference/svm/v0.1.1/messages#extra-args).
 
 ### Setting `compute_units` (SVM destinations)
 

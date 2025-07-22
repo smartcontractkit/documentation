@@ -2551,7 +2551,7 @@ On this page
 
 | Item | Description | Limit |
 | --- | --- | --- |
-| Maximum message data length | data payload sent within the [CCIP message](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) | 400 bytes |
+| Maximum message data length | data payload sent within the [CCIP message](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) | 400 bytes |
 | Message execution gas limit | User specified gas limit. Mandatory to be set | 3,000,000 gas |
 | Maximum number of tokens | Maximum number of distinct tokens a user can transfer in a single transaction. | 1 |
 | Smart Execution time window | Maximum duration for the execution of a CCIP message | 8 hours |
@@ -2573,7 +2573,7 @@ On this page
 
 ### [Latest Release](https://docs.chain.link/ccip/api-reference/svm\#latest-release)
 
-- **[CCIP v1.6.0](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/)** (Current Version)
+- **[CCIP v1.6.0](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/)** (Current Version)
 
   - Initial release for SVM-based blockchains (Solana)
   - Cross-chain messaging from Solana to EVM and SVM chains
@@ -4703,7 +4703,7 @@ This reference guide explains the key components and security patterns required 
 
 ## [Introduction](https://docs.chain.link/ccip/tutorials/svm/receivers\#introduction)
 
-A CCIP Receiver is a Solana program that implements the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction, allowing it to process incoming cross-chain messages. It can handle both arbitrary data payloads and/or token transfers, serving as the destination endpoint for CCIP messages.
+A CCIP Receiver is a Solana program that implements the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction, allowing it to process incoming cross-chain messages. It can handle both arbitrary data payloads and/or token transfers, serving as the destination endpoint for CCIP messages.
 
 ## [Security Architecture](https://docs.chain.link/ccip/tutorials/svm/receivers\#security-architecture)
 
@@ -4729,7 +4729,7 @@ The security model relies on three critical validations:
 The CCIP security architecture consists of:
 
 1. **Receiver Program** (your SVM program)
-   - Implements the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction
+   - Implements the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction
    - Validates that messages come from an authorized OffRamp program
 2. **CCIP Router**
    - Central coordinator of cross-chain communication
@@ -5202,7 +5202,7 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
 
 ## [Verify destination chain](https://docs.chain.link/ccip/concepts/best-practices/svm\#verify-destination-chain)
 
-Before calling the router's `ccip_send` [instruction](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
+Before calling the router's `ccip_send` [instruction](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
 
 You can programmatically verify destination chain support using Solana PDAs (Program Derived Addresses). Here below is a JavaScript example of how to verify destination chain support:
 
@@ -5240,17 +5240,17 @@ async function isDestinationChainSupported(connection, routerProgramId, destinat
 
 ## [Verify source chain](https://docs.chain.link/ccip/concepts/best-practices/svm\#verify-source-chain)
 
-When implementing the `ccip_receive` [method](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+When implementing the `ccip_receive` [method](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
 
 ## [Verify sender](https://docs.chain.link/ccip/concepts/best-practices/svm\#verify-sender)
 
-When implementing the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+When implementing the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
 ## [Verify authority and allowed offramp](https://docs.chain.link/ccip/concepts/best-practices/svm\#verify-authority-and-allowed-offramp)
 
-When you implement the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
+When you implement the [`ccip_receive`](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
 
 **Example in Rust**:
 
@@ -5305,7 +5305,7 @@ When sending a CCIP message, you must select the appropriate `extra_args` struct
 - `SVMExtraArgsV1`: For Solana and other SVM-based destinations
 - `EVMExtraArgsV2`: For Ethereum and other EVM-based destinations
 
-For the full parameter specification, refer to the [CCIP API Reference](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/messages#extra-args).
+For the full parameter specification, refer to the [CCIP API Reference](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/messages#extra-args).
 
 ### [Setting `compute_units` (SVM destinations)](https://docs.chain.link/ccip/concepts/best-practices/svm\#setting-compute_units-svm-destinations)
 
@@ -9589,13 +9589,13 @@ On this page
 
 ### [Core Components](https://docs.chain.link/ccip/api-reference/svm/v160\#core-components)
 
-- [Messages](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/messages) \- Message structures and extra args for cross-chain messaging
-- [Router](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/router) \- Instructions for sending messages through CCIP on Solana
-- [Events](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/events) \- Event emissions for tracking cross-chain messages
+- [Messages](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/messages) \- Message structures and extra args for cross-chain messaging
+- [Router](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/router) \- Instructions for sending messages through CCIP on Solana
+- [Events](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/events) \- Event emissions for tracking cross-chain messages
 
 ### [Error Handling](https://docs.chain.link/ccip/api-reference/svm/v160\#error-handling)
 
-- [Errors](https://docs.chain.link/ccip/api-reference/svm/v1.6.0/errors) \- Comprehensive list of CCIP error codes for SVM blockchains
+- [Errors](https://docs.chain.link/ccip/api-reference/svm/v0.1.1/errors) \- Comprehensive list of CCIP error codes for SVM blockchains
 
 ## Get the latest Chainlink content straight to your inbox.
 
