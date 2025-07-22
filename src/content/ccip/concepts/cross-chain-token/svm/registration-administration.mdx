@@ -155,7 +155,7 @@ On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/sv
    - Resets the old permission bits, then enables the specified "writable indexes."
    - This ensures the new token pool has the correct set of PDAs with the correct writable permissions.
 1. **Validate or Delist:**
-   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. This includes the token mint, pool program, token program, pool configuration PDA, and any other mandatory accounts specified by the pool implementation. If valid, the token becomes enabled for cross-chain transfers.
+   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements). If valid, the token becomes enabled for cross-chain transfers.
    - If the `pool_lookuptable` is the zero address, the token is effectively delisted from CCIP, meaning no new cross-chain transfers can occur.
 
 The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction updates the `TokenAdminRegistry` PDA and either enables or delists the token for cross-chain transfers.
