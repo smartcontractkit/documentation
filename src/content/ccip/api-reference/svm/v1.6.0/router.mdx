@@ -424,3 +424,37 @@ fn set_pool(
 
 - **Enable Token**: Set `pool_lookuptable` to a valid Address Lookup Table with required pool accounts
 - **Disable Token**: Set `pool_lookuptable` to zero address (`Pubkey::default()`) to delist from CCIP
+
+##### Address Lookup Table Requirements
+
+The `pool_lookuptable` must contain exactly these accounts in the specified order for proper CCIP token pool operations:
+
+| Index | Account                     | Derivation                                                   | Description                                                                                                                             |
+| ----- | --------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | **Lookup Table Address**    | N/A                                                          | The Address Lookup Table itself                                                                                                         |
+| 1     | **Token Admin Registry**    | `["token_admin_registry", mint]` under Router program        | Registry PDA for this token                                                                                                             |
+| 2     | **Pool Program**            | N/A                                                          | The token pool program ID (e.g., BurnMint or LockRelease Token Pool program)                                                            |
+| 3     | **Pool Config**             | `["ccip_tokenpool_config", mint]` under pool program         | Token-specific pool configuration and settings                                                                                          |
+| 4     | **Pool Token Account**      | ATA of (pool_signer, mint, token_program)                    | Associated Token Account holding pool's tokens                                                                                          |
+| 5     | **Pool Signer**             | `["ccip_tokenpool_signer", mint]` under pool program         | PDA with authority for token operations                                                                                                 |
+| 6     | **Token Program**           | N/A                                                          | SPL Token program (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`) or Token-2022 program (`TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb`) |
+| 7     | **Token Mint**              | N/A                                                          | The SPL token mint address                                                                                                              |
+| 8     | **Fee Token Config**        | `["fee_billing_token_config", mint]` under Fee Quoter        | Fee token billing configuration PDA                                                                                                     |
+| 9     | **CCIP Router Pool Signer** | `["external_token_pools_signer", pool_program]` under Router | Router's signer PDA for the pool                                                                                                        |
+
+**Notes:**
+
+- The ALT contains exactly 10 accounts as shown above
+- Custom token pools may require additional accounts beyond these core 10
+- All PDA derivations must use the correct program IDs
+- Pool Token Account must be the proper Associated Token Account for the Pool Signer
+- Writable permissions are specified via the `writable_indexes` parameter
+
+**Creating the ALT:**
+
+1. Create a new Address Lookup Table
+1. Add accounts in the exact order specified above
+1. Ensure all PDA derivations are correct for your specific token and pool program
+1. Call `set_pool` with the ALT address and appropriate `writable_indexes`
+
+For PDA derivation examples and account validation details, see the [Token Pool documentation](/ccip/concepts/cross-chain-token/svm/token-pools).
