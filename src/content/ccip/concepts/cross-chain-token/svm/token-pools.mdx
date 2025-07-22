@@ -209,8 +209,17 @@ The mint authority follows this lifecycle for BurnMint pools:
 
 - You must control the token's `mint_authority` to initialize the pool
 - The [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction requires the mint authority as the signer
-- The pool stores you as the owner during initialization
+- **The pool automatically sets the initializer as the pool owner during initialization**
 - Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+<Aside type="note" title="Ownership Flexibility After Initialization">
+  **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
+  initialized in the token pool program AND the token admin registry PDA is created in the router, **the pool owner can
+  transfer pool ownership to any address** using
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership). The new owner will
+  have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
+  who currently holds it.
+</Aside>
 
 **Ongoing: Pool Management**
 
@@ -219,6 +228,7 @@ The mint authority follows this lifecycle for BurnMint pools:
   - Configure or update rate limits for existing chains
   - Manage allowlists and other pool settings
   - Add or remove remote pool addresses
+  - **Transfer pool ownership to any address using [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)**
 
 **When Ready: Mint Authority Transfer**
 
@@ -334,30 +344,29 @@ After this transfer, the pool can mint tokens when the SVM chain is the destinat
 
 Understanding who can call which instructions is critical for secure pool operation and proper integration. This table shows the authorization model for all BurnMint token pool instructions, helping you understand the security boundaries and operational responsibilities.
 
-| Instruction Category | Instruction                                                                                                                      | Program Upgrade Authority | Pool Owner | Rate Limit Admin\* | Router Authority |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :----------------: | :--------------: |
-| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_global_config)                                   |            ✅             |     ❌     |         ❌         |        ❌        |
-|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_self_served_allowed)                   |            ✅             |     ❌     |         ❌         |        ❌        |
-|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_router)                             |            ✅             |     ❌     |         ❌         |        ❌        |
-|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_rmn)                                   |            ✅             |     ❌     |         ❌         |        ❌        |
-| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)                                                   |   ✅ OR Mint Authority    |     ❌     |         ❌         |        ❌        |
-| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)                                   |            ❌             |     ✅     |         ❌         |        ❌        |
-|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#accept_ownership)                                       |            ❌             |   ✅\*\*   |         ❌         |        ❌        |
-| **Security**         | [`transfer_mint_authority_to_multisig`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_mint_authority_to_multisig) |            ✅             |     ❌     |         ❌         |        ❌        |
-|                      | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list)                               |            ❌             |     ✅     |         ❌         |        ❌        |
-|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)                           |            ❌             |     ✅     |         ❌         |        ❌        |
-| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)                       |            ❌             |     ✅     |         ❌         |        ❌        |
-|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)                       |            ❌             |     ✅     |         ❌         |        ❌        |
-|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)               |            ❌             |     ✅     |         ❌         |        ❌        |
-|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)                               |            ❌             |     ✅     |         ✅         |        ❌        |
-|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)                                 |            ❌             |     ✅     |         ❌         |        ❌        |
-| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)                                 |            ❌             |     ❌     |         ❌         |        ✅        |
-|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)                           |            ❌             |     ❌     |         ❌         |        ✅        |
+| Instruction Category | Instruction                                                                                                                      | Program Upgrade Authority | Pool Owner | Router Authority |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_global_config)                                   |            ✅             |     ❌     |        ❌        |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_self_served_allowed)                   |            ✅             |     ❌     |        ❌        |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_router)                             |            ✅             |     ❌     |        ❌        |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_rmn)                                   |            ✅             |     ❌     |        ❌        |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)                                                   |   ✅ OR Mint Authority    |     ❌     |        ❌        |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)                                   |            ❌             |     ✅     |        ❌        |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#accept_ownership)                                       |            ❌             |   ✅\*\*   |        ❌        |
+| **Security**         | [`transfer_mint_authority_to_multisig`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_mint_authority_to_multisig) |            ✅             |     ❌     |        ❌        |
+|                      | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list)                               |            ❌             |     ✅     |        ❌        |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)                           |            ❌             |     ✅     |        ❌        |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)                       |            ❌             |     ✅     |        ❌        |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)                       |            ❌             |     ✅     |        ❌        |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)               |            ❌             |     ✅     |        ❌        |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)                               |            ❌             |     ✅     |        ❌        |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)                                 |            ❌             |     ✅     |        ❌        |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)                                 |            ❌             |     ❌     |        ✅        |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)                           |            ❌             |     ❌     |        ✅        |
 
 **Notes:**
 
-- \* **Rate Limit Admin**: Optional role. Only useful if pool owner wants another address to manage rate limits
-- \*\* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
+- \* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
 - **Critical**: Pool Signer PDA MUST have mint capability (direct or via multisig) for minting operations
 - **Critical**: Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
 
@@ -419,8 +428,17 @@ The LockRelease token pool specializes in lock and release operations, requiring
 
 - Program upgrade authority can always initialize pools
 - When self-serve is enabled (`self_served_allowed: true`), the token's mint authority can also initialize pools
+- **The pool automatically sets the initializer as the pool owner during initialization**
 - Pool is configured with liquidity acceptance settings during initialization
 - Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+<Aside type="note" title="Ownership Flexibility After Initialization">
+  **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
+  initialized, **the pool owner can transfer pool ownership to any address** using
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership). The new owner will
+  have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
+  who currently holds it.
+</Aside>
 
 **Ongoing Liquidity Operations:**
 
@@ -440,33 +458,32 @@ The LockRelease token pool specializes in lock and release operations, requiring
 
 Understanding who can call which instructions is critical for secure pool operation and proper integration. This table shows the authorization model for all LockRelease token pool instructions, helping you understand the security boundaries and operational responsibilities.
 
-| Instruction Category | Instruction                                                                                                           | Program Upgrade Authority | Pool Owner | Rate Limit Admin\* | Router Authority | Rebalancer |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :----------------: | :--------------: | :--------: |
-| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_global_config)                     |            ✅             |     ❌     |         ❌         |        ❌        |     ❌     |
-|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_self_served_allowed)     |            ✅             |     ❌     |         ❌         |        ❌        |     ❌     |
-|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_router)               |            ✅             |     ❌     |         ❌         |        ❌        |     ❌     |
-|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_rmn)                     |            ✅             |     ❌     |         ❌         |        ❌        |     ❌     |
-| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#initialize)                                     |   ✅ OR Mint Authority    |     ❌     |         ❌         |        ❌        |     ❌     |
-| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership)                     |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#accept_ownership)                         |            ❌             |   ✅\*\*   |         ❌         |        ❌        |     ❌     |
-| **Security**         | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#configure_allow_list)                 |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#remove_from_allow_list)             |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-| **Liquidity Mgmt**   | [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)                             |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)         |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)                       |            ❌             |     ❌     |         ❌         |        ❌        |     ✅     |
-|                      | [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)                     |            ❌             |     ❌     |         ❌         |        ❌        |     ✅     |
-| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_chain_remote_config)         |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config)         |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#append_remote_pool_addresses) |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_chain_rate_limit)                 |            ❌             |     ✅     |         ✅         |        ❌        |     ❌     |
-|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#delete_chain_config)                   |            ❌             |     ✅     |         ❌         |        ❌        |     ❌     |
-| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#lock_or_burn_tokens)                   |            ❌             |     ❌     |         ❌         |        ✅        |     ❌     |
-|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#release_or_mint_tokens)             |            ❌             |     ❌     |         ❌         |        ✅        |     ❌     |
+| Instruction Category | Instruction                                                                                                           | Program Upgrade Authority | Pool Owner | Router Authority | Rebalancer |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: | :--------: |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_global_config)                     |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_self_served_allowed)     |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_router)               |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_rmn)                     |            ✅             |     ❌     |        ❌        |     ❌     |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#initialize)                                     |   ✅ OR Mint Authority    |     ❌     |        ❌        |     ❌     |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership)                     |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#accept_ownership)                         |            ❌             |   ✅\*\*   |        ❌        |     ❌     |
+| **Security**         | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#configure_allow_list)                 |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#remove_from_allow_list)             |            ❌             |     ✅     |        ❌        |     ❌     |
+| **Liquidity Mgmt**   | [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)                             |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)                       |            ❌             |     ❌     |        ❌        |     ✅     |
+|                      | [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)                     |            ❌             |     ❌     |        ❌        |     ✅     |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_chain_remote_config)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#append_remote_pool_addresses) |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_chain_rate_limit)                 |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#delete_chain_config)                   |            ❌             |     ✅     |        ❌        |     ❌     |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#lock_or_burn_tokens)                   |            ❌             |     ❌     |        ✅        |     ❌     |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#release_or_mint_tokens)             |            ❌             |     ❌     |        ✅        |     ❌     |
 
 **Notes:**
 
-- \* **Rate Limit Admin**: Optional role. Only useful if pool owner wants another address to manage rate limits
-- \*\* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
+- \* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
 - **Critical**: Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
 
 #### When to Use
