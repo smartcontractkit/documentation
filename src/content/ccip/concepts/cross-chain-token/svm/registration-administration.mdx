@@ -30,7 +30,6 @@ Understanding who can call which Router instructions is critical for secure toke
 | [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry)     |       ❌       |            ❌            |         ❌          |         ✅          |
 | [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) |       ❌       |            ❌            |         ✅          |         ❌          |
 | [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool)                                                                 |       ❌       |            ❌            |         ✅          |         ❌          |
-| [`set_pool_supports_auto_derivation`](/ccip/api-reference/svm/v1.6.0/router#set_pool_supports_auto_derivation)               |       ❌       |            ❌            |         ✅          |         ❌          |
 
 **Notes:**
 
@@ -167,25 +166,6 @@ The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm
   style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />
 
-### Configuring Pool Auto-Derivation
-
-The [`set_pool_supports_auto_derivation`](/ccip/api-reference/svm/v1.6.0/router#set_pool_supports_auto_derivation) instruction allows a token administrator to configure whether their token pool supports automatic account derivation for cross-chain transfers. This setting affects how the CCIP Router validates and handles account lists during token transfer operations.
-
-**Auto-Derivation Capability:** When enabled (`supports_auto_derivation = true`), the token pool can dynamically derive additional accounts and lookup tables required for cross-chain operations by implementing `derive_accounts_lock_or_burn` and `derive_accounts_release_or_mint` functions. This provides flexibility for pools that need message-dependent or dynamically calculated account sets.
-
-**Account Validation Impact:**
-
-- **Auto-derivation enabled**: The Router validates only the static accounts present in the Address Lookup Table, allowing the pool to handle validation of additional dynamically-derived accounts.
-- **Auto-derivation disabled**: The Router validates all accounts against the static Address Lookup Table, expecting a complete and fixed account set.
-
-**Administrative Control:** Only the current token administrator can modify this setting, ensuring that pool configuration changes are properly authorized. The function updates the `supports_auto_derivation` flag in the `TokenAdminRegistry` PDA and emits a `PoolEdited` event for transparency.
-
-<ClickToZoom
-  src="/images/ccip/cct/cct-svm-diagrams/solana_set_pool_supports_auto_derivation.svg"
-  alt="Cross-Chain Token Standard - Configure Pool Auto-Derivation"
-  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
-/>
-
 ## Token Pool Configuration (Pool Side)
 
 Once you have registered your token and set the token pool via the Router, you need to configure the specific pool parameters. These operations are performed directly on the Token Pool programs, not the Router.
@@ -248,7 +228,7 @@ Configure transfer limits and access controls for your token pool:
 1.  **Configure Rate Limits**
     - **Instruction:** [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)
     - **Use Case:** Apply or modify the remote blockchain's inbound/outbound rate-limit configuration. This uses a token bucket algorithm in which you can configure the capacity (maximum tokens) and rate (tokens per second refill rate) for both inbound and outbound transfers.
-    - **Authorization:** Pool Owner OR Rate Limit Admin
+    - **Authorization:** Pool Owner only
     - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit) to learn more.
 
 1.  **Optional Allowlist**

@@ -94,12 +94,11 @@ The CCIP Router program is central to cross-chain token management. It has two f
 
      For detailed step-by-step procedures, sequence diagrams, and complete registration workflows, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
 
-   - **Pool configuration:** The TokenAdminRegistry maps each mint to exactly one token pool configuration through the ALT. This ensures that during cross-chain transfers, only the authorized token pool implementation can interact with the token. The registry also includes a `supports_auto_derivation` flag for enhanced account derivation capabilities.
+   - **Pool configuration:** The TokenAdminRegistry maps each mint to exactly one token pool configuration through the ALT. This ensures that during cross-chain transfers, only the authorized token pool implementation can interact with the token.
    - **Security Architecture:** The one-to-one mapping between tokens and pools provides critical security guarantees:
      - **Single Authorized Pool:** Each token mint can only have one authorized pool configuration, preventing unauthorized token handling
      - **Atomic Pool Updates:** Changing pool configurations requires updating the entire ALT reference, ensuring consistent state
      - **Access Control:** Only the registry administrator can modify pool assignments, maintaining strict governance
-   - **Enhanced Account Derivation:** When `supports_auto_derivation` is enabled, token pools can dynamically derive additional accounts during cross-chain operations. This allows pools to handle complex transfer scenarios with varying account requirements while maintaining security through the registry's controlled environment.
 
 1. **Lock or Burn Flow (when sending tokens cross-chain)**
    - [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) entrypoint: When a CCIP sender initiates a cross-chain token transfer, they invoke the [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) instruction on the Router, providing the token mint, amount, destination chain, receiver address, and other transaction parameters.
