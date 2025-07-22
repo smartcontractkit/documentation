@@ -140,7 +140,36 @@ Deploy tokens with the **same number of decimals across all blockchains** whenev
 
 ## Standard Token Pools: An Overview
 
-Chainlink provides two standard token pool types that implement the token handling mechanisms described above. Each pool type implements specific logic for how tokens are managed during cross-chain transfers. The detailed sections below will help you understand the architecture, requirements, and implementation details for each pool type.
+Chainlink provides two standard token pool types that implement the token handling mechanisms described above. Each pool type implements specific logic for how tokens are managed during cross-chain transfers.
+
+### SVM Program Architecture Overview
+
+On SVM-based blockchains like Solana, applications consist of **programs** (executable code) and **accounts** (data storage). Programs are stateless and store their data in separate accounts.
+
+**Program-Derived Addresses (PDAs)** are special accounts with addresses [deterministically derived](https://solana.com/docs/core/pda) from seeds and a program ID. PDAs have no private keys, allowing programs to "sign" for them. This enables secure, predictable account management.
+
+### CCIP Token Pool Architecture
+
+Both BurnMint and LockRelease token pool programs use PDAs to organize data into two categories:
+
+- **Global PDAs**: Shared configuration for all pools deployed from this program
+- **Pool-Specific PDAs**: Individual configuration for each token's pool
+
+Each token has its own independent pool (one pool per mint), with pool-specific PDAs derived using the mint address as a seed.
+
+### Program-Derived Addresses (PDAs)
+
+**Global Configuration:**
+
+- **Global Config PDA** (`seeds: ["config"]`): Program-wide settings including `self_served_allowed`, default router, and RMN remote addresses
+
+**Pool-Specific Configuration (per mint):**
+
+- **Pool State PDA** (`seeds: ["ccip_tokenpool_config", mint]`): Token-specific pool configuration, ownership, and operational settings
+- **Pool Signer PDA** (`seeds: ["ccip_tokenpool_signer", mint]`): Signing authority for token operations (burns, mints, transfers)
+- **Chain Config PDAs** (`seeds: ["ccip_tokenpool_chainconfig", chain_selector, mint]`): Per-destination chain configuration including rate limits and remote pool addresses
+
+The detailed sections below will help you understand the specific requirements and implementation details for each pool type.
 
 ### BurnMint Token Pool
 
@@ -166,34 +195,9 @@ The BurnMint token pool provides burn and mint operations for cross-chain token 
 - New tokens are created in the user's associated token account (ATA)
 - Pool program must control the `mint_authority` for the token
 
-#### Architecture Components
+#### BurnMint Pool Specifics
 
-**SVM Program Architecture Overview:**
-
-On SVM-based blockchains like Solana, applications consist of **programs** (executable code) and **accounts** (data storage). Programs are stateless and store their data in separate accounts.
-
-**Program-Derived Addresses (PDAs)** are special accounts with addresses [deterministically derived](https://solana.com/docs/core/pda) from seeds and a program ID. PDAs have no private keys, allowing programs to "sign" for them. This enables secure, predictable account management.
-
-**CCIP Token Pool Architecture:**
-
-The BurnMint token pool program uses PDAs to organize data into two categories:
-
-- **Global PDAs**: Shared configuration for all pools deployed from this program
-- **Pool-Specific PDAs**: Individual configuration for each token's pool
-
-Each token has its own independent pool (one pool per mint), with pool-specific PDAs derived using the mint address as a seed.
-
-**Program-Derived Addresses (PDAs):**
-
-**Global Configuration:**
-
-- **Global Config PDA** (`seeds: ["config"]`): Program-wide settings including `self_served_allowed`, default router, and RMN remote addresses
-
-**Pool-Specific Configuration (per mint):**
-
-- **Pool State PDA** (`seeds: ["ccip_tokenpool_config", mint]`): Token-specific pool configuration, ownership, and operational settings
-- **Pool Signer PDA** (`seeds: ["ccip_tokenpool_signer", mint]`): Signing authority for token operations (burns, mints, transfers)
-- **Chain Config PDAs** (`seeds: ["ccip_tokenpool_chainconfig", chain_selector, mint]`): Per-destination chain configuration including rate limits and remote pool addresses
+The BurnMint token pool specializes in burn and mint operations, requiring specific mint authority management for minting operations.
 
 #### Mint Authority Management
 
@@ -243,9 +247,25 @@ The mint authority follows this lifecycle for BurnMint pools:
 
 **Configuration:**
 
-- Set up a 1-of-N [SPL token multisig account](https://spl.solana.com/token#multisig-usage) as the mint authority
-- Include the Pool Signer PDA as one of the authorized signers
-- Retain other signers under your exclusive control
+- Set up an M-of-N [SPL token multisig account](https://spl.solana.com/token#multisig-usage) as the mint authority
+- Include the Pool Signer PDA as a required signer **exactly M times** (where M is your threshold)
+- Include additional signers under your exclusive control as needed
+
+**SPL Token Multisig Requirements:**
+
+- **Threshold (M)**: Any value from 1 to N (your choice based on security needs)
+- **Total Signers (N)**: At least 2 signers total
+- **Pool Signer Repetition**: The Pool Signer PDA must appear **at least M times** in the signer list (typically exactly M times for optimal configuration)
+- **Additional Signers**: Remaining (N-M) signer slots for your governance control
+
+**Valid Configuration Examples:**
+
+| Threshold (M) | Total Signers (N) | Pool Signer PDA Occurrences | Your Signers |
+| ------------- | ----------------- | --------------------------- | ------------ |
+| 1             | 3                 | 1                           | 2            |
+| 2             | 4                 | 2                           | 2            |
+| 2             | 5                 | 2                           | 3            |
+| 3             | 6                 | 3                           | 3            |
 
 **Key benefits:**
 
@@ -253,19 +273,61 @@ The mint authority follows this lifecycle for BurnMint pools:
 - Maintains governance control through other multisig signers
 - Provides extensibility for future integrations
 - Enhanced security through distributed control
+- Flexible threshold configuration for different security requirements
 
-**Requirements:**
+**Technical Requirements:**
 
 - Must use [SPL token multisig](https://spl.solana.com/token#multisignatures) - other multisig implementations are not supported
-- The Pool Signer PDA must be included as one of the multisig signers
+- The Pool Signer PDA must be included exactly M times as a multisig signer
 - Multisig configuration must allow the pool to sign minting transactions independently
+
+**Why Pool Signer Must Appear At Least M Times:**
+
+This design ensures the pool can always mint tokens for cross-chain transfers without requiring your manual intervention, while still maintaining your governance control:
+
+- **Autonomous Operation**: Pool operations always have sufficient signatures (≥M occurrences of Pool Signer)
+- **Governance Control**: Your additional signers can still initiate mint operations independent of the pool (≤N-M pool signer occurrences ensures ≥M governance signer slots remain)
+- **Flexible Security**: You choose the threshold (M) based on your security requirements, constrained by M ≤ N/2
+- **Optimal Configuration**: Most deployments use exactly M pool signer occurrences for optimal balance
+
+**Multisig Configuration Validation:**
+
+The system validates your multisig configuration with these rules:
+
+- `total_signers >= 2` (must have at least 2 signers)
+- `threshold >= 1` (must require at least 1 signature)
+- `threshold <= total_signers` (can't require more signatures than available signers)
+- `pool_signer_occurrences >= threshold` (Pool Signer PDA must appear at least M times for autonomous operation)
+- `pool_signer_occurrences <= (total_signers - threshold)` (Pool Signer PDA cannot occupy all governance signer slots)
+
+**Constraint Implications:**
+
+- **Minimum Pool Signer Occurrences**: M times (enables autonomous pool operation)
+- **Maximum Pool Signer Occurrences**: N-M times (preserves governance control capability)
+- **Threshold Limit**: M ≤ N/2 (ensures both pool autonomy and governance control are possible)
+
+**Common Misconceptions:**
+
+To ensure proper implementation, avoid these common misconceptions about SPL token multisig configurations:
+
+**Incorrect**: "Only 1-of-N multisig is supported"  
+**Correct**: "Any M-of-N multisig is supported with proper Pool Signer repetition"
+
+**Incorrect**: "Pool Signer appears once in the multisig"  
+**Correct**: "Pool Signer appears at least M times (typically exactly M times) in the multisig"
+
+**Incorrect**: "Pool can operate with any multisig configuration"  
+**Correct**: "Pool Signer must appear ≥M and ≤(N-M) times to ensure both autonomous operation and governance control capability"
+
+**Incorrect**: "Any threshold M is valid for any total signers N"  
+**Correct**: "Threshold M must satisfy M ≤ N/2 to allow both pool autonomy and governance control"
 
 After this transfer, the pool can mint tokens when the SVM chain is the destination chain for cross-chain transfers.
 
 <Aside type="note" title="Advanced Multisig Scenarios">
   If your token already uses an [SPL token multisig](https://spl.solana.com/token#multisignatures) mint authority, you
-  can still integrate with CCIP by including the Pool Signer PDA as one of the signers and ensuring the pool program can
-  validate the signing logic during operations.
+  can still integrate with CCIP by ensuring the Pool Signer PDA appears exactly M times (where M is your threshold) in
+  the signer list and the pool program can validate the signing logic during operations.
 </Aside>
 
 #### Access Control
@@ -343,34 +405,13 @@ The LockRelease token pool implements a lock-and-release strategy for cross-chai
 - Pool must have sufficient token balance (liquidity) to fulfill transfers
 - No minting occurs - only transfers of existing tokens from the pool's reserves
 
-#### Architecture Components
+#### LockRelease Pool Specifics
 
-**SVM Program Architecture Overview:**
+The LockRelease token pool specializes in lock and release operations, requiring liquidity management rather than mint authority control. Unlike BurnMint pools, LockRelease pools:
 
-On SVM-based blockchains like Solana, applications consist of **programs** (executable code) and **accounts** (data storage). Programs are stateless and store their data in separate accounts.
-
-**Program-Derived Addresses (PDAs)** are special accounts with addresses [deterministically derived](https://solana.com/docs/core/pda) from seeds and a program ID. PDAs have no private keys, allowing programs to "sign" for them. This enables secure, predictable account management.
-
-**CCIP Token Pool Architecture:**
-
-The LockRelease token pool program uses the same PDA structure as BurnMint pools, organizing data into two categories:
-
-- **Global PDAs**: Shared configuration for all pools deployed from this program
-- **Pool-Specific PDAs**: Individual configuration for each token's pool
-
-Each token has its own independent pool (one pool per mint), with pool-specific PDAs derived using the mint address as a seed.
-
-**Program-Derived Addresses (PDAs):**
-
-**Global Configuration:**
-
-- **Global Config PDA** (`seeds: ["config"]`): Program-wide settings including `self_served_allowed`, default router, and RMN remote addresses
-
-**Pool-Specific Configuration (per mint):**
-
-- **Pool State PDA** (`seeds: ["ccip_tokenpool_config", mint]`): Token-specific pool configuration, ownership, and operational settings
-- **Pool Signer PDA** (`seeds: ["ccip_tokenpool_signer", mint]`): Signing authority for token operations (transfers, liquidity management)
-- **Chain Config PDAs** (`seeds: ["ccip_tokenpool_chainconfig", chain_selector, mint]`): Per-destination chain configuration including rate limits and remote pool addresses
+- **Do not require mint authority transfer** - the original mint authority remains unchanged
+- **Rely on token reserves** - manage liquidity through the pool's token holdings
+- **Use rebalancer role** - designated address manages liquidity operations
 
 #### Liquidity Management
 
