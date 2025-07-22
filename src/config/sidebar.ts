@@ -1787,8 +1787,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/svm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/svm/v1.6.0",
+                  title: "v0.1.1 (Latest)",
+                  url: "ccip/api-reference/svm/v0.1.1",
                   isCollapsible: true,
                   children: svmCcipV011Contents,
                 },
