@@ -30,6 +30,15 @@ This tutorial focuses on the simpler direct transfer approach for development en
   mint authority to a single PDA.
 </Aside>
 
+## Tutorial Approach
+
+This tutorial provides step-by-step instructions and explains what each command does. For detailed implementation code explanations, refer to the comprehensive READMEs in both repositories:
+
+- **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: Detailed explanations of all SVM commands and implementation
+- **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: Comprehensive EVM implementation guide
+
+The READMEs contain detailed technical explanations, troubleshooting guides, and advanced configuration options.
+
 ## Prerequisites
 
 This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
@@ -1642,6 +1651,20 @@ Token approval check completed successfully
 yarn svm:token-transfer --token-mint $TOKEN_MINT
 ```
 
+**Customization Options:**
+
+You can override the default transfer amount and destination receiver:
+
+```bash
+# Override amount and receiver address
+yarn svm:token-transfer --token-mint $TOKEN_MINT --token-amount 1000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
+```
+
+**Parameters:**
+
+- `--token-amount`: Amount to transfer (in token base units)
+- `--receiver`: EVM address that will receive the tokens on the destination chain
+
 </Fragment>
 
 <Fragment slot="panel.2">
@@ -1779,6 +1802,20 @@ https://explorer.solana.com/tx/5KVJnX4KN7GS76F67wWpX5fZ8sQkWWQM6fvWnPFirKxLEecKj
 # Execute cross-chain transfer from Ethereum to Solana
 yarn evm:transfer --token $ETH_TOKEN_ADDRESS
 ```
+
+**Customization Options:**
+
+You can override the default transfer amount and destination receiver:
+
+```bash
+# Override amount and receiver address
+yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
+
+**Parameters:**
+
+- `--amount`: Amount to transfer (in wei for 18-decimal tokens)
+- `--token-receiver`: Solana wallet address that will receive the tokens on the destination chain
 
 </Fragment>
 
