@@ -1670,6 +1670,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Cross-Chain Token (CCT) standard",
               url: "ccip/tutorials/svm/cross-chain-tokens",
+              children: [
+                {
+                  title: "BurnMint: Direct Mint Authority Transfer (Development)",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
+                },
+              ],
             },
           ],
         },
