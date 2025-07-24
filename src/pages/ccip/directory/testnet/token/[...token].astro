@@ -1,30 +1,26 @@
 ---
+export const prerender = false
+
 import Token from "~/components/CCIP/Token/Token.astro"
 import { Environment, getAllSupportedTokens, Version } from "~/config/data/ccip"
 import { getTokenIconUrl } from "~/features/utils"
 
-export async function getStaticPaths() {
-  const supportedTokens = getAllSupportedTokens({
-    environment: Environment.Testnet,
-    version: Version.V1_2_0,
-  })
+// Handle dynamic routing
+const { token } = Astro.params
+const environment = Environment.Testnet
 
-  const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
-  const pages = tokens.map((token) => ({ token }))
+// Get supported tokens dynamically
+const supportedTokens = getAllSupportedTokens({
+  environment,
+  version: Version.V1_2_0,
+})
 
-  return pages.map(({ token }) => {
-    return {
-      params: { token },
-      props: {
-        token: tokens.find((t) => t === token),
-        logo: getTokenIconUrl(token),
-        environment: Environment.Testnet,
-      },
-    }
-  })
+// Check if token exists
+if (!supportedTokens[token]) {
+  return Astro.redirect("/404")
 }
 
-const { token, logo, environment } = Astro.props
+const logo = getTokenIconUrl(token)
 ---
 
 <Token token={token} logo={logo} environment={environment} />
