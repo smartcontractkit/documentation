@@ -8,7 +8,7 @@ import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
-import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
+import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -1245,6 +1245,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/concepts/cross-chain-token/svm",
               children: [
                 {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                },
+                {
                   title: "Tokens",
                   url: "ccip/concepts/cross-chain-token/svm/tokens",
                 },
@@ -1253,8 +1257,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/concepts/cross-chain-token/svm/token-pools",
                 },
                 {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                  title: "Integration Guide",
+                  url: "ccip/concepts/cross-chain-token/svm/integration-guide",
                 },
                 {
                   title: "Registration and Administration",
@@ -1453,6 +1457,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Cross-Chain Token (CCT) standard",
               url: "ccip/tutorials/svm/cross-chain-tokens",
+              children: [
+                {
+                  title: "BurnMint: Direct Mint Authority Transfer (Development)",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
+                },
+              ],
             },
           ],
         },
@@ -1502,10 +1512,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/svm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/svm/v1.6.0",
+                  title: "v0.1.1 (Latest)",
+                  url: "ccip/api-reference/svm/v0.1.1",
                   isCollapsible: true,
-                  children: svmCcipV160Contents,
+                  children: svmCcipV011Contents,
                 },
               ],
             },
