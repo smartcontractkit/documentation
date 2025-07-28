@@ -4,8 +4,8 @@ date: Last Modified
 title: "Building CCIP Messages from EVM to SVM"
 isIndex: false
 metadata:
-  description: "Implement CCIP messages from EVM chains to Solana. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmatic token transfers (data+tokens)."
-  excerpt: "ccip messages evm to solana cross-chain messaging token transfers solana integration blockchain interoperability programmatic token transfers"
+  description: "Implement CCIP messages from EVM chains to Solana. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmable token transfers (data+tokens)."
+  excerpt: "ccip messages evm to solana cross-chain messaging token transfers solana integration blockchain interoperability programmable token transfers"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -14,7 +14,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Introduction
 
-This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g. Ethereum) to SVM chains (e.g. Solana). We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g. Ethereum) to SVM chains (e.g. Solana). We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmable token transfers (data and tokens).
 
 ## CCIP Message Structure
 
@@ -36,7 +36,7 @@ struct EVM2AnyMessage {
 - **Token-only transfers**:
   - **Use**: `0x0000000000000000000000000000000000000000000000000000000000000000` (32-byte zero address)
   - **Why**: No program execution needed for token-only transfers.
-- **Arbitrary Messaging** or **Programmatic Token Transfers**:
+- **Arbitrary Messaging** or **Programmable Token Transfers**:
   - **Use**: The program ID of the SVM program that implements the `ccip_receive` instruction, converted to a 32-byte hex format.
   - **Why**: The program will process the incoming CCIP message and execute the `ccip_receive` instruction.
 
@@ -61,7 +61,7 @@ struct EVM2AnyMessage {
 
 - **Definition**: Contains the payload that will be passed to the receiving program
 - **For token-only transfers**: Empty (`0x`)
-- **For arbitrary messaging** or **programmatic token transfers**: Contains the data the receiver program will process
+- **For arbitrary messaging** or **programmable token transfers**: Contains the data the receiver program will process
 - **Encoding requirement**: Must be encoded as a hex string with `0x`· prefix
 
 <Aside type="tip" title="Data Encoding">
@@ -80,7 +80,7 @@ const messageData = `0x${Buffer.from("Hello World").toString("hex")}`
 
 - **Definition**: An array of token addresses and amounts to transfer
 - **For data-only messages**: Must be an empty array
-- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
+- **For token transfers** or **programmable token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane
 
 ### feeToken
 
@@ -115,7 +115,7 @@ Specifies the amount of compute units allowed for calling the `ccip_receive` ins
 
 - **For token transfers only**: **MUST** be set to 0
 
-- **For arbitrary messaging** or **programmatic token transfers**: Must be
+- **For arbitrary messaging** or **programmable token transfers**: Must be
   determined through comprehensive testing of the receiver program under different conditions
 
 </Aside>
@@ -390,7 +390,7 @@ Use this configuration when sending only data messages to SVM:
 
 </Aside>
 
-### Programmatic Token Transfer (Data and Tokens)
+### Programmable Token Transfer (Data and Tokens)
 
 Use this configuration when sending both tokens and data in a single message:
 
