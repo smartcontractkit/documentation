@@ -764,20 +764,20 @@ const StreamsTr = ({ proxy, isMainnet }) => (
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
+                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
                   Crypto Schema (v3)
                 </a>
               </dd>
             </div>
           )}{" "}
-          {proxy.feedType === "Forex" && (
+          {(proxy.feedType === "Forex" || proxy.feedType === "Equities" || proxy.feedType === "FX_Spot") && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
-                  RWA Schema (v4)
+                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                  RWA Schema (v8)
                 </a>
               </dd>
             </div>
@@ -835,7 +835,12 @@ export const MainnetTable = ({
       }
 
       if (dataFeedType === "streamsRwa") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Forex"
+        return (
+          metadata.contractType === "verifier" &&
+          (metadata.docs.feedType === "Forex" ||
+            metadata.docs.feedType === "Equities" ||
+            metadata.docs.feedType === "FX_Spot")
+        )
       }
 
       if (isSmartData) {
@@ -968,7 +973,10 @@ export const TestnetTable = ({
           return proxy.contractType === "verifier" && proxy.feedType === "Crypto"
         }
         if (dataFeedType === "streamsRwa") {
-          return proxy.contractType === "verifier" && proxy.feedType === "Forex"
+          return (
+            proxy.contractType === "verifier" &&
+            (proxy.feedType === "Forex" || proxy.feedType === "Equities" || proxy.feedType === "FX_Spot")
+          )
         }
       }
       if (isSmartData) return !!proxy.docs.porType
