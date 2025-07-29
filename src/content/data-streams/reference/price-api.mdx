@@ -1,0 +1,214 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Data Streams Price API"
+metadata:
+  title: "Data Streams Price API Reference | Chainlink Documentation"
+  description: "Reference for the Chainlink Data Streams Price API. Learn how to authenticate, list available symbols, query historical candlestick (OHLC) data, and stream live price updates over HTTP."
+  keywords: ["Candlestick API", "Price API", "OHLC", "HTTP Rest API", "API Client", "Trading View API"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+PriceAPI is designed and implemented to satisfy the [TradingView implementation spec](https://www.tradingview.com/broker-api-docs/rest-api-spec/#tag/Data-Integration), the industry standard to share aggregated trading data.
+
+Alignment to the TradingView spec allows for trading view integration and direct customer access to prices without resorting to consuming and decoding reports for non-transactional use cases, like dashboards, analytics platforms, portfolio trackers, research tools, and more.
+
+{/* TODO: specify mainnet and testnet domains */}
+
+## Domains
+
+| Description        | Testnet URL | Mainnet URL |
+| ------------------ | ----------- | ----------- |
+| Price API endpoint | TBD         | TBD         |
+
+## API Endpoints
+
+### Authorize and get token
+
+##### Endpoint
+
+**`/api/v1/authorize`**
+
+| Type      | Description                                       | Parameter(s)                                                                    |
+| :-------- | :------------------------------------------------ | :------------------------------------------------------------------------------ |
+| HTTP POST | Authorizes a user and returns a JWT access token. | <ul><li>`login`: The user ID.</li><li>`password`: The user's API key.</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "login={YOUR_USER_ID}&password={YOUR_API_KEY}" \
+  [API_BASE]/api/v1/authorize
+```
+
+##### Sample response
+
+```json
+{
+  "d": {
+    "access_token": "[ACCESS_TOKEN]", // JWT token for subsequent requests
+    "expiration": 1747203979
+  },
+  "s": "ok"
+}
+```
+
+### Get list of supported symbols
+
+##### Endpoint
+
+**`/api/v1/symbol_info`**
+
+| Type     | Description                                              | Parameter(s)                                                                                     |
+| :------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. Currently only supports "crypto".</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  [API_BASE]/api/v1/symbol_info
+```
+
+##### Sample response
+
+```json
+{
+  "s": "ok",
+  "symbol": ["ETHUSD", "BTCUSD"],
+  "currency": ["USD", "USD"],
+  "base-currency": ["ETH", "BTC"]
+}
+```
+
+### Get candlestick data (column format)
+
+##### Endpoint
+
+**`/api/v1/history`**
+
+| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                      |
+| :------- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+
+**Note**: The resolution of the data is based on the size of the time window:
+
+| Max time window size | Resolution of candles |
+| :------------------- | :-------------------- |
+| \<= 24 hours         | 1 minute              |
+| \<= 5 days           | 5 minutes             |
+| \<= 30 days          | 30 minutes            |
+| \<= 90 days          | 1 hour                |
+| \<= 6 months         | 2 hours               |
+| > 6 months           | 1 day                 |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  "[API_BASE]/api/v1/history?symbol=ETHUSD&resolution=1m&from=1746072068&to=1746158468"
+```
+
+##### Sample response
+
+```json
+{
+  "s": "ok",
+  "t": [1746158460, 1746158400, 1746158340],
+  "c": [1.84685e21, 1.848515087189567e21, 1.8490380305e21, 1.8481266e21],
+  "o": [1.8483674e21, 1.848602513e21, 1.8481267e21],
+  "h": [1.8498753129131415e21, 1.848875387e21, 1.8490380305e21],
+  "l": [1.8468008021426886e21, 1.848243519e21, 1.8475677870725296e21],
+  "v": []
+}
+```
+
+### Get candlestick data (row format)
+
+##### Endpoint
+
+**`/api/v1/history/rows`**
+
+| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                      |
+| :------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  "[API_BASE]/api/v1/history/rows?symbol=ETHUSD&resolution=1m&from=1746072068&to=1746158468"
+```
+
+##### Sample response
+
+```json
+{
+  "s": "ok",
+  "candles": [
+    [1746158460, 1.8483674e21, 1.8498753129131415e21, 1.8468008021426886e21, 1.84685e21, 0],
+    [1746158400, 1.848602513e21, 1.848875387e21, 1.848243519e21, 1.848515087189567e21, 0],
+    [1746158340, 1.8481267e21, 1.8490380305e21, 1.8475677870725296e21, 1.8490380305e21, 0]
+  ]
+}
+```
+
+### Get streaming price updates
+
+##### Endpoint
+
+**`/api/v1/streaming`**
+
+| Type     | Description                                               | Parameter(s)                                                                                     |
+| :------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets streaming price updates using HTTP chunked encoding. | <ul><li>`symbol` or `feedId`: A comma-separated list of symbols or feed IDs to stream.</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  -H "Connection: keep-alive" \
+  "[API_BASE]/api/v1/streaming?symbol=ETHUSD,BTCUSD"
+```
+
+##### Sample response (Streaming)
+
+A stream of JSON objects.
+
+**Trade Response:**
+
+```json
+{
+  "f": "t",
+  "i": "ETHUSD",
+  "fid": "[FEED_ID]", // Hex encoded feed ID
+  "p": 2.68312e21,
+  "t": 1748525526,
+  "s": 1
+}
+```
+
+**Heartbeat (sent every 5 seconds):**
+
+```json
+{ "heartbeat": 1748525528 }
+```
+
+---
+
+## Error Response Codes
+
+| Status Code             | Description                                                                                                                                                                                                       |
+| :---------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **400 Bad Request**     | This error is triggered when: <ul><li>Required parameters are missing or malformed.</li><li>Invalid parameter values are provided.</li></ul>                                                                      |
+| **401 Unauthorized**    | This error is triggered when: <ul><li>The authorization header is missing or invalid.</li><li>The access token is expired or malformed.</li><li>Invalid credentials were provided during authorization.</li></ul> |
+| **404 Not Found**       | This error is triggered when: <ul><li>The requested symbol is not supported.</li><li>A user is not found during authorization.</li></ul>                                                                          |
+| **500 Internal Server** | Indicates an unexpected condition was encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                             |
