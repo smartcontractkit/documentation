@@ -13,7 +13,7 @@ const BASE_URL = "http://localhost:4321"
 const TEMP_DIR = `${cwd()}/temp`
 const LOG_FILE = `${TEMP_DIR}/link-checker.log`
 
-const LINK_CHUNK_SIZE = 300
+const LINK_CHUNK_SIZE = 150
 
 // ================================
 //  HELPER FUNCTIONS
@@ -42,14 +42,36 @@ function displayLogFile() {
 
 /**
  * Wait for the dev server to be "ready" by checking for a 2xx status on BASE_URL.
+ * Uses multiple checks to ensure server stability.
  */
 async function waitForServerReadiness(url: string, attempts = 20) {
   for (let i = 1; i <= attempts; i++) {
     try {
       const response = await fetch(url)
       if (response.ok) {
-        console.log(`Server is ready at ${url}`)
-        return
+        // Server responded, but few more checks to ensure stability
+        console.log(`Server responded on attempt ${i}, verifying stability...`)
+
+        let stableChecks = 0
+        for (let j = 0; j < 3; j++) {
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+          try {
+            const checkResponse = await fetch(url)
+            if (checkResponse.ok) {
+              stableChecks++
+            }
+          } catch {
+            // Stability check failed
+            break
+          }
+        }
+
+        if (stableChecks === 3) {
+          console.log(`Server is ready and stable at ${url}`)
+          return
+        } else {
+          console.log(`Server not yet stable, continuing checks...`)
+        }
       }
     } catch {
       // Connection error or not ready yet
@@ -238,8 +260,6 @@ async function main() {
   // 4) Wait for readiness
   try {
     await waitForServerReadiness(BASE_URL, 30) // Wait up to 30 attempts
-    console.log("Server ready, waiting additional 10 seconds for all pages to be available...")
-    await new Promise((resolve) => setTimeout(resolve, 10000))
   } catch (err) {
     console.error("Server did not become ready in time.", err)
     exit(1)
@@ -249,22 +269,29 @@ async function main() {
   const chunkFiles = await processSiteMap(mode)
   console.log(`Created ${chunkFiles.length} chunk files.`)
 
-  // 6) Run link check on each chunk in parallel, collecting any failures
-  const checkPromises = chunkFiles.map((chunkFile, index) => {
+  // 6) Run link check on each chunk sequentially to reduce CI resource pressure
+  const results: { chunkNumber: number; failed: boolean }[] = []
+
+  for (let index = 0; index < chunkFiles.length; index++) {
+    const chunkFile = chunkFiles[index]
     const chunkNumber = index + 1
     console.log(`\n>>> Checking chunk ${chunkNumber} of ${chunkFiles.length}: ${chunkFile}\n`)
 
-    return checkChunkFile(chunkFile, mode).then((code) => {
-      if (code !== 0) {
-        console.error(`Link checker failed on chunk ${chunkNumber} (exit code: ${code})`)
-        // We'll store chunkNumber with the failure
-        return { chunkNumber, failed: true }
-      }
-      return { chunkNumber, failed: false }
-    })
-  })
+    const code = await checkChunkFile(chunkFile, mode)
+    if (code !== 0) {
+      console.error(`Link checker failed on chunk ${chunkNumber} (exit code: ${code})`)
+      results.push({ chunkNumber, failed: true })
+    } else {
+      results.push({ chunkNumber, failed: false })
+    }
 
-  const results = await Promise.all(checkPromises)
+    // Add a small delay between chunks to reduce server pressure
+    if (index < chunkFiles.length - 1) {
+      console.log("Waiting 2 seconds before next chunk...")
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+  }
+
   const failedChunks = results.filter((r) => r.failed).map((r) => r.chunkNumber)
 
   // 7) If any chunks failed, exit with error after we've checked them all
