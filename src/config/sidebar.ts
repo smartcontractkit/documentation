@@ -88,9 +88,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "SmartData",
           url: "data-feeds/smartdata",
+          children: [
+            {
+              title: "Multiple-Variable Response (MVR) Feeds",
+              url: "data-feeds/mvr-feeds",
+            },
+          ],
         },
         {
-          title: "SVR Feeds",
+          title: "Smart Value Recapture (SVR) Feeds",
           url: "data-feeds/svr-feeds",
         },
         {
@@ -138,6 +144,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Data Feeds",
           url: "data-feeds/using-data-feeds",
+        },
+        {
+          title: "Using MVR Feeds",
+          url: "data-feeds/mvr-feeds/guides",
+          children: [
+            {
+              title: "Using MVR Feeds on EVM Chains (Solidity)",
+              url: "data-feeds/mvr-feeds/guides/evm-solidity",
+            },
+            {
+              title: "Using MVR Feeds with ethers.js (JS)",
+              url: "data-feeds/mvr-feeds/guides/ethersjs",
+            },
+            {
+              title: "Using MVR Feeds with Viem (TS)",
+              url: "data-feeds/mvr-feeds/guides/viem",
+            },
+          ],
         },
         {
           title: "Getting Historical Data",
@@ -217,6 +241,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
+        },
+        {
+          title: "MVR Feeds API Reference",
+          url: "data-feeds/mvr-feeds/api-reference",
         },
       ],
     },

@@ -1,0 +1,573 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using MVR Feeds with ethers.js (JS)"
+whatsnext:
+  {
+    "Learn more about the MVR Feeds": "/data-feeds/mvr-feeds",
+    "Find contract addresses and data structure for MVR Feeds": "/data-feeds/smartdata/addresses",
+    "MVR Feeds API Reference": "/data-feeds/mvr-feeds/api-reference",
+  }
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+
+This guide explains how to use [Multiple-Variable Response (MVR) feeds](/data-feeds/mvr-feeds) data in your JavaScript applications using the [ethers.js v5 library](https://docs.ethers.org/v5/).
+
+MVR feeds store multiple data points in a single byte array onchain. To consume this data in your JavaScript application:
+
+1. **Obtain the proxy address and data structure**:
+   - Find the `BundleAggregatorProxy` address for the specific MVR feed you want to read on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
+   - Expand the "MVR Bundle Info" section to see the exact data structure, field types, and decimals
+   - Note these details as you'll need to match this structure exactly in your code
+1. **Set up ethers.js**: Create a provider and contract instance to interact with the feed.
+1. **Check data staleness**: Compare the feed's latest timestamp against current time to verify it hasn't exceeded your maximum acceptable staleness threshold.
+1. **Fetch and decode the data**: Retrieve the feed's latest bundle and decode the bytes array.
+1. **Apply decimals**: Scale numeric values to their true decimal representation for accurate calculations and display.
+1. **Use in your application**: Process or display the decoded values.
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/) environment (Node.js >=12.x recommended)
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [yarn](https://yarnpkg.com/getting-started) installed
+- [ethers.js](https://docs.ethers.org/v5/) library v5.x installed:
+
+  ```shell
+  npm install ethers@^5.0.0
+  ```
+
+  or
+
+  ```shell
+  yarn add ethers@^5.0.0
+  ```
+
+  **Note:** For [ethers.js v6](https://docs.ethers.org/v6/), some API calls differ significantly.
+
+- An RPC URL for the network where the MVR feed is deployed. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/).
+
+- Set up environment variables:
+
+  ```shell
+  npm install dotenv
+  ```
+
+  or
+
+  ```shell
+  yarn add dotenv
+  ```
+
+## Step-by-Step Implementation
+
+### 1. Define the BundleAggregatorProxy Interface
+
+First, define the minimal ABI or interface for the `BundleAggregatorProxy` contract:
+
+```javascript
+const bundleAggregatorProxyABI = [
+  "function latestBundle() external view returns (bytes)",
+  "function bundleDecimals() external view returns (uint8[])",
+  "function latestBundleTimestamp() external view returns (uint256)",
+]
+```
+
+### 2. Set Up the Provider and Contract Instance
+
+Connect to a blockchain provider and create the contract instance, using environment variables for sensitive information:
+
+```javascript
+// Load environment variables (in Node.js)
+require("dotenv").config()
+
+const { ethers } = require("ethers")
+
+// Get RPC URL from environment variables
+const rpcUrl = process.env.RPC_URL
+if (!rpcUrl) {
+  throw new Error("RPC_URL not found in environment variables")
+}
+
+// Connect to a provider securely
+const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+
+// MVR Feed proxy address - replace with the actual address for your feed
+// This can also be stored in environment variables for production
+const proxyAddress = process.env.MVR_FEED_ADDRESS || "0x..."
+
+// Create contract instance
+const mvrFeed = new ethers.Contract(proxyAddress, bundleAggregatorProxyABI, provider)
+```
+
+Create a `.env` file in your project root (and add it to `.gitignore`):
+
+```
+# .env
+RPC_URL=<your-rpc-url>
+MVR_FEED_ADDRESS=<your-feed-address>
+```
+
+### 3. Validate Data Staleness
+
+Before using the data, check its timestamp to ensure it's not stale:
+
+```javascript
+/**
+ * Checks if the feed data is fresh enough to use
+ * @returns {Promise<boolean>} True if data is not stale
+ * @throws {Error} If data is stale
+ */
+async function checkDataStaleness() {
+  // Get the latest timestamp
+  const lastUpdateTime = await mvrFeed.latestBundleTimestamp()
+  const timestamp = lastUpdateTime.toNumber()
+
+  // Current time in seconds
+  const now = Math.floor(Date.now() / 1000)
+
+  // Define staleness threshold
+  const stalenessThreshold = 86400 // 24 hours in seconds
+
+  if (now - timestamp > stalenessThreshold) {
+    throw new Error(`Data is stale. Last update was ${now - timestamp} seconds ago.`)
+  }
+
+  return true
+}
+```
+
+**Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
+
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
+1. Consider your specific use case requirements (some applications may need very recent data)
+
+### 4. Fetch and Decode the Bundle Data
+
+<Aside type="note" title="MVR Feed-Specific Data Structure">
+  Find the exact data structure for your specific MVR feed on the [SmartData
+  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+  Info" section to see all fields, their types, and decimals.
+</Aside>
+
+MVR feeds encode multiple data points in a single bytes array. You need to know the structure to properly decode it:
+
+```javascript
+// Define the data structure based on the specific feed's format
+// This MUST match the format defined in the feed documentation
+const dataStructure = [
+  "uint256", // netAssetValue
+  "uint256", // assetsUnderManagement
+  "uint256", // outstandingShares
+  "uint256", // netIncomeExpenses
+  "bool", // openToNewInvestors
+]
+
+// Field names for easier access
+const fieldNames = [
+  "netAssetValue",
+  "assetsUnderManagement",
+  "outstandingShares",
+  "netIncomeExpenses",
+  "openToNewInvestors",
+]
+
+/**
+ * Gets the raw decoded data from the feed
+ * @returns {Promise<object>} The decoded data with BigNumber values
+ */
+async function getRawData() {
+  try {
+    // First check data staleness
+    await checkDataStaleness()
+
+    // Get raw bundle data
+    const bundleBytes = await mvrFeed.latestBundle()
+
+    // Decode the bytes array using ethers.js utilities
+    const decodedValues = ethers.utils.defaultAbiCoder.decode(dataStructure, bundleBytes)
+
+    // Create a more accessible object with named fields
+    const result = {}
+    fieldNames.forEach((name, index) => {
+      if (index < decodedValues.length) {
+        result[name] = decodedValues[index]
+      }
+    })
+
+    return result
+  } catch (error) {
+    console.error("Error fetching or decoding data:", error)
+    throw error
+  }
+}
+```
+
+### 5. Apply Decimal Scaling Factors
+
+<Aside type="note" title="Robust Decimal Handling">
+  Different RPC providers might return decimals in varying formats. The robust implementation shown here handles
+  different possible return types, including arrays of BigNumber objects, plain arrays, or objects with numeric
+  properties.
+</Aside>
+
+You need to apply the appropriate decimals to convert the raw fixed-point integers to their true numerical values:
+
+```javascript
+/**
+ * Gets formatted data with decimal adjustments for accurate numerical representation
+ * @returns {Promise<object>} The data with correct decimal scaling applied
+ */
+async function getFormattedData() {
+  try {
+    // Get raw decoded data
+    const rawData = await getRawData()
+
+    // Get decimals for each field
+    const decimalsArray = await mvrFeed.bundleDecimals()
+
+    // Process data with decimals
+    const formattedData = {}
+
+    fieldNames.forEach((name, index) => {
+      // Skip boolean values - they don't need decimal adjustment
+      if (index < dataStructure.length && dataStructure[index] === "bool") {
+        formattedData[name] = rawData[name]
+        return
+      }
+
+      // Verify the value exists and is a BigNumber
+      const value = rawData[name]
+      if (!value || !ethers.BigNumber.isBigNumber(value)) {
+        formattedData[name] = {
+          raw: value,
+          formatted: String(value ?? ""),
+          decimals: 0,
+        }
+        return
+      }
+
+      // Get decimal places from the array
+      const decimalPlaces = index < decimalsArray.length ? Number(decimalsArray[index]) : 0
+
+      const divisor = ethers.BigNumber.from(10).pow(decimalPlaces)
+
+      // Store both raw and formatted values
+      formattedData[name] = {
+        raw: value, // Original BigNumber
+        value: value.div(divisor), // BigNumber after decimal adjustment
+        decimals: decimalPlaces,
+        // Add a formatted string for display purposes using our helper function
+        formatted: formatWithDecimals(value, decimalPlaces),
+      }
+    })
+
+    return formattedData
+  } catch (error) {
+    console.error("Error formatting data:", error)
+    throw new Error(`Failed to format MVR feed data: ${error.message}`)
+  }
+}
+```
+
+### 6. Convert to Human-Readable Format (Optional)
+
+For display purposes, convert BigNumber values to strings using ethers.js built-in formatters:
+
+```javascript
+/**
+ * Formats a BigNumber with the appropriate number of decimals
+ * @param {ethers.BigNumber} value - The value to format
+ * @param {number} decimals - The number of decimal places
+ * @returns {string} A formatted string representation
+ */
+function formatWithDecimals(value, decimals) {
+  // Handle non-BigNumber values
+  if (!value || !ethers.BigNumber.isBigNumber(value)) {
+    return String(value ?? "")
+  }
+
+  // Use ethers.js built-in formatter for consistent, reliable formatting
+  return ethers.utils.formatUnits(value, decimals ?? 0)
+}
+```
+
+This uses [`ethers.utils.formatUnits()`](https://docs.ethers.org/v5/api/utils/display-logic/), which is specifically designed to format numbers with the correct decimal places. The function handles different value types and applies the appropriate formatting based on the data structure.
+
+## Complete Example
+
+Here's a complete example that ties everything together into a reusable class:
+
+```javascript
+// Load environment variables
+require("dotenv").config()
+
+const { ethers } = require("ethers")
+
+class MVRFeedClient {
+  /**
+   * Creates a new MVR Feed client
+   * @param {string} proxyAddress - The address of the BundleAggregatorProxy contract
+   * @param {ethers.providers.Provider} provider - An ethers.js provider
+   * @param {object} config - Configuration options
+   * @param {number} config.stalenessThreshold - The staleness threshold in seconds
+   * @param {string[]} config.dataStructure - The ABI types for the data structure
+   * @param {string[]} config.fieldNames - Names for each field in the data structure
+   */
+  constructor(proxyAddress, provider, config = {}) {
+    if (!proxyAddress) {
+      throw new Error("Proxy address is required")
+    }
+    if (!provider) {
+      throw new Error("Provider is required")
+    }
+
+    // Set up contract ABI
+    const bundleAggregatorProxyABI = [
+      "function latestBundle() external view returns (bytes)",
+      "function bundleDecimals() external view returns (uint8[])",
+      "function latestBundleTimestamp() external view returns (uint256)",
+    ]
+
+    // Create contract instance
+    this.contract = new ethers.Contract(proxyAddress, bundleAggregatorProxyABI, provider)
+
+    // Configure data structure
+    this.dataStructure = config.dataStructure ?? [
+      "uint256", // netAssetValue
+      "uint256", // assetsUnderManagement
+      "uint256", // outstandingShares
+      "uint256", // netIncomeExpenses
+      "bool", // openToNewInvestors
+    ]
+
+    this.fieldNames = config.fieldNames ?? [
+      "netAssetValue",
+      "assetsUnderManagement",
+      "outstandingShares",
+      "netIncomeExpenses",
+      "openToNewInvestors",
+    ]
+
+    // Set staleness threshold with nullish coalescing
+    this.stalenessThreshold = config.stalenessThreshold ?? 86400 // 24 hours default
+  }
+
+  /**
+   * Checks if the data hasn't exceeded the staleness threshold based on the timestamp
+   * @returns {Promise<boolean>} True if data is not stale
+   * @throws {Error} If data is stale
+   */
+  async checkDataStaleness() {
+    const timestamp = (await this.contract.latestBundleTimestamp()).toNumber()
+    const now = Math.floor(Date.now() / 1000)
+
+    if (now - timestamp > this.stalenessThreshold) {
+      throw new Error(`Data is stale. Last update was ${now - timestamp} seconds ago.`)
+    }
+
+    return true
+  }
+
+  /**
+   * Gets the raw decoded data from the feed
+   * @returns {Promise<object>} The decoded data with BigNumber values
+   */
+  async getRawData() {
+    try {
+      // First check data staleness
+      await this.checkDataStaleness()
+
+      // Get raw bundle data
+      const bundleBytes = await this.contract.latestBundle()
+
+      // Decode the bytes array using ethers.js utilities
+      const decodedValues = ethers.utils.defaultAbiCoder.decode(this.dataStructure, bundleBytes)
+
+      // Create a more accessible object with named fields
+      const result = {}
+      this.fieldNames.forEach((name, index) => {
+        if (index < decodedValues.length) {
+          result[name] = decodedValues[index]
+        }
+      })
+
+      return result
+    } catch (error) {
+      console.error("Error fetching or decoding data:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Gets formatted data with decimal adjustments for accurate numerical representation
+   * @returns {Promise<object>} The data with correct decimal scaling applied
+   */
+  async getFormattedData() {
+    try {
+      const rawData = await this.getRawData()
+      const decimalsArray = await this.contract.bundleDecimals()
+
+      const formattedData = {}
+
+      this.fieldNames.forEach((name, index) => {
+        // Skip boolean values - they don't need decimal adjustment
+        if (index < this.dataStructure.length && this.dataStructure[index] === "bool") {
+          formattedData[name] = rawData[name]
+          return
+        }
+
+        // Verify the value exists and is a BigNumber
+        const value = rawData[name]
+        if (!value || !ethers.BigNumber.isBigNumber(value)) {
+          formattedData[name] = {
+            raw: value,
+            formatted: String(value ?? ""),
+            decimals: 0,
+          }
+          return
+        }
+
+        // Get decimal places from the array
+        const decimalPlaces = index < decimalsArray.length ? Number(decimalsArray[index]) : 0
+
+        const divisor = ethers.BigNumber.from(10).pow(decimalPlaces)
+
+        formattedData[name] = {
+          raw: value,
+          value: value.div(divisor), // Properly scaled for calculations
+          decimals: decimalPlaces,
+          // Add a formatted string for display purposes using our helper function
+          formatted: this.formatWithDecimals(value, decimalPlaces),
+        }
+      })
+
+      return formattedData
+    } catch (error) {
+      console.error("Error formatting data:", error)
+      throw new Error(`Failed to format MVR feed data: ${error.message}`)
+    }
+  }
+
+  /**
+   * Formats a BigNumber with the appropriate number of decimals
+   * @param {ethers.BigNumber} value - The value to format
+   * @param {number} decimals - The number of decimal places
+   * @returns {string} A formatted string representation
+   */
+  formatWithDecimals(value, decimals) {
+    // Handle non-BigNumber values
+    if (!value || !ethers.BigNumber.isBigNumber(value)) {
+      return String(value ?? "")
+    }
+
+    // Use ethers.js built-in formatter for consistent, reliable formatting
+    return ethers.utils.formatUnits(value, decimals ?? 0)
+  }
+}
+
+// Example usage
+async function main() {
+  // Get configuration from environment variables
+  const rpcUrl = process.env.RPC_URL
+  if (!rpcUrl) {
+    throw new Error("RPC_URL not found in environment variables")
+  }
+
+  const feedAddress = process.env.MVR_FEED_ADDRESS
+  if (!feedAddress) {
+    throw new Error("MVR_FEED_ADDRESS environment variable not set")
+  }
+
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+  const mvrClient = new MVRFeedClient(feedAddress, provider)
+
+  try {
+    const data = await mvrClient.getFormattedData()
+    console.log("MVR Feed Data:")
+
+    // Display the data
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === "boolean") {
+        console.log(`${key}: ${value}`)
+      } else {
+        console.log(`${key}: ${value.formatted} (raw: ${value.raw.toString()})`)
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching MVR data:", error.message)
+  }
+}
+
+main()
+```
+
+### Customizing and Running the Example
+
+To run the complete example above:
+
+1. Find the MVR feed you want to read on the [SmartData Addresses](/data-feeds/smartdata/addresses) page
+
+   - Copy the `BundleAggregatorProxy` address for the next step
+   - Expand the "MVR Bundle Info" section to see all fields, their types, and decimals
+
+1. Create a `.env` file in your project directory:
+
+   ```
+   RPC_URL=<your-rpc-url>
+   MVR_FEED_ADDRESS=<your-feed-address>
+   ```
+
+1. Update the code to match your specific MVR feed:
+
+   ```javascript
+   // IMPORTANT: Always match the structure to your specific MVR feed
+   this.dataStructure = [
+     // Replace with your feed's exact types in correct order
+     "uint256", // Example: netAssetValue
+     "uint256", // Example: assetsUnderManagement
+     "bool", // Example: openToNewInvestors
+   ]
+
+   this.fieldNames = [
+     // Replace with your feed's exact field names in same order
+     "netAssetValue",
+     "assetsUnderManagement",
+     "openToNewInvestors",
+   ]
+   ```
+
+1. Install the required dependencies:
+
+   ```bash
+   npm install ethers@^5.0.0 dotenv
+   ```
+
+1. Run the application:
+   ```bash
+   node your-script-filename.js
+   ```
+
+The output should display the formatted data from the MVR feed with both formatted values and raw values.
+
+## Key Points
+
+- **ABI Definition**: Ensure your ABI defines the expected functions.
+- **Data Structure**: The data structure must exactly match the feed's format.
+- **Staleness Check**: Always verify data staleness using the timestamp.
+- **Decimal Scaling**: Apply the correct decimals to convert fixed-point integers to their true numerical values for calculations and display.
+- **BigNumber Handling**: Use [ethers.js BigNumber](https://docs.ethers.org/v5/api/utils/bignumber/) for all numeric operations to avoid precision issues.
+- **Error Handling**: Implement proper error handling for network issues and stale data.
+
+Remember that different MVR feeds may have different data structures. Always check the [SmartData Addresses](/data-feeds/smartdata/addresses) page for the exact format and decimals for the specific MVR feed you are using.

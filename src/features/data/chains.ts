@@ -1,11 +1,15 @@
 import { ChainMetadata } from "./api/index.ts"
 
+// Cross-networks
+export const POR_MVR_FEEDS_URL = "https://reference-data-directory.vercel.app/por-data-feeds.json"
+
 type ChainTags = ("default" | "smartData" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
   networkType: "mainnet" | "testnet"
   rddUrl?: string
+  rddBundleUrl?: string
   queryString: string
   metadata?: ChainMetadata[]
   tags?: ChainTags
@@ -26,7 +30,12 @@ export const getNetworkFromQueryString = (
   queryString: string
 ): { chain: Chain | null; chainNetwork: ChainNetwork | null } => {
   const chain = CHAINS.find((chain) => chain.networks.some((network) => network.queryString === queryString))
-  if (!chain) return { chain: null, chainNetwork: null }
+
+  if (!chain) {
+    console.warn("getNetworkFromQueryString - No chain found for queryString:", queryString)
+    return { chain: null, chainNetwork: null }
+  }
+
   const chainNetwork = chain.networks.filter((network) => network.queryString === queryString)[0]
   return { chain, chainNetwork }
 }
@@ -80,8 +89,10 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://sepolia.arbiscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
+        rddBundleUrl:
+          "https://reference-data-directory.vercel.app/bundle-proxies-ethereum-testnet-sepolia-arbitrum-1.json",
         queryString: "arbitrum-sepolia",
-        tags: ["rates", "streams"],
+        tags: ["rates", "streams", "smartData"],
       },
     ],
   },
@@ -98,6 +109,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-avalanche-mainnet.json",
         queryString: "avalanche-mainnet",
         tags: ["smartData", "streams"],
       },
@@ -107,7 +119,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["smartData", "rates", "streams"],
+        tags: ["rates", "streams"],
       },
     ],
     label: "Avalanche",
@@ -246,6 +258,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
         tags: ["smartData"],
       },
@@ -254,6 +267,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://sepolia.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-ethereum-testnet-sepolia.json",
         queryString: "ethereum-sepolia",
         tags: ["rates"],
       },
@@ -509,6 +523,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-matic-mainnet.json",
         queryString: "polygon-mainnet",
         tags: ["smartData"],
       },
@@ -517,6 +532,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://amoy.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-amoy.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-polygon-testnet-amoy.json",
         queryString: "polygon-amoy",
         tags: ["smartData"],
       },
