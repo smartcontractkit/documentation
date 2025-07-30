@@ -238,6 +238,8 @@ async function main() {
   // 4) Wait for readiness
   try {
     await waitForServerReadiness(BASE_URL, 30) // Wait up to 30 attempts
+    console.log("Server ready, waiting additional 10 seconds for all pages to be available...")
+    await new Promise((resolve) => setTimeout(resolve, 10000))
   } catch (err) {
     console.error("Server did not become ready in time.", err)
     exit(1)
