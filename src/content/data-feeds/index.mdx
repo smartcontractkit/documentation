@@ -35,6 +35,8 @@ Data feeds provide many different types of data for your applications.
 
 - [Price Feeds](#price-feeds)
 - [SmartData Feeds](#smartdata-feeds)
+  - [Multiple-Variable Response (MVR) Feeds](#multiple-variable-response-mvr-feeds)
+- [Smart Value Recapture (SVR) Feeds](#smart-value-recapture-svr-feeds)
 - [Rate and Volatility Feeds](#rate-and-volatility-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
@@ -46,25 +48,36 @@ For example, lending and borrowing platforms like [Aave](https://aave.com) utili
 
 Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
 
-To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
-
-See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
+- To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
+- See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
 
 ### SmartData Feeds
 
 Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
 
-To learn more about SmartData Feeds, see the [SmartData](/data-feeds/smartdata) documentation.
+- To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
 
-See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
+#### Multiple-Variable Response (MVR) Feeds
+
+The SmartData suite includes [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which bundle multiple data points of various types into a single onchain update. Unlike traditional feeds that provide only one numeric value, MVR feeds can return multiple values of different types (both numeric and non-numeric) in a single transaction.
+
+- To learn more about MVR Feeds, see the [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses. Use the _Show Multiple-Variable Response (MVR) feeds_ checkbox to filter the list.
+
+### Smart Value Recapture (SVR) Feeds
+
+Smart Value Recapture (SVR) Feeds introduce a mechanism to recapture Oracle Extractable Value (OEV), a form of MEV associated with oracle updates, often observed during liquidations.
+
+- To learn more, see the [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds) documentation.
+- Find SVR-enabled addresses on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by filtering for SVR feeds.
 
 ### Rate and Volatility Feeds
 
 Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
 
-To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
-
-See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
+- To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
+- See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
 
 ### L2 sequencer uptime feeds
 
@@ -74,13 +87,26 @@ To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feed
 
 ## Components of a data feed
 
-Data Feeds are an example of a decentralized oracle network and include the following components:
+Data Feeds are examples of decentralized oracle networks with different interfaces depending on the type of data they provide. Each feed type includes specific components:
+
+### Single-value Feed Components
+
+Data feeds that deliver a single numeric value (such as price feeds or single-value [SmartData feeds](/data-feeds/smartdata)) include the following components:
 
 - **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
 - **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on Github is a common example.
 - **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
+To learn how to create a consumer contract that uses an existing price feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
+
+### MVR Feed Components
+
+[Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which deliver multiple data points of various types in a single bundle, include the following components:
+
+- **Consumer**: A consumer is an onchain or offchain application that uses MVR Feeds. Consumer contracts use the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference/#ibundleaggregatorproxy) interface to call functions on the proxy contract and retrieve bundle data.
+- **Bundle Aggregator Proxy**: This proxy contract points to the underlying bundle aggregator. Using proxies enables the underlying aggregator to be upgraded without service interruption to consuming contracts. The proxy exposes functions like [`latestBundle()`](/data-feeds/mvr-feeds/api-reference/#latestbundle), [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference/#bundledecimals), and [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference/#latestbundletimestamp) for consumers to access the bundled data.
+
+To learn how to create a consumer contract that uses an existing MVR feed, read the [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity) guide.
 
 ## Reading proxy and aggregator configurations
 
