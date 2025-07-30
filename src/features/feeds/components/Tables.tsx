@@ -1203,7 +1203,7 @@ export const TestnetTable = ({
       </div>
       <Pagination
         addrPerPage={addrPerPage}
-        totalAddr={slicedFilteredMetadata.length}
+        totalAddr={filteredMetadata.length}
         currentPage={currentPage}
         firstAddr={firstAddr}
         lastAddr={lastAddr}
