@@ -27,6 +27,7 @@ export const FeedList = ({
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isSmartData = dataFeedType === "smartdata"
 
   // Get network directly from URL
   const networkFromURL =
@@ -105,6 +106,9 @@ export const FeedList = ({
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
+  const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
+  const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
+  const [showOnlySVR, setShowOnlySVR] = useState(false)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
@@ -135,7 +139,6 @@ export const FeedList = ({
   const chain = chains.find((c) => c.page === activeChain) || chains[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
-  const [showOnlySVR, setShowOnlySVR] = useState(false)
 
   // scroll handler
   useEffect(() => {
@@ -264,6 +267,8 @@ export const FeedList = ({
     setSearchValue("")
     setSelectedFeedCategories([])
     setCurrentPage("1")
+    setShowOnlyMVRFeeds(false)
+    setShowOnlyMVRFeedsTestnet(false)
   }
 
   const handleCategorySelection = (category) => {
@@ -309,7 +314,6 @@ export const FeedList = ({
   }
 
   useOutsideAlerter(wrapperRef)
-  const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
@@ -449,6 +453,7 @@ export const FeedList = ({
                 network={network}
                 showExtraDetails={showExtraDetails}
                 showOnlySVR={showOnlySVR}
+                showOnlyMVRFeeds={showOnlyMVRFeeds}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -506,6 +511,14 @@ export const FeedList = ({
                 network={network}
                 showExtraDetails={showExtraDetails}
                 dataFeedType={dataFeedType}
+                selectedFeedCategories={
+                  Array.isArray(selectedFeedCategories)
+                    ? selectedFeedCategories
+                    : selectedFeedCategories
+                      ? [selectedFeedCategories]
+                      : []
+                }
+                showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
@@ -708,61 +721,77 @@ export const FeedList = ({
                           </nav>
                         </details>
                       )}
-                      <form class={feedList.filterDropdown_search}>
-                        <input
-                          id="search"
-                          class={feedList.filterDropdown_searchInput}
-                          placeholder="Search"
-                          onInput={(event) => {
-                            setSearchValue((event.target as HTMLInputElement).value)
-                            setCurrentPage("1")
-                          }}
-                        />
-                        {searchValue && (
-                          <button
-                            type="button"
-                            className={clsx(button.secondary, feedList.clearFilterBtn)}
-                            onClick={() => {
-                              setSearchValue("")
+                      <div className={feedList.searchAndCheckbox}>
+                        <form class={feedList.filterDropdown_search}>
+                          <input
+                            id="search"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search"
+                            onInput={(event) => {
+                              setSearchValue((event.target as HTMLInputElement).value)
                               setCurrentPage("1")
-                              const inputElement = document.getElementById("search") as HTMLInputElement
-                              if (inputElement) {
-                                inputElement.value = ""
-                              }
                             }}
-                            aria-label="Clear search filter"
-                          >
-                            Clear filter
-                          </button>
-                        )}
-                      </form>
-                      {!isStreams && (
-                        <div className={feedList.checkboxContainer}>
+                          />
+                          {searchValue && (
+                            <button
+                              type="button"
+                              className={clsx(button.secondary, feedList.clearFilterBtn)}
+                              onClick={() => {
+                                setSearchValue("")
+                                setCurrentPage("1")
+                                const inputElement = document.getElementById("search") as HTMLInputElement
+                                if (inputElement) {
+                                  inputElement.value = ""
+                                }
+                              }}
+                              aria-label="Clear search filter"
+                            >
+                              Clear filter
+                            </button>
+                          )}
+                        </form>
+                        {!isStreams && (
                           <label className={feedList.detailsLabel}>
                             <input
                               type="checkbox"
-                              style="width:15px;height:15px;display:inline;"
+                              style="width:15px;height:15px;display:inline;margin-right:8px;"
                               checked={showExtraDetails}
                               onChange={() => setShowExtraDetails((old) => !old)}
                             />
                             Show more details
                           </label>
-                          {!isSmartData && (
-                            <label className={feedList.detailsLabel}>
-                              <input
-                                type="checkbox"
-                                style="width:15px;height:15px;display:inline;"
-                                checked={showOnlySVR}
-                                onChange={() => {
-                                  setShowOnlySVR((old) => !old)
-                                  setCurrentPage("1")
-                                }}
-                              />
-                              Show SVR-enabled feeds
-                            </label>
-                          )}
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <div className={feedList.checkboxContainer}>
+                        {!isStreams && isSmartData && (
+                          <label className={feedList.detailsLabel}>
+                            <input
+                              type="checkbox"
+                              style="width:15px;height:15px;display:inline;margin-right:8px;"
+                              checked={showOnlyMVRFeeds}
+                              onChange={() => {
+                                setShowOnlyMVRFeeds((old) => !old)
+                                setCurrentPage("1") // Reset to first page when filter changes
+                              }}
+                            />
+                            Show Multiple-Variable Response (MVR) feeds
+                          </label>
+                        )}
+                        {!isStreams && !isSmartData && (
+                          <label className={feedList.detailsLabel}>
+                            <input
+                              type="checkbox"
+                              style="width:15px;height:15px;display:inline;margin-right:8px;"
+                              checked={showOnlySVR}
+                              onChange={() => {
+                                setShowOnlySVR((old) => !old)
+                                setCurrentPage("1")
+                              }}
+                            />
+                            Show Smart Value Recapture (SVR) feeds
+                          </label>
+                        )}
+                      </div>
                     </div>
                     <MainnetTable
                       selectedFeedCategories={
@@ -775,6 +804,7 @@ export const FeedList = ({
                       network={network}
                       showExtraDetails={showExtraDetails}
                       showOnlySVR={showOnlySVR}
+                      showOnlyMVRFeeds={showOnlyMVRFeeds}
                       dataFeedType={dataFeedType}
                       ecosystem={ecosystem}
                       lastAddr={lastAddr}
@@ -829,45 +859,85 @@ export const FeedList = ({
                     )}
                     {!isStreams && (
                       <div className={feedList.tableFilters}>
-                        <div className={feedList.checkboxContainer}>
+                        {isSmartData && (
+                          <details class={feedList.filterDropdown_details}>
+                            <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                              SmartData Type
+                            </summary>
+                            <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                              <ul>
+                                {smartDataTypes.map((category) => (
+                                  <li>
+                                    <button onClick={() => handleCategorySelection(category.key)}>
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedFeedCategories?.includes(category.key)}
+                                        readonly
+                                        style="cursor:pointer;"
+                                      />
+                                      <span> {category.name}</span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </nav>
+                          </details>
+                        )}
+                        <div className={feedList.searchAndCheckbox}>
+                          <form class={feedList.filterDropdown_search}>
+                            <input
+                              id="testnetSearch"
+                              class={feedList.filterDropdown_searchInput}
+                              placeholder="Search"
+                              onInput={(event) => {
+                                setTestnetSearchValue((event.target as HTMLInputElement).value)
+                                setTestnetCurrentPage("1")
+                              }}
+                            />
+                            {testnetSearchValue && (
+                              <button
+                                type="button"
+                                className={clsx(button.secondary, feedList.clearFilterBtn)}
+                                onClick={() => {
+                                  setTestnetSearchValue("")
+                                  setTestnetCurrentPage("1")
+                                  const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                                  if (inputElement) {
+                                    inputElement.value = ""
+                                  }
+                                }}
+                                aria-label="Clear search filter"
+                              >
+                                Clear filter
+                              </button>
+                            )}
+                          </form>
                           <label className={feedList.detailsLabel}>
                             <input
                               type="checkbox"
-                              style="width:15px;height:15px;display:inline;"
+                              style="width:15px;height:15px;display:inline;margin-right:8px;"
                               checked={showExtraDetails}
                               onChange={() => setShowExtraDetails((old) => !old)}
                             />
                             Show more details
                           </label>
                         </div>
-                        <form class={feedList.filterDropdown_search}>
-                          <input
-                            id="testnetSearch"
-                            class={feedList.filterDropdown_searchInput}
-                            placeholder="Search"
-                            onInput={(event) => {
-                              setTestnetSearchValue((event.target as HTMLInputElement).value)
-                              setTestnetCurrentPage("1")
-                            }}
-                          />
-                          {testnetSearchValue && (
-                            <button
-                              type="button"
-                              className={clsx(button.secondary, feedList.clearFilterBtn)}
-                              onClick={() => {
-                                setTestnetSearchValue("")
-                                setTestnetCurrentPage("1")
-                                const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                                if (inputElement) {
-                                  inputElement.value = ""
-                                }
-                              }}
-                              aria-label="Clear search filter"
-                            >
-                              Clear filter
-                            </button>
+                        <div className={feedList.checkboxContainer}>
+                          {!isStreams && isSmartData && (
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                checked={showOnlyMVRFeedsTestnet}
+                                onChange={() => {
+                                  setShowOnlyMVRFeedsTestnet((old) => !old)
+                                  setTestnetCurrentPage("1") // Reset to first page when filter changes
+                                }}
+                              />
+                              Show Multiple-Variable Response (MVR) feeds
+                            </label>
                           )}
-                        </form>
+                        </div>
                       </div>
                     )}
                     {isStreams && (
@@ -906,6 +976,14 @@ export const FeedList = ({
                       network={network}
                       showExtraDetails={showExtraDetails}
                       dataFeedType={dataFeedType}
+                      selectedFeedCategories={
+                        Array.isArray(selectedFeedCategories)
+                          ? selectedFeedCategories
+                          : selectedFeedCategories
+                            ? [selectedFeedCategories]
+                            : []
+                      }
+                      showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
                       firstAddr={testnetFirstAddr}
                       lastAddr={testnetLastAddr}
                       addrPerPage={testnetAddrPerPage}
@@ -937,39 +1015,100 @@ export const FeedList = ({
             }
           >
             <div className={feedList.tableFilters}>
-              <form class={feedList.filterDropdown_search}>
-                <input
-                  id="testnetSearch"
-                  class={feedList.filterDropdown_searchInput}
-                  placeholder="Search"
-                  onInput={(event) => {
-                    setTestnetSearchValue((event.target as HTMLInputElement).value)
-                    setTestnetCurrentPage("1")
-                  }}
-                />
-                {testnetSearchValue && (
-                  <button
-                    type="button"
-                    className={clsx(button.secondary, feedList.clearFilterBtn)}
-                    onClick={() => {
-                      setTestnetSearchValue("")
+              {!isStreams && isSmartData && (
+                <details class={feedList.filterDropdown_details}>
+                  <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                    SmartData Type
+                  </summary>
+                  <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                    <ul>
+                      {smartDataTypes.map((category) => (
+                        <li>
+                          <button onClick={() => handleCategorySelection(category.key)}>
+                            <input
+                              type="checkbox"
+                              checked={selectedFeedCategories?.includes(category.key)}
+                              readonly
+                              style="cursor:pointer;"
+                            />
+                            <span> {category.name}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                </details>
+              )}
+              <div className={feedList.searchAndCheckbox}>
+                <form class={feedList.filterDropdown_search}>
+                  <input
+                    id="testnetSearch"
+                    class={feedList.filterDropdown_searchInput}
+                    placeholder="Search"
+                    onInput={(event) => {
+                      setTestnetSearchValue((event.target as HTMLInputElement).value)
                       setTestnetCurrentPage("1")
-                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                      if (inputElement) {
-                        inputElement.value = ""
-                      }
                     }}
-                    aria-label="Clear search filter"
-                  >
-                    Clear filter
-                  </button>
+                  />
+                  {testnetSearchValue && (
+                    <button
+                      type="button"
+                      className={clsx(button.secondary, feedList.clearFilterBtn)}
+                      onClick={() => {
+                        setTestnetSearchValue("")
+                        setTestnetCurrentPage("1")
+                        const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                        if (inputElement) {
+                          inputElement.value = ""
+                        }
+                      }}
+                      aria-label="Clear search filter"
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                </form>
+                {!isStreams && (
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showExtraDetails}
+                      onChange={() => setShowExtraDetails((old) => !old)}
+                    />
+                    Show more details
+                  </label>
                 )}
-              </form>
+              </div>
+              <div className={feedList.checkboxContainer}>
+                {!isStreams && isSmartData && (
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showOnlyMVRFeedsTestnet}
+                      onChange={() => {
+                        setShowOnlyMVRFeedsTestnet((old) => !old)
+                        setTestnetCurrentPage("1") // Reset to first page when filter changes
+                      }}
+                    />
+                    Show Multiple-Variable Response (MVR) feeds
+                  </label>
+                )}
+              </div>
             </div>
             <TestnetTable
               network={chainMetadata.processedData.testnetNetwork}
               showExtraDetails={showExtraDetails}
               dataFeedType={dataFeedType}
+              selectedFeedCategories={
+                Array.isArray(selectedFeedCategories)
+                  ? selectedFeedCategories
+                  : selectedFeedCategories
+                    ? [selectedFeedCategories]
+                    : []
+              }
+              showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
               firstAddr={testnetFirstAddr}
               lastAddr={testnetLastAddr}
               addrPerPage={testnetAddrPerPage}
