@@ -434,8 +434,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/overview",
         },
         {
-          title: "REST API",
+          title: "Data Streams REST API",
           url: "data-streams/reference/interface-api",
+        },
+        {
+          title: "Candlestick REST API",
+          url: "data-streams/reference/candlestick-api",
         },
         {
           title: "WebSocket",
