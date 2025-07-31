@@ -807,11 +807,11 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 <span className="label">Asset class:</span>
               </dt>
               <dd>
-                {proxy.docs.assetClass}
-                {proxy.docs.assetSubClass &&
-                proxy.docs.assetSubClass !== "Crypto" &&
-                proxy.docs.assetSubClass !== "Equities"
-                  ? " - " + proxy.docs.assetSubClass
+                {metadata.docs.assetClass}
+                {metadata.docs.assetSubClass &&
+                metadata.docs.assetSubClass !== "Crypto" &&
+                metadata.docs.assetSubClass !== "Equities"
+                  ? " - " + metadata.docs.assetSubClass
                   : ""}
               </dd>
             </div>
@@ -860,7 +860,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}{" "}
-          {proxy.feedType === "Equities" && (
+          {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
@@ -1098,7 +1098,7 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return proxy.contractType === "verifier" && proxy.feedType === "Equities"
+          return metadata.contractType === "verifier" && metadata.feedType === "Equities"
         }
       }
 
