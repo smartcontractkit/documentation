@@ -46,7 +46,7 @@ The [Data Streams SDK for Rust](https://github.com/smartcontractkit/data-streams
 
 - **REST API Client**: Fetch point-in-time data from Data Streams
 - **WebSocket Client**: Stream real-time data with automatic reconnection
-- **Report Decoding**: Built-in support for decoding and validating multiple report formats (V3, V4)
+- **Report Decoding**: Built-in support for decoding and validating multiple report formats (V3, V8)
 - **High Availability**: WebSocket connection management with failover support
 - **Tracing Support**: Optional logging via the [`tracing`](https://crates.io/crates/tracing) crate
 - **Async/Await**: Built on Tokio for efficient async operations
@@ -72,10 +72,10 @@ The SDK provides several feature flags to customize its functionality:
 
 ## Report Types
 
-The Rust SDK supports multiple report formats, including **V3 (Crypto)** and **V4 (RWA)**. For the complete list of fields and their detailed descriptions, refer to the dedicated schema pages:
+The Rust SDK supports multiple report formats, including **V3 (Crypto)** and **V8 (RWA)**. For the complete list of fields and their detailed descriptions, refer to the dedicated schema pages:
 
-- [V3 (Cryptocurrency) Report Schema](/data-streams/reference/report-schema)
-- [V4 (RWA) Report Schema](/data-streams/reference/report-schema-v4)
+- [V3 (Cryptocurrency) Report Schema](/data-streams/reference/report-schema-v3)
+- [V8 (RWA) Report Schema](/data-streams/reference/report-schema-v8)
 
 Below are basic code snippets for decoding these reports with the SDK:
 
@@ -95,22 +95,23 @@ println!("Ask: {}", report_data.ask);
 // ... etc.
 ```
 
-For more details on every field in V3 (Crypto) reports, see the [V3 report schema page](/data-streams/reference/report-schema).
+For more details on every field in V3 (Crypto) reports, see the [V3 report schema page](/data-streams/reference/report-schema-v3).
 
-### V4 Reports (RWA Streams)
+### V8 Reports (RWA Streams)
 
 ```rust
-use chainlink_data_streams_report::report::v4::ReportDataV4;
+use chainlink_data_streams_report::report::v8::ReportDataV8;
 
-let report_data = ReportDataV4::decode(&report_blob)?;
+let report_data = ReportDataV8::decode(&report_blob)?;
 
 // Example usage:
-println!("Price: {}", report_data.price);
+println!("Mid Price: {}", report_data.mid_price);
 println!("Market Status: {}", report_data.market_status);
+
 // ... etc.
 ```
 
-For more details on every field in V4 (RWA) reports, see the [V4 report schema page](/data-streams/reference/report-schema-v4).
+For more details on every field in v8 (RWA) reports, see the [V8 report schema page](/data-streams/reference/report-schema-v8).
 
 ## Authentication
 
