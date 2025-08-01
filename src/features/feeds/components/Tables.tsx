@@ -9,9 +9,20 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { type Docs } from "~/features/data/api/index.ts"
+import { type ChainMetadata } from "~/features/data/api/index.ts"
 
 const feedItems = monitoredFeeds.mainnet
+
+// Helper functions for SVR feed categorization
+const isSharedSVR = (metadata: ChainMetadata): boolean => {
+  // Check for marketing.path or fallback to path field
+  const pathToCheck = (metadata as ChainMetadata & { marketing?: { path?: string } })?.marketing?.path || metadata.path
+  return typeof pathToCheck === "string" && /-shared-svr$/.test(pathToCheck)
+}
+
+const isAaveSVR = (metadata: ChainMetadata): boolean => {
+  return !!metadata?.secondaryProxyAddress && !isSharedSVR(metadata)
+}
 const feedCategories = {
   low: (
     <span
@@ -213,9 +224,15 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
               href="/data-feeds/svr-feeds"
               target="_blank"
               className={tableStyles.feedVariantBadge}
-              title="SVR-enabled Feed"
+              title={
+                isAaveSVR(metadata)
+                  ? "Aave Dedicated SVR Feed"
+                  : isSharedSVR(metadata)
+                    ? "Shared SVR Feed"
+                    : "SVR-enabled Feed"
+              }
             >
-              SVR
+              {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "Shared SVR" : "SVR"}
             </a>
           </div>
         )}
@@ -304,7 +321,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
               <div className={tableStyles.separator} />
               <div className={tableStyles.assetAddress}>
                 <dt>
-                  <span className="label">AAVE SVR Proxy:</span>
+                  <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                 </dt>
                 <dd>
                   <button
@@ -331,14 +348,25 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
                   </a>
                 </dd>
               </div>
-              <div className={clsx(tableStyles.aaveCallout)}>
-                <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
-                Aave protocol. Learn more about{" "}
-                <a href="/data-feeds/svr-feeds" target="_blank">
-                  SVR-enabled Feeds
-                </a>
-                .
-              </div>
+              {isAaveSVR(metadata) && (
+                <div className={clsx(tableStyles.aaveCallout)}>
+                  <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
+                  Aave protocol. Learn more about{" "}
+                  <a href="/data-feeds/svr-feeds" target="_blank">
+                    SVR-enabled Feeds
+                  </a>
+                  .
+                </div>
+              )}
+              {isSharedSVR(metadata) && (
+                <div className={clsx(tableStyles.sharedCallout)}>
+                  <strong>🔗 Shared SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
+                  <a href="/data-feeds/svr-feeds" target="_blank">
+                    SVR-enabled Feeds
+                  </a>
+                  .
+                </div>
+              )}
             </>
           )}
         </dl>
@@ -903,6 +931,7 @@ export const MainnetTable = ({
   network,
   showExtraDetails,
   showOnlySVR,
+  svrFilter = "all", // "all" | "aave" | "shared"
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
   dataFeedType,
@@ -918,6 +947,7 @@ export const MainnetTable = ({
   network: ChainNetwork
   showExtraDetails: boolean
   showOnlySVR: boolean
+  svrFilter?: "all" | "aave" | "shared"
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
   dataFeedType: string
@@ -940,8 +970,17 @@ export const MainnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
-      if (showOnlySVR && !metadata.secondaryProxyAddress) {
-        return false
+      // Handle SVR filtering with granular options
+      if (showOnlySVR) {
+        if (svrFilter === "aave" && !isAaveSVR(metadata)) {
+          return false
+        }
+        if (svrFilter === "shared" && !isSharedSVR(metadata)) {
+          return false
+        }
+        if (svrFilter === "all" && !metadata.secondaryProxyAddress) {
+          return false
+        }
       }
 
       if (isDeprecating) return !!metadata.docs.shutdownDate
@@ -1095,7 +1134,7 @@ export const TestnetTable = ({
   lastAddr = 1000,
   addrPerPage = 8,
   currentPage = 1,
-  paginate = (_page: number) => {
+  paginate = () => {
     /* Default no-op function */
   },
   searchValue = "",
