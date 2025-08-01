@@ -753,6 +753,15 @@ const StreamsTr = ({ metadata, isMainnet }) => (
     <td className={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
         {metadata.pair[0]}/{metadata.pair[1]}
+        {metadata.feedType === "Crypto-DEX" && (
+          <a
+            href="/data-streams/concepts/dex-state-price-streams"
+            target="_blank"
+            className={tableStyles.feedVariantBadge}
+          >
+            DEX State Price
+          </a>
+        )}
       </div>
       {metadata.docs.shutdownDate && (
         <div className={clsx(feedList.shutDate)}>
@@ -848,6 +857,18 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               <dd>{metadata.decimals}</dd>
             </div>
           ) : null}
+          {metadata.feedType === "Crypto-DEX" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
+                  Crypto Schema - DEX (v3)
+                </a>
+              </dd>
+            </div>
+          )}
           {metadata.feedType === "Crypto" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
@@ -883,6 +904,7 @@ export const MainnetTable = ({
   showExtraDetails,
   showOnlySVR,
   showOnlyMVRFeeds,
+  showOnlyDEXFeeds,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -897,6 +919,7 @@ export const MainnetTable = ({
   showExtraDetails: boolean
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
+  showOnlyDEXFeeds: boolean
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -924,7 +947,15 @@ export const MainnetTable = ({
       if (isDeprecating) return !!metadata.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Crypto"
+        const isValidStreamsFeed =
+          metadata.contractType === "verifier" &&
+          (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
+
+        if (showOnlyDEXFeeds) {
+          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
+        }
+
+        return isValidStreamsFeed
       }
 
       if (dataFeedType === "streamsRwa") {
@@ -1069,6 +1100,7 @@ export const TestnetTable = ({
   },
   searchValue = "",
   showOnlyMVRFeeds,
+  showOnlyDEXFeeds,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1081,6 +1113,7 @@ export const TestnetTable = ({
   paginate?: (page: number) => void
   searchValue?: string
   showOnlyMVRFeeds?: boolean
+  showOnlyDEXFeeds?: boolean
 }) => {
   if (!network.metadata) return null
 
@@ -1094,7 +1127,15 @@ export const TestnetTable = ({
     .filter((metadata) => {
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Crypto"
+          const isValidStreamsFeed =
+            metadata.contractType === "verifier" &&
+            (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
+
+          if (showOnlyDEXFeeds) {
+            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
+          }
+
+          return isValidStreamsFeed
         }
 
         if (dataFeedType === "streamsRwa") {

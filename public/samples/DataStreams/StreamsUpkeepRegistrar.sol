@@ -88,8 +88,9 @@ contract StreamsUpkeepRegistrar is
     AutomationRegistrarInterface public immutable i_registrar;
 
     /**
-     * @dev Represents a data report from a Data Streams feed for v3 schema (crypto feeds).
-     * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the feed.
+     * @dev Represents a data report from a stream for v3 schema (crypto and DEX State Price streams).
+     * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the stream.
+     * `bid`, and `ask` values are not available for DEX State Price streams.
      * For more information, see https://docs.chain.link/data-streams/crypto-streams and https://docs.chain.link/data-streams/reference/report-schema
      */
     struct ReportV3 {
@@ -100,8 +101,8 @@ contract StreamsUpkeepRegistrar is
         uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
         uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
         int192 price; // DON consensus median price (8 or 18 decimals).
-        int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
-        int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18 decimals).
+        int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals). Note: not available for DEX State Price streams.
+        int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18 decimals). Note: not available for DEX State Price streams.
     }
 
     /**

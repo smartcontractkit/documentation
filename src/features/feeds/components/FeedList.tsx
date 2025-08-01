@@ -109,6 +109,8 @@ export const FeedList = ({
   const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
+  const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
+  const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
   const addrPerPage = 8
   const lastAddr = Number(currentPage) * addrPerPage
@@ -439,6 +441,20 @@ export const FeedList = ({
                 </button>
               )}
             </form>
+            <div className={feedList.checkboxContainer}>
+              <label className={feedList.detailsLabel}>
+                <input
+                  type="checkbox"
+                  style="width:15px;height:15px;display:inline;margin-right:8px;"
+                  checked={showOnlyDEXFeeds}
+                  onChange={() => {
+                    setShowOnlyDEXFeeds((old) => !old)
+                    setCurrentPage("1") // Reset to first page when filter changes
+                  }}
+                />
+                Show DEX State Price streams
+              </label>
+            </div>
           </div>
           {mainnetFeeds.length ? (
             mainnetFeeds.map((network) => (
@@ -454,6 +470,7 @@ export const FeedList = ({
                 showExtraDetails={showExtraDetails}
                 showOnlySVR={showOnlySVR}
                 showOnlyMVRFeeds={showOnlyMVRFeeds}
+                showOnlyDEXFeeds={showOnlyDEXFeeds}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -503,6 +520,20 @@ export const FeedList = ({
                 </button>
               )}
             </form>
+            <div className={feedList.checkboxContainer}>
+              <label className={feedList.detailsLabel}>
+                <input
+                  type="checkbox"
+                  style="width:15px;height:15px;display:inline;margin-right:8px;"
+                  checked={showOnlyDEXFeedsTestnet}
+                  onChange={() => {
+                    setShowOnlyDEXFeedsTestnet((old) => !old)
+                    setTestnetCurrentPage("1") // Reset to first page when filter changes
+                  }}
+                />
+                Show DEX State Price streams
+              </label>
+            </div>
           </div>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (
@@ -519,6 +550,7 @@ export const FeedList = ({
                       : []
                 }
                 showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
+                showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
@@ -805,6 +837,7 @@ export const FeedList = ({
                       showExtraDetails={showExtraDetails}
                       showOnlySVR={showOnlySVR}
                       showOnlyMVRFeeds={showOnlyMVRFeeds}
+                      showOnlyDEXFeeds={false}
                       dataFeedType={dataFeedType}
                       ecosystem={ecosystem}
                       lastAddr={lastAddr}
