@@ -434,47 +434,53 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/overview",
         },
         {
-          title: "Data Streams REST API",
-          url: "data-streams/reference/interface-api",
-        },
-        {
-          title: "Candlestick REST API",
-          url: "data-streams/reference/candlestick-api",
-        },
-        {
-          title: "WebSocket",
-          url: "data-streams/reference/interface-ws",
-        },
-        {
-          title: "Authentication",
-          url: "data-streams/reference/authentication",
+          title: "Data Streams API",
+          url: "data-streams/reference/data-streams-api",
           children: [
             {
-              title: "JavaScript examples",
-              url: "data-streams/reference/authentication/javascript-examples",
+              title: "Authentication",
+              url: "data-streams/reference/data-streams-api/authentication",
+              children: [
+                {
+                  title: "JavaScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/javascript-examples",
+                },
+                {
+                  title: "TypeScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/typescript-examples",
+                },
+                {
+                  title: "Go examples",
+                  url: "data-streams/reference/data-streams-api/authentication/go-examples",
+                },
+                {
+                  title: "Rust examples",
+                  url: "data-streams/reference/data-streams-api/authentication/rust-examples",
+                },
+              ],
             },
             {
-              title: "TypeScript examples",
-              url: "data-streams/reference/authentication/typescript-examples",
+              title: "API Reference",
+              url: "data-streams/reference/data-streams-api/interface-api",
             },
             {
-              title: "Go examples",
-              url: "data-streams/reference/authentication/go-examples",
+              title: "WebSocket Reference",
+              url: "data-streams/reference/data-streams-api/interface-ws",
             },
             {
-              title: "Rust examples",
-              url: "data-streams/reference/authentication/rust-examples",
+              title: "SDK References",
+              url: "data-streams/reference/data-streams-api/go-sdk",
+              highlightAsCurrent: ["data-streams/reference/data-streams-api/rust-sdk"],
+            },
+            {
+              title: "Onchain report verification (EVM chains)",
+              url: "data-streams/reference/data-streams-api/onchain-verification",
             },
           ],
         },
         {
-          title: "SDK References",
-          url: "data-streams/reference/go-sdk",
-          highlightAsCurrent: ["data-streams/reference/rust-sdk"],
-        },
-        {
-          title: "Onchain report verification (EVM chains)",
-          url: "data-streams/reference/onchain-verification",
+          title: "Candlestick API",
+          url: "data-streams/reference/candlestick-api",
         },
       ],
     },

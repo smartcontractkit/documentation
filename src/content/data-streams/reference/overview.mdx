@@ -4,40 +4,35 @@ date: Last Modified
 title: "Data Streams Reference"
 isIndex: true
 metadata:
-  title: "Data Streams Reference | API, SDK, and Integration Guide"
+  title: "Data Streams Reference"
   description: "Access comprehensive reference documentation for Chainlink Data Streams including API interfaces, SDK libraries, authentication guides, and report schemas."
   keywords: ["Data Streams", "API Reference", "SDK", "WebSocket", "REST API", "Integration Guide"]
 ---
 
-import DataStreams from "@features/data-streams/common/DataStreams.astro"
+Chainlink Data Streams offers two distinct APIs for accessing low-latency market data. Choose the API that best fits your use case.
 
-<DataStreams section="dsNotes" />
+### Which API should I use?
 
-### API Interfaces
+| Feature                 | [Data Streams API](./data-streams-api)      | [Candlestick API](./candlestick-api)          |
+| ----------------------- | ------------------------------------------- | --------------------------------------------- |
+| **Primary Use Case**    | **On-chain** consumption by smart contracts | **Off-chain** analytics, charting, dashboards |
+| **Data Format**         | Signed, verifiable data reports             | Aggregated OHLC (candlestick) data            |
+| **Interfaces**          | REST API & WebSocket                        | REST API (including a streaming endpoint)     |
+| **Authentication**      | HMAC Signature                              | JWT (token-based)                             |
+| **Cryptographic Proof** | ✅ Yes (`fullReport` blob)                  | ❌ No                                         |
 
-- [REST API](/data-streams/reference/interface-api) - HTTP-based interface for simple integrations
-- [WebSocket](/data-streams/reference/interface-ws) - Real-time data streaming via WebSocket connection
+---
 
-### SDK Integration
+### Data Streams API
 
-- [Go SDK](/data-streams/reference/go-sdk) - Native Go language integration
-- [Rust SDK](/data-streams/reference/rust-sdk) - Native Rust language integration
+Use the [Data Streams API](./data-streams-api) for applications that require high-frequency, verifiable data for **on-chain** execution. It provides access to cryptographically signed data reports that can be verified and used by smart contracts. This API is designed for applications that depend on low-latency, tamper-proof data.
 
-### Authentication
+**[View the Data Streams API Reference](./data-streams-api/interface-api)**
 
-- [Authentication](/data-streams/reference/authentication) - Learn how to authenticate with the Data Streams API (not required if using the SDKs)
-  - [JavaScript examples](/data-streams/reference/authentication/javascript-examples)
-  - [TypeScript examples](/data-streams/reference/authentication/typescript-examples)
-  - [Go examples](/data-streams/reference/authentication/go-examples)
-  - [Rust examples](/data-streams/reference/authentication/rust-examples)
+---
 
-### Verification
+### Candlestick API
 
-#### EVM chains
+Use the [Candlestick API](./candlestick-api) for **off-chain** applications. It provides historical open-high-low-close (OHLC) data and real-time price updates in a format compatible with the [TradingView data integration specification](https://www.tradingview.com/broker-api-docs/rest-api-spec/#tag/Data-Integration). This is ideal for building dashboards, analytics platforms, portfolio trackers, and research tools.
 
-- [Onchain report data verification](/data-streams/reference/onchain-verification) - Verify the authenticity of received data on EVM chains
-
-#### Solana
-
-- [Verify reports using the onchain integration method](/data-streams/tutorials/solana-onchain-report-verification)
-- [Verify reports using the offchain integration method](/data-streams/tutorials/solana-offchain-report-verification)
+**[View the Candlestick API Reference](./candlestick-api)**
