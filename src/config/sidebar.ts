@@ -348,8 +348,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/crypto-streams",
           children: [
             {
-              title: "Report Schema v3",
+              title: "Report Schema v3 (Crypto)",
               url: "data-streams/reference/report-schema-v3",
+            },
+            {
+              title: "Report Schema v3 (DEX State Price)",
+              url: "data-streams/reference/report-schema-v3-dex",
             },
           ],
         },
@@ -415,6 +419,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
+        },
+        {
+          title: "DEX State Price Streams",
+          url: "data-streams/concepts/dex-state-price-streams",
         },
       ],
     },
