@@ -82,7 +82,7 @@ contract ClientReportsVerifier {
     error InvalidReportVersion(uint16 version);
 
     // ----------------- Report schemas -----------------
-    // More info: https://docs.chain.link/data-streams/reference/report-schema
+    // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
     /**
      * @dev Data Streams report schema v3 (crypto streams).
      *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
