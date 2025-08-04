@@ -349,7 +349,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Report Schema v3 (Crypto)",
-              url: "data-streams/reference/report-schema",
+              url: "data-streams/reference/report-schema-v3",
             },
             {
               title: "Report Schema v3 (DEX State Price)",
@@ -362,8 +362,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Report Schema v4",
-              url: "data-streams/reference/report-schema-v4",
+              title: "Report Schema v8",
+              url: "data-streams/reference/report-schema-v8",
             },
           ],
         },

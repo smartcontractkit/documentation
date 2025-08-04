@@ -3,34 +3,45 @@ section: dataStreams
 date: Last Modified
 title: "Report Schemas"
 metadata:
-  title: "Real World Asset (RWA) Report Schema (v4) | Chainlink Data Streams"
+  title: "Real World Asset (RWA) Report Schema (v4) (Deprecated) | Chainlink Data Streams"
   description: "Learn about Chainlink Data Streams Real World Asset (RWA) report schema (v4), including fields, encoding, and examples for integrating RWA data in your applications."
   keywords: ["Report Schema", "RWA", "Real World Assets", "v4 Schema", "Data Format", "Report Structure"]
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
-import { PageTabs } from "@components"
+import { Aside, PageTabs } from "@components"
 
 <DataStreams section="dsNotes" />
 
 <PageTabs
   pages={[
+
     {
       name: "Cryptocurrency Report Schema (v3)",
-      url: "/data-streams/reference/report-schema",
+      url: "/data-streams/reference/report-schema-v3",
     },
     {
       name: "DEX State Price Report Schema (v3)",
       url: "/data-streams/reference/report-schema-v3-dex",
     },
     {
-      name: "Real World Asset (RWA) Report Schema (v4)",
+      name: "(Deprecated) RWA Report Schema (v4)",
       url: "/data-streams/reference/report-schema-v4",
     },
-  ]}
-  headerTitle="Available Report Schemas"
-  headerDescription="Choose the schema version you want to explore."
+    {
+      name: "RWA Report Schema (v8)",
+      url: "/data-streams/reference/report-schema-v8",
+    },
+
+]}
+headerTitle="Available Report Schemas"
+headerDescription="Choose the schema version you want to explore."
 />
+
+<Aside type="danger">
+  The v4 report schema is deprecated. View the [v8 report schema](/data-streams/reference/report-schema-v8) for the
+  latest RWA report schema.
+</Aside>
 
 Real World Asset (RWA) streams adhere to the report schema outlined below.
 
@@ -44,7 +55,7 @@ Real World Asset (RWA) streams adhere to the report schema outlined below.
 | `nativeFee`             | `uint192` | The cost to verify this report onchain when paying with the blockchain's native token                                        |
 | `linkFee`               | `uint192` | The cost to verify this report onchain when paying with LINK                                                                 |
 | `expiresAt`             | `uint32`  | The expiration date of this report                                                                                           |
-| `price`                 | `int192`  | The DON's consensus median price for this report carried to 18 decimal places                                                |
+| `price`                 | `int192`  | The DON's consensus median price                                                                                             |
 | `marketStatus`          | `uint32`  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
 
 **Notes**:
