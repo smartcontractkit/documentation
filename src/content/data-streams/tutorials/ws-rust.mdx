@@ -26,7 +26,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V8 reports for RWA streams",
+      name: "Go SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/ws-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
@@ -36,14 +36,14 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
-      name: "Rust SDK - V8 reports for RWA streams",
+      name: "Rust SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/ws-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to subscribe to real-time [V3 reports](/data-streams/reference/report-schema-v3) for [Crypto streams](/data-streams/crypto-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to subscribe to real-time [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -314,17 +314,17 @@ This will subscribe to both ETH/USD and BTC/USD streams.
 
 The decoded report details include:
 
-| Attribute                | Value                                                                | Description                                                                                                                                                                                                                    |
-| ------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                              |
-| `Observations Timestamp` | `1734131277`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                           |
-| `Price`                  | `3906157533081673500000`                                             | The observed price in the report. For readability: `3,906.1575330816735` USD per ETH.                                                                                                                                          |
-| `Bid`                    | `3905928693886829700000`                                             | The highest price a buyer is willing to pay for an asset. For readability: `3,905.9286938868297` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices).                              |
-| `Ask`                    | `3906215307384792250000`                                             | The lowest price a seller is willing to accept for an asset. For readability: `3,906.2153073847923` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices).                           |
-| `Valid From Timestamp`   | `1734131277`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                        |
-| `Expires At`             | `1734217677`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                               |
-| `Link Fee`               | `3513685734964500`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. For readability: `0.0035136857349645` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
-| `Native Fee`             | `25600606005500`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. For readability: `0.0000256006060055` ETH. **Note:** This example fee is not indicative of actual fees. |
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                      |
+| ------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                                                |
+| `Observations Timestamp` | `1734131277`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                             |
+| `Price`                  | `3906157533081673500000`                                             | The observed price in the report, with 18 decimals. For readability: `3,906.1575330816735` USD per ETH.                                                                                                                                          |
+| `Bid`                    | `3905928693886829700000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,905.9286938868297` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices).                              |
+| `Ask`                    | `3906215307384792250000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,906.2153073847923` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices).                           |
+| `Valid From Timestamp`   | `1734131277`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                          |
+| `Expires At`             | `1734217677`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                 |
+| `Link Fee`               | `3513685734964500`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.0035136857349645` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `25600606005500`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.0000256006060055` ETH. **Note:** This example fee is not indicative of actual fees. |
 
 #### Payload for onchain verification
 
@@ -358,7 +358,7 @@ As data reports arrive via the WebSocket connection, they are processed in real-
 2. Decoding reports: Each report is decoded in two stages:
    - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
    - [`ReportDataV3::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v3.rs#L80) transforms the report blob into a structured format containing:
-     - The benchmark price
+     - The benchmark price (with 18 decimal places)
      - Bid and ask prices for [liquidity-weighted pricing](/data-streams/concepts/liquidity-weighted-prices)
      - Fee information for onchain verification
      - Timestamp information

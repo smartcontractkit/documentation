@@ -819,7 +819,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 {metadata.docs.assetClass}
                 {metadata.docs.assetSubClass &&
                 metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Equities"
+                metadata.docs.assetSubClass !== "Forex"
                   ? " - " + metadata.docs.assetSubClass
                   : ""}
               </dd>
@@ -875,20 +875,20 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
+                <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
                   Crypto Schema (v3)
                 </a>
               </dd>
             </div>
           )}{" "}
-          {metadata.feedType === "Equities" && (
+          {metadata.feedType === "Forex" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  RWA Schema (v8)
+                <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
+                  RWA Schema (v4)
                 </a>
               </dd>
             </div>
@@ -959,7 +959,7 @@ export const MainnetTable = ({
       }
 
       if (dataFeedType === "streamsRwa") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+        return metadata.contractType === "verifier" && metadata.docs.feedType === "Forex"
       }
 
       if (isSmartData) {
@@ -1139,7 +1139,7 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Equities"
+          return metadata.contractType === "verifier" && metadata.feedType === "Forex"
         }
       }
 

@@ -1,12 +1,12 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode V8 reports using the Rust SDK"
+title: "Fetch and decode V4 reports using the Rust SDK"
 metadata:
   title: "Fetch and Decode Real World Asset Data with Rust SDK | Chainlink Data Streams"
-  description: "Learn how to use the Rust SDK to fetch and decode Real World Asset (RWA) market data reports with V8 schema from Chainlink Data Streams."
+  description: "Learn how to use the Rust SDK to fetch and decode Real World Asset (RWA) market data reports with V4 schema from Chainlink Data Streams."
   keywords:
-    ["Rust SDK", "RWA", "Real World Assets", "V8 Reports", "API Tutorial", "Data Streams", "Forex", "Commodities"]
+    ["Rust SDK", "RWA", "Real World Assets", "V4 Reports", "API Tutorial", "Data Streams", "Forex", "Commodities"]
 whatsnext:
   {
     "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-rwa-rust",
@@ -28,7 +28,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V8 reports for RWA streams",
+      name: "Go SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
@@ -38,14 +38,14 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
-      name: "Rust SDK - V8 reports for RWA streams",
+      name: "Rust SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to fetch and decode [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to fetch and decode [V4 reports](/data-streams/reference/report-schema-v4) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -88,7 +88,7 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
    ```rust
    use chainlink_data_streams_report::feed_id::ID;
-   use chainlink_data_streams_report::report::{ decode_full_report, v8::ReportDataV8 };
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
    use chainlink_data_streams_sdk::client::Client;
    use chainlink_data_streams_sdk::config::Config;
    use std::env;
@@ -129,16 +129,15 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
       // Decode the report
       let full_report = hex::decode(&response.report.full_report[2..])?;
       let (_report_context, report_blob) = decode_full_report(&full_report)?;
-      let report_data = ReportDataV8::decode(&report_blob)?;
+      let report_data = ReportDataV4::decode(&report_blob)?;
 
       // Print decoded report details
       println!("\nDecoded Report for Stream ID {}:", feed_id_input);
       println!("------------------------------------------");
-      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
       println!("Observations Timestamp: {}", response.report.observations_timestamp);
-      println!("Last Update Timestamp : {}", report_data.last_update_timestamp);
+      println!("Benchmark Price       : {}", report_data.price);
+      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
       println!("Expires At            : {}", report_data.expires_at);
-      println!("Mid Price             : {}", report_data.mid_price);
       println!("Link Fee              : {}", report_data.link_fee);
       println!("Native Fee            : {}", report_data.native_fee);
       println!("Market Status         : {}", report_data.market_status);
@@ -146,7 +145,6 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
       Ok(())
    }
-
    ```
 
 1. Set up your API credentials as environment variables:
@@ -174,14 +172,13 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
    Decoded Report for Stream ID [STREAM_ID]:
    ------------------------------------------
-   Valid From Timestamp  : 1753554142
-   Observations Timestamp: 1753554142
-   Last Update Timestamp : 1753476931520000000
-   Expires At            : 1756146142
-   Mid Price             : 213940000000000000000
-   Link Fee              : 17474419425934927
-   Native Fee            : 85926694786199
-   Market Status         : 1
+   Observations Timestamp: 1734125487
+   Benchmark Price       : 635840000000000000
+   Valid From Timestamp  : 1734125487
+   Expires At            : 1734211887
+   Link Fee              : 0
+   Native Fee            : 0
+   Market Status         : 2
    ------------------------------------------
    ```
 
@@ -189,17 +186,16 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
 The decoded report details include:
 
-| Attribute                | Value                   | Description                                                                                                                  |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `[STREAM_ID]`           | The unique identifier for the stream.                                                                                        |
-| `Valid From Timestamp`   | `1753554142`            | The start validity timestamp for the report, indicating when the data becomes relevant.                                      |
-| `Observations Timestamp` | `1753554142`            | The timestamp indicating when the data was captured.                                                                         |
-| `Last Update Timestamp`  | `1753476931520000000`   | The timestamp of the last valid price update, in nanoseconds since epoch.                                                    |
-| `Expires At`             | `1756146142`            | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                             |
-| `Mid Price`              | `213940000000000000000` | The observed median price in the report. For readability: `213.94`.                                                          |
-| `Link Fee`               | `17474419425934927`     | The fee to pay in LINK tokens for onchain verification of the report data.                                                   |
-| `Native Fee`             | `85926694786199`        | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                          |
-| `Market Status`          | `1`                     | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
+| Attribute                | Value                | Description                                                                                                                                                                                           |
+| ------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`        | The unique identifier for the stream.                                                                                                                                                                 |
+| `Observations Timestamp` | `1734125487`         | The timestamp indicating when the data was captured.                                                                                                                                                  |
+| `Benchmark Price`        | `635840000000000000` | The observed price in the report, with 18 decimals. For readability: `0.63584` USD per AUD.                                                                                                           |
+| `Valid From Timestamp`   | `1734125487`         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                               |
+| `Expires At`             | `1734211887`         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                      |
+| `Link Fee`               | `0`                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `0`                  | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`).                                                                          |
 
 #### Payload for onchain verification
 
@@ -262,8 +258,8 @@ Reports are decoded in three stages:
    - Isolates the report blob (actual data)
    - Validates the report format
 
-3. Data extraction: [`ReportDataV8::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v8.rs#L60) parses the report blob into structured data:
-   - Price
+3. Data extraction: [`ReportDataV4::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v4.rs#L57) parses the report blob into structured data:
+   - Price (18 decimal places)
    - Market status (Open, Closed, or Unknown)
    - Fee information for onchain verification
    - Timestamp information

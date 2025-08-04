@@ -27,7 +27,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V8 reports for RWA streams",
+      name: "Go SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
@@ -37,14 +37,14 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
-      name: "Rust SDK - V8 reports for RWA streams",
+      name: "Rust SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V3 reports](/data-streams/reference/report-schema-v3) for [Crypto streams](/data-streams/crypto-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V3 reports](/data-streams/reference/report-schema) for [Crypto streams](/data-streams/crypto-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -530,7 +530,7 @@ Reports are decoded in two steps:
    This step:
 
    - Takes the raw `FullReport` bytes from the response
-   - Uses `v3.Data` schema for Crypto streams (use `v8.Data` for RWA streams)
+   - Uses `v3.Data` schema for Crypto streams (use `v4.Data` for RWA streams)
    - Validates the format and decodes using Go generics
    - Returns a structured report with typed data
 
@@ -538,7 +538,7 @@ Reports are decoded in two steps:
    ```go
    data := decodedReport.Data
    price := data.BenchmarkPrice.String()  // Convert big number to string
-   bid := data.Bid.String()
+   bid := data.Bid.String()              // All prices use 18 decimal places
    ask := data.Ask.String()
    validFrom := data.ValidFromTimestamp  // Unix timestamp
    expiresAt := data.ExpiresAt          // Unix timestamp

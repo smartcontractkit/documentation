@@ -1,11 +1,11 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode V8 reports using the Go SDK"
+title: "Fetch and decode V4 reports using the Go SDK"
 metadata:
   title: "Fetch and Decode Real World Asset Data with Go SDK | Chainlink Data Streams"
-  description: "Learn how to use the Go SDK to fetch and decode Real World Asset (RWA) market data reports with V8 schema from Chainlink Data Streams."
-  keywords: ["Go SDK", "Golang", "RWA", "Real World Assets", "V8 Reports", "API Tutorial", "Data Streams"]
+  description: "Learn how to use the Go SDK to fetch and decode Real World Asset (RWA) market data reports with V4 schema from Chainlink Data Streams."
+  keywords: ["Go SDK", "Golang", "RWA", "Real World Assets", "V4 Reports", "API Tutorial", "Data Streams"]
 whatsnext:
   {
     "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-rwa-go",
@@ -27,7 +27,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V8 reports for RWA streams",
+      name: "Go SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
@@ -37,14 +37,14 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
-      name: "Rust SDK - V8 reports for RWA streams",
+      name: "Rust SDK - V4 reports for RWA streams",
       url: "/data-streams/tutorials/api-rwa-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V4 reports](/data-streams/reference/report-schema-v4) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -101,7 +101,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
         streams "github.com/smartcontractkit/data-streams-sdk/go"
         feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
         report "github.com/smartcontractkit/data-streams-sdk/go/report"
-        v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8" // Import the v8 report schema for RWA streams. For Crypto streams, use the v3 schema.
+        v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4" // Import the v4 report schema for RWA streams. For Crypto streams, use the v3 schema.
     )
 
     func main() {
@@ -157,37 +157,33 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
         cfg.Logger("Raw report data: %+v\n", reportResponse)
 
         // Decode the report
-        decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+        decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
         if err != nil {
             cfg.Logger("Failed to decode report: %v\n", err)
             os.Exit(1)
         }
 
         // Format and display the decoded report
-        fmt.Printf(
-            "\nDecoded Report for Stream ID %s:\n"+
-                "------------------------------------------\n"+
-                "Observations Timestamp  : %d\n"+
-                "Valid From Timestamp    : %d\n"+
-                "Last Update Timestamp   : %d\n"+
-                "Expires At              : %d\n"+
-                "Mid Price               : %s\n"+
-                "Market Status           : %d\n"+
-                "Link Fee (wei)          : %s\n"+
-                "Native Fee (wei)        : %s\n"+
-                "------------------------------------------\n",
+        fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
+            "------------------------------------------\n"+
+            "Observations Timestamp: %d\n"+
+            "Benchmark Price       : %s\n"+
+            "Valid From Timestamp  : %d\n"+
+            "Expires At            : %d\n"+
+            "Link Fee              : %s\n"+
+            "Native Fee            : %s\n"+
+            "Market Status         : %d\n"+
+            "------------------------------------------\n",
             feedIDInput,
             decodedReport.Data.ObservationsTimestamp,
+            decodedReport.Data.BenchmarkPrice.String(),
             decodedReport.Data.ValidFromTimestamp,
-            decodedReport.Data.LastUpdateTimestamp,
             decodedReport.Data.ExpiresAt,
-            decodedReport.Data.MidPrice.String(),
-            decodedReport.Data.MarketStatus,
             decodedReport.Data.LinkFee.String(),
             decodedReport.Data.NativeFee.String(),
+            decodedReport.Data.MarketStatus,
         )
-   }
-
+    }
    ```
 
 1. Download the required dependencies and update the `go.mod` and `go.sum` files:
@@ -231,37 +227,35 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
    Expect output similar to the following in your terminal:
 
    ```bash
-    2025-07-26T12:44:54-05:00 Raw report data: {"fullReport":"0x...","feedID":"[STREAM_ID]","validFromTimestamp":1753551893,"observationsTimestamp":1753551893}
+   2024-12-14T17:50:49-05:00 Raw report data: {"fullReport":"0x...","feedID":"[STREAM_ID]","validFromTimestamp":1734216649,"observationsTimestamp":1734216649}
 
-    2025-07-26T12:44:54-05:00
-    Decoded Report for Stream ID [STREAM_ID]:
-    ------------------------------------------
-    Observations Timestamp : 1753551893
-    Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
-    Expires At             : 1756143893
-    Mid Price     : 213940000000000000000
-    Market Status          : 1
-    Link Fee (wei)         : 17515847021884305
-    Native Fee (wei)       : 85879244037647
-    ------------------------------------------
+   2024-12-14T17:50:49-05:00
+   Decoded Report for Stream ID [STREAM_ID]:
+   ------------------------------------------
+   Observations Timestamp: 1734216649
+   Benchmark Price       : 636240000000000000
+   Valid From Timestamp  : 1734216649
+   Expires At            : 1734303049
+   Link Fee              : 0
+   Native Fee            : 0
+   Market Status         : 1
+   ------------------------------------------
    ```
 
 #### Decoded report details
 
-The decoded report includes:
+The decoded report details include:
 
-| Attribute                | Value                   | Description                                                                                                                  |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `[STREAM_ID]`           | The unique identifier for the stream.                                                                                        |
-| `Observations Timestamp` | `1753551893`            | The timestamp indicating when the data was captured.                                                                         |
-| `Valid From Timestamp`   | `1753551893`            | The start validity timestamp for the report, indicating when the data becomes relevant.                                      |
-| `Last Update Timestamp`  | `1753476931520000000`   | The timestamp of the last valid price update, in nanoseconds since epoch.                                                    |
-| `Expires At`             | `1756143893`            | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                             |
-| `Mid Price`              | `213940000000000000000` | The observed median price in the report. For readability: `213.94`.                                                          |
-| `Market Status`          | `1`                     | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
-| `Link Fee`               | `17515847021884305`     | The fee to pay in LINK tokens for onchain verification of the report data.                                                   |
-| `Native Fee`             | `85879244037647`        | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                          |
+| Attribute                | Value                | Description                                                                                                                                                                                           |
+| ------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`        | The unique identifier for the stream.                                                                                                                                                                 |
+| `Observations Timestamp` | `1734216649`         | The timestamp indicating when the data was captured.                                                                                                                                                  |
+| `Benchmark Price`        | `636240000000000000` | The observed price in the report, with 18 decimals. For readability: `0.63624` USD per AUD.                                                                                                           |
+| `Valid From Timestamp`   | `1734216649`         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                               |
+| `Expires At`             | `1734303049`         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                      |
+| `Link Fee`               | `0`                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `0`                  | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `1`                  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`).                                                                          |
 
 #### Payload for onchain verification
 
@@ -291,7 +285,7 @@ production environment, you should verify the data to ensure its integrity and a
         streams "github.com/smartcontractkit/data-streams-sdk/go"
         feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
         report "github.com/smartcontractkit/data-streams-sdk/go/report"
-        v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8" // Import the v8 report schema for RWA streams
+        v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4" // Import the v4 report schema for RWA streams
     )
 
     func main() {
@@ -360,7 +354,7 @@ production environment, you should verify the data to ensure its integrity and a
                 reportResponse.FeedID.String(), reportResponse)
 
             // Decode the report
-            decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+            decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
             if err != nil {
                 cfg.Logger("Failed to decode report for Stream ID %s: %v\n",
                     reportResponse.FeedID.String(), err)
@@ -368,27 +362,24 @@ production environment, you should verify the data to ensure its integrity and a
             }
 
             // Format and display the decoded report
-            fmt.Printf(
-                "\nDecoded Report for Stream ID %s:\n"+
-                    "------------------------------------------\n"+
-                    "Observations Timestamp  : %d\n"+
-                    "Valid From Timestamp    : %d\n"+
-                    "Last Update Timestamp   : %d\n"+
-                    "Expires At              : %d\n"+
-                    "Mid Price      : %s\n"+
-                    "Market Status           : %d\n"+
-                    "Link Fee (wei)          : %s\n"+
-                    "Native Fee (wei)        : %s\n"+
-                    "------------------------------------------\n",
-                feedIDInput,
+            fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
+                "------------------------------------------\n"+
+                "Observations Timestamp: %d\n"+
+                "Benchmark Price       : %s\n"+
+                "Valid From Timestamp  : %d\n"+
+                "Expires At            : %d\n"+
+                "Link Fee              : %s\n"+
+                "Native Fee            : %s\n"+
+                "Market Status         : %d\n"+
+                "------------------------------------------\n",
+                reportResponse.FeedID.String(),
                 decodedReport.Data.ObservationsTimestamp,
+                decodedReport.Data.BenchmarkPrice.String(),
                 decodedReport.Data.ValidFromTimestamp,
-                decodedReport.Data.LastUpdateTimestamp,
                 decodedReport.Data.ExpiresAt,
-                decodedReport.Data.MidPrice.String(),
-                decodedReport.Data.MarketStatus,
                 decodedReport.Data.LinkFee.String(),
                 decodedReport.Data.NativeFee.String(),
+                decodedReport.Data.MarketStatus,
             )
         }
     }
@@ -422,28 +413,26 @@ production environment, you should verify the data to ensure its integrity and a
 
    Decoded Report for Stream ID [STREAM_ID_1]:
    ------------------------------------------
-    Observations Timestamp : 1753551893
-    Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
-    Expires At             : 1756143893
-    Mid Price              : 213940000000000000000
-    Market Status          : 1
-    Link Fee (wei)         : 17515847021884305
-    Native Fee (wei)       : 85879244037647
+   Observations Timestamp: 1734216809
+   Benchmark Price       : 636240000000000000
+   Valid From Timestamp  : 1734216809
+   Expires At            : 1734303209
+   Link Fee              : 0
+   Native Fee            : 0
+   Market Status         : 1
    ------------------------------------------
    2024-12-14T17:53:30-05:00 Raw report data for Stream ID [STREAM_ID_2]: {"fullReport":"0x...","feedID":"[STREAM_ID_2]","validFromTimestamp":1734216809,"observationsTimestamp":1734216809}
 
 
    Decoded Report for Stream ID [STREAM_ID_2]:
    ------------------------------------------
-    Observations Timestamp : 1753551893
-    Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
-    Expires At             : 1756143893
-    Mid Price              : 213940000000000000000
-    Market Status          : 1
-    Link Fee (wei)         : 17515847021884305
-    Native Fee (wei)       : 85879244037647
+   Observations Timestamp: 1734216809
+   Benchmark Price       : 1050250000000000000
+   Valid From Timestamp  : 1734216809
+   Expires At            : 1734303209
+   Link Fee              : 0
+   Native Fee            : 0
+   Market Status         : 1
    ------------------------------------------
    ```
 
@@ -526,20 +515,20 @@ Reports are decoded in two steps:
 1. Report decoding with [`report.Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30):
 
    ```go
-   decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+   decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
    ```
 
    This step:
 
    - Takes the raw `FullReport` bytes from the response
-   - Uses `v8.Data` schema for RWA streams (use `v3.Data` for Crypto streams)
+   - Uses `v4.Data` schema for RWA streams (use `v3.Data` for Crypto streams)
    - Validates the format and decodes using Go generics
    - Returns a structured report with typed data
 
 2. Data access:
    ```go
    data := decodedReport.Data
-   price := data.MidPrice.String(),  // Convert big number to string
+   price := data.BenchmarkPrice.String()  // Convert big number to string
    validFrom := data.ValidFromTimestamp  // Unix timestamp
    expiresAt := data.ExpiresAt          // Unix timestamp
    marketStatus := data.MarketStatus    // Market status (0: Unknown, 1: Closed, 2: Open)
