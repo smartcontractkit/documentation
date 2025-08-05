@@ -15,9 +15,8 @@ const feedItems = monitoredFeeds.mainnet
 
 // Helper functions for SVR feed categorization
 const isSharedSVR = (metadata: ChainMetadata): boolean => {
-  // Check for marketing.path or fallback to path field
-  const pathToCheck = (metadata as ChainMetadata & { marketing?: { path?: string } })?.marketing?.path || metadata.path
-  return typeof pathToCheck === "string" && /-shared-svr$/.test(pathToCheck)
+  // Check the path field for feeds ending with "-shared-svr"
+  return typeof metadata.path === "string" && /-shared-svr$/.test(metadata.path)
 }
 
 const isAaveSVR = (metadata: ChainMetadata): boolean => {
@@ -931,7 +930,6 @@ export const MainnetTable = ({
   network,
   showExtraDetails,
   showOnlySVR,
-  svrFilter = "all", // "all" | "aave" | "shared"
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
   dataFeedType,
@@ -947,7 +945,6 @@ export const MainnetTable = ({
   network: ChainNetwork
   showExtraDetails: boolean
   showOnlySVR: boolean
-  svrFilter?: "all" | "aave" | "shared"
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
   dataFeedType: string
@@ -970,15 +967,8 @@ export const MainnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
-      // Handle SVR filtering with granular options
       if (showOnlySVR) {
-        if (svrFilter === "aave" && !isAaveSVR(metadata)) {
-          return false
-        }
-        if (svrFilter === "shared" && !isSharedSVR(metadata)) {
-          return false
-        }
-        if (svrFilter === "all" && !metadata.secondaryProxyAddress) {
+        if (!metadata.secondaryProxyAddress) {
           return false
         }
       }
@@ -1042,33 +1032,6 @@ export const MainnetTable = ({
         selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
       )
     })
-    .filter(
-      (metadata) =>
-        metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.proxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.secondaryProxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porType
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porAuditor
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porSource
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
-    )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
