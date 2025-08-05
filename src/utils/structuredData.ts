@@ -7,7 +7,13 @@
  */
 
 import type { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
-import { productChainLinks, chainNames, type ProductData } from "~/components/QuickLinks/data/productChainLinks.ts"
+
+/**
+ * Base URLs - Environment-aware constants
+ * These should match the production URLs for structured data consistency
+ */
+export const DOCS_BASE_URL = "https://docs.chain.link"
+export const CHAINLINK_BASE_URL = "https://chain.link"
 
 // Schema.org compliant types
 export type SchemaType = "TechArticle" | "HowTo" | "APIReference" | "BreadcrumbList" | "Organization" | "WebSite"
@@ -38,10 +44,10 @@ export interface VersionInfo {
 export const CHAINLINK_ORGANIZATION = {
   "@type": "Organization",
   name: "Chainlink Labs",
-  url: "https://chain.link",
+  url: CHAINLINK_BASE_URL,
   logo: {
     "@type": "ImageObject",
-    url: "https://docs.chain.link/images/logo.png",
+    url: `${DOCS_BASE_URL}/images/logo.png`,
     width: 200,
     height: 200,
   },
@@ -58,7 +64,7 @@ export const CHAINLINK_ORGANIZATION = {
     {
       "@type": "ContactPoint",
       contactType: "customer support",
-      url: "https://chain.link/support",
+      url: `${CHAINLINK_BASE_URL}/support`,
     },
     {
       "@type": "ContactPoint",
@@ -82,10 +88,10 @@ export const CHAINLINK_ORGANIZATION = {
 export const CHAINLINK_PUBLISHER = {
   "@type": "Organization",
   name: "Chainlink Documentation",
-  url: "https://docs.chain.link",
+  url: DOCS_BASE_URL,
   logo: {
     "@type": "ImageObject",
-    url: "https://docs.chain.link/images/logo.png",
+    url: `${DOCS_BASE_URL}/images/logo.png`,
     width: 200,
     height: 200,
   },
@@ -282,75 +288,6 @@ export function detectQuickstartProducts(products?: string[]): string[] {
 }
 
 /**
- * Get supported networks for a single Chainlink product
- * Returns comprehensive list of all networks the product supports
- */
-export function getSupportedNetworks(pathname?: string): string[] {
-  const product = detectChainlinkProduct(pathname)
-  if (!product || !productChainLinks[product]) return []
-
-  const productData = productChainLinks[product] as ProductData
-  if (!productData.chains) return []
-
-  // Get all supported chain keys and map to display names
-  const supportedChains = Object.keys(productData.chains)
-  return supportedChains
-    .map((chainKey) => chainNames[chainKey] || chainKey)
-    .filter(Boolean)
-    .sort()
-}
-
-/**
- * Get intersection of supported networks for multiple products
- * Returns networks that ALL specified products support
- */
-export function getIntersectionOfSupportedNetworks(products: string[]): string[] {
-  if (products.length === 0) return []
-  if (products.length === 1) {
-    // Single product - get all its networks
-    const product = products[0]
-    if (!productChainLinks[product]) return []
-
-    const productData = productChainLinks[product] as ProductData
-    if (!productData.chains) return []
-
-    const supportedChains = Object.keys(productData.chains)
-    return supportedChains
-      .map((chainKey) => chainNames[chainKey] || chainKey)
-      .filter(Boolean)
-      .sort()
-  }
-
-  // Multiple products - find intersection
-  const networkSets = products.map((product) => {
-    if (!productChainLinks[product]) return new Set<string>()
-
-    const productData = productChainLinks[product] as ProductData
-    if (!productData.chains) return new Set<string>()
-
-    const chains = Object.keys(productData.chains)
-      .map((chainKey) => chainNames[chainKey] || chainKey)
-      .filter(Boolean)
-
-    return new Set(chains)
-  })
-
-  // Start with first product's networks
-  const intersection = networkSets[0]
-
-  // Keep only networks that exist in ALL products
-  for (let i = 1; i < networkSets.length; i++) {
-    for (const network of intersection) {
-      if (!networkSets[i].has(network)) {
-        intersection.delete(network)
-      }
-    }
-  }
-
-  return Array.from(intersection).sort()
-}
-
-/**
  * Extract target platform from metadata content
  * Returns Schema.org compliant target platform
  */
@@ -431,8 +368,6 @@ export function extractToolsAndPrerequisites(
     remix: "Remix IDE",
     metamask: "MetaMask",
     foundry: "Foundry",
-    truffle: "Truffle",
-    ganache: "Ganache",
     web3: "Web3.js",
     ethers: "Ethers.js",
     viem: "Viem",
@@ -520,7 +455,6 @@ export function generateTechArticle(
   const { isLearningResource, category } = detectContentType(pathname)
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
-  const supportedNetworks = getSupportedNetworks(pathname)
 
   const baseArticle = {
     "@context": "https://schema.org",
@@ -540,8 +474,8 @@ export function generateTechArticle(
       url: metadata?.image
         ? metadata.image.startsWith("http")
           ? metadata.image
-          : `https://docs.chain.link${metadata.image}`
-        : "https://docs.chain.link/images/logo.png",
+          : `${DOCS_BASE_URL}${metadata.image}`
+        : `${DOCS_BASE_URL}/images/logo.png`,
       width: 1200,
       height: 630,
     },
@@ -556,13 +490,15 @@ export function generateTechArticle(
         ? `Smart contract and blockchain development using Chainlink ${product}`
         : "Smart contract and blockchain development using Chainlink",
     },
-    // Add supported networks as mentions if available
-    ...(supportedNetworks.length > 0 && {
-      mentions: supportedNetworks.map((network) => ({
-        "@type": "Thing",
-        name: network,
-        description: `${network} blockchain network`,
-      })),
+    // Add Chainlink product mention for better topical SEO
+    ...(product && {
+      mentions: [
+        {
+          "@type": "Thing",
+          name: product,
+          description: `Chainlink ${product}`,
+        },
+      ],
     }),
   }
 
@@ -600,7 +536,6 @@ export function generateHowTo(
   const { tools, prerequisites } = extractToolsAndPrerequisites(metadata?.excerpt, pathname)
   const duration = parseTimeToISO8601(estimatedTime)
   const product = detectChainlinkProduct(pathname)
-  const supportedNetworks = getSupportedNetworks(pathname)
 
   return {
     "@context": "https://schema.org",
@@ -621,8 +556,8 @@ export function generateHowTo(
       url: metadata?.image
         ? metadata.image.startsWith("http")
           ? metadata.image
-          : `https://docs.chain.link${metadata.image}`
-        : "https://docs.chain.link/images/logo.png",
+          : `${DOCS_BASE_URL}${metadata.image}`
+        : `${DOCS_BASE_URL}/images/logo.png`,
       width: 1200,
       height: 630,
     },
@@ -657,13 +592,15 @@ export function generateHowTo(
         ? `Building decentralized applications with Chainlink ${product}`
         : "Building decentralized applications with Chainlink",
     },
-    // Add supported networks as mentions if available
-    ...(supportedNetworks.length > 0 && {
-      mentions: supportedNetworks.map((network) => ({
-        "@type": "Thing",
-        name: network,
-        description: `${network} blockchain network`,
-      })),
+    // Add Chainlink product mention for better topical SEO
+    ...(product && {
+      mentions: [
+        {
+          "@type": "Thing",
+          name: product,
+          description: `Chainlink ${product}`,
+        },
+      ],
     }),
   }
 }
@@ -682,7 +619,6 @@ export function generateAPIReference(
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
-  const supportedNetworks = getSupportedNetworks(pathname)
 
   // Use provided version info or extract from metadata/pathname
   const versionMatch = pathname.match(/v(\d+\.\d+\.\d+)/)
@@ -712,8 +648,8 @@ export function generateAPIReference(
       url: metadata?.image
         ? metadata.image.startsWith("http")
           ? metadata.image
-          : `https://docs.chain.link${metadata.image}`
-        : "https://docs.chain.link/images/logo.png",
+          : `${DOCS_BASE_URL}${metadata.image}`
+        : `${DOCS_BASE_URL}/images/logo.png`,
       width: 1200,
       height: 630,
     },
@@ -729,34 +665,49 @@ export function generateAPIReference(
         ? `${product} - Decentralized oracle network for smart contracts`
         : "Decentralized oracle network for smart contracts",
     },
-    // Add supported networks as mentions if available
-    ...(supportedNetworks.length > 0 && {
-      mentions: supportedNetworks.map((network) => ({
-        "@type": "Thing",
-        name: network,
-        description: `${network} blockchain network`,
-      })),
+    // Add Chainlink product mention for better topical SEO
+    ...(product && {
+      mentions: [
+        {
+          "@type": "Thing",
+          name: product,
+          description: `Chainlink ${product}`,
+        },
+      ],
     }),
+
     // Add version-specific structured data if available
     ...(versionInfo && {
       version,
-      ...(versionInfo.availableVersions && {
-        isPartOf: {
-          "@type": "SoftwareApplication",
-          name: product ? `Chainlink ${product}` : "Chainlink Protocol",
-          versionList: versionInfo.availableVersions.map((v) => ({
-            "@type": "SoftwareVersion",
-            version: v,
-            releaseDate: v === versionInfo.version ? releaseDate : undefined,
-            status:
-              v === versionInfo.version && versionInfo.isLatest
-                ? "Latest"
-                : versionInfo.isDeprecated
-                  ? "Deprecated"
-                  : "Stable",
-          })),
-        },
-      }),
+      isPartOf: {
+        "@type": "SoftwareApplication",
+        name: product ? `Chainlink ${product}` : "Chainlink Protocol",
+        description: product
+          ? `${product} - Decentralized oracle network for smart contracts`
+          : "Decentralized oracle network for smart contracts",
+        operatingSystem: "Blockchain",
+        applicationCategory: "DeveloperApplication",
+        url: `${DOCS_BASE_URL}/${product?.toLowerCase()}/api-reference/`,
+        ...(releaseDate && {
+          datePublished: releaseDate,
+          dateModified: releaseDate,
+        }),
+        // Valid Schema.org properties only
+        ...(versionInfo.availableVersions &&
+          versionInfo.availableVersions.length > 1 && {
+            // Use 'version' property (valid for CreativeWork parent)
+            version,
+            // Use 'isRelatedTo' for version relationships (valid for SoftwareApplication via Service inheritance)
+            isRelatedTo: versionInfo.availableVersions
+              .filter((v) => v !== version)
+              .slice(0, 3) // Limit for performance
+              .map((v) => ({
+                "@type": "SoftwareApplication",
+                name: `${product ? `Chainlink ${product}` : "Chainlink Protocol"} ${v}`,
+                url: version && version !== v ? resolvedCanonicalUrl.replace(version, v) : resolvedCanonicalUrl,
+              })),
+          }),
+      },
       mainEntityOfPage: {
         "@type": "WebPage",
         "@id": resolvedCanonicalUrl,
@@ -845,7 +796,6 @@ export function generateQuickstartHowTo(
 
   // Detect products from curated quickstart metadata
   const detectedProducts = detectQuickstartProducts(frontmatter.products)
-  const supportedNetworks = getIntersectionOfSupportedNetworks(detectedProducts)
   const primaryProduct = detectedProducts.length > 0 ? detectedProducts[0] : null
 
   // Add requires to prerequisites if not already detected
@@ -872,7 +822,7 @@ export function generateQuickstartHowTo(
     ...(duration && { totalTime: duration }),
     image: {
       "@type": "ImageObject",
-      url: `https://docs.chain.link/images/quickstarts/feature/${frontmatter.image}`,
+      url: `${DOCS_BASE_URL}/images/quickstarts/feature/${frontmatter.image}`,
       width: 1200,
       height: 630,
     },
@@ -910,23 +860,21 @@ export function generateQuickstartHowTo(
     // Quickstart-specific properties
     genre: "Quickstart Guide",
     ...(frontmatter.githubSourceCodeUrl && {
-      codeRepository: frontmatter.githubSourceCodeUrl,
+      workExample: {
+        "@type": "SoftwareSourceCode",
+        name: `${frontmatter.title} - Source Code`,
+        description: "Complete source code and examples for this tutorial",
+        codeRepository: frontmatter.githubSourceCodeUrl,
+        url: frontmatter.githubSourceCodeUrl,
+      },
     }),
-    // Add supported networks as mentions if available, otherwise use frontmatter products
-    ...(supportedNetworks.length > 0
-      ? {
-          mentions: supportedNetworks.map((network) => ({
-            "@type": "Thing",
-            name: network,
-            description: `${network} blockchain network`,
-          })),
-        }
-      : frontmatter.products && {
-          mentions: frontmatter.products.map((product) => ({
-            "@type": "Thing",
-            name: product === "general" ? "Chainlink" : product.toUpperCase(),
-          })),
-        }),
+    // Add Chainlink product mentions for better topical SEO
+    ...(frontmatter.products && {
+      mentions: frontmatter.products.map((product) => ({
+        "@type": "Thing",
+        name: product === "general" ? "Chainlink" : product.toUpperCase(),
+      })),
+    }),
   }
 }
 
