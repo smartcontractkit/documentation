@@ -506,7 +506,6 @@ export function generateTechArticle(
 ): object {
   const { isLearningResource, category } = detectContentType(pathname)
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
-  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
   const supportedNetworks = getSupportedNetworks(pathname)
 
@@ -535,9 +534,6 @@ export function generateTechArticle(
     },
     ...(metadata?.excerpt && {
       keywords: metadata.excerpt,
-    }),
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
     }),
     // Add technical article specific properties with product info
     about: {
@@ -570,8 +566,6 @@ export function generateTechArticle(
         "@type": "Audience",
         audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
       },
-      // Remove programmingLanguage for LearningResource compatibility
-      programmingLanguage: undefined,
     }
   }
 
@@ -671,7 +665,6 @@ export function generateAPIReference(
   canonicalURL: URL,
   pathname: string
 ): object {
-  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
@@ -708,9 +701,6 @@ export function generateAPIReference(
     },
     ...(metadata?.excerpt && {
       keywords: metadata.excerpt,
-    }),
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
     }),
     programmingModel,
     targetPlatform,
