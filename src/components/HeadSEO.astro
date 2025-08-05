@@ -1,15 +1,18 @@
 ---
-import { Metadata } from "src/content.config.ts"
+import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
+import StructuredData from "./StructuredData.astro"
+import { generateStructuredData } from "~/utils/structuredData"
 
 export interface Props {
   metadata?: Metadata
   canonicalURL: URL | string
+  quickstartFrontmatter?: QuickstartsFrontmatter
 }
 
-const { metadata, canonicalURL } = Astro.props
+const { metadata, canonicalURL, quickstartFrontmatter } = Astro.props
 const formattedContentTitle = metadata?.title
   ? `${metadata.title} | ${SITE.title}`
   : `${PAGE.titleFallback} | ${SITE.title}`
@@ -33,6 +36,14 @@ if (metadata?.image) {
 // Detect if this is an API reference page and get the product
 const currentPage = new URL(Astro.request.url).pathname
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
+
+// Generate structured data
+const canonicalURLObj = typeof canonicalURL === "string" ? new URL(canonicalURL) : canonicalURL
+
+// Use quickstart frontmatter if available, otherwise use regular metadata
+const structuredDataObjects = quickstartFrontmatter
+  ? generateStructuredData(quickstartFrontmatter, formattedContentTitle, canonicalURLObj, currentPage)
+  : generateStructuredData(metadata, formattedContentTitle, canonicalURLObj, currentPage, metadata?.estimatedTime)
 ---
 
 <!-- Version-specific SEO tags for API reference pages -->{
@@ -68,9 +79,5 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 <link href="/images/logo.png" rel="apple-touch-icon" />
 
-<!--
-  TODO: Add json+ld data, maybe https://schema.org/APIReference makes sense?
-  Docs: https://developers.google.com/search/docs/advanced/structured-data/intro-structured-data
-  https://www.npmjs.com/package/schema-dts seems like a great resource for implementing this.
-  Even better, there's a React component that integrates with `schema-dts`: https://github.com/google/react-schemaorg
--->
+<!-- Structured Data (JSON-LD) -->
+<StructuredData data={structuredDataObjects} />
