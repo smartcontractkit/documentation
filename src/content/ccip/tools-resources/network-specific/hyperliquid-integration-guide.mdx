@@ -69,9 +69,15 @@ For example, when a contract on HyperEVM queries a token balance by calling a de
 
 This design enables the development of on-chain applications that can respond to the live state of the central limit order book on HyperCore. The same precompile infrastructure also powers cross-chain bridging, allowing seamless integration between ERC-20 tokens on HyperEVM and their linked HIP-1 counterparts on HyperCore.
 
+In the following example snippet, a smart contract on HyperEVM can trustlessly read the balance of an HIP1 token on HyperCore.
+
 ```bash
 address constant SPOT_BALANCE_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000801;
-
+ struct SpotBalance {
+    uint64 total;
+    uint64 hold;
+    uint64 entryNtl;
+  }
 function spotBalance(address user, uint64 token) external view returns (SpotBalance memory) {
     bool success;
     bytes memory result;
