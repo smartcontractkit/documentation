@@ -115,7 +115,7 @@ contract TokenTransferor is OwnerIsCreator {
         uint256 requiredLinkBalance;
         if (_token == address(s_linkToken)) {
             // Required LINK Balance is the sum of fees and amount to transfer, if the token to transfer is LINK
-            requiredLinkBalance = fees + _amount; 
+            requiredLinkBalance = fees + _amount;
         } else {
             requiredLinkBalance = fees;
         }
