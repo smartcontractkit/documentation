@@ -635,7 +635,7 @@ export function generateAPIReference(
   const releaseDate = versionInfo?.releaseDate
 
   // Use version-specific canonical URL if provided (for proper version SEO)
-  const resolvedCanonicalUrl = versionInfo?.canonicalUrl || canonicalURL.toString()
+  const resolvedCanonicalUrl = (versionInfo?.canonicalUrl || canonicalURL.toString()).replace(/\/+$/, "")
 
   return {
     "@context": "https://schema.org",
