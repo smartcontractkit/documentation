@@ -1,32 +1,33 @@
 ---
 section: ccip
 date: Last Modified
-title: "Cross-Chain Token Setup: BurnMint with Production Multisig Configuration"
+title: "Cross-Chain Token Setup: BurnMint with SPL Token Multisig Tutorial"
 isIndex: false
 metadata:
-  description: "Complete tutorial for implementing bidirectional cross-chain tokens using CCIP Path A with production-ready SPL token multisig configuration. Set up secure BurnMint pools between Solana Devnet and Ethereum Sepolia using self-service registration, multisig governance, and comprehensive security controls for production environments."
-  excerpt: "ccip cross-chain token tutorial solana ethereum burnmint pools path-a production multisig spl token multisig governance self-service registration svm evm bidirectional token pools address lookup tables transaction monitoring production security solana devnet ethereum sepolia pool signer pda token admin registry multisig threshold governance"
+  description: "Educational tutorial demonstrating how to implement bidirectional cross-chain tokens using CCIP Path A with SPL token multisig concepts. Learn to set up BurnMint pools between Solana Devnet and Ethereum Sepolia while understanding multisig architecture, self-service registration, and preparing for production deployment."
+  excerpt: "ccip cross-chain token tutorial solana ethereum burnmint pools path-a multisig educational spl token multisig architecture learning self-service registration svm evm bidirectional token pools address lookup tables transaction monitoring solana devnet ethereum sepolia pool signer pda token admin registry multisig concepts tutorial governance foundation"
 ---
 
 import { Aside, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-This comprehensive tutorial demonstrates how to create and configure cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia with **production-ready multisig governance**. You will implement the **SPL token multisig** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
+This educational tutorial demonstrates how to create and configure cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia using **SPL token multisig concepts**. You will learn to implement the **SPL token multisig** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
 **Path A Mint Authority Options:**
 
 - **Direct Transfer**: Transfer mint authority directly to Pool Signer PDA - suitable for development and testing ([see tutorial](/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority))
-- **Multisig Setup** (this tutorial): Create SPL token multisig with Pool Signer PDA as a member - recommended for production
+- **Multisig Setup** (this tutorial): Learn SPL token multisig concepts with Pool Signer PDA as a member - foundation for production systems
 
-This tutorial focuses on the production-ready multisig approach, implementing proper governance controls while maintaining autonomous cross-chain token transfers through BurnMint token pools.
+This tutorial focuses on demonstrating multisig architecture concepts, helping you understand governance controls while maintaining autonomous cross-chain token transfers through BurnMint token pools.
 
-<Aside type="note" title="Production-Ready Approach">
-  **Important**: This tutorial implements **production-ready multisig governance** for mint authority control. This
-  approach provides enhanced security through distributed control while enabling autonomous CCIP operations. For
-  development and testing environments, consider the simpler [Direct Mint Authority Transfer
-  tutorial](/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority). This tutorial uses M=1 for simplicity, but
-  production deployments should consider higher thresholds based on security requirements.
+<Aside type="note" title="Educational Multisig Tutorial">
+  **Important**: This tutorial demonstrates **SPL token multisig concepts** for learning purposes, using simplified
+  configurations (1-of-2 with single admin wallet). While the multisig architecture shown provides a foundation for
+  production systems, **real production deployments require additional considerations**: proper governance multisig
+  (like Squads), higher signature thresholds, and comprehensive security audits. For development and testing
+  environments, consider the simpler [Direct Mint Authority Transfer
+  tutorial](/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority).
 </Aside>
 
 <Aside type="caution" title="SPL Token Multisig Limitations">
@@ -147,8 +148,13 @@ The Pool Signer PDA remains the same in both cases.
 In this step, you will use Hardhat tasks to deploy an ERC20 token contract and a corresponding burn and mint token pool on Ethereum Sepolia. The tasks interact with the `BurnMintERC20` contract for token deployment and the `BurnMintTokenPool` contract for pool creation.
 
 <Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat ```
+  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): 
+  
+  ```bash 
+  pwd # Should show:
+  .../smart-contract-examples/ccip/cct/hardhat 
+  ```
+
 </Aside>
 
 ### Deploy ERC20 Token
@@ -320,7 +326,13 @@ npx hardhat acceptAdminRole \
 In this phase, you will create an SPL token, initialize the CCIP token pool, and complete CCIP registration BEFORE setting up the production multisig. This sequence is critical because the self-service registration requires you to hold the mint authority.
 
 <Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 1** (Solana Starter Kit directory): ```bash pwd # Should show: .../solana-starter-kit ```
+  **Switch to Terminal 1** (Solana Starter Kit directory): 
+  
+  ```bash 
+  pwd 
+  # Should show: .../solana-starter-kit 
+  ```
+
 </Aside>
 
 ### Create SPL Token
@@ -1489,7 +1501,8 @@ Test the complete cross-chain token transfer functionality in both directions us
 ### Transfer Direction 1: Solana → Ethereum
 
 <Aside type="note" title="Terminal Environment">
-  **Ensure you are in Terminal 1** (Solana Starter Kit directory) for Solana → Ethereum transfers.
+  **Stay in Terminal 1** (Solana Starter Kit directory) for all transfer directions. The Solana Starter Kit supports
+  both Solana → Ethereum and Ethereum → Solana transfers, so you can execute all commands from the same terminal.
 </Aside>
 
 #### Prepare for Testing
@@ -1720,6 +1733,11 @@ https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfm
 
 ### Transfer Direction 2: Ethereum → Solana
 
+<Aside type="note" title="Terminal Environment">
+  **Continue in Terminal 1** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
+  handles Ethereum → Solana transfers as well.
+</Aside>
+
 #### Execute Transfer
 
 <Tabs client:visible>
@@ -1899,10 +1917,10 @@ solana config get
 
 <Aside type="tip" title="Understanding This Demonstration">
 **What This Proves**: Successfully minting tokens through the multisig confirms that:
-- ✅ Mint authority transfer was successful
-- ✅ The multisig is properly configured (1-of-2 with Pool Signer PDA + Admin Wallet)
-- ✅ You retain administrative control through your Admin Wallet
-- ✅ The Pool Signer PDA can autonomously handle CCIP operations
+- Mint authority transfer was successful
+- The multisig is properly configured (1-of-2 with Pool Signer PDA + Admin Wallet)
+- You retain administrative control through your Admin Wallet
+- The Pool Signer PDA can autonomously handle CCIP operations
 
 **Key Insight**: Since you're one of the multisig signers, you can still perform administrative mints. The Pool Signer PDA handles CCIP burns/mints automatically, while you handle manual operations.
 

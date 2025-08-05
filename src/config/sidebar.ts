@@ -1672,12 +1672,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/svm/cross-chain-tokens",
               children: [
                 {
-                  title: "BurnMint: Direct Mint Authority Transfer (Development)",
+                  title: "BurnMint: Direct Mint Authority Transfer",
                   url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
                 },
                 {
-                  title: "BurnMint: Production Multisig Configuration",
-                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig",
+                  title: "BurnMint: SPL Token Multisig Tutorial",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial",
                 },
               ],
             },
