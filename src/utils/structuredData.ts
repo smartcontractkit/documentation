@@ -19,6 +19,19 @@ export type DifficultyLevel = "Beginner" | "Intermediate" | "Advanced"
 export type AudienceType = "Developer" | "Beginner" | "Professional"
 
 /**
+ * Version information interface for API reference pages
+ */
+export interface VersionInfo {
+  version: string
+  releaseDate?: string
+  isLatest: boolean
+  isDeprecated: boolean
+  availableVersions?: string[]
+  vmType?: string
+  canonicalUrl?: string // Override canonical URL for version management
+}
+
+/**
  * Base organization data for Chainlink
  * Schema.org Organization type
  */
@@ -657,22 +670,27 @@ export function generateHowTo(
 
 /**
  * Generate APIReference structured data
- * 100% Schema.org compliant
+ * 100% Schema.org compliant with optional version information
  */
 export function generateAPIReference(
   metadata: Metadata | undefined,
   title: string,
   canonicalURL: URL,
-  pathname: string
+  pathname: string,
+  versionInfo?: VersionInfo
 ): object {
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
   const supportedNetworks = getSupportedNetworks(pathname)
 
-  // Extract version from metadata or pathname
+  // Use provided version info or extract from metadata/pathname
   const versionMatch = pathname.match(/v(\d+\.\d+\.\d+)/)
-  const version = metadata?.version || (versionMatch ? versionMatch[1] : undefined)
+  const version = versionInfo?.version || metadata?.version || (versionMatch ? versionMatch[1] : undefined)
+  const releaseDate = versionInfo?.releaseDate
+
+  // Use version-specific canonical URL if provided (for proper version SEO)
+  const resolvedCanonicalUrl = versionInfo?.canonicalUrl || canonicalURL.toString()
 
   return {
     "@context": "https://schema.org",
@@ -680,11 +698,11 @@ export function generateAPIReference(
     name: metadata?.title || title,
     headline: metadata?.title || title, // Required for TechArticle
     description: metadata?.description,
-    url: canonicalURL.toString(),
+    url: resolvedCanonicalUrl,
     author: CHAINLINK_ORGANIZATION,
     publisher: CHAINLINK_PUBLISHER,
-    datePublished: metadata?.datePublished || new Date().toISOString(),
-    dateModified: metadata?.lastModified || new Date().toISOString(),
+    datePublished: releaseDate || metadata?.datePublished || new Date().toISOString(),
+    dateModified: releaseDate || metadata?.lastModified || new Date().toISOString(),
     inLanguage: "en-US",
     isAccessibleForFree: true,
     genre: "API Reference",
@@ -718,6 +736,31 @@ export function generateAPIReference(
         name: network,
         description: `${network} blockchain network`,
       })),
+    }),
+    // Add version-specific structured data if available
+    ...(versionInfo && {
+      version,
+      ...(versionInfo.availableVersions && {
+        isPartOf: {
+          "@type": "SoftwareApplication",
+          name: product ? `Chainlink ${product}` : "Chainlink Protocol",
+          versionList: versionInfo.availableVersions.map((v) => ({
+            "@type": "SoftwareVersion",
+            version: v,
+            releaseDate: v === versionInfo.version ? releaseDate : undefined,
+            status:
+              v === versionInfo.version && versionInfo.isLatest
+                ? "Latest"
+                : versionInfo.isDeprecated
+                  ? "Deprecated"
+                  : "Stable",
+          })),
+        },
+      }),
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": resolvedCanonicalUrl,
+      },
     }),
   }
 }
@@ -897,7 +940,8 @@ export function generateStructuredData(
   title: string,
   canonicalURL: URL,
   pathname: string,
-  estimatedTime?: string
+  estimatedTime?: string,
+  versionInfo?: VersionInfo
 ): object[]
 
 export function generateStructuredData(
@@ -912,7 +956,8 @@ export function generateStructuredData(
   title: string,
   canonicalURL: URL,
   pathname: string,
-  estimatedTime?: string
+  estimatedTime?: string,
+  versionInfo?: VersionInfo
 ): object[] {
   const structuredData: object[] = []
 
@@ -940,7 +985,7 @@ export function generateStructuredData(
         structuredData.push(generateHowTo(metadata, title, canonicalURL, pathname, estimatedTime))
         break
       case "APIReference":
-        structuredData.push(generateAPIReference(metadata, title, canonicalURL, pathname))
+        structuredData.push(generateAPIReference(metadata, title, canonicalURL, pathname, versionInfo))
         break
       case "TechArticle":
       default:

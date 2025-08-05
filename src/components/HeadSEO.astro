@@ -2,9 +2,10 @@
 import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import { extractVersionInfo } from "@components/VersionSelector/utils/extractVersionInfo"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
 import StructuredData from "./StructuredData.astro"
-import { generateStructuredData } from "~/utils/structuredData"
+import { generateStructuredData, type VersionInfo } from "~/utils/structuredData"
 
 export interface Props {
   metadata?: Metadata
@@ -37,21 +38,37 @@ if (metadata?.image) {
 const currentPage = new URL(Astro.request.url).pathname
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 
+// Extract version information for API reference pages
+let versionInfo: VersionInfo | undefined = undefined
+if (isApiReference && product && isVersioned) {
+  const extractedVersionInfo = extractVersionInfo(product, currentPage)
+  if (extractedVersionInfo) {
+    versionInfo = extractedVersionInfo.toVersionInfo()
+  }
+}
+
 // Generate structured data
 const canonicalURLObj = typeof canonicalURL === "string" ? new URL(canonicalURL) : canonicalURL
 
 // Use quickstart frontmatter if available, otherwise use regular metadata
 const structuredDataObjects = quickstartFrontmatter
   ? generateStructuredData(quickstartFrontmatter, formattedContentTitle, canonicalURLObj, currentPage)
-  : generateStructuredData(metadata, formattedContentTitle, canonicalURLObj, currentPage, metadata?.estimatedTime)
+  : generateStructuredData(
+      metadata,
+      formattedContentTitle,
+      canonicalURLObj,
+      currentPage,
+      metadata?.estimatedTime,
+      versionInfo
+    )
 ---
+
+<!-- Page Metadata -->{/* Conditional canonical: Let VersionSelectorHead handle it for versioned pages */}
+{!(isApiReference && product && isVersioned) && <link rel="canonical" href={canonicalURL} />}
 
 <!-- Version-specific SEO tags for API reference pages -->{
   isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
 }
-
-<!-- Page Metadata -->
-<link rel="canonical" href={canonicalURL} />
 
 <!-- Primary Meta Tags -->
 <meta name="description" content={description} />
