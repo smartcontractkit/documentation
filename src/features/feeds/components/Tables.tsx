@@ -227,11 +227,11 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
                 isAaveSVR(metadata)
                   ? "Aave Dedicated SVR Feed"
                   : isSharedSVR(metadata)
-                    ? "Shared SVR Feed"
+                    ? "Canonical SVR Feed"
                     : "SVR-enabled Feed"
               }
             >
-              {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "Shared SVR" : "SVR"}
+              {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "Canonical SVR" : "SVR"}
             </a>
           </div>
         )}
@@ -359,7 +359,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
               )}
               {isSharedSVR(metadata) && (
                 <div className={clsx(tableStyles.sharedCallout)}>
-                  <strong>🔗 Shared SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
+                  <strong>🔗 Canonical SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more
+                  about{" "}
                   <a href="/data-feeds/svr-feeds" target="_blank">
                     SVR-enabled Feeds
                   </a>
