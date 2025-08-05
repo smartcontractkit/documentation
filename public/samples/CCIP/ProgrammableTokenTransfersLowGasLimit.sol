@@ -19,7 +19,7 @@ contract ProgrammableTokenTransfersLowGasLimit is CCIPReceiver, OwnerIsCreator {
     using SafeERC20 for IERC20;
 
     // Custom errors to provide more descriptive revert messages.
-    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
+    error NotEnoughBalance(uint256 currentBalance, uint256 requiredBalance); // Used to make sure contract has enough token balance
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error DestinationChainNotAllowed(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error SourceChainNotAllowed(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the contract owner.
@@ -175,14 +175,32 @@ contract ProgrammableTokenTransfersLowGasLimit is CCIPReceiver, OwnerIsCreator {
         // Get the fee required to send the CCIP message
         uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
 
-        if (fees > s_linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+        uint256 requiredLinkBalance;
+        if (_token == address(s_linkToken)) {
+            // Required LINK Balance is the sum of fees and amount to transfer, if the token to transfer is LINK
+            requiredLinkBalance = fees + _amount;
+        } else {
+            requiredLinkBalance = fees;
+        }
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        s_linkToken.approve(address(router), fees);
+        uint256 linkBalance = s_linkToken.balanceOf(address(this));
 
-        // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
-        IERC20(_token).approve(address(router), _amount);
+        if (requiredLinkBalance > linkBalance) {
+            revert NotEnoughBalance(linkBalance, requiredLinkBalance);
+        }
+
+        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the requiredLinkBalance
+        s_linkToken.approve(address(router), requiredLinkBalance);
+
+        // If sending a token other than LINK, approve it separately
+        if (_token != address(s_linkToken)) {
+            uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+            if (_amount > tokenBalance) {
+                revert NotEnoughBalance(tokenBalance, _amount);
+            }
+            // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
+            IERC20(_token).approve(address(router), _amount);
+        }
 
         // Send the message through the router and store the returned message ID
         messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
