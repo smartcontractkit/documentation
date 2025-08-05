@@ -1192,13 +1192,31 @@ export const TestnetTable = ({
       )
     })
     .filter(
-      (pair) =>
-        !searchValue ||
-        pair.name?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.assetName?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.feedType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+      (metadata) =>
+        metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.proxyAddress
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.secondaryProxyAddress
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porType
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porAuditor
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porSource
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
