@@ -1032,6 +1032,33 @@ export const MainnetTable = ({
         selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
       )
     })
+    .filter(
+      (metadata) =>
+        metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.proxyAddress
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.secondaryProxyAddress
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porType
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porAuditor
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porSource
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+    )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
@@ -1097,7 +1124,7 @@ export const TestnetTable = ({
   lastAddr = 1000,
   addrPerPage = 8,
   currentPage = 1,
-  paginate = () => {
+  paginate = (_page: number) => {
     /* Default no-op function */
   },
   searchValue = "",
@@ -1192,31 +1219,13 @@ export const TestnetTable = ({
       )
     })
     .filter(
-      (metadata) =>
-        metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.proxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.secondaryProxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porType
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porAuditor
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porSource
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+      (pair) =>
+        !searchValue ||
+        pair.name?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.assetName?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
