@@ -668,7 +668,7 @@ export function generateAPIReference(
     programmingModel,
     targetPlatform,
     about: {
-      "@type": "SoftwareApplication",
+      "@type": "Thing",
       name: product ? `Chainlink ${product}` : "Chainlink Protocol",
       description: product
         ? `${product} - Decentralized oracle network for smart contracts`
