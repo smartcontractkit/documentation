@@ -9,19 +9,9 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { type ChainMetadata } from "~/features/data/api/index.ts"
+import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 
 const feedItems = monitoredFeeds.mainnet
-
-// Helper functions for SVR feed categorization
-const isSharedSVR = (metadata: ChainMetadata): boolean => {
-  // Check the path field for feeds ending with "-shared-svr"
-  return typeof metadata.path === "string" && /-shared-svr$/.test(metadata.path)
-}
-
-const isAaveSVR = (metadata: ChainMetadata): boolean => {
-  return !!metadata?.secondaryProxyAddress && !isSharedSVR(metadata)
-}
 const feedCategories = {
   low: (
     <span
