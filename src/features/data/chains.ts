@@ -257,7 +257,8 @@ export const CHAINS: Chain[] = [
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+        rddUrl:
+          "https://gist.githubusercontent.com/dev-dist/ce452c3a623a754998ebda361ef59448/raw/ed425feb9efc37c43f7994c51ea16e7a4d98ca73/feed-mainnet-svr-test-.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
         tags: ["smartData"],
