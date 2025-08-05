@@ -1,8 +1,8 @@
 import React from "react"
-import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config"
-import { clsx } from "~/lib"
+import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config.ts"
+import { clsx } from "~/lib/clsx/clsx.ts"
 import styles from "./category.module.css"
-import { isMatchedPath } from "../../Header/Nav/isMatchedPath"
+import { isMatchedPath } from "../../Header/Nav/isMatchedPath.ts"
 
 type ListItemProps = {
   item: ProductItem
@@ -51,7 +51,11 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
         {itemComponent}
       </button>
     ) : (
-      <a className={clsx(styles.link, "product-link")} href={href} ref={forwardedRef}>
+      <a
+        className={clsx(styles.link, "product-link")}
+        href={href.startsWith("http") ? href : `/${href}`}
+        ref={forwardedRef}
+      >
         {itemComponent}
       </a>
     )

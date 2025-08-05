@@ -1,28 +1,273 @@
 name: Test
 on: [push, pull_request]
 
+# Cancel any in-progress job or run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Set default permissions as restrictive as possible
+permissions:
+  actions: write    # Required for upload-artifact
+  contents: read    # Required for checkout and other read operations
+  checks: write     # Required for test results
+
 jobs:
-  test:
-    name: Test
+  # Setup job to install and cache dependencies
+  setup:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Only cache node_modules, let setup-node handle npm cache
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: cache-node-modules
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install Dependencies
-        run: npm i
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss, installing dependencies..."
+          npm ci --prefer-offline --no-audit
+
+  # Job 1: Check Solidity Compilation and Solhint
+  solidity:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+
+      # Cache Solidity compilation artifacts
+      - name: Restore compilation caches
+        id: cache-solidity
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            .test/artifacts
+            .test/cache
+            ~/.cache/hardhat
+            typechain-types
+          key: ${{ runner.os }}-solidity-${{ hashFiles('public/samples/**/*.sol', 'hardhat.config.cts') }}
+          restore-keys: |
+            ${{ runner.os }}-solidity-
+
       - name: Check Solidity Compilation
-        run: npm run sol:compile
+        run: |
+          echo "Running Solidity compilation with cache..."
+          npm run sol:compile
+
       - name: Check Solidity Solhint
-        run: npm run lint-solc
-      - name: Check Eslint
-        run: npm run lint
-      - name: Build
-        run: npm run build
-      # TODO: fix css files throwing 404 errors
-      - name: Check internal links
+        run: |
+          echo "Running Solhint..."
+          npm run lint-solc
+
+  # Job 2: Check ESLint
+  eslint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+      
+      - name: Check ESLint
+        run: |
+          echo "Running ESLint with cache..."
+          npm run lint -- --cache --cache-strategy content
+        
+      - name: Check Formatting
+        run: |
+          echo "Running Prettier with cache..."
+          npm run format:check -- --cache
+
+  # Job 3: Check Internal Links
+  linkcheck-internal:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+      
+      - name: Check Internal Links
         run: npm run linkcheck-internal
-      - name: Check types
-        run: npm run typecheck
+
+  # Job 4: Check Types
+  typecheck:
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Generate Astro types
+        run: |
+          echo "Generating Astro types..."
+          npm run astro sync
+      
+      - name: Check Types
+        run: |
+          echo "Running type check..."
+          npm run typecheck
+
+  # Job 5: Run Jest Tests
+  jest:
+    needs: [setup]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Restore node_modules from setup job
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Run Jest Tests
+        run: npm test -- --coverage
+      
+      - name: Upload Test Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-node-${{ matrix.node-version }}
+          path: coverage/
+          retention-days: 30

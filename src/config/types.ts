@@ -21,10 +21,61 @@ export type SupportedTechnology =
   | "MODE"
   | "ZKSYNC"
   | "SONEIUM"
+  | "ASTAR"
+  | "ZIRCUIT"
+  | "MANTLE"
+  | "RONIN"
+  | "SONIC"
+  | "BOB"
+  | "WORLD"
+  | "XLAYER"
+  | "BITLAYER"
+  | "INK"
+  | "HASHKEY"
+  | "CORN"
+  | "BOTANIX"
+  | "SEI"
+  | "CORE"
+  | "MONAD"
+  | "TREASURE"
+  | "LENS"
+  | "BERACHAIN"
+  | "UNICHAIN"
+  | "HYPEREVM"
+  | "MERLIN"
+  | "FRAXTAL"
+  | "HEDERA"
+  | "UNICHAIN"
+  | "HEMI"
+  | "APECHAIN"
+  | "CRONOS"
+  | "CRONOS_ZKEVM"
+  | "TRON"
+  | "0G"
+  | "MIND_NETWORK"
+  | "MEGAETH"
+  | "TAIKO"
+  | "PLUME"
+  | "ABSTRACT"
+  | "LISK"
+  | "ZORA"
+  | "MINT"
+  | "SUPERSEED"
+  | "GRAVITY"
+  | "ETHERLINK"
+  | "OPBNB"
+  | "JANCTION"
+  | "NEO_X"
+  | "POLYGON_KATANA"
+
+export type ChainType = "evm" | "solana" | "aptos"
+
+export type ChainFamily = "evm" | "mvm" | "svm"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
+  | "ETHEREUM_HOLESKY"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"
@@ -56,34 +107,137 @@ export type SupportedChain =
   | "ZKSYNC_MAINNET"
   | "ZKSYNC_SEPOLIA"
   | "POLYGON_ZKEVM_MAINNET"
-  | "POLYGON_ZKEVM_TESTNET"
+  | "POLYGON_ZKEVM_CARDONA"
   | "WEMIX_MAINNET"
   | "WEMIX_TESTNET"
   | "KROMA_MAINNET"
   | "KROMA_SEPOLIA"
   | "MODE_MAINNET"
   | "MODE_SEPOLIA"
+  | "SONEIUM_MAINNET"
   | "SONEIUM_MINATO"
+  | "ASTAR_MAINNET"
+  | "ASTAR_SHIBUYA"
+  | "ZIRCUIT_MAINNET"
+  | "ZIRCUIT_TESTNET"
+  | "MANTLE_MAINNET"
+  | "MANTLE_SEPOLIA"
+  | "RONIN_MAINNET"
+  | "RONIN_SAIGON"
+  | "BSQUARED_MAINNET"
+  | "BSQUARED_TESTNET"
+  | "SHIBARIUM_MAINNET"
+  | "SHIBARIUM_PUPPYNET"
+  | "SONIC_MAINNET"
+  | "SONIC_BLAZE"
+  | "BOB_MAINNET"
+  | "BOB_SEPOLIA"
+  | "WORLD_MAINNET"
+  | "WORLD_SEPOLIA"
+  | "XLAYER_MAINNET"
+  | "XLAYER_TESTNET"
+  | "BITLAYER_MAINNET"
+  | "BITLAYER_TESTNET"
+  | "INK_MAINNET"
+  | "INK_SEPOLIA"
+  | "HASHKEY_MAINNET"
+  | "HASHKEY_TESTNET"
+  | "CORN_MAINNET"
+  | "CORN_TESTNET"
+  | "BOTANIX_TESTNET"
+  | "SEI_MAINNET"
+  | "SEI_TESTNET"
+  | "CORE_TESTNET"
+  | "CORE_MAINNET"
+  | "MONAD_TESTNET"
+  | "TREASURE_MAINNET"
+  | "TREASURE_TOPAZ"
+  | "LENS_SEPOLIA"
+  | "LENS_MAINNET"
+  | "BERACHAIN_MAINNET"
+  | "BERACHAIN_BARTIO"
+  | "HYPEREVM_MAINNET"
+  | "HYPEREVM_TESTNET"
+  | "MERLIN_TESTNET"
+  | "MERLIN_MAINNET"
+  | "FRAXTAL_TESTNET"
+  | "FRAXTAL_MAINNET"
+  | "HEDERA_TESTNET"
+  | "HEDERA_MAINNET"
+  | "UNICHAIN_SEPOLIA"
+  | "UNICHAIN_MAINNET"
+  | "APECHAIN_CURTIS"
+  | "APECHAIN_MAINNET"
+  | "HEMI_MAINNET"
+  | "HEMI_SEPOLIA"
+  | "CRONOS_TESTNET"
+  | "CRONOS_MAINNET"
+  | "CRONOS_ZKEVM_TESTNET"
+  | "CRONOS_ZKEVM_MAINNET"
+  | "0G_GALILEO_TESTNET"
+  | "MIND_NETWORK_TESTNET"
+  | "MIND_NETWORK_MAINNET"
+  | "MEGAETH_TESTNET"
+  | "TAIKO_MAINNET"
+  | "TAIKO_HEKLA"
+  | "PLUME_MAINNET"
+  | "PLUME_SEPOLIA"
+  | "SOLANA_DEVNET"
+  | "SOLANA_MAINNET"
+  | "TRON_MAINNET"
+  | "TRON_SHASTA"
+  | "ABSTRACT_TESTNET"
+  | "ABSTRACT_MAINNET"
+  | "LISK_TESTNET"
+  | "LISK_MAINNET"
+  | "ZORA_TESTNET"
+  | "ZORA_MAINNET"
+  | "MINT_TESTNET"
+  | "MINT_MAINNET"
+  | "SUPERSEED_TESTNET"
+  | "SUPERSEED_MAINNET"
+  | "METAL_TESTNET"
+  | "METAL_MAINNET"
+  | "ROOTSTOCK_TESTNET"
+  | "ROOTSTOCK_MAINNET"
+  | "GRAVITY_MAINNET"
+  | "GRAVITY_TESTNET"
+  | "ETHERLINK_TESTNET"
+  | "ETHERLINK_MAINNET"
+  | "OPBNB_MAINNET"
+  | "OPBNB_TESTNET"
+  | "JANCTION_MAINNET"
+  | "JANCTION_TESTNET"
+  | "NEO_X_MAINNET"
+  | "NEO_X_TESTNET"
+  | "KATANA_TATARA"
+  | "KATANA_MAINNET"
+  | "BOTANIX_MAINNET"
+
+export type ExplorerInfo = {
+  baseUrl: string
+  queryParameters?: {
+    [key: string]: string
+  }
+}
+
+export type ChainInfo = {
+  chainId: number | string
+  title: string
+  explorer: ExplorerInfo
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+  }
+}
 
 export type Chains = Record<
   SupportedTechnology,
   {
     title: string
     icon: string
-    chains: Partial<
-      Record<
-        SupportedChain,
-        {
-          chainId: number
-          title: string
-          explorer: string
-          nativeCurrency: {
-            name: string
-            symbol: string
-            decimals: number
-          }
-        }
-      >
-    >
+    chainType: ChainType
+    chains: Partial<Record<SupportedChain, ChainInfo>>
   }
 >

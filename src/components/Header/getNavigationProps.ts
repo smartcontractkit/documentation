@@ -16,7 +16,13 @@ interface Page {
   children?: Page[]
 }
 
-const mapContents = (contents: any[]): Page[] => {
+interface SidebarContent {
+  title?: string
+  url?: string
+  children?: SidebarContent[]
+}
+
+const mapContents = (contents: SidebarContent[]): Page[] => {
   return contents.map((page) => {
     const label = page.title || "No Label"
     const href = page.url || "#"
@@ -151,13 +157,13 @@ const docsSections = [
         href: "/vrf",
         icon: vrfLogo.src,
         subProducts: getSubProducts(sidebar.vrf),
-        divider: true,
       },
       {
         label: "Automation",
         href: "/chainlink-automation",
         icon: automationLogo.src,
         subProducts: getSubProducts(sidebar.automation),
+        divider: true,
       },
       {
         label: "Chainlink Local",
@@ -193,7 +199,7 @@ const docsSections = [
       {
         label: "Developer Hub",
         icon: nodesLogo.src,
-        href: "https://dev.chain.link",
+        href: "https://dev.chain.Link",
         external: true,
       },
   ]

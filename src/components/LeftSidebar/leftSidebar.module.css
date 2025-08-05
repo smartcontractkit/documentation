@@ -1,0 +1,114 @@
+.nav {
+  padding-bottom: calc(2 * var(--doc-padding));
+  width: 100%;
+  height: calc(100vh - var(--space-16x)); /* Subtract header height */
+  position: sticky;
+  top: var(--space-16x); /* Header height */
+  overflow: hidden; /* Prevent nav overflow */
+}
+
+.navGroups {
+  padding: var(--doc-padding) var(--space-8x) var(--doc-padding) 0;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.navGroups::-webkit-scrollbar {
+  width: 6px;
+}
+
+.navGroups::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navGroups::-webkit-scrollbar-thumb {
+  background-color: var(--gray-300);
+  border-radius: 3px;
+}
+
+.navGroups li {
+  list-style: none;
+}
+
+.navGroups > li {
+  padding-top: var(--space-1x);
+}
+
+.navGroups > li:first-of-type {
+  padding-top: 0;
+}
+
+.navGroups > li[aria-hidden="true"] {
+  display: none;
+}
+
+.navGroupTitle {
+  margin-bottom: var(--space-2x);
+  margin-top: var(--space-1x);
+  color: var(--gray-900);
+  font-weight: 600;
+  line-height: 24px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  padding-left: var(--space-6x);
+}
+
+.navGroupTitle::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-right: 1.5px solid var(--gray-500);
+  border-bottom: 1.5px solid var(--gray-500);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  position: absolute;
+  top: calc(50% - 4px);
+  left: var(--space-2x);
+}
+
+details[open] > .navGroupTitle::before {
+  transform: rotate(45deg);
+  top: calc(50% - 5px);
+}
+
+details:hover .navGroupTitle::before {
+  border-color: var(--color-text-link);
+}
+
+.navGroupEntries {
+  margin-bottom: 0;
+  padding-left: var(--space-6x);
+}
+
+details {
+  margin-bottom: 0;
+  position: relative;
+}
+
+details > summary {
+  margin-bottom: var(--space-1x);
+}
+
+details summary {
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] > .navGroupTitle {
+  margin-bottom: var(--space-2x);
+}
+
+:global(:root.theme-dark) .navLink[aria-current="page"] {
+  color: hsla(var(--color-base-white), 100%, 1);
+}

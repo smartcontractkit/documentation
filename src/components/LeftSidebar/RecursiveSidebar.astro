@@ -1,0 +1,141 @@
+---
+import type { SectionContent } from "../../config"
+import styles from "./recursiveSidebar.module.css"
+
+/** Props for this recursive component */
+interface Props {
+  items: SectionContent[]
+  currentPage: string
+}
+
+const { items, currentPage } = Astro.props
+
+/** Removes leading/trailing slashes, plus anything after "?" */
+function removeSlashes(url: string): string {
+  let sanitizedUrl = url
+  sanitizedUrl = sanitizedUrl.split("?parent")[0]
+  if (sanitizedUrl.charAt(0) == "/") sanitizedUrl = sanitizedUrl.substr(1)
+  if (sanitizedUrl.charAt(sanitizedUrl.length - 1) == "/")
+    sanitizedUrl = sanitizedUrl.substr(0, sanitizedUrl.length - 1)
+  return sanitizedUrl
+}
+
+/** Checks if the URL is external (starts with http:// or https://) */
+function isExternalUrl(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://")
+}
+
+/** Builds the correct href based on whether the URL is internal or external */
+function buildHref(url: string): string {
+  if (isExternalUrl(url)) {
+    return url // Return external URLs as-is
+  }
+  return `${Astro.site?.pathname}${url}` // Prepend base path for internal URLs
+}
+
+/**
+ * Determines if a page matches the current page or should be highlighted.
+ * Handles:
+ * 1. Direct URL matches
+ * 2. URLs specified in highlightAsCurrent array
+ */
+function isCurrentPageMatch(sectionUrl: string, currentPage: string, highlightAsCurrent: string[] = []): boolean {
+  if (!sectionUrl) return false
+
+  // External URLs should never match the current page
+  if (isExternalUrl(sectionUrl)) return false
+
+  const normalizedSectionUrl = removeSlashes(sectionUrl)
+  const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
+
+  // Direct match only
+  if (normalizedCurrentPage === normalizedSectionUrl) {
+    return true
+  }
+
+  // Check highlightAsCurrent array
+  if (highlightAsCurrent?.some((url) => removeSlashes(url) === normalizedCurrentPage)) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Determines if a section should be expanded based on whether the current page
+ * is this item or any of its descendants
+ */
+function shouldExpandSection(item: SectionContent, currentPage: string): boolean {
+  const normalizedCurrentPage = removeSlashes(currentPage.slice(1))
+
+  // For external URLs, we don't need to expand the section
+  if (item.url && isExternalUrl(item.url)) {
+    return false
+  }
+
+  const normalizedItemUrl = item.url ? removeSlashes(item.url) : ""
+
+  // If this item has a URL, check if the current page is this item or a descendant
+  if (normalizedItemUrl) {
+    // Direct match
+    if (normalizedCurrentPage === normalizedItemUrl) {
+      return true
+    }
+
+    // Check if current page is a descendant
+    if (normalizedCurrentPage.startsWith(normalizedItemUrl + "/")) {
+      return true
+    }
+  }
+
+  // If this item has children, check if any child should be expanded
+  if (item.children) {
+    return item.children.some((child) => shouldExpandSection(child, currentPage))
+  }
+
+  return false
+}
+---
+
+<ul class={styles.list}>
+  {
+    items.map((item) => (
+      <li>
+        {item.children ? (
+          <details open={shouldExpandSection(item, currentPage)}>
+            <summary
+              class={`${styles.navLink} ${isCurrentPageMatch(item.url || "", currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
+            >
+              {item.url ? (
+                <a
+                  class={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}
+                  href={buildHref(item.url)}
+                  aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : "false"}
+                  target={isExternalUrl(item.url) ? "_blank" : undefined}
+                  rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
+                >
+                  {item.title}
+                </a>
+              ) : (
+                item.title
+              )}
+            </summary>
+            <ul class={`${styles.navGroupEntries} ${styles.nested}`}>
+              <Astro.self items={item.children} currentPage={currentPage} />
+            </ul>
+          </details>
+        ) : (
+          <a
+            class={`${styles.navLink} ${isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
+            href={buildHref(item.url)}
+            aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : "false"}
+            target={isExternalUrl(item.url) ? "_blank" : undefined}
+            rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
+          >
+            {item.title}
+          </a>
+        )}
+      </li>
+    ))
+  }
+</ul>

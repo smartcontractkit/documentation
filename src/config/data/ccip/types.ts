@@ -1,3 +1,5 @@
+import { ExplorerInfo, ChainType } from "~/config/types.ts"
+
 export type RateLimiterConfig = {
   capacity: string
   isEnabled: boolean
@@ -39,7 +41,7 @@ type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
   poolAddress?: string
-  poolType?: PoolType
+  poolType: PoolType
   name?: string
   symbol: string
   decimals: number
@@ -51,6 +53,29 @@ export type ChainConfig = {
   router: {
     address: string
     version: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  registryModule?: {
+    address: string
+    version: string
+  }
+  tokenAdminRegistry?: {
+    address: string
+    version: string
+  }
+  tokenPoolFactory?: {
+    address: string
+    version: string
+  }
+  feeQuoter?: string
+  rmnPermeable?: boolean
+  nativeToken?: {
+    name: string
+    symbol: string
+    logo: string
   }
 }
 
@@ -106,8 +131,14 @@ export type NetworkFees = {
 }
 
 export enum Environment {
+  // Standard environments for all VM types
   Mainnet = "mainnet",
   Testnet = "testnet",
+}
+
+export enum LaneFilter {
+  Inbound = "inbound",
+  Outbound = "outbound",
 }
 
 export enum Version {
@@ -122,4 +153,60 @@ export interface CCIPSendErrorEntry {
   }>
   errorSelector?: string
   description: string
+}
+
+export enum LaneStatus {
+  OPERATIONAL = "OPERATIONAL",
+  MAINTENANCE = "MAINTENANCE",
+  DEGRADED = "DEGRADED",
+  CURSED = "CURSED",
+}
+
+export interface Network {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  totalLanes: number
+  totalTokens: number
+  key: string
+  chainType: ChainType
+  tokenAdminRegistry?: string
+  explorer: ExplorerInfo
+  registryModule?: string
+  router?: {
+    address: string
+    version: string
+  }
+  feeTokens?: {
+    name: string
+    logo: string
+  }[]
+  nativeToken?: {
+    name: string
+    symbol: string
+    logo: string
+  }
+  armProxy: {
+    address: string
+    version: string
+  }
+  routerExplorerUrl: string
+  feeQuoter?: string
+  rmnPermeable: boolean
+}
+
+export type DecomConfig = {
+  [chainName: string]: {
+    chainSelector: string
+  }
+}
+
+export interface DecommissionedNetwork {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  explorer: ExplorerInfo
+  chainType: ChainType
 }

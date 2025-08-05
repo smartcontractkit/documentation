@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { clsx } from "../lib" // Ensure that the `clsx` function is correctly imported or implemented.
+import { clsx } from "~/lib/clsx/clsx.ts"
 
 export type Props = {
   text: string
@@ -60,6 +60,7 @@ const CopyContainer = ({ text, code, format, formatType, eventName, additionalIn
           text-overflow: ellipsis;
           word-break: break-all;
           margin-top: 0;
+          margin-bottom: 0 !important;
         }
 
         .copyBtn {

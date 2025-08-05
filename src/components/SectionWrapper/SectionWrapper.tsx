@@ -2,7 +2,7 @@
 import type { ComponentChildren, Key } from "preact"
 import { createElement } from "preact"
 import { useEffect, useRef } from "preact/hooks"
-import { updateTableOfContents } from "~/components/TableOfContents/tocStore"
+import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import GithubSlugger from "github-slugger"
 
 type Props = {

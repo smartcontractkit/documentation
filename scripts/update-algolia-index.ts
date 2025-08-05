@@ -12,13 +12,18 @@ if (!process.env.ALGOLIA_INDEX_NAME) throw Error("ALGOLIA_INDEX_NAME secret is m
 
 const client = algoliasearch(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_WRITE_API_KEY)
 
-let objects: { index?: any } = {}
+interface AlgoliaObject {
+  title: string
+  [key: string]: unknown
+}
+
+let objects: { index?: AlgoliaObject[] } = {}
 
 try {
   const data = JSON.parse(fs.readFileSync(process.cwd() + "/public/search-index.json", "utf-8"))
   objects = data
 } catch (err) {
-  throw Error(err)
+  throw new Error(err instanceof Error ? err.message : String(err))
 }
 
 const index = client.initIndex(process.env.ALGOLIA_INDEX_NAME)

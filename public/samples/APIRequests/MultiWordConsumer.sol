@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import {Chainlink, ChainlinkClient} from "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import {Chainlink, ChainlinkClient} from "@chainlink/contracts/src/v0.8/operatorforwarder/ChainlinkClient.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
@@ -53,7 +53,7 @@ contract MultiWordConsumer is ChainlinkClient, ConfirmedOwner {
     }
 
     /**
-     * @notice Request mutiple parameters from the oracle in a single transaction
+     * @notice Request multiple parameters from the oracle in a single transaction
      */
     function requestMultipleParameters() public {
         Chainlink.Request memory req = _buildChainlinkRequest(

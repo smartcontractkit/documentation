@@ -1,0 +1,164 @@
+---
+import CcipLayout from "~/layouts/CcipLayout.astro"
+import { getEntry, render } from "astro:content"
+import {
+  Environment,
+  Network,
+  getAllNetworkLanes,
+  getAllNetworks,
+  getSearchLanes,
+  getTokensOfChain,
+  Version,
+} from "~/config/data/ccip"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import ChainTable from "~/components/CCIP/Tables/ChainTable"
+import { getTokenIconUrl } from "~/features/utils"
+import ChainTokenGrid from "./ChainTokenGrid"
+
+interface Props {
+  environment: Environment
+  network: Network
+}
+const { environment, network } = Astro.props as Props
+
+const entry = await getEntry("ccip", "index")
+if (!entry) {
+  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+}
+
+const { headings } = await render(entry)
+
+const networks = getAllNetworks({ filter: environment })
+const allTokens = getTokensOfChain({ chain: network?.chain || "", filter: environment })
+  .map((token) => ({
+    id: token,
+    logo: getTokenIconUrl(token) || "",
+    totalNetworks: networks.length,
+  }))
+  .sort((a, b) => a.id.localeCompare(b.id))
+
+const lanes = await getAllNetworkLanes({
+  environment,
+  version: Version.V1_2_0,
+  chain: network?.chain || "",
+})
+
+const searchLanes = getSearchLanes({ environment })
+---
+
+<CcipLayout
+  frontmatter={{
+    title: `CCIP Supported Networks - ${network.name}`,
+    section: "ccip",
+  }}
+  {headings}
+  environment={environment}
+>
+  <ChainHero
+    chains={networks}
+    tokens={allTokens}
+    network={network}
+    environment={environment}
+    lanes={searchLanes}
+    client:load
+  />
+  <section class="layout">
+    <div>
+      <ChainTable
+        environment={environment}
+        lanes={lanes}
+        client:load
+        explorer={network.explorer}
+        sourceNetwork={{
+          name: network.name,
+          logo: network.logo,
+          key: network.chain,
+          chainType: network.chainType,
+        }}
+      />
+    </div>
+    <div>
+      <div class="ccip-heading">
+        <h2>Tokens <span>({allTokens.length})</span></h2>
+        {
+          network.chainType !== "solana" && (
+            <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">
+              <img
+                src="/assets/icons/plus.svg"
+                alt="Add"
+                style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
+              />
+              Add my token
+            </a>
+          )
+        }
+      </div>
+      <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
+    </div>
+  </section>
+</CcipLayout>
+
+<style scoped="false">
+  .layout {
+    --gutter: var(--space-10x);
+    --doc-padding: var(--space-4x);
+    margin: var(--space-8x) auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gutter);
+    padding: var(--doc-padding);
+  }
+
+  .ccip-heading {
+    display: flex;
+    padding-bottom: var(--space-4x);
+    margin-bottom: var(--space-6x);
+    justify-content: space-between;
+  }
+
+  .layout h2 {
+    color: var(--gray-900);
+    font-size: 22px;
+    line-height: var(--space-10x);
+    margin-bottom: 0px;
+  }
+
+  .layout h2 span {
+    color: var(--gray-400);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .networks__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2x);
+  }
+
+  @media (min-width: 50em) {
+    .layout {
+      max-width: 1500px;
+      padding: 0 var(--space-6x);
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      display: grid;
+      --doc-padding: var(--space-10x);
+      padding: var(--doc-padding) var(--space-8x);
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-24x);
+    }
+
+    .networks__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6x);
+      min-height: 420px;
+    }
+
+    .ccip-heading {
+      border-bottom: 1px solid var(--gray-200);
+    }
+  }
+</style>

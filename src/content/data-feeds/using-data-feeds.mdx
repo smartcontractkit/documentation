@@ -16,9 +16,9 @@ The code for reading Data Feeds is the same across all EVM-compatible blockchain
 
 - **RPC endpoint URL:** This determines which network that your smart contracts will run on. You can use a [node provider service](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) or point to your own [client](https://ethereum.org/en/developers/docs/nodes-and-clients/). If you are using a Web3 wallet, it is already configured with the RPC endpoints for several networks and the [Remix IDE](https://remix-project.org/) will automatically detect them for you.
 - **LINK token contract address:** The address for the LINK token contract is different for each network. You can find the full list of addresses for all supported networks on the [LINK Token Contracts](/resources/link-token-contracts?parent=dataFeeds) page.
-- **Feed contract address:** This determines which data feed your smart contract will read. Contract addresses are different for each network. You can find the availble contract addresses on the following pages:
+- **Feed contract address:** This determines which data feed your smart contract will read. Contract addresses are different for each network. You can find the available contract addresses on the following pages:
   - [Price Feed Addresses](/data-feeds/price-feeds/addresses)
-  - [Proof of Reserve Feed Addresses](/data-feeds/proof-of-reserve/addresses)
+  - [SmartData Addresses](/data-feeds/smartdata/addresses)
 
 The examples in this document indicate these variables, but you can modify the examples to work on different networks and read different feeds.
 
@@ -38,7 +38,7 @@ These code examples demonstrate how to deploy a consumer contract onchain that r
 
 ### Solidity
 
-To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
+To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
 <CodeSample src="samples/DataFeeds/DataConsumerV3.sol" />
 
@@ -75,19 +75,11 @@ This example uses [web3.js](https://web3js.readthedocs.io/) to retrieve feed dat
 This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 
 <CodeSample src="samples/DataFeeds/PriceConsumerV3.py" />
-<a href="https://repl.it/@DwightLyle/GetLatestPriceWeb3PY" class={button.primary}>
-  {"Run this Python example"}
-</a>
 
 ### Golang
 
 You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang). This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 To learn how to run the example, see the [README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/pricefeed-golang/README.md).
-
-<Aside type="note" title="New Feed Registry">
-  You can use the [Feed Registry](/data-feeds/feed-registry) to reference data feed assets by name or currency
-  identifier instead of by pair/proxy address.
-</Aside>
 
 ## Getting a different price denomination
 
@@ -106,5 +98,3 @@ If you require a denomination other than what is provided, you can use two data 
 ## More aggregator functions
 
 Getting the latest price is not the only data that aggregators can retrieve. You can also retrieve historical price data. To learn more, see the [Historical Price Data](/data-feeds/historical-data) page.
-
-To understand different use cases for Chainlink Price Feeds, refer to [Other Tutorials](/getting-started/other-tutorials).

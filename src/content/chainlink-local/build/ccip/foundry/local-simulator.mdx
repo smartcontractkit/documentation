@@ -87,13 +87,13 @@ To transfer tokens using CCIP, we need the following:
 
 The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
 
-1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#cciplocalsimulator) contract:
+1.  Initialize the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
 
     ```solidity
     ccipLocalSimulator = new CCIPLocalSimulator();
     ```
 
-1.  Invoke the [`configuration`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
+1.  Invoke the [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function to retrieve the configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
 
     ```solidity
     (
@@ -106,13 +106,13 @@ The `setUp()` function is invoked before each test case to reinitialize all the 
     ) = ccipLocalSimulator.configuration();
     ```
 
-         **Note**: The [`configuration`](/chainlink-local/api-reference/solidity/ccip/cciplocalsimulator#configuration) function also returns the destination router, WETH9, and CCIP-LnM contracts, but we are not using them in these test cases. Hence, there are commas in the return values.
+         **Note**: The [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function also returns the destination router, WETH9, and CCIP-LnM contracts, but we are not using them in these test cases. Hence, there are commas in the return values.
 
 1.  Initialize the sender and receiver accounts:
 
     ```solidity
     alice = makeAddr("alice")
-    Bob = makeAddr("Bob")
+    bob = makeAddr("bob")
     ```
 
 1.  All the variables are stored in the contract state for use in the test cases.
@@ -134,7 +134,7 @@ The `prepareScenario()` function is invoked at the beginning of each test case. 
    ccipBnMToken.approve(address(router), amountToSend);
    ```
 
-1. Create an array [Client.EVMTokenAmount](/ccip/api-reference/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send are returned by the prepareScenario() function for use in the calling test case:
+1. Create an array [Client.EVMTokenAmount](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send are returned by the prepareScenario() function for use in the calling test case:
 
    ```solidity
    tokensToSendDetails = new Client.EVMTokenAmount[](1);
@@ -173,7 +173,7 @@ Here are the steps involved in this test case:
    ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
    ```
 
-1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
 
    - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
    - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
@@ -235,7 +235,7 @@ Here are the steps involved in this test case:
    deal(alice, 5 ether);
    ```
 
-1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) structure. This step is the same as in the previous test case.
+1. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) structure. This step is the same as in the previous test case.
    The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
 
    ```solidity

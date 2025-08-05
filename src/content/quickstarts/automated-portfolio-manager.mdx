@@ -19,16 +19,25 @@ A live demo is available at https://automated-portfolio-manager.vercel.app.
 
 The example contract supports dynamic asset management using tokens that adhere to the ERC20 standard. For this demonstration, Mimic Tokens representing gold (mXAU), Wrapped Bitcoin (mWBTC), and Ethereum (mETH) are used as the underlying assets. These tokens are automatically bought or sold to mirror changes in crypto market sentiment and gold volatility (GVZ) to ensure the portfolio adjusts to evolving market conditions. This functionality demonstrates how blockchain and Chainlink technologies can be used to create a dynamic investment strategy that adapts to global financial movements in real time.
 
-**Note**: In a real-world use case, you can integrate the portfolio rebalancing mechanism with any DeFi protocol, such as a swapping mechanism or investments in ERC-4626 vaults. 
+**Note**: In a real-world use case, you can integrate the portfolio rebalancing mechanism with any DeFi protocol, such as a swapping mechanism or investments in ERC-4626 vaults.
 
 <ClickToZoom src="/images/quickstarts/automated-portfolio-manager/Automated_Portfolio_Manager_Concept.webp" />
 
 <Aside type="caution" title="Disclaimer">
-This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how to interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or error handling to make the usage of the product more clear. Do not use the code in this example in a production environment without completing your own audits and application of best practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in code.
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
 </Aside>
 
 <Aside type="caution" title="Disclaimer">
-The rebalancing strategy and logic outlined in this tutorial are solely for educational purposes and have not been backtested. This content is not meant to be financial advice and should not be interpreted as such. The example is intended to demonstrate the potential of Chainlink products. Users are strongly advised to perform their own due diligence before making any financial decisions.
+  The rebalancing strategy and logic outlined in this tutorial are solely for educational purposes and have not been
+  backtested. This content is not meant to be financial advice and should not be interpreted as such. The example is
+  intended to demonstrate the potential of Chainlink products. Users are strongly advised to perform their own due
+  diligence before making any financial decisions.
 </Aside>
 
 ## Table of Content
@@ -51,7 +60,7 @@ The rebalancing strategy and logic outlined in this tutorial are solely for educ
   ```
 
 - **RPC URL**: You need a Remote Procedure Call (RPC) URL for the Ethereum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Ethereum Sepolia project.
-- **Private key**: You need the private key of the account that will deploy and interact with the contracts. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+- **Private key**: You need the private key of the account that will deploy and interact with the contracts. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/configure/accounts/how-to-export-an-accounts-private-key).
 - **Testnet funds**: This guide requires testnet ETH, LINK, and USDC on Ethereum Sepolia.
   - Get Sepolia testnet ETH and LINK at [faucets.chain.link](https://faucets.chain.link/sepolia).
   - Get Sepolia testnet USDC at [faucet.circle.com](https://faucet.circle.com).
@@ -113,6 +122,7 @@ Run the following script to deploy your `OffchainDataFetcher` contract on Ethere
 ```bash
 forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify -vvvv
 ```
+
 </Accordion>
 
 <Accordion title="Add the contract to your Functions subscription and configure it" number={2}>
@@ -201,6 +211,18 @@ forge script script/DeployAutomatedPortfolioManager.s.sol --rpc-url $RPC_URL_SEP
    ```bash
    cd app
    ```
+
+1. Create a `.env.local` file in the `app` directory:
+   ```bash
+   cp .env.example .env.local
+   ```
+1. Open your `.env.local` file and add your Sepolia RPC URL:
+
+   ```
+   NEXT_PUBLIC_SEPOLIA_RPC_URL=your_sepolia_rpc_url
+   ```
+
+   You can use the same RPC URL you used for contract deployment or get one from providers like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
 
 1. Run the dApp locally:
 

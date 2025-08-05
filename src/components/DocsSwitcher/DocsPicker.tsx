@@ -1,12 +1,14 @@
 import { useState } from "react"
-import { isMatchedPath } from "../Header/Nav/isMatchedPath"
-import { getNavigationProps } from "../Header/getNavigationProps"
+import { isMatchedPath } from "../Header/Nav/isMatchedPath.ts"
+import { getNavigationProps } from "../Header/getNavigationProps.ts"
 import styles from "./docsPicker.module.css"
-import { clsx } from "../Header/Nav/utils"
+import { clsx } from "../Header/Nav/utils.ts"
 
 function DocsPicker({ pathname }: { pathname: string }) {
   const [productMenuOpen, setProductMenuOpen] = useState(false)
+
   const { subProductsNav } = getNavigationProps()
+
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
 
   const label = subProductTrigger?.label || "Resources"

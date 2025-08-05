@@ -1,0 +1,118 @@
+import { Aside } from "@components"
+
+## Prerequisites
+
+Before starting EVM to SVM tutorials, ensure you have:
+
+### Development Environment
+
+- Node.js v20 or higher. You can use the [nvm package](https://www.npmjs.com/package/nvm) to install and switch between Node.js versions. Once installed, you can verify the installation by running `node -v` in your terminal:
+
+  ```bash
+  node -v
+  ```
+
+  Example output:
+
+  ```bash
+  $ node -v
+  v23.11.0
+  ```
+
+- Git for cloning the repository.
+- [Yarn](https://yarnpkg.com/) for installing dependencies.
+- **Anchor and Solana CLI Tools**: Install Anchor and Solana CLI Tools following the [installation guide](https://www.anchor-lang.com/docs/installation). This requires Rust to be installed.
+
+### Wallets
+
+- An Ethereum wallet with a private key. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key.
+- A Solana wallet address if you are testing token transfers. If you don't have one, you can generate a new Solana keypair file using the Solana CLI:
+
+  ```bash
+  solana-keygen new --outfile ~/.config/solana/id.json
+  ```
+
+  Get your wallet address by running:
+
+  ```bash
+  solana address
+  ```
+
+  Example output:
+
+  ```bash
+  $ solana address
+  EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+  ```
+
+### RPC URLs
+
+Get an Ethereum RPC URL. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+### Setup Instructions
+
+- Clone the repository:
+  ```bash
+  git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+  ```
+- Checkout the `ccip` branch:
+
+  ```bash
+  git checkout ccip
+  ```
+
+- Install dependencies:
+
+  ```bash
+  yarn install
+  ```
+
+- Create a `.env` file in the project root based on the provided example:
+
+  ```
+  EVM_PRIVATE_KEY=your_private_key_here
+  EVM_RPC_URL=your_rpc_url_here
+  ```
+
+- Replace the `EVM_PRIVATE_KEY` and `EVM_RPC_URL` values with your own Ethereum private key and RPC URL that you obtained in the previous steps.
+
+### Tokens for Testing
+
+You'll need the following tokens on Ethereum Sepolia testnet to complete the tutorials:
+
+#### Required Tokens
+
+| Token    | Purpose                 | How to Obtain                                                                                                                                                               |
+| -------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ETH      | Transaction gas fees    | [Chainlink Faucet](https://faucets.chain.link/) or alternative sources such as the [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) |
+| LINK     | CCIP fees               | [Chainlink Faucet](https://faucets.chain.link/)                                                                                                                             |
+| CCIP-BnM | Token transfer examples | Use the command below                                                                                                                                                       |
+
+#### Getting CCIP-BnM Tokens
+
+Run the following command in your terminal to get 1 (18 decimals) CCIP-BnM token:
+
+```bash
+yarn evm:token:drip
+```
+
+You should see output similar to this:
+
+```text
+$ yarn evm:token:drip
+...
+[drip-tokens] [INFO] [1/1] Executing operation...
+[drip-tokens] [INFO] Dripping tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+[drip-tokens] [INFO] ✓ Operation 1/1 successful (Block: 8235790, Gas: 33845)
+[drip-tokens] [INFO] Batch operation completed: 1/1 successful
+[drip-tokens] [INFO] Final CCIP-BnM balance: 25.129
+[drip-tokens] [INFO] Total CCIP-BnM gained: 1.0
+[drip-tokens] [INFO]
+==== Results ====
+[drip-tokens] [INFO] Operations completed: 1/1
+[drip-tokens] [INFO] Initial Balance: 24.129 CCIP-BnM
+[drip-tokens] [INFO] Final Balance: 25.129 CCIP-BnM
+[drip-tokens] [INFO] Gained: 1.0 CCIP-BnM
+[drip-tokens] [INFO]
+🎉 Drip operations completed!
+```

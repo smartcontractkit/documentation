@@ -1,0 +1,66 @@
+.addressContainer {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  position: relative;
+  cursor: help;
+  background: rgba(255, 255, 255, 0.1);
+  isolation: isolate;
+  display: inline-block;
+}
+
+.addressContainer:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.addressText {
+  display: inline;
+  white-space: nowrap;
+}
+
+.addressContainer[data-tooltip] {
+  position: relative;
+}
+
+.addressContainer[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 0.85em;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.addressContainer[data-tooltip]::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.addressContainer[data-tooltip]:hover::before,
+.addressContainer[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}

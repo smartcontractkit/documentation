@@ -1,31 +1,31 @@
 import { CodeSample, CopyText, ClickToZoom } from "@components"
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
-This guide shows you how to read data from a Data Streams feed, verify the answer onchain, and store it.
+This guide shows you how to read data from a Data Streams stream, verify the answer onchain, and store it.
 
-This example uses the _[Streams Trade](/data-streams#streams-trade-using-data-streams-with-chainlink-automation) implementation_, with a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
+This example uses the _[Streams Trade](/data-streams/streams-trade) implementation_, with a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
 
-Note: To learn how to use the _[Streams Direct](/data-streams#streams-direct-using-data-streams-with-your-own-bot) implementation_ of Data Streams, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/streams-direct/streams-direct-api) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/streams-direct/streams-direct-ws) guide.
+Note: To learn how to use Data Streams with the REST API or WebSocket, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/api-go) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/ws-go) guide.
 
 <DataStreams section="asideDisclaimer" />
 
 ## Before you begin
 
-- Chainlink Data Streams is available in Early Access. [Contact
+- [Contact
   us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request
-  mainnet or testnet early access.
+  mainnet or testnet access.
 - If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract) so you are familiar with the tools that are necessary for this guide:
   - The [Solidity](https://soliditylang.org/) programming language
   - The [MetaMask](https://metamask.io) wallet
   - The [Remix](https://remix.ethereum.org/) development environment
-- This guide requires testnet ETH and LINK on _Arbitrum Sepolia_. Both are available at [faucets.chain.link/arbitrum-sepolia](https://faucets.chain.link/arbitrum-sepolia).
+- This guide requires testnet ETH and LINK on _Arbitrum Sepolia_. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
 - Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
 
 ## Tutorial
 
 ### Deploy the Chainlink Automation upkeep contract
 
-Deploy an upkeep contract that is enabled to retrieve data from Data Streams. For this example, you will read from the ETH/USD Data Streams feed on Arbitrum Sepolia. This feed ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for a complete list of available assets.
+Deploy an upkeep contract that is enabled to retrieve data from Data Streams. For this example, you will read from the ETH/USD stream on Arbitrum Sepolia. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Data Streams Crypto streams](/data-streams/crypto-streams) page for a complete list of available crypto assets.
 
 1. [Open the StreamsUpkeep.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataStreams/StreamsUpkeep.sol) contract in Remix.
 
@@ -59,7 +59,7 @@ Deploy an upkeep contract that is enabled to retrieve data from Data Streams. Fo
      style="max-width: 70%;"
    />
 
-1. In the **Contract** section, select the `StreamsUpkeep` contract and fill in the **verifier proxy address** corresponding to the Data Streams feed you want to read from. You can find this address on the [Data Streams Feed IDs](/data-streams/stream-ids) page. The verifier proxy address for the ETH/USD feed on Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>.
+1. In the **Contract** section, select the `StreamsUpkeep` contract and fill in the Arbitrum Sepolia **verifier proxy address**: <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find the verifier proxy addresses on the [Stream Addresses](/data-streams/crypto-streams) page.
 
    <ClickToZoom
      src="/images/data-streams/getting-started/deploy-upkeep.webp"
@@ -163,7 +163,7 @@ Open MetaMask and send 1 testnet LINK on _Arbitrum Sepolia_ to the upkeep contra
 
 ### Emit a log
 
-You can use your emitter contract to emit a log and initiate the upkeep, which retrieves data for the specified Data Streams feed ID.
+You can use your emitter contract to emit a log and initiate the upkeep, which retrieves data for the specified stream ID.
 
 1. In Remix, on the **Deploy & Run Transactions** tab, expand your emitter contract under the **Deployed Contracts** section.
 
@@ -181,11 +181,11 @@ After the transaction is complete, the log is emitted, and the upkeep is trigger
 
 ### View the retrieved price
 
-The retrieved price is stored in a storage variable and emitted in the logs.
+The retrieved price is stored in the `lastDecodedPrice` storage variable.
 
 1. On the **Deploy & Run Transactions** tab in Remix, expand the details of your upkeep contract in the **Deployed Contracts** section.
 
-1. Click the `last_retrieved_price` getter function to view the retrieved price. The answer on the ETH/USD feed uses 18 decimal places, so an answer of `248412100000000000` indicates an ETH/USD price of 2,484.121. Each Data Streams feed uses a different number of decimal places for answers. See the [Data Streams Feed IDs](/data-streams/stream-ids) page for more information.
+1. Click the `lastDecodedPrice` getter function to view the retrieved price. The answer on the ETH/USD stream uses 18 decimal places, so an answer of `248412100000000000` indicates an ETH/USD price of 2,484.121. Some streams may use a different number of decimal places for answers. See the [Data Streams Crypto streams](/data-streams/crypto-streams) page for more information.
 
    <ClickToZoom
      src="/images/data-streams/getting-started/deployed-upkeep-2.webp"
@@ -193,11 +193,9 @@ The retrieved price is stored in a storage variable and emitted in the logs.
      style="max-width: 70%;"
    />
 
-Alternatively, you can view the price emitted in the logs for your upkeep transaction. You can find the upkeep transaction hash at [Chainlink Automation UI](https://automation.chain.link/arbitrum-sepolia) and view the transaction logs in the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/).
-
 ## Examine the code
 
-The example code you deployed has all the interfaces and functions required to work with Chainlink Automation as an upkeep contract. It follows a similar flow to the trading flow in the [Architecture](/data-streams/architecture#example-trading-flow-using-streams-trade) documentation but uses a basic log emitter to simulate the client contract that would initiate a `StreamsLookup`. After the contract receives and verifies the report, `performUpkeep` stores the price from the report in the `last_retrieved_price` and emits a `PriceUpdate` log message with the price. You could modify this to use the data in a way that works for your specific use case and application.
+The example code you deployed has all the interfaces and functions required to work with Chainlink Automation as an upkeep contract. It follows a similar flow to the trading flow in the [Architecture](/data-streams/architecture#example-trading-flow-using-streams-trade) documentation but uses a basic log emitter to simulate the client contract that would initiate a `StreamsLookup`. After the contract receives and verifies the report, `performUpkeep` stores the price from the report in the `lastDecodedPrice` variable. You could modify this to use the data in a way that works for your specific use case and application.
 
 The code example uses `revert` with `StreamsLookup` to convey call information about what streams to retrieve. See the [EIP-3668 rationale](https://eips.ethereum.org/EIPS/eip-3668#rationale) for more information about how to use `revert` in this way.
 
@@ -205,7 +203,7 @@ The code example uses `revert` with `StreamsLookup` to convey call information a
 
 ### Initializing the upkeep contract
 
-When deploying the contract, you define the verifier proxy address for the Data Streams feed you want to read from. You can find this address on the [Data Streams Feed IDs](/data-streams/stream-ids) page. The verifier proxy address provides functions that are required for this example:
+When you deploy the contract, you define the verifier proxy address. You can find this address on the [Stream Addresses](/data-streams/crypto-streams) page. The `IVerifierProxy` interface provides the following functions:
 
 - The `s_feeManager` function to estimate the verification fees.
 - The `verify` function to verify the report onchain.
@@ -215,14 +213,22 @@ When deploying the contract, you define the verifier proxy address for the Data 
 After registering your upkeep contract with Chainlink Automation with a log trigger, you can emit a log with the `emitLog` function from your emitter contract.
 
     1. The emitted log triggers the Chainlink Automation upkeep.
-    2. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, returns the data in a callback (`checkCallback`), and runs the `performUpkeep` function on your registered upkeep contract.
-    2. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, returns the data in a callback (`checkCallback`), and runs the `performUpkeep` function on your registered upkeep contract.
-    3. The `performUpkeep` function calls the `verify` function on the verifier contract to verify the report onchain.
-    4. In this example, the `performUpkeep` function also stores the price from the report in the `last_retrieved_price` state variable and emits a `PriceUpdate` log message with the price.
+    1. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, returns the data in a callback (`checkCallback`), and runs the `performUpkeep` function on your registered upkeep contract.
+    1. The `performUpkeep` function calls the `verify` function on the verifier contract to verify the report onchain.
+    1. In this example, the `performUpkeep` function also stores the price from the report in the `lastDecodedPrice` state variable.
 
 ### Viewing the retrieved price
 
-The `last_retrieved_price` getter function of your upkeep contract retrieves the last price stored by the `performUpkeep` function in the `last_retrieved_price` state variable of the `StreamsUpkeep` contract. Additionally, the `performUpkeep` function emits a `PriceUpdate` log message with the retrieved price.
+The `lastDecodedPrice` getter function of your upkeep contract retrieves the last price stored by the `performUpkeep` function in the `lastDecodedPrice` state variable of the `StreamsUpkeep` contract.
+
+### Feed ID types and conversion
+
+Chainlink Data Streams uses different data types for feed IDs at different stages of the process:
+
+- The [`StreamsLookup` error](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol#L6) requires feed IDs to be provided as an array of `string`,
+- The decoded reports within the contract use `bytes32` types for feed IDs (see the [Report Schemas](/data-streams/reference/report-schema-v3) reference).
+
+If your application needs to compare the feed ID(s) sent in the `StreamsLookup` with those received in the report(s), you must convert between `string` and `bytes32` types.
 
 ### Optional: Handle Data Streams fetching errors offchain with `checkErrorHandler`
 

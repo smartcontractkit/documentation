@@ -1,46 +1,52 @@
 ---
-// Importing necessary modules and error data
-import {
-  erc20Errors,
-  routerErrors,
-  onrampErrors,
-  ratelimiterErrors,
-  priceRegistryErrors,
-  CCIPSendErrorEntry,
-} from "@config/data/ccip/"
+import type { CCIPSendErrorEntry } from "@config/data/ccip/types"
+import { errors } from "@config/data/ccip/data"
 import { CopyText } from "@components"
 import { marked } from "marked"
 
-// Get the prop type and determine which error data to use
-const { type } = Astro.props
-let errors: CCIPSendErrorEntry[] = []
-
-switch (type) {
-  case "erc20":
-    errors = erc20Errors
-    break
-  case "router":
-    errors = routerErrors
-    break
-  case "onramp":
-    errors = onrampErrors
-    break
-  case "rate-limiter":
-    errors = ratelimiterErrors
-    break
-  case "price-registry":
-    errors = priceRegistryErrors
-    break
-  default:
-    throw new Error(`Invalid error type: ${type}`)
+// Define error parameter type
+interface ErrorParameter {
+  type: string
+  name: string
 }
 
-// Determine if any errors have parameters or an error selector
-const hasParameters = errors.some((error) => error.parameters && error.parameters.length > 0)
-const hasErrorSelector = errors.some((error) => error.errorSelector)
+// Props with literal types - use the same keys as in data.ts
+interface Props {
+  type: "erc20" | "router" | "onramp" | "rate-limiter" | "price-registry" | "pool" | "burnMintERC20" | "feequoter"
+  version: "v1_5_0" | "v1_5_1" | "v1_6_0"
+}
 
-const renderMarkdown = (text: string) => {
-  return marked.parse(text)
+const { type, version } = Astro.props
+
+// Simple mapping to error keys
+const typeToErrorKey = {
+  erc20: "erc20CCIPSendErrors",
+  router: "routerCCIPSendErrors",
+  onramp: "onrampCCIPSendErrors",
+  "rate-limiter": "ratelimiterCCIPSendErrors",
+  "price-registry": "priceregistryCCIPSendErrors",
+  pool: "poolCCIPSendErrors",
+  burnMintERC20: "burnMintERC20CCIPSendErrors",
+  feequoter: "feequoterCCIPSendErrors",
+} as const
+
+const selectedErrors = errors[version]?.[typeToErrorKey[type]] || []
+
+if (!selectedErrors.length) {
+  throw new Error(`Invalid error type: ${type} or version: ${version}`)
+}
+
+// Fix for undefined parameters length
+const hasParameters = selectedErrors.some(
+  (error: CCIPSendErrorEntry) => Array.isArray(error.parameters) && error.parameters.length > 0
+)
+const hasErrorSelector = selectedErrors.some((error: CCIPSendErrorEntry) => error.errorSelector)
+
+// Fix for marked.parse return type
+const renderMarkdown = (text: string): string => {
+  const result = marked.parse(text)
+  // Handle potential Promise return
+  return typeof result === "string" ? result : ""
 }
 ---
 
@@ -49,40 +55,34 @@ const renderMarkdown = (text: string) => {
     <thead>
       <tr>
         <th>Error</th>
-        {hasParameters ? <th>Parameters</th> : null}
-        {hasErrorSelector ? <th>Error Selector</th> : null}
+        {hasParameters && <th>Parameters</th>}
+        {hasErrorSelector && <th>Error Selector</th>}
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
       {
-        errors.map((error) => {
-          const params = error.parameters || []
-          const paramsLength = params.length
-          return (
-            <tr>
-              <td>{error.error}</td>
-              {hasParameters ? (
-                <td>
-                  {paramsLength > 0
-                    ? params.map((param, index) => (
-                        <>
-                          <span>
-                            {param.type} {param.name}
-                          </span>
-                          {index < paramsLength - 1 ? <br /> : null}
-                        </>
-                      ))
-                    : "-"}
-                </td>
-              ) : null}
-              {hasErrorSelector ? (
-                <td>{error.errorSelector ? <CopyText text={error.errorSelector} code /> : "-"}</td>
-              ) : null}
-              <td class="description" set:html={renderMarkdown(error.description)} />
-            </tr>
-          )
-        })
+        selectedErrors.map((error: CCIPSendErrorEntry) => (
+          <tr>
+            <td>{error.error}</td>
+            {hasParameters && (
+              <td>
+                {Array.isArray(error.parameters) && error.parameters.length > 0
+                  ? error.parameters.map((param: ErrorParameter, i: number) => (
+                      <>
+                        <span>
+                          {param.type} {param.name}
+                        </span>
+                        {i < error.parameters!.length - 1 && <br />}
+                      </>
+                    ))
+                  : "-"}
+              </td>
+            )}
+            {hasErrorSelector && <td>{error.errorSelector ? <CopyText text={error.errorSelector} code /> : "-"}</td>}
+            <td class="description" set:html={renderMarkdown(error.description)} />
+          </tr>
+        ))
       }
     </tbody>
   </table>

@@ -1,11 +1,22 @@
-import React, { useState } from "react"
-import { NavBar as Nav } from "./Nav"
-import { Search } from "./aiSearch/Search"
-import { getNavigationProps } from "./getNavigationProps"
-import { useNavBar } from "./useNavBar/useNavBar"
+import React from "react"
+import { NavBar as Nav } from "./Nav/index.ts"
+import { useNavBar } from "./useNavBar/useNavBar.ts"
 import styles from "./scroll.module.css"
+import { ProductsNav, SubProductsNav } from "./Nav/config.tsx"
 
-export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
+export const NavBar = ({
+  productsNav,
+  subProductsNav,
+  path,
+  showSearch = true,
+  algoliaVars,
+}: {
+  productsNav: ProductsNav
+  subProductsNav: SubProductsNav
+  path: string
+  showSearch?: boolean
+  algoliaVars: { algoliaAppId: string; algoliaPublicApiKey: string }
+}) => {
   const navRef = React.useRef(null)
 
   const { setNavBarInfo } = useNavBar()
@@ -45,9 +56,11 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
   return (
     <span ref={navRef}>
       <Nav
-        {...getNavigationProps()}
+        productsNav={productsNav}
+        subProductsNav={subProductsNav}
         path={path}
-        searchTrigger={showSearch ? <Search /> : undefined}
+        showSearch={showSearch}
+        algoliaVars={algoliaVars}
         onHideChange={onHideChange}
         doubleNavbar={doubleNavbar()}
       />

@@ -1,6 +1,6 @@
 import styles from "./megaMenu.module.css"
 import { Fragment } from "react/jsx-runtime"
-import { megaMenuSections } from "../Desktop/MegaMenu"
+import { megaMenuSections } from "../Desktop/MegaMenu.tsx"
 import { useState } from "react"
 
 function MegaMenu() {
@@ -24,13 +24,13 @@ function MegaMenu() {
 
         <div className={styles.bottomLinks}>
           <div className="label">
-            <a href="/cross-chain" target="_blank" rel="noopener noreferrer">
+            <a href="https://dev.chain.link/resources" target="_blank" rel="noopener noreferrer">
               View all resources
             </a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
           <div className="label">
-            <a href="#" target="_blank" rel="noopener noreferrer">
+            <a href="https://dev.chain.link/products/general" target="_blank" rel="noopener noreferrer">
               Learn about Chainlink
             </a>
             <img src="/images/tabler_arrow-up.svg" alt="" />

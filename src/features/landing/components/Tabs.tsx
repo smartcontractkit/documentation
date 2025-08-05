@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import tabs from "./Tabs.module.css"
-import { ProductCard } from "./ProductCard"
-import { evmProducts } from "../data"
+import { ProductCard } from "./ProductCard.tsx"
+import { evmProducts } from "../data/index.ts"
 
 export const Tabs = () => {
   return (

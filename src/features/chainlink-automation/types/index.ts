@@ -1,11 +1,11 @@
-import { BigNumber } from "ethers"
-import { SupportedChain } from "@config"
+import { BigNumberish } from "ethers"
+import { SupportedChain } from "@config/index.ts"
 
-type StateStructOutput = [number, BigNumber, BigNumber, BigNumber] & {
+type StateStructOutput = [number, BigNumberish, BigNumberish, BigNumberish] & {
   nonce: number
-  ownerLinkBalance: BigNumber
-  expectedLinkBalance: BigNumber
-  numUpkeeps: BigNumber
+  ownerLinkBalance: BigNumberish
+  expectedLinkBalance: BigNumberish
+  numUpkeeps: BigNumberish
 }
 
 type ConfigStructOutput = [
@@ -16,13 +16,13 @@ type ConfigStructOutput = [
   number,
   number,
   number,
-  BigNumber,
+  BigNumberish,
   number,
   number | "Not Applicable",
-  BigNumber,
-  BigNumber,
+  BigNumberish,
+  BigNumberish,
   string,
-  string
+  string,
 ] & {
   paymentPremiumPPB: number
   flatFeeMicroLink: number
@@ -31,11 +31,11 @@ type ConfigStructOutput = [
   checkGasLimit: number
   stalenessSeconds: number
   gasCeilingMultiplier: number
-  minUpkeepSpend: BigNumber
+  minUpkeepSpend: BigNumberish
   maxPerformGas: number
   maxPerformDataSize: number | "Not Applicable"
-  fallbackGasPrice: BigNumber
-  fallbackLinkPrice: BigNumber
+  fallbackGasPrice: BigNumberish
+  fallbackLinkPrice: BigNumberish
   transcoder: string
   registrar: string
 }

@@ -1,20 +1,71 @@
-import { Sections } from "../content/config"
-import chainlinkLocalAPIReference from "./sidebar/chainlink-local/api-reference.json"
+/**
+ * Configuration file for the documentation sidebar navigation structure.
+ * This file defines the entire navigation hierarchy for the documentation website.
+ */
+
+import { Sections } from "../content.config.ts"
+import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
+import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
+import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
+import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
+import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
+import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
+import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
+
+/**
+ * Represents a single item in the sidebar navigation.
+ * Can be either a leaf node (just title and URL) or a parent node with children.
+ *
+ * @property title - Display text for the navigation item
+ * @property url - Target URL for the item (can be undefined for section headers)
+ * @property highlightAsCurrent - Optional array of URLs that should highlight this item as current
+ * @property children - Optional array of nested navigation items
+ * @property isCollapsible - Optional flag to control if a section can be collapsed
+ */
 export type SectionContent = {
   title: string
   url: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
+  isCollapsible?: boolean
 }
-type SectionEntry = {
+
+/**
+ * Represents a top-level section in the sidebar.
+ * Each section contains a title and an array of navigation items.
+ */
+export type SectionEntry = {
   section: string
   contents: SectionContent[]
+  parentSection?: string
 }
 
-const chainlinkLocalAPIReferenceTyped = chainlinkLocalAPIReference as SectionEntry
-
+/**
+ * Main sidebar configuration object.
+ * Maps each section identifier to its content structure.
+ *
+ * Structure:
+ * {
+ *   dataFeeds: [
+ *     {
+ *       section: "Section Title",
+ *       contents: [
+ *         { title: "Page Title", url: "page-url" },
+ *         {
+ *           title: "Parent Page",
+ *           url: "parent-url",
+ *           children: [
+ *             { title: "Child Page", url: "child-url" }
+ *           ]
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * }
+ */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
-  dataFeeds: [
+  [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
       contents: [
@@ -35,8 +86,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds",
         },
         {
-          title: "Proof of Reserve Feeds",
-          url: "data-feeds/proof-of-reserve",
+          title: "SmartData",
+          url: "data-feeds/smartdata",
+          children: [
+            {
+              title: "Multiple-Variable Response (MVR) Feeds",
+              url: "data-feeds/mvr-feeds",
+            },
+          ],
+        },
+        {
+          title: "Smart Value Recapture (SVR) Feeds",
+          url: "data-feeds/svr-feeds",
         },
         {
           title: "Rate and Volatility Feeds",
@@ -45,6 +106,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "L2 Sequencer Uptime Feeds",
           url: "data-feeds/l2-sequencer-feeds",
+        },
+        {
+          title: "Flags Contract Registry",
+          url: "data-feeds/contract-registry",
+        },
+        {
+          title: "Release Notes",
+          url: "https://dev.chain.link/changelog?product=Data+Feeds",
         },
       ],
     },
@@ -56,8 +125,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "Proof of Reserve Addresses",
-          url: "data-feeds/proof-of-reserve/addresses",
+          title: "SmartData Feed Addresses",
+          url: "data-feeds/smartdata/addresses",
         },
         {
           title: "Rate and Volatility Feed Addresses",
@@ -77,16 +146,39 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/using-data-feeds",
         },
         {
+          title: "Using MVR Feeds",
+          url: "data-feeds/mvr-feeds/guides",
+          children: [
+            {
+              title: "Using MVR Feeds on EVM Chains (Solidity)",
+              url: "data-feeds/mvr-feeds/guides/evm-solidity",
+            },
+            {
+              title: "Using MVR Feeds with ethers.js (JS)",
+              url: "data-feeds/mvr-feeds/guides/ethersjs",
+            },
+            {
+              title: "Using MVR Feeds with Viem (TS)",
+              url: "data-feeds/mvr-feeds/guides/viem",
+            },
+          ],
+        },
+        {
           title: "Getting Historical Data",
           url: "data-feeds/historical-data",
         },
         {
-          title: "Using Feed Registry",
-          url: "data-feeds/feed-registry",
-        },
-        {
           title: "Using ENS with Data Feeds",
           url: "data-feeds/ens",
+        },
+      ],
+    },
+    {
+      section: "Aptos Guides",
+      contents: [
+        {
+          title: "Data Feeds on Aptos",
+          url: "data-feeds/aptos",
         },
       ],
     },
@@ -135,6 +227,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Tron Guides",
+      contents: [
+        {
+          title: "Data Feeds on Tron",
+          url: "data-feeds/tron",
+        },
+      ],
+    },
+    {
       section: "API Reference",
       contents: [
         {
@@ -142,8 +243,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/api-reference",
         },
         {
-          title: "Feed Registry API Reference",
-          url: "data-feeds/feed-registry/feed-registry-functions",
+          title: "MVR Feeds API Reference",
+          url: "data-feeds/mvr-feeds/api-reference",
         },
       ],
     },
@@ -213,7 +314,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  dataStreams: [
+  [SIDEBAR_SECTIONS.DATA_STREAMS]: [
     {
       section: "Chainlink Data Streams",
       contents: [
@@ -222,17 +323,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
-          title: "Getting Started",
-          url: "data-streams/getting-started",
-          highlightAsCurrent: ["data-streams/getting-started-hardhat"],
-        },
-        {
-          title: "Data Streams Feeds",
-          url: "data-streams/stream-ids",
-        },
-        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
+        },
+        {
+          title: "Supported Networks",
+          url: "data-streams/supported-networks",
         },
         {
           title: "Billing",
@@ -240,40 +336,76 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "data-streams/release-notes",
+          url: "https://dev.chain.link/changelog?product=Data+Streams",
         },
       ],
     },
     {
-      section: "Guides",
+      section: "Streams & Report Schemas",
       contents: [
         {
-          title: "Streams Trade",
-          url: "data-streams/tutorials/streams-trade/",
+          title: "Cryptocurrency Streams",
+          url: "data-streams/crypto-streams",
           children: [
             {
-              title: "Handle StreamsLookup errors",
-              url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+              title: "Report Schema v3 (Crypto)",
+              url: "data-streams/reference/report-schema-v3",
+            },
+            {
+              title: "Report Schema v3 (DEX State Price)",
+              url: "data-streams/reference/report-schema-v3-dex",
             },
           ],
         },
         {
-          title: "Streams Direct SDK",
-          url: "data-streams/tutorials/streams-direct/",
+          title: "Real World Asset (RWA) Streams",
+          url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Fetch and decode reports",
-              url: "data-streams/tutorials/streams-direct/streams-direct-api",
-            },
-            {
-              title: "Stream and decode reports (WebSocket)",
-              url: "data-streams/tutorials/streams-direct/streams-direct-ws",
-            },
-            {
-              title: "Verify report data onchain",
-              url: "data-streams/tutorials/streams-direct/streams-direct-onchain-verification",
+              title: "Report Schema v8",
+              url: "data-streams/reference/report-schema-v8",
             },
           ],
+        },
+        {
+          title: "Market Hours",
+          url: "data-streams/market-hours",
+        },
+      ],
+    },
+    {
+      section: "Tutorials",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/tutorials/overview",
+        },
+        {
+          title: "Fetch and decode reports",
+          url: "data-streams/tutorials/api-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/api-rust",
+            "data-streams/tutorials/api-rwa-go",
+            "data-streams/tutorials/api-rwa-rust",
+          ],
+        },
+        {
+          title: "Stream and decode reports (WebSocket)",
+          url: "data-streams/tutorials/ws-go",
+          highlightAsCurrent: [
+            "data-streams/tutorials/ws-rust",
+            "data-streams/tutorials/ws-rwa-go",
+            "data-streams/tutorials/ws-rwa-rust",
+          ],
+        },
+        {
+          title: "Verify report data (EVM)",
+          url: "data-streams/tutorials/evm-onchain-report-verification",
+        },
+        {
+          title: "Verify report data (Solana)",
+          url: "data-streams/tutorials/solana-onchain-report-verification",
+          highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
         },
       ],
     },
@@ -288,40 +420,79 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
+        {
+          title: "DEX State Price Streams",
+          url: "data-streams/concepts/dex-state-price-streams",
+        },
       ],
     },
     {
       section: "Reference",
       contents: [
         {
-          title: "Report Schema",
-          url: "data-streams/reference/report-schema",
+          title: "Overview",
+          url: "data-streams/reference/overview",
         },
         {
-          title: "Streams Trade Interface",
-          url: "data-streams/reference/streams-trade-interface",
+          title: "REST API",
+          url: "data-streams/reference/interface-api",
         },
         {
-          title: "Streams Direct Interface",
-          url: "data-streams/reference/streams-direct",
+          title: "WebSocket",
+          url: "data-streams/reference/interface-ws",
+        },
+        {
+          title: "Authentication",
+          url: "data-streams/reference/authentication",
           children: [
             {
-              title: "REST API",
-              url: "data-streams/reference/streams-direct/streams-direct-interface-api",
+              title: "JavaScript examples",
+              url: "data-streams/reference/authentication/javascript-examples",
             },
             {
-              title: "WebSocket",
-              url: "data-streams/reference/streams-direct/streams-direct-interface-ws",
+              title: "TypeScript examples",
+              url: "data-streams/reference/authentication/typescript-examples",
             },
             {
-              title: "SDK Reference",
-              url: "data-streams/reference/streams-direct/streams-direct-go-sdk",
+              title: "Go examples",
+              url: "data-streams/reference/authentication/go-examples",
             },
             {
-              title: "Onchain report data verification",
-              url: "data-streams/reference/streams-direct/streams-direct-onchain-verification",
+              title: "Rust examples",
+              url: "data-streams/reference/authentication/rust-examples",
             },
           ],
+        },
+        {
+          title: "SDK References",
+          url: "data-streams/reference/go-sdk",
+          highlightAsCurrent: ["data-streams/reference/rust-sdk"],
+        },
+        {
+          title: "Onchain report verification (EVM chains)",
+          url: "data-streams/reference/onchain-verification",
+        },
+      ],
+    },
+    {
+      section: "Streams Trade",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/streams-trade",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/tutorials/streams-trade/getting-started",
+          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
+        },
+        {
+          title: "Handle StreamsLookup errors",
+          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
+        },
+        {
+          title: "Reference (Interfaces)",
+          url: "data-streams/streams-trade/interfaces",
         },
       ],
     },
@@ -397,7 +568,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  automation: [
+  [SIDEBAR_SECTIONS.AUTOMATION]: [
     {
       section: "Chainlink Automation",
       contents: [
@@ -426,12 +597,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview/service-limits",
         },
         {
-          title: "Release Notes",
-          url: "chainlink-automation/overview/automation-release-notes",
-        },
-        {
           title: "Migrate to Automation v2.1",
           url: "chainlink-automation/guides/migrate-to-v2",
+        },
+        {
+          title: "Release Notes",
+          url: "https://dev.chain.link/changelog?product=Automation",
         },
       ],
     },
@@ -580,7 +751,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  chainlinkFunctions: [
+  [SIDEBAR_SECTIONS.CHAINLINK_FUNCTIONS]: [
     {
       section: "Chainlink Functions",
       contents: [
@@ -610,7 +781,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "chainlink-functions/resources/release-notes",
+          url: "https://dev.chain.link/changelog?product=Functions",
         },
       ],
     },
@@ -771,7 +942,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  vrf: [
+  [SIDEBAR_SECTIONS.VRF]: [
     {
       section: "Chainlink VRF v2.5",
       contents: [
@@ -809,7 +980,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "vrf/release-notes",
+          url: "https://dev.chain.link/changelog?product=VRF",
         },
       ],
     },
@@ -930,35 +1101,55 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  ccip: [
+  [SIDEBAR_SECTIONS.CCIP]: [
     {
       section: "Chainlink CCIP",
       contents: [
         {
-          title: "Overview",
+          title: "About CCIP",
           url: "ccip",
         },
         {
           title: "Getting Started",
           url: "ccip/getting-started",
+          children: [
+            {
+              title: "EVM",
+              url: "ccip/getting-started/evm",
+            },
+          ],
         },
         {
-          title: "Supported Networks",
-          url: "ccip/supported-networks",
+          title: "CCIP Directory",
+          url: "ccip/directory",
           children: [
             {
               title: "Mainnet",
-              url: "ccip/supported-networks/v1_2_0/mainnet",
+              url: "ccip/directory/mainnet",
             },
             {
               title: "Testnet",
-              url: "ccip/supported-networks/v1_2_0/testnet",
+              url: "ccip/directory/testnet",
             },
           ],
         },
         {
           title: "Service Limits",
           url: "ccip/service-limits",
+          children: [
+            {
+              title: "EVM",
+              url: "ccip/service-limits/evm",
+            },
+            {
+              title: "SVM",
+              url: "ccip/service-limits/svm",
+            },
+            {
+              title: "Network Specific",
+              url: "ccip/service-limits/network-specific-limits",
+            },
+          ],
         },
         {
           title: "Service Responsibility",
@@ -966,7 +1157,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Execution Latency",
-          url: "ccip/concepts/ccip-execution-latency",
+          url: "ccip/ccip-execution-latency",
         },
         {
           title: "Billing",
@@ -974,66 +1165,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "ccip/release-notes",
-        },
-      ],
-    },
-    {
-      section: "Guides",
-      contents: [
-        {
-          title: "Transfer Tokens",
-          url: "ccip/tutorials/cross-chain-tokens",
-        },
-        {
-          title: "Transfer Tokens with Data",
-          url: "ccip/tutorials/programmable-token-transfers",
-        },
-        {
-          title: "Transfer Tokens with Data - Defensive Example",
-          url: "ccip/tutorials/programmable-token-transfers-defensive",
-        },
-        {
-          title: "Test CCIP Locally",
-          url: "ccip/tutorials/test-ccip-locally",
-        },
-        {
-          title: "Offchain",
-          url: "ccip/tutorials/offchain",
-          children: [
-            {
-              title: "Transfer Tokens between EOAs",
-              url: "ccip/tutorials/cross-chain-tokens-from-eoa",
-            },
-            {
-              title: "Checking CCIP Message Status",
-              url: "ccip/tutorials/get-status-offchain",
-            },
-          ],
-        },
-        {
-          title: "Transfer USDC with Data",
-          url: "ccip/tutorials/usdc",
-        },
-        {
-          title: "Send Arbitrary Data",
-          url: "ccip/tutorials/send-arbitrary-data",
-        },
-        {
-          title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
-          url: "ccip/tutorials/send-arbitrary-data-receipt-acknowledgment",
-        },
-        {
-          title: "Manual Execution",
-          url: "ccip/tutorials/manual-execution",
-        },
-        {
-          title: "Optimizing Gas Limit Settings in CCIP Messages",
-          url: "ccip/tutorials/ccipreceive-gaslimit",
-        },
-        {
-          title: "Acquire Test Tokens",
-          url: "ccip/test-tokens",
+          url: "https://dev.chain.link/changelog?product=CCIP",
         },
       ],
     },
@@ -1041,12 +1173,136 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Conceptual Overview",
-          url: "ccip/concepts",
+          title: "Architecture",
+          url: "ccip/concepts/architecture",
+          children: [
+            {
+              title: "Overview",
+              url: "ccip/concepts/architecture/overview",
+            },
+            {
+              title: "Key Concepts",
+              url: "ccip/concepts/architecture/key-concepts",
+            },
+            {
+              title: "Onchain Architecture",
+              url: "ccip/concepts/architecture/onchain",
+              children: [
+                {
+                  title: "EVM",
+                  url: "ccip/concepts/architecture/onchain/evm",
+                  children: [
+                    {
+                      title: "Overview",
+                      url: "ccip/concepts/architecture/onchain/evm/overview",
+                    },
+                    {
+                      title: "Components",
+                      url: "ccip/concepts/architecture/onchain/evm/components",
+                    },
+                    {
+                      title: "Upgradability",
+                      url: "ccip/concepts/architecture/onchain/evm/upgradability",
+                    },
+                  ],
+                },
+                {
+                  title: "SVM",
+                  url: "ccip/concepts/architecture/onchain/svm",
+                  children: [
+                    {
+                      title: "Overview",
+                      url: "ccip/concepts/architecture/onchain/svm/overview",
+                    },
+                    {
+                      title: "Components",
+                      url: "ccip/concepts/architecture/onchain/svm/components",
+                    },
+                    {
+                      title: "Upgradability",
+                      url: "ccip/concepts/architecture/onchain/svm/upgradability",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              title: "Offchain Architecture",
+              url: "ccip/concepts/architecture/offchain",
+              children: [
+                {
+                  title: "Overview",
+                  url: "ccip/concepts/architecture/offchain/overview",
+                },
+                {
+                  title: "Risk Management Network",
+                  url: "ccip/concepts/architecture/offchain/risk-management-network",
+                },
+              ],
+            },
+          ],
         },
         {
-          title: "Architecture",
-          url: "ccip/architecture",
+          title: "Cross-Chain Token (CCT) Standard",
+          url: "ccip/concepts/cross-chain-token",
+          children: [
+            {
+              title: "Overview",
+              url: "ccip/concepts/cross-chain-token/overview",
+            },
+            {
+              title: "EVM",
+              url: "ccip/concepts/cross-chain-token/evm",
+              children: [
+                {
+                  title: "Tokens",
+                  url: "ccip/concepts/cross-chain-token/evm/tokens",
+                },
+                {
+                  title: "Token Pools",
+                  url: "ccip/concepts/cross-chain-token/evm/token-pools",
+                },
+                {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/evm/architecture",
+                },
+                {
+                  title: "Registration and Administration",
+                  url: "ccip/concepts/cross-chain-token/evm/registration-administration",
+                },
+                {
+                  title: "Upgradability",
+                  url: "ccip/concepts/cross-chain-token/evm/upgradability",
+                },
+              ],
+            },
+            {
+              title: "SVM",
+              url: "ccip/concepts/cross-chain-token/svm",
+              children: [
+                {
+                  title: "Tokens",
+                  url: "ccip/concepts/cross-chain-token/svm/tokens",
+                },
+                {
+                  title: "Token Pools",
+                  url: "ccip/concepts/cross-chain-token/svm/token-pools",
+                },
+                {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                },
+                {
+                  title: "Registration and Administration",
+                  url: "ccip/concepts/cross-chain-token/svm/registration-administration",
+                },
+                {
+                  title: "Upgradability",
+                  url: "ccip/concepts/cross-chain-token/svm/upgradability",
+                },
+              ],
+            },
+          ],
         },
         {
           title: "Manual execution",
@@ -1054,107 +1310,259 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Best Practices",
-          url: "ccip/best-practices",
+          url: "ccip/concepts/best-practices",
+          children: [
+            {
+              title: "EVM",
+              url: "ccip/concepts/best-practices/evm",
+            },
+            {
+              title: "SVM",
+              url: "ccip/concepts/best-practices/svm",
+            },
+          ],
         },
       ],
     },
     {
-      section: "API Reference",
+      section: "Tutorials",
       contents: [
         {
-          title: "IRouterClient",
-          url: "ccip/api-reference/i-router-client",
+          title: "EVM",
+          url: "ccip/tutorials/evm",
+          children: [
+            {
+              title: "Transfer Tokens",
+              url: "ccip/tutorials/evm/transfer-tokens-from-contract",
+            },
+            {
+              title: "Transfer Tokens with Data",
+              url: "ccip/tutorials/evm/programmable-token-transfers",
+            },
+            {
+              title: "Transfer Tokens with Data - Defensive Example",
+              url: "ccip/tutorials/evm/programmable-token-transfers-defensive",
+            },
+            {
+              title: "Using the Token Manager",
+              url: "ccip/tutorials/evm/token-manager",
+            },
+            {
+              title: "Using the CCIP JavaScript SDK",
+              url: "ccip/ccip-javascript-sdk",
+            },
+            {
+              title: "Offchain",
+              url: "ccip/tutorials/evm/offchain",
+              children: [
+                {
+                  title: "Transfer Tokens between EOAs",
+                  url: "ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
+                },
+                {
+                  title: "Checking CCIP Message Status",
+                  url: "ccip/tutorials/evm/offchain/get-status-offchain",
+                },
+                {
+                  title: "Using CCIP CLI",
+                  url: "ccip/tutorials/evm/offchain/ccip-tools",
+                  children: [
+                    {
+                      title: "Transfer Tokens between EOAs",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
+                    },
+                    {
+                      title: "Checking CCIP Message Status",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
+                    },
+                    {
+                      title: "Get Supported Tokens",
+                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              title: "Cross-Chain Token (CCT) standard",
+              url: "ccip/tutorials/evm/cross-chain-tokens",
+              children: [
+                {
+                  title: "Deploy and Register Using Remix IDE",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
+                },
+                {
+                  title: "Register from an EOA (Burn & Mint)",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+                },
+                {
+                  title: "Register from an EOA (Lock & Mint)",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+                },
+                {
+                  title: "Set Token Pool rate limits",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
+                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
+                },
+                {
+                  title: "Register from a Safe Smart Account (Burn & Mint)",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+                },
+              ],
+            },
+            {
+              title: "Test CCIP Locally",
+              url: "ccip/tutorials/evm/test-ccip-locally",
+            },
+            {
+              title: "Transfer USDC with Data",
+              url: "ccip/tutorials/evm/usdc",
+            },
+            {
+              title: "Send Arbitrary Data",
+              url: "ccip/tutorials/evm/send-arbitrary-data",
+            },
+            {
+              title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
+              url: "ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment",
+            },
+            {
+              title: "Manual Execution",
+              url: "ccip/tutorials/evm/manual-execution",
+            },
+            {
+              title: "Optimizing Gas Limit Settings in CCIP Messages",
+              url: "ccip/tutorials/evm/ccipreceive-gaslimit",
+            },
+            {
+              title: "Acquire Test Tokens",
+              url: "ccip/test-tokens",
+            },
+          ],
         },
         {
-          title: "CCIPReceiver",
-          url: "ccip/api-reference/ccip-receiver",
-        },
-        {
-          title: "Client Library",
-          url: "ccip/api-reference/client",
-        },
-        {
-          title: "Errors",
-          url: "ccip/api-reference/errors",
+          title: "SVM",
+          url: "ccip/tutorials/svm",
+          children: [
+            {
+              title: "Implement CCIP Receiver",
+              url: "ccip/tutorials/svm/receivers",
+            },
+            {
+              title: "SVM as Source",
+              url: "ccip/tutorials/svm/source",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/svm/source/build-messages",
+                },
+                {
+                  title: "Prerequisites",
+                  url: "ccip/tutorials/svm/source/prerequisites",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/svm/source/token-transfers",
+                },
+              ],
+            },
+            {
+              title: "SVM as Destination",
+              url: "ccip/tutorials/svm/destination",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/svm/destination/build-messages",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/svm/destination/token-transfers",
+                },
+                {
+                  title: "Arbitrary Messaging",
+                  url: "ccip/tutorials/svm/destination/arbitrary-messaging",
+                },
+              ],
+            },
+            {
+              title: "Cross-Chain Token (CCT) standard",
+              url: "ccip/tutorials/svm/cross-chain-tokens",
+            },
+          ],
         },
       ],
     },
     {
-      section: "Examples",
+      section: "Tools and Resources",
       contents: [
         {
-          title: "Cross-chain dApps and Tools",
+          title: "CCIP Explorer",
+          url: "ccip/tools-resources/ccip-explorer",
+        },
+        {
+          title: "Token Manager",
+          url: "ccip/tools-resources/token-manager",
+        },
+        {
+          title: "API Reference",
+          url: "ccip/api-reference",
+          children: [
+            {
+              title: "EVM",
+              url: "ccip/api-reference/evm",
+              children: [
+                {
+                  title: "v1.6.0 (Latest)",
+                  url: "ccip/api-reference/evm/v1.6.0",
+                  isCollapsible: true,
+                  children: evmCcipV160Contents,
+                },
+                {
+                  title: "v1.5.1",
+                  url: "ccip/api-reference/evm/v1.5.1",
+                  isCollapsible: true,
+                  children: evmCcipV151Contents,
+                },
+                {
+                  title: "v1.5.0",
+                  url: "ccip/api-reference/evm/v1.5.0",
+                  isCollapsible: true,
+                  children: evmCcipV150Contents,
+                },
+              ],
+            },
+            {
+              title: "SVM",
+              url: "ccip/api-reference/svm",
+              children: [
+                {
+                  title: "v1.6.0 (Latest)",
+                  url: "ccip/api-reference/svm/v1.6.0",
+                  isCollapsible: true,
+                  children: svmCcipV160Contents,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "SDK",
+          url: "ccip/tools-resources/sdk",
+        },
+        {
+          title: "Tools",
+          url: "ccip/tools-resources/tools",
+        },
+        {
+          title: "Cross-chain Examples",
           url: "ccip/examples",
         },
       ],
     },
-    {
-      section: "Resources",
-      contents: [
-        {
-          title: "Smart Contract Overview",
-          url: "getting-started/conceptual-overview?parent=ccip",
-        },
-        {
-          title: "LINK Token Contracts",
-          url: "resources/link-token-contracts?parent=ccip",
-          children: [
-            {
-              title: "Acquire testnet LINK",
-              url: "resources/acquire-link?parent=ccip",
-            },
-            {
-              title: "Fund Your Contracts",
-              url: "resources/fund-your-contract?parent=ccip",
-            },
-          ],
-        },
-        {
-          title: "Starter Kits and Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=ccip",
-        },
-        {
-          title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks?parent=ccip",
-        },
-        {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=ccip",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=ccip",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=ccip",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=ccip",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=ccip",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=ccip" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
-          ],
-        },
-        {
-          title: "Integrating EVM Networks",
-          url: "resources/network-integration?parent=ccip",
-        },
-        {
-          title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink?parent=ccip",
-        },
-      ],
-    },
   ],
-  chainlinkLocal: [
+  [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
       contents: [
@@ -1187,6 +1595,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Using the CCIP Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
+            {
+              title: "Using the CCIP Local Simulator to fork mainnets",
+              url: "chainlink-local/build/ccip/foundry/forking-mainnets",
+            },
+            {
+              title: "CCT - getCCIPAdmin() token with Burn and Mint Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
+            },
+            {
+              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
+            },
           ],
         },
         {
@@ -1215,19 +1635,41 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    { ...chainlinkLocalAPIReferenceTyped },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "Overview",
+          url: "chainlink-local/api-reference",
+        },
+        {
+          title: "v0.2.3 (Latest)",
+          url: "chainlink-local/api-reference/v0.2.3",
+          isCollapsible: true,
+          children: chainlinkLocalV023Contents,
+        },
+        {
+          title: "v0.2.2",
+          url: "chainlink-local/api-reference/v0.2.2",
+          isCollapsible: true,
+          children: chainlinkLocalV022Contents,
+        },
+        {
+          title: "v0.2.1",
+          url: "chainlink-local/api-reference/v0.2.1",
+          isCollapsible: true,
+          children: chainlinkLocalV021Contents,
+        },
+      ],
+    },
   ],
-  nodeOperator: [
+  [SIDEBAR_SECTIONS.NODE_OPERATORS]: [
     {
       section: "Chainlink Nodes",
       contents: [
         {
           title: "Overview",
           url: "chainlink-nodes",
-        },
-        {
-          title: "Release Notes",
-          url: "chainlink-nodes/node-versions",
         },
         {
           title: "Run a Chainlink Node",
@@ -1254,6 +1696,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "System Requirements",
           url: "chainlink-nodes/resources/requirements",
+        },
+        {
+          title: "Release Notes",
+          url: "https://dev.chain.link/changelog?product=Nodes",
         },
       ],
     },
@@ -1422,7 +1868,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  global: [
+  [SIDEBAR_SECTIONS.GLOBAL]: [
     {
       section: "General Documentation",
       contents: [
@@ -1489,7 +1935,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  legacy: [
+  [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [Legacy]",
       contents: [

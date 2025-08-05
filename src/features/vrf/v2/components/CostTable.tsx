@@ -1,9 +1,10 @@
 /** @jsxImportSource preact */
-import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
+import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains.ts"
 import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"
-import { BigNumber, utils } from "ethers"
+import { parseUnits, formatUnits, parseEther } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
+import { commify } from "~/utils/index.js"
 
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
@@ -282,7 +283,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
   }
 
   const computeArbitrumCost = () => {
-    const VRFCallDataSizeBytes = 140 + 580
+    const VRFCallDataSizeBytes = BigInt(140 + 580)
     const {
       L1GasPriceEstimate,
       currentL1GasPriceEstimate,
@@ -298,42 +299,38 @@ export const CostTable = ({ method, network, aside }: Props) => {
     } = state
     // If currentGasPrice is 0, it will throw a division by zero error. So, let's adjust it to a very small value to still give an approximation of the cost.
     const formattedCurrentGasPrice =
-      parseFloat(currentGasPrice) === 0 && BigNumber.from(currentGasPrice).toNumber() === 0
-        ? "0.000001"
-        : currentGasPrice
+      parseFloat(currentGasPrice) === 0 && BigInt(currentGasPrice) === BigInt(0) ? "0.000001" : currentGasPrice
     const L1P =
       currentL1GasPriceEstimate === L1GasPriceEstimate
-        ? BigNumber.from(currentL1GasPriceEstimate)
-        : utils.parseUnits(currentL1GasPriceEstimate, "gwei")
+        ? BigInt(currentL1GasPriceEstimate)
+        : parseUnits(currentL1GasPriceEstimate, "gwei")
     const L2P =
-      currentGasPrice === gasPrice
-        ? BigNumber.from(formattedCurrentGasPrice)
-        : utils.parseUnits(formattedCurrentGasPrice, "gwei")
+      currentGasPrice === gasPrice ? BigInt(formattedCurrentGasPrice) : parseUnits(formattedCurrentGasPrice, "gwei")
 
-    const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
-    const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
-    const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
-    const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
-    const VRFL1Buffer = VRFL1CostEstimate.div(L2P)
-    const VRFL1GasLaneBuffer = VRFL1CostEstimate.div(L2PGasLane)
-    const bigNumberLINKPremium = utils.parseUnits(LINKPremium.toString())
+    const L2PGasLane = parseUnits(currentGasLane.toString(), "gwei")
+    const VRFL1CostEstimate = L1P * VRFCallDataSizeBytes
+    const bigNumberPriceFeed = formatUnits(BigInt(priceFeed), decimalPlaces)
+    const formattedPriceFeed = parseEther(bigNumberPriceFeed)
+    const VRFL1Buffer = VRFL1CostEstimate / L2P
+    const VRFL1GasLaneBuffer = VRFL1CostEstimate / L2PGasLane
+    const bigNumberLINKPremium = parseUnits(LINKPremium.toString())
     if (method === "vrfSubscription") {
-      const VRFL2SubscriptionGasSubtotal = BigNumber.from(currentVerificationGas + callbackGas)
-      const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
-      const VRFSubscriptionGasEstimate = L2P.mul(VRFSubscriptionGasTotal)
+      const VRFL2SubscriptionGasSubtotal = BigInt(currentVerificationGas + callbackGas)
+      const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal + VRFL1Buffer
+      const VRFSubscriptionGasEstimate = L2P * VRFSubscriptionGasTotal
 
-      const VRFSubscriptionMaxCostTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1GasLaneBuffer)
-      const VRFSubscriptionMaxCostEstimate = L2PGasLane.mul(VRFSubscriptionMaxCostTotal)
+      const VRFSubscriptionMaxCostTotal = VRFL2SubscriptionGasSubtotal + VRFL1GasLaneBuffer
+      const VRFSubscriptionMaxCostEstimate = L2PGasLane * VRFSubscriptionMaxCostTotal
 
-      const formattedGasEstimate = utils.parseEther(VRFSubscriptionGasEstimate.toString())
-      const VRFSubscriptionGasEstimateTotal = utils.formatUnits(
-        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+      const formattedGasEstimate = parseEther(VRFSubscriptionGasEstimate.toString())
+      const VRFSubscriptionGasEstimateTotal = formatUnits(
+        formattedGasEstimate / formattedPriceFeed + bigNumberLINKPremium,
         decimalPlaces
       )
 
-      const formattedMaxCostEstimate = utils.parseEther(VRFSubscriptionMaxCostEstimate.toString())
-      const VRFSubscriptionMaxCostEstimateTotal = utils.formatUnits(
-        formattedMaxCostEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+      const formattedMaxCostEstimate = parseEther(VRFSubscriptionMaxCostEstimate.toString())
+      const VRFSubscriptionMaxCostEstimateTotal = formatUnits(
+        (formattedMaxCostEstimate / formattedPriceFeed + bigNumberLINKPremium).toString(),
         decimalPlaces
       )
 
@@ -345,13 +342,13 @@ export const CostTable = ({ method, network, aside }: Props) => {
         },
       })
     } else {
-      const VRFL2DirectFundingGasSubtotal = BigNumber.from(currentVerificationGas + wrapperOverheadGas + callbackGas)
-      const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
-      const VRFDirectFundingGasEstimate = L2P.mul(VRFDirectFundingGasTotal)
+      const VRFL2DirectFundingGasSubtotal = BigInt(currentVerificationGas + wrapperOverheadGas + callbackGas)
+      const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal + VRFL1Buffer
+      const VRFDirectFundingGasEstimate = L2P * VRFDirectFundingGasTotal
 
-      const formattedGasEstimate = utils.parseEther(VRFDirectFundingGasEstimate.toString())
-      const VRFDirectFundingGasEstimateTotal = utils.formatUnits(
-        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+      const formattedGasEstimate = parseEther(VRFDirectFundingGasEstimate.toString())
+      const VRFDirectFundingGasEstimateTotal = formatUnits(
+        (formattedGasEstimate / formattedPriceFeed + bigNumberLINKPremium).toString(),
         decimalPlaces
       )
 
@@ -417,21 +414,21 @@ export const CostTable = ({ method, network, aside }: Props) => {
       wrapperLinkPremiumPercentage,
     } = state
     const bigNumberGasPrice =
-      currentGasPrice === gasPrice ? BigNumber.from(currentGasPrice) : utils.parseUnits(currentGasPrice, "gwei")
-    const bigNumberGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
-    const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
-    const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
+      currentGasPrice === gasPrice ? BigInt(currentGasPrice) : parseUnits(currentGasPrice, "gwei")
+    const bigNumberGasLane = parseUnits(currentGasLane.toString(), "gwei")
+    const bigNumberPriceFeed = formatUnits(BigInt(priceFeed), decimalPlaces)
+    const formattedPriceFeed = parseEther(bigNumberPriceFeed)
     if (method === "vrfSubscription") {
-      const vrfSubscriptionGasSubTotal = BigNumber.from(callbackGas + currentVerificationGas)
+      const vrfSubscriptionGasSubTotal = BigInt(callbackGas + currentVerificationGas)
 
-      const addition = bigNumberGasPrice.mul(vrfSubscriptionGasSubTotal)
-      const maxCostAddition = bigNumberGasLane.mul(vrfSubscriptionGasSubTotal)
+      const addition = bigNumberGasPrice * vrfSubscriptionGasSubTotal
+      const maxCostAddition = bigNumberGasLane * vrfSubscriptionGasSubTotal
 
-      const formattedMaxCostAddition = utils.parseEther(maxCostAddition.toString())
-      const formattedAddition = utils.parseEther(addition.toString())
+      const formattedMaxCostAddition = parseEther(maxCostAddition.toString())
+      const formattedAddition = parseEther(addition.toString())
 
-      const total = utils.formatUnits(formattedAddition.div(formattedPriceFeed).toString(), decimalPlaces)
-      const maxCost = utils.formatUnits(formattedMaxCostAddition.div(formattedPriceFeed).toString(), decimalPlaces)
+      const total = formatUnits(formattedAddition / formattedPriceFeed, decimalPlaces)
+      const maxCost = formatUnits(formattedMaxCostAddition / formattedPriceFeed, decimalPlaces)
       const [result, maxResult] = [parseFloat(total) + LINKPremium, parseFloat(maxCost) + LINKPremium]
       dispatch({
         type: "UPDATE_STATE",
@@ -441,13 +438,10 @@ export const CostTable = ({ method, network, aside }: Props) => {
         },
       })
     } else {
-      const vrfDirectFundingGasSubTotal = BigNumber.from(callbackGas + currentVerificationGas + wrapperOverheadGas)
-      const totalGasCost = bigNumberGasPrice.mul(vrfDirectFundingGasSubTotal)
-      const formattedTotalGasCost = utils.parseEther(totalGasCost.toString())
-      const totalGasCostInToken = utils.formatUnits(
-        formattedTotalGasCost.div(formattedPriceFeed).toString(),
-        decimalPlaces
-      )
+      const vrfDirectFundingGasSubTotal = BigInt(callbackGas + currentVerificationGas + wrapperOverheadGas)
+      const totalGasCost = bigNumberGasPrice * vrfDirectFundingGasSubTotal
+      const formattedTotalGasCost = parseEther(totalGasCost.toString())
+      const totalGasCostInToken = formatUnits(formattedTotalGasCost / formattedPriceFeed, decimalPlaces)
       const total = LINKPremium + parseFloat(totalGasCostInToken) * (1 + wrapperLinkPremiumPercentage)
       dispatch({
         type: "SET_TOTAL",
@@ -526,7 +520,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
     str.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? "-" : "") + $.toLowerCase())
 
   const getGasPrice = (gasPrice: string) => {
-    const fullGasPrice = utils.formatUnits(BigNumber.from(gasPrice).toHexString(), "gwei")
+    const fullGasPrice = formatUnits(BigInt(gasPrice), "gwei")
     return parseFloat(fullGasPrice).toFixed(2)
   }
 
@@ -607,7 +601,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
                 min={0}
                 value={
                   state.currentGasPrice === state.gasPrice
-                    ? utils.formatUnits(state.currentGasPrice, "gwei")
+                    ? formatUnits(state.currentGasPrice, "gwei")
                     : state.currentGasPrice
                 }
                 onChange={handleChangeGas}
@@ -625,7 +619,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
                   min={0}
                   value={
                     state.currentL1GasPriceEstimate === state.L1GasPriceEstimate
-                      ? utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")
+                      ? formatUnits(state.currentL1GasPriceEstimate, "gwei")
                       : state.currentL1GasPriceEstimate
                   }
                   onChange={handleChangeGasL1}
@@ -635,13 +629,13 @@ export const CostTable = ({ method, network, aside }: Props) => {
             </tr>
           )}
           <tr>
-            <td>Callback gas (max. {utils.commify(state.callbackGasLimit)})</td>
+            <td>Callback gas (max. {commify(state.callbackGasLimit)})</td>
             <td>
               <input
                 id="callback-gas-value"
                 type="text"
                 max={state.callbackGasLimit.toLocaleString()}
-                value={utils.commify(state.callbackGas ?? "0")}
+                value={commify(state.callbackGas ?? "0")}
                 onChange={handleChangeCallback}
               />
             </td>
@@ -652,7 +646,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
                 ? "Average verification gas"
                 : "Coordinator gas overhead (verification gas)"}
             </td>
-            <td>{utils.commify(state.currentVerificationGas)}</td>
+            <td>{commify(state.currentVerificationGas)}</td>
           </tr>
           <tr>
             {method === "vrfSubscription" && (
@@ -700,7 +694,7 @@ export const CostTable = ({ method, network, aside }: Props) => {
         </div>
         {method === "vrfSubscription" &&
           (state.currentGasPrice === state.gasPrice
-            ? BigNumber.from(state.currentGasPrice).gt(utils.parseUnits(state.currentGasLane.toString(), "gwei"))
+            ? BigInt(state.currentGasPrice) > BigInt(state.currentGasLane)
             : parseFloat(state.currentGasPrice) > state.currentGasLane) && (
             <div className="warning-container">{aside}</div>
           )}

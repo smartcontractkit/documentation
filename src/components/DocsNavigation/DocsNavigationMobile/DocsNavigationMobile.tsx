@@ -1,9 +1,9 @@
-import { clsx } from "~/lib"
-import { useNavBar } from "../../Header/useNavBar/useNavBar"
-import DocsPickerMobile from "./DocsPickerMobile"
+import { clsx } from "~/lib/clsx/clsx.ts"
+import { useNavBar } from "../../Header/useNavBar/useNavBar.ts"
+import DocsPickerMobile from "./DocsPickerMobile.tsx"
 import styles from "./docsNavigationMobile.module.css"
 
-function DocsNavigationDesktop({ pathname }: { pathname: string }) {
+function DocsNavigationMobile({ pathname, children }: { pathname: string; children?: React.ReactNode }) {
   const { $navBarInfo } = useNavBar()
   return (
     <>
@@ -14,10 +14,11 @@ function DocsNavigationDesktop({ pathname }: { pathname: string }) {
       >
         <div className={styles.DocsPickerContainer}>
           <DocsPickerMobile path={pathname} />
+          {children}
         </div>
       </nav>
     </>
   )
 }
 
-export default DocsNavigationDesktop
+export default DocsNavigationMobile

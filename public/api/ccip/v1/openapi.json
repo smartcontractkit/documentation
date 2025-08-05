@@ -1,0 +1,673 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CCIP Chains API",
+    "description": "API for retrieving CCIP chain information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.3.0",
+    "contact": {
+      "name": "File issues",
+      "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://docs.chain.link/api/ccip/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:4321/api/ccip/v1",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "chains",
+      "description": "Chain information endpoints"
+    },
+    {
+      "name": "tokens",
+      "description": "Token information endpoints"
+    }
+  ],
+  "paths": {
+    "/chains": {
+      "get": {
+        "tags": ["chains"],
+        "summary": "Retrieve CCIP chain information",
+        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) chains across different blockchain families (EVM, Solana, Aptos)",
+        "operationId": "getChains",
+        "parameters": [
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "chainId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by chain ID (e.g., \"1\" for Ethereum, \"56\" for BSC, or a Solana pubkey)",
+            "example": "1,56"
+          },
+          {
+            "name": "selector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by CCIP chain selector. Multiple selectors can be specified using comma-separated values",
+            "example": "5009297550715157269,13264668187771770619"
+          },
+          {
+            "name": "internalId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by internal chain identifier. Multiple IDs can be specified using comma-separated values (e.g., \"ethereum-mainnet,bsc-mainnet\")",
+            "example": "ethereum-mainnet,bsc-mainnet"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with chain data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainApiResponse"
+                },
+                "example": {
+                  "metadata": {
+                    "environment": "mainnet",
+                    "timestamp": "2024-03-14T12:00:00Z",
+                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                    "ignoredChainCount": 0,
+                    "validChainCount": 2
+                  },
+                  "data": {
+                    "evm": {
+                      "1": {
+                        "chainId": 1,
+                        "displayName": "Ethereum",
+                        "selector": "5009297550715157269",
+                        "internalId": "ethereum-mainnet",
+                        "feeTokens": ["LINK", "WETH", "ETH"],
+                        "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                        "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                        "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                        "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
+                        "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
+                        "chainType": "evm",
+                        "chainFamily": "evm"
+                      }
+                    },
+                    "svm": {
+                      "solana-devnet": {
+                        "chainId": "solana-devnet",
+                        "displayName": "Solana Devnet",
+                        "selector": "16015286601757825753",
+                        "internalId": "solana-devnet",
+                        "feeTokens": ["LINK", "SOL"],
+                        "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
+                        "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
+                        "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
+                        "chainType": "solana",
+                        "chainFamily": "svm"
+                      }
+                    }
+                  },
+                  "ignored": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve CCIP token information",
+        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) supported tokens. The response includes token details organized by token symbol, with chain-specific information nested under each token and indexed by chain ID or selector (depending on the outputKey parameter).",
+        "operationId": "getTokens",
+        "parameters": [
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "token_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by token canonical identifier (e.g., \"LINK\" for Chainlink token, or \"LINK,ETH\" for multiple tokens)",
+            "example": "LINK,ETH"
+          },
+          {
+            "name": "chain_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by chain ID where the token is supported (e.g., \"1\" for Ethereum, or \"1,56\" for Ethereum and BSC)",
+            "example": "1,56"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenApiResponse"
+                },
+                "example": {
+                  "metadata": {
+                    "environment": "mainnet",
+                    "timestamp": "2024-03-14T12:00:00Z",
+                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                    "ignoredTokenCount": 0,
+                    "validTokenCount": 1
+                  },
+                  "data": {
+                    "LINK": {
+                      "1": {
+                        "chainId": 1,
+                        "chainName": "Ethereum",
+                        "decimals": 18,
+                        "destinations": [
+                          "1088",
+                          "1111",
+                          "1868",
+                          "2020",
+                          "324",
+                          "34443",
+                          "42220",
+                          "592",
+                          "81457",
+                          "8453"
+                        ],
+                        "name": "ChainLink Token",
+                        "poolAddress": "0xE31009Ac8385147A74463F686Dd148e99d291739",
+                        "poolType": "lockRelease",
+                        "symbol": "LINK",
+                        "tokenAddress": "0x514910771AF9Ca656af840dff83E8264EcF986CA"
+                      },
+                      "42220": {
+                        "chainId": 42220,
+                        "chainName": "Celo",
+                        "decimals": 18,
+                        "destinations": ["1"],
+                        "name": "ChainLink Token",
+                        "poolAddress": "0xEB521366531411b982D1bc822A9fa09EDd94E309",
+                        "poolType": "burnMint",
+                        "symbol": "LINK",
+                        "tokenAddress": "0xd07294e6E917e07dfDcee882dd1e2565085C2ae0"
+                      }
+                    }
+                  },
+                  "ignored": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChainMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "ignoredChainCount", "validChainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "ignoredChainCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of chains ignored due to configuration issues"
+          },
+          "validChainCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of valid chains in the response"
+          }
+        }
+      },
+      "ChainDetails": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "displayName",
+          "selector",
+          "internalId",
+          "feeTokens",
+          "router",
+          "rmn",
+          "chainType",
+          "chainFamily"
+        ],
+        "properties": {
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Identifier of the chain (numeric for EVM chains, string for Solana/Aptos chains)"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector"
+          },
+          "internalId": {
+            "type": "string",
+            "description": "Internal identifier for the chain"
+          },
+          "feeTokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of supported fee tokens"
+          },
+          "router": {
+            "type": "string",
+            "description": "CCIP Router contract address"
+          },
+          "rmn": {
+            "type": "string",
+            "description": "Risk Management Network contract address"
+          },
+          "chainType": {
+            "type": "string",
+            "enum": ["evm", "solana", "aptos"],
+            "description": "Type of blockchain"
+          },
+          "chainFamily": {
+            "type": "string",
+            "enum": ["evm", "svm", "mvm"],
+            "description": "Blockchain family (EVM, Solana VM, Move VM)"
+          },
+          "registryModule": {
+            "type": "string",
+            "description": "Registry Module contract address (EVM chains only)"
+          },
+          "tokenAdminRegistry": {
+            "type": "string",
+            "description": "Token Admin Registry contract address (EVM chains only)"
+          },
+          "tokenPoolFactory": {
+            "type": "string",
+            "description": "Token Pool Factory contract address (EVM chains only)"
+          },
+          "feeQuoter": {
+            "type": "string",
+            "description": "Fee Quoter address (Solana chains only)"
+          }
+        }
+      },
+      "ChainConfigError": {
+        "type": "object",
+        "required": ["chainId", "networkId", "reason", "missingFields"],
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "Chain ID of the failed configuration"
+          },
+          "networkId": {
+            "type": "string",
+            "description": "Network identifier of the failed configuration"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for the configuration failure"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of missing required fields"
+          }
+        }
+      },
+      "ChainApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data", "ignored"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/ChainMetadata"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "evm": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "EVM chain details keyed by the specified output key"
+              },
+              "svm": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Solana VM chain details keyed by the specified output key"
+              },
+              "mvm": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Move VM (Aptos) chain details keyed by the specified output key"
+              }
+            },
+            "description": "Chain details grouped by chain family"
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChainConfigError"
+            },
+            "description": "List of chains that could not be configured"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error type identifier"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          }
+        }
+      },
+      "TokenMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "ignoredTokenCount", "validTokenCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "ignoredTokenCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of tokens ignored due to configuration issues"
+          },
+          "validTokenCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of valid tokens in the response"
+          }
+        }
+      },
+      "TokenChainInfo": {
+        "type": "object",
+        "required": ["chainId", "chainName", "tokenAddress", "decimals", "poolType", "poolAddress"],
+        "properties": {
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Identifier of the chain (numeric for EVM chains, string for Solana/Aptos chains)"
+          },
+          "chainName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "tokenAddress": {
+            "type": "string",
+            "description": "Token contract address on this chain"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 18,
+            "description": "Number of decimals used for the token"
+          },
+          "poolType": {
+            "type": "string",
+            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "description": "Type of pool for this token"
+          },
+          "poolAddress": {
+            "type": "string",
+            "description": "Token pool contract address (if applicable)"
+          }
+        }
+      },
+      "TokenChainData": {
+        "type": "object",
+        "required": ["chainId", "chainName", "tokenAddress", "decimals", "poolType", "poolAddress"],
+        "properties": {
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Identifier of the chain (numeric for EVM chains, string for Solana/Aptos chains)"
+          },
+          "chainName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "tokenAddress": {
+            "type": "string",
+            "description": "Token contract address on this chain"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 18,
+            "description": "Number of decimals used for the token"
+          },
+          "poolType": {
+            "type": "string",
+            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "description": "Type of pool for this token"
+          },
+          "poolAddress": {
+            "type": "string",
+            "description": "Token pool contract address (if applicable)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the token"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol of the token"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Destination chains this token can be sent to"
+          }
+        }
+      },
+      "TokenDetails": {
+        "type": "object",
+        "required": ["symbol", "lanes", "chains"],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol identifier"
+          },
+          "lanes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Available token lanes: source chain to array of destination chains"
+          },
+          "chains": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenChainInfo"
+            },
+            "description": "Detailed information about the token on each chain"
+          }
+        }
+      },
+      "TokenConfigError": {
+        "type": "object",
+        "required": ["symbol", "reason", "missingFields"],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for the configuration error"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of missing required fields"
+          }
+        }
+      },
+      "TokenApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data", "ignored"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/TokenChainData"
+              },
+              "description": "Map of chain IDs/selectors to chain-specific token details"
+            },
+            "description": "Token data indexed by token symbol and then by chain ID/selector"
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenConfigError"
+            },
+            "description": "List of tokens that were ignored due to configuration issues"
+          }
+        }
+      }
+    }
+  }
+}

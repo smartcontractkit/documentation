@@ -21,13 +21,9 @@ metadata:
 import { Aside, CodeSample } from "@components"
 import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 
-This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/any-api/introduction) cycle and receive a single response.
+<AnyApiCallout callout="usefunctions" />
 
-<Aside type="note" title="Chainlink Functions">
-  Chainlink Functions provides your smart contracts access to trust-minimized compute infrastructure, allowing you to
-  fetch data from APIs and perform custom computation. Read the [Chainlink Functions
-  documentation](/chainlink-functions) to learn more.
-</Aside>
+This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/any-api/introduction) cycle and receive a single response.
 
 <AnyApiCallout callout="prerequisites" />
 
@@ -71,7 +67,7 @@ The response should be similar to the following example:
 }
 ```
 
-To consume an API with multiple responses, your contract must import [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
+To consume an API with multiple responses, your contract must import [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
 
 - Link token address
 - Oracle address
@@ -109,7 +105,7 @@ To use this contract:
    - The `req._add("get", "CRYPTOCOMPARE_URL")` request parameter provides the oracle node with the [URL](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from which to fetch _ETH-USD_ trading info.
    - The `req._add('path', 'RAW,ETH,USD,VOLUME24HOUR')` request parameter tells the oracle node where to fetch the 24h ETH volume in the _json_ response. It uses a [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects. For example: `'RAW,ETH,USD,VOLUME24HOUR'`.
    - The `req._addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is multiplied. Use this to remove any decimals from the volume. **_Note_**: The `times` parameter is mandatory. If the API that you call returns a number without any decimals then provide `1`as `timesAmount`.
-     The `APIConsumer` in the example above is flexible enough to call any public API as long as the URL in _get_, _path_, and _timesAmounnt_ are correct.
+     The `APIConsumer` in the example above is flexible enough to call any public API as long as the URL in _get_, _path_, and _timesAmount_ are correct.
 
 1. After few seconds, call the `volume` function. You should get a non-zero response.
 

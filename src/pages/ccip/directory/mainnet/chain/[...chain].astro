@@ -1,0 +1,64 @@
+---
+import Chain from "~/components/CCIP/Chain/Chain.astro"
+import DecommissionedChain from "~/components/CCIP/Chain/DecommissionedChain.astro"
+import {
+  Environment,
+  getAllNetworks,
+  Network,
+  getAllDecommissionedNetworks,
+  DecommissionedNetwork,
+  getNetwork,
+  getDecommissionedNetwork,
+} from "~/config/data/ccip"
+
+export async function getStaticPaths() {
+  // Get both active and decommissioned networks
+  const activeNetworks = getAllNetworks({ filter: Environment.Mainnet })
+  const decommissionedNetworks = getAllDecommissionedNetworks({ filter: Environment.Mainnet })
+
+  // Combine all chain names
+  const allChains = [
+    ...activeNetworks.map(({ chain }) => ({ chain, isDecommissioned: false })),
+    ...decommissionedNetworks.map(({ chain }) => ({ chain, isDecommissioned: true })),
+  ]
+
+  return allChains.map(({ chain, isDecommissioned }) => {
+    if (isDecommissioned) {
+      const decomNetwork = decommissionedNetworks.find((network) => network.chain === chain) as DecommissionedNetwork
+      return {
+        params: { chain },
+        props: {
+          decomNetwork,
+          environment: Environment.Mainnet,
+          isDecommissioned: true,
+        },
+      }
+    } else {
+      const activeNetwork = activeNetworks.find((network) => network.chain === chain) as Network
+      return {
+        params: { chain },
+        props: {
+          activeNetwork,
+          environment: Environment.Mainnet,
+          isDecommissioned: false,
+        },
+      }
+    }
+  })
+}
+
+const { decomNetwork, activeNetwork, environment, isDecommissioned } = Astro.props as {
+  decomNetwork?: DecommissionedNetwork
+  activeNetwork?: Network
+  environment: Environment
+  isDecommissioned: boolean
+}
+---
+
+{
+  isDecommissioned ? (
+    <DecommissionedChain network={decomNetwork!} environment={environment} />
+  ) : (
+    <Chain network={activeNetwork!} environment={environment} />
+  )
+}
