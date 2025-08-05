@@ -18,7 +18,7 @@ contract TokenTransferor is OwnerIsCreator {
     using SafeERC20 for IERC20;
 
     // Custom errors to provide more descriptive revert messages.
-    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
+    error NotEnoughBalance(uint256 currentBalance, uint256 requiredBalance); // Used to make sure contract has enough token balance
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
     error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
@@ -123,7 +123,7 @@ contract TokenTransferor is OwnerIsCreator {
         uint256 linkBalance = s_linkToken.balanceOf(address(this));
 
         if (requiredLinkBalance > linkBalance) {
-            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+            revert NotEnoughBalance(linkBalance, requiredLinkBalance);
         }
 
         // approve the Router to transfer LINK tokens on contract's behalf. It will spend the requiredLinkBalance
@@ -131,6 +131,10 @@ contract TokenTransferor is OwnerIsCreator {
 
         // If sending a token other than LINK, approve it separately
         if (_token != address(s_linkToken)) {
+            uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+            if (_amount > tokenBalance) {
+                revert NotEnoughBalance(tokenBalance, _amount);
+            }
             // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
             IERC20(_token).approve(address(s_router), _amount);
         }
