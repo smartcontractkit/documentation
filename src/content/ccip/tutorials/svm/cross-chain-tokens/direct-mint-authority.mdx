@@ -12,7 +12,7 @@ import { Aside, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-This comprehensive tutorial demonstrates how to create and configure bidirectional cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia. You will implement the **direct mint authority transfer** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide).
+This comprehensive tutorial demonstrates how to create and configure cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia. You will implement the **direct mint authority transfer** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide).
 
 **Path A Mint Authority Options:**
 
@@ -39,106 +39,7 @@ This tutorial provides step-by-step instructions and explains what each command 
 
 The READMEs contain detailed technical explanations, troubleshooting guides, and advanced configuration options.
 
-## Prerequisites
-
-This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
-
-### Development Environment Requirements
-
-**System Requirements:**
-
-- **Anchor and Solana CLI Tools**: Install following the [installation guide](https://www.anchor-lang.com/docs/installation). Requires Rust to be installed.
-- **Node.js v20 or higher**: Use the [nvm package](https://www.npmjs.com/package/nvm) to install and manage versions. Verify with `node -v`
-- **Yarn**: For dependency management
-- **Git**: For cloning repositories
-
-### Terminal 1: Solana Starter Kit Setup
-
-**Clone and setup the Solana Starter Kit:**
-
-```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
-```
-
-**Install dependencies:**
-
-```bash
-yarn install
-```
-
-**Configure your Solana environment:**
-
-```bash
-# Set Solana CLI to use devnet
-solana config set --url https://api.devnet.solana.com
-
-# Set your keypair (create one if needed)
-solana config set --keypair ~/.config/solana/id.json
-
-# If you do not have a keypair, create one:
-solana-keygen new --outfile ~/.config/solana/id.json
-```
-
-**Fund your Solana wallet:**
-
-```bash
-# Get your wallet address
-solana address
-
-# Request SOL from the devnet faucet
-solana airdrop 2
-```
-
-**Verify your setup:**
-
-```bash
-# Check your SOL balance
-solana balance
-
-# Verify you are on devnet
-solana config get
-```
-
-### Terminal 2: Smart Contract Examples Setup
-
-**Clone the repository and navigate to the Hardhat project:**
-
-```bash
-git clone https://github.com/smartcontractkit/smart-contract-examples.git
-cd smart-contract-examples/ccip/cct/hardhat
-```
-
-**Install and compile dependencies:**
-
-```bash
-npm install
-npm run compile
-```
-
-**Set up encrypted environment variables:**
-
-```bash
-# Set encryption password
-npx env-enc set-pw
-
-# Configure environment variables
-npx env-enc set
-```
-
-**Required environment variables for Ethereum Sepolia:**
-
-- `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/)
-- `PRIVATE_KEY`: Your testnet wallet private key ([MetaMask export guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/))
-- `ETHERSCAN_API_KEY`: API key from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
-
-**Fund your wallet:**
-
-- Acquire LINK and ETH on Ethereum Sepolia using [Chainlink faucets](https://faucets.chain.link/)
-
-<Aside type="note" title="Two-Terminal Workflow">
-  Keep both terminal windows open throughout the tutorial. You will switch between the Solana Starter Kit (Terminal 1)
-  and Hardhat project (Terminal 2) as you progress through the phases.
-</Aside>
+<CcipCommon callout="svmCrossChainTokenPrerequisites" />
 
 ## Introduction
 
@@ -246,6 +147,7 @@ In this step, you will use the `deployTokenPool` task to deploy a CCIP BurnMint 
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Set token address from deployment
 export ETH_TOKEN_ADDRESS=0x80c301E9ACAF23308B53760374dEc5FF388759Fc
@@ -259,11 +161,12 @@ npx hardhat deployTokenPool \
  --verifycontract true \
  --network sepolia
 
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 2025-07-23T10:06:02.626Z info: Waiting 3 blocks for transaction 0x42022b588924eecde421c894b7bffc0658f24a22f3b6f61e062380be68fdcd8c to be confirmed...
 2025-07-23T10:06:37.411Z info: Token pool deployed to: 0xAbd67F52a6819e6018E27207285960830ecdC765
@@ -272,7 +175,7 @@ npx hardhat deployTokenPool \
 The contract 0xAbd67F52a6819e6018E27207285960830ecdC765 has already been verified on the block explorer. If you are trying to verify a partially verified contract, please use the --force flag.
 https://sepolia.etherscan.io/address/0xAbd67F52a6819e6018E27207285960830ecdC765#code
 2025-07-23T10:07:14.238Z info: Token pool contract deployed and verified
-````
+```
 
 </Fragment>
 </Tabs>
@@ -399,6 +302,7 @@ yarn svm:token:create
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/token/create-token-metaplex.ts
@@ -482,7 +386,7 @@ Mint Address: EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
 
 ✨ Done in 45.84s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -495,7 +399,7 @@ Mint Address: EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
 ```bash
 # Set your token mint address (replace with your actual mint address)
 export TOKEN_MINT=EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
-````
+```
 
 ### Initialize CCIP Token Pool
 
@@ -528,6 +432,7 @@ yarn svm:pool:initialize \
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/initialize-pool.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
@@ -577,7 +482,7 @@ Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
 
 ✨ Done in 20.11s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -591,16 +496,18 @@ In this step, you will use the `svm:pool:get-info` script to verify that your to
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Verify pool creation
 yarn svm:pool:get-info \
   --token-mint $TOKEN_MINT \
   --burn-mint-pool-program $POOL_PROGRAM
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/get-pool-info.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
@@ -681,7 +588,7 @@ Pool Signer PDA: F33GBLfrk1EkkdkXrrnMEh1m3HMirb9USZvoCi4m41n6 (Token authority)
 
 ✨ Done in 5.26s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -695,16 +602,18 @@ In this step, you will use the `svm:pool:create-token-account` script to create 
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Create ATA for Pool Signer PDA
 yarn svm:pool:create-token-account \
   --token-mint $TOKEN_MINT \
   --burn-mint-pool-program $POOL_PROGRAM
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/create-pool-token-account.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
@@ -747,7 +656,7 @@ Verifying account creation...
 
 ✨ Done in 6.69s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -761,15 +670,17 @@ In this step, you will use the `svm:admin:propose-administrator` and `svm:admin:
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Propose yourself as CCIP administrator
 yarn svm:admin:propose-administrator \
   --token-mint $TOKEN_MINT
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/admin/propose-administrator.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
@@ -805,7 +716,7 @@ Current administrator: 11111111111111111111111111111111
 
 ✨ Done in 19.97s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -815,15 +726,17 @@ Current administrator: 11111111111111111111111111111111
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Accept the administrator role
 yarn svm:admin:accept-admin-role \
   --token-mint $TOKEN_MINT
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/admin/accept-admin-role.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
@@ -864,7 +777,7 @@ Pending administrator: 11111111111111111111111111111111 (should be default/clear
 
 ✨ Done in 33.94s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -885,7 +798,7 @@ First, set the environment variables needed for this terminal session:
 # Set Ethereum token and pool addresses from Phase 1
 export ETH_TOKEN_ADDRESS=0x80c301E9ACAF23308B53760374dEc5FF388759Fc
 export ETH_POOL_ADDRESS=0xAbd67F52a6819e6018E27207285960830ecdC765
-````
+```
 
 #### Initialize Chain Remote Configuration
 
@@ -914,6 +827,7 @@ yarn svm:pool:init-chain-remote-config \
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/init-chain-remote-config.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia --token-address 0x80c301E9ACAF23308B53760374dEc5FF388759Fc --decimals 9
@@ -947,7 +861,7 @@ Solana Explorer: https://explorer.solana.com/tx/5TuKKYtg4mKx7ZN2zRMSmDuyo698y9RC
 
 ✨ Done in 19.97s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -961,6 +875,7 @@ In this step, you will use the `svm:pool:edit-chain-remote-config` script to upd
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Add Ethereum pool address to the configuration
 yarn svm:pool:edit-chain-remote-config \
@@ -970,11 +885,12 @@ yarn svm:pool:edit-chain-remote-config \
   --pool-addresses $ETH_POOL_ADDRESS \
   --token-address $ETH_TOKEN_ADDRESS \
   --decimals 9
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/edit-chain-remote-config.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia --pool-addresses 0xAbd67F52a6819e6018E27207285960830ecdC765 --token-address 0x80c301E9ACAF23308B53760374dEc5FF388759Fc --decimals 9
@@ -1006,7 +922,7 @@ Solana Explorer: https://explorer.solana.com/tx/4Ram1S7vryo8Q1KWQv8mBY6Q8oiN1dzk
 
 ✨ Done in 21.62s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -1020,17 +936,19 @@ In this step, you will use the `svm:pool:get-chain-config` script to verify that
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Verify the chain configuration is complete
 yarn svm:pool:get-chain-config \
   --token-mint $TOKEN_MINT \
   --burn-mint-pool-program $POOL_PROGRAM \
   --remote-chain ethereum-sepolia
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/get-chain-config.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia
@@ -1075,7 +993,7 @@ Last Updated: 1970-01-01T00:00:00.000Z
 
 ✨ Done in 4.25s.
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -1083,7 +1001,8 @@ Last Updated: 1970-01-01T00:00:00.000Z
 ### Configure Ethereum → Solana
 
 <Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show: .../smart-contract-examples/ccip/cct/hardhat ```
+  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show:
+  .../smart-contract-examples/ccip/cct/hardhat ```
 </Aside>
 
 First, set the environment variables needed for this terminal session:
@@ -1094,7 +1013,7 @@ export ETH_TOKEN_ADDRESS=0x80c301E9ACAF23308B53760374dEc5FF388759Fc
 export ETH_POOL_ADDRESS=0xAbd67F52a6819e6018E27207285960830ecdC765
 export TOKEN_MINT=EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
 export POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-````
+```
 
 #### Calculate Solana Pool Config PDA
 
@@ -1115,6 +1034,7 @@ npx tsx scripts/calculateCCIPTokenPoolPDA.ts \
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 Need to install the following packages:
 tsx@4.20.3
@@ -1144,7 +1064,7 @@ Seeds used:
 📋 For EVM pool configuration, use this hex address:
 0xa609d2ea871dc57290257bed361edfa1d75608bd1b7de01fd28fdc63c5552db3
 
-````
+```
 
 </Fragment>
 </Tabs>
@@ -1156,7 +1076,7 @@ Export the calculated Pool Config PDA to use in the next command.
 ```bash
 # Export the Pool Config PDA (use the address from the previous step output)
 export SOLANA_POOL_CONFIG_PDA=CB9NEes1KzH3WmsnXA1bH3Qyu3gjaKJMfyGNVgtVZw8e
-````
+```
 
 #### Apply Chain Updates
 
@@ -1229,6 +1149,7 @@ In this step, you will use the `setPool` Hardhat task to register the BurnMint t
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Set pool address from deployment
 export ETH_POOL_ADDRESS=0xAbd67F52a6819e6018E27207285960830ecdC765
@@ -1240,15 +1161,16 @@ npx hardhat setPool \
  --pooladdress $ETH_POOL_ADDRESS \
  --network sepolia
 
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 2025-07-23T11:47:40.601Z info: Setting pool for token 0x80c301E9ACAF23308B53760374dEc5FF388759Fc to 0xAbd67F52a6819e6018E27207285960830ecdC765 by 0x9d087fC03ae39b088326b67fA3C788236645b717
 2025-07-23T11:48:13.947Z info: Pool set for token 0x80c301E9ACAF23308B53760374dEc5FF388759Fc to 0xAbd67F52a6819e6018E27207285960830ecdC765
-````
+```
 
 </Fragment>
 </Tabs>
@@ -1407,6 +1329,7 @@ In this step, you will use the `spl-token` CLI to transfer mint authority from y
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Transfer mint authority to Pool Signer PDA
 spl-token authorize $TOKEN_MINT mint $POOL_SIGNER_PDA
@@ -1415,11 +1338,12 @@ spl-token authorize $TOKEN_MINT mint $POOL_SIGNER_PDA
 
 spl-token display $TOKEN_MINT
 
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 Updating EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
   Current mint: [YOUR_WALLET_ADDRESS]
@@ -1435,7 +1359,7 @@ SPL Token Mint
   Decimals: 9
   Mint authority: F33GBLfrk1EkkdkXrrnMEh1m3HMirb9USZvoCi4m41n6
   Freeze authority: [YOUR_WALLET_ADDRESS]
-````
+```
 
 </Fragment>
 </Tabs>
@@ -1534,6 +1458,7 @@ Your Associated Token Account (ATA) was already created during token creation in
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Check your current token balance (should show 1000 from Phase 1)
 spl-token balance $TOKEN_MINT
@@ -1546,13 +1471,13 @@ yarn svm:token:delegate --token-mint $TOKEN_MINT
 
 yarn svm:token:check --token-mint $TOKEN_MINT
 
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
-1000
 
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/token/delegate-token-authority.ts --token-mint EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
@@ -1634,7 +1559,7 @@ Successfully loaded environment variables from /Users/user/solana-starter-kit/.e
 [2025-07-23T14:45:26.706Z]
 Token approval check completed successfully
 ✨  Done in 9.50s.
-````
+```
 
 </Fragment>
 </Tabs>
