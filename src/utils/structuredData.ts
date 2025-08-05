@@ -455,6 +455,8 @@ export function generateTechArticle(
   const { isLearningResource, category } = detectContentType(pathname)
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
+  const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
+  const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
 
   const baseArticle = {
     "@context": "https://schema.org",
@@ -482,6 +484,9 @@ export function generateTechArticle(
     ...(metadata?.excerpt && {
       keywords: metadata.excerpt,
     }),
+    // Technical properties for programming content
+    programmingModel,
+    targetPlatform,
     // Add technical article specific properties with product info
     about: {
       "@type": "Thing",
@@ -536,6 +541,8 @@ export function generateHowTo(
   const { tools, prerequisites } = extractToolsAndPrerequisites(metadata?.excerpt, pathname)
   const duration = parseTimeToISO8601(estimatedTime)
   const product = detectChainlinkProduct(pathname)
+  const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
+  const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
 
   return {
     "@context": "https://schema.org",
@@ -584,7 +591,9 @@ export function generateHowTo(
       "@type": "Audience",
       audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
     },
-    // Note: programmingLanguage removed for LearningResource compatibility
+    // Technical properties for programming tutorials
+    programmingModel,
+    targetPlatform,
     about: {
       "@type": "Thing",
       name: product ? `${product} Development` : "Smart Contract Development",
@@ -692,21 +701,8 @@ export function generateAPIReference(
           datePublished: releaseDate,
           dateModified: releaseDate,
         }),
-        // Valid Schema.org properties only
-        ...(versionInfo.availableVersions &&
-          versionInfo.availableVersions.length > 1 && {
-            // Use 'version' property (valid for CreativeWork parent)
-            version,
-            // Use 'isRelatedTo' for version relationships (valid for SoftwareApplication via Service inheritance)
-            isRelatedTo: versionInfo.availableVersions
-              .filter((v) => v !== version)
-              .slice(0, 3) // Limit for performance
-              .map((v) => ({
-                "@type": "SoftwareApplication",
-                name: `${product ? `Chainlink ${product}` : "Chainlink Protocol"} ${v}`,
-                url: version && version !== v ? resolvedCanonicalUrl.replace(version, v) : resolvedCanonicalUrl,
-              })),
-          }),
+        // Use only valid Schema.org properties for SoftwareApplication
+        softwareVersion: version,
       },
       mainEntityOfPage: {
         "@type": "WebPage",
