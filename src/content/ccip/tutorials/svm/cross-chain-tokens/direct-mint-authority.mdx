@@ -69,11 +69,11 @@ In this tutorial, you will:
 
 This tutorial implements the **direct mint authority transfer** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled):
 
-- ✅ **Mint Authority Control**: You control the token mint authority
-- ✅ **Self-Service Registration**: Use `owner_propose_administrator` directly
-- ✅ **Self-Serve Mode**: Initialize from Chainlink-deployed programs
-- ✅ **BurnMint Pools**: Burn tokens on source, mint on destination
-- ✅ **Direct Transfer**: Complete mint authority transferred to Pool Signer PDA
+- **Mint Authority Control**: You control the token mint authority
+- **Self-Service Registration**: Use `owner_propose_administrator` directly
+- **Self-Serve Mode**: Initialize from Chainlink-deployed programs
+- **BurnMint Pools**: Burn tokens on source, mint on destination
+- **Direct Transfer**: Complete mint authority transferred to Pool Signer PDA
 - ⚠️ **Development Focus**: Suitable for development and testing environments
 
 </Aside>
@@ -98,8 +98,13 @@ The critical component for this tutorial is the **Chainlink-deployed Pool Progra
 In this step, you will use Hardhat tasks to deploy an ERC20 token contract and a corresponding burn and mint token pool on Ethereum Sepolia. The tasks interact with the `BurnMintERC20` contract for token deployment and the `BurnMintTokenPool` contract for pool creation.
 
 <Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat ```
+  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): 
+  
+  ```bash 
+  pwd 
+  # Should show: .../smart-contract-examples/ccip/cct/hardhat 
+  ```
+
 </Aside>
 
 ### Deploy ERC20 Token
@@ -271,7 +276,14 @@ npx hardhat acceptAdminRole \
 In this step, you will use the `spl-token` CLI tool to create an SPL token mint on Solana Devnet and then use Solana Starter Kit scripts to initialize the CCIP pool configuration and deploy the token pool program.
 
 <Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 1** (Solana Starter Kit directory): ```bash pwd # Should show: .../solana-starter-kit ```
+
+**Switch to Terminal 1** (Solana Starter Kit directory):
+
+    ```bash
+    pwd
+    # Should show: .../solana-starter-kit
+    ```
+
 </Aside>
 
 ### Create SPL Token
@@ -295,8 +307,15 @@ yarn svm:token:create
 ```
 
 <Aside type="note" title="Custom Configuration">
-  You can customize the token by adding parameters: ```bash yarn svm:token:create \ --name "Cross Chain Token" \
-  --symbol "CCT" \ --uri "https://your-ipfs-url/metadata.json" ```
+  You can customize the token by adding parameters: 
+  
+  ```bash 
+  yarn svm:token:create \ 
+  --name "Cross Chain Token" \
+  --symbol "CCT" \ 
+  --uri "https://your-ipfs-url/metadata.json" 
+  ```
+
 </Aside>
 
 </Fragment>
@@ -391,10 +410,7 @@ Mint Address: EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo
 </Fragment>
 </Tabs>
 
-<Aside type="note" title="Token Mint Address">
-  Save your token mint address from the output. For this tutorial, we will use:
-  `EL4xtGMgYoYtM4FcFnehiQJZFM2AsfqdFikgZK2y9GCo`
-</Aside>
+Save your token mint address from the output.
 
 ```bash
 # Set your token mint address (replace with your actual mint address)
@@ -1001,8 +1017,13 @@ Last Updated: 1970-01-01T00:00:00.000Z
 ### Configure Ethereum → Solana
 
 <Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat ```
+  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory): 
+  
+  ```bash 
+  pwd 
+  # Should show: .../smart-contract-examples/ccip/cct/hardhat 
+  ```
+
 </Aside>
 
 First, set the environment variables needed for this terminal session:
@@ -1138,8 +1159,13 @@ Pool registration works differently on each platform:
 ### Ethereum Sepolia Pool Registration
 
 <Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): ```bash pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat ```
+  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): 
+  
+  ```bash 
+  pwd 
+  # Should show: .../smart-contract-examples/ccip/cct/hardhat 
+  ```
+
 </Aside>
 
 In this step, you will use the `setPool` Hardhat task to register the BurnMint token pool with the token in Ethereum's TokenAdminRegistry contract. This function sets the pool contract address for the token, enabling it for CCIP cross-chain transfers. Only the token administrator can call this function.
@@ -1178,7 +1204,13 @@ npx hardhat setPool \
 ### Solana Devnet Pool Registration
 
 <Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 1** (Solana Starter Kit directory): ```bash pwd # Should show: .../solana-starter-kit ```
+  **Switch to Terminal 1** (Solana Starter Kit directory): 
+  
+  ```bash 
+  pwd 
+  # Should show: .../solana-starter-kit 
+  ```
+
 </Aside>
 
 Solana pool registration is a multi-step process: create an Address Lookup Table (ALT), transfer mint authority, and register the pool. The ALT contains all necessary accounts for CCIP operations, and the `set_pool` instruction links this ALT to the token in the Router's TokenAdminRegistry.
@@ -1446,7 +1478,8 @@ This phase demonstrates bidirectional token transfers using the burn-mint mechan
 ### Transfer Direction 1: Solana → Ethereum
 
 <Aside type="note" title="Terminal Environment">
-  **Ensure you are in Terminal 1** (Solana Starter Kit directory) for Solana → Ethereum transfers.
+  **Stay in Terminal 1** (Solana Starter Kit directory) for all transfer directions. The Solana Starter Kit supports
+  both Solana → Ethereum and Ethereum → Solana transfers, so you can execute all commands from the same terminal.
 </Aside>
 
 #### Prepare for Testing
@@ -1713,7 +1746,8 @@ https://explorer.solana.com/tx/5KVJnX4KN7GS76F67wWpX5fZ8sQkWWQM6fvWnPFirKxLEecKj
 ### Transfer Direction 2: Ethereum → Solana
 
 <Aside type="note" title="Terminal Environment">
-  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory) for Ethereum → Solana transfers.
+  **Continue in Terminal 1** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
+  handles Ethereum → Solana transfers as well.
 </Aside>
 
 #### Execute Transfer
