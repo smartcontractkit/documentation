@@ -1675,6 +1675,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "BurnMint: Direct Mint Authority Transfer (Development)",
                   url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
                 },
+                {
+                  title: "BurnMint: Production Multisig Configuration",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig",
+                },
               ],
             },
           ],
