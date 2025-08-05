@@ -967,10 +967,8 @@ export const MainnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
-      if (showOnlySVR) {
-        if (!metadata.secondaryProxyAddress) {
-          return false
-        }
+      if (showOnlySVR && !metadata.secondaryProxyAddress) {
+        return false
       }
 
       if (isDeprecating) return !!metadata.docs.shutdownDate
