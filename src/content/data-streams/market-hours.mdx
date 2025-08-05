@@ -1,11 +1,22 @@
 ---
 section: dataStreams
-date: Last Modified
+date: "2025-08-04"
 title: "Data Streams Market Hours"
 metadata:
   title: "Chainlink Data Streams Market Hours | Trading Hours by Asset Class"
-  description: "Learn about trading hours for different asset classes in Chainlink Data Streams including cryptocurrency, forex, and precious metals market schedules."
-  keywords: ["Market Hours", "Trading Hours", "Crypto", "Forex", "Precious Metals", "Data Streams"]
+  description: "Market-open schedules for Chainlink Data Streams, covering crypto, forex, precious metals, US equities, and commodities."
+  keywords:
+    [
+      "Market Hours",
+      "Trading Hours",
+      "Crypto",
+      "Forex",
+      "Precious Metals",
+      "US Equities",
+      "Commodities",
+      "RWA",
+      "Data Streams",
+    ]
 whatsnext:
   {
     "Find the list of available Crypto streams": "/data-streams/crypto-streams",
@@ -15,16 +26,185 @@ whatsnext:
   }
 ---
 
-Markets for several assets are actively traded only during certain hours. Listed streams include an attribute describing their market hours.
+import { Aside } from "@components"
 
-## Market hours
+Markets for several assets are actively traded only during certain hours.
 
-| Asset class         | Hours                                                                                                                                                                                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Crypto**          | 24/7/365 - No market close.                                                                                                                                                                                                                                                     |
-| **Forex**           | 18:00 ET Sunday to 17:00 ET Friday. <br/> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. |
-| **Precious Metals** | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br/> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day.                                                                    |
+---
 
-## Real World Asset market status
+## Cryptocurrency
 
-Reports for Real World Asset (RWA) streams include the `marketStatus` value, which reflects the DON'S consensus on whether the market is currently open. For additional information, refer to the [RWA report schema](/data-streams/reference/report-schema-v8) page.
+Cryptocurrency markets operate continuously, with no designated market close.
+
+| Asset class | Hours                       |
+| ----------- | --------------------------- |
+| **Crypto**  | 24/7/365 — No market close. |
+
+---
+
+## Real-World Asset (RWA) market hours <span id="rwa-market-hours"></span>
+
+RWA markets operate during specific hours, with breaks for holidays and sometimes daily pauses.
+
+{/* prettier-ignore */}
+<Aside type="note" title="marketStatus values">
+  In the [RWA report schema (v8)](/data-streams/reference/report-schema-v8), the <code>marketStatus</code> field indicates market status:<br/>
+  • <code>0</code> → <strong>Unknown</strong><br/>
+  • <code>1</code> → <strong>Closed</strong><br/>
+  • <code>2</code> → <strong>Open</strong><br/>
+  All times are Eastern&nbsp;Time (ET, UTC-05 / UTC-04 DST).
+  </Aside>
+
+| Asset class                                                     | Weekly Open   | Weekly Close  | Daily Breaks \*     | Bank Holidays \*\*                                                                     |
+| --------------------------------------------------------------- | ------------- | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| **US Equities**<br/>(top-50 by market cap&nbsp;+ selected ETFs) | **09:30 Mon** | **16:00 Fri** | —                   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
+| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …)                  | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
+| **Precious Metals (Spot)**<br/>(XAU, XAG)                       | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
+| **WTI Synthetic Spot**                                          | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+
+\* Times shown as **HH:MM ET**.  
+\*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
+
+---
+
+### User Recommendations <span id="rwa-recommendations"></span>
+
+The following sections outline common market issues related to RWA trading hours, and how users can mitigate risks.
+
+Users should also consult the [Developer Responsibility page](/data-streams/developer-responsibility) to understand the risks associated with both market integrity and application code.
+
+#### Market gaps
+
+Market gaps occur when there are interruptions in trading or price discovery, leading to periods where the last available price may not reflect current market conditions. These gaps can create risks, particularly around market opens, closures, and unexpected disruptions.
+
+##### Market close
+
+Large price jumps between trading sessions due to after-hours news.
+
+A large price jump at market open could cause sudden liquidations, potentially leaving the perpetual DEX with bad debt if a trader’s collateral is insufficient to cover the losses.
+
+| Data Stream behavior                                                                                                                                                                                     | User guidance                                                                                                                                                               |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: 1 = Market Closed.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets **closed** while `marketStatus = 1` to prevent users trading at unfair prices.<br/>Set leverage in line with the asset’s average volatility to avoid bad debt. |
+
+##### Price formation at open/close
+
+Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
+
+The perpetual DEX should be careful of not opening their market with the last close price.
+
+| Data Stream behavior                                                                                                                                                                                                                             | User guidance                                                                                                   |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
+
+##### Sudden failures
+
+Unexpected system outages, order execution failures, or data feed disruptions can occur.
+
+The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+
+##### Trading halts
+
+Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
+
+The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                | User guidance                                                                  |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Pause trading while the price is frozen; reopen only once fresh quotes resume. |
+
+---
+
+#### Volatility & low liquidity
+
+During periods of high volatility or low liquidity, price movements can become unpredictable and exaggerated. These conditions can increase the risk of sudden liquidations and bad debt accumulation, requiring careful risk management strategies.
+
+##### Algorithmic & HFT activity
+
+Rapid-fire trading by algos can create unpredictable price movements.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                          | User guidance                                                            |
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+##### Low liquidity at open/close
+
+Reduced market depth at trading session transitions can lead to higher volatility and spreads.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                          | User guidance                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Widen spreads or funding rates, or briefly delay market open to let liquidity build. |
+
+---
+
+#### Corporate actions
+
+Corporate actions are events initiated by publicly traded companies that can significantly impact stock prices and trading behavior. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen. Users should monitor these events closely as they can lead to sudden price adjustments that may trigger unexpected liquidations or require position modifications.
+
+##### Bankruptcy & delisting
+
+Bankruptcy can lead to delisting or complete loss of equity value.
+
+Delisting will zero out prices for the asset.
+
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                          |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during status = 1 and close markets permanently once confirmed. |
+
+##### Spin-offs
+
+When a company spins off a business unit into a separate publicly traded entity, the parent company’s stock may adjust accordingly, while the spun-off company’s shares begin trading independently.
+
+Positions may need to be manually adjusted if the DEX doesn’t support tracking the new entity.
+
+| Data Stream behavior                                                                                                                                                             | User guidance                                                                                                                 |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Pause markets if the first post-spin price moves by more than X % from the previous close; adjust positions before reopening. |
+
+##### Stock splits & reverse splits
+
+A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
+
+A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
+
+| Data Stream behavior                                                                                                                                                                   | User guidance                                                                    |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Handle like spin-offs—pause & adjust positions, or temporarily disable leverage. |
+
+##### Mergers & acquisitions (M&A)
+
+If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company’s stock might fluctuate based on investor sentiment regarding the deal’s financial and strategic impact.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                      | User guidance                                                                         |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------ |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Widen spreads and monitor liquidation thresholds closely during announcement periods. |
+
+##### Share buybacks & stock issuance
+
+Reduced share supply from a buyback can drive stock prices higher, while increase in share supply can lead to price dilution.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                      | User guidance                                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds; adjust risk parameters as needed. |
+
+##### Dividends
+
+A company's stock price typically adjusts to reflect dividend payments. For example, when a company declares a 10% dividend, its stock price often drops by a similar amount on the ex-dividend date, as new buyers are no longer entitled to that dividend.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                            | User guidance                                                                                   |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Adjust funding rates and leverage limits around ex-dividend dates to avoid unfair liquidations. |
