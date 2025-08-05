@@ -7,6 +7,7 @@
  */
 
 import type { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
+import { productChainLinks, chainNames, type ProductData } from "~/components/QuickLinks/data/productChainLinks.ts"
 
 // Schema.org compliant types
 export type SchemaType = "TechArticle" | "HowTo" | "APIReference" | "BreadcrumbList" | "Organization" | "WebSite"
@@ -182,31 +183,190 @@ export function extractProgrammingLanguages(excerpt?: string, pathname?: string)
 }
 
 /**
- * Extract blockchain networks from content
+ * Extract programming model from content based on detected languages and platforms
+ * Returns Schema.org compliant programming model
  */
-export function extractNetworks(excerpt?: string, pathname?: string): string[] {
+export function extractProgrammingModel(excerpt?: string, pathname?: string): string {
   const content = (excerpt || pathname || "").toLowerCase()
-  const networks: string[] = []
+  const languages = extractProgrammingLanguages(excerpt, pathname)
 
-  const networkMap = {
-    ethereum: "Ethereum",
-    polygon: "Polygon",
-    arbitrum: "Arbitrum",
-    optimism: "Optimism",
-    base: "Base",
-    avalanche: "Avalanche",
-    bsc: "BNB Smart Chain",
-    solana: "Solana",
-    svm: "Solana",
+  // Platform-specific models
+  if (content.includes("evm") || content.includes("ethereum") || languages.includes("Solidity")) {
+    return "Ethereum Virtual Machine"
   }
 
-  Object.entries(networkMap).forEach(([key, value]) => {
-    if (content.includes(key)) {
-      networks.push(value)
-    }
+  if (content.includes("svm") || content.includes("solana") || content.includes("anchor")) {
+    return "Solana Virtual Machine"
+  }
+
+  if (content.includes("aptos") || content.includes("move")) {
+    return "Aptos Move"
+  }
+
+  if (content.includes("sui")) {
+    return "Sui Move"
+  }
+
+  // Language-specific models
+  if (languages.includes("JavaScript") || languages.includes("TypeScript")) {
+    return "JavaScript Runtime"
+  }
+
+  if (languages.includes("Python")) {
+    return "Python Runtime"
+  }
+
+  if (languages.includes("Rust")) {
+    return "Native Compiled"
+  }
+
+  if (languages.includes("Go")) {
+    return "Native Compiled"
+  }
+
+  // Default fallback
+  return "Smart Contract"
+}
+
+/**
+ * Detect Chainlink product from pathname
+ * Maps pathname to product keys used in productChainLinks
+ */
+export function detectChainlinkProduct(pathname?: string): string | null {
+  if (!pathname) return null
+
+  const path = pathname.toLowerCase()
+
+  // Map pathnames to productChainLinks keys
+  if (path.includes("/ccip/")) return "CCIP"
+  if (path.includes("/data-feeds/")) return "Data Feeds"
+  if (path.includes("/data-streams/")) return "Data Streams"
+  if (path.includes("/chainlink-functions/")) return "Functions"
+  if (path.includes("/chainlink-automation/")) return "Automation"
+  if (path.includes("/vrf/")) return "VRF"
+
+  return null
+}
+
+/**
+ * Detect multiple Chainlink products from quickstart frontmatter
+ * Maps products array to productChainLinks keys
+ */
+export function detectQuickstartProducts(products?: string[]): string[] {
+  if (!products || products.length === 0) return []
+
+  const productMap: Record<string, string> = {
+    ccip: "CCIP",
+    feeds: "Data Feeds",
+    "data-feeds": "Data Feeds",
+    "data-streams": "Data Streams",
+    functions: "Functions",
+    automation: "Automation",
+    vrf: "VRF",
+  }
+
+  return products.map((product) => productMap[product.toLowerCase()]).filter(Boolean)
+}
+
+/**
+ * Get supported networks for a single Chainlink product
+ * Returns comprehensive list of all networks the product supports
+ */
+export function getSupportedNetworks(pathname?: string): string[] {
+  const product = detectChainlinkProduct(pathname)
+  if (!product || !productChainLinks[product]) return []
+
+  const productData = productChainLinks[product] as ProductData
+  if (!productData.chains) return []
+
+  // Get all supported chain keys and map to display names
+  const supportedChains = Object.keys(productData.chains)
+  return supportedChains
+    .map((chainKey) => chainNames[chainKey] || chainKey)
+    .filter(Boolean)
+    .sort()
+}
+
+/**
+ * Get intersection of supported networks for multiple products
+ * Returns networks that ALL specified products support
+ */
+export function getIntersectionOfSupportedNetworks(products: string[]): string[] {
+  if (products.length === 0) return []
+  if (products.length === 1) {
+    // Single product - get all its networks
+    const product = products[0]
+    if (!productChainLinks[product]) return []
+
+    const productData = productChainLinks[product] as ProductData
+    if (!productData.chains) return []
+
+    const supportedChains = Object.keys(productData.chains)
+    return supportedChains
+      .map((chainKey) => chainNames[chainKey] || chainKey)
+      .filter(Boolean)
+      .sort()
+  }
+
+  // Multiple products - find intersection
+  const networkSets = products.map((product) => {
+    if (!productChainLinks[product]) return new Set<string>()
+
+    const productData = productChainLinks[product] as ProductData
+    if (!productData.chains) return new Set<string>()
+
+    const chains = Object.keys(productData.chains)
+      .map((chainKey) => chainNames[chainKey] || chainKey)
+      .filter(Boolean)
+
+    return new Set(chains)
   })
 
-  return [...new Set(networks)] // Remove duplicates
+  // Start with first product's networks
+  const intersection = networkSets[0]
+
+  // Keep only networks that exist in ALL products
+  for (let i = 1; i < networkSets.length; i++) {
+    for (const network of intersection) {
+      if (!networkSets[i].has(network)) {
+        intersection.delete(network)
+      }
+    }
+  }
+
+  return Array.from(intersection).sort()
+}
+
+/**
+ * Extract target platform from metadata content
+ * Returns Schema.org compliant target platform
+ */
+export function extractTargetPlatform(excerpt?: string, pathname?: string): string {
+  const content = (excerpt || pathname || "").toLowerCase()
+
+  // Check metadata for specific blockchain platforms
+  if (content.includes("ethereum") || content.includes("evm")) {
+    return "Ethereum Virtual Machine"
+  }
+
+  if (content.includes("solana") || content.includes("svm")) {
+    return "Solana Virtual Machine"
+  }
+
+  if (content.includes("aptos")) {
+    return "Aptos"
+  }
+
+  if (content.includes("sui")) {
+    return "Sui"
+  }
+
+  if (content.includes("ton")) {
+    return "TON"
+  }
+
+  // Default fallback
+  return "Blockchain"
 }
 
 /**
@@ -347,7 +507,8 @@ export function generateTechArticle(
   const { isLearningResource, category } = detectContentType(pathname)
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
   const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
-  const networks = extractNetworks(metadata?.excerpt, pathname)
+  const product = detectChainlinkProduct(pathname)
+  const supportedNetworks = getSupportedNetworks(pathname)
 
   const baseArticle = {
     "@context": "https://schema.org",
@@ -378,12 +539,22 @@ export function generateTechArticle(
     ...(programmingLanguages.length > 0 && {
       programmingLanguage: programmingLanguages,
     }),
-    // Add technical article specific properties
+    // Add technical article specific properties with product info
     about: {
       "@type": "Thing",
-      name: "Blockchain Development",
-      description: "Smart contract and blockchain development using Chainlink",
+      name: product ? `${product} Development` : "Blockchain Development",
+      description: product
+        ? `Smart contract and blockchain development using Chainlink ${product}`
+        : "Smart contract and blockchain development using Chainlink",
     },
+    // Add supported networks as mentions if available
+    ...(supportedNetworks.length > 0 && {
+      mentions: supportedNetworks.map((network) => ({
+        "@type": "Thing",
+        name: network,
+        description: `${network} blockchain network`,
+      })),
+    }),
   }
 
   // Add LearningResource properties if applicable
@@ -393,12 +564,14 @@ export function generateTechArticle(
       "@type": ["TechArticle", "LearningResource"],
       name: metadata?.title || title, // Required for LearningResource
       educationalLevel: difficulty,
-      teaches: networks.length > 0 ? `${category} for ${networks.join(", ")}` : category,
+      teaches: product ? `${category} for ${product}` : category,
       learningResourceType: category,
       audience: {
         "@type": "Audience",
         audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
       },
+      // Remove programmingLanguage for LearningResource compatibility
+      programmingLanguage: undefined,
     }
   }
 
@@ -419,7 +592,8 @@ export function generateHowTo(
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
   const { tools, prerequisites } = extractToolsAndPrerequisites(metadata?.excerpt, pathname)
   const duration = parseTimeToISO8601(estimatedTime)
-  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
+  const product = detectChainlinkProduct(pathname)
+  const supportedNetworks = getSupportedNetworks(pathname)
 
   return {
     "@context": "https://schema.org",
@@ -468,14 +642,22 @@ export function generateHowTo(
       "@type": "Audience",
       audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
     },
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
-    }),
+    // Note: programmingLanguage removed for LearningResource compatibility
     about: {
       "@type": "Thing",
-      name: "Smart Contract Development",
-      description: "Building decentralized applications with Chainlink",
+      name: product ? `${product} Development` : "Smart Contract Development",
+      description: product
+        ? `Building decentralized applications with Chainlink ${product}`
+        : "Building decentralized applications with Chainlink",
     },
+    // Add supported networks as mentions if available
+    ...(supportedNetworks.length > 0 && {
+      mentions: supportedNetworks.map((network) => ({
+        "@type": "Thing",
+        name: network,
+        description: `${network} blockchain network`,
+      })),
+    }),
   }
 }
 
@@ -490,6 +672,10 @@ export function generateAPIReference(
   pathname: string
 ): object {
   const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
+  const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
+  const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
+  const product = detectChainlinkProduct(pathname)
+  const supportedNetworks = getSupportedNetworks(pathname)
 
   // Extract version from metadata or pathname
   const versionMatch = pathname.match(/v(\d+\.\d+\.\d+)/)
@@ -509,7 +695,7 @@ export function generateAPIReference(
     inLanguage: "en-US",
     isAccessibleForFree: true,
     genre: "API Reference",
-    ...(version && { version }),
+    ...(version && { assemblyVersion: version }),
     image: {
       "@type": "ImageObject",
       url: metadata?.image
@@ -526,13 +712,23 @@ export function generateAPIReference(
     ...(programmingLanguages.length > 0 && {
       programmingLanguage: programmingLanguages,
     }),
-    programmingModel: "Smart Contract",
-    targetPlatform: "Blockchain",
+    programmingModel,
+    targetPlatform,
     about: {
       "@type": "SoftwareApplication",
-      name: "Chainlink Protocol",
-      description: "Decentralized oracle network for smart contracts",
+      name: product ? `Chainlink ${product}` : "Chainlink Protocol",
+      description: product
+        ? `${product} - Decentralized oracle network for smart contracts`
+        : "Decentralized oracle network for smart contracts",
     },
+    // Add supported networks as mentions if available
+    ...(supportedNetworks.length > 0 && {
+      mentions: supportedNetworks.map((network) => ({
+        "@type": "Thing",
+        name: network,
+        description: `${network} blockchain network`,
+      })),
+    }),
   }
 }
 
@@ -609,11 +805,15 @@ export function generateQuickstartHowTo(
 ): object {
   const difficulty = extractDifficulty(frontmatter.excerpt, pathname)
   const duration = parseTimeToISO8601(frontmatter.time)
-  const programmingLanguages = extractProgrammingLanguages(frontmatter.excerpt, pathname)
   const { tools, prerequisites } = extractToolsAndPrerequisites(
     frontmatter.excerpt + " " + (frontmatter.requires || ""),
     pathname
   )
+
+  // Detect products from curated quickstart metadata
+  const detectedProducts = detectQuickstartProducts(frontmatter.products)
+  const supportedNetworks = getIntersectionOfSupportedNetworks(detectedProducts)
+  const primaryProduct = detectedProducts.length > 0 ? detectedProducts[0] : null
 
   // Add requires to prerequisites if not already detected
   if (frontmatter.requires) {
@@ -666,26 +866,34 @@ export function generateQuickstartHowTo(
       "@type": "Audience",
       audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
     },
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
-    }),
+    // Note: programmingLanguage removed for LearningResource compatibility
     about: {
       "@type": "Thing",
-      name: "Smart Contract Development",
-      description: "Building decentralized applications with Chainlink",
+      name: primaryProduct ? `${primaryProduct} Development` : "Smart Contract Development",
+      description: primaryProduct
+        ? `Building decentralized applications with Chainlink ${primaryProduct}`
+        : "Building decentralized applications with Chainlink",
     },
     // Quickstart-specific properties
     genre: "Quickstart Guide",
     ...(frontmatter.githubSourceCodeUrl && {
       codeRepository: frontmatter.githubSourceCodeUrl,
     }),
-    // Products/tags
-    ...(frontmatter.products && {
-      mentions: frontmatter.products.map((product) => ({
-        "@type": "Thing",
-        name: product === "general" ? "Chainlink" : product.toUpperCase(),
-      })),
-    }),
+    // Add supported networks as mentions if available, otherwise use frontmatter products
+    ...(supportedNetworks.length > 0
+      ? {
+          mentions: supportedNetworks.map((network) => ({
+            "@type": "Thing",
+            name: network,
+            description: `${network} blockchain network`,
+          })),
+        }
+      : frontmatter.products && {
+          mentions: frontmatter.products.map((product) => ({
+            "@type": "Thing",
+            name: product === "general" ? "Chainlink" : product.toUpperCase(),
+          })),
+        }),
   }
 }
 
