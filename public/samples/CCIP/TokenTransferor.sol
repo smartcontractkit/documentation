@@ -112,14 +112,28 @@ contract TokenTransferor is OwnerIsCreator {
             evm2AnyMessage
         );
 
-        if (fees > s_linkToken.balanceOf(address(this)))
+        uint256 requiredLinkBalance;
+        if (_token == address(s_linkToken)) {
+            // Required LINK Balance is the sum of fees and amount to transfer, if the token to transfer is LINK
+            requiredLinkBalance = fees + _amount; 
+        } else {
+            requiredLinkBalance = fees;
+        }
+
+        uint256 linkBalance = s_linkToken.balanceOf(address(this));
+
+        if (requiredLinkBalance > linkBalance) {
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+        }
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        s_linkToken.approve(address(s_router), fees);
+        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the requiredLinkBalance
+        s_linkToken.approve(address(s_router), requiredLinkBalance);
 
-        // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
-        IERC20(_token).approve(address(s_router), _amount);
+        // If sending a token other than LINK, approve it separately
+        if (_token != address(s_linkToken)) {
+            // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
+            IERC20(_token).approve(address(s_router), _amount);
+        }
 
         // Send the message through the router and store the returned message ID
         messageId = s_router.ccipSend(
