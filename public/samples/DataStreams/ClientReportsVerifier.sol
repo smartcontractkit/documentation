@@ -82,7 +82,7 @@ contract ClientReportsVerifier {
     error InvalidReportVersion(uint16 version);
 
     // ----------------- Report schemas -----------------
-    // More info: https://docs.chain.link/data-streams/reference/report-schema
+    // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
     /**
      * @dev Data Streams report schema v3 (crypto streams).
      *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
@@ -100,16 +100,17 @@ contract ClientReportsVerifier {
     }
 
     /**
-     * @dev Data Streams report schema v4 (RWA streams).
+     * @dev Data Streams report schema v8 (RWA streams).
      */
-    struct ReportV4 {
+    struct ReportV8 {
         bytes32 feedId;
         uint32 validFromTimestamp;
         uint32 observationsTimestamp;
         uint192 nativeFee;
         uint192 linkFee;
         uint32 expiresAt;
-        int192 price;
+        uint64 lastUpdateTimestamp;
+        int192 midPrice;
         uint32 marketStatus;
     }
 
@@ -140,11 +141,11 @@ contract ClientReportsVerifier {
     // ----------------- Public API -----------------
 
     /**
-     * @notice Verify a Data Streams report (schema v3 or v4).
+     * @notice Verify a Data Streams report (schema v3 or v8).
      *
      * @dev Steps:
      *  1. Decode the unverified report to get `reportData`.
-     *  2. Read the first two bytes → schema version (`0x0003` or `0x0004`).
+     *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
      *     - Revert if the version is unsupported.
      *  3. Fee handling:
      *     - Query `s_feeManager()` on the proxy.
@@ -155,7 +156,7 @@ contract ClientReportsVerifier {
      *  5. Decode the verified report into the correct struct and emit the price.
      *
      *  @param unverifiedReport Full payload returned by Streams Direct.
-     *  @custom:reverts InvalidReportVersion when schema ≠ v3/v4.
+     *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
      */
     function verifyReport(bytes memory unverifiedReport) external {
         // ─── 1. & 2. Extract reportData and schema version ──
@@ -166,7 +167,7 @@ contract ClientReportsVerifier {
 
         uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) |
             uint16(uint8(reportData[1]));
-        if (reportVersion != 3 && reportVersion != 4)
+        if (reportVersion != 3 && reportVersion != 8)
             revert InvalidReportVersion(reportVersion);
 
         // ─── 3. Fee handling ──
@@ -204,7 +205,7 @@ contract ClientReportsVerifier {
             lastDecodedPrice = price;
             emit DecodedPrice(price);
         } else {
-            int192 price = abi.decode(verified, (ReportV4)).price;
+            int192 price = abi.decode(verified, (ReportV8)).midPrice;
             lastDecodedPrice = price;
             emit DecodedPrice(price);
         }
