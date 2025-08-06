@@ -724,9 +724,16 @@ export function generateAPIReference(
     }),
     programmingModel,
     targetPlatform,
-    // Add standard programming language property if detected
+    // Schema.org compliant technical properties using additionalProperty for programmingLanguage
     ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
+      additionalProperty: [
+        ...programmingLanguages.map((language) => ({
+          "@type": "PropertyValue",
+          name: "Programming Language",
+          value: language,
+          description: "Programming language used in the API",
+        })),
+      ],
     }),
     about: {
       "@type": "Thing",
