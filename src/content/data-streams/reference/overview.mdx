@@ -9,30 +9,65 @@ metadata:
   keywords: ["Data Streams", "API Reference", "SDK", "WebSocket", "REST API", "Integration Guide"]
 ---
 
-Chainlink Data Streams offers two distinct APIs for accessing low-latency market data. Choose the API that best fits your use case.
+Chainlink Data Streams offers two distinct solutions for accessing low-latency market data. Choose the solution that best fits your use case.
 
-### Which API should I use?
+### Which solution should I use?
 
-| Feature                 | [Data Streams API](/data-streams/reference/data-streams-api) | [Candlestick API](/data-streams/reference/candlestick-api) |
-| ----------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
-| **Primary Use Case**    | **Onchain** consumption by smart contracts                   | **Offchain** analytics, charting, dashboards               |
-| **Data Format**         | Signed, verifiable data reports                              | Aggregated OHLC (candlestick) data                         |
-| **Interfaces**          | REST API & WebSocket                                         | REST API (including a streaming endpoint)                  |
-| **Authentication**      | HMAC Signature                                               | JWT (token-based)                                          |
-| **Cryptographic Proof** | ✅ Yes (`fullReport` blob)                                   | ❌ No                                                      |
-
----
-
-### Data Streams API
-
-Use the [Data Streams API](/data-streams/reference/data-streams-api) for applications that require high-frequency, verifiable data for **onchain** execution. It provides access to cryptographically signed data reports that can be verified and used by smart contracts. This API is designed for applications that depend on low-latency, tamper-proof data.
-
-**[View the Data Streams API Reference](/data-streams/reference/data-streams-api/interface-api)**
+| Feature                 | [Data Streams API](#data-streams-api)                                                                                                                                                                                                                            | [Candlestick API](#candlestick-api)                                                                                                                         |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Primary Use Case**    | **Onchain** consumption by smart contracts                                                                                                                                                                                                                       | **Offchain** analytics, charting, dashboards                                                                                                                |
+| **Data Format**         | Signed, verifiable data reports                                                                                                                                                                                                                                  | Aggregated OHLC (candlestick) data                                                                                                                          |
+| **Interfaces**          | SDKs ([Go](/data-streams/reference/data-streams-api/go-sdk), [Rust](/data-streams/reference/data-streams-api/rust-sdk)), [REST API](/data-streams/reference/data-streams-api/interface-api) & [WebSocket](/data-streams/reference/data-streams-api/interface-ws) | [REST API](/data-streams/reference/candlestick-api) (including a [streaming endpoint](/data-streams/reference/candlestick-api#get-streaming-price-updates)) |
+| **Authentication**      | [HMAC Signature](data-streams/reference/data-streams-api/authentication) (automatic with SDKs)                                                                                                                                                                   | [JWT](/data-streams/reference/candlestick-api#authorize-and-get-token) (token-based)                                                                        |
+| **Cryptographic Proof** | ✅ Yes (See [Verification methods](#verification))                                                                                                                                                                                                               | ❌ No                                                                                                                                                       |
 
 ---
 
-### Candlestick API
+## Data Streams API
 
-Use the [Candlestick API](/data-streams/reference/candlestick-api) for **offchain** applications. It provides historical open-high-low-close (OHLC) data and real-time price updates in a format compatible with the [TradingView data integration specification](https://www.tradingview.com/broker-api-docs/rest-api-spec/#tag/Data-Integration). This is ideal for building dashboards, analytics platforms, portfolio trackers, and research tools.
+The [Data Streams API](/data-streams/reference/data-streams-api) provides cryptographically signed, verifiable data reports designed for **onchain** consumption by smart contracts. This comprehensive solution offers multiple integration paths to support applications that require low-latency, tamper-proof data.
 
-**[View the Candlestick API Reference](/data-streams/reference/candlestick-api)**
+### Integration Methods
+
+#### SDKs (Recommended)
+
+- [Go SDK](/data-streams/reference/data-streams-api/go-sdk) - Native Go language integration
+- [Rust SDK](/data-streams/reference/data-streams-api/rust-sdk) - Native Rust language integration
+
+#### Direct API Access
+
+- [REST API](/data-streams/reference/data-streams-api/interface-api) - HTTP-based interface for simple integrations
+- [WebSocket](/data-streams/reference/data-streams-api/interface-ws) - Real-time data streaming via WebSocket connection
+
+#### Authentication
+
+- [Authentication Guides](/data-streams/reference/data-streams-api/authentication) - HMAC signature implementation examples (not required when using SDKs)
+
+#### Verification
+
+##### EVM chains
+
+- [Onchain report data verification](/data-streams/reference/data-streams-api/onchain-verification) - Verify the authenticity of received data on EVM chains
+
+##### Solana
+
+- [Verify reports using the onchain integration method](/data-streams/tutorials/solana-onchain-report-verification) - Verify reports directly within your Solana program
+- [Verify reports using the offchain integration method](/data-streams/tutorials/solana-offchain-report-verification) - Verify reports client-side using the Rust SDK
+
+**[View the Data Streams API Reference →](/data-streams/reference/data-streams-api)**
+
+---
+
+## Candlestick API
+
+The [Candlestick API](/data-streams/reference/candlestick-api) provides historical and real-time OHLC (Open-High-Low-Close) data designed for **offchain** applications. Built to TradingView data integration specifications, it's optimized for analytics, charting, and dashboard applications.
+
+### Integration Methods
+
+Currently, the Candlestick API is accessible via a [REST API](/data-streams/reference/candlestick-api), including a [streaming endpoint](/data-streams/reference/candlestick-api#get-streaming-price-updates) for real-time data.
+
+### Authentication
+
+- [Authentication Endpoint](/data-streams/reference/candlestick-api#authorize-and-get-token) - JWT token-based authentication
+
+**[View the Candlestick API Reference →](/data-streams/reference/candlestick-api)**

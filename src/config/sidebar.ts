@@ -434,7 +434,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/overview",
         },
         {
-          title: "Data Streams API",
+          title: "Data Streams Reference",
           url: "data-streams/reference/data-streams-api",
           children: [
             {
