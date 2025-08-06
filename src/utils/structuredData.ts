@@ -538,10 +538,6 @@ export function generateTechArticle(
     ...(technicalProperties.length > 0 && {
       additionalProperty: technicalProperties,
     }),
-    // Add standard programming language property if detected
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
-    }),
     // Add technical article specific properties with product info
     about: {
       "@type": "Thing",
@@ -653,10 +649,6 @@ export function generateHowTo(
     // Schema.org compliant technical properties using additionalProperty
     ...(technicalProperties.length > 0 && {
       additionalProperty: technicalProperties,
-    }),
-    // Add standard programming language property if detected
-    ...(programmingLanguages.length > 0 && {
-      programmingLanguage: programmingLanguages,
     }),
     about: {
       "@type": "Thing",
