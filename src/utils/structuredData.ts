@@ -248,6 +248,52 @@ export function extractProgrammingModel(excerpt?: string, pathname?: string): st
 }
 
 /**
+ * Generate Schema.org compliant additionalProperty array for technical metadata
+ * Converts non-standard properties to Schema.org PropertyValue format
+ */
+export function generateTechnicalProperties(
+  programmingModel: string,
+  targetPlatform: string,
+  programmingLanguages?: string[]
+): object[] {
+  const properties: object[] = []
+
+  // Add programming model as additional property
+  if (programmingModel) {
+    properties.push({
+      "@type": "PropertyValue",
+      name: "Programming Model",
+      value: programmingModel,
+      description: "The programming model or runtime environment used",
+    })
+  }
+
+  // Add target platform as additional property
+  if (targetPlatform) {
+    properties.push({
+      "@type": "PropertyValue",
+      name: "Target Platform",
+      value: targetPlatform,
+      description: "The target platform or blockchain ecosystem",
+    })
+  }
+
+  // Add programming languages as additional properties
+  if (programmingLanguages && programmingLanguages.length > 0) {
+    programmingLanguages.forEach((language) => {
+      properties.push({
+        "@type": "PropertyValue",
+        name: "Programming Language",
+        value: language,
+        description: "Programming language used in the content",
+      })
+    })
+  }
+
+  return properties
+}
+
+/**
  * Detect Chainlink product from pathname
  * Maps pathname to product keys used in productChainLinks
  */
@@ -457,6 +503,10 @@ export function generateTechArticle(
   const product = detectChainlinkProduct(pathname)
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
+  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
+
+  // Generate Schema.org compliant technical properties
+  const technicalProperties = generateTechnicalProperties(programmingModel, targetPlatform, programmingLanguages)
 
   const baseArticle = {
     "@context": "https://schema.org",
@@ -484,9 +534,14 @@ export function generateTechArticle(
     ...(metadata?.excerpt && {
       keywords: metadata.excerpt,
     }),
-    // Technical properties for programming content
-    programmingModel,
-    targetPlatform,
+    // Schema.org compliant technical properties using additionalProperty
+    ...(technicalProperties.length > 0 && {
+      additionalProperty: technicalProperties,
+    }),
+    // Add standard programming language property if detected
+    ...(programmingLanguages.length > 0 && {
+      programmingLanguage: programmingLanguages,
+    }),
     // Add technical article specific properties with product info
     about: {
       "@type": "Thing",
@@ -543,6 +598,10 @@ export function generateHowTo(
   const product = detectChainlinkProduct(pathname)
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
+  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
+
+  // Generate Schema.org compliant technical properties
+  const technicalProperties = generateTechnicalProperties(programmingModel, targetPlatform, programmingLanguages)
 
   return {
     "@context": "https://schema.org",
@@ -591,9 +650,14 @@ export function generateHowTo(
       "@type": "Audience",
       audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
     },
-    // Technical properties for programming tutorials
-    programmingModel,
-    targetPlatform,
+    // Schema.org compliant technical properties using additionalProperty
+    ...(technicalProperties.length > 0 && {
+      additionalProperty: technicalProperties,
+    }),
+    // Add standard programming language property if detected
+    ...(programmingLanguages.length > 0 && {
+      programmingLanguage: programmingLanguages,
+    }),
     about: {
       "@type": "Thing",
       name: product ? `${product} Development` : "Smart Contract Development",
@@ -627,6 +691,7 @@ export function generateAPIReference(
 ): object {
   const programmingModel = extractProgrammingModel(metadata?.excerpt, pathname)
   const targetPlatform = extractTargetPlatform(metadata?.excerpt, pathname)
+  const programmingLanguages = extractProgrammingLanguages(metadata?.excerpt, pathname)
   const product = detectChainlinkProduct(pathname)
 
   // Use provided version info or extract from metadata/pathname
@@ -667,6 +732,10 @@ export function generateAPIReference(
     }),
     programmingModel,
     targetPlatform,
+    // Add standard programming language property if detected
+    ...(programmingLanguages.length > 0 && {
+      programmingLanguage: programmingLanguages,
+    }),
     about: {
       "@type": "Thing",
       name: product ? `Chainlink ${product}` : "Chainlink Protocol",
