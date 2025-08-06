@@ -1,0 +1,146 @@
+---
+import { supabase } from "../db/supabase"
+import { getFeedCategories, testSupabaseConnection } from "../db/feedCategories"
+
+let connectionStatus = "Testing connection..."
+let data: any = null
+let error: string | null = null
+let feedCategoriesData: any = null
+
+try {
+  // Test the connection by trying to fetch from the actual docs_feeds_risk table
+  // This will fail gracefully if the table doesn't exist or if credentials are wrong
+  if (!supabase) {
+    connectionStatus = "Connection failed"
+    error = "Supabase client is not initialized."
+  } else {
+    const { data: testData, error: testError } = await supabase.from("docs_feeds_risk").select("*").limit(5)
+
+    if (testError) {
+      // If it's a table not found error, that's actually good - it means we connected
+      if (
+        testError.code === "PGRST116" ||
+        testError.message.includes("relation") ||
+        testError.message.includes("does not exist")
+      ) {
+        connectionStatus = 'Connection successful! (Table "docs_feeds_risk" does not exist, but connection is working)'
+      } else {
+        connectionStatus = "Connection error"
+        error = testError.message
+      }
+    } else {
+      connectionStatus = "Connection successful!"
+      data = testData
+
+      // If we successfully got data, also try to get feed categories
+      try {
+        feedCategoriesData = await getFeedCategories()
+      } catch (e) {
+        console.warn("Could not fetch feed categories:", e)
+      }
+    }
+  }
+} catch (e) {
+  connectionStatus = "Connection failed"
+  error = e.message
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Supabase Connection Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .warning {
+        color: orange;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Supabase Connection Test</h1>
+
+    <div
+      class={connectionStatus.includes("successful")
+        ? "success"
+        : connectionStatus.includes("error") || connectionStatus.includes("failed")
+          ? "error"
+          : "warning"}
+    >
+      <h2>Status: {connectionStatus}</h2>
+    </div>
+
+    {
+      error && (
+        <div class="error">
+          <h3>Error Details:</h3>
+          <pre>{error}</pre>
+        </div>
+      )
+    }
+
+    {
+      data && (
+        <div class="success">
+          <h3>Sample docs_feeds_risk Data (first 5 records):</h3>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )
+    }
+
+    {
+      feedCategoriesData && (
+        <div class="success">
+          <h3>Feed Categories Analysis:</h3>
+          <pre>{JSON.stringify(feedCategoriesData, null, 2)}</pre>
+        </div>
+      )
+    }
+
+    <div>
+      <h3>Environment Variables Check:</h3>
+      <ul>
+        <li>PUBLIC_SUPABASE_URL: {import.meta.env.PUBLIC_SUPABASE_URL ? "✓ Set" : "✗ Not set"}</li>
+        <li>PUBLIC_SUPABASE_KEY: {import.meta.env.PUBLIC_SUPABASE_KEY ? "✓ Set" : "✗ Not set"}</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Next Steps:</h3>
+      <ol>
+        <li>If you haven't already, create a <code>.env.local</code> file based on <code>.env.local.template</code></li>
+        <li>Add your actual Supabase URL and anon key to the <code>.env.local</code> file</li>
+        <li>Make sure your Supabase project has the <code>docs_feeds_risk</code> table</li>
+        <li>Restart the dev server after adding environment variables</li>
+        <li>
+          If successful, you should see sample data from the <code>docs_feeds_risk</code> table and risk category analysis
+        </li>
+      </ol>
+
+      <h4>Expected table structure for docs_feeds_risk:</h4>
+      <ul>
+        <li><code>proxy_address</code> - Feed contract address</li>
+        <li><code>network</code> - Network identifier</li>
+        <li><code>risk_status</code> - Risk category (low, medium, high, etc.)</li>
+      </ul>
+    </div>
+  </body>
+</html>

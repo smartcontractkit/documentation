@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState } from "preact/hooks"
+import { useState, useEffect } from "preact/hooks"
 import { Fragment } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -9,74 +9,37 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { type Docs } from "~/features/data/api/index.ts"
+import { FEED_CATEGORY_CONFIG, getFeedRiskTierWithFallback } from "../../../db/feedCategories.js"
 
 const feedItems = monitoredFeeds.mainnet
+
+// Centralized function to get feed category element using the shared config
+const getFeedCategoryElement = (riskTier: string | undefined) => {
+  if (!riskTier) return ""
+
+  const lowerTier = riskTier.toLowerCase()
+  const category = FEED_CATEGORY_CONFIG[lowerTier]
+
+  if (!category) return ""
+
+  return (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
+      <a href={category.link} aria-label={category.name} target="_blank">
+        {category.icon}
+      </a>
+    </span>
+  )
+}
+
+// ✅ Dynamic Supabase feed categories implementation
+// Feed categories are sourced from Supabase with graceful fallback
 const feedCategories = {
-  low: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" aria-label="Low Market Risk" target="_blank">
-        🟢
-      </a>
-    </span>
-  ),
-  medium: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk."
-    >
-      <a
-        href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds"
-        aria-label="Medium Market Risk"
-        target="_blank"
-      >
-        🟡
-      </a>
-    </span>
-  ),
-  high: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" aria-label="High Market Risk" target="_blank">
-        🔴
-      </a>
-    </span>
-  ),
-  new: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" aria-label="New Token" target="_blank">
-        🟠
-      </a>
-    </span>
-  ),
-  custom: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" aria-label="Custom" target="_blank">
-        🔵
-      </a>
-    </span>
-  ),
-  deprecating: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more."
-    >
-      <a href="/data-feeds/deprecating-feeds" aria-label="Deprecating" target="_blank">
-        ⭕
-      </a>
-    </span>
-  ),
+  low: getFeedCategoryElement("low"),
+  medium: getFeedCategoryElement("medium"),
+  high: getFeedCategoryElement("high"),
+  new: getFeedCategoryElement("new"),
+  custom: getFeedCategoryElement("custom"),
+  deprecating: getFeedCategoryElement("deprecating"),
 }
 
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
@@ -199,124 +162,92 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails }) => (
-  <tr>
-    <td className={tableStyles.pairCol}>
-      <div className={tableStyles.assetPair}>
-        <div className={tableStyles.pairNameRow}>
-          {feedCategories[metadata.feedCategory?.toLowerCase()] || ""}
-          {metadata.name}
+const DefaultTr = ({ network, metadata, showExtraDetails }) => {
+  // Enhanced feed category logic with async Supabase lookup
+  const [dynamicFeedCategory, setDynamicFeedCategory] = useState<string | undefined>(metadata.feedCategory)
+
+  // Effect to fetch risk tier from Supabase on component mount
+  useEffect(() => {
+    const fetchRiskTier = async () => {
+      if (metadata.proxyAddress && network?.referenceDataDirectorySchema) {
+        try {
+          const supabaseRiskTier = await getFeedRiskTierWithFallback(
+            metadata.proxyAddress,
+            network.referenceDataDirectorySchema,
+            metadata.feedCategory
+          )
+
+          setDynamicFeedCategory(supabaseRiskTier || metadata.feedCategory)
+        } catch (error) {
+          console.warn("Failed to fetch risk tier for", metadata.name, error)
+          setDynamicFeedCategory(metadata.feedCategory)
+        }
+      }
+    }
+
+    fetchRiskTier()
+  }, [metadata.proxyAddress, metadata.feedCategory, network?.referenceDataDirectorySchema, metadata.name])
+
+  const getFinalFeedCategory = () => {
+    // Use dynamically fetched category
+    const categoryKey = dynamicFeedCategory?.toLowerCase()
+    return (categoryKey && feedCategories[categoryKey]) || getFeedCategoryElement(dynamicFeedCategory) || ""
+  }
+
+  return (
+    <tr>
+      <td className={tableStyles.pairCol}>
+        <div className={tableStyles.assetPair}>
+          <div className={tableStyles.pairNameRow}>
+            {getFinalFeedCategory()}
+            {metadata.name}
+          </div>
+          {metadata.secondaryProxyAddress && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/svr-feeds"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="SVR-enabled Feed"
+              >
+                SVR
+              </a>
+            </div>
+          )}
         </div>
-        {metadata.secondaryProxyAddress && (
-          <div style={{ marginTop: "5px" }}>
-            <a
-              href="/data-feeds/svr-feeds"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-              title="SVR-enabled Feed"
-            >
-              SVR
-            </a>
+        {metadata.docs.shutdownDate && (
+          <div className={clsx(feedList.shutDate)}>
+            <hr />
+            Deprecating:
+            <br />
+            {metadata.docs.shutdownDate}
           </div>
         )}
-      </div>
-      {metadata.docs.shutdownDate && (
-        <div className={clsx(feedList.shutDate)}>
-          <hr />
-          Deprecating:
-          <br />
-          {metadata.docs.shutdownDate}
-        </div>
-      )}
-    </td>
-    <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
-    <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}</td>
-    <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
-    <td>
-      <div>
-        <dl className={tableStyles.listContainer}>
-          <div className={tableStyles.definitionGroup}>
-            {metadata.secondaryProxyAddress && (
-              <dt>
-                <span className="label">Standard Proxy:</span>
-              </dt>
-            )}
-            <dd>
-              <div className={tableStyles.assetAddress}>
-                <button
-                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "FEEDS",
-                      action: "feedId_copied",
-                      extraInfo1: network.name,
-                      extraInfo2: metadata.name,
-                      extraInfo3: metadata.proxyAddress,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                </button>
-                <a
-                  className={tableStyles.addressLink}
-                  href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-                  target="_blank"
-                >
-                  {metadata.proxyAddress ?? metadata.transmissionsAccount}
-                </a>
-              </div>
-            </dd>
-          </div>
-          {metadata.assetName && (
+      </td>
+      <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
+      <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}</td>
+      <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
+      <td>
+        <div>
+          <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
-              <dd>{metadata.assetName}</dd>
-            </div>
-          )}
-          {metadata.feedType && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset type:</span>
-              </dt>
-              <dd>
-                {metadata.feedType}
-                {metadata.docs.assetSubClass === "UK" ? " - " + metadata.docs.assetSubClass : ""}
-              </dd>
-            </div>
-          )}
-          {metadata.docs.marketHours && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.secondaryProxyAddress && (
-            <>
-              <div className={tableStyles.separator} />
-              <div className={tableStyles.assetAddress}>
+              {metadata.secondaryProxyAddress && (
                 <dt>
-                  <span className="label">AAVE SVR Proxy:</span>
+                  <span className="label">Standard Proxy:</span>
                 </dt>
-                <dd>
+              )}
+              <dd>
+                <div className={tableStyles.assetAddress}>
                   <button
                     className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                    data-clipboard-text={metadata.secondaryProxyAddress}
+                    data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
                     onClick={(e) =>
                       handleClick(e, {
                         product: "FEEDS",
-                        action: "SVR_proxy_copied",
+                        action: "feedId_copied",
                         extraInfo1: network.name,
                         extraInfo2: metadata.name,
-                        extraInfo3: metadata.secondaryProxyAddress,
+                        extraInfo3: metadata.proxyAddress,
                       })
                     }
                   >
@@ -324,28 +255,93 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
                   </button>
                   <a
                     className={tableStyles.addressLink}
-                    href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                    href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
                     target="_blank"
                   >
-                    {metadata.secondaryProxyAddress}
+                    {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                  </a>
+                </div>
+              </dd>
+            </div>
+            {metadata.assetName && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset name:</span>
+                </dt>
+                <dd>{metadata.assetName}</dd>
+              </div>
+            )}
+            {metadata.feedType && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset type:</span>
+                </dt>
+                <dd>
+                  {metadata.feedType}
+                  {metadata.docs.assetSubClass === "UK" ? " - " + metadata.docs.assetSubClass : ""}
+                </dd>
+              </div>
+            )}
+            {metadata.docs.marketHours && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                    {metadata.docs.marketHours}
                   </a>
                 </dd>
               </div>
-              <div className={clsx(tableStyles.aaveCallout)}>
-                <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
-                Aave protocol. Learn more about{" "}
-                <a href="/data-feeds/svr-feeds" target="_blank">
-                  SVR-enabled Feeds
-                </a>
-                .
-              </div>
-            </>
-          )}
-        </dl>
-      </div>
-    </td>
-  </tr>
-)
+            )}
+            {metadata.secondaryProxyAddress && (
+              <>
+                <div className={tableStyles.separator} />
+                <div className={tableStyles.assetAddress}>
+                  <dt>
+                    <span className="label">AAVE SVR Proxy:</span>
+                  </dt>
+                  <dd>
+                    <button
+                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                      data-clipboard-text={metadata.secondaryProxyAddress}
+                      onClick={(e) =>
+                        handleClick(e, {
+                          product: "FEEDS",
+                          action: "SVR_proxy_copied",
+                          extraInfo1: network.name,
+                          extraInfo2: metadata.name,
+                          extraInfo3: metadata.secondaryProxyAddress,
+                        })
+                      }
+                    >
+                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                    </button>
+                    <a
+                      className={tableStyles.addressLink}
+                      href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                      target="_blank"
+                    >
+                      {metadata.secondaryProxyAddress}
+                    </a>
+                  </dd>
+                </div>
+                <div className={clsx(tableStyles.aaveCallout)}>
+                  <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
+                  Aave protocol. Learn more about{" "}
+                  <a href="/data-feeds/svr-feeds" target="_blank">
+                    SVR-enabled Feeds
+                  </a>
+                  .
+                </div>
+              </>
+            )}
+          </dl>
+        </div>
+      </td>
+    </tr>
+  )
+}
 
 const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
@@ -367,6 +363,29 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
 
+  // Dynamic feed category lookup for SmartData feeds
+  const [dynamicFeedCategory, setDynamicFeedCategory] = useState<string | undefined>(metadata.feedCategory)
+
+  useEffect(() => {
+    const fetchRiskTier = async () => {
+      if (metadata.proxyAddress && network?.referenceDataDirectorySchema) {
+        try {
+          const supabaseRiskTier = await getFeedRiskTierWithFallback(
+            metadata.proxyAddress,
+            network.referenceDataDirectorySchema,
+            metadata.feedCategory
+          )
+          setDynamicFeedCategory(supabaseRiskTier || metadata.feedCategory)
+        } catch (error) {
+          console.warn("Failed to fetch risk tier for SmartData feed", metadata.name, error)
+          setDynamicFeedCategory(metadata.feedCategory)
+        }
+      }
+    }
+
+    fetchRiskTier()
+  }, [metadata.proxyAddress, metadata.feedCategory, network?.referenceDataDirectorySchema, metadata.name])
+
   return (
     <tr>
       <td className={tableStyles.pairCol}>
@@ -386,7 +405,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
           return ""
         })}
         <div className={tableStyles.assetPair}>
-          {feedCategories[metadata.feedCategory?.toLowerCase()] || ""} {metadata.name}
+          {getFeedCategoryElement(dynamicFeedCategory) || ""} {metadata.name}
         </div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
@@ -1095,7 +1114,7 @@ export const TestnetTable = ({
   lastAddr = 1000,
   addrPerPage = 8,
   currentPage = 1,
-  paginate = (_page: number) => {
+  paginate = () => {
     /* Default no-op function */
   },
   searchValue = "",
