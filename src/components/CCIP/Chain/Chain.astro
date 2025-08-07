@@ -1,5 +1,5 @@
 ---
-import CcipLayout from "~/layouts/CcipLayout.astro"
+import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
 import {
   Environment,
@@ -14,6 +14,8 @@ import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import ChainTable from "~/components/CCIP/Tables/ChainTable"
 import { getTokenIconUrl } from "~/features/utils"
 import ChainTokenGrid from "./ChainTokenGrid"
+import { generateChainStructuredData } from "~/utils/ccipStructuredData"
+import StructuredData from "~/components/StructuredData.astro"
 
 interface Props {
   environment: Environment
@@ -44,16 +46,41 @@ const lanes = await getAllNetworkLanes({
 })
 
 const searchLanes = getSearchLanes({ environment })
+
+// Generate dynamic metadata for this specific chain
+const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+const chainMetadata = {
+  title: `${network.name} CCIP Network - ${environmentText} Cross-Chain Configuration`,
+  description: `CCIP configuration for ${network.name} on ${environmentText}. View ${allTokens.length} supported tokens, active cross-chain lanes, fees, and technical specifications.`,
+  image: network.logo,
+  excerpt: `${network.name} CCIP network configuration ${environmentText.toLowerCase()} cross-chain interoperability ${network.chainType.toLowerCase()} supported tokens lanes fees technical specifications`,
+}
+
+// Generate structured data for this chain
+const currentURL = new URL(Astro.request.url).href
+const chainStructuredData = generateChainStructuredData(
+  network,
+  environment,
+  allTokens.length,
+  lanes.length,
+  currentURL
+)
 ---
 
-<CcipLayout
+<CcipDirectoryLayout
   frontmatter={{
-    title: `CCIP Supported Networks - ${network.name}`,
+    title: chainMetadata.title,
     section: "ccip",
+    metadata: {
+      description: chainMetadata.description,
+      image: chainMetadata.image,
+      excerpt: chainMetadata.excerpt,
+    },
   }}
   {headings}
   environment={environment}
 >
+  <StructuredData data={chainStructuredData} />
   <ChainHero
     chains={networks}
     tokens={allTokens}
@@ -96,7 +123,7 @@ const searchLanes = getSearchLanes({ environment })
       <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
     </div>
   </section>
-</CcipLayout>
+</CcipDirectoryLayout>
 
 <style scoped="false">
   .layout {

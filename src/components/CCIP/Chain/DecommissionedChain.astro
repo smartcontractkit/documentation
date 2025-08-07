@@ -1,10 +1,12 @@
 ---
-import CcipLayout from "~/layouts/CcipLayout.astro"
+import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
 import { Environment, DecommissionedNetwork, getAllDecommissionedNetworks } from "~/config/data/ccip"
 import Breadcrumb from "~/components/CCIP/Breadcrumb/Breadcrumb"
 import Aside from "~/components/Aside.astro"
 import CopyValue from "~/components/CCIP/CopyValue/CopyValue"
+import { generateDecommissionedChainStructuredData } from "~/utils/ccipStructuredData"
+import StructuredData from "~/components/StructuredData.astro"
 
 interface Props {
   environment: Environment
@@ -24,16 +26,35 @@ const ccipExplorerUrl = `https://ccip.chain.link/`
 
 // Get all networks for potential search context
 const allDecommissionedNetworks = getAllDecommissionedNetworks({ filter: environment })
+
+// Generate dynamic metadata for this decommissioned chain
+const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+const chainMetadata = {
+  title: `${network.name} CCIP Network (Decommissioned) - ${environmentText}`,
+  description: `Decommissioned CCIP network for ${network.name} on ${environmentText}. This chain is no longer active but historical transaction data remains accessible via CCIP Explorer.`,
+  image: network.logo,
+  excerpt: `${network.name} decommissioned CCIP network ${environmentText.toLowerCase()} historical data chain selector ${network.chainSelector} blockchain interoperability`,
+}
+
+// Generate structured data for this decommissioned chain
+const currentURL = new URL(Astro.request.url).href
+const decommissionedChainStructuredData = generateDecommissionedChainStructuredData(network, environment, currentURL)
 ---
 
-<CcipLayout
+<CcipDirectoryLayout
   frontmatter={{
-    title: `CCIP Decommissioned Network - ${network.name}`,
+    title: chainMetadata.title,
     section: "ccip",
+    metadata: {
+      description: chainMetadata.description,
+      image: chainMetadata.image,
+      excerpt: chainMetadata.excerpt,
+    },
   }}
   {headings}
   environment={environment}
 >
+  <StructuredData data={decommissionedChainStructuredData} />
   <!-- Hero Section - Consistent with ChainHero pattern -->
   <section class="ccip-decom-hero">
     <div class="ccip-decom-hero__content">
@@ -122,7 +143,7 @@ const allDecommissionedNetworks = getAllDecommissionedNetworks({ filter: environ
       </div>
     </div>
   </section>
-</CcipLayout>
+</CcipDirectoryLayout>
 
 <style scoped="false">
   /* Hero Section - Consistent with ChainHero */
