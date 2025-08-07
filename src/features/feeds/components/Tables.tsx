@@ -9,7 +9,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { FEED_CATEGORY_CONFIG, getFeedRiskTierWithFallback } from "../../../db/feedCategories.js"
+import { FEED_CATEGORY_CONFIG, getFeedRiskTierWithComparison } from "../../../db/feedCategories.js"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -31,15 +31,107 @@ const getFeedCategoryElement = (riskTier: string | undefined) => {
   )
 }
 
-// ✅ Dynamic Supabase feed categories implementation
-// Feed categories are sourced from Supabase with graceful fallback
-const feedCategories = {
-  low: getFeedCategoryElement("low"),
-  medium: getFeedCategoryElement("medium"),
-  high: getFeedCategoryElement("high"),
-  new: getFeedCategoryElement("new"),
-  custom: getFeedCategoryElement("custom"),
-  deprecating: getFeedCategoryElement("deprecating"),
+// Dev mode warning banner
+const DevModeWarning = () => {
+  const [showDevMode, setShowDevMode] = useState(false)
+
+  useEffect(() => {
+    const checkDevMode = () => {
+      const devMode =
+        typeof window !== "undefined" &&
+        (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
+      console.log("🔍 DevModeWarning checking dev mode:", devMode)
+      setShowDevMode(devMode)
+    }
+
+    checkDevMode()
+    // Check every 2 seconds in case dev mode is toggled
+    const interval = setInterval(checkDevMode, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  console.log("🎯 DevModeWarning render - showDevMode:", showDevMode)
+
+  if (!showDevMode) return null
+
+  return (
+    <div
+      style={{
+        background: "#fef3c7",
+        border: "1px solid #f59e0b",
+        borderRadius: "8px",
+        padding: "12px 16px",
+        margin: "16px 0",
+        color: "#92400e",
+        fontSize: "14px",
+        fontWeight: "500",
+      }}
+    >
+      🔬 <strong>DEVELOPER TEST MODE ACTIVE</strong> - Categories show original → Supabase comparison. Disable with{" "}
+      <code style={{ background: "#fbbf24", padding: "2px 4px", borderRadius: "4px" }}>
+        window.CHAINLINK_DEV_MODE = false
+      </code>
+    </div>
+  )
+}
+const getFeedCategoryWithComparison = (comparisonData: {
+  final: string | null
+  original: string | null
+  supabase: string | null
+  changed: boolean
+  devMode: boolean
+}) => {
+  const { final, devMode } = comparisonData
+
+  // Add debugging
+  if (devMode) {
+    console.log("🔬 UI: getFeedCategoryWithComparison called with:", comparisonData)
+  }
+
+  // Always show the final category icon
+  return getFeedCategoryElement(final || undefined)
+}
+
+// New function to show comparison text under feed name
+const getComparisonText = (comparisonData: {
+  final: string | null
+  original: string | null
+  supabase: string | null
+  changed: boolean
+  devMode: boolean
+}) => {
+  const { original, supabase, changed, devMode } = comparisonData
+
+  if (!devMode || !changed) {
+    return null
+  }
+
+  const getIconForCategory = (category: string | null) => {
+    if (!category) return "❓"
+    const config = FEED_CATEGORY_CONFIG[category.toLowerCase()]
+    return config?.icon || "❓"
+  }
+
+  const originalIcon = getIconForCategory(original)
+  const supabaseIcon = getIconForCategory(supabase)
+
+  return (
+    <div
+      style={{
+        fontSize: "11px",
+        color: "#666",
+        marginTop: "4px",
+        background: "#f0f9ff",
+        padding: "2px 6px",
+        borderRadius: "3px",
+        border: "1px solid #0ea5e9",
+      }}
+    >
+      🔬
+      <br />
+      {originalIcon} {original || "none"} → {supabaseIcon} {supabase || "none"}
+    </div>
+  )
 }
 
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
@@ -163,35 +255,117 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
 }
 
 const DefaultTr = ({ network, metadata, showExtraDetails }) => {
-  // Enhanced feed category logic with async Supabase lookup
-  const [dynamicFeedCategory, setDynamicFeedCategory] = useState<string | undefined>(metadata.feedCategory)
+  // Enhanced feed category logic with dev mode comparison
+  const [comparisonData, setComparisonData] = useState<{
+    final: string | null
+    original: string | null
+    supabase: string | null
+    changed: boolean
+    devMode: boolean
+  }>({
+    final: metadata.feedCategory,
+    original: metadata.feedCategory,
+    supabase: null,
+    changed: false,
+    devMode: false,
+  })
 
-  // Effect to fetch risk tier from Supabase on component mount
+  // BASIC TEST - Log when component renders
+  console.log(`🚀 DefaultTr component loaded for ${metadata.name}`)
+
+  // Effect to fetch risk tier comparison data
   useEffect(() => {
+    console.log(`🔧 useEffect triggered for ${metadata.name}`)
+
     const fetchRiskTier = async () => {
-      if (metadata.proxyAddress && network?.referenceDataDirectorySchema) {
+      console.log(`🔧 fetchRiskTier starting for ${metadata.name}`, {
+        proxyAddress: metadata.proxyAddress,
+        networkSchema: network?.referenceDataDirectorySchema,
+        hasProxyAddress: !!metadata.proxyAddress,
+        hasNetworkSchema: !!network?.referenceDataDirectorySchema,
+      })
+
+      // DEBUG: Let's see what the network object actually contains
+      console.log(`🌐 Full network object for ${metadata.name}:`, network)
+
+      // Use the network type as the network identifier (mainnet, testnet, etc.)
+      const networkIdentifier = network?.networkType || "unknown"
+
+      console.log("🌍 NETWORK DEBUG:", {
+        network,
+        queryString: network?.queryString,
+        name: network?.name,
+        networkIdentifier,
+        allNetworkProps: Object.keys(network || {}),
+      })
+
+      // TEMP: Call directly with any proxy address in dev mode
+      if (metadata.proxyAddress) {
         try {
-          const supabaseRiskTier = await getFeedRiskTierWithFallback(
-            metadata.proxyAddress,
-            network.referenceDataDirectorySchema,
+          console.log(`📞 About to call getFeedRiskTierWithComparison for ${metadata.name}`)
+          const result = await getFeedRiskTierWithComparison(
+            metadata.contractAddress || metadata.proxyAddress,
+            networkIdentifier,
             metadata.feedCategory
           )
+          setComparisonData(result)
 
-          setDynamicFeedCategory(supabaseRiskTier || metadata.feedCategory)
+          // Console diff logging for dev mode
+          if (result.devMode) {
+            const hasChanges = result.changed
+            const diffInfo = {
+              feedName: metadata.name,
+              proxyAddress: metadata.proxyAddress,
+              network: network.referenceDataDirectorySchema,
+              original: result.original,
+              supabase: result.supabase,
+              final: result.final,
+              changed: hasChanges,
+              devMode: result.devMode,
+            }
+
+            // COMPREHENSIVE DATA DUMP
+            console.group(`🔍 FULL DATA DUMP - ${metadata.name}`)
+            console.log("📋 Feed Metadata:", {
+              name: metadata.name,
+              proxyAddress: metadata.proxyAddress,
+              feedCategory: metadata.feedCategory,
+              assetName: metadata.assetName,
+              feedType: metadata.feedType,
+            })
+            console.log("🌐 Network Info:", {
+              networkName: network.name,
+              referenceDataDirectorySchema: network.networkType,
+            })
+            console.log("📊 Comparison Result:", diffInfo)
+            console.log("🔄 Raw Result Object:", result)
+
+            if (hasChanges) {
+              console.log(`📊 DIFF DETECTED - ${metadata.name}:`, diffInfo)
+              console.log(`   Original: ${result.original} → Supabase: ${result.supabase}`)
+            } else {
+              console.log(`✅ NO DIFF - ${metadata.name}:`, diffInfo)
+            }
+            console.groupEnd()
+          }
         } catch (error) {
           console.warn("Failed to fetch risk tier for", metadata.name, error)
-          setDynamicFeedCategory(metadata.feedCategory)
+          setComparisonData({
+            final: metadata.feedCategory,
+            original: metadata.feedCategory,
+            supabase: null,
+            changed: false,
+            devMode: false,
+          })
         }
       }
     }
 
     fetchRiskTier()
-  }, [metadata.proxyAddress, metadata.feedCategory, network?.referenceDataDirectorySchema, metadata.name])
+  }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
 
   const getFinalFeedCategory = () => {
-    // Use dynamically fetched category
-    const categoryKey = dynamicFeedCategory?.toLowerCase()
-    return (categoryKey && feedCategories[categoryKey]) || getFeedCategoryElement(dynamicFeedCategory) || ""
+    return getFeedCategoryWithComparison(comparisonData)
   }
 
   return (
@@ -202,6 +376,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => {
             {getFinalFeedCategory()}
             {metadata.name}
           </div>
+          {getComparisonText(comparisonData)}
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
@@ -363,28 +538,93 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
 
-  // Dynamic feed category lookup for SmartData feeds
-  const [dynamicFeedCategory, setDynamicFeedCategory] = useState<string | undefined>(metadata.feedCategory)
+  // Dynamic feed category lookup for SmartData feeds with comparison
+  const [comparisonData, setComparisonData] = useState<{
+    final: string | null
+    original: string | null
+    supabase: string | null
+    changed: boolean
+    devMode: boolean
+  }>({
+    final: metadata.feedCategory,
+    original: metadata.feedCategory,
+    supabase: null,
+    changed: false,
+    devMode: false,
+  })
 
   useEffect(() => {
     const fetchRiskTier = async () => {
-      if (metadata.proxyAddress && network?.referenceDataDirectorySchema) {
+      // Use the network type as the network identifier (mainnet, testnet, etc.)
+      const networkIdentifier = network?.networkType || "unknown"
+
+      if (metadata.proxyAddress && network) {
         try {
-          const supabaseRiskTier = await getFeedRiskTierWithFallback(
-            metadata.proxyAddress,
-            network.referenceDataDirectorySchema,
+          const result = await getFeedRiskTierWithComparison(
+            metadata.contractAddress || metadata.proxyAddress,
+            networkIdentifier,
             metadata.feedCategory
           )
-          setDynamicFeedCategory(supabaseRiskTier || metadata.feedCategory)
+          setComparisonData(result)
+
+          // Console diff logging for dev mode
+          if (result.devMode) {
+            const hasChanges = result.changed
+            const diffInfo = {
+              feedName: metadata.name,
+              proxyAddress: metadata.proxyAddress,
+              network: network.referenceDataDirectorySchema,
+              original: result.original,
+              supabase: result.supabase,
+              final: result.final,
+              changed: hasChanges,
+              devMode: result.devMode,
+            }
+
+            // COMPREHENSIVE DATA DUMP FOR SMARTDATA
+            console.group(`🔍 SMARTDATA FULL DATA DUMP - ${metadata.name}`)
+            console.log("📋 SmartData Feed Metadata:", {
+              name: metadata.name,
+              proxyAddress: metadata.proxyAddress,
+              feedCategory: metadata.feedCategory,
+              assetName: metadata.assetName,
+              productType: metadata.docs?.productType,
+              isMVR: metadata.docs?.isMVR,
+            })
+            console.log("🌐 Network Info:", {
+              networkName: network.name,
+              referenceDataDirectorySchema: network.networkType,
+            })
+            console.log("📊 Comparison Result:", diffInfo)
+            console.log("🔄 Raw Result Object:", result)
+
+            if (hasChanges) {
+              console.log(`📊 SMARTDATA DIFF DETECTED - ${metadata.name}:`, diffInfo)
+              console.log(`   Original: ${result.original} → Supabase: ${result.supabase}`)
+            } else {
+              console.log(`✅ SMARTDATA NO DIFF - ${metadata.name}:`, diffInfo)
+            }
+            console.groupEnd()
+          }
         } catch (error) {
           console.warn("Failed to fetch risk tier for SmartData feed", metadata.name, error)
-          setDynamicFeedCategory(metadata.feedCategory)
+          setComparisonData({
+            final: metadata.feedCategory,
+            original: metadata.feedCategory,
+            supabase: null,
+            changed: false,
+            devMode: false,
+          })
         }
       }
     }
 
     fetchRiskTier()
-  }, [metadata.proxyAddress, metadata.feedCategory, network?.referenceDataDirectorySchema, metadata.name])
+  }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
+
+  const getSmartDataFeedCategory = () => {
+    return getFeedCategoryWithComparison(comparisonData)
+  }
 
   return (
     <tr>
@@ -405,8 +645,9 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
           return ""
         })}
         <div className={tableStyles.assetPair}>
-          {getFeedCategoryElement(dynamicFeedCategory) || ""} {metadata.name}
+          {getSmartDataFeedCategory()} {metadata.name}
         </div>
+        {getComparisonText(comparisonData)}
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
             <hr />
@@ -1054,6 +1295,7 @@ export const MainnetTable = ({
 
   return (
     <>
+      <DevModeWarning />
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (

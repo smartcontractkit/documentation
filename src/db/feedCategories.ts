@@ -1,5 +1,26 @@
 import { supabase } from "./supabase.js"
 
+// Development debug function
+function isDevelopmentDebug(): boolean {
+  return (
+    typeof window !== "undefined" && (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
+  )
+}
+
+// Development flag getter
+function getDevTestFlag(): boolean {
+  return (
+    typeof window !== "undefined" && (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
+  )
+}
+
+// Type for the docs_feeds_risk table
+type FeedRiskData = {
+  proxy_address: string
+  network: string
+  risk_status: string
+}
+
 // Centralized category configuration
 export const FEED_CATEGORY_CONFIG = {
   low: {
@@ -53,59 +74,94 @@ export const FEED_CATEGORY_CONFIG = {
 
 export const getDefaultCategories = () => Object.values(FEED_CATEGORY_CONFIG)
 
-export async function getFeedRiskData(proxyAddress?: string, network?: string) {
+export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]> {
+  if (!supabase) {
+    console.warn("getFeedRiskData: Supabase client not available")
+    return []
+  }
+
   try {
-    if (!supabase) {
-      console.warn("Supabase client not available")
-      return null
-    }
-
     let query = supabase.from("docs_feeds_risk").select("*")
-
-    if (proxyAddress) {
-      query = query.eq("proxy_address", proxyAddress)
-    }
 
     if (network) {
       query = query.eq("network", network)
+
+      if (isDevelopmentDebug()) {
+        console.log(`[DEBUG] getFeedRiskData: Using network: "${network}"`)
+      }
     }
 
-    const { data, error } = await query
+    const { data, error } = await query.limit(1000) // Use reasonable limit instead of .single()
 
     if (error) {
-      console.warn("Error fetching feed risk data:", error.message)
-      return null
+      console.error("Supabase query error:", error)
+      return []
     }
 
-    return data
-  } catch (e) {
-    console.error("Error fetching feed risk data:", e)
-    return null
+    if (isDevelopmentDebug()) {
+      console.log(`[DEBUG] getFeedRiskData: Loaded ${data?.length || 0} records for network ${network}`)
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Error in getFeedRiskData:", error)
+    return []
   }
 }
 
-export async function getFeedRiskTier(proxyAddress: string, network: string, fallbackCategory?: string) {
+export async function getFeedRiskTier(contractAddress: string, network: string, fallbackCategory?: string) {
   try {
+    // Always fetch from Supabase if available, even in non-dev mode
     if (!supabase) {
       console.warn("Supabase client not available, using fallback")
       return fallbackCategory || null
     }
 
+    // Map the network identifier to match the database schema
     const { data, error } = await supabase
       .from("docs_feeds_risk")
       .select("*")
-      .eq("proxy_address", proxyAddress)
+      .eq("proxy_address", contractAddress)
       .eq("network", network)
-      .single()
+      .limit(1)
 
     if (error) {
       console.warn("Error fetching feed risk tier:", error.message)
       return fallbackCategory || null
     }
 
-    return data?.risk_status || fallbackCategory || null
-  } catch (e) {
-    console.error("Error fetching feed risk tier:", e)
+    // Handle empty results - no matching records found
+    if (!data || data.length === 0) {
+      const devMode = getDevTestFlag()
+      if (devMode) {
+        console.log("🔬 DEV MODE: No Supabase data found for:", {
+          contractAddress,
+          network,
+          fallback: fallbackCategory,
+        })
+      }
+      return fallbackCategory || null
+    }
+
+    const supabaseRiskTier = data[0]?.risk_status || null
+    const finalCategory = supabaseRiskTier || fallbackCategory || null
+
+    // Enhanced logging when dev mode is enabled
+    const devMode = getDevTestFlag()
+    if (devMode && (supabaseRiskTier || fallbackCategory)) {
+      console.log("🔬 DEV MODE: Feed category comparison:", {
+        contractAddress,
+        network,
+        original: fallbackCategory,
+        supabase: supabaseRiskTier,
+        final: finalCategory,
+        changed: supabaseRiskTier && supabaseRiskTier !== fallbackCategory,
+      })
+    }
+
+    return finalCategory
+  } catch (error) {
+    console.error("Error in getFeedRiskTier:", error)
     return fallbackCategory || null
   }
 }
@@ -135,13 +191,13 @@ export async function getFeedCategories() {
     }
 
     const uniqueStatuses = Array.from(new Set(data.map((item) => item.risk_status).filter(Boolean))).filter(
-      (status) => status.toLowerCase() !== "hidden"
+      (status: string) => status.toLowerCase() !== "hidden"
     )
 
-    const dynamicCategories = uniqueStatuses.map((status) => {
-      const config = FEED_CATEGORY_CONFIG[status.toLowerCase()]
+    const dynamicCategories = uniqueStatuses.map((status: string) => {
+      const config = FEED_CATEGORY_CONFIG[status.toLowerCase() as keyof typeof FEED_CATEGORY_CONFIG]
       return {
-        key: status.toLowerCase(),
+        key: status.toLowerCase() as keyof typeof FEED_CATEGORY_CONFIG,
         name: config?.name || status,
       }
     })
@@ -154,7 +210,7 @@ export async function getFeedCategories() {
     const allCategories = [...defaultCategories]
     dynamicCategories.forEach((dynCat) => {
       if (!allCategories.find((cat) => cat.key === dynCat.key)) {
-        allCategories.push(dynCat)
+        allCategories.push(dynCat as (typeof allCategories)[0])
       }
     })
 
@@ -168,14 +224,153 @@ export async function getFeedCategories() {
   }
 }
 
+// Enhanced function for dev mode that returns comparison data
+export async function getFeedRiskTierWithComparison(
+  contractAddress: string,
+  network: string,
+  fallbackCategory?: string
+): Promise<{
+  final: string | null
+  original: string | null
+  supabase: string | null
+  changed: boolean
+  devMode: boolean
+}> {
+  const devMode = getDevTestFlag()
+  const original = fallbackCategory || null
+
+  // COMPREHENSIVE DEBUG LOGGING FOR ALL CALLS
+  if (devMode) {
+    console.group(`🔍 getFeedRiskTierWithComparison DEBUG - ${contractAddress}`)
+    console.log("📥 Input Parameters:", {
+      contractAddress,
+      network,
+      fallbackCategory,
+    })
+    console.log("🏁 Original Value:", original)
+    console.log("🎯 Dev Mode Active:", devMode)
+    console.log("🔍 Network identifier analysis:", {
+      network,
+      networkType: typeof network,
+      networkLength: network?.length,
+    })
+  }
+
+  try {
+    if (!supabase) {
+      const result = {
+        final: original,
+        original,
+        supabase: null,
+        changed: false,
+        devMode,
+      }
+      if (devMode) {
+        console.log("❌ No Supabase client, returning:", result)
+        console.groupEnd()
+      }
+      return result
+    }
+
+    if (devMode) {
+      console.log("🔍 Querying Supabase with:", {
+        contractAddress,
+        network,
+      })
+    }
+
+    const { data, error } = await supabase
+      .from("docs_feeds_risk")
+      .select("*")
+      .eq("proxy_address", contractAddress)
+      .eq("network", network)
+      .limit(1)
+
+    if (devMode) {
+      console.log("📡 Supabase Query Result:", { data, error })
+    }
+
+    if (error) {
+      const result = {
+        final: original,
+        original,
+        supabase: null,
+        changed: false,
+        devMode,
+      }
+      if (devMode) {
+        console.log("❌ Supabase error, returning:", result)
+        console.groupEnd()
+      }
+      return result
+    }
+
+    // Handle empty results - no matching records found
+    if (!data || data.length === 0) {
+      const result = {
+        final: original,
+        original,
+        supabase: null,
+        changed: false,
+        devMode,
+      }
+      if (devMode) {
+        console.log("📝 No Supabase data found, returning:", result)
+        console.groupEnd()
+      }
+      return result
+    }
+
+    const supabaseRiskTier = data[0]?.risk_status || null
+    const final = supabaseRiskTier || original
+    const changed = supabaseRiskTier !== null && supabaseRiskTier !== original
+
+    const result = {
+      final,
+      original,
+      supabase: supabaseRiskTier,
+      changed,
+      devMode,
+    }
+
+    if (devMode) {
+      console.log("🎯 Final Comparison Result:", result)
+      console.log("🔄 Change Detection:", {
+        supabaseRiskTier,
+        original,
+        isNotNull: supabaseRiskTier !== null,
+        isDifferent: supabaseRiskTier !== original,
+        changed,
+      })
+      console.groupEnd()
+    }
+
+    return result
+  } catch (error) {
+    console.error("Error in getFeedRiskTierWithComparison:", error)
+    const result = {
+      final: original,
+      original,
+      supabase: null,
+      changed: false,
+      devMode,
+    }
+    if (devMode) {
+      console.log("❌ Exception occurred, returning:", result)
+      console.groupEnd()
+    }
+    return result
+  }
+}
+
 export async function getFeedRiskTierWithFallback(
-  proxyAddress: string,
+  contractAddress: string,
   network: string,
   fallbackCategory?: string
 ): Promise<string | undefined> {
   try {
     if (typeof window === "undefined") {
-      const riskTier = await getFeedRiskTier(proxyAddress, network, fallbackCategory)
+      const riskTier = await getFeedRiskTier(contractAddress, network, fallbackCategory)
       return riskTier || fallbackCategory
     } else {
       console.log("Client-side context: using fallback category instead of Supabase")
