@@ -1,15 +1,19 @@
 ---
-import { Metadata } from "src/content.config.ts"
+import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import { extractVersionInfo } from "@components/VersionSelector/utils/extractVersionInfo"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
+import StructuredData from "./StructuredData.astro"
+import { generateStructuredData, type VersionInfo } from "~/utils/structuredData"
 
 export interface Props {
   metadata?: Metadata
   canonicalURL: URL | string
+  quickstartFrontmatter?: QuickstartsFrontmatter
 }
 
-const { metadata, canonicalURL } = Astro.props
+const { metadata, canonicalURL, quickstartFrontmatter } = Astro.props
 const formattedContentTitle = metadata?.title
   ? `${metadata.title} | ${SITE.title}`
   : `${PAGE.titleFallback} | ${SITE.title}`
@@ -33,14 +37,38 @@ if (metadata?.image) {
 // Detect if this is an API reference page and get the product
 const currentPage = new URL(Astro.request.url).pathname
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
+
+// Extract version information for API reference pages
+let versionInfo: VersionInfo | undefined = undefined
+if (isApiReference && product && isVersioned) {
+  const extractedVersionInfo = extractVersionInfo(product, currentPage)
+  if (extractedVersionInfo) {
+    versionInfo = extractedVersionInfo.toVersionInfo()
+  }
+}
+
+// Generate structured data
+const canonicalURLObj = typeof canonicalURL === "string" ? new URL(canonicalURL) : canonicalURL
+
+// Use quickstart frontmatter if available, otherwise use regular metadata
+const structuredDataObjects = quickstartFrontmatter
+  ? generateStructuredData(quickstartFrontmatter, formattedContentTitle, canonicalURLObj, currentPage)
+  : generateStructuredData(
+      metadata,
+      formattedContentTitle,
+      canonicalURLObj,
+      currentPage,
+      metadata?.estimatedTime,
+      versionInfo
+    )
 ---
+
+<!-- Page Metadata -->{/* Conditional canonical: Let VersionSelectorHead handle it for versioned pages */}
+{!(isApiReference && product && isVersioned) && <link rel="canonical" href={canonicalURL} />}
 
 <!-- Version-specific SEO tags for API reference pages -->{
   isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
 }
-
-<!-- Page Metadata -->
-<link rel="canonical" href={canonicalURL} />
 
 <!-- Primary Meta Tags -->
 <meta name="description" content={description} />
@@ -68,9 +96,5 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 <link href="/images/logo.png" rel="apple-touch-icon" />
 
-<!--
-  TODO: Add json+ld data, maybe https://schema.org/APIReference makes sense?
-  Docs: https://developers.google.com/search/docs/advanced/structured-data/intro-structured-data
-  https://www.npmjs.com/package/schema-dts seems like a great resource for implementing this.
-  Even better, there's a React component that integrates with `schema-dts`: https://github.com/google/react-schemaorg
--->
+<!-- Structured Data (JSON-LD) -->
+<StructuredData data={structuredDataObjects} />

@@ -4,14 +4,15 @@ import HeadSEO from "~/components/HeadSEO.astro"
 import Header from "~/components/Header/Header.astro"
 import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
-import { Metadata } from "~/content.config.ts"
+import { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
 //
 
 interface Props {
   title: string
   metadata?: Metadata
+  quickstartFrontmatter?: QuickstartsFrontmatter
 }
-const { title, metadata } = Astro.props
+const { title, metadata, quickstartFrontmatter } = Astro.props
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 ---
@@ -19,7 +20,7 @@ const canonicalURL = new URL(canonicalURLStr)
 <html dir="ltr" lang="en-us" class="initial" transition:animate="none">
   <head>
     <HeadCommon {title} />
-    <HeadSEO metadata={metadata} {canonicalURL} />
+    <HeadSEO metadata={metadata} {canonicalURL} quickstartFrontmatter={quickstartFrontmatter} />
     <style>
       html {
         scroll-behavior: smooth;

@@ -32,10 +32,15 @@ const formattedContentTitle = `${frontmatter.title} | ${SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 
+// Only set default metadata if not already provided by the component
 frontmatter.metadata = frontmatter.metadata || {}
-frontmatter.metadata.image = "/files/ccip-directory.jpg"
-frontmatter.metadata.description =
-  "Access real-time information and operational statuses for Chainlink Cross-Chain Interoperability Protocol (CCIP) networks, lanes, and tokens."
+if (!frontmatter.metadata.image) {
+  frontmatter.metadata.image = "/files/ccip-directory.jpg"
+}
+if (!frontmatter.metadata.description) {
+  frontmatter.metadata.description =
+    "Access real-time information and operational statuses for Chainlink Cross-Chain Interoperability Protocol (CCIP) networks, lanes, and tokens."
+}
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
