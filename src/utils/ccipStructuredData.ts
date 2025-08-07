@@ -5,8 +5,7 @@
 
 import { Environment } from "../config/data/ccip/index.js"
 import type { Network } from "../config/data/ccip/index.js"
-
-const DOCS_BASE_URL = "https://docs.chain.link"
+import { CHAINLINK_ORGANIZATION, CHAINLINK_PUBLISHER, DOCS_BASE_URL } from "./structuredData.js"
 
 /**
  * Generate DataCatalog structured data for CCIP directory landing pages
@@ -29,23 +28,18 @@ export function generateDirectoryStructuredData(
     name: `CCIP Network Directory - ${environmentText}`,
     description: `Real-time status and information for Chainlink Cross-Chain Interoperability Protocol networks on ${environmentText}`,
     url: canonicalURL,
-    provider: {
-      "@type": "Organization",
-      name: "Chainlink Labs",
-      url: "https://chain.link",
-    },
+    provider: CHAINLINK_ORGANIZATION,
+    publisher: CHAINLINK_PUBLISHER,
     dataset: networks.map((network) => ({
       "@type": "Dataset",
       name: `${network.name} CCIP Network Data`,
       description: `Cross-chain interoperability data for ${network.name} including supported tokens and active lanes`,
       url: `${DOCS_BASE_URL}/ccip/directory/${environment}/chain/${network.chain}`,
-      provider: {
-        "@type": "Organization",
-        name: "Chainlink Labs",
-      },
+      provider: CHAINLINK_ORGANIZATION,
     })),
     dateModified: new Date().toISOString().split("T")[0],
-    inLanguage: "en",
+    inLanguage: "en-US",
+    isAccessibleForFree: true,
   })
 
   // BreadcrumbList for navigation
@@ -106,11 +100,8 @@ export function generateChainStructuredData(
     description: `Cross-chain interoperability service for ${network.name} blockchain on ${environmentText}`,
     url: canonicalURL,
     serviceType: "Blockchain Interoperability Protocol",
-    provider: {
-      "@type": "Organization",
-      name: "Chainlink Labs",
-      url: "https://chain.link",
-    },
+    provider: CHAINLINK_ORGANIZATION,
+    publisher: CHAINLINK_PUBLISHER,
     areaServed: {
       "@type": "Place",
       name: "Global",
@@ -125,6 +116,8 @@ export function generateChainStructuredData(
       "@type": "Audience",
       audienceType: "Developers",
     },
+    inLanguage: "en-US",
+    isAccessibleForFree: true,
   })
 
   // BreadcrumbList for chain page navigation
@@ -190,16 +183,15 @@ export function generateTokenStructuredData(
     description: `${token} cryptocurrency token with cross-chain transfer capabilities via Chainlink CCIP on ${environmentText}`,
     url: canonicalURL,
     category: "Cryptocurrency",
-    provider: {
-      "@type": "Organization",
-      name: "Chainlink Labs",
-      url: "https://chain.link",
-    },
+    provider: CHAINLINK_ORGANIZATION,
+    publisher: CHAINLINK_PUBLISHER,
     audience: {
       "@type": "Audience",
       audienceType: "Cryptocurrency Traders",
     },
     feesAndCommissionsSpecification: "Variable fees based on destination network and token transfer mechanism",
+    inLanguage: "en-US",
+    isAccessibleForFree: true,
   })
 
   // BreadcrumbList for token page navigation
@@ -264,11 +256,8 @@ export function generateDecommissionedChainStructuredData(
     description: `Decommissioned cross-chain interoperability service for ${network.name} blockchain on ${environmentText}. Historical data remains accessible.`,
     url: canonicalURL,
     serviceType: "Blockchain Interoperability Protocol",
-    provider: {
-      "@type": "Organization",
-      name: "Chainlink Labs",
-      url: "https://chain.link",
-    },
+    provider: CHAINLINK_ORGANIZATION,
+    publisher: CHAINLINK_PUBLISHER,
     areaServed: {
       "@type": "Place",
       name: "Global",
@@ -288,6 +277,8 @@ export function generateDecommissionedChainStructuredData(
       name: "Historical Transaction Data",
       description: "Access to historical cross-chain transaction records",
     },
+    inLanguage: "en-US",
+    isAccessibleForFree: true,
   })
 
   // BreadcrumbList for decommissioned chain page navigation
