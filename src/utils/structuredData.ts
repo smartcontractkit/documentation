@@ -198,6 +198,14 @@ export function extractProgrammingLanguages(excerpt?: string, pathname?: string)
     languages.push("Go")
   }
 
+  if (content.includes("move") && (content.includes("aptos") || content.includes("sui"))) {
+    languages.push("Move")
+  }
+
+  if (content.includes("tolk")) {
+    languages.push("Tolk")
+  }
+
   return languages
 }
 
