@@ -13,6 +13,8 @@ import {
 import { getTokenIconUrl } from "~/features/utils"
 import NetworkGrid from "./NetworkGrid"
 import TokenGrid from "../TokenGrid/TokenGrid"
+import StructuredData from "~/components/StructuredData.astro"
+import { generateDirectoryStructuredData } from "~/utils/ccipStructuredData"
 
 export type Props = {
   environment: Environment
@@ -41,9 +43,18 @@ const allTokens = tokens.map((token) => {
   }
 })
 const searchLanes = getSearchLanes({ environment })
+
+// Generate directory-level structured data (DataCatalog/Dataset)
+const directoryStructuredData = generateDirectoryStructuredData(
+  environment,
+  networks,
+  tokens,
+  new URL(Astro.request.url).href
+)
 ---
 
 <CcipDirectoryLayout frontmatter={entry.data} {headings} environment={environment}>
+  <StructuredData data={directoryStructuredData} />
   <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
   <section class="layout">
     <div>

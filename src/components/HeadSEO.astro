@@ -12,9 +12,10 @@ export interface Props {
   canonicalURL: URL | string
   quickstartFrontmatter?: QuickstartsFrontmatter
   pageTitle?: string // Add page title from frontmatter
+  howToSteps?: { name: string; slug: string }[]
 }
 
-const { metadata, canonicalURL, quickstartFrontmatter, pageTitle } = Astro.props
+const { metadata, canonicalURL, quickstartFrontmatter, pageTitle, howToSteps } = Astro.props
 const formattedContentTitle = pageTitle
   ? `${pageTitle} | ${SITE.title}`
   : metadata?.title
@@ -53,21 +54,59 @@ if (isApiReference && product && isVersioned) {
 // Generate structured data
 const canonicalURLObj = typeof canonicalURL === "string" ? new URL(canonicalURL) : canonicalURL
 
+// Canonical override support (non-versioned pages only)
+const resolvedCanonicalHref = (() => {
+  const candidate = metadata?.canonical
+  if (!candidate) return canonicalURL
+  try {
+    // If candidate is absolute, use it; otherwise resolve against site
+    const url = new URL(candidate, Astro.site)
+    return url.toString()
+  } catch {
+    return canonicalURL
+  }
+})()
+
+// Contextual Open Graph type
+const ogType = (() => {
+  const websiteExact = new Set([
+    "/",
+    "/ccip",
+    "/data-feeds",
+    "/vrf",
+    "/chainlink-functions",
+    "/chainlink-automation",
+    "/chainlink-local",
+    "/resources",
+  ])
+  const isWebsite = websiteExact.has(currentPage) || currentPage.startsWith("/ccip/directory")
+  return isWebsite ? "website" : "article"
+})()
+
 // Use quickstart frontmatter if available, otherwise use regular metadata
 const structuredDataObjects = quickstartFrontmatter
-  ? generateStructuredData(quickstartFrontmatter, formattedContentTitle, canonicalURLObj, currentPage)
+  ? generateStructuredData(
+      quickstartFrontmatter,
+      formattedContentTitle,
+      canonicalURLObj,
+      currentPage,
+      undefined,
+      undefined,
+      howToSteps
+    )
   : generateStructuredData(
       metadata,
       formattedContentTitle,
       canonicalURLObj,
       currentPage,
       metadata?.estimatedTime,
-      versionInfo
+      versionInfo,
+      howToSteps
     )
 ---
 
 <!-- Page Metadata -->{/* Conditional canonical: Let VersionSelectorHead handle it for versioned pages */}
-{!(isApiReference && product && isVersioned) && <link rel="canonical" href={canonicalURL} />}
+{!(isApiReference && product && isVersioned) && <link rel="canonical" href={resolvedCanonicalHref} />}
 
 <!-- Version-specific SEO tags for API reference pages -->{
   isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
@@ -75,7 +114,6 @@ const structuredDataObjects = quickstartFrontmatter
 
 <!-- Primary Meta Tags -->
 <meta name="description" content={description} />
-<meta name="keywords" content={excerpt} />
 <meta name="author" content="Chainlink Labs" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 {metadata?.datePublished && <meta name="article:published_time" content={metadata.datePublished} />}
@@ -84,10 +122,11 @@ const structuredDataObjects = quickstartFrontmatter
 
 <!-- OpenGraph Tags -->
 <meta property="og:title" content={formattedContentTitle} />
-<meta property="og:type" content="article" />
+<meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:locale" content={SITE.defaultLanguage} />
 <meta property="og:image" content={canonicalImageSrc} />
+<meta property="og:image:secure_url" content={canonicalImageSrc} />
 <meta property="og:image:alt" content={OPEN_GRAPH.image.alt} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />

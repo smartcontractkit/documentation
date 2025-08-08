@@ -594,7 +594,8 @@ export function generateHowTo(
   title: string,
   canonicalURL: URL,
   pathname: string,
-  estimatedTime?: string
+  estimatedTime?: string,
+  steps?: { name: string; slug: string }[]
 ): object {
   const difficulty = extractDifficulty(metadata?.excerpt, pathname)
   const { tools, prerequisites } = extractToolsAndPrerequisites(metadata?.excerpt, pathname)
@@ -646,6 +647,15 @@ export function generateHowTo(
         name: prereq,
       })),
     }),
+    ...(steps && steps.length > 0
+      ? {
+          step: steps.map((s) => ({
+            "@type": "HowToStep",
+            name: s.name,
+            url: `${canonicalURL.toString()}#${s.slug}`,
+          })),
+        }
+      : {}),
     // LearningResource properties
     educationalLevel: difficulty,
     teaches: `How to ${(metadata?.title || title).toLowerCase()}`,
@@ -702,6 +712,9 @@ export function generateAPIReference(
   // Use version-specific canonical URL if provided (for proper version SEO)
   const resolvedCanonicalUrl = (versionInfo?.canonicalUrl || canonicalURL.toString()).replace(/\/+$/, "")
 
+  // Schema.org compliant technical properties
+  const technicalProperties = generateTechnicalProperties(programmingModel, targetPlatform, programmingLanguages)
+
   return {
     "@context": "https://schema.org",
     "@type": ["APIReference", "TechArticle"],
@@ -716,7 +729,6 @@ export function generateAPIReference(
     inLanguage: "en-US",
     isAccessibleForFree: true,
     genre: "API Reference",
-    ...(version && { assemblyVersion: version }),
     image: {
       "@type": "ImageObject",
       url: metadata?.image
@@ -730,18 +742,9 @@ export function generateAPIReference(
     ...(metadata?.excerpt && {
       keywords: metadata.excerpt,
     }),
-    programmingModel,
-    targetPlatform,
-    // Schema.org compliant technical properties using additionalProperty for programmingLanguage
-    ...(programmingLanguages.length > 0 && {
-      additionalProperty: [
-        ...programmingLanguages.map((language) => ({
-          "@type": "PropertyValue",
-          name: "Programming Language",
-          value: language,
-          description: "Programming language used in the API",
-        })),
-      ],
+    // Schema.org compliant technical properties using additionalProperty
+    ...(technicalProperties.length > 0 && {
+      additionalProperty: technicalProperties,
     }),
     about: {
       "@type": "Thing",
@@ -857,7 +860,8 @@ export function generateQuickstartHowTo(
   frontmatter: QuickstartsFrontmatter,
   title: string,
   canonicalURL: URL,
-  pathname: string
+  pathname: string,
+  steps?: { name: string; slug: string }[]
 ): object {
   const difficulty = extractDifficulty(frontmatter.excerpt, pathname)
   const duration = parseTimeToISO8601(frontmatter.time)
@@ -913,6 +917,15 @@ export function generateQuickstartHowTo(
         name: prereq,
       })),
     }),
+    ...(steps && steps.length > 0
+      ? {
+          step: steps.map((s) => ({
+            "@type": "HowToStep",
+            name: s.name,
+            url: `${canonicalURL.toString()}#${s.slug}`,
+          })),
+        }
+      : {}),
     // LearningResource properties
     educationalLevel: difficulty,
     teaches: `How to ${frontmatter.title.toLowerCase()}`,
@@ -961,7 +974,8 @@ export function generateStructuredData(
   canonicalURL: URL,
   pathname: string,
   estimatedTime?: string,
-  versionInfo?: VersionInfo
+  versionInfo?: VersionInfo,
+  steps?: { name: string; slug: string }[]
 ): object[]
 
 export function generateStructuredData(
@@ -977,7 +991,8 @@ export function generateStructuredData(
   canonicalURL: URL,
   pathname: string,
   estimatedTime?: string,
-  versionInfo?: VersionInfo
+  versionInfo?: VersionInfo,
+  steps?: { name: string; slug: string }[]
 ): object[] {
   const structuredData: object[] = []
 
@@ -992,7 +1007,7 @@ export function generateStructuredData(
   if (isQuickstart) {
     // Handle quickstarts
     structuredData.push(
-      generateQuickstartHowTo(metadataOrFrontmatter as QuickstartsFrontmatter, title, canonicalURL, pathname)
+      generateQuickstartHowTo(metadataOrFrontmatter as QuickstartsFrontmatter, title, canonicalURL, pathname, steps)
     )
   } else {
     // Handle regular content
@@ -1002,7 +1017,7 @@ export function generateStructuredData(
     // Generate main content structured data based on type
     switch (schemaType) {
       case "HowTo":
-        structuredData.push(generateHowTo(metadata, title, canonicalURL, pathname, estimatedTime))
+        structuredData.push(generateHowTo(metadata, title, canonicalURL, pathname, estimatedTime, steps))
         break
       case "APIReference":
         structuredData.push(generateAPIReference(metadata, title, canonicalURL, pathname, versionInfo))
