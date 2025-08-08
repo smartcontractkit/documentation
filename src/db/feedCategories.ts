@@ -1,12 +1,5 @@
 import { supabase } from "./supabase.js"
 
-// Development debug function
-function isDevelopmentDebug(): boolean {
-  return (
-    typeof window !== "undefined" && (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
-  )
-}
-
 // Development flag getter
 function getDevTestFlag(): boolean {
   return (
@@ -85,10 +78,6 @@ export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]>
 
     if (network) {
       query = query.eq("network", network)
-
-      if (isDevelopmentDebug()) {
-        console.log(`[DEBUG] getFeedRiskData: Using network: "${network}"`)
-      }
     }
 
     const { data, error } = await query.limit(1000) // Use reasonable limit instead of .single()
@@ -96,10 +85,6 @@ export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]>
     if (error) {
       console.error("Supabase query error:", error)
       return []
-    }
-
-    if (isDevelopmentDebug()) {
-      console.log(`[DEBUG] getFeedRiskData: Loaded ${data?.length || 0} records for network ${network}`)
     }
 
     return data || []
@@ -132,31 +117,16 @@ export async function getFeedRiskTier(contractAddress: string, network: string, 
 
     // Handle empty results - no matching records found
     if (!data || data.length === 0) {
-      const devMode = getDevTestFlag()
-      if (devMode) {
-        console.log("🔬 DEV MODE: No Supabase data found for:", {
-          contractAddress,
-          network,
-          fallback: fallbackCategory,
-        })
-      }
       return fallbackCategory || null
     }
 
     const supabaseRiskTier = data[0]?.risk_status || null
     const finalCategory = supabaseRiskTier || fallbackCategory || null
 
-    // Enhanced logging when dev mode is enabled
+    // Only log diffs when dev mode is enabled
     const devMode = getDevTestFlag()
-    if (devMode && (supabaseRiskTier || fallbackCategory)) {
-      console.log("🔬 DEV MODE: Feed category comparison:", {
-        contractAddress,
-        network,
-        original: fallbackCategory,
-        supabase: supabaseRiskTier,
-        final: finalCategory,
-        changed: supabaseRiskTier && supabaseRiskTier !== fallbackCategory,
-      })
+    if (devMode && supabaseRiskTier && supabaseRiskTier !== fallbackCategory) {
+      console.log(`� ${contractAddress}: ${fallbackCategory} → ${supabaseRiskTier}`)
     }
 
     return finalCategory
@@ -239,44 +209,15 @@ export async function getFeedRiskTierWithComparison(
   const devMode = getDevTestFlag()
   const original = fallbackCategory || null
 
-  // COMPREHENSIVE DEBUG LOGGING FOR ALL CALLS
-  if (devMode) {
-    console.group(`🔍 getFeedRiskTierWithComparison DEBUG - ${contractAddress}`)
-    console.log("📥 Input Parameters:", {
-      contractAddress,
-      network,
-      fallbackCategory,
-    })
-    console.log("🏁 Original Value:", original)
-    console.log("🎯 Dev Mode Active:", devMode)
-    console.log("🔍 Network identifier analysis:", {
-      network,
-      networkType: typeof network,
-      networkLength: network?.length,
-    })
-  }
-
   try {
     if (!supabase) {
-      const result = {
+      return {
         final: original,
         original,
         supabase: null,
         changed: false,
         devMode,
       }
-      if (devMode) {
-        console.log("❌ No Supabase client, returning:", result)
-        console.groupEnd()
-      }
-      return result
-    }
-
-    if (devMode) {
-      console.log("🔍 Querying Supabase with:", {
-        contractAddress,
-        network,
-      })
     }
 
     const { data, error } = await supabase
@@ -286,39 +227,25 @@ export async function getFeedRiskTierWithComparison(
       .eq("network", network)
       .limit(1)
 
-    if (devMode) {
-      console.log("📡 Supabase Query Result:", { data, error })
-    }
-
     if (error) {
-      const result = {
+      return {
         final: original,
         original,
         supabase: null,
         changed: false,
         devMode,
       }
-      if (devMode) {
-        console.log("❌ Supabase error, returning:", result)
-        console.groupEnd()
-      }
-      return result
     }
 
     // Handle empty results - no matching records found
     if (!data || data.length === 0) {
-      const result = {
+      return {
         final: original,
         original,
         supabase: null,
         changed: false,
         devMode,
       }
-      if (devMode) {
-        console.log("📝 No Supabase data found, returning:", result)
-        console.groupEnd()
-      }
-      return result
     }
 
     const supabaseRiskTier = data[0]?.risk_status || null
@@ -333,33 +260,21 @@ export async function getFeedRiskTierWithComparison(
       devMode,
     }
 
-    if (devMode) {
-      console.log("🎯 Final Comparison Result:", result)
-      console.log("🔄 Change Detection:", {
-        supabaseRiskTier,
-        original,
-        isNotNull: supabaseRiskTier !== null,
-        isDifferent: supabaseRiskTier !== original,
-        changed,
-      })
-      console.groupEnd()
+    // Only log diffs in dev mode
+    if (devMode && changed) {
+      console.log(`🔄 ${contractAddress}: ${original} → ${supabaseRiskTier}`)
     }
 
     return result
   } catch (error) {
     console.error("Error in getFeedRiskTierWithComparison:", error)
-    const result = {
+    return {
       final: original,
       original,
       supabase: null,
       changed: false,
       devMode,
     }
-    if (devMode) {
-      console.log("❌ Exception occurred, returning:", result)
-      console.groupEnd()
-    }
-    return result
   }
 }
 
@@ -413,16 +328,6 @@ export async function getFeedRiskTiersBatch(
   const uniqueNetworks = Array.from(new Set(feedRequests.map((req) => req.network)))
   const uniqueAddresses = Array.from(new Set(feedRequests.map((req) => req.contractAddress)))
 
-  if (devMode) {
-    console.group(`🚀 BATCH getFeedRiskTiersBatch - ${feedRequests.length} requests`)
-    console.log("📊 Batch Stats:", {
-      totalRequests: feedRequests.length,
-      uniqueNetworks: uniqueNetworks.length,
-      uniqueAddresses: uniqueAddresses.length,
-      networks: uniqueNetworks,
-    })
-  }
-
   try {
     // Single query for all addresses and networks
     const { data, error } = await supabase
@@ -455,13 +360,6 @@ export async function getFeedRiskTiersBatch(
       supabaseData.set(key, row.risk_status)
     })
 
-    if (devMode) {
-      console.log("📡 Batch Query Results:", {
-        supabaseRecords: data?.length || 0,
-        lookupEntries: supabaseData.size,
-      })
-    }
-
     // Process each request using the batch data
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
       const key = `${contractAddress}-${network}`
@@ -478,21 +376,11 @@ export async function getFeedRiskTiersBatch(
         devMode,
       })
 
-      // Log individual changes in dev mode
+      // Only log diffs in dev mode
       if (devMode && changed) {
         console.log(`🔄 ${contractAddress}: ${original} → ${supabaseRiskTier}`)
       }
     })
-
-    if (devMode) {
-      const changedCount = Array.from(resultMap.values()).filter((result) => result.changed).length
-      console.log("🎯 Batch Processing Complete:", {
-        totalProcessed: resultMap.size,
-        changedFeeds: changedCount,
-        unchangedFeeds: resultMap.size - changedCount,
-      })
-      console.groupEnd()
-    }
   } catch (error) {
     console.error("Error in getFeedRiskTiersBatch:", error)
     // Return fallback values for all requests on error
@@ -506,9 +394,6 @@ export async function getFeedRiskTiersBatch(
         devMode,
       })
     })
-    if (devMode) {
-      console.groupEnd()
-    }
   }
 
   return resultMap
