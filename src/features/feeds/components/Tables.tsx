@@ -14,7 +14,16 @@ import { FEED_CATEGORY_CONFIG, getFeedRiskTierWithComparison } from "../../../db
 const feedItems = monitoredFeeds.mainnet
 
 // Centralized function to get feed category element using the shared config
-const getFeedCategoryElement = (riskTier: string | undefined) => {
+const getFeedCategoryElement = (riskTier: string | undefined, isLoading: boolean = false) => {
+  // Show gray circle while loading
+  if (isLoading) {
+    return (
+      <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Loading risk tier...">
+        ⚪ 
+      </span>
+    )
+  }
+
   if (!riskTier) return ""
 
   const lowerTier = riskTier.toLowerCase()
@@ -40,7 +49,6 @@ const DevModeWarning = () => {
       const devMode =
         typeof window !== "undefined" &&
         (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
-      console.log("🔍 DevModeWarning checking dev mode:", devMode)
       setShowDevMode(devMode)
     }
 
@@ -49,8 +57,6 @@ const DevModeWarning = () => {
     const interval = setInterval(checkDevMode, 2000)
     return () => clearInterval(interval)
   }, [])
-
-  console.log("🎯 DevModeWarning render - showDevMode:", showDevMode)
 
   if (!showDevMode) return null
 
@@ -80,16 +86,11 @@ const getFeedCategoryWithComparison = (comparisonData: {
   supabase: string | null
   changed: boolean
   devMode: boolean
-}) => {
-  const { final, devMode } = comparisonData
+}, isLoading: boolean = false) => {
+  const { final } = comparisonData
 
-  // Add debugging
-  if (devMode) {
-    console.log("🔬 UI: getFeedCategoryWithComparison called with:", comparisonData)
-  }
-
-  // Always show the final category icon
-  return getFeedCategoryElement(final || undefined)
+  // Always show the final category icon (or loading state)
+  return getFeedCategoryElement(final || undefined, isLoading)
 }
 
 // New function to show comparison text under feed name
@@ -270,83 +271,32 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => {
     devMode: false,
   })
 
-  // BASIC TEST - Log when component renders
-  console.log(`🚀 DefaultTr component loaded for ${metadata.name}`)
+  // Add loading state for risk category - start as false, set to true when API starts  
+  const [isLoadingRisk, setIsLoadingRisk] = useState(false)
 
   // Effect to fetch risk tier comparison data
   useEffect(() => {
-    console.log(`🔧 useEffect triggered for ${metadata.name}`)
-
     const fetchRiskTier = async () => {
-      console.log(`🔧 fetchRiskTier starting for ${metadata.name}`, {
-        proxyAddress: metadata.proxyAddress,
-        networkSchema: network?.referenceDataDirectorySchema,
-        hasProxyAddress: !!metadata.proxyAddress,
-        hasNetworkSchema: !!network?.referenceDataDirectorySchema,
-      })
-
-      // DEBUG: Let's see what the network object actually contains
-      console.log(`🌐 Full network object for ${metadata.name}:`, network)
-
       // Use the network type as the network identifier (mainnet, testnet, etc.)
       const networkIdentifier = network?.networkType || "unknown"
 
-      console.log("🌍 NETWORK DEBUG:", {
-        network,
-        queryString: network?.queryString,
-        name: network?.name,
-        networkIdentifier,
-        allNetworkProps: Object.keys(network || {}),
-      })
-
       // TEMP: Call directly with any proxy address in dev mode
       if (metadata.proxyAddress) {
+        // Ensure loading state is true at the start of API call
+        setIsLoadingRisk(true)
+        
         try {
-          console.log(`📞 About to call getFeedRiskTierWithComparison for ${metadata.name}`)
           const result = await getFeedRiskTierWithComparison(
             metadata.contractAddress || metadata.proxyAddress,
             networkIdentifier,
             metadata.feedCategory
           )
           setComparisonData(result)
+          setIsLoadingRisk(false) // Risk data loaded successfully
 
-          // Console diff logging for dev mode
-          if (result.devMode) {
-            const hasChanges = result.changed
-            const diffInfo = {
-              feedName: metadata.name,
-              proxyAddress: metadata.proxyAddress,
-              network: network.referenceDataDirectorySchema,
-              original: result.original,
-              supabase: result.supabase,
-              final: result.final,
-              changed: hasChanges,
-              devMode: result.devMode,
-            }
-
-            // COMPREHENSIVE DATA DUMP
-            console.group(`🔍 FULL DATA DUMP - ${metadata.name}`)
-            console.log("📋 Feed Metadata:", {
-              name: metadata.name,
-              proxyAddress: metadata.proxyAddress,
-              feedCategory: metadata.feedCategory,
-              assetName: metadata.assetName,
-              feedType: metadata.feedType,
-            })
-            console.log("🌐 Network Info:", {
-              networkName: network.name,
-              referenceDataDirectorySchema: network.networkType,
-            })
-            console.log("📊 Comparison Result:", diffInfo)
-            console.log("🔄 Raw Result Object:", result)
-
-            if (hasChanges) {
-              console.log(`📊 DIFF DETECTED - ${metadata.name}:`, diffInfo)
-              console.log(`   Original: ${result.original} → Supabase: ${result.supabase}`)
-            } else {
-              console.log(`✅ NO DIFF - ${metadata.name}:`, diffInfo)
-            }
-            console.groupEnd()
+          // Only log differences in dev mode
+          if (result.devMode && result.changed) {
+            console.log(`📊 ${metadata.name}: ${result.original} → ${result.supabase}`)
           }
         } catch (error) {
           console.warn("Failed to fetch risk tier for", metadata.name, error)
@@ -357,7 +307,11 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => {
             changed: false,
             devMode: false,
           })
+          setIsLoadingRisk(false) // Stop loading even on error
         }
+      } else {
+        // No proxy address, no API call needed
+        setIsLoadingRisk(false)
       }
     }
 
@@ -365,7 +319,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => {
   }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
 
   const getFinalFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData)
+    return getFeedCategoryWithComparison(comparisonData, isLoadingRisk)
   }
 
   return (
@@ -553,8 +507,19 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
     devMode: false,
   })
 
+  // Add loading state for risk category - start as false, set to true when API starts
+  const [isLoadingRisk, setIsLoadingRisk] = useState(false)
+
   useEffect(() => {
     const fetchRiskTier = async () => {
+      // Only load if we have a proxy address
+      if (!metadata.proxyAddress) {
+        setIsLoadingRisk(false)
+        return
+      }
+
+      // Ensure loading state is true at the start of API call
+      setIsLoadingRisk(true)
       // Use the network type as the network identifier (mainnet, testnet, etc.)
       const networkIdentifier = network?.networkType || "unknown"
 
@@ -566,45 +531,11 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
             metadata.feedCategory
           )
           setComparisonData(result)
+          setIsLoadingRisk(false) // Risk data loaded successfully
 
-          // Console diff logging for dev mode
-          if (result.devMode) {
-            const hasChanges = result.changed
-            const diffInfo = {
-              feedName: metadata.name,
-              proxyAddress: metadata.proxyAddress,
-              network: network.referenceDataDirectorySchema,
-              original: result.original,
-              supabase: result.supabase,
-              final: result.final,
-              changed: hasChanges,
-              devMode: result.devMode,
-            }
-
-            // COMPREHENSIVE DATA DUMP FOR SMARTDATA
-            console.group(`🔍 SMARTDATA FULL DATA DUMP - ${metadata.name}`)
-            console.log("📋 SmartData Feed Metadata:", {
-              name: metadata.name,
-              proxyAddress: metadata.proxyAddress,
-              feedCategory: metadata.feedCategory,
-              assetName: metadata.assetName,
-              productType: metadata.docs?.productType,
-              isMVR: metadata.docs?.isMVR,
-            })
-            console.log("🌐 Network Info:", {
-              networkName: network.name,
-              referenceDataDirectorySchema: network.networkType,
-            })
-            console.log("📊 Comparison Result:", diffInfo)
-            console.log("🔄 Raw Result Object:", result)
-
-            if (hasChanges) {
-              console.log(`📊 SMARTDATA DIFF DETECTED - ${metadata.name}:`, diffInfo)
-              console.log(`   Original: ${result.original} → Supabase: ${result.supabase}`)
-            } else {
-              console.log(`✅ SMARTDATA NO DIFF - ${metadata.name}:`, diffInfo)
-            }
-            console.groupEnd()
+          // Only log differences in dev mode
+          if (result.devMode && result.changed) {
+            console.log(`📊 SmartData ${metadata.name}: ${result.original} → ${result.supabase}`)
           }
         } catch (error) {
           console.warn("Failed to fetch risk tier for SmartData feed", metadata.name, error)
@@ -615,6 +546,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
             changed: false,
             devMode: false,
           })
+          setIsLoadingRisk(false) // Stop loading even on error
         }
       }
     }
@@ -623,7 +555,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
   }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
 
   const getSmartDataFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData)
+    return getFeedCategoryWithComparison(comparisonData, isLoadingRisk)
   }
 
   return (
