@@ -17,8 +17,17 @@ interface Props {
   structuredData?: object | object[]
   pageTitleOverride?: string
   metadataOverride?: Metadata
+  suppressDefaultStructuredData?: boolean
 }
-const { frontmatter, headings, environment, structuredData, pageTitleOverride, metadataOverride } = Astro.props
+const {
+  frontmatter,
+  headings,
+  environment,
+  structuredData,
+  pageTitleOverride,
+  metadataOverride,
+  suppressDefaultStructuredData,
+} = Astro.props
 
 const titleHeading: MarkdownHeading = {
   text: frontmatter.title,
@@ -45,6 +54,7 @@ const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.met
   metadata={layoutMetadata}
   pageTitle={effectiveTitle}
   structuredData={structuredData}
+  suppressDefaultStructuredData={suppressDefaultStructuredData}
 >
   <Drawer client:only="react" />
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />

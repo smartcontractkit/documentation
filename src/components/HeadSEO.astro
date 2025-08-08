@@ -1,6 +1,8 @@
 ---
 import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
+import { getOgType } from "~/utils/seo/og"
+import { resolveCanonical, getMimeFromUrlPath, toAbsoluteUrl } from "~/utils/seo/url"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
 import { extractVersionInfo } from "@components/VersionSelector/utils/extractVersionInfo"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
@@ -13,9 +15,11 @@ export interface Props {
   quickstartFrontmatter?: QuickstartsFrontmatter
   pageTitle?: string // Add page title from frontmatter
   howToSteps?: { name: string; slug: string }[]
+  suppressDefaultStructuredData?: boolean
 }
 
-const { metadata, canonicalURL, quickstartFrontmatter, pageTitle, howToSteps } = Astro.props
+const { metadata, canonicalURL, quickstartFrontmatter, pageTitle, howToSteps, suppressDefaultStructuredData } =
+  Astro.props
 const contentTitle = pageTitle ?? metadata?.title ?? PAGE.titleFallback
 const formattedContentTitle = `${contentTitle} | ${SITE.title}`
 const description = metadata?.description ?? SITE.description
@@ -26,14 +30,10 @@ var canonicalImageSrc = OPEN_GRAPH.image.src
 let ogImageType = "image/png"
 let ogImageAlt = OPEN_GRAPH.image.alt
 if (metadata?.image) {
-  const imageUrl = new URL(metadata.image, Astro.site).toString()
+  const imageUrl = toAbsoluteUrl(metadata.image, Astro.site)
   canonicalImageSrc = imageUrl
-  // Infer from URL pathname only (ignore query/hash) to avoid network requests
-  const pathname = new URL(imageUrl).pathname.toLowerCase()
-  if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) ogImageType = "image/jpeg"
-  else if (pathname.endsWith(".png")) ogImageType = "image/png"
-  else if (pathname.endsWith(".webp")) ogImageType = "image/webp"
-  else if (pathname.endsWith(".gif")) ogImageType = "image/gif"
+  const pathname = new URL(imageUrl).pathname
+  ogImageType = getMimeFromUrlPath(pathname) || ogImageType
 }
 
 // Prefer a context-specific image alt when possible
@@ -54,60 +54,38 @@ if (isApiReference && product && isVersioned) {
 }
 
 // Generate structured data
-const canonicalURLObj = typeof canonicalURL === "string" ? new URL(canonicalURL) : canonicalURL
+const canonicalURLObj: URL = typeof canonicalURL === "string" ? new URL(canonicalURL) : (canonicalURL as URL)
 
 // Canonical override support (non-versioned pages only)
-const resolvedCanonicalHref = (() => {
-  const candidate = metadata?.canonical
-  if (!candidate) return canonicalURL
-  try {
-    // If candidate is absolute, use it; otherwise resolve against site
-    const url = new URL(candidate, Astro.site)
-    return url.toString()
-  } catch {
-    return canonicalURL
-  }
-})()
+const resolvedCanonicalHref = resolveCanonical(metadata?.canonical, Astro.site, canonicalURLObj)
 
 // Contextual Open Graph type
-const ogType = (() => {
-  const websiteExact = new Set([
-    "/",
-    "/ccip",
-    "/data-feeds",
-    "/vrf",
-    "/chainlink-functions",
-    "/chainlink-automation",
-    "/chainlink-local",
-    "/resources",
-  ])
-  const isWebsite = websiteExact.has(currentPage) || currentPage.startsWith("/ccip/directory")
-  return isWebsite ? "website" : "article"
-})()
+const ogType = getOgType(currentPage)
 
 // Use quickstart frontmatter if available, otherwise use regular metadata
 // Suppress default structured data for CCIP directory pages (handled by page-level generators)
-const structuredDataObjects = isCcipDirectoryPath
-  ? []
-  : quickstartFrontmatter
-    ? generateStructuredData(
-        quickstartFrontmatter,
-        contentTitle,
-        canonicalURLObj,
-        currentPage,
-        undefined,
-        undefined,
-        howToSteps
-      )
-    : generateStructuredData(
-        metadata,
-        contentTitle,
-        canonicalURLObj,
-        currentPage,
-        metadata?.estimatedTime,
-        versionInfo,
-        howToSteps
-      )
+const structuredDataObjects =
+  suppressDefaultStructuredData || isCcipDirectoryPath
+    ? []
+    : quickstartFrontmatter
+      ? generateStructuredData(
+          quickstartFrontmatter,
+          contentTitle,
+          canonicalURLObj,
+          currentPage,
+          undefined,
+          undefined,
+          howToSteps
+        )
+      : generateStructuredData(
+          metadata,
+          contentTitle,
+          canonicalURLObj,
+          currentPage,
+          metadata?.estimatedTime,
+          versionInfo,
+          howToSteps
+        )
 ---
 
 <!-- Page Metadata -->{/* Conditional canonical: Let VersionSelectorHead handle it for versioned pages */}

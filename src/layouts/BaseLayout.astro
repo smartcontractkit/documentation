@@ -15,8 +15,10 @@ interface Props {
   pageTitle?: string
   howToSteps?: { name: string; slug: string }[]
   structuredData?: object | object[]
+  suppressDefaultStructuredData?: boolean
 }
-const { title, metadata, quickstartFrontmatter, pageTitle, howToSteps, structuredData } = Astro.props
+const { title, metadata, quickstartFrontmatter, pageTitle, howToSteps, structuredData, suppressDefaultStructuredData } =
+  Astro.props
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 ---
@@ -30,6 +32,7 @@ const canonicalURL = new URL(canonicalURLStr)
       quickstartFrontmatter={quickstartFrontmatter}
       {pageTitle}
       howToSteps={howToSteps}
+      suppressDefaultStructuredData={suppressDefaultStructuredData}
     />
     {structuredData && <StructuredData data={structuredData} />}
     <style>
