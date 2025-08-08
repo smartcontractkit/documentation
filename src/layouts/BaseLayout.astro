@@ -1,6 +1,7 @@
 ---
 import HeadCommon from "~/components/HeadCommon.astro"
 import HeadSEO from "~/components/HeadSEO.astro"
+import StructuredData from "~/components/StructuredData.astro"
 import Header from "~/components/Header/Header.astro"
 import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
@@ -13,8 +14,9 @@ interface Props {
   quickstartFrontmatter?: QuickstartsFrontmatter
   pageTitle?: string
   howToSteps?: { name: string; slug: string }[]
+  structuredData?: object | object[]
 }
-const { title, metadata, quickstartFrontmatter, pageTitle, howToSteps } = Astro.props
+const { title, metadata, quickstartFrontmatter, pageTitle, howToSteps, structuredData } = Astro.props
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 ---
@@ -29,6 +31,7 @@ const canonicalURL = new URL(canonicalURLStr)
       {pageTitle}
       howToSteps={howToSteps}
     />
+    {structuredData && <StructuredData data={structuredData} />}
     <style>
       html {
         scroll-behavior: smooth;

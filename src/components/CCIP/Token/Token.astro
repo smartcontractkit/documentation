@@ -24,6 +24,7 @@ import {
 import Drawer from "~/components/CCIP/Drawer/Drawer"
 import { generateTokenStructuredData } from "~/utils/ccipStructuredData"
 import StructuredData from "~/components/StructuredData.astro"
+import { DOCS_BASE_URL } from "~/utils/structuredData"
 
 interface Props {
   token: string
@@ -84,8 +85,10 @@ const tokenMetadata = {
   excerpt: `${token} cross-chain token CCIP ${environmentText.toLowerCase()} supported networks pool types rate limits transfer mechanisms blockchain interoperability`,
 }
 
-// Generate structured data for this token page
-const tokenStructuredData = generateTokenStructuredData(token, environment, chainsOfToken.length, Astro.url.href)
+// Generate structured data for this token page (use production base for JSON-LD URLs)
+const currentPath = new URL(Astro.request.url).pathname
+const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
+const tokenStructuredData = generateTokenStructuredData(token, environment, chainsOfToken.length, canonicalForJsonLd)
 ---
 
 <CcipDirectoryLayout
@@ -100,6 +103,13 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
   }}
   {headings}
   environment={environment}
+  structuredData={tokenStructuredData}
+  pageTitleOverride={tokenMetadata.title}
+  metadataOverride={{
+    description: tokenMetadata.description,
+    image: tokenMetadata.image,
+    excerpt: tokenMetadata.excerpt,
+  }}
 >
   <ChainHero
     chains={networks}
@@ -157,8 +167,6 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
     </div>
   </section>
 </CcipDirectoryLayout>
-
-<StructuredData data={tokenStructuredData} />
 
 <style scoped="false">
   .layout {
