@@ -363,6 +363,157 @@ export async function getFeedRiskTierWithComparison(
   }
 }
 
+// Batched version for improved performance
+export async function getFeedRiskTiersBatch(
+  feedRequests: Array<{
+    contractAddress: string
+    network: string
+    fallbackCategory?: string
+  }>
+): Promise<
+  Map<
+    string,
+    {
+      final: string | null
+      original: string | null
+      supabase: string | null
+      changed: boolean
+      devMode: boolean
+    }
+  >
+> {
+  const devMode = getDevTestFlag()
+  const resultMap = new Map<
+    string,
+    {
+      final: string | null
+      original: string | null
+      supabase: string | null
+      changed: boolean
+      devMode: boolean
+    }
+  >()
+
+  // If no Supabase client, return fallback values for all requests
+  if (!supabase) {
+    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+      const key = `${contractAddress}-${network}`
+      resultMap.set(key, {
+        final: fallbackCategory || null,
+        original: fallbackCategory || null,
+        supabase: null,
+        changed: false,
+        devMode,
+      })
+    })
+    return resultMap
+  }
+
+  // Get unique networks and contract addresses
+  const uniqueNetworks = Array.from(new Set(feedRequests.map((req) => req.network)))
+  const uniqueAddresses = Array.from(new Set(feedRequests.map((req) => req.contractAddress)))
+
+  if (devMode) {
+    console.group(`🚀 BATCH getFeedRiskTiersBatch - ${feedRequests.length} requests`)
+    console.log("📊 Batch Stats:", {
+      totalRequests: feedRequests.length,
+      uniqueNetworks: uniqueNetworks.length,
+      uniqueAddresses: uniqueAddresses.length,
+      networks: uniqueNetworks,
+    })
+  }
+
+  try {
+    // Single query for all addresses and networks
+    const { data, error } = await supabase
+      .from("docs_feeds_risk")
+      .select("*")
+      .in("proxy_address", uniqueAddresses)
+      .in("network", uniqueNetworks)
+      .limit(1000) // Reasonable limit for batch operations
+
+    if (error) {
+      console.error("Batch Supabase query error:", error)
+      // Return fallback values for all requests
+      feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+        const key = `${contractAddress}-${network}`
+        resultMap.set(key, {
+          final: fallbackCategory || null,
+          original: fallbackCategory || null,
+          supabase: null,
+          changed: false,
+          devMode,
+        })
+      })
+      return resultMap
+    }
+
+    // Create a lookup map from the batch results
+    const supabaseData = new Map<string, string>()
+    data?.forEach((row) => {
+      const key = `${row.proxy_address}-${row.network}`
+      supabaseData.set(key, row.risk_status)
+    })
+
+    if (devMode) {
+      console.log("📡 Batch Query Results:", {
+        supabaseRecords: data?.length || 0,
+        lookupEntries: supabaseData.size,
+      })
+    }
+
+    // Process each request using the batch data
+    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+      const key = `${contractAddress}-${network}`
+      const original = fallbackCategory || null
+      const supabaseRiskTier = supabaseData.get(key) || null
+      const final = supabaseRiskTier || original
+      const changed = supabaseRiskTier !== null && supabaseRiskTier !== original
+
+      resultMap.set(key, {
+        final,
+        original,
+        supabase: supabaseRiskTier,
+        changed,
+        devMode,
+      })
+
+      // Log individual changes in dev mode
+      if (devMode && changed) {
+        console.log(`🔄 ${contractAddress}: ${original} → ${supabaseRiskTier}`)
+      }
+    })
+
+    if (devMode) {
+      const changedCount = Array.from(resultMap.values()).filter((result) => result.changed).length
+      console.log("🎯 Batch Processing Complete:", {
+        totalProcessed: resultMap.size,
+        changedFeeds: changedCount,
+        unchangedFeeds: resultMap.size - changedCount,
+      })
+      console.groupEnd()
+    }
+  } catch (error) {
+    console.error("Error in getFeedRiskTiersBatch:", error)
+    // Return fallback values for all requests on error
+    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+      const key = `${contractAddress}-${network}`
+      resultMap.set(key, {
+        final: fallbackCategory || null,
+        original: fallbackCategory || null,
+        supabase: null,
+        changed: false,
+        devMode,
+      })
+    })
+    if (devMode) {
+      console.groupEnd()
+    }
+  }
+
+  return resultMap
+}
+
 export async function getFeedRiskTierWithFallback(
   contractAddress: string,
   network: string,

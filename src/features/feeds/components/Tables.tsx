@@ -9,7 +9,8 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { FEED_CATEGORY_CONFIG, getFeedRiskTierWithComparison } from "../../../db/feedCategories.js"
+import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
+import { useBatchedFeedCategories, getFeedCategoryFromBatch, type FeedCategoryData } from "./useBatchedFeedCategories.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -255,15 +256,9 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails }) => {
-  // Enhanced feed category logic with dev mode comparison
-  const [comparisonData, setComparisonData] = useState<{
-    final: string | null
-    original: string | null
-    supabase: string | null
-    changed: boolean
-    devMode: boolean
-  }>({
+const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
+  // Use batched category data instead of individual API calls
+  const [comparisonData, setComparisonData] = useState<FeedCategoryData>({
     final: metadata.feedCategory,
     original: metadata.feedCategory,
     supabase: null,
@@ -271,55 +266,54 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => {
     devMode: false,
   })
 
-  // Add loading state for risk category - start as false, set to true when API starts  
-  const [isLoadingRisk, setIsLoadingRisk] = useState(false)
+  // No longer need loading state since batch loading is handled at network level
 
-  // Effect to fetch risk tier comparison data
+  // Effect to get data from batch results when they're available
   useEffect(() => {
-    const fetchRiskTier = async () => {
-      // Use the network type as the network identifier (mainnet, testnet, etc.)
-      const networkIdentifier = network?.networkType || "unknown"
-
-      // TEMP: Call directly with any proxy address in dev mode
-      if (metadata.proxyAddress) {
-        // Ensure loading state is true at the start of API call
-        setIsLoadingRisk(true)
-        
-        try {
-          const result = await getFeedRiskTierWithComparison(
-            metadata.contractAddress || metadata.proxyAddress,
-            networkIdentifier,
-            metadata.feedCategory
-          )
-          setComparisonData(result)
-          setIsLoadingRisk(false) // Risk data loaded successfully
-
-          // Only log differences in dev mode
-          if (result.devMode && result.changed) {
-            console.log(`📊 ${metadata.name}: ${result.original} → ${result.supabase}`)
-          }
-        } catch (error) {
-          console.warn("Failed to fetch risk tier for", metadata.name, error)
-          setComparisonData({
-            final: metadata.feedCategory,
-            original: metadata.feedCategory,
-            supabase: null,
-            changed: false,
-            devMode: false,
-          })
-          setIsLoadingRisk(false) // Stop loading even on error
-        }
-      } else {
-        // No proxy address, no API call needed
-        setIsLoadingRisk(false)
-      }
+    // For testnet or networks without batch data, just use fallback
+    if (!batchedCategoryData || batchedCategoryData.size === 0) {
+      setComparisonData({
+        final: metadata.feedCategory,
+        original: metadata.feedCategory,
+        supabase: null,
+        changed: false,
+        devMode: false,
+      })
+      return
     }
 
-    fetchRiskTier()
-  }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
+    if (metadata.proxyAddress || metadata.contractAddress) {
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
+      const networkIdentifier = network?.networkType || "unknown"
+      
+      if (contractAddress) {
+        const batchResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        setComparisonData(batchResult)
+
+        // Only log differences in dev mode
+        if (batchResult.devMode && batchResult.changed) {
+          console.log(`📊 ${metadata.name}: ${batchResult.original} → ${batchResult.supabase}`)
+        }
+      }
+    } else {
+      // Fallback to original category if no proxy address
+      setComparisonData({
+        final: metadata.feedCategory,
+        original: metadata.feedCategory,
+        supabase: null,
+        changed: false,
+        devMode: false,
+      })
+    }
+  }, [batchedCategoryData, metadata.proxyAddress, metadata.contractAddress, metadata.feedCategory, network?.networkType, metadata.name])
 
   const getFinalFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData, isLoadingRisk)
+    return getFeedCategoryWithComparison(comparisonData, false)
   }
 
   return (
@@ -484,7 +478,7 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   </thead>
 )
 
-const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
+const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
   // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
   const isMVRFlagSet = metadata.docs?.isMVR === true
@@ -492,14 +486,8 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
 
-  // Dynamic feed category lookup for SmartData feeds with comparison
-  const [comparisonData, setComparisonData] = useState<{
-    final: string | null
-    original: string | null
-    supabase: string | null
-    changed: boolean
-    devMode: boolean
-  }>({
+  // Use batched category data instead of individual API calls
+  const [comparisonData, setComparisonData] = useState<FeedCategoryData>({
     final: metadata.feedCategory,
     original: metadata.feedCategory,
     supabase: null,
@@ -507,55 +495,41 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
     devMode: false,
   })
 
-  // Add loading state for risk category - start as false, set to true when API starts
-  const [isLoadingRisk, setIsLoadingRisk] = useState(false)
+  // No longer need loading state since batch loading is handled at network level
 
   useEffect(() => {
-    const fetchRiskTier = async () => {
-      // Only load if we have a proxy address
-      if (!metadata.proxyAddress) {
-        setIsLoadingRisk(false)
-        return
-      }
-
-      // Ensure loading state is true at the start of API call
-      setIsLoadingRisk(true)
-      // Use the network type as the network identifier (mainnet, testnet, etc.)
+    if (batchedCategoryData && metadata.proxyAddress) {
       const networkIdentifier = network?.networkType || "unknown"
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
 
-      if (metadata.proxyAddress && network) {
-        try {
-          const result = await getFeedRiskTierWithComparison(
-            metadata.contractAddress || metadata.proxyAddress,
-            networkIdentifier,
-            metadata.feedCategory
-          )
-          setComparisonData(result)
-          setIsLoadingRisk(false) // Risk data loaded successfully
+      if (contractAddress) {
+        const batchResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        setComparisonData(batchResult)
 
-          // Only log differences in dev mode
-          if (result.devMode && result.changed) {
-            console.log(`📊 SmartData ${metadata.name}: ${result.original} → ${result.supabase}`)
-          }
-        } catch (error) {
-          console.warn("Failed to fetch risk tier for SmartData feed", metadata.name, error)
-          setComparisonData({
-            final: metadata.feedCategory,
-            original: metadata.feedCategory,
-            supabase: null,
-            changed: false,
-            devMode: false,
-          })
-          setIsLoadingRisk(false) // Stop loading even on error
+        // Only log differences in dev mode
+        if (batchResult.devMode && batchResult.changed) {
+          console.log(`📊 SmartData ${metadata.name}: ${batchResult.original} → ${batchResult.supabase}`)
         }
       }
+    } else {
+      // Fallback to original category if no batch data
+      setComparisonData({
+        final: metadata.feedCategory,
+        original: metadata.feedCategory,
+        supabase: null,
+        changed: false,
+        devMode: false,
+      })
     }
-
-    fetchRiskTier()
-  }, [metadata.proxyAddress, metadata.feedCategory, network?.networkType, metadata.name])
+  }, [batchedCategoryData, metadata.proxyAddress, metadata.contractAddress, metadata.feedCategory, network?.networkType, metadata.name])
 
   const getSmartDataFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData, isLoadingRisk)
+    return getFeedCategoryWithComparison(comparisonData, false)
   }
 
   return (
@@ -1124,6 +1098,9 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
 
+  // Use batched feed category loading for this network
+  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
+
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isSmartData = dataFeedType === "smartdata"
   const isDefault = !isStreams && !isSmartData
@@ -1228,6 +1205,7 @@ export const MainnetTable = ({
   return (
     <>
       <DevModeWarning />
+      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1253,10 +1231,20 @@ export const MainnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet />}
                     {isSmartData && (
-                      <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <SmartDataTr 
+                        network={network} 
+                        metadata={metadata} 
+                        showExtraDetails={showExtraDetails} 
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
                     {isDefault && (
-                      <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <DefaultTr 
+                        network={network} 
+                        metadata={metadata} 
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
                   </>
                 ))}
@@ -1309,6 +1297,9 @@ export const TestnetTable = ({
   showOnlyDEXFeeds?: boolean
 }) => {
   if (!network.metadata) return null
+
+  // Use batched feed category loading for this network
+  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
 
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
   const isSmartData = dataFeedType === "smartdata"
@@ -1396,6 +1387,7 @@ export const TestnetTable = ({
 
   return (
     <>
+      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1422,12 +1414,29 @@ export const TestnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
                     {isSmartData && (
-                      <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <SmartDataTr 
+                        network={network} 
+                        metadata={metadata} 
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
                     {isDefault && (
-                      <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <DefaultTr 
+                        network={network} 
+                        metadata={metadata} 
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
-                    {isRates && <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />}
+                    {isRates && (
+                      <DefaultTr 
+                        network={network} 
+                        metadata={metadata} 
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
+                    )}
                   </>
                 ))}
               </tbody>
