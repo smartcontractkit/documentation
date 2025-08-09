@@ -819,7 +819,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 {metadata.docs.assetClass}
                 {metadata.docs.assetSubClass &&
                 metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Forex"
+                metadata.docs.assetSubClass !== "Equities"
                   ? " - " + metadata.docs.assetSubClass
                   : ""}
               </dd>
@@ -875,20 +875,20 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema" rel="noreferrer" target="_blank">
+                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
                   Crypto Schema (v3)
                 </a>
               </dd>
             </div>
           )}{" "}
-          {metadata.feedType === "Forex" && (
+          {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
-                <a href="/data-streams/reference/report-schema-v4" rel="noreferrer" target="_blank">
-                  RWA Schema (v4)
+                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                  RWA Schema (v8)
                 </a>
               </dd>
             </div>
@@ -904,6 +904,7 @@ export const MainnetTable = ({
   showExtraDetails,
   showOnlySVR,
   showOnlyMVRFeeds,
+  showOnlyDEXFeeds,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -918,6 +919,7 @@ export const MainnetTable = ({
   showExtraDetails: boolean
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
+  showOnlyDEXFeeds: boolean
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -945,14 +947,19 @@ export const MainnetTable = ({
       if (isDeprecating) return !!metadata.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
-        return (
+        const isValidStreamsFeed =
           metadata.contractType === "verifier" &&
           (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-        )
+
+        if (showOnlyDEXFeeds) {
+          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
+        }
+
+        return isValidStreamsFeed
       }
 
       if (dataFeedType === "streamsRwa") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Forex"
+        return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
       }
 
       if (isSmartData) {
@@ -1093,6 +1100,7 @@ export const TestnetTable = ({
   },
   searchValue = "",
   showOnlyMVRFeeds,
+  showOnlyDEXFeeds,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1105,6 +1113,7 @@ export const TestnetTable = ({
   paginate?: (page: number) => void
   searchValue?: string
   showOnlyMVRFeeds?: boolean
+  showOnlyDEXFeeds?: boolean
 }) => {
   if (!network.metadata) return null
 
@@ -1118,11 +1127,19 @@ export const TestnetTable = ({
     .filter((metadata) => {
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Crypto"
+          const isValidStreamsFeed =
+            metadata.contractType === "verifier" &&
+            (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
+
+          if (showOnlyDEXFeeds) {
+            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
+          }
+
+          return isValidStreamsFeed
         }
 
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Forex"
+          return metadata.contractType === "verifier" && metadata.feedType === "Equities"
         }
       }
 
