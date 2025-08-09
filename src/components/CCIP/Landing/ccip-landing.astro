@@ -13,6 +13,9 @@ import {
 import { getTokenIconUrl } from "~/features/utils"
 import NetworkGrid from "./NetworkGrid"
 import TokenGrid from "../TokenGrid/TokenGrid"
+import StructuredData from "~/components/StructuredData.astro"
+import { generateDirectoryStructuredData } from "~/utils/ccipStructuredData"
+import { DOCS_BASE_URL } from "~/utils/structuredData"
 
 export type Props = {
   environment: Environment
@@ -41,9 +44,27 @@ const allTokens = tokens.map((token) => {
   }
 })
 const searchLanes = getSearchLanes({ environment })
+
+// Generate directory-level structured data (DataCatalog/Dataset)
+// Use production base for canonical JSON-LD URLs (avoid local IPv6/port)
+const currentPath = new URL(Astro.request.url).pathname
+const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
+const directoryStructuredData = generateDirectoryStructuredData(environment, networks, tokens, canonicalForJsonLd)
 ---
 
-<CcipDirectoryLayout frontmatter={entry.data} {headings} environment={environment}>
+<CcipDirectoryLayout
+  frontmatter={entry.data}
+  {headings}
+  environment={environment}
+  structuredData={directoryStructuredData}
+  pageTitleOverride={`CCIP Directory - ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}`}
+  metadataOverride={{
+    ...(entry.data.metadata || {}),
+    description: `Explore CCIP Directory for ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}: configuration data for supported blockchains and tokens, cross-chain lanes, contract addresses, rate limits, and operational status on ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}.`,
+    image: "/files/ccip-directory.jpg",
+  }}
+  suppressDefaultStructuredData={true}
+>
   <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
   <section class="layout">
     <div>
