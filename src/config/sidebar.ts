@@ -1506,6 +1506,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "ccip/tools-resources/token-manager",
         },
         {
+          title: "Network Specific",
+          url: "ccip/tools-resources/network-specific",
+          children: [
+            {
+              title: "Hyperliquid Integration Guide",
+              url: "ccip/tools-resources/network-specific/hyperliquid-integration-guide",
+            },
+          ],
+        },
+        {
           title: "API Reference",
           url: "ccip/api-reference",
           children: [
