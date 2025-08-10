@@ -1,21 +1,22 @@
 ---
 section: dataStreams
 date: "Last Modified"
-title: "Data Streams Market Hours"
+title: "Data Streams Best Practices"
 metadata:
-  title: "Chainlink Data Streams Market Hours | Trading Hours by Asset Class"
-  description: "Market-open schedules for Chainlink Data Streams, covering crypto, forex, precious metals, US equities, and commodities."
+  title: "Chainlink Data Streams Best Practices | Risk Management and Implementation Guide"
+  description: "Best practices for using Chainlink Data Streams effectively, including market hours management, risk mitigation strategies, and robust application development."
   keywords:
     [
+      "Best Practices",
+      "Data Streams",
+      "Risk Management",
       "Market Hours",
       "Trading Hours",
-      "Crypto",
-      "Forex",
-      "Precious Metals",
-      "US Equities",
-      "Commodities",
+      "Market Gaps",
+      "Volatility",
+      "Corporate Actions",
       "RWA",
-      "Data Streams",
+      "Crypto",
     ]
 whatsnext:
   {
@@ -23,79 +24,44 @@ whatsnext:
     "Find the list of available RWA streams": "/data-streams/rwa-streams",
     "Find the schema of data to expect from Data Streams reports: Crypto": "/data-streams/reference/report-schema-v3",
     "Find the schema of data to expect from Data Streams reports: RWA": "/data-streams/reference/report-schema-v8",
-    "Learn best practices for managing market hours risks": "/data-streams/concepts/best-practices",
+    "Learn about Data Streams market hours and schedules": "/data-streams/market-hours",
   }
 ---
 
 import { Aside } from "@components"
 
-Markets for several assets are actively traded only during certain hours.
-
----
-
-## Cryptocurrency
-
-Cryptocurrency markets operate continuously, with no designated market close.
-
-| Asset class | Hours                       |
-| ----------- | --------------------------- |
-| **Crypto**  | 24/7/365 — No market close. |
-
----
-
-## Real-World Asset (RWA) market hours <span id="rwa-market-hours"></span>
-
-RWA markets operate during specific hours, with breaks for holidays and sometimes daily pauses.
-
-{/* prettier-ignore */}
-<Aside type="note" title="marketStatus values">
-  In the [RWA report schema (v8)](/data-streams/reference/report-schema-v8), the <code>marketStatus</code> field indicates market status:<br/>
-  • <code>0</code> → <strong>Unknown</strong><br/>
-  • <code>1</code> → <strong>Closed</strong><br/>
-  • <code>2</code> → <strong>Open</strong><br/>
-  All times are Eastern&nbsp;Time (ET, UTC-05 / UTC-04 DST).
-  </Aside>
-
-| Asset class                                                     | Weekly Open   | Weekly Close  | Daily Breaks \*     | Bank Holidays \*\*                                                                     |
-| --------------------------------------------------------------- | ------------- | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
-| **US Equities**<br/>(top-50 by market cap&nbsp;+ selected ETFs) | **09:30 Mon** | **16:00 Fri** | —                   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
-| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …)                  | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
-| **Precious Metals (Spot)**<br/>(XAU, XAG)                       | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
-| **Commodities** <br/> (WTI Synthetic Spot)                      | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
-
-\* Times shown as **HH:MM ET**.  
-\*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
-
----
-
-## User Recommendations
-
-For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours-best-practices) page.
+This guide provides best practices and recommendations for using Chainlink Data Streams effectively. Understanding these practices is crucial for building robust applications that handle various market conditions, edge cases, and potential risks.
 
 <Aside type="note" title="Developer Responsibilities">
   Make sure to review the <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page to
   understand the risks associated with both market integrity and application code.
 </Aside>
 
-The following sections outline common market issues related to RWA trading hours, and how users can mitigate risks.
+---
 
-Users should also consult the [Developer Responsibility page](/data-streams/developer-responsibilities) to understand the risks associated with both market integrity and application code.
+## Market Hours Best Practices <span id="market-hours-best-practices"></span>
 
-#### Market gaps
+Markets for Real-World Assets (RWA) operate during specific hours and are subject to various market conditions that can create risks for applications. The following sections outline common market issues and how to mitigate them.
+
+<Aside type="note" title="Market Hours Overview">
+  For detailed market hours and trading schedules, see the <a href="/data-streams/market-hours">Market Hours</a> page.
+</Aside>
+
+### Market gaps
 
 Market gaps occur when there are interruptions in trading or price discovery, leading to periods where the last available price may not reflect current market conditions. These gaps can create risks, particularly around market opens, closures, and unexpected disruptions.
 
-##### Market close
+#### Market close
 
 Large price jumps between trading sessions due to after-hours news.
 
-A large price jump at market open could cause sudden liquidations, potentially leaving the perpetual DEX with bad debt if a trader’s collateral is insufficient to cover the losses.
+A large price jump at market open could cause sudden liquidations, potentially leaving the perpetual DEX with bad debt if a trader's collateral is insufficient to cover the losses.
 
 | Data Stream behavior                                                                                                                                                                                     | User guidance                                                                                                                                                                                                                                                |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: 1 = Market Closed.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus = 1` to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a trader’s collateral is insufficient to cover the losses. |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: 1 = Market Closed.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus = 1` to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a trader's collateral is insufficient to cover the losses. |
 
-##### Price formation at open/close
+#### Price formation at open/close
 
 Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
 
@@ -105,7 +71,7 @@ The perpetual DEX should be careful of not opening their market with the last cl
 | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
 
-##### Sudden failures
+#### Sudden failures
 
 Unexpected system outages, order execution failures, or data feed disruptions can occur.
 
@@ -115,7 +81,7 @@ The price will be flat during that period, meaning if a perp DEX lacks a mechani
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
 
-##### Trading halts
+#### Trading halts
 
 Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
 
@@ -127,11 +93,11 @@ The price will be flat during that period, meaning if a perp DEX lacks a mechani
 
 ---
 
-#### Volatility & low liquidity
+### Volatility & low liquidity
 
 During periods of high volatility or low liquidity, price movements can become unpredictable and exaggerated. These conditions can increase the risk of sudden liquidations and bad debt accumulation, requiring careful risk management strategies.
 
-##### Algorithmic & HFT activity
+#### Algorithmic & HFT activity
 
 Rapid-fire trading by algos can create unpredictable price movements.
 
@@ -141,7 +107,7 @@ High volatility can lead to liquidation and potential bad debt accumulation.
 | :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
-##### Low liquidity at open/close
+#### Low liquidity at open/close
 
 Reduced market depth at trading session transitions can lead to higher volatility and spreads.
 
@@ -153,11 +119,11 @@ High volatility can lead to liquidation and potential bad debt accumulation.
 
 ---
 
-#### Corporate actions
+### Corporate actions
 
 Corporate actions are events initiated by publicly traded companies that can significantly impact stock prices and trading behavior. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen. Users should monitor these events closely as they can lead to sudden price adjustments that may trigger unexpected liquidations or require position modifications.
 
-##### Bankruptcy & delisting
+#### Bankruptcy & delisting
 
 Bankruptcy can lead to delisting or complete loss of equity value.
 
@@ -167,17 +133,17 @@ Delisting will zero out prices for the asset.
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during `marketStatus` = `1` and close markets permanently once confirmed. |
 
-##### Spin-offs
+#### Spin-offs
 
-When a company spins off a business unit into a separate publicly traded entity, the parent company’s stock may adjust accordingly, while the spun-off company’s shares begin trading independently.
+When a company spins off a business unit into a separate publicly traded entity, the parent company's stock may adjust accordingly, while the spun-off company's shares begin trading independently.
 
-Positions may need to be manually adjusted if the DEX doesn’t support tracking the new entity.
+Positions may need to be manually adjusted if the DEX doesn't support tracking the new entity.
 
 | Data Stream behavior                                                                                                                                                             | User guidance                                                                                                                                                                                                                                                                                                                        |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn’t possible, disable leverage during the event window to prevent unfair liquidations. |
+| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
 
-##### Stock splits & reverse splits
+#### Stock splits & reverse splits
 
 A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
 
@@ -185,11 +151,11 @@ A 2-for-1 split would reduce the price by 50% from the previous trading session,
 
 | Data Stream behavior                                                                                                                                                                   | User guidance                                                                                                                                                                                                                                                                                                                        |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn’t possible, disable leverage during the event window to prevent unfair liquidations. |
+| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
 
-##### Mergers & acquisitions (M&A)
+#### Mergers & acquisitions (M&A)
 
-If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company’s stock might fluctuate based on investor sentiment regarding the deal’s financial and strategic impact.
+If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company's stock might fluctuate based on investor sentiment regarding the deal's financial and strategic impact.
 
 Announcements can cause sharp price spikes or sustained moves.
 
@@ -197,7 +163,7 @@ Announcements can cause sharp price spikes or sustained moves.
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
-##### Share buybacks & stock issuance
+#### Share buybacks & stock issuance
 
 Reduced share supply from a buyback can drive stock prices higher, while increase in share supply can lead to price dilution.
 
@@ -207,7 +173,7 @@ Announcements can cause sharp price spikes or sustained moves.
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
 | <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
-##### Dividends
+#### Dividends
 
 A company's stock price typically adjusts to reflect dividend payments. For example, when a company declares a 10% dividend, its stock price often drops by a similar amount on the ex-dividend date, as new buyers are no longer entitled to that dividend.
 
