@@ -95,7 +95,12 @@ export function ProductNavigation() {
                 </div>
                 <div className={clsx(styles.subProductContentPage)}>
                   <div className={styles.header}>
-                    <button key="back" className={styles.back} onClick={() => setProductsSlidePosition("main")} aria-label="Go back to main menu">
+                    <button
+                      key="back"
+                      className={styles.back}
+                      onClick={() => setProductsSlidePosition("main")}
+                      aria-label="Go back to main menu"
+                    >
                       <BackArrowIcon />
                     </button>
                     <span className={styles.subProductContentTitle}>Resources</span>

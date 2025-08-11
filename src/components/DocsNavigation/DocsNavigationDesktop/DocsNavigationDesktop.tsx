@@ -54,7 +54,12 @@ function DocsNavigationDesktop({
             ) : (
               /* Default links for other documentation pages */
               <>
-                <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)} aria-label="Open quick links menu">
+                <button
+                  className={styles.link}
+                  id="quick-links-nav-button"
+                  onClick={() => setIsModalOpen(true)}
+                  aria-label="Open quick links menu"
+                >
                   <img height={20} width={20} src="/assets/icons/quick-links.svg" alt="Quick links menu" />
                   <span>Quick Links</span>
                 </button>
