@@ -359,10 +359,11 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                             width="20px"
                             height="20px"
                             className="ccip-chain-hero__feeTokens__item__logo"
+                            aria-label={`${nativeCurrency.symbol} token logo`}
                           >
                             <img
                               src={fallbackTokenIconUrl}
-                              alt={`${nativeCurrency.symbol} icon`}
+                              alt={`${nativeCurrency.symbol} token logo`}
                               width="20px"
                               height="20px"
                             />
