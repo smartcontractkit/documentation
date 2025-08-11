@@ -108,21 +108,13 @@ export default defineConfig({
   vite: {
     plugins: [yaml()],
     build: {
-      cssCodeSplit: true,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            // Split CCIP-specific styles into separate chunks
-            if (id.includes("src/components/CCIP") && id.endsWith(".css")) {
-              return "ccip-styles"
-            }
-            // Keep tooltip styles separate as they're not critical
-            if (id.includes("tooltip-override")) {
-              return "tooltip-styles"
-            }
-          },
-        },
-      },
+      // Optimize CSS delivery
+      cssMinify: true,
+      // Increase the threshold for inlining assets
+      assetsInlineLimit: 4096, // Inline small CSS files
+    },
+    css: {
+      devSourcemap: false,
     },
   },
   legacy: {
