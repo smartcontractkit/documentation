@@ -104,7 +104,9 @@ export default defineConfig({
   },
   // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
   output: "static",
-  adapter: vercel(),
+  adapter: vercel({
+    excludeFiles: ["./public/images/**/*", "./public/search-index.json"],
+  }),
   vite: {
     plugins: [yaml()],
     build: {
@@ -112,45 +114,12 @@ export default defineConfig({
       cssMinify: true,
       // Increase the threshold for inlining assets
       assetsInlineLimit: 4096, // Inline small CSS files
-      rollupOptions: {
-        output: {
-          manualChunks: (id) => {
-            // Split vendor libraries
-            if (id.includes("node_modules")) {
-              if (id.includes("react") || id.includes("preact")) {
-                return "vendor-react"
-              }
-              if (id.includes("lodash") || id.includes("ethers")) {
-                return "vendor-utils"
-              }
-              return "vendor"
-            }
-
-            // Split large feeds/chains data files, avoid files with asset imports
-            if (id.includes("src/features/data/chains.ts") && !id.includes("landing")) {
-              return "chains-data"
-            }
-
-            // Split CCIP data files by type for better caching
-            if (id.includes("ccip") && id.includes("lanes.json")) {
-              return "ccip-lanes" // This is the biggest file (700KB)
-            }
-            if (id.includes("ccip") && id.includes("tokens.json")) {
-              return "ccip-tokens"
-            }
-            if (id.includes("ccip") && id.includes("chains.json")) {
-              return "ccip-chains"
-            }
-            // Other CCIP data (smaller files)
-            if (
-              id.includes("config/data/ccip/data.ts") ||
-              (id.includes("ccip") && id.includes("config/data") && id.includes(".json"))
-            ) {
-              return "ccip-data"
-            }
-          },
-        },
-      },
+      // Removed manual chunking to prevent serverless function bloat
+      // rollupOptions: {
+      //   output: {
+      //     manualChunks: ...
+      //   }
+      // },
     },
     css: {
       devSourcemap: false,
