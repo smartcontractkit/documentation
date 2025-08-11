@@ -87,7 +87,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
   }
 
   return (
-    <div className={tableStyles.pagination}>
+    <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
       {totalAddr !== 0 && (
         <>
           <button
@@ -95,10 +95,11 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             style={"outline-offset: 2px"}
             disabled={currentPage === 1}
             onClick={() => paginate(Number(currentPage) - 1)}
+            aria-label={`Go to previous page, page ${currentPage - 1}`}
           >
             Prev
           </button>
-          <p>
+          <p aria-live="polite">
             Showing {firstAddr + 1} to {lastAddr > totalAddr ? totalAddr : lastAddr} of {totalAddr} entries
           </p>
           <button
@@ -106,6 +107,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             style={"outline-offset: 2px"}
             disabled={lastAddr >= totalAddr}
             onClick={() => paginate(Number(currentPage) + 1)}
+            aria-label={`Go to next page, page ${currentPage + 1}`}
           >
             Next
           </button>
@@ -190,9 +192,9 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
     <thead>
       <tr>
         <th className={tableStyles.heading}>Pair</th>
-        <th aria-hidden={!showExtraDetails}>Deviation</th>
-        <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-        <th aria-hidden={!showExtraDetails}>Dec</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
         <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
       </tr>
     </thead>
@@ -229,9 +231,15 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
         </div>
       )}
     </td>
-    <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
-    <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}</td>
-    <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
+    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+      {metadata.threshold ? metadata.threshold + "%" : "N/A"}
+    </td>
+    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+      {metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}
+    </td>
+    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+      {metadata.decimals ? metadata.decimals : "N/A"}
+    </td>
     <td>
       <div>
         <dl className={tableStyles.listContainer}>
@@ -351,9 +359,9 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   <thead>
     <tr>
       <th className={tableStyles.heading}>SmartData Feed</th>
-      <th aria-hidden={!showExtraDetails}>Deviation</th>
-      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-      <th aria-hidden={!showExtraDetails}>Dec</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
       <th>Address and Info</th>
     </tr>
   </thead>
@@ -414,9 +422,15 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
         )}
       </td>
 
-      <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.threshold ? metadata.threshold + "%" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.heartbeat ? metadata.heartbeat : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.decimals ? metadata.decimals : "N/A"}
+      </td>
       <td>
         <div className={tableStyles.assetAddress}>
           <a
