@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react"
-import type { Environment } from "~/config/data/ccip/types"
+import type { Environment } from "~/config/data/ccip/types.ts"
 
-const NetworkGrid = lazy(() => import("./NetworkGrid"))
+const NetworkGrid = lazy(() => import("./NetworkGrid.tsx"))
 
 interface LazyNetworkGridProps {
   networks: Array<{
@@ -16,22 +16,25 @@ interface LazyNetworkGridProps {
 
 export default function LazyNetworkGrid({ networks, environment }: LazyNetworkGridProps) {
   return (
-    <Suspense 
+    <Suspense
       fallback={
-        <div className="grid" style={{ 
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '1rem',
-          padding: '1rem 0'
-        }}>
+        <div
+          className="grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: "1rem",
+            padding: "1rem 0",
+          }}
+        >
           {Array.from({ length: 8 }, (_, i) => (
-            <div 
+            <div
               key={i}
               style={{
-                height: '120px',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                animation: 'pulse 1.5s ease-in-out infinite alternate'
+                height: "120px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
+                animation: "pulse 1.5s ease-in-out infinite alternate",
               }}
             />
           ))}

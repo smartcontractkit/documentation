@@ -7,7 +7,7 @@ import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
-import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker"
+import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker.ts"
 
 interface SearchProps {
   chains: {
@@ -57,10 +57,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Import the worker as a URL that Vite will process
-      workerRef.current = new Worker(
-        new URL("~/workers/data-worker.ts", import.meta.url),
-        { type: "module" }
-      )
+      workerRef.current = new Worker(new URL("~/workers/data-worker.ts", import.meta.url), { type: "module" })
 
       workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
         const { networks, tokens: workerTokens, lanes: workerLanes } = event.data

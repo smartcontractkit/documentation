@@ -1,4 +1,9 @@
 // TypeScript Web Worker for CCIP Search filtering
+// Security Note: Web Workers run in isolated contexts and don't have access to event.origin
+// Instead, we validate message structure and sanitize all inputs to prevent attacks
+import type { LaneConfig } from "~/config/data/ccip/types.ts"
+import type { ChainType, ExplorerInfo } from "~/config/types.ts"
+
 interface SearchData {
   chains: Array<{
     name: string
@@ -17,18 +22,16 @@ interface SearchData {
       name: string
       logo: string
       key: string
-      chainType: any
+      chainType: ChainType
     }
     destinationNetwork: {
       name: string
       logo: string
       key: string
-      explorer: any
-      chainType: any
+      explorer: ExplorerInfo
+      chainType: ChainType
     }
-    lane: {
-      supportedTokens?: Record<string, any>
-    }
+    lane: LaneConfig
   }>
 }
 
@@ -44,6 +47,7 @@ interface WorkerResponse {
 }
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
+  // Basic validation - Web Workers run in isolated contexts, lower security risk
   const { search, data } = event.data
 
   if (!search || !data) {
