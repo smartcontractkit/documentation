@@ -37,7 +37,7 @@ function DocsNavigationDesktop({
             {isCcipPage ? (
               /* Custom links for CCIP Directory pages */
               <>
-                <a className={styles.ccipDirectoryLink} href="/ccip/" target="_blank" rel="noopener noreferrer">
+                <a className={styles.ccipDirectoryLink} href="/ccip" target="_blank" rel="noopener noreferrer">
                   <PageIcon />
                   <span>Go to CCIP docs</span>
                 </a>

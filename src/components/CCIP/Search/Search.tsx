@@ -154,12 +154,18 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             ensureWorker()
           }}
           onBlur={() => setIsActive(false)}
+          aria-label="Search networks, tokens, and lanes"
+          aria-describedby={openSearchMenu ? "search-results" : undefined}
         />
         {openSearchMenu && (
           <div
+            id="search-results"
             className={clsx("ccip-hero__search-results", {
               "ccip-hero__search-results--small": small || false,
             })}
+            role="region"
+            aria-live="polite"
+            aria-label="Search results"
           >
             {networksResults.length === 0 && tokensResults.length === 0 && (
               <span className="ccip-hero__search-results__no-result">No results found</span>
@@ -228,8 +234,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                 <ul aria-label="Lanes">
                   {lanesResults.map((lane) => (
                     <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
-                      <a
-                        role="button"
+                      <button
+                        type="button"
                         onClick={() =>
                           drawerContentStore.set(() => (
                             <LaneDrawer
@@ -244,6 +250,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                             />
                           ))
                         }
+                        aria-label={`View lane from ${lane.sourceNetwork.name} to ${lane.destinationNetwork.name}`}
                       >
                         <div className="ccip-hero__search-results__lane-images">
                           <img
@@ -272,7 +279,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                               : "token"}
                           </span>
                         )}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>

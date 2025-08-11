@@ -226,9 +226,9 @@ function TokenDrawer({
                   return (
                     <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                       <td>
-                        <div
+                        <button
+                          type="button"
                           className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
-                          role="button"
                           onClick={() => {
                             drawerContentStore.set(() => (
                               <LaneDrawer
@@ -245,6 +245,7 @@ function TokenDrawer({
                               />
                             ))
                           }}
+                          aria-label={`View lane details for ${networkDetails?.name}`}
                         >
                           <img
                             src={networkDetails?.logo}
@@ -257,7 +258,7 @@ function TokenDrawer({
                               ⏸️
                             </span>
                           )}
-                        </div>
+                        </button>
                       </td>
                       <td>
                         {displayCapacity(

@@ -27,12 +27,12 @@ const TokenCard = memo(function TokenCard({ id, logo, link, onClick }: TokenCard
 
   if (onClick) {
     return (
-      <div className="token-card__container" onClick={onClick} role="button">
+      <button type="button" className="token-card__container" onClick={onClick} aria-label={`View ${id} token details`}>
         <object data={logo} type="image/png" aria-label={`${id} token logo`}>
           <img src={fallbackTokenIconUrl} alt={`${id} token logo`} loading="lazy" />
         </object>
         <h3>{id}</h3>
-      </div>
+      </button>
     )
   }
 
