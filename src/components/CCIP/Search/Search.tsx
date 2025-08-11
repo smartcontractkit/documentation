@@ -196,7 +196,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             {tokensResults.length > 0 && (
               <>
                 <span className="ccip-hero__search-results__title">Tokens</span>
-                <ul aria-label="Networks">
+                <ul aria-label="Tokens">
                   {tokensResults.map((token) => (
                     <li key={token.id}>
                       <a href={`/ccip/directory/${environment}/token/${token.id}`}>
@@ -225,7 +225,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             {lanesResults.length > 0 && (
               <>
                 <span className="ccip-hero__search-results__title">Lanes</span>
-                <ul aria-label="Networks">
+                <ul aria-label="Lanes">
                   {lanesResults.map((lane) => (
                     <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
                       <a

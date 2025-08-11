@@ -338,7 +338,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                               width="20px"
                               height="20px"
                               className="ccip-chain-hero__feeTokens__item__logo"
-                              aria-label={`${token.name} token logo`}
                             >
                               <img
                                 src={fallbackTokenIconUrl}
@@ -359,7 +358,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                             width="20px"
                             height="20px"
                             className="ccip-chain-hero__feeTokens__item__logo"
-                            aria-label={`${nativeCurrency.symbol} token logo`}
                           >
                             <img
                               src={fallbackTokenIconUrl}
