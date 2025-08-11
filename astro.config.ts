@@ -113,8 +113,8 @@ export default defineConfig({
       target: "es2022",
       // Optimize CSS delivery
       cssMinify: true,
-      // Increase the threshold for inlining assets
-      assetsInlineLimit: 4096, // Inline small CSS files
+      // Increase the threshold for inlining assets to reduce render-blocking CSS
+      assetsInlineLimit: 8192, // Inline CSS files up to 8KB
       // Removed manual chunking to prevent serverless function bloat
       // rollupOptions: {
       //   output: {
