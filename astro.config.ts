@@ -110,7 +110,7 @@ export default defineConfig({
   vite: {
     plugins: [yaml()],
     build: {
-      target: "es2020",
+      target: "es2022",
       // Optimize CSS delivery
       cssMinify: true,
       // Increase the threshold for inlining assets
@@ -123,7 +123,7 @@ export default defineConfig({
       // },
     },
     esbuild: {
-      target: "es2020",
+      target: "es2022",
     },
     css: {
       devSourcemap: false,
