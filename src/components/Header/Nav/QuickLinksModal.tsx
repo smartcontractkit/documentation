@@ -5,7 +5,7 @@ function QuickLinksModal({ toggleModal }: { toggleModal: () => void }) {
   return (
     <div className={styles.modalOverlay} onClick={toggleModal}>
       <div className={styles.modalContentWrapper} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={toggleModal}>
+        <button className={styles.closeButton} onClick={toggleModal} aria-label="Close modal">
           &times;
         </button>
         <div className={styles.modalContent}>

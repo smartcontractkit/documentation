@@ -207,6 +207,7 @@ export const VersionSelectorClient = <T extends string>({
             disabled={isChanging}
             aria-label="Select API Version"
             aria-invalid={!!error}
+            aria-describedby={error ? "version-error" : undefined}
           >
             {config.versions.all.map((version) => (
               <option
@@ -223,7 +224,7 @@ export const VersionSelectorClient = <T extends string>({
       </div>
 
       {error && (
-        <div role="alert" className={classes.warning}>
+        <div id="version-error" role="alert" className={classes.warning}>
           <span className={styles.warningIcon} aria-hidden="true" />
           <p className={styles.warningText}>{error}</p>
         </div>

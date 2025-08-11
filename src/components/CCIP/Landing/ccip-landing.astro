@@ -11,8 +11,8 @@ import {
   Version,
 } from "~/config/data/ccip"
 import { getTokenIconUrl } from "~/features/utils"
-import NetworkGrid from "./NetworkGrid"
-import TokenGrid from "../TokenGrid/TokenGrid"
+import LazyNetworkGrid from "./LazyNetworkGrid"
+import LazyTokenGrid from "../TokenGrid/LazyTokenGrid"
 import StructuredData from "~/components/StructuredData.astro"
 import { generateDirectoryStructuredData } from "~/utils/ccipStructuredData"
 import { DOCS_BASE_URL } from "~/utils/structuredData"
@@ -65,20 +65,20 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
   }}
   suppressDefaultStructuredData={true}
 >
-  <Hero chains={networks} tokens={allTokens} environment={environment} client:load lanes={searchLanes} />
+  <Hero chains={networks} tokens={allTokens} environment={environment} client:visible lanes={searchLanes} />
   <section class="layout">
     <div>
       <div class="ccip-heading">
         <h2>Networks {environment} <span>({networks.length})</span></h2>
       </div>
-      <NetworkGrid networks={networks} environment={environment} client:load />
+      <LazyNetworkGrid networks={networks} environment={environment} client:visible />
     </div>
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
         <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">Add my token</a>
       </div>
-      <TokenGrid tokens={allTokens} environment={environment} client:load />
+      <LazyTokenGrid tokens={allTokens} environment={environment} client:visible />
     </div>
   </section>
 </CcipDirectoryLayout>
