@@ -107,6 +107,23 @@ export default defineConfig({
   adapter: vercel(),
   vite: {
     plugins: [yaml()],
+    build: {
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Split CCIP-specific styles into separate chunks
+            if (id.includes("src/components/CCIP") && id.endsWith(".css")) {
+              return "ccip-styles"
+            }
+            // Keep tooltip styles separate as they're not critical
+            if (id.includes("tooltip-override")) {
+              return "tooltip-styles"
+            }
+          },
+        },
+      },
+    },
   },
   legacy: {
     collections: false,
