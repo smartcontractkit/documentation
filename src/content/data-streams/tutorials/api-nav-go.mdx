@@ -1,16 +1,16 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode V8 reports using the Go SDK"
+title: "Fetch and decode V9 reports using the Go SDK"
 metadata:
-  title: "Fetch and Decode Real World Asset Data with Go SDK | Chainlink Data Streams"
-  description: "Learn how to use the Go SDK to fetch and decode Real World Asset (RWA) market data reports with V8 schema from Chainlink Data Streams."
-  keywords: ["Go SDK", "Golang", "RWA", "Real World Assets", "V8 Reports", "API Tutorial", "Data Streams"]
+  title: "Fetch and Decode Net Asset Value Data with Go SDK | Chainlink Data Streams"
+  description: "Learn how to use the Go SDK to fetch and decode Net Asset Value (NAV) market data reports with V9 schema from Chainlink Data Streams."
+  keywords: ["Go SDK", "Golang", "NAV", "Net Asset Value", "V9 Reports", "API Tutorial", "Data Streams"]
 whatsnext:
   {
-    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-rwa-go",
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-nav-go",
     "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/rwa-streams",
+    "Find the list of available Stream IDs": "/data-streams/nav-streams",
   }
 ---
 
@@ -54,7 +54,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V9 reports](/data-streams/reference/report-schema-v9) for [Net Asset Value (NAV) streams](/data-streams/nav-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -66,7 +66,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 ## Tutorial
 
-You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [RWA streams](/data-streams/rwa-streams), and log their attributes to your terminal.
+You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [NAV streams](/data-streams/nav-streams), and log their attributes to your terminal.
 
 ### Set up your Go project
 
@@ -111,7 +111,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
         streams "github.com/smartcontractkit/data-streams-sdk/go"
         feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
         report "github.com/smartcontractkit/data-streams-sdk/go/report"
-        v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8" // Import the v8 report schema for RWA streams. For Crypto streams, use the v3 schema.
+        v9 "github.com/smartcontractkit/data-streams-sdk/go/report/v9" // Import the v9 report schema for NAV streams
     )
 
     func main() {
@@ -167,7 +167,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
         cfg.Logger("Raw report data: %+v\n", reportResponse)
 
         // Decode the report
-        decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+        decodedReport, err := report.Decode[v9.Data](reportResponse.FullReport)
         if err != nil {
             cfg.Logger("Failed to decode report: %v\n", err)
             os.Exit(1)
@@ -177,22 +177,24 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
         fmt.Printf(
             "\nDecoded Report for Stream ID %s:\n"+
                 "------------------------------------------\n"+
-                "Observations Timestamp  : %d\n"+
-                "Valid From Timestamp    : %d\n"+
-                "Last Update Timestamp   : %d\n"+
-                "Expires At              : %d\n"+
-                "Mid Price               : %s\n"+
-                "Market Status           : %d\n"+
-                "Link Fee (wei)          : %s\n"+
-                "Native Fee (wei)        : %s\n"+
+                "Observations Timestamp : %d\n"+
+                "Valid From Timestamp   : %d\n"+
+                "Expires At             : %d\n"+
+                "NAV Per Share          : %s\n"+
+                "NAV Date               : %d\n"+
+                "AUM                    : %s\n"+
+                "Ripcord                : %d\n"+
+                "Link Fee (wei)         : %s\n"+
+                "Native Fee (wei)       : %s\n"+
                 "------------------------------------------\n",
             feedIDInput,
             decodedReport.Data.ObservationsTimestamp,
             decodedReport.Data.ValidFromTimestamp,
-            decodedReport.Data.LastUpdateTimestamp,
             decodedReport.Data.ExpiresAt,
-            decodedReport.Data.MidPrice.String(),
-            decodedReport.Data.MarketStatus,
+            decodedReport.Data.NavPerShare.String(),
+            decodedReport.Data.NavDate,
+            decodedReport.Data.Aum.String(),
+            decodedReport.Data.Ripcord,
             decodedReport.Data.LinkFee.String(),
             decodedReport.Data.NativeFee.String(),
         )
@@ -230,7 +232,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
    See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
 
-1. For this example, you will read from an RWA stream. See the [Data Streams RWA streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
+1. For this example, you will read from a NAV stream. See the [Data Streams NAV streams](/data-streams/nav-streams) page for a complete list of available Net Asset Value streams.
 
    Execute your application. Replace `[STREAM_ID]` with your stream ID.
 
@@ -248,10 +250,11 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
     ------------------------------------------
     Observations Timestamp : 1753551893
     Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
     Expires At             : 1756143893
-    Mid Price     : 213940000000000000000
-    Market Status          : 1
+    NAV Per Share          : 1234500000000000000000
+    NAV Date               : 1753551893
+    AUM                    : 12345000000000000000000000
+    Ripcord                : 0
     Link Fee (wei)         : 17515847021884305
     Native Fee (wei)       : 85879244037647
     ------------------------------------------
@@ -261,17 +264,20 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
 The decoded report includes:
 
-| Attribute                | Value                   | Description                                                                                                                  |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `[STREAM_ID]`           | The unique identifier for the stream.                                                                                        |
-| `Observations Timestamp` | `1753551893`            | The timestamp indicating when the data was captured.                                                                         |
-| `Valid From Timestamp`   | `1753551893`            | The start validity timestamp for the report, indicating when the data becomes relevant.                                      |
-| `Last Update Timestamp`  | `1753476931520000000`   | The timestamp of the last valid price update, in nanoseconds since epoch.                                                    |
-| `Expires At`             | `1756143893`            | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                             |
-| `Mid Price`              | `213940000000000000000` | The observed median price in the report. For readability: `213.94`.                                                          |
-| `Market Status`          | `1`                     | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
-| `Link Fee`               | `17515847021884305`     | The fee to pay in LINK tokens for onchain verification of the report data.                                                   |
-| `Native Fee`             | `85879244037647`        | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                          |
+| Attribute                | Value                        | Description                                                                                                                                                      |
+| ------------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`                | The unique identifier for the stream.                                                                                                                            |
+| `Observations Timestamp` | `1753551893`                 | The timestamp indicating when the data was captured.                                                                                                             |
+| `Valid From Timestamp`   | `1753551893`                 | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                          |
+| `Expires At`             | `1756143893`                 | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                 |
+| `NAV Per Share`          | `1234500000000000000000`     | DON's consensus NAV Per Share value as reported by the Fund Manager (18 decimal precision). For readability: `1234.5`.                                           |
+| `NAV Date`               | `1753551893`                 | Timestamp for the date the NAV Report was published by the Fund Manager.                                                                                         |
+| `AUM`                    | `12345000000000000000000000` | DON's consensus for the total USD value of Assets Under Management (18 decimal precision). For readability: `12345000.0`.                                        |
+| `Ripcord`                | `0`                          | Whether the API provider initiated a "pause" to the NAV reporting due to underlying data source issues. Possible values: `0` (normal state), `1` (paused state). |
+| `Link Fee`               | `17515847021884305`          | The fee to pay in LINK tokens for onchain verification of the report data.                                                                                       |
+| `Native Fee`             | `85879244037647`             | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                                                              |
+
+**Important**: Always validate the ripcord status before consuming NAV data. When ripcord=1, do not consume any NAV data.
 
 #### Payload for onchain verification
 
@@ -301,7 +307,7 @@ production environment, you should verify the data to ensure its integrity and a
         streams "github.com/smartcontractkit/data-streams-sdk/go"
         feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
         report "github.com/smartcontractkit/data-streams-sdk/go/report"
-        v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8" // Import the v8 report schema for RWA streams
+        v9 "github.com/smartcontractkit/data-streams-sdk/go/report/v9" // Import the v9 report schema for NAV streams
     )
 
     func main() {
@@ -339,7 +345,7 @@ production environment, you should verify the data to ensure its integrity and a
         ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
         defer cancel()
 
-        // Parse Feed IDs
+         // Parse Feed IDs
         var ids []feed.ID
         for _, arg := range os.Args[1:] {
             var fid feed.ID
@@ -349,6 +355,7 @@ production environment, you should verify the data to ensure its integrity and a
             }
             ids = append(ids, fid)
         }
+
 
         if len(ids) == 0 {
             cfg.Logger("No valid feed IDs provided\n")
@@ -370,7 +377,7 @@ production environment, you should verify the data to ensure its integrity and a
                 reportResponse.FeedID.String(), reportResponse)
 
             // Decode the report
-            decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+            decodedReport, err := report.Decode[v9.Data](reportResponse.FullReport)
             if err != nil {
                 cfg.Logger("Failed to decode report for Stream ID %s: %v\n",
                     reportResponse.FeedID.String(), err)
@@ -381,22 +388,24 @@ production environment, you should verify the data to ensure its integrity and a
             fmt.Printf(
                 "\nDecoded Report for Stream ID %s:\n"+
                     "------------------------------------------\n"+
-                    "Observations Timestamp  : %d\n"+
-                    "Valid From Timestamp    : %d\n"+
-                    "Last Update Timestamp   : %d\n"+
-                    "Expires At              : %d\n"+
-                    "Mid Price      : %s\n"+
-                    "Market Status           : %d\n"+
-                    "Link Fee (wei)          : %s\n"+
-                    "Native Fee (wei)        : %s\n"+
+                    "Observations Timestamp : %d\n"+
+                    "Valid From Timestamp   : %d\n"+
+                    "Expires At             : %d\n"+
+                    "NAV Per Share          : %s\n"+
+                    "NAV Date               : %d\n"+
+                    "AUM                    : %s\n"+
+                    "Ripcord                : %d\n"+
+                    "Link Fee (wei)         : %s\n"+
+                    "Native Fee (wei)       : %s\n"+
                     "------------------------------------------\n",
-                feedIDInput,
+                reportResponse.FeedID.String(),
                 decodedReport.Data.ObservationsTimestamp,
                 decodedReport.Data.ValidFromTimestamp,
-                decodedReport.Data.LastUpdateTimestamp,
                 decodedReport.Data.ExpiresAt,
-                decodedReport.Data.MidPrice.String(),
-                decodedReport.Data.MarketStatus,
+                decodedReport.Data.NavPerShare.String(),
+                decodedReport.Data.NavDate,
+                decodedReport.Data.Aum.String(),
+                decodedReport.Data.Ripcord,
                 decodedReport.Data.LinkFee.String(),
                 decodedReport.Data.NativeFee.String(),
             )
@@ -418,7 +427,7 @@ production environment, you should verify the data to ensure its integrity and a
    export API_SECRET="<YOUR_API_SECRET>"
    ```
 
-1. For this example, you will read from two RWA streams. Run your application. Replace `[STREAM_ID_1]` and `[STREAM_ID_2]` with your stream IDs.
+1. For this example, you will read from two NAV streams. Run your application. Replace `[STREAM_ID_1]` and `[STREAM_ID_2]` with your stream IDs.
 
    ```bash
    go run multiple-streams.go [STREAM_ID_1] [STREAM_ID_2]
@@ -434,10 +443,11 @@ production environment, you should verify the data to ensure its integrity and a
    ------------------------------------------
     Observations Timestamp : 1753551893
     Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
     Expires At             : 1756143893
-    Mid Price              : 213940000000000000000
-    Market Status          : 1
+    NAV Per Share          : 1234500000000000000000
+    NAV Date               : 1753551893
+    AUM                    : 12345000000000000000000000
+    Ripcord                : 0
     Link Fee (wei)         : 17515847021884305
     Native Fee (wei)       : 85879244037647
    ------------------------------------------
@@ -448,10 +458,11 @@ production environment, you should verify the data to ensure its integrity and a
    ------------------------------------------
     Observations Timestamp : 1753551893
     Valid From Timestamp   : 1753551893
-    Last Update Timestamp  : 1753476931520000000
     Expires At             : 1756143893
-    Mid Price              : 213940000000000000000
-    Market Status          : 1
+    NAV Per Share          : 987600000000000000000
+    NAV Date               : 1753551893
+    AUM                    : 9876000000000000000000000
+    Ripcord                : 0
     Link Fee (wei)         : 17515847021884305
     Native Fee (wei)       : 85879244037647
    ------------------------------------------
@@ -510,7 +521,7 @@ The SDK provides two main methods to fetch reports:
    - Takes a context and feed ID
    - Returns a single `ReportResponse` with the most recent data
    - No timestamp parameter needed
-   - Useful for real-time price monitoring
+   - Useful for real-time NAV monitoring
 
 2. Latest reports for multiple streams with [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L208):
 
@@ -521,7 +532,7 @@ The SDK provides two main methods to fetch reports:
    - Takes context, feed IDs array, and Unix timestamp
    - Returns array of `ReportResponse`, one per feed ID
    - Timestamp determines the point in time for the reports
-   - Efficient for monitoring multiple assets simultaneously
+   - Efficient for monitoring multiple NAV assets simultaneously
 
 Each API request automatically:
 
@@ -536,29 +547,33 @@ Reports are decoded in two steps:
 1. Report decoding with [`report.Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30):
 
    ```go
-   decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+   decodedReport, err := report.Decode[v9.Data](reportResponse.FullReport)
    ```
 
    This step:
 
    - Takes the raw `FullReport` bytes from the response
-   - Uses `v8.Data` schema for RWA streams (use `v3.Data` for Crypto streams)
+   - Uses `v9.Data` schema for NAV streams
    - Validates the format and decodes using Go generics
    - Returns a structured report with typed data
 
 2. Data access:
    ```go
    data := decodedReport.Data
-   price := data.MidPrice.String(),  // Convert big number to string
-   validFrom := data.ValidFromTimestamp  // Unix timestamp
-   expiresAt := data.ExpiresAt          // Unix timestamp
-   marketStatus := data.MarketStatus    // Market status (0: Unknown, 1: Closed, 2: Open)
+   navPerShare := data.NavPerShare.String()    // Convert big number to string
+   navDate := data.NavDate                     // Unix timestamp
+   aum := data.Aum.String()                   // Convert big number to string
+   ripcord := data.Ripcord                    // Ripcord flag (0: normal, 1: paused)
+   validFrom := data.ValidFromTimestamp       // Unix timestamp
+   expiresAt := data.ExpiresAt               // Unix timestamp
    ```
    Provides access to:
-   - Benchmark price (as big number)
+   - NAV per share value (as big number)
+   - NAV date timestamp
+   - Assets under management total (as big number)
+   - Ripcord safety flag
    - Fee information (LINK and native token fees)
    - Timestamp data (validity period)
-   - Market status information
    - All numeric values require `.String()` for display
 
 ### Error handling
@@ -600,4 +615,4 @@ The SDK uses Go's standard error handling patterns with some enhancements:
    - Debug information includes raw report data
    - Structured error messages with context
 
-The decoded data can be used for further processing or display in your application. For production environments, you must verify the data onchain using the provided `fullReport` payload.
+The decoded data can be used for further processing or display in your application. For production environments, you must verify the data onchain using the provided `fullReport` payload and always validate the ripcord status before consuming NAV data.

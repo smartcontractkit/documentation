@@ -1,17 +1,16 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode V8 reports using the Rust SDK"
+title: "Fetch and decode V9 reports using the Rust SDK"
 metadata:
-  title: "Fetch and Decode Real World Asset Data with Rust SDK | Chainlink Data Streams"
-  description: "Learn how to use the Rust SDK to fetch and decode Real World Asset (RWA) market data reports with V8 schema from Chainlink Data Streams."
-  keywords:
-    ["Rust SDK", "RWA", "Real World Assets", "V8 Reports", "API Tutorial", "Data Streams", "Forex", "Commodities"]
+  title: "Fetch and Decode Net Asset Value Data with Rust SDK | Chainlink Data Streams"
+  description: "Learn how to use the Rust SDK to fetch and decode Net Asset Value (NAV) market data reports with V9 schema from Chainlink Data Streams."
+  keywords: ["Rust SDK", "NAV", "Net Asset Value", "V9 Reports", "API Tutorial", "Data Streams", "Fund Management"]
 whatsnext:
   {
-    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-rwa-rust",
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-nav-rust",
     "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/rwa-streams",
+    "Find the list of available Stream IDs": "/data-streams/nav-streams",
   }
 ---
 
@@ -55,7 +54,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to fetch and decode [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to fetch and decode [V9 reports](/data-streams/reference/report-schema-v9) for [Net Asset Value (NAV) streams](/data-streams/nav-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -66,7 +65,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 ## Tutorial
 
-You'll start with the set up of your Rust project. Next, you'll fetch and decode reports for RWA streams and log their attributes to your terminal.
+You'll start with the set up of your Rust project. Next, you'll fetch and decode reports for NAV streams and log their attributes to your terminal.
 
 ### Set up your Rust project
 
@@ -98,7 +97,7 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
    ```rust
    use chainlink_data_streams_report::feed_id::ID;
-   use chainlink_data_streams_report::report::{ decode_full_report, v8::ReportDataV8 };
+   use chainlink_data_streams_report::report::{ decode_full_report, v9::ReportDataV9 };
    use chainlink_data_streams_sdk::client::Client;
    use chainlink_data_streams_sdk::config::Config;
    use std::env;
@@ -139,19 +138,20 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
       // Decode the report
       let full_report = hex::decode(&response.report.full_report[2..])?;
       let (_report_context, report_blob) = decode_full_report(&full_report)?;
-      let report_data = ReportDataV8::decode(&report_blob)?;
+      let report_data = ReportDataV9::decode(&report_blob)?;
 
       // Print decoded report details
       println!("\nDecoded Report for Stream ID {}:", feed_id_input);
       println!("------------------------------------------");
       println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
       println!("Observations Timestamp: {}", response.report.observations_timestamp);
-      println!("Last Update Timestamp : {}", report_data.last_update_timestamp);
       println!("Expires At            : {}", report_data.expires_at);
-      println!("Mid Price             : {}", report_data.mid_price);
+      println!("NAV Per Share         : {}", report_data.nav_per_share);
+      println!("NAV Date              : {}", report_data.nav_date);
+      println!("AUM                   : {}", report_data.aum);
+      println!("Ripcord               : {}", report_data.ripcord);
       println!("Link Fee              : {}", report_data.link_fee);
       println!("Native Fee            : {}", report_data.native_fee);
-      println!("Market Status         : {}", report_data.market_status);
       println!("------------------------------------------");
 
       Ok(())
@@ -168,7 +168,7 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
    Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-1. For this example, you will read from an RWA stream. See the [Data Streams RWA streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
+1. For this example, you will read from a NAV stream. See the [Data Streams NAV streams](/data-streams/nav-streams) page for a complete list of available Net Asset Value streams.
 
    Build and run your application. Replace `[STREAM_ID]` with your stream ID.
 
@@ -186,12 +186,13 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
    ------------------------------------------
    Valid From Timestamp  : 1753554142
    Observations Timestamp: 1753554142
-   Last Update Timestamp : 1753476931520000000
    Expires At            : 1756146142
-   Mid Price             : 213940000000000000000
+   NAV Per Share         : 1234500000000000000000
+   NAV Date              : 1753554142
+   AUM                   : 12345000000000000000000000
+   Ripcord               : 0
    Link Fee              : 17474419425934927
    Native Fee            : 85926694786199
-   Market Status         : 1
    ------------------------------------------
    ```
 
@@ -199,17 +200,20 @@ You'll start with the set up of your Rust project. Next, you'll fetch and decode
 
 The decoded report details include:
 
-| Attribute                | Value                   | Description                                                                                                                  |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `[STREAM_ID]`           | The unique identifier for the stream.                                                                                        |
-| `Valid From Timestamp`   | `1753554142`            | The start validity timestamp for the report, indicating when the data becomes relevant.                                      |
-| `Observations Timestamp` | `1753554142`            | The timestamp indicating when the data was captured.                                                                         |
-| `Last Update Timestamp`  | `1753476931520000000`   | The timestamp of the last valid price update, in nanoseconds since epoch.                                                    |
-| `Expires At`             | `1756146142`            | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                             |
-| `Mid Price`              | `213940000000000000000` | The observed median price in the report. For readability: `213.94`.                                                          |
-| `Link Fee`               | `17474419425934927`     | The fee to pay in LINK tokens for onchain verification of the report data.                                                   |
-| `Native Fee`             | `85926694786199`        | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                          |
-| `Market Status`          | `1`                     | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
+| Attribute                | Value                        | Description                                                                                                                                                      |
+| ------------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`                | The unique identifier for the stream.                                                                                                                            |
+| `Valid From Timestamp`   | `1753554142`                 | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                          |
+| `Observations Timestamp` | `1753554142`                 | The timestamp indicating when the data was captured.                                                                                                             |
+| `Expires At`             | `1756146142`                 | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                 |
+| `NAV Per Share`          | `1234500000000000000000`     | DON's consensus NAV Per Share value as reported by the Fund Manager (18 decimal precision). For readability: `1234.5`.                                           |
+| `NAV Date`               | `1753554142`                 | Timestamp for the date the NAV Report was published by the Fund Manager.                                                                                         |
+| `AUM`                    | `12345000000000000000000000` | DON's consensus for the total USD value of Assets Under Management (18 decimal precision). For readability: `12345000.0`.                                        |
+| `Ripcord`                | `0`                          | Whether the API provider initiated a "pause" to the NAV reporting due to underlying data source issues. Possible values: `0` (normal state), `1` (paused state). |
+| `Link Fee`               | `17474419425934927`          | The fee to pay in LINK tokens for onchain verification of the report data.                                                                                       |
+| `Native Fee`             | `85926694786199`             | The fee to pay in the native blockchain token (e.g., ETH) for onchain verification.                                                                              |
+
+**Important**: Always validate the ripcord status before consuming NAV data. When ripcord=1, do not consume any NAV data.
 
 #### Payload for onchain verification
 
@@ -272,9 +276,11 @@ Reports are decoded in three stages:
    - Isolates the report blob (actual data)
    - Validates the report format
 
-3. Data extraction: [`ReportDataV8::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v8.rs#L60) parses the report blob into structured data:
-   - Price
-   - Market status (Open, Closed, or Unknown)
+3. Data extraction: [`ReportDataV9::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v9.rs#L60) parses the report blob into structured data:
+   - NAV per share value
+   - NAV date timestamp
+   - Assets under management total
+   - Ripcord safety flag
    - Fee information for onchain verification
    - Timestamp information
 
@@ -299,4 +305,4 @@ The example demonstrates Rust's robust error handling:
    - Validates environment variables
    - Verifies feed ID format
 
-The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload.
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload and always validate the ripcord status before consuming NAV data.

@@ -1,0 +1,356 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Stream and decode V9 reports via WebSocket using the Go SDK"
+metadata:
+  title: "NAV V9 Reports via WebSocket with Go SDK | Chainlink Data Streams"
+  description: "Tutorial on streaming and decoding Net Asset Value (NAV) V9 reports using WebSocket connections with the Go SDK for Chainlink Data Streams."
+  keywords: ["WebSocket", "Go SDK", "Net Asset Value", "NAV", "V9 reports", "Data Streams", "Real-time data"]
+whatsnext:
+  {
+    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/nav-streams",
+  }
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Go SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/ws-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Go SDK - V8 reports for RWA streams",
+      url: "/data-streams/tutorials/ws-rwa-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Go SDK - V9 reports for NAV streams",
+      url: "/data-streams/tutorials/ws-nav-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Rust SDK - V3 reports for Crypto streams",
+      url: "/data-streams/tutorials/ws-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "Rust SDK - V8 reports for RWA streams",
+      url: "/data-streams/tutorials/ws-rwa-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "Rust SDK - V9 reports for NAV streams",
+      url: "/data-streams/tutorials/ws-nav-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to subscribe to real-time [V9 reports](/data-streams/reference/report-schema-v9) for [Net Asset Value (NAV) streams](/data-streams/nav-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+
+## Tutorial
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-data-streams-project
+   cd my-data-streams-project
+   ```
+
+1. Initialize a new Go module:
+
+   ```bash
+   go mod init my-data-streams-project
+   ```
+
+1. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1. Create a new Go file, `stream.go`, in your project directory:
+
+   ```bash
+   touch stream.go
+   ```
+
+1. Insert the following code example and save your `stream.go` file:
+
+   ```go
+    package main
+
+    import (
+      "context"
+      "fmt"
+      "os"
+      "time"
+
+      streams "github.com/smartcontractkit/data-streams-sdk/go"
+      feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+      report "github.com/smartcontractkit/data-streams-sdk/go/report"
+      v9 "github.com/smartcontractkit/data-streams-sdk/go/report/v9" // Import the v9 report schema for NAV streams
+    )
+
+    func main() {
+      if len(os.Args) < 2 {
+        fmt.Println("Usage: go run stream.go [StreamID1] [StreamID2] ...")
+        os.Exit(1)
+      }
+
+      // Set up the SDK client configuration
+      cfg := streams.Config{
+        ApiKey:    os.Getenv("API_KEY"),
+        ApiSecret: os.Getenv("API_SECRET"),
+        WsURL: "wss://ws.testnet-dataengine.chain.link",
+        Logger: streams.LogPrintf,
+      }
+
+      // Create a new client
+      client, err := streams.New(cfg)
+      if err != nil {
+        cfg.Logger("Failed to create client: %v\n", err)
+        os.Exit(1)
+      }
+
+      // Parse the feed IDs from the command line arguments
+      var ids []feed.ID
+      for _, arg := range os.Args[1:] {
+        var fid feed.ID
+        if err := fid.FromString(arg); err != nil {
+          cfg.Logger("Invalid stream ID %s: %v\n", arg, err)
+          os.Exit(1)
+        }
+        ids = append(ids, fid)
+      }
+
+      ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+      defer cancel()
+
+      // Subscribe to the feeds
+      stream, err := client.Stream(ctx, ids)
+      if err != nil {
+        cfg.Logger("Failed to subscribe: %v\n", err)
+        os.Exit(1)
+      }
+
+      defer stream.Close()
+        for {
+            reportResponse, err := stream.Read(context.Background())
+            if err != nil {
+                cfg.Logger("Error reading from stream: %v\n", err)
+                continue
+            }
+
+            // Log the contents of the report before decoding
+            cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+                // Decode each report as it comes in
+                decodedReport, decodeErr := report.Decode[v9.Data](reportResponse.FullReport)
+                if decodeErr != nil {
+                    cfg.Logger("Failed to decode report: %v\n", decodeErr)
+                    continue
+                }
+
+            // Log the decoded report
+            cfg.Logger("\n--- Report Stream ID: %s ---\n" +
+              "------------------------------------------\n" +
+              "Observations Timestamp : %d\n" +
+              "NAV Per Share          : %s\n" +
+              "Valid From Timestamp   : %d\n" +
+              "NAV Date               : %d\n" +
+              "Expires At             : %d\n" +
+              "AUM                    : %s\n" +
+              "Ripcord                : %d\n" +
+              "Link Fee               : %s\n" +
+              "Native Fee             : %s\n" +
+              "------------------------------------------\n",
+              reportResponse.FeedID.String(),
+              decodedReport.Data.ObservationsTimestamp,
+              decodedReport.Data.NavPerShare.String(),
+              decodedReport.Data.ValidFromTimestamp,
+              decodedReport.Data.NavDate,
+              decodedReport.Data.ExpiresAt,
+              decodedReport.Data.Aum.String(),
+              decodedReport.Data.Ripcord,
+              decodedReport.Data.LinkFee.String(),
+              decodedReport.Data.NativeFee.String(),
+            )
+
+            // Also, log the stream stats
+            cfg.Logger("\n--- Stream Stats ---\n" +
+            stream.Stats().String() + "\n" +
+            "--------------------------------------------------------------------------------------------------------------------------------------------\n",
+            )
+        }
+    }
+   ```
+
+1. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+1. Set up the SDK client configuration within `stream.go` with your API credentials and the WebSocket URL:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       WsURL: "wss://ws.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
+
+   See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
+
+1. For this example, you'll subscribe to a NAV stream. See the [NAV Streams](/data-streams/nav-streams) page for a complete list of available Net Asset Value streams.
+
+   Execute your application. Replace `[STREAM_ID]` with your stream ID.
+
+   ```bash
+   go run stream.go [STREAM_ID]
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+    2025-07-29T07:00:34-05:00 Raw report data: {"fullReport":"0x...","feedID":"0x...","validFromTimestamp":1753790434,"observationsTimestamp":1753790434}
+
+    2025-07-29T07:00:34-05:00
+    --- Report Stream ID: 0x... ---
+    ------------------------------------------
+    Observations Timestamp  : 1753790434
+    NAV Per Share          : 1234500000000000000000
+    Valid From Timestamp   : 1753790434
+    NAV Date               : 1753790434
+    Expires At             : 1756382434
+    AUM                    : 12345000000000000000000000
+    Ripcord                : 0
+    Link Fee               : 17645303122661231
+    Native Fee             : 83649514886592
+    ------------------------------------------
+
+    2025-07-29T07:00:34-05:00
+    --- Stream Stats ---
+    accepted: 1, deduplicated: 0, total_received 1, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
+
+    2025-07-29T07:00:35-05:00 Raw report data: {"fullReport":"0x...","feedID":"0x...","validFromTimestamp":1753790435,"observationsTimestamp":1753790435}
+
+    2025-07-29T07:00:35-05:00
+    --- Report Stream ID: 0x... ---
+    ------------------------------------------
+    Observations Timestamp  : 1753790435
+    NAV Per Share          : 1234500000000000000000
+    Valid From Timestamp   : 1753790435
+    NAV Date               : 1753790435
+    Expires At             : 1756382435
+    AUM                    : 12345000000000000000000000
+    Ripcord                : 0
+    Link Fee               : 17645800951933545
+    Native Fee             : 83649982947389
+    ------------------------------------------
+
+    2025-07-29T07:00:35-05:00
+    --- Stream Stats ---
+    accepted: 2, deduplicated: 0, total_received 2, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
+
+    2025-07-29T07:00:36-05:00 Raw report data: {"fullReport":"0x...","feedID":"0x...","validFromTimestamp":1753790436,"observationsTimestamp":1753790436}
+
+    2025-07-29T07:00:36-05:00
+    --- Report Stream ID: 0x... ---
+    ------------------------------------------
+    Observations Timestamp  : 1753790436
+    NAV Per Share          : 1234500000000000000000
+    Valid From Timestamp   : 1753790436
+    NAV Date               : 1753790436
+    Expires At             : 1756382436
+    AUM                    : 12345000000000000000000000
+    Ripcord                : 0
+    Link Fee               : 17646581336142177
+    Native Fee             : 83651911800852
+    ------------------------------------------
+
+    2025-07-29T07:00:36-05:00
+    --- Stream Stats ---
+    accepted: 3, deduplicated: 0, total_received 3, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+    --------------------------------------------------------------------------------------------------------------------------------------------
+
+   [...]
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                        | Description                                                                                                                                                                         |
+| ------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`                | The unique identifier for the stream.                                                                                                                                               |
+| `Observations Timestamp` | `1753790436`                 | The timestamp indicating when the data was captured.                                                                                                                                |
+| `NAV Per Share`          | `1234500000000000000000`     | DON's consensus NAV Per Share value as reported by the Fund Manager (18 decimal precision). For readability: `1234.5`.                                                              |
+| `Valid From Timestamp`   | `1753790436`                 | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                             |
+| `NAV Date`               | `1753790436`                 | Timestamp for the date the NAV Report was published by the Fund Manager.                                                                                                            |
+| `Expires At`             | `1756382436`                 | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                    |
+| `AUM`                    | `12345000000000000000000000` | DON's consensus for the total USD value of Assets Under Management (18 decimal precision). For readability: `12345000.0`.                                                           |
+| `Ripcord`                | `0`                          | Whether the API provider initiated a "pause" to the NAV reporting due to underlying data source issues. Possible values: `0` (normal state), `1` (paused state).                    |
+| `Link Fee`               | `17646581336142177`          | The fee to pay in LINK tokens for the onchain verification of the report data. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `83651911800852`             | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. **Note:** This example fee is not indicative of actual fees. |
+
+#### Payload for onchain verification
+
+In this tutorial, you log and decode the `fullReport` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
+
+## Explanation
+
+### Establishing a WebSocket connection and listening for reports
+
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+
+Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
+
+### Decoding a report
+
+As data reports arrive via the established WebSocket connection, they are processed in real-time:
+
+- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
+
+- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30) function parses and transforms the raw data into a structured format (`v9.Data` for [NAV streams](/data-streams/nav-streams)). This decoded data includes data such as the observation timestamp, NAV per share, AUM, and ripcord status from the report data.
+
+### Handling the decoded data
+
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.
