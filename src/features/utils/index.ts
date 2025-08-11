@@ -132,11 +132,11 @@ const transformTokenName = (token: string): string => {
     .replace(/\+/g, "%2B") // Step 3: Replace plus signs with %2B
 }
 
-export const getTokenIconUrl = (token: string, size = 80) => {
+export const getTokenIconUrl = (token: string, size = 40) => {
   if (!token) return ""
   // Request appropriately sized images from CloudFront
   // For 40x40 display, request 80x80 for retina displays (2x)
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat&w=${size}&h=${size}&fit=cover`
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"

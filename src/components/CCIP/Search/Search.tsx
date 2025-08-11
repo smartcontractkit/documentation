@@ -52,21 +52,22 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [lanesResults, setLanesResults] = useState<typeof lanes>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const workerRef = useRef<Worker | null>(null)
+  const workerReadyRef = useRef(false)
 
-  // Initialize Web Worker
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Import the worker as a URL that Vite will process
-      workerRef.current = new Worker(new URL("~/workers/data-worker.ts", import.meta.url), { type: "module" })
-
-      workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
-        const { networks, tokens: workerTokens, lanes: workerLanes } = event.data
-        setNetworksResults(networks || [])
-        setTokensResults(workerTokens || [])
-        setLanesResults(workerLanes || [])
-      }
+  // Lazily initialize Web Worker on first interaction
+  const ensureWorker = () => {
+    if (workerReadyRef.current || typeof window === "undefined") return
+    workerRef.current = new Worker(new URL("~/workers/data-worker.ts", import.meta.url), { type: "module" })
+    workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      const { networks, tokens: workerTokens, lanes: workerLanes } = event.data
+      setNetworksResults(networks || [])
+      setTokensResults(workerTokens || [])
+      setLanesResults(workerLanes || [])
     }
+    workerReadyRef.current = true
+  }
 
+  useEffect(() => {
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate()
@@ -92,6 +93,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
       return
     }
 
+    // Ensure worker exists before posting message
+    if (!workerReadyRef.current) ensureWorker()
     if (workerRef.current) {
       const message: WorkerMessage = {
         search: debouncedSearch,
@@ -114,7 +117,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
     }
   }, [debouncedSearch])
 
-  useClickOutside(searchRef, () => setOpenSearchMenu(false))
+  useClickOutside(searchRef, () => setOpenSearchMenu(false), { enabled: openSearchMenu })
 
   const generateExplorerUrl = (lane): ExplorerInfo => {
     const directory = directoryToSupportedChain(lane.sourceNetwork.key)
@@ -146,7 +149,10 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
           placeholder="Network/Token/Lane"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          onFocus={() => setIsActive(true)}
+          onFocus={() => {
+            setIsActive(true)
+            ensureWorker()
+          }}
           onBlur={() => setIsActive(false)}
         />
         {openSearchMenu && (

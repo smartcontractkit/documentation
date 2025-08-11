@@ -32,13 +32,7 @@ const { title } = Astro.props
 <link rel="preconnect" href="https://js.usemessages.com" crossorigin />
 
 <!-- Preload critical fonts -->
-<link
-  rel="preload"
-  href="https://smartcontract.imgix.net/fonts/Inter-VariableFont_opsz,wght.ttf"
-  as="font"
-  type="font/ttf"
-  crossorigin
-/>
+<!-- Remove heavy TTF preload to cut ~1.7MB; rely on system fonts or WOFF2 subsets -->
 <link
   rel="preload"
   href="https://smartcontract.imgix.net/fonts/TASAOrbiterDisplay-SemiBold.woff"
@@ -50,20 +44,41 @@ const { title } = Astro.props
 <!-- Scrollable a11y code helper - defer to not block render -->
 <script src="/make-scrollable-code-focusable.js" defer></script>
 
-<!-- Google Tag Manager -->
+<!-- Preconnects to speed GTM/GA when they load -->
+<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+
+<!-- Google Tag Manager (lazy init on first interaction or idle) -->
 <script type="text/javascript">
   ;(function (w, d, s, l, i) {
     w[l] = w[l] || []
     w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" })
-    var f = d.getElementsByTagName(s)[0],
-      j = d.createElement(s),
-      dl = l != "dataLayer" ? "&l=" + l : ""
-    j.async = true
-    j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl
-    f.parentNode.insertBefore(j, f)
+    function loadGTM() {
+      if (w.__gtmLoaded) return
+      w.__gtmLoaded = true
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != "dataLayer" ? "&l=" + l : ""
+      j.async = true
+      j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl
+      f.parentNode.insertBefore(j, f)
+    }
+    function onFirstInput() {
+      loadGTM()
+      ;["pointerdown", "keydown", "wheel", "touchstart"].forEach((evt) =>
+        d.removeEventListener(evt, onFirstInput, { passive: true })
+      )
+    }
+    ;["pointerdown", "keydown", "wheel", "touchstart"].forEach((evt) =>
+      d.addEventListener(evt, onFirstInput, { passive: true })
+    )
+    if ("requestIdleCallback" in w) {
+      requestIdleCallback(loadGTM, { timeout: 3000 })
+    } else {
+      setTimeout(loadGTM, 3000)
+    }
   })(window, document, "script", "dataLayer", "GTM-N6DQ47T")
 </script>
-<!-- End Google Tag Manager -->
 
 <meta name="algolia-site-verification" content="5C6E2FAC077D2F49" />
 
