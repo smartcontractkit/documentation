@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import "./Search.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
@@ -7,6 +7,7 @@ import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
+import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker"
 
 interface SearchProps {
   chains: {
@@ -46,7 +47,35 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
   const [isActive, setIsActive] = useState(false)
+  const [networksResults, setNetworksResults] = useState<typeof chains>([])
+  const [tokensResults, setTokensResults] = useState<typeof tokens>([])
+  const [lanesResults, setLanesResults] = useState<typeof lanes>([])
   const searchRef = useRef<HTMLDivElement>(null)
+  const workerRef = useRef<Worker | null>(null)
+
+  // Initialize Web Worker
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Import the worker as a URL that Vite will process
+      workerRef.current = new Worker(
+        new URL("~/workers/data-worker.ts", import.meta.url),
+        { type: "module" }
+      )
+
+      workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
+        const { networks, tokens: workerTokens, lanes: workerLanes } = event.data
+        setNetworksResults(networks || [])
+        setTokensResults(workerTokens || [])
+        setLanesResults(workerLanes || [])
+      }
+    }
+
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate()
+      }
+    }
+  }, [])
 
   // Debounce search input
   useEffect(() => {
@@ -57,26 +86,27 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
     return () => clearTimeout(timer)
   }, [search])
 
-  // Memoize filtered results to prevent unnecessary recalculations
-  const networksResults = useMemo(() => {
-    if (!debouncedSearch) return []
-    return chains.filter((chain) => chain.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
-  }, [debouncedSearch, chains])
+  // Filter data using Web Worker
+  useEffect(() => {
+    if (!debouncedSearch) {
+      setNetworksResults([])
+      setTokensResults([])
+      setLanesResults([])
+      return
+    }
 
-  const tokensResults = useMemo(() => {
-    if (!debouncedSearch) return []
-    return tokens.filter((token) => token.id.toLowerCase().includes(debouncedSearch.toLowerCase()))
-  }, [debouncedSearch, tokens])
-
-  const lanesResults = useMemo(() => {
-    if (!debouncedSearch) return []
-    return lanes.filter(
-      (lane) =>
-        (lane.sourceNetwork.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          lane.destinationNetwork.name.toLowerCase().includes(debouncedSearch.toLowerCase())) &&
-        (lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0) > 0
-    )
-  }, [debouncedSearch, lanes])
+    if (workerRef.current) {
+      const message: WorkerMessage = {
+        search: debouncedSearch,
+        data: {
+          chains,
+          tokens,
+          lanes,
+        },
+      }
+      workerRef.current.postMessage(message)
+    }
+  }, [debouncedSearch, chains, tokens, lanes])
 
   // Handle menu visibility
   useEffect(() => {
