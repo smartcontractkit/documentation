@@ -932,7 +932,7 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav"
   const isSmartData = dataFeedType === "smartdata"
   const isDefault = !isStreams && !isSmartData
   const isDeprecating = ecosystem === "deprecating"
@@ -960,6 +960,10 @@ export const MainnetTable = ({
 
       if (dataFeedType === "streamsRwa") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+      }
+
+      if (dataFeedType === "streamsNav") {
+        return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
       }
 
       if (isSmartData) {
@@ -1117,7 +1121,7 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDefault = !isSmartData && !isRates && !isStreams
@@ -1140,6 +1144,10 @@ export const TestnetTable = ({
 
         if (dataFeedType === "streamsRwa") {
           return metadata.contractType === "verifier" && metadata.feedType === "Equities"
+        }
+
+        if (dataFeedType === "streamsNav") {
+          return metadata.contractType === "verifier" && metadata.feedType === "Net Asset Value"
         }
       }
 

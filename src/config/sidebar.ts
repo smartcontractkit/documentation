@@ -368,6 +368,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Net Asset Value (NAV) Streams",
+          url: "data-streams/nav-streams",
+          children: [
+            {
+              title: "Report Schema v9",
+              url: "data-streams/reference/report-schema-v9",
+            },
+          ],
+        },
+        {
           title: "Market Hours",
           url: "data-streams/market-hours",
         },
