@@ -28,6 +28,7 @@ const redirectSources = new Set(
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
+  trailingSlash: "never",
   redirects: {
     "/ccip/directory": "/ccip/directory/mainnet",
     "/ccip/supported-networks": "/ccip/directory/mainnet",
