@@ -246,7 +246,11 @@ function TokenDrawer({
                             ))
                           }}
                         >
-                          <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
+                          <img
+                            src={networkDetails?.logo}
+                            alt={`${networkDetails?.name} blockchain logo`}
+                            className="ccip-table__logo"
+                          />
                           {networkDetails?.name}
                           {tokenPaused && (
                             <span className="ccip-table__paused-badge" title="Transfers are currently paused">

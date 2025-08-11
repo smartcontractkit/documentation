@@ -89,7 +89,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         <span className="ccip-table__logoContainer">
                           <img
                             src={network.logo}
-                            alt={network.name}
+                            alt={`${network.name} blockchain logo`}
                             className="ccip-table__logo"
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping

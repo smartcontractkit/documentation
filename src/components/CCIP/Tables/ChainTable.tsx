@@ -144,7 +144,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                         ))
                       }}
                     >
-                      <img src={network.logo} alt={network.name} className="ccip-table__logo" />
+                      <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
                       {network.name}
                     </div>
                   </td>

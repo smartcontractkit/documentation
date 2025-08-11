@@ -64,7 +64,7 @@ function Drawer() {
     >
       <div className="drawer__container" ref={drawerContentRef}>
         <div className="drawer__close">
-          <button id="drawer-exit" onClick={handleClose}>
+          <button id="drawer-exit" onClick={handleClose} aria-label="Close drawer">
             <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15.1667 1.33331L1.83337 14.6666M1.83337 1.33331L15.1667 14.6666" stroke="white" />
             </svg>
@@ -72,7 +72,7 @@ function Drawer() {
           <label htmlFor="drawer-exit">Esc</label>
         </div>
         <div className="drawer__content">
-          <button onClick={handleClose} className="drawer__closeMobile">
+          <button onClick={handleClose} className="drawer__closeMobile" aria-label="Close drawer">
             <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15.1667 1.33331L1.83337 14.6666M1.83337 1.33331L15.1667 14.6666" stroke="#000000" />
             </svg>

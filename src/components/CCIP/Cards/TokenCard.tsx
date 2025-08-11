@@ -16,8 +16,8 @@ const TokenCard = memo(function TokenCard({ id, logo, link, onClick }: TokenCard
         <div className="token-card__container">
           {/* We cannot use the normal Image/onError syntax as a fallback as the element is server rendered 
           and the onerror does not seem to work correctly. Using Picture will also not work. */}
-          <object data={logo} type="image/png">
-            <img src={fallbackTokenIconUrl} alt="" loading="lazy" />
+          <object data={logo} type="image/png" aria-label={`${id} token logo`}>
+            <img src={fallbackTokenIconUrl} alt={`${id} token logo`} loading="lazy" />
           </object>
           <h3>{id}</h3>
         </div>
@@ -28,8 +28,8 @@ const TokenCard = memo(function TokenCard({ id, logo, link, onClick }: TokenCard
   if (onClick) {
     return (
       <div className="token-card__container" onClick={onClick} role="button">
-        <object data={logo} type="image/png">
-          <img src={fallbackTokenIconUrl} alt="" loading="lazy" />
+        <object data={logo} type="image/png" aria-label={`${id} token logo`}>
+          <img src={fallbackTokenIconUrl} alt={`${id} token logo`} loading="lazy" />
         </object>
         <h3>{id}</h3>
       </div>

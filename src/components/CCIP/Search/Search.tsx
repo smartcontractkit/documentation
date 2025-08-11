@@ -140,7 +140,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
         })}
         ref={searchRef}
       >
-        <img src="/assets/icons/search.svg" alt="" />
+        <img src="/assets/icons/search.svg" alt="Search icon" />
         <input
           type="search"
           placeholder="Network/Token/Lane"
@@ -167,7 +167,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/directory/${environment}/chain/${network.chain}`}>
                         <img
                           src={network.logo}
-                          alt=""
+                          alt={`${network.name} blockchain logo`}
                           loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
@@ -196,7 +196,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/directory/${environment}/token/${token.id}`}>
                         <img
                           src={token.logo}
-                          alt=""
+                          alt={`${token.id} token logo`}
                           loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
@@ -242,7 +242,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         <div className="ccip-hero__search-results__lane-images">
                           <img
                             src={lane.sourceNetwork.logo}
-                            alt=""
+                            alt={`${lane.sourceNetwork.name} source blockchain logo`}
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping
                               currentTarget.src = fallbackTokenIconUrl
@@ -250,7 +250,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                           />
                           <img
                             src={lane.destinationNetwork.logo}
-                            alt=""
+                            alt={`${lane.destinationNetwork.name} destination blockchain logo`}
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping
                               currentTarget.src = fallbackTokenIconUrl
