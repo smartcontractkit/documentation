@@ -104,13 +104,11 @@ export default defineConfig({
   },
   // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
   output: "static",
-  adapter: vercel({
-    excludeFiles: ["./public/images/**/*", "./public/search-index.json"],
-  }),
+  adapter: vercel(),
   vite: {
     plugins: [yaml()],
     build: {
-      target: "es2022",
+      target: "esnext", // Use latest ES features, no transpilation for modern browsers
       // Optimize CSS delivery
       cssMinify: true,
       // Increase the threshold for inlining assets to reduce render-blocking CSS
@@ -123,7 +121,7 @@ export default defineConfig({
       // },
     },
     esbuild: {
-      target: "es2022",
+      target: "esnext", // Match build target for consistency
     },
     css: {
       devSourcemap: false,
