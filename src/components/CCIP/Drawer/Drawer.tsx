@@ -44,10 +44,14 @@ function Drawer() {
   const handleClose = () => {
     setIsOpened(false)
 
-    // wait for animation to finish
-    setTimeout(() => {
+    // Use transitionend event instead of setTimeout for better performance
+    const handleTransitionEnd = () => {
       drawerContentStore.set(null)
-    }, 500)
+      drawerRef.current?.removeEventListener("transitionend", handleTransitionEnd)
+    }
+
+    // Listen for the transition to complete
+    drawerRef.current?.addEventListener("transitionend", handleTransitionEnd)
   }
 
   return (

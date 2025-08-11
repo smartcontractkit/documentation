@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import "./Search.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
@@ -43,34 +43,49 @@ interface SearchProps {
 
 function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
   const [isActive, setIsActive] = useState(false)
-  const [networksResults, setNetworksResults] = useState<SearchProps["chains"]>([])
-  const [tokensResults, setTokensResults] = useState<SearchProps["tokens"]>([])
-  const [lanesResults, setLanesResults] = useState<SearchProps["lanes"]>([])
   const searchRef = useRef<HTMLDivElement>(null)
 
+  // Debounce search input
   useEffect(() => {
-    if (search) {
-      const networks = chains.filter((chain) => chain.name.toLowerCase().includes(search.toLowerCase()))
-      const tokensList = tokens.filter((token) => token.id.toLowerCase().includes(search.toLowerCase()))
-      const lanesList = lanes.filter(
-        (lane) =>
-          (lane.sourceNetwork.name.toLowerCase().includes(search.toLowerCase()) ||
-            lane.destinationNetwork.name.toLowerCase().includes(search.toLowerCase())) &&
-          (lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0) > 0
-      )
-      setNetworksResults(networks)
-      setTokensResults(tokensList)
-      setLanesResults(lanesList)
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Memoize filtered results to prevent unnecessary recalculations
+  const networksResults = useMemo(() => {
+    if (!debouncedSearch) return []
+    return chains.filter((chain) => chain.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
+  }, [debouncedSearch, chains])
+
+  const tokensResults = useMemo(() => {
+    if (!debouncedSearch) return []
+    return tokens.filter((token) => token.id.toLowerCase().includes(debouncedSearch.toLowerCase()))
+  }, [debouncedSearch, tokens])
+
+  const lanesResults = useMemo(() => {
+    if (!debouncedSearch) return []
+    return lanes.filter(
+      (lane) =>
+        (lane.sourceNetwork.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          lane.destinationNetwork.name.toLowerCase().includes(debouncedSearch.toLowerCase())) &&
+        (lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0) > 0
+    )
+  }, [debouncedSearch, lanes])
+
+  // Handle menu visibility
+  useEffect(() => {
+    if (debouncedSearch) {
       setOpenSearchMenu(true)
     } else {
-      setNetworksResults([])
-      setTokensResults([])
-      setLanesResults([])
       setOpenSearchMenu(false)
     }
-  }, [search, chains, tokens])
+  }, [debouncedSearch])
 
   useClickOutside(searchRef, () => setOpenSearchMenu(false))
 
@@ -126,6 +141,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         <img
                           src={network.logo}
                           alt=""
+                          loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
                             currentTarget.src = fallbackTokenIconUrl
@@ -154,6 +170,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         <img
                           src={token.logo}
                           alt=""
+                          loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
                             currentTarget.src = fallbackTokenIconUrl
