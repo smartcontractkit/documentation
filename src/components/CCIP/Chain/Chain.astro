@@ -16,6 +16,7 @@ import { getTokenIconUrl } from "~/features/utils"
 import ChainTokenGrid from "./ChainTokenGrid"
 import { generateChainStructuredData } from "~/utils/ccipStructuredData"
 import StructuredData from "~/components/StructuredData.astro"
+import { DOCS_BASE_URL } from "~/utils/structuredData"
 
 interface Props {
   environment: Environment
@@ -49,21 +50,32 @@ const searchLanes = getSearchLanes({ environment })
 
 // Generate dynamic metadata for this specific chain
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+const logoPath = network.logo || ""
+const logoPathname = (() => {
+  try {
+    return new URL(logoPath, Astro.site).pathname.toLowerCase()
+  } catch {
+    return logoPath.toLowerCase()
+  }
+})()
+const socialImage = logoPathname.endsWith(".svg") ? "/files/ccip-directory.jpg" : logoPath
+
 const chainMetadata = {
   title: `${network.name} CCIP Network - ${environmentText} Cross-Chain Configuration`,
   description: `CCIP configuration for ${network.name} on ${environmentText}. View ${allTokens.length > 0 ? `${allTokens.length} supported tokens` : "supported tokens"}, active cross-chain lanes, fees, and technical specifications.`,
-  image: network.logo,
+  image: socialImage,
   excerpt: `${network.name} CCIP network configuration ${environmentText.toLowerCase()} cross-chain interoperability ${network.chainType.toLowerCase()} supported tokens lanes fees technical specifications`,
 }
 
-// Generate structured data for this chain
-const currentURL = new URL(Astro.request.url).href
+// Generate structured data for this chain (use production base for JSON-LD URLs)
+const currentPath = new URL(Astro.request.url).pathname
+const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
 const chainStructuredData = generateChainStructuredData(
   network,
   environment,
   allTokens.length,
   lanes.length,
-  currentURL
+  canonicalForJsonLd
 )
 ---
 
@@ -79,8 +91,15 @@ const chainStructuredData = generateChainStructuredData(
   }}
   {headings}
   environment={environment}
+  structuredData={chainStructuredData}
+  pageTitleOverride={chainMetadata.title}
+  metadataOverride={{
+    description: chainMetadata.description,
+    image: chainMetadata.image,
+    excerpt: chainMetadata.excerpt,
+  }}
+  suppressDefaultStructuredData={true}
 >
-  <StructuredData data={chainStructuredData} />
   <ChainHero
     chains={networks}
     tokens={allTokens}

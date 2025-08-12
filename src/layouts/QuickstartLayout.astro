@@ -14,6 +14,11 @@ interface Props {
 const { frontmatter, headings } = Astro.props
 
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+
+// Derive HowTo steps from headings (H2/H3)
+const howToSteps = (headings || [])
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ name: h.text, slug: h.slug }))
 ---
 
 <BaseLayout
@@ -25,6 +30,7 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
     image: `/images/quickstarts/feature/${frontmatter.image}`,
   }}
   quickstartFrontmatter={frontmatter}
+  howToSteps={howToSteps}
 >
   <main>
     <div></div>

@@ -61,9 +61,9 @@ Every page automatically receives:
 ```html
 <title>Page Title | Chainlink Documentation</title>
 <meta name="description" content="..." />
-<meta name="keywords" content="..." />
 <link rel="canonical" href="..." />
 <meta property="og:title" content="..." />
+<meta property="og:type" content="article" />
 <meta property="og:description" content="..." />
 <meta name="twitter:card" content="summary_large_image" />
 ```
@@ -78,11 +78,25 @@ Every page automatically receives:
     "name": "Deploy Your First Smart Contract",
     "description": "Learn to deploy smart contracts in 10 minutes",
     "totalTime": "PT10M",
-    "author": { "@type": "Organization", "name": "Chainlink" },
-    "publisher": { "@type": "Organization", "name": "Chainlink" }
+    "author": { "@type": "Organization", "name": "Chainlink Labs" },
+    "publisher": { "@type": "Organization", "name": "Chainlink Documentation" }
   }
 </script>
 ```
+
+### Canonical URLs
+
+- Non-versioned pages can override canonical with `metadata.canonical`.
+  - Relative values are resolved to absolute URLs using the site base.
+- Versioned API reference pages set canonicals/alternates via the version head component.
+  - Latest version: `rel="canonical"`; other versions: `rel="alternate"`.
+  - `hreflang` is not used for versioning.
+
+### Open Graph Type
+
+- `og:type` is set contextually:
+  - `website`: for `/`, `/ccip`, `/ccip/directory*`, `/data-feeds`, `/vrf`, `/chainlink-functions`, `/chainlink-automation`, `/chainlink-local`, `/resources`.
+  - `article`: for all other pages.
 
 ## Content Types & Templates
 
@@ -157,7 +171,7 @@ metadata:
 **Generated Schema**: TechArticle + LearningResource
 
 - `educationalLevel`: From `difficulty` field
-- `teaches`: Auto-generated from content analysis
+- `teaches`: Derived from content type and product (e.g., "Concept for CCIP")
 - `learningResourceType`: "Concept"
 
 ### Guides
@@ -317,15 +331,20 @@ excerpt: "ccip cross-chain token transfer tutorial hardhat solidity intermediate
 
 ### Image Guidelines
 
-**Path Format**: `/images/[product]/[descriptive-name].png`
+**Path Format**:
+
+- Standard pages: `metadata.image` should be an absolute path like `/images/[product]/[descriptive-name].png`.
+- Quickstarts: `frontmatter.image` is a filename resolved to `/images/quickstarts/feature/{filename}`.
 
 **Requirements:**
 
 - Minimum 1200x630px for social sharing
-- Use WebP format when possible
+- Prefer PNG or JPG for broad preview compatibility
+- WebP is acceptable, but some bots preview PNG/JPG more reliably
+- Avoid animated GIFs for social previews (often heavy; many platforms show only the first frame)
 - Include alt text context in filename
 
-**Note**: Images are optional - the system automatically falls back to the Chainlink logo for social sharing if no custom image is provided.
+**Note**: The system falls back to the Chainlink logo if no custom image is provided. The current implementation sets `og:image:type` to `image/png`; using PNG avoids type mismatches.
 
 ### Content Hierarchy
 
@@ -338,21 +357,6 @@ excerpt: "ccip cross-chain token transfer tutorial hardhat solidity intermediate
 - `chainlinkFunctions`: Chainlink Functions
 
 ## Validation & Testing
-
-### Build-Time Validation
-
-Run the validation script to check structured data compliance:
-
-```bash
-npm run validate-structured-data
-```
-
-This script validates:
-
-- Required Schema.org properties
-- ISO 8601 duration formats
-- URL validity
-- Content type classification
 
 ### Manual Testing Tools
 
@@ -449,8 +453,8 @@ Run `npm run build` and check for errors in console.
 **Reality**: Minimal impact
 
 - JSON-LD scripts are small (typically <2KB)
-- Processed at build time, not runtime
-- No additional HTTP requests
+- Processed at build time (no client-side runtime cost)
+- Social image existence is validated at build time; no client-side requests
 - Automatic fallbacks prevent missing data
 
 ---
@@ -476,12 +480,6 @@ When updating existing content for better SEO:
 - [ ] Add `metadata.datePublished` for new content
 - [ ] Add `metadata.lastModified` when updating content
 - [ ] Add `metadata.version` for API references
-
-### Validation
-
-- [ ] Test with validation script: `npm run validate-structured-data`
-- [ ] Check Rich Results Test
-- [ ] Verify social sharing preview
 
 ## Current Implementation Status
 
