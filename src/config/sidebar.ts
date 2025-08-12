@@ -1679,6 +1679,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "BurnMint: SPL Token Multisig Tutorial",
                   url: "ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial",
                 },
+                {
+                  title: "Production Multisig Governance",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial",
+                },
               ],
             },
           ],
