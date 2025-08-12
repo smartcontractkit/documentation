@@ -612,6 +612,95 @@ echo "✅ Tokens minted successfully"
 </Fragment>
 </Tabs>
 
+### Step 5: Claim CCIP Admin Role
+
+In this step, you will use the `claimAdmin` task to register your EOA as the administrator for the deployed token on Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the CCIP admin of the token and set it up as the admin in the registry.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Claim Admin</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Claim admin role for CCIP token registry
+npx hardhat claimAdmin \
+  --tokenaddress $ETH_TOKEN_ADDRESS \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-12T21:22:38.303Z info: 🎯 Attempting to claim admin for token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 using getCCIPAdmin mode
+2025-08-12T21:22:39.072Z info: Current token CCIP admin: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-12T21:22:39.072Z info: Claiming admin of 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 via getCCIPAdmin() for CCIP admin 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-12T21:23:13.903Z info: ✅ Successfully claimed admin of 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 using getCCIPAdmin mode. Transaction: 0x3765b1e222b7bb55ea7d601a10a27e83d7cbfe76ad8a286b39f833c9f17283ee
+```
+
+</Fragment>
+</Tabs>
+
+### Step 6: Accept CCIP Admin Role
+
+In this step, you will use the `acceptAdminRole` task to accept the admin role for the deployed token on Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Accept Admin Role</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Accept admin role to complete CCIP registration
+npx hardhat acceptAdminRole \
+--tokenaddress $ETH_TOKEN_ADDRESS \
+--network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-12T21:26:15.066Z info: Accepted admin role for token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 tx: 0x883db3a63416eb02c56ec39661f6a7c90e7db8cabb57779a653008404b714d37
+```
+
+</Fragment>
+</Tabs>
+
+### Step 7: Register Pool with Token
+
+In this step, you will use the `setPool` task to register the BurnMint token pool with the token in Ethereum's TokenAdminRegistry contract. This function sets the pool contract address for the token, enabling it for CCIP cross-chain transfers. Only the token administrator can call this function.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Pool</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Register token pool with TokenAdminRegistry contract
+npx hardhat setPool \
+--tokenaddress $ETH_TOKEN_ADDRESS \
+--pooladdress $ETH_POOL_ADDRESS \
+--network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-12T21:27:24.993Z info: Setting pool for token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 to 0xB8aE4F4eDDFEFb3476039606Bfb8caE74a554342 by 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-12T21:28:14.346Z info: Pool set for token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 to 0xB8aE4F4eDDFEFb3476039606Bfb8caE74a554342
+```
+
+</Fragment>
+</Tabs>
+
 **Phase 1 Complete**: Save your variables:
 
 <Tabs client:visible>
@@ -822,11 +911,19 @@ INFO [2025-08-12 18:00:46.990]: Size: 815 bytes, Compute units: 82,237
 </Fragment>
 </Tabs>
 
-**Squads Execution Steps:**
+<Aside type="note" title="Squads Execution Required">
 
-1. **Import**: Copy the Base58 transaction → Squads UI → "Add instruction" → "Import base58 encoded tx"
-1. **Verify**: Review transaction details, check authority and mint parameters
-1. **Execute**: Click "Initiate Transaction" → Get required signatures → Execute
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details, check authority and mint
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 After execution, set the token mint:
 
@@ -961,11 +1058,19 @@ Total accounts: 7 1. gbsmzERXogUy74hMq5zYwAkKWd2Y2BKobsvhs26Z3MM (writable) 2. E
 - **Account #1** → `SOL_POOL_ADDRESS` (writable account = pool state)
 - **Account #7** → `SOL_POOL_SIGNER_PDA` (the derived authority)
 
-**Squads Execution Steps:**
+<Aside type="note" title="Squads Execution Required">
 
-1. **Import**: Copy the Base58 transaction → Squads UI → "Add instruction" → "Import base58 encoded tx"
-1. **Verify**: Review pool initialization parameters
-1. **Execute**: Click "Initiate Transaction" → Get required signatures → Execute
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify pool initialization parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 After execution, set the pool variables:
 
@@ -1089,7 +1194,19 @@ Total accounts: 5 1. 3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3 (read-only) 2.
 **What This Transaction Does:**
 This transaction proposes your Squad vault as the administrator for your token in the Router's Token Admin Registry. **Account #2** is the Token Admin Registry PDA that stores who has administrative control over your token's cross-chain operations.
 
-**Execute this transaction through Squads UI**, then proceed to accept the administrator role.
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 #### Sub-step 4b: Accept Administrator Role
 
@@ -1170,7 +1287,19 @@ This is the **acceptance step** of the two-phase administrator registration. It 
 
 **Key Difference**: Only 4 accounts (vs. 5 in the propose step) because we're updating an existing registry entry, not creating a new one.
 
-**Execute this transaction through Squads UI to complete administrator registration.**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 After both transactions are executed, your Squad vault will be the CCIP token administrator. See [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration) for more details.
 
@@ -1388,7 +1517,19 @@ Total accounts: 2
 - **New Authority**: `DXzYSauMSb623qvrPXLgxbEp4MNZQGtx6jYWkRCEfDiC` (SPL Token Multisig)
 - **Token Mint**: `EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND` (authority field updated)
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 ### Step 7: Test Token Minting (Verify Dual-Layer Control)
 
@@ -2776,59 +2917,59 @@ yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --re
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/router/1_token-transfer.ts --token-mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --token-amount 1000000 --receiver
-[2025-08-12T21:07:37.661Z] 🚀 CCIP Token Transfer
-[2025-08-12T21:07:37.683Z] =======================================
-[2025-08-12T21:07:37.906Z] Network: devnet
-[2025-08-12T21:07:37.907Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-12T21:36:22.171Z] 🚀 CCIP Token Transfer
+[2025-08-12T21:36:22.177Z] =======================================
+[2025-08-12T21:36:22.249Z] Network: devnet
+[2025-08-12T21:36:22.249Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 
-[2025-08-12T21:07:37.908Z] 💰 WALLET BALANCE
-[2025-08-12T21:07:37.908Z] =======================================
-[2025-08-12T21:07:38.887Z] SOL Balance: 40369509865 lamports (40.369509865 SOL)
+[2025-08-12T21:36:22.249Z] 💰 WALLET BALANCE
+[2025-08-12T21:36:22.250Z] =======================================
+[2025-08-12T21:36:22.941Z] SOL Balance: 40368116618 lamports (40.368116618 SOL)
 
-[2025-08-12T21:07:38.888Z] 🌉 CCIP ROUTER INFORMATION
-[2025-08-12T21:07:38.889Z] =======================================
-[2025-08-12T21:07:38.892Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-12T21:07:38.894Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
-[2025-08-12T21:07:38.896Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
-[2025-08-12T21:07:38.899Z] Using native SOL as fee token
+[2025-08-12T21:36:22.942Z] 🌉 CCIP ROUTER INFORMATION
+[2025-08-12T21:36:22.942Z] =======================================
+[2025-08-12T21:36:22.942Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-12T21:36:22.942Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
+[2025-08-12T21:36:22.942Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-08-12T21:36:22.943Z] Using native SOL as fee token
 
-[2025-08-12T21:07:38.901Z] 📋 TOKEN TRANSFER PARAMETERS
-[2025-08-12T21:07:38.901Z] ===========================================
-[2025-08-12T21:07:38.901Z] Destination Chain: ethereum-sepolia
-[2025-08-12T21:07:38.901Z] Destination Chain Selector: 16015286601757825753
-[2025-08-12T21:07:38.902Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-12T21:07:38.902Z] Token Mint: EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND
-[2025-08-12T21:07:38.902Z] Token Amount: 1000000
-[2025-08-12T21:07:38.903Z] Fee Token: 11111111111111111111111111111111
-[2025-08-12T21:07:38.903Z] Gas Limit: 0
-[2025-08-12T21:07:38.903Z] Allow Out Of Order Execution: true
+[2025-08-12T21:36:22.943Z] 📋 TOKEN TRANSFER PARAMETERS
+[2025-08-12T21:36:22.943Z] ===========================================
+[2025-08-12T21:36:22.943Z] Destination Chain: ethereum-sepolia
+[2025-08-12T21:36:22.943Z] Destination Chain Selector: 16015286601757825753
+[2025-08-12T21:36:22.943Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-12T21:36:22.943Z] Token Mint: EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND
+[2025-08-12T21:36:22.943Z] Token Amount: 1000000
+[2025-08-12T21:36:22.943Z] Fee Token: 11111111111111111111111111111111
+[2025-08-12T21:36:22.943Z] Gas Limit: 0
+[2025-08-12T21:36:22.943Z] Allow Out Of Order Execution: true
 
-[2025-08-12T21:07:38.913Z] 🔄 SENDING TOKEN TRANSFER
-[2025-08-12T21:07:38.913Z] =======================================
-[2025-08-12T21:07:38.913Z] Preparing CCIP message...
-[2025-08-12T21:07:38.916Z] Sending CCIP message to destination chain 16015286601757825753
-[2025-08-12T21:07:38.916Z] Building accounts for CCIP send to chain 16015286601757825753
-[2025-08-12T21:07:38.932Z] Getting mint account info for EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND to determine token program ID...
-[2025-08-12T21:07:39.045Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-12T21:07:52.843Z] CCIP message sent successfully: 3kRoZFounTa4fiF4CM1UvXvU7hxvcawmHErDaBgSMJw7EvGa2JJD1mAj3GfvVGXWPv6hYw6yDZobLue9Xb2KMMDf
-[2025-08-12T21:07:52.857Z] Parsing CCIP message sent event for transaction: 3kRoZFounTa4fiF4CM1UvXvU7hxvcawmHErDaBgSMJw7EvGa2JJD1mAj3GfvVGXWPv6hYw6yDZobLue9Xb2KMMDf
-[2025-08-12T21:07:53.005Z] Successfully extracted messageId: 0xa7ccd2ed88a9c305849226291fe3afcdac4b12a3be3528617038dd76e325e1a4
+[2025-08-12T21:36:22.945Z] 🔄 SENDING TOKEN TRANSFER
+[2025-08-12T21:36:22.945Z] =======================================
+[2025-08-12T21:36:22.945Z] Preparing CCIP message...
+[2025-08-12T21:36:22.945Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-08-12T21:36:22.946Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-08-12T21:36:22.952Z] Getting mint account info for EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND to determine token program ID...
+[2025-08-12T21:36:23.054Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-12T21:36:36.532Z] CCIP message sent successfully: 5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx
+[2025-08-12T21:36:36.534Z] Parsing CCIP message sent event for transaction: 5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx
+[2025-08-12T21:36:36.658Z] Successfully extracted messageId: 0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
 
-[2025-08-12T21:07:53.006Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
-[2025-08-12T21:07:53.006Z] =======================================
-[2025-08-12T21:07:53.006Z] Transaction Signature: 3kRoZFounTa4fiF4CM1UvXvU7hxvcawmHErDaBgSMJw7EvGa2JJD1mAj3GfvVGXWPv6hYw6yDZobLue9Xb2KMMDf
-[2025-08-12T21:07:53.006Z] CCIP Message ID: 0xa7ccd2ed88a9c305849226291fe3afcdac4b12a3be3528617038dd76e325e1a4
+[2025-08-12T21:36:36.658Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
+[2025-08-12T21:36:36.658Z] =======================================
+[2025-08-12T21:36:36.658Z] Transaction Signature: 5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx
+[2025-08-12T21:36:36.658Z] CCIP Message ID: 0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
 
-[2025-08-12T21:07:53.006Z] 🔍 EXPLORER URLS
-[2025-08-12T21:07:53.006Z] =======================================
-[2025-08-12T21:07:53.006Z] Solana Transaction: https://explorer.solana.com/tx/3kRoZFounTa4fiF4CM1UvXvU7hxvcawmHErDaBgSMJw7EvGa2JJD1mAj3GfvVGXWPv6hYw6yDZobLue9Xb2KMMDf?cluster=devnet
-[2025-08-12T21:07:53.006Z] CCIP Explorer: https://ccip.chain.link/msg/0xa7ccd2ed88a9c305849226291fe3afcdac4b12a3be3528617038dd76e325e1a4
+[2025-08-12T21:36:36.658Z] 🔍 EXPLORER URLS
+[2025-08-12T21:36:36.658Z] =======================================
+[2025-08-12T21:36:36.658Z] Solana Transaction: https://explorer.solana.com/tx/5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx?cluster=devnet
+[2025-08-12T21:36:36.658Z] CCIP Explorer: https://ccip.chain.link/msg/0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
 
-[2025-08-12T21:07:53.006Z] 🎉 Transfer Complete!
-[2025-08-12T21:07:53.006Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-12T21:07:53.006Z] ✅ Message ID: 0xa7ccd2ed88a9c305849226291fe3afcdac4b12a3be3528617038dd76e325e1a4
-[2025-08-12T21:07:53.006Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0xa7ccd2ed88a9c305849226291fe3afcdac4b12a3be3528617038dd76e325e1a4
-✨  Done in 19.73s.
+[2025-08-12T21:36:36.658Z] 🎉 Transfer Complete!
+[2025-08-12T21:36:36.658Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-12T21:36:36.658Z] ✅ Message ID: 0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
+[2025-08-12T21:36:36.658Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
+✨  Done in 26.37s.
 ```
 
 </Fragment>
@@ -2840,13 +2981,13 @@ Upon successful execution, the system generates critical tracking identifiers fo
 
 **Transaction Identifiers:**
 
-- **Transaction Signature**: `5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7`
-- **CCIP Message ID**: `0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef`
+- **Transaction Signature**: `5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx`
+- **CCIP Message ID**: `0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac`
 
 **CCIP Explorer** (Primary monitoring interface):
 
 ```
-https://ccip.chain.link/msg/0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
+https://ccip.chain.link/msg/0x83c31dcab25a016a2f68ad5f1a5b8d125c60049ce1cfbccba8436cfbf60523ac
 ```
 
 The CCIP Explorer provides comprehensive transaction visibility:
@@ -2859,7 +3000,7 @@ The CCIP Explorer provides comprehensive transaction visibility:
 **Solana Explorer** (Source chain verification):
 
 ```
-https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7?cluster=devnet
+https://explorer.solana.com/tx/5vkGgNUYjCejbTikMPpwD3d1zuTiMXigHquXKnEQinULuekYmUt3kFKiVaY1WaFv5mUWbZWNSgunKW7pZoUUW5Sx?cluster=devnet
 ```
 
 ### Transfer Direction 2: Ethereum → Solana
@@ -2889,9 +3030,9 @@ yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --toke
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/evm/router/1_token-transfer.ts --token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 --amount 1000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-Current working directory: /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit
-Found .env file at: /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit/.env
-Successfully loaded environment variables from /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit/.env
+Current working directory: /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit
+Found .env file at: /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit/.env
+Successfully loaded environment variables from /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit/.env
 [token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
 [token-transfer] [INFO] =========================================
 chainId ethereum-sepolia
@@ -2899,28 +3040,28 @@ chainId ethereum-sepolia
 [token-transfer] [INFO] Fee Token: link
 [token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 [token-transfer] [INFO] Compute Units: 0
-
+[token-transfer] [INFO]
 ==== Environment Information ====
 chainId ethereum-sepolia
 [token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
 [token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[token-transfer] [INFO] Native Balance: 592.735864997776343064 ETH
-
+[token-transfer] [INFO] Native Balance: 592.730405783156992237 ETH
+[token-transfer] [INFO]
 🔍 Validating Token Transfer
 [token-transfer] [INFO] =========================================
-[token-transfer] [INFO] Token: BnMAEM (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
-[token-transfer] [INFO] Token Balance: 1000.001 BnMAEM
-[token-transfer] [INFO] Token: BnMAEM (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
-[token-transfer] [INFO] Token Balance: 1000.001 BnMAEM
-[token-transfer] [INFO] Transfer Amount: 1.0 BnMAEM
+[token-transfer] [INFO] Token: BnmAEM (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Token: BnmAEM (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Transfer Amount: 1.0 BnmAEM
 [token-transfer] [INFO] ✅ Token validation successful
 [token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
 [token-transfer] [INFO] Creating CCIP message request
-
+[token-transfer] [INFO]
 📋 Transfer Summary
 [token-transfer] [INFO] =========================================
-
+[token-transfer] [INFO]
 ==== Transfer Summary ====
 [token-transfer] [INFO] Source Chain: Ethereum Sepolia
 [token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
@@ -2928,50 +3069,50 @@ chainId ethereum-sepolia
 [token-transfer] [INFO] Receiver: 11111111111111111111111111111111
 [token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 [token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
-
+[token-transfer] [INFO]
 Token Transfers:
 [token-transfer] [INFO]   1. 1000000000000000000 raw units (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
-
+[token-transfer] [INFO]
 Extra Args: Solana-specific, 228 bytes
-
+[token-transfer] [INFO]
 🚀 Executing Token Transfer
 [token-transfer] [INFO] =========================================
 [token-transfer] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Estimated fee: 18785561290872855
-[ccip-messenger] [INFO] Approving 0.022542673549047426 LINK for CCIP Router
+[ccip-messenger] [INFO] Estimated fee: 13394337964851142
+[ccip-messenger] [INFO] Approving 0.01607320555782137 LINK for CCIP Router
 [ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
-[ccip-messenger] [INFO] Approving 0.022542673549047426 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] Approving 0.01607320555782137 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] LINK approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.022542673549047426 (required: 0.022542673549047426)
-[ccip-messenger] [INFO] Approving 1.0 BnMAEM for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.01607320555782137 (required: 0.01607320555782137)
+[ccip-messenger] [INFO] Approving 1.0 BnmAEM for CCIP Router
 [ccip-messenger] [INFO] Approving 1.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-[ccip-messenger] [INFO] BnMAEM approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnMAEM: 1.0 (required: 1.0)
+[ccip-messenger] [INFO] BnmAEM approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnmAEM: 1.0 (required: 1.0)
 [ccip-messenger] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Transaction sent: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[ccip-messenger] [INFO] Transaction sent: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[ccip-messenger] [INFO] Message ID: 0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
-
+[ccip-messenger] [INFO] Transaction sent: 0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32
+[ccip-messenger] [INFO] Transaction sent: 0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32
+[ccip-messenger] [INFO] Message ID: 0x8a02d96c651c0c791e938388c8a53a2b65ae6b8fd2c0ab78121d90415605ca2e
+[token-transfer] [INFO]
 🎉 Transfer Results
 [token-transfer] [INFO] =========================================
-
+[token-transfer] [INFO]
 ==== Transfer Results ====
-[token-transfer] [INFO] Transaction Hash: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[token-transfer] [INFO] Message ID: 0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
-[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
+[token-transfer] [INFO] Transaction Hash: 0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32
+[token-transfer] [INFO] Message ID: 0x8a02d96c651c0c791e938388c8a53a2b65ae6b8fd2c0ab78121d90415605ca2e
+[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0x8a02d96c651c0c791e938388c8a53a2b65ae6b8fd2c0ab78121d90415605ca2e
 [token-transfer] [INFO] Destination Chain Selector: 16423721717087811551
-[token-transfer] [INFO] Sequence Number: 420
-
+[token-transfer] [INFO] Sequence Number: 542
+[token-transfer] [INFO]
 Message tracking for Solana destinations:
 [token-transfer] [INFO] Please check the CCIP Explorer link to monitor your message status.
-
+[token-transfer] [INFO]
 ✅ Transaction completed on the source chain
-
+[token-transfer] [INFO]
 ✅ Token Transfer Complete!
 [token-transfer] [INFO] 🔗 Your tokens are being bridged to Solana
-✨  Done in 126.75s.
+✨  Done in 169.33s.
 ```
 
 </Fragment>
@@ -2983,13 +3124,13 @@ Upon successful execution, the system generates distinct tracking identifiers fo
 
 **Transaction Identifiers:**
 
-- **Ethereum Transaction Hash**: `0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a`
-- **CCIP Message ID**: `0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828`
+- **Ethereum Transaction Hash**: `0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32`
+- **CCIP Message ID**: `0x8a02d96c651c0c791e938388c8a53a2b65ae6b8fd2c0ab78121d90415605ca2e`
 
 **CCIP Explorer** (Primary monitoring interface):
 
 ```
-https://ccip.chain.link/msg/0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
+https://ccip.chain.link/msg/0x8a02d96c651c0c791e938388c8a53a2b65ae6b8fd2c0ab78121d90415605ca2e
 ```
 
 The CCIP Explorer provides comprehensive transaction visibility:
@@ -3002,7 +3143,7 @@ The CCIP Explorer provides comprehensive transaction visibility:
 **Ethereum Sepolia Explorer** (Source chain verification):
 
 ```
-https://sepolia.etherscan.io/tx/0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
+https://sepolia.etherscan.io/tx/0x4364ead19d219016511624b841a0c547a637884344b0c9bcbec9f3c95c2a7b32
 ```
 
 ## Optional: Rate Limit Testing
