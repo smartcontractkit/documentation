@@ -320,8 +320,18 @@ export const FeedList = ({
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
-  const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : dataFeedType === "streamsNav" ? "Mainnet NAV Streams" : "Mainnet RWA Streams"
-  const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : dataFeedType === "streamsNav" ? "Testnet NAV Streams" : "Testnet RWA Streams"
+  const streamsMainnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Mainnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Mainnet NAV Streams"
+        : "Mainnet RWA Streams"
+  const streamsTestnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Testnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Testnet NAV Streams"
+        : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
