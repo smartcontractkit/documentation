@@ -1143,11 +1143,11 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Equities"
+          return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
         }
 
         if (dataFeedType === "streamsNav") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Net Asset Value"
+          return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
         }
       }
 
