@@ -18,106 +18,36 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 This tutorial implements **production-grade cross-chain tokens** using Chainlink CCIP with **dual-layer multisig governance** between Solana Devnet and Ethereum Sepolia. You'll build a **production-ready governance architecture** following **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
-## What You Will Build
+## What You will Build
 
-Upon completion, you will have:
+This tutorial builds a cross-chain token with enterprise-grade governance using Chainlink CCIP between Solana Devnet and Ethereum Sepolia.
 
-| Component                 | Implementation                       | Security Model              |
-| ------------------------- | ------------------------------------ | --------------------------- |
-| **Ethereum Sepolia**      | ERC20 token with CCIP BurnMint pool  | EOA-controlled (tutorial)   |
-| **Solana Devnet**         | SPL token with dual-layer governance | Squads + SPL multisig       |
-| **Cross-Chain Bridge**    | Bidirectional token transfers        | Autonomous operations       |
-| **Architecture (Solana)** | Production-ready setup               | Enterprise-grade governance |
+| Component                | Implementation                       | Security Model            |
+| ------------------------ | ------------------------------------ | ------------------------- |
+| **Ethereum Sepolia**     | ERC20 token with CCIP BurnMint pool  | EOA-controlled (tutorial) |
+| **Solana Devnet**        | SPL token with dual-layer governance | Squads + SPL multisig     |
+| **Cross-Chain Transfer** | Bidirectional token transfers        | Autonomous operations     |
 
-### Key Innovation: Dual-Layer Governance
+**Key Innovation: Dual-Layer Governance**
 
-**Separation of Concerns Architecture:**
+This tutorial implements **dual-layer multisig governance** that separates concerns:
 
 - **Layer 1 (Squads)**: Controls CCIP administration, pool ownership, protocol configuration
 - **Layer 2 (SPL Multisig)**: Controls mint authority with Pool Signer PDA for autonomous operations
 
-### Implementation Steps
+**Production Benefits:**
 
-You will:
+- **Comprehensive Security**: Two independent governance layers
+- **Operational Autonomy**: Pool Signer PDA enables autonomous cross-chain transfers
+- **Administrative Control**: Squads provides enterprise-grade governance
+
+**Implementation Path:**
 
 1. **Deploy EVM token and pool** on Ethereum Sepolia
 1. **Create governed SPL tokens** with Squads as mint authority
 1. **Establish dual-layer multisig** (Squads → SPL multisig transfer)
-1. **Configure cross-chain pools** with autonomous operations
+1. **Configure cross-chain pools**
 1. **Test bidirectional transfers** and validate governance
-
-**Path A Production Governance Options:**
-
-- **Direct Transfer**: Transfer mint authority directly to Pool Signer PDA - suitable for development and testing ([see tutorial](/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority))
-- **Educational Multisig**: Learn SPL token multisig concepts - foundation for understanding ([see tutorial](/ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial))
-- **Production Governance** (this tutorial): Implement enterprise-grade dual-layer multisig with Squads governance
-
-## Technical Architecture
-
-Before proceeding with implementation, it's crucial to understand the **dual-layer multisig governance** architecture that provides enterprise-grade security.
-
-### Production Dual-Layer Multisig Architecture
-
-This tutorial implements **dual-layer multisig governance** that separates concerns between protocol administration and token operations:
-
-```mermaid
-graph TB
-    subgraph "Layer 1: Squads Multisig Governance"
-        SM["Squads Multisig<br/>🏛️ Protocol Administration"]
-        TAR["CCIP Token Admin<br/>Registry Roles"]
-        PO["CCIP Pool<br/>Ownership"]
-        CS["Cross-chain<br/>Settings"]
-        PA["Protocol-level<br/>Functions"]
-
-        SM --> TAR
-        SM --> PO
-        SM --> CS
-        SM --> PA
-    end
-
-    subgraph "Layer 2: SPL Token Multisig"
-        SPL["SPL Token Multisig<br/>🔐 Mint Authority Control"]
-        PDA["Pool Signer PDA<br/>⚡ Autonomous Operations"]
-        SMG["Squads Multisig<br/>🏛️ Governance Control"]
-
-        SPL --> PDA
-        SPL --> SMG
-    end
-
-    subgraph "Cross-Chain Operations"
-        CCT["Cross-Chain<br/>Token Transfers"]
-        AUTO["Autonomous<br/>Pool Operations"]
-    end
-
-    SM -.-> SMG
-    PDA --> AUTO
-    AUTO --> CCT
-    PA --> CCT
-
-    classDef governance fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef autonomous fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef operations fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-
-    class SM,SMG,TAR,PO,CS,PA governance
-    class PDA,AUTO autonomous
-    class SPL,CCT operations
-```
-
-### Why Dual-Layer Architecture
-
-**Separation of Concerns**:
-
-- **Layer 1 (Squads)**: Controls all CCIP protocol operations, pool configuration, and administrative functions
-- **Layer 2 (SPL Multisig)**: Controls token mint authority with autonomous pool operations
-
-**Production Benefits**:
-
-- **Comprehensive Security**: Two independent governance layers with different security models
-- **Operational Autonomy**: Pool Signer PDA enables autonomous cross-chain transfers
-- **Administrative Control**: Squads provides enterprise-grade governance for all configuration changes
-- **Scalable Architecture**: Suitable for mainnet deployment with proper governance procedures
-
-This tutorial focuses on **mainnet-ready governance architecture**, demonstrating how to implement comprehensive security controls while maintaining autonomous cross-chain token transfers through BurnMint token pools.
 
 <Aside type="caution" title="SPL Token Multisig Limitations">
   **Critical Understanding**: The SPL token multisig demonstrated in this tutorial can **ONLY execute SPL token
@@ -125,52 +55,6 @@ This tutorial focuses on **mainnet-ready governance architecture**, demonstratin
   operations like transferring CCIP admin roles or pool ownership. This is why we implement dual-layer governance:
   Squads handles arbitrary governance operations while SPL multisig handles only token-specific operations.
 </Aside>
-
-## Tutorial Approach
-
-This tutorial implements **production-grade cross-chain tokens** using a **three-terminal workflow** across specialized repositories:
-
-| Terminal       | Repository                                                                                                                  | Purpose                          | Commands      |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------- |
-| **Terminal 1** | [CCIP Solana base58 Generator](https://github.com/smartcontractkit/ccip-solana-base58-generator)                            | Generate governance transactions | `pnpm bs58`   |
-| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy EVM components            | `npx hardhat` |
-| **Terminal 3** | [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit)                                                | Test cross-chain transfers       | `yarn`        |
-
-### Key Implementation Notes
-
-- **Terminal 1** generates base58-encoded transactions for Squads multisig governance
-- **Terminal 2** uses EOA for tutorial simplicity; production deployments should use multisig wallets (e.g., Safe)
-- **Terminal 3** validates end-to-end cross-chain functionality
-
-### base58 Transaction Execution Workflow
-
-**Transaction Generation & Validation:**
-
-1. **CLI Simulation**: Each base58 transaction is automatically simulated during generation
-1. **Error Handling**: If simulation fails, error logs appear in terminal - **do not upload failed transactions to Squads**
-1. **Success Indicator**: Successful simulation shows transaction preview and base58 output
-
-**Squads Multisig Execution Process:**
-
-1. **Propose**: A signer imports the base58 transaction into Squads UI → "Add instruction" → "Import base58 encoded tx" → **Initiate Transaction**
-1. **Approve**: Required threshold (M) of signers review and approve the transaction
-1. **Simulate** (Recommended): Before execution, signers can simulate through Squads interface to preview onchain effects
-1. **Execute**: After threshold approval, any signer can execute the transaction
-
-<Aside type="note" title="Security Best Practice">
-  **Always Simulate Before Execution**: Use Squads' built-in simulation feature before executing transactions. This
-  shows exactly what will happen onchain and is critical for validating complex governance operations before commitment.
-</Aside>
-
-### Environment Variables
-
-Variables use prefixes to prevent confusion across repositories:
-
-| Prefix   | Usage              | Examples                                   |
-| -------- | ------------------ | ------------------------------------------ |
-| `ETH_*`  | Ethereum addresses | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`    |
-| `SOL_*`  | Solana addresses   | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`       |
-| `CCIP_*` | Protocol constants | `CCIP_POOL_PROGRAM`, `CCIP_ROUTER_PROGRAM` |
 
 ## Prerequisites
 
@@ -372,6 +256,52 @@ For detailed setup guidance, see the [Squads Documentation](https://docs.squads.
 **For fresh start**: Proceed with Step 2 to create a new token with Squad vault as mint authority from the beginning.
 
 </Aside>
+
+## Tutorial Approach
+
+This tutorial implements production-grade cross-chain tokens using a three-terminal workflow across specialized repositories:
+
+| Terminal       | Repository                                                                                                                  | Purpose                          | Commands      |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------- |
+| **Terminal 1** | [CCIP Solana base58 Generator](https://github.com/smartcontractkit/ccip-solana-base58-generator)                            | Generate governance transactions | `pnpm bs58`   |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy EVM components            | `npx hardhat` |
+| **Terminal 3** | [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit)                                                | Test cross-chain transfers       | `yarn`        |
+
+### Key Implementation Notes
+
+- **Terminal 1** generates base58-encoded transactions for Squads multisig governance
+- **Terminal 2** uses EOA for tutorial simplicity; production deployments should use multisig wallets (e.g., Safe)
+- **Terminal 3** validates end-to-end cross-chain functionality
+
+### base58 Transaction Execution Workflow
+
+**Transaction Generation and Validation:**
+
+1. **CLI Simulation**: Each base58 transaction is automatically simulated during generation
+2. **Error Handling**: If simulation fails, error logs appear in terminal - do not upload failed transactions to Squads
+3. **Success Indicator**: Successful simulation shows transaction preview and base58 output
+
+**Squads Multisig Execution Process:**
+
+1. **Propose**: A signer imports the base58 transaction into Squads UI → "Add instruction" → "Import base58 encoded tx" → **Initiate Transaction**
+2. **Approve**: Required threshold (M) of signers review and approve the transaction
+3. **Simulate** (Recommended): Before execution, signers can simulate through Squads interface to preview onchain effects
+4. **Execute**: After threshold approval, any signer can execute the transaction
+
+<Aside type="note" title="Security Best Practice">
+  Always simulate before execution using Squads' built-in simulation feature. This shows exactly what will happen
+  onchain and is critical for validating complex governance operations before commitment.
+</Aside>
+
+### Environment Variables
+
+Variables use prefixes to prevent confusion across repositories:
+
+| Prefix   | Usage              | Examples                                   |
+| -------- | ------------------ | ------------------------------------------ |
+| `ETH_*`  | Ethereum addresses | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`    |
+| `SOL_*`  | Solana addresses   | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`       |
+| `CCIP_*` | Protocol constants | `CCIP_POOL_PROGRAM`, `CCIP_ROUTER_PROGRAM` |
 
 ## Phase 1: EVM Chain Setup (Ethereum Sepolia)
 
