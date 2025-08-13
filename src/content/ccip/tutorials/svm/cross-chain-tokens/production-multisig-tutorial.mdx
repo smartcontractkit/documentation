@@ -974,7 +974,7 @@ This command creates only one new account and establishes references to existing
 
 **What Gets Created:**
 
-- **Pool State PDA**: Creates the on-chain Pool State account that stores your token's CCIP configuration
+- **Pool State PDA**: Creates the onchain Pool State account that stores your token's CCIP configuration
 
 **What Gets Referenced (Not Created):**
 
@@ -1208,7 +1208,7 @@ Pool Signer PDA: ERs5qJvN1hu4rGrtuj6WMhZznVWbCyf2g4ynMgFHCWKN
 
 This two-step process establishes your Squad vault as the CCIP token administrator, enabling you to enable your token in CCIP. Since your Squad vault currently holds the mint authority, you can complete this registration using the [self-service registration flow](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) without external assistance.
 
-**Why This Works**: The Router's [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) instruction verifies on-chain that the caller matches the token's `mint_authority` field. Your Squad vault has this authority, enabling [PATH A self-service registration](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
+**Why This Works**: The Router's [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) instruction verifies onchain that the caller matches the token's `mint_authority` field. Your Squad vault has this authority, enabling [PATH A self-service registration](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
 #### Sub-step 5a: Propose Administrator
 
@@ -1524,7 +1524,7 @@ echo "✅ SPL Multisig: $SOL_SPL_MULTISIG"
 </Fragment>
 </Tabs>
 
-### Step 8: Transfer Mint Authority (Layer 2 Mint Authority)
+### Step 7: Transfer Mint Authority (Layer 2 Mint Authority)
 
 Transfer mint authority from your Squad vault to the SPL Token Multisig, completing the dual-layer governance architecture. This enables both automated CCIP operations and human governance control.
 
@@ -1627,7 +1627,7 @@ Total accounts: 2
 
 </Aside>
 
-### Step 7: Test Token Minting (Verify Dual-Layer Control)
+### Step 8: Test Token Minting (Verify Dual-Layer Control)
 
 Verify that your Squad vault can still mint tokens after the authority transfer. This proves the dual-layer governance is working correctly: Squad vault → SPL Token Multisig → Token minting.
 
@@ -1742,7 +1742,17 @@ This is an **SPL Token Multisig Mint** operation that proves your dual-layer gov
 1. **Token Creation**: 1 token is minted and added to total supply
 1. **Token Transfer**: New tokens are deposited into your wallet's ATA
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 **Phase 2 Complete**: Save your variables:
 
@@ -2006,64 +2016,30 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 1. **Account Creation**: Creates new account with rent-exempt balance
 1. **Basic Configuration**: Stores minimal cross-chain parameters (no rate limits, no pool addresses)
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
 
-#### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
+**Execute this base58 transaction in Squads UI:**
 
-After Step 2A completes, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
-
-<Aside type="note" title="Rate Limit Configuration">
-
-**Production Best Practices for Rate Limits**:
-
-- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
-- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate (e.g., 20 tokens per second)
-- **Cross-Chain Decimal Precision**: Critical difference between chains
-  - **Solana Token**: 9 decimals (lamports equivalent)
-  - **Ethereum Token**: 18 decimals (wei equivalent)
-  - **Rate Limits Apply Per Chain**: Each chain uses its own token's decimal precision
-- **Configuration Controls**:
-  - **Pause lane**: Set capacity=1, rate=1 for both directions
-  - **Remove limits**: Set enabled=false, capacity=0, rate=0 for both directions
-- **Value Calculations (Solana 9-Decimal Example)**:
-  - 20 tokens = `20000000000` (20 × 10^9)
-  - 18 tokens = `18000000000` (18 × 10^9)
-  - 0.1 tokens/sec = `100000000` (0.1 × 10^9)
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
 
 </Aside>
 
+#### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
+
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+
 <Tabs client:visible>
-<Fragment slot="tab.1">With Rate Limits</Fragment>
-<Fragment slot="tab.2">Without Rate Limits</Fragment>
-<Fragment slot="tab.3">Expected Output (With Limits)</Fragment>
-<Fragment slot="tab.4">Expected Output (Without Limits)</Fragment>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
 
 ```bash
-# Edit chain config to add remote pool address (with rate limits)
-pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-config \
-  --program-id $CCIP_POOL_PROGRAM \
-  --mint $SOL_TOKEN_MINT \
-  --authority $SOL_SQUAD_VAULT_MULTISIG \
-  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
-  --pool-addresses "[\"$ETH_POOL_ADDRESS\"]" \
-  --token-address $ETH_TOKEN_ADDRESS \
-  --decimals "18" \
-  --inbound-enabled "true" \
-  --inbound-capacity "20000000000" \
-  --inbound-rate "100000000" \
-  --outbound-enabled "true" \
-  --outbound-capacity "18000000000" \
-  --outbound-rate "100000000"
-```
-
-</Fragment>
-
-<Fragment slot="panel.2">
-
-```bash
-# Edit chain config to add remote pool address (without rate limits)
+# Configure chain connection and remote pool address
 pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-config \
   --program-id $CCIP_POOL_PROGRAM \
   --mint $SOL_TOKEN_MINT \
@@ -2076,7 +2052,7 @@ pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-confi
 
 </Fragment>
 
-<Fragment slot="panel.3">
+<Fragment slot="panel.2">
 
 ```bash
 $ pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-config \
@@ -2086,16 +2062,10 @@ $ pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-con
   --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
   --pool-addresses "[\"0xB8aE4F4eDDFEFb3476039606Bfb8caE74a554342\"]" \
   --token-address $ETH_TOKEN_ADDRESS \
-  --decimals "18" \
-  --inbound-enabled "true" \
-  --inbound-capacity "20000000000" \
-  --inbound-rate "100000000" \
-  --outbound-enabled "true" \
-  --outbound-capacity "18000000000" \
-  --outbound-rate "100000000"
+  --decimals "18"
 
 > ccip-solana-bs58-generator@1.0.0 bs58 /Users/.../ccip-solana-bs58-generator
-> tsx src/index.ts burnmint-token-pool --env devnet --instruction edit-chain-remote-config --program-id 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --authority 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY --remote-chain-selector 16015286601757825753 --pool-addresses "[\"0xB8aE4F4eDDFEFb3476039606Bfb8caE74a554342\"]" --token-address 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 --decimals 18 --inbound-enabled true --inbound-capacity 20000000000 --inbound-rate 100000000 --outbound-enabled true --outbound-capacity 18000000000 --outbound-rate 100000000
+> tsx src/index.ts burnmint-token-pool --env devnet --instruction edit-chain-remote-config --program-id 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --authority 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY --remote-chain-selector 16015286601757825753 --pool-addresses "[\"0xB8aE4F4eDDFEFb3476039606Bfb8caE74a554342\"]" --token-address 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 --decimals 18
 
 bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
 🔗 Validating RPC connectivity...
@@ -2238,19 +2208,186 @@ Ym3kR9wF2nH5vT8qL1cX6pB4mZ7sA3dE9jN5uY2wK8xP7hM1gF4tR6sB9vC3qL5eN8jY2wM7kR4xP1hF
 | **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - fee payer)       |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account operations)            |
 
-**What This Command Does:**
-
-This command **edits the existing Chain Remote Config PDA** (created in Step 2A) to complete the cross-chain bridge setup. The key update is **adding the Ethereum pool address** and applying rate limits in a single transaction.
-
 **Transaction Flow:**
 
 1. **Authority Verification**: Confirms Squad vault owns the pool state
-1. **PDA Access**: Updates the existing Chain Remote Config PDA (e.g., such as rate limits)
+1. **PDA Access**: Updates the existing Chain Remote Config PDA
 1. **Pool Address Addition**: Adds the remote pool to the the remote pool list for Ethereum Sepolia
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
 
-### Step 3: Create Address Lookup Table
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 3: Configure Rate Limits (Optional)
+
+This command configures inbound and outbound rate limiting for token transfers between your Solana token and Ethereum Sepolia. Rate limits act as "token buckets" that control the flow of tokens across chains.
+
+<Aside type="note" title="CCIP Rate Limit Best Practices">
+
+**Recommendations for rate limits:**
+
+- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
+- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate
+- **9-Decimal Tokens**: All values are in smallest token units (Solana uses 9 decimals)
+
+**Configuration Controls:**
+
+- **Pause lane**: Set `capacity=1`, `rate=1` for both directions
+- **Remove limits**: Set `enabled=false`, `capacity=0`, `rate=0` for both directions
+
+**Value Calculations:**
+
+- 20 tokens = `20000000000` (20 × 10^9)
+- 18 tokens = `18000000000` (18 × 10^9)
+- 0.1 tokens/sec = `100000000` (0.1 × 10^9)
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure rate limits for cross-chain token transfers
+pnpm bs58 burnmint-token-pool \
+  --env devnet \
+  --instruction set-chain-rate-limit \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --inbound-enabled "true" \
+  --inbound-capacity "20000000000" \
+  --inbound-rate "100000000" \
+  --outbound-enabled "true" \
+  --outbound-capacity "18000000000" \
+  --outbound-rate "100000000"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ pnpm bs58 burnmint-token-pool \
+  --env devnet \
+  --instruction set-chain-rate-limit \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --inbound-enabled "true" \
+  --inbound-capacity "20000000000" \
+  --inbound-rate "100000000" \
+  --outbound-enabled "true" \
+  --outbound-capacity "18000000000" \
+  --outbound-rate "100000000"
+
+> ccip-solana-bs58-generator@1.0.0 bs58 /.../ccip-solana-bs58-generator
+> tsx src/index.ts burnmint-token-pool --env devnet --instruction set-chain-rate-limit --program-id 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --authority 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY --remote-chain-selector 16015286601757825753 --inbound-enabled true --inbound-capacity 20000000000 --inbound-rate 100000000 --outbound-enabled true --outbound-capacity 18000000000 --outbound-rate 100000000
+
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+🔗 Validating RPC connectivity...
+INFO [2025-08-13 01:30:02.426 +0200]: Starting setChainRateLimit command
+    command: "set-chain-rate-limit"
+    programId: "3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo"
+    mint: "EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND"
+    authority: "59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY"
+    remoteChainSelector: "16015286601757825753"
+    inboundEnabled: "true"
+    inboundCapacity: "20000000000"
+    inboundRate: "100000000"
+    outboundEnabled: "true"
+    outboundCapacity: "18000000000"
+    outboundRate: "100000000"
+    globalOptions: {
+      "environment": "devnet",
+      "resolvedRpcUrl": "https://api.devnet.solana.com"
+    }
+   ✅ RPC connection verified
+🔄 Generating setChainRateLimit transaction...
+   RPC URL: https://api.devnet.solana.com
+   Program ID: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
+   Mint: EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND
+   Authority: 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY
+   Remote Chain Selector: 16015286601757825753
+   Inbound Rate Limit: enabled (capacity: 20000000000, rate: 100000000)
+   Outbound Rate Limit: enabled (capacity: 18000000000, rate: 100000000)
+⚙️  Building transaction instruction...
+   ✅ Instruction built successfully
+🔄 Building and simulating transaction...
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+2osuKVgAa7jk8Ahvr7KPjeNDY7RAx29vFbgbkrKwtnGKbSjEBRi8e7gVMdRtj6rsWc57eVr3guqdjDifN4joBVRRnVNcH8i6FeQuRtshDvLahoYrUYnwU6wgp3FiANUN5czyX7rhNHdM4wMXSTG8L3Dvf8k6RJRq1kXrrU9oX7eDewiKv8q9VBJi86UZtYS4u3X3x99mCWkpca3x27RN54LU7UvFgLv2vBWTfTj1YP5RbFnipvPkCuxzWYXTpj2shy9wwVY87g8Fx9uJc4f2FTz4bvw5cRKstMYQpb1BzsEQMYyVss8ybW2rnJPeh4LovFPDhEVwcc8xjCYGap9sfnYsh
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-13 01:30:04.536 +0200]: Transaction built successfully
+    instructionName: "setChainRateLimit"
+    transactionSize: "253 bytes"
+    base58Length: "345 characters"
+    hexLength: "506 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 15592
+INFO [2025-08-13 01:30:04.537 +0200]: Completed buildTransaction (setChainRateLimit)
+    durationMs: 987
+INFO [2025-08-13 01:30:04.537 +0200]:
+INFO [2025-08-13 01:30:04.537 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-13 01:30:04.537 +0200]:
+INFO [2025-08-13 01:30:04.537 +0200]: 📋 Transaction Details:
+INFO [2025-08-13 01:30:04.537 +0200]:    Instruction: setChainRateLimit
+INFO [2025-08-13 01:30:04.537 +0200]:    Size: 253 bytes
+INFO [2025-08-13 01:30:04.537 +0200]:    Base58 length: 345 characters
+INFO [2025-08-13 01:30:04.562 +0200]:    Compute units: 15 592
+INFO [2025-08-13 01:30:04.562 +0200]:    Generated: 2025-08-12T23:30:04.535Z
+INFO [2025-08-13 01:30:04.562 +0200]:
+INFO [2025-08-13 01:30:04.562 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-13 01:30:04.562 +0200]:
+INFO [2025-08-13 01:30:04.562 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-13 01:30:04.562 +0200]:
+INFO [2025-08-13 01:30:04.562 +0200]: 📊 Account Information:
+INFO [2025-08-13 01:30:04.562 +0200]:    Total accounts: 3
+INFO [2025-08-13 01:30:04.562 +0200]:     1. gbsmzERXogUy74hMq5zYwAkKWd2Y2BKobsvhs26Z3MM (read-only)
+INFO [2025-08-13 01:30:04.562 +0200]:     2. 9sc57SrLmm3hUCSShj6t1BsYDmmnM4USCshKYRt5DSFd (writable)
+INFO [2025-08-13 01:30:04.562 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-13 01:30:04.562 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Transaction Accounts (3 total):**
+
+| Account | Address                                        | Type                 | Purpose                                                           |
+| ------- | ---------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
+| **#1**  | `gbsmzERXogUy74hMq5zYwAkKWd2Y2BKobsvhs26Z3MM`  | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
+| **#2**  | `9sc57SrLmm3hUCSShj6t1BsYDmmnM4USCshKYRt5DSFd` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 4: Create Address Lookup Table
 
 Create an Address Lookup Table (ALT) containing all accounts needed for CCIP router operations.
 
@@ -2368,7 +2505,17 @@ The created lookup table will contain indices for these accounts in this exact o
 - **After ALT**: Each account = 1 byte index (10 accounts = 10 bytes)
 - **Savings**: ~310 bytes per future CCIP transaction!
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 **Set Variables:**
 
@@ -2401,7 +2548,7 @@ echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
 </Fragment>
 </Tabs>
 
-### Step 4: Register Pool with Router
+### Step 5: Register Pool with Router
 
 Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v0.1.1/router#set-pool). This enables the router to route cross-chain transfers through your token pool.
 
@@ -2432,7 +2579,7 @@ pnpm bs58 router --env devnet --instruction set-pool \
 <Fragment slot="panel.2">
 
 ```bash
-> ccip-solana-bs58-generator@1.0.0 bs58 /Users/aelmanaa/Documents/Blockchain/tmp/ccip-solana-bs58-generator
+> ccip-solana-bs58-generator@1.0.0 bs58 /.../ccip-solana-bs58-generator
 > tsx src/index.ts router --env devnet --instruction set-pool --program-id Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C --mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --authority 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY --pool-lookup-table Gs628Qdfakm6EHxYdvuf27HMnZNh2TqjJNjnyrQhu6t6 --writable-indexes '[3,4,7]'
 
 bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
@@ -2511,7 +2658,17 @@ Based on the ALT order established earlier:
 | **4**     | Pool Token ATA  | Tokens get minted/burned during transfers        |
 | **7**     | Token Mint      | Supply gets modified during mint/burn operations |
 
-**Execute this transaction through Squads UI.**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
 
 **Phase 3 Complete**: Save all variables:
 
@@ -2520,6 +2677,7 @@ Based on the ALT order established earlier:
 <Fragment slot="tab.2">Summary</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Save all variables for testing phase
 cat > ~/.all_vars << EOF
@@ -2549,18 +2707,19 @@ echo "=== Phase 3 Complete - Cross-Chain Configuration ==="
 echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
 echo "✅ Cross-chain connection configured"
 echo "✅ All variables saved to ~/.all_vars"
-
-````
+```
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 === Phase 3 Complete - Cross-Chain Configuration ===
 ✅ Address Lookup Table: Gs628Qdfakm6EHxYdvuf27HMnZNh2TqjJNjnyrQhu6t6
 ✅ Cross-chain connection configured
 ✅ All variables saved to ~/.all_vars
 ```
+
 </Fragment>
 </Tabs>
 
@@ -2767,8 +2926,6 @@ Set Ethereum receiver for testing
 export ETH_RECEIVER_ADDRESS="<YOUR_ETH_RECEIVER_ADDRESS>"
 ```
 
-
-
 Verify critical variables for Solana Starter Kit
 
 ```bash
@@ -2807,12 +2964,7 @@ Before testing cross-chain transfers, you need to create the pool's Associated T
 <Fragment slot="tab.1">Command</Fragment>
 <Fragment slot="tab.2">Expected Output</Fragment>
 
-<Fragment slot="panel.1">
-```bash
-# Check your current token balance
-spl-token balance $SOL_TOKEN_MINT
-```
-</Fragment>
+<Fragment slot="panel.1">```bash # Check your current token balance spl-token balance $SOL_TOKEN_MINT ```</Fragment>
 
 <Fragment slot="panel.2">
 ```bash
@@ -2828,15 +2980,19 @@ spl-token balance $SOL_TOKEN_MINT
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Create Associated Token Account for the Pool Signer PDA
+
 yarn svm:pool:create-token-account \
   --token-mint $SOL_TOKEN_MINT \
   --burn-mint-pool-program $CCIP_POOL_PROGRAM
 ```
+
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/svm/pool/create-pool-token-account.ts --token-mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
@@ -2890,8 +3046,10 @@ $ ts-node ./ccip-scripts/svm/pool/create-pool-token-account.ts --token-mint EbrE
 [2025-08-12T21:07:07.183Z] ✅ ATA Address: 9pVYxjcnV2gTTFrwnrh2Lb1zUwTefEjxSbpia1B6NUtn
 [2025-08-12T21:07:07.183Z] ✅ Owner: ERs5qJvN1hu4rGrtuj6WMhZznVWbCyf2g4ynMgFHCWKN (Pool Signer PDA)
 [2025-08-12T21:07:07.183Z] ✅ Ready for cross-chain token operations
-✨  Done in 7.60s.
+✨ Done in 7.60s.
+
 ```
+
 </Fragment>
 </Tabs>
 
@@ -2902,6 +3060,7 @@ $ ts-node ./ccip-scripts/svm/pool/create-pool-token-account.ts --token-mint EbrE
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Delegate tokens for CCIP transfers
 yarn svm:token:delegate --token-mint $SOL_TOKEN_MINT
@@ -3004,7 +3163,6 @@ $ ts-node ./ccip-scripts/svm/token/check-token-approval.ts --token-mint EbrEbzXX
 # Execute cross-chain transfer from Solana to Ethereum
 yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver $ETH_RECEIVER_ADDRESS
 ```
-
 
 </Fragment>
 
@@ -3126,9 +3284,9 @@ yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --toke
 ```bash
 yarn run v1.22.22
 $ ts-node ./ccip-scripts/evm/router/1_token-transfer.ts --token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 --amount 1000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-Current working directory: /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit
-Found .env file at: /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit/.env
-Successfully loaded environment variables from /Users/aelmanaa/Documents/Blockchain/tmp/solana-starter-kit/.env
+Current working directory: /.../solana-starter-kit
+Found .env file at: /.../solana-starter-kit/.env
+Successfully loaded environment variables from /.../solana-starter-kit/.env
 [token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
 [token-transfer] [INFO] =========================================
 chainId ethereum-sepolia
@@ -3179,11 +3337,11 @@ Extra Args: Solana-specific, 228 bytes
 [ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
 [ccip-messenger] [INFO] Approving 0.016343570414432214 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] LINK approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.016343570414432214 (required: 0.016343570414432214)
+[ccip-messenger] [INFO] ✅ Verified onchain allowance for LINK: 0.016343570414432214 (required: 0.016343570414432214)
 [ccip-messenger] [INFO] Approving 1.0 BnmAEM for CCIP Router
 [ccip-messenger] [INFO] Approving 1.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] BnmAEM approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnmAEM: 1.0 (required: 1.0)
+[ccip-messenger] [INFO] ✅ Verified onchain allowance for BnmAEM: 1.0 (required: 1.0)
 [ccip-messenger] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Transaction sent: 0x164f3577d51af7502667b3664a5473721cd509ae8bf38f012ac66a47549386c5
@@ -3242,26 +3400,26 @@ The CCIP Explorer provides comprehensive transaction visibility:
 https://sepolia.etherscan.io/tx/0x164f3577d51af7502667b3664a5473721cd509ae8bf38f012ac66a47549386c5
 ```
 
-## Optional: Rate Limit Testing
-
-This optional section demonstrates how rate limits protect against excessive token transfers. Since we configured rate limits in Phase 3 with a capacity of 20 tokens, attempting to transfer more than this amount should fail.
+### Test Solana Rate Limit Enforcement (Optional)
 
 <Aside type="note" title="Rate Limit Configuration Reminder">
-  **Current Rate Limits**: If you followed Phase 3 with rate limits enabled:
-  - **Solana Outbound**: 18 tokens capacity, 0.1 tokens/second rate
-  - **Solana Inbound**: 20 tokens capacity, 0.1 tokens/second rate
-  - **Ethereum**: Similar limits (18-decimal equivalent: 18/20 ETH tokens)
 
-  **Testing Strategy**: Attempt to transfer 25 tokens (exceeds 20-token inbound capacity).
+**Current Rate Limits**: If you followed Phase 3 with rate limits enabled:
+
+- **Solana Outbound**: 18 tokens capacity, 0.1 tokens/second rate
+- **Solana Inbound**: 20 tokens capacity, 0.1 tokens/second rate
+- **Ethereum**: Similar limits (18-decimal equivalent: 18/20 ETH tokens)
+
+**Testing Strategy**: Attempt to transfer 25 tokens (exceeds 20-token inbound capacity).
+
 </Aside>
-
-### Test Rate Limit Enforcement
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Test Command</Fragment>
 <Fragment slot="tab.2">Expected Failure</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Attempt to transfer 25 tokens (exceeds rate limit capacity of 20)
 yarn svm:token-transfer \
@@ -3270,87 +3428,202 @@ yarn svm:token-transfer \
   --receiver $ETH_RECEIVER_ADDRESS
 ```
 
-<Aside type="caution" title="Expected Behavior">
-  **This transfer should FAIL** because 25 tokens exceeds the configured inbound rate limit capacity of 20 tokens. This demonstrates that rate limits are working correctly to protect against excessive transfers.
-</Aside>
-
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
+$ yarn svm:token-transfer \
+  --token-mint $SOL_TOKEN_MINT \
+  --token-amount 25000000000 \
+  --receiver $ETH_RECEIVER_ADDRESS
+
 yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/router/1_token-transfer.ts --token-mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --token-amount 25000000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-12T11:15:33.424Z] 🚀 CCIP Token Transfer
-[2025-08-12T11:15:33.427Z] =======================================
-[2025-08-12T11:15:33.465Z] Network: devnet
-[2025-08-12T11:15:33.466Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-12T11:15:33.500Z] 📋 TOKEN TRANSFER PARAMETERS
-[2025-08-12T11:15:33.500Z] ===========================================
-[2025-08-12T11:15:33.500Z] Token Amount: 25000000000 (25.0 tokens)
-[2025-08-12T11:15:33.500Z] Rate Limit Check: Validating against capacity...
-
-[2025-08-12T11:15:33.550Z] ❌ RATE LIMIT EXCEEDED
-[2025-08-12T11:15:33.550Z] =======================================
-[2025-08-12T11:15:33.550Z] Transfer Amount: 25.0 tokens
-[2025-08-12T11:15:33.550Z] Rate Limit Capacity: 20.0 tokens
-[2025-08-12T11:15:33.550Z] Excess Amount: 5.0 tokens over limit
-
-[2025-08-12T11:15:33.550Z] 🛑 Transfer REJECTED: Amount exceeds rate limit capacity
-[2025-08-12T11:15:33.550Z]
-[2025-08-12T11:15:33.550Z] 💡 Rate Limit Protection Working Correctly!
-[2025-08-12T11:15:33.550Z] This failure confirms that rate limits are properly enforced.
-[2025-08-12T11:15:33.550Z] Try again with amount ≤ 20 tokens.
-✨ Done in 2.45s.
+$ ts-node ./ccip-scripts/svm/router/1_token-transfer.ts --token-mint EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND --token-amount 25000000000 --receiver
+[2025-08-13T00:09:26.249Z] 🚀 CCIP Token Transfer
+[2025-08-13T00:09:26.251Z] =======================================
+[2025-08-13T00:09:26.281Z] Network: devnet
+[2025-08-13T00:09:26.281Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-13T00:09:26.281Z]
+[2025-08-13T00:09:26.281Z] 💰 WALLET BALANCE
+[2025-08-13T00:09:26.281Z] =======================================
+[2025-08-13T00:09:26.847Z] SOL Balance: 40364108169 lamports (40.364108169 SOL)
+[2025-08-13T00:09:26.847Z]
+[2025-08-13T00:09:26.847Z] 🌉 CCIP ROUTER INFORMATION
+[2025-08-13T00:09:26.847Z] =======================================
+[2025-08-13T00:09:26.848Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-13T00:09:26.848Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
+[2025-08-13T00:09:26.848Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-08-13T00:09:26.848Z] Using native SOL as fee token
+[2025-08-13T00:09:26.848Z]
+[2025-08-13T00:09:26.848Z] 📋 TOKEN TRANSFER PARAMETERS
+[2025-08-13T00:09:26.848Z] ===========================================
+[2025-08-13T00:09:26.848Z] Destination Chain: ethereum-sepolia
+[2025-08-13T00:09:26.848Z] Destination Chain Selector: 16015286601757825753
+[2025-08-13T00:09:26.848Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-13T00:09:26.848Z] Token Mint: EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND
+[2025-08-13T00:09:26.848Z] Token Amount: 25000000000
+[2025-08-13T00:09:26.848Z] Fee Token: 11111111111111111111111111111111
+[2025-08-13T00:09:26.848Z] Gas Limit: 0
+[2025-08-13T00:09:26.848Z] Allow Out Of Order Execution: true
+[2025-08-13T00:09:26.849Z]
+[2025-08-13T00:09:26.849Z] 🔄 SENDING TOKEN TRANSFER
+[2025-08-13T00:09:26.849Z] =======================================
+[2025-08-13T00:09:26.849Z] Preparing CCIP message...
+[2025-08-13T00:09:26.850Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-08-13T00:09:26.850Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-08-13T00:09:26.855Z] Getting mint account info for EbrEbzXXUGurxRq55xtie1r4e8rHH99jUAwUaEygrKND to determine token program ID...
+[2025-08-13T00:09:26.955Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-13T00:09:27.397Z] ❌ Failed to send token transfer: Simulation failed.
+Message: Transaction simulation failed: Error processing Instruction 1: custom program error: 0x177f.
+Logs:
+[
+  "Program log: Instruction: LockOrBurnTokens",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 invoke [3]",
+  "Program log: Instruction: VerifyNotCursed",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 consumed 6856 of 1167595 compute units",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 success",
+  "Program log: AnchorError thrown in programs/base-token-pool/src/rate_limiter.rs:48. Error Code: RLMaxCapacityExceeded. Error Number: 6015. Error Message: RateLimit: max capacity exceeded.",
+  "Program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo consumed 46498 of 1204388 compute units",
+  "Program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo failed: custom program error: 0x177f",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C consumed 241960 of 1399850 compute units",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C failed: custom program error: 0x177f"
+].
+Catch the `SendTransactionError` and call `getLogs()` on it for full details.
+[2025-08-13T00:09:27.410Z]
+❌ Command failed:
+[2025-08-13T00:09:27.410Z] Simulation failed.
+Message: Transaction simulation failed: Error processing Instruction 1: custom program error: 0x177f.
+Logs:
+[
+  "Program log: Instruction: LockOrBurnTokens",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 invoke [3]",
+  "Program log: Instruction: VerifyNotCursed",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 consumed 6856 of 1167595 compute units",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 success",
+  "Program log: AnchorError thrown in programs/base-token-pool/src/rate_limiter.rs:48. Error Code: RLMaxCapacityExceeded. Error Number: 6015. Error Message: RateLimit: max capacity exceeded.",
+  "Program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo consumed 46498 of 1204388 compute units",
+  "Program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo failed: custom program error: 0x177f",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C consumed 241960 of 1399850 compute units",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C failed: custom program error: 0x177f"
+].
+Catch the `SendTransactionError` and call `getLogs()` on it for full details.
+error Command failed with exit code 1.
 ```
 
 </Fragment>
 </Tabs>
 
-### Verify Rate Limit Recovery
+The transaction correctly failed with `RLMaxCapacityExceeded` error because:
 
-After the failed transfer, you can verify rate limits with a successful smaller transfer:
+- **Attempted**: 25 tokens (`25000000000` in smallest units)
+- **Limit**: 20 tokens maximum capacity (`20000000000`)
+- **Result**: Rate limiter blocked the excessive transfer
+
+**Key Error Details:**
+
+- **Error Code**: `RLMaxCapacityExceeded` (Error Number: 6015)
+- **Source**: `programs/base-token-pool/src/rate_limiter.rs:48`
+- **Meaning**: The token bucket capacity was exceeded
+
+This demonstrates that your rate limits are properly configured and actively protecting against transfers that exceed the configured limits.
+
+### Test EVM Rate Limit Enforcement (Optional)
+
+Test rate limits from the EVM side (Ethereum to Solana) using the same 25-token limit.
 
 <Tabs client:visible>
-<Fragment slot="tab.1">Recovery Test</Fragment>
-<Fragment slot="tab.2">Expected Success</Fragment>
+<Fragment slot="tab.1">Test Command</Fragment>
+<Fragment slot="tab.2">Expected Failure</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
-# Test with amount within rate limit (10 tokens)
-yarn svm:token-transfer \
-  --token-mint $SOL_TOKEN_MINT \
-  --token-amount 10000000000 \
-  --receiver $ETH_RECEIVER_ADDRESS
+# Attempt to transfer 25 tokens from Ethereum (exceeds rate limit capacity of 20)
+yarn evm:transfer \
+  --token $ETH_TOKEN_ADDRESS \
+  --amount 25000000000000000000 \
+  --token-receiver $SOL_WALLET_ADDRESS
 ```
+
 </Fragment>
 
 <Fragment slot="panel.2">
-```bash
-[2025-08-12T11:18:15.123Z] 🚀 CCIP Token Transfer
-[2025-08-12T11:18:15.124Z] =======================================
-[2025-08-12T11:18:15.150Z] Token Amount: 10000000000 (10.0 tokens)
-[2025-08-12T11:18:15.150Z] Rate Limit Check: ✅ Within capacity (10.0 ≤ 20.0)
 
-[2025-08-12T11:18:30.456Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
-[2025-08-12T11:18:30.456Z] =======================================
-[2025-08-12T11:18:30.456Z] Message ID: 0x7a8b9c0d1e2f3456789abcdef0123456789abcdef0123456789abcdef012345
-[2025-08-12T11:18:30.456Z]
-[2025-08-12T11:18:30.456Z] 🎉 Rate Limit Test Successful!
-[2025-08-12T11:18:30.456Z] ✅ Transfer within limits: APPROVED
-[2025-08-12T11:18:30.456Z] ✅ Rate limit protection: WORKING
-✨ Done in 16.78s.
+```bash
+$ yarn evm:transfer \
+  --token $ETH_TOKEN_ADDRESS \
+  --amount 25000000000000000000 \
+  --token-receiver $SOL_WALLET_ADDRESS
+
+yarn run v1.22.22
+$ ts-node ./ccip-scripts/evm/router/1_token-transfer.ts --token 0x9cE471d0a7bE21ee32276ddE49104fE02C812906 --amount 25000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+Current working directory: /.../solana-starter-kit
+Found .env file at: /.../solana-starter-kit/.env
+Successfully loaded environment variables from /.../solana-starter-kit/.env
+[token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
+[token-transfer] [INFO] =========================================
+chainId ethereum-sepolia
+[token-transfer] [INFO] Source Chain: ethereum-sepolia
+[token-transfer] [INFO] Fee Token: link
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Compute Units: 0
+[token-transfer] [INFO]
+==== Environment Information ====
+chainId ethereum-sepolia
+[token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
+[token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Native Balance: 592.730404718701499976 ETH
+[token-transfer] [INFO]
+🔍 Validating Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Token: BnmAEM (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
+[token-transfer] [INFO] Token Balance: 999.001 BnmAEM
+[token-transfer] [INFO] Transfer Amount: 25.0 BnmAEM
+[token-transfer] [INFO] ✅ Token validation successful
+[token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO] Creating CCIP message request
+[token-transfer] [INFO]
+📋 Transfer Summary
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Source Chain: Ethereum Sepolia
+[token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
+[token-transfer] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Receiver: 11111111111111111111111111111111
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO] Token Transfers:
+[token-transfer] [INFO]   1. 25000000000000000000 raw units (0x9cE471d0a7bE21ee32276ddE49104fE02C812906)
+[token-transfer] [INFO]
+🚀 Executing Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Estimated fee: 13619642012026845
+[ccip-messenger] [INFO] Approving 0.016343570414432214 LINK for CCIP Router
+[ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
+[ccip-messenger] [INFO] Approving 0.016343570414432214 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] LINK approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.016343570414432214 (required: 0.016343570414432214)
+[ccip-messenger] [INFO] Approving 25.0 BnmAEM for CCIP Router
+[ccip-messenger] [INFO] Approving 25.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] BnmAEM approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnmAEM: 25.0 (required: 25.0)
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [ERROR] Error sending CCIP message: Error: execution reverted (unknown custom error) (action="estimateGas", data="0x1a76572a000000000000000000000000000000000000000000000000f9ccd8a1c50800000000000000000000000000000000000000000000000000015af1d78b58c400000000000000000000000000009ce471d0a7be21ee32276dde49104fe02c812906", reason=null, transaction={...})
+[token-transfer] [ERROR] ❌ token-transfer failed:
+execution reverted (unknown custom error) (action="estimateGas", data="0x1a76572a000000000000000000000000000000000000000000000000f9ccd8a1c50800000000000000000000000000000000000000000000000000015af1d78b58c400000000000000000000000000009ce471d0a7be21ee32276dde49104fe02c812906")
+error Command failed with exit code 1.
 ```
+
 </Fragment>
 </Tabs>
 
-**Rate Limit Testing Summary:**
+The transaction correctly failed because:
 
-- **✅ Protection Verified**: 25-token transfer properly rejected
-- **✅ Normal Operation**: 10-token transfer successfully processed
-- **✅ Security Confirmed**: Rate limits actively protecting against excessive transfers
+- **Attempted**: 25 tokens (`25000000000000000000` wei - 18 decimals)
+- **Limit**: 18 tokens maximum capacity
+- **Error Selector**: [`0x1a76572a` (TokenMaxCapacityExceeded)](/ccip/api-reference/evm/v1.6.0/errors#rate-limiter-errors)
+- **Decoded Values**: Capacity: `18000000000000000000`, Attempted: `25000000000000000000`, Token: `0x9cE471d0a7bE21ee32276dde49104fe02c812906`
 
-This demonstrates that your production multisig setup includes proper safeguards against both malicious and accidental large-value transfers.
-
-<CcipCommon callout="educationalDisclaimer" />
-````
+This demonstrates that rate limits are enforced on both chains, protecting the cross-chain bridge from excessive transfers. The EVM error selector corresponds to the `TokenMaxCapacityExceeded` error in the [CCIP EVM v1.6.0 errors reference](/ccip/api-reference/evm/v1.6.0/errors).
