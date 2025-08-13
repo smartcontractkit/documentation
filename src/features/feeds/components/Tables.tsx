@@ -10,17 +10,21 @@ import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
-import { useBatchedFeedCategories, getFeedCategoryFromBatch, type FeedCategoryData } from "./useBatchedFeedCategories.ts"
+import {
+  useBatchedFeedCategories,
+  getFeedCategoryFromBatch,
+  type FeedCategoryData,
+} from "./useBatchedFeedCategories.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
 // Centralized function to get feed category element using the shared config
-const getFeedCategoryElement = (riskTier: string | undefined, isLoading: boolean = false) => {
+const getFeedCategoryElement = (riskTier: string | undefined, isLoading = false) => {
   // Show gray circle while loading
   if (isLoading) {
     return (
       <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Loading risk tier...">
-        ⚪ 
+        ⚪
       </span>
     )
   }
@@ -81,13 +85,16 @@ const DevModeWarning = () => {
     </div>
   )
 }
-const getFeedCategoryWithComparison = (comparisonData: {
-  final: string | null
-  original: string | null
-  supabase: string | null
-  changed: boolean
-  devMode: boolean
-}, isLoading: boolean = false) => {
+const getFeedCategoryWithComparison = (
+  comparisonData: {
+    final: string | null
+    original: string | null
+    supabase: string | null
+    changed: boolean
+    devMode: boolean
+  },
+  isLoading = false
+) => {
   const { final } = comparisonData
 
   // Always show the final category icon (or loading state)
@@ -285,7 +292,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
     if (metadata.proxyAddress || metadata.contractAddress) {
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
       const networkIdentifier = network?.networkType || "unknown"
-      
+
       if (contractAddress) {
         const batchResult = getFeedCategoryFromBatch(
           batchedCategoryData,
@@ -310,7 +317,14 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
         devMode: false,
       })
     }
-  }, [batchedCategoryData, metadata.proxyAddress, metadata.contractAddress, metadata.feedCategory, network?.networkType, metadata.name])
+  }, [
+    batchedCategoryData,
+    metadata.proxyAddress,
+    metadata.contractAddress,
+    metadata.feedCategory,
+    network?.networkType,
+    metadata.name,
+  ])
 
   const getFinalFeedCategory = () => {
     return getFeedCategoryWithComparison(comparisonData, false)
@@ -526,7 +540,14 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
         devMode: false,
       })
     }
-  }, [batchedCategoryData, metadata.proxyAddress, metadata.contractAddress, metadata.feedCategory, network?.networkType, metadata.name])
+  }, [
+    batchedCategoryData,
+    metadata.proxyAddress,
+    metadata.contractAddress,
+    metadata.feedCategory,
+    network?.networkType,
+    metadata.name,
+  ])
 
   const getSmartDataFeedCategory = () => {
     return getFeedCategoryWithComparison(comparisonData, false)
@@ -1231,17 +1252,17 @@ export const MainnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet />}
                     {isSmartData && (
-                      <SmartDataTr 
-                        network={network} 
-                        metadata={metadata} 
-                        showExtraDetails={showExtraDetails} 
+                      <SmartDataTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                       />
                     )}
                     {isDefault && (
-                      <DefaultTr 
-                        network={network} 
-                        metadata={metadata} 
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                       />
@@ -1414,25 +1435,25 @@ export const TestnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
                     {isSmartData && (
-                      <SmartDataTr 
-                        network={network} 
-                        metadata={metadata} 
+                      <SmartDataTr
+                        network={network}
+                        metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                       />
                     )}
                     {isDefault && (
-                      <DefaultTr 
-                        network={network} 
-                        metadata={metadata} 
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                       />
                     )}
                     {isRates && (
-                      <DefaultTr 
-                        network={network} 
-                        metadata={metadata} 
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                       />
