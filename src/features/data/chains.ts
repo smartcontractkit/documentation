@@ -655,7 +655,8 @@ export const CHAINS: Chain[] = [
         name: "Solana Mainnet",
         explorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
+        rddUrl:
+          "https://gist.githubusercontent.com/dev-dist/e568dbf5d0d6deef0c5f42ee9e0aa883/raw/d99bb206d8b1a1eee9c50cdf45bcafcc54da3eba/solana-test.json",
         queryString: "solana-mainnet",
         tags: ["smartData"],
       },
@@ -950,7 +951,8 @@ export const ALL_CHAINS: Chain[] = [
         name: "Solana Mainnet",
         explorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
+        rddUrl:
+          "https://gist.githubusercontent.com/dev-dist/e568dbf5d0d6deef0c5f42ee9e0aa883/raw/d99bb206d8b1a1eee9c50cdf45bcafcc54da3eba/solana-test.json",
         queryString: "solana-mainnet",
       },
     ],

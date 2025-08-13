@@ -619,16 +619,65 @@ export const FeedList = ({
 
       {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
 
-      {chainMetadata.processedData?.networks
-        .filter((network: { metadata: unknown[]; tags: string | string[] }) => {
+      {/* Handle deprecating feeds */}
+      {isDeprecating && initialCache && initialCache['deprecated'] && (initialCache['deprecated'] as any).networks ? (
+        (initialCache['deprecated'] as any).networks
+          .filter((network: any) => {
+            let foundDeprecated = false
+            network.metadata?.forEach((feed: any) => {
+              if (feed.shutdownDate) {
+                foundDeprecated = true
+              }
+            })
+            if (foundDeprecated) {
+              netCount++
+            }
+            return foundDeprecated
+          })
+          .map((network: any) => (
+            <SectionWrapper
+              title={network.name}
+              depth={3}
+              key={network.name}
+              idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
+            >
+              <MainnetTable
+                selectedFeedCategories={
+                  Array.isArray(selectedFeedCategories)
+                    ? selectedFeedCategories
+                    : selectedFeedCategories
+                      ? [selectedFeedCategories]
+                      : []
+                }
+                network={{ ...network, metadata: network.metadata.filter((feed: any) => feed.shutdownDate) }}
+                showExtraDetails={showExtraDetails}
+                showOnlySVR={showOnlySVR}
+                showOnlyMVRFeeds={showOnlyMVRFeeds}
+                showOnlyDEXFeeds={false}
+                dataFeedType={dataFeedType}
+                ecosystem={ecosystem}
+                lastAddr={lastAddr}
+                firstAddr={firstAddr}
+                addrPerPage={addrPerPage}
+                currentPage={Number(currentPage)}
+                paginate={paginate}
+                searchValue={typeof searchValue === "string" ? searchValue : ""}
+              />
+            </SectionWrapper>
+          ))
+      ) : (
+        chainMetadata.processedData?.networks
+        ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
           if (isDeprecating) {
             let foundDeprecated = false
             network.metadata?.forEach((feed: { docs: { shutdownDate: unknown } }) => {
               if (feed.docs?.shutdownDate) {
                 foundDeprecated = true
-                netCount++
               }
             })
+            if (foundDeprecated) {
+              netCount++
+            }
             return foundDeprecated
           }
 
@@ -649,6 +698,25 @@ export const FeedList = ({
                 key={network.name}
                 idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
               >
+                {/* Solana Mainnet deprecation callout */}
+                {network.name === "Solana Mainnet" && (
+                  <div style={{
+                    background: '#fff3cd',
+                    border: '1px solid #ffeeba',
+                    color: '#856404',
+                    padding: '1rem',
+                    borderRadius: '6px',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}>
+                    <span style={{fontSize: '1.5rem'}}>⚠️</span>
+                    <span>
+                      <strong>Deprecation Notice:</strong> Solana Mainnet feeds are scheduled for deprecation. This is a placeholder notice. Please check back for updated information.
+                    </span>
+                  </div>
+                )}
                 {network.networkType === "mainnet" ? (
                   <>
                     {!isStreams && chain.l2SequencerFeed && (
@@ -1029,7 +1097,8 @@ export const FeedList = ({
               </SectionWrapper>
             </>
           )
-        })}
+        })
+      )}
       {isDeprecating && netCount === 0 && (
         <div>
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
