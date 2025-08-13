@@ -14,6 +14,7 @@ whatsnext:
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
 import { CHAINS } from "@features/data/chains"
+import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 
 export async function getFeeds() {
   const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
@@ -33,6 +34,7 @@ const data = await response.json()
     const targetFeeds = [
       "AAVE/USD-RefPrice-DF-Ethereum-001",
       "BTC/USD-RefPrice-DF-Ethereum-001",
+      "COMP/USD-RefPrice-DF-Ethereum-001",
       "ETH/USD-RefPrice-DF-Ethereum-001",
       "LINK/USD-RefPrice-DF-Ethereum-001",
       "USDC/USD-RefPrice-DF-Ethereum-001",
@@ -44,12 +46,32 @@ const data = await response.json()
         feed.secondaryProxyAddress && feed.docs?.clicProductName && targetFeeds.includes(feed.docs.clicProductName)
     )
 
-    return svrFeeds
-      .map((feed) => ({
-        name: feed.name.replace(" / ", "/"),
-        address: feed.contractAddress,
-      }))
+    // Group feeds by their base name (e.g., "BTC/USD", "ETH/USD")
+    const feedGroups = {}
+
+    svrFeeds.forEach(feed => {
+      const baseName = feed.name.replace(" / ", "/")
+
+      if (!feedGroups[baseName]) {
+        feedGroups[baseName] = {
+          name: baseName,
+          aaveAddress: null,
+          canonicalAddress: null
+        }
+      }
+
+      if (isAaveSVR(feed)) {
+        feedGroups[baseName].aaveAddress = feed.contractAddress
+      } else if (isSharedSVR(feed)) {
+        feedGroups[baseName].canonicalAddress = feed.contractAddress
+      }
+    })
+
+    // Convert to array and sort
+    const combinedFeeds = Object.values(feedGroups)
       .sort((a, b) => a.name.localeCompare(b.name))
+
+    return combinedFeeds
 
 } catch (error) {
 return []
@@ -135,6 +157,22 @@ Chainlink Smart Value Recapture (SVR) extends standard Chainlink Price Feeds wit
 
 **Fail-Safe Fallback Mechanism**  
 If the **private route** fails or times out, the SVR feed automatically **reverts** to the **Standard Feed price** after a configurable delay. This delay can be set to any amount of seconds. This helps ensures the feed doesn't stall and that price data is accessible through the public route if the private channel is unavailable.
+
+## SVR Feed Variants
+
+Chainlink SVR Feeds are currently available in two variants: [Canonical SVR Feeds](#canonical-svr-feeds) and [Aave SVR Feeds](#aave-svr-feeds).
+
+### Canonical SVR Feeds
+
+Canonical SVR feeds are designed to be used by any protocol.
+
+{/* [More info] */}
+
+### Aave SVR Feeds
+
+Aave SVR feeds are specifically tailored for the Aave protocol.
+
+{/* [More info] */}
 
 ## How Protocols Can Utilize SVR Feeds
 
@@ -293,30 +331,44 @@ The following code samples demonstrate the complete decoding process, including 
   </Fragment>
 </Tabs>
 
-#### 4. Detect SVR-enabled Feeds for the Aave Protocol
+#### 4. Detect SVR-enabled Feeds
 
 When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
 
 <table>
   <thead>
     <tr>
-      <th>Feed name</th>
-      <th>Address</th>
+      <th>Feed</th>
+      <th>Aave Dedicated SVR Feed</th>
+      <th>Canonical SVR Feed</th>
     </tr>
   </thead>
   <tbody>
     {feeds &&
       feeds.map((feed) => (
-        <tr key={feed.address}>
-          <td>{feed.name}</td>
+        <tr key={feed.name}>
           <td>
-            <CopyText text={feed.address} code />
+            <strong>{feed.name}</strong>
+          </td>
+          <td>
+            {feed.aaveAddress ? (
+              <CopyText text={feed.aaveAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
+          </td>
+          <td>
+            {feed.canonicalAddress ? (
+              <CopyText text={feed.canonicalAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
           </td>
         </tr>
       ))}
     {(!feeds || feeds.length === 0) && (
       <tr>
-        <td colSpan="2">No SVR feeds found.</td>
+        <td colSpan="3">No SVR feeds found.</td>
       </tr>
     )}
   </tbody>
@@ -393,7 +445,7 @@ For gas management, simulations, and other advanced usage, see the official [Fla
 
 3. **Stay Updated**
    - Keep track of any updates to the SVR aggregator address, function signatures, or Flashbots MEV-Share changes.
-   - Monitor for changes in Aave liquidation parameters (e.g., new assets, different collateral thresholds).
+   - Monitor for changes in liquidation parameters (e.g., new assets, different collateral thresholds).
 
 ## Economics and Revenue Split
 
