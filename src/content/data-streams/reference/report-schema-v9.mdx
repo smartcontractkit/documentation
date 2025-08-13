@@ -42,21 +42,22 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
-| Value                   | Type      | Description                                                                                                                       |
-| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                       |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                                        |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                                          |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                      |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                              |
-| `expiresAt`             | `uint32`  | Expiration date of the report                                                                                                     |
-| `navPerShare`           | `int192`  | DON's consensus NAV Per Share value as reported by the Fund Manager                                                               |
-| `navDate`               | `uint64`  | Timestamp for the date the NAV Report was published by the Fund Manager                                                           |
-| `aum`                   | `int192`  | DON's consensus for the total USD value of Assets Under Management                                                                |
-| `ripcord`               | `uint32`  | Whether the provider paused NAV reporting <br/> Possible values: 0 (normal state), 1 (paused state – DO NOT consume any NAV data) |
+| Value                   | Type      | Description                                                                                                                                   |
+| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                   |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                                                    |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                                                      |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                  |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                          |
+| `expiresAt`             | `uint32`  | Expiration date of the report                                                                                                                 |
+| `navPerShare`           | `int192`  | DON's consensus NAV Per Share value as reported by the Fund Manager                                                                           |
+| `navDate`               | `uint64`  | Timestamp for the date the NAV Report was published by the Fund Manager                                                                       |
+| `aum`                   | `int192`  | DON's consensus for the total USD value of Assets Under Management                                                                            |
+| `ripcord`               | `uint32`  | Whether the provider paused NAV reporting <br/> Possible values: `0` (normal state), `1` (paused state) <br/> [More details](#ripcord-status) |
 
 **Notes:**
 
-- `ripcord` status:
-  - 0 (false) - **Data Provider is OK**. This indicates that the Fund’s data provider and data accuracy is reporting as expected.
-  - 1 (true) - **Data Provider is flagging a Pause**. This indicates that the Fund’s data provider detected outliers, deviated thresholds, management or operational related pause. **During `ripcord=1`, do not consume any NAV data**.
+##### `ripcord` Status
+
+- 0 (false) - **Data Provider is OK**. This indicates that the Fund’s data provider and data accuracy is reporting as expected.
+- 1 (true) - **Data Provider is flagging a Pause**. This indicates that the Fund’s data provider detected outliers, deviated thresholds, management or operational related pause. **During `ripcord=1`, do not consume any NAV data**.
