@@ -47,7 +47,7 @@ export const CHAINS: Chain[] = [
     title: "Aptos Data Feeds",
     img: "/assets/chains/aptos.svg",
     networkStatusUrl: "https://explorer.aptoslabs.com/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -56,6 +56,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
         queryString: "aptos-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Aptos Testnet",
@@ -63,6 +64,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://docs.chain.link/files/json/feeds-aptos-testnet.json",
         queryString: "aptos-testnet",
+        tags: ["smartData"],
       },
     ],
   },
