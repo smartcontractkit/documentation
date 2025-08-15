@@ -13,7 +13,14 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 
-export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa" | "streamsNav" | "streamsBacked"
+export type DataFeedType =
+  | "default"
+  | "smartdata"
+  | "rates"
+  | "streamsCrypto"
+  | "streamsRwa"
+  | "streamsNav"
+  | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -26,7 +33,11 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
 
   // Get network directly from URL
@@ -401,7 +412,12 @@ export const FeedList = ({
     return null
   }
 
-  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked") {
+  if (
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
+  ) {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 

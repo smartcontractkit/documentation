@@ -932,7 +932,11 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isDefault = !isStreams && !isSmartData
   const isDeprecating = ecosystem === "deprecating"
@@ -1125,7 +1129,11 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isDefault = !isSmartData && !isRates && !isStreams
