@@ -337,7 +337,7 @@ export const FeedList = ({
       : dataFeedType === "streamsNav"
         ? "Mainnet NAV Streams"
         : dataFeedType === "streamsBacked"
-          ? "Mainnet Backed Tokenized Asset Streams"
+          ? "Mainnet Backed xStock Streams"
           : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
@@ -345,7 +345,7 @@ export const FeedList = ({
       : dataFeedType === "streamsNav"
         ? "Testnet NAV Streams"
         : dataFeedType === "streamsBacked"
-          ? "Testnet Backed Tokenized Asset Streams"
+          ? "Testnet Backed xStock Streams"
           : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values

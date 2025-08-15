@@ -378,7 +378,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Backed Tokenized Asset Streams",
+          title: "Backed xStock Streams",
           url: "data-streams/backed-streams",
           children: [
             {
