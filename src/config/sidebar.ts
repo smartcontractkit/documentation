@@ -407,6 +407,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/api-rust",
             "data-streams/tutorials/api-rwa-go",
             "data-streams/tutorials/api-rwa-rust",
+            "data-streams/tutorials/api-nav-go",
           ],
         },
         {
@@ -416,6 +417,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/ws-rust",
             "data-streams/tutorials/ws-rwa-go",
             "data-streams/tutorials/ws-rwa-rust",
+            "data-streams/tutorials/ws-nav-go",
           ],
         },
         {

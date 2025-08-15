@@ -893,6 +893,30 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}
+          {metadata.feedType === "Net Asset Value" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                  NAV Schema (v9)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.feedType === "Tokenized Equities" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                  Backed xStock Schema (v10)
+                </a>
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
