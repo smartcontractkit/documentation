@@ -1,0 +1,76 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Backed Tokenized Assets Report Schema (v10)"
+metadata:
+  title: "Backed Tokenized Assets Report Schema (v10) | Chainlink Data Streams"
+  description: "Learn about Chainlink Backed Tokenized Assets report schema (v10), including fields, encoding, and examples for integrating tokenized asset data in your applications."
+  keywords:
+    [
+      "Report Schema",
+      "Tokenized Assets",
+      "Equities",
+      "Multiplier",
+      "Corporate Actions",
+      "v10 Schema",
+      "Data Format",
+      "Report Structure",
+    ]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3",
+    },
+    {
+      name: "DEX State Price Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3-dex",
+    },
+    {
+      name: "RWA Report Schema (v8)",
+      url: "/data-streams/reference/report-schema-v8",
+    },
+    {
+      name: "NAV Report Schema (v9)",
+      url: "/data-streams/reference/report-schema-v9",
+    },
+    {
+      name: "Backed Tokenized Assets Report Schema (v10)",
+      url: "/data-streams/reference/report-schema-v10",
+    },
+
+]}
+headerTitle="Available Report Schemas"
+headerDescription="Choose the schema version you want to explore."
+/>
+
+Chainlink Backed Tokenized Assets Data Streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Field                 | Type     | Description                                                                         |
+| --------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `usEquityPrice`       | `int192` | Last traded price from the real-world equity market                                 |
+| `marketStatus`        | `string` | Status of the real-world equity market (e.g., OPEN, CLOSED, HALTED)                 |
+| `stalenessTimestamp`  | `uint64` | Timestamp of the last update from the real-world equity feed                        |
+| `tokenisedPrice`      | `int192` | 24/7 tokenized equity price as traded on supported exchanges                        |
+| `currentMultiplier`   | `float`  | Currently applied multiplier accounting for past corporate actions                  |
+| `reason`              | `string` | Reason for next corporate action (e.g., dividend, stock split, fee accrual, etc.)   |
+| `activationTimestamp` | `uint64` | When the next corporate action takes effect (set to 0 if none is scheduled)         |
+| `newMultiplier`       | `float`  | Multiplier to be applied at the activationTimestamp (set to 0 if none is scheduled) |
+
+**Notes:**
+
+- `usEquityPrice` updates in real time during market open, but may become stale during market closed periods.
+- `tokenisedPrice` may continue to trade 24/7, and can diverge from `usEquityPrice × currentMultiplier` when the market is closed.
+- `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
+- `activationTimestamp` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
+- `reason` describes the type of upcoming corporate action (if any).

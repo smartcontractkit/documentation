@@ -378,6 +378,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Backed Tokenized Asset Streams",
+          url: "data-streams/backed-streams",
+          children: [
+            {
+              title: "Report Schema v10",
+              url: "data-streams/reference/report-schema-v10",
+            },
+          ],
+        },
+        {
           title: "Market Hours",
           url: "data-streams/market-hours",
         },

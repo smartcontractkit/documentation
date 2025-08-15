@@ -13,7 +13,7 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 
-export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa" | "streamsNav"
+export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa" | "streamsNav" | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -26,7 +26,7 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav"
+  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
 
   // Get network directly from URL
@@ -325,13 +325,17 @@ export const FeedList = ({
       ? "Mainnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Mainnet NAV Streams"
-        : "Mainnet RWA Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Mainnet Backed Tokenized Asset Streams"
+          : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Testnet NAV Streams"
-        : "Testnet RWA Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Testnet Backed Tokenized Asset Streams"
+          : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -397,7 +401,7 @@ export const FeedList = ({
     return null
   }
 
-  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav") {
+  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" || dataFeedType === "streamsNav" || dataFeedType === "streamsBacked") {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
