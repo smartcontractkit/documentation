@@ -794,7 +794,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
       </div>
       <div>
         <dl className={tableStyles.listContainer}>
-          {isMainnet && metadata.docs.clicProductName && (
+          {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Full name:</span>
