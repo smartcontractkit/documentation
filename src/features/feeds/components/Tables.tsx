@@ -978,14 +978,15 @@ export const MainnetTable = ({
 
       if (isSmartData) {
         if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true
+          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
         }
 
         return (
           !metadata.docs?.hidden &&
-          (metadata.docs.productType === "Proof of Reserve" ||
-            metadata.docs.productType === "NAVLink" ||
-            metadata.docs.productType === "SmartAUM" ||
+          metadata.docs?.deliveryChannelCode !== "DS" &&
+          (metadata.docs?.productType === "Proof of Reserve" ||
+            metadata.docs?.productType === "NAVLink" ||
+            metadata.docs?.productType === "SmartAUM" ||
             metadata.docs?.isMVR === true)
         )
       }
@@ -1159,15 +1160,16 @@ export const TestnetTable = ({
 
       if (isSmartData) {
         if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true
+          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
         }
 
         // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
         return (
           !metadata.docs?.hidden &&
-          (metadata.docs.productType === "Proof of Reserve" ||
-            metadata.docs.productType === "NAVLink" ||
-            metadata.docs.productType === "SmartAUM" ||
+          metadata.docs?.deliveryChannelCode !== "DS" &&
+          (metadata.docs?.productType === "Proof of Reserve" ||
+            metadata.docs?.productType === "NAVLink" ||
+            metadata.docs?.productType === "SmartAUM" ||
             metadata.docs?.isMVR === true)
         )
       }
