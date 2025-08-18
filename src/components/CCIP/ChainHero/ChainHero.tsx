@@ -339,7 +339,12 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                               height="20px"
                               className="ccip-chain-hero__feeTokens__item__logo"
                             >
-                              <img src={fallbackTokenIconUrl} alt={token.name} width="20px" height="20px" />
+                              <img
+                                src={fallbackTokenIconUrl}
+                                alt={`${token.name} token logo`}
+                                width="20px"
+                                height="20px"
+                              />
                             </object>
                             <div>{token.name}</div>
                             <Address endLength={4} contractUrl={contractUrl} address={address} />
@@ -356,7 +361,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                           >
                             <img
                               src={fallbackTokenIconUrl}
-                              alt={`${nativeCurrency.symbol} icon`}
+                              alt={`${nativeCurrency.symbol} token logo`}
                               width="20px"
                               height="20px"
                             />

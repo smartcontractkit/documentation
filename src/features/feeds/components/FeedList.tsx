@@ -471,20 +471,22 @@ export const FeedList = ({
                 </button>
               )}
             </form>
-            <div className={feedList.checkboxContainer}>
-              <label className={feedList.detailsLabel}>
-                <input
-                  type="checkbox"
-                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                  checked={showOnlyDEXFeeds}
-                  onChange={() => {
-                    setShowOnlyDEXFeeds((old) => !old)
-                    setCurrentPage("1") // Reset to first page when filter changes
-                  }}
-                />
-                Show DEX State Price streams
-              </label>
-            </div>
+            {dataFeedType === "streamsCrypto" && (
+              <div className={feedList.checkboxContainer}>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDEXFeeds}
+                    onChange={() => {
+                      setShowOnlyDEXFeeds((old) => !old)
+                      setCurrentPage("1") // Reset to first page when filter changes
+                    }}
+                  />
+                  Show DEX State Price streams
+                </label>
+              </div>
+            )}
           </div>
           {mainnetFeeds.length ? (
             mainnetFeeds.map((network) => (
@@ -550,20 +552,22 @@ export const FeedList = ({
                 </button>
               )}
             </form>
-            <div className={feedList.checkboxContainer}>
-              <label className={feedList.detailsLabel}>
-                <input
-                  type="checkbox"
-                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                  checked={showOnlyDEXFeedsTestnet}
-                  onChange={() => {
-                    setShowOnlyDEXFeedsTestnet((old) => !old)
-                    setTestnetCurrentPage("1") // Reset to first page when filter changes
-                  }}
-                />
-                Show DEX State Price streams
-              </label>
-            </div>
+            {dataFeedType === "streamsCrypto" && (
+              <div className={feedList.checkboxContainer}>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDEXFeedsTestnet}
+                    onChange={() => {
+                      setShowOnlyDEXFeedsTestnet((old) => !old)
+                      setTestnetCurrentPage("1") // Reset to first page when filter changes
+                    }}
+                  />
+                  Show DEX State Price streams
+                </label>
+              </div>
+            )}
           </div>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (

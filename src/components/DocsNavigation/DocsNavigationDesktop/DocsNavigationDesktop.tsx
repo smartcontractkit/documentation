@@ -37,7 +37,7 @@ function DocsNavigationDesktop({
             {isCcipPage ? (
               /* Custom links for CCIP Directory pages */
               <>
-                <a className={styles.ccipDirectoryLink} href="/ccip/" target="_blank" rel="noopener noreferrer">
+                <a className={styles.ccipDirectoryLink} href="/ccip" target="_blank" rel="noopener noreferrer">
                   <PageIcon />
                   <span>Go to CCIP docs</span>
                 </a>
@@ -54,8 +54,13 @@ function DocsNavigationDesktop({
             ) : (
               /* Default links for other documentation pages */
               <>
-                <button className={styles.link} id="quick-links-nav-button" onClick={() => setIsModalOpen(true)}>
-                  <img height={20} width={20} src="/assets/icons/quick-links.svg" />
+                <button
+                  className={styles.link}
+                  id="quick-links-nav-button"
+                  onClick={() => setIsModalOpen(true)}
+                  aria-label="Open quick links menu"
+                >
+                  <img height={20} width={20} src="/assets/icons/quick-links.svg" alt="Quick links menu" />
                   <span>Quick Links</span>
                 </button>
                 <a
@@ -64,7 +69,7 @@ function DocsNavigationDesktop({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img height={20} width={20} src="/assets/icons/github-blue.svg" />
+                  <img height={20} width={20} src="/assets/icons/github-blue.svg" alt="GitHub repository" />
                   <span>Github</span>
                 </a>
               </>
