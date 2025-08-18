@@ -13,7 +13,14 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 
-export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
+export type DataFeedType =
+  | "default"
+  | "smartdata"
+  | "rates"
+  | "streamsCrypto"
+  | "streamsRwa"
+  | "streamsNav"
+  | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -26,7 +33,11 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
 
   // Get network directly from URL
@@ -320,8 +331,22 @@ export const FeedList = ({
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
-  const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : "Mainnet RWA Streams"
-  const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : "Testnet RWA Streams"
+  const streamsMainnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Mainnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Mainnet NAV Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Mainnet Backed xStock Streams"
+          : "Mainnet RWA Streams"
+  const streamsTestnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Testnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Testnet NAV Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Testnet Backed xStock Streams"
+          : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -387,7 +412,12 @@ export const FeedList = ({
     return null
   }
 
-  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa") {
+  if (
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
+  ) {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 

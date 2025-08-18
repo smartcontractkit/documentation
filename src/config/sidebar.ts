@@ -368,6 +368,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Net Asset Value (NAV) Streams",
+          url: "data-streams/nav-streams",
+          children: [
+            {
+              title: "Report Schema v9",
+              url: "data-streams/reference/report-schema-v9",
+            },
+          ],
+        },
+        {
+          title: "Backed xStock Streams",
+          url: "data-streams/backed-streams",
+          children: [
+            {
+              title: "Report Schema v10",
+              url: "data-streams/reference/report-schema-v10",
+            },
+          ],
+        },
+        {
           title: "Market Hours",
           url: "data-streams/market-hours",
         },
@@ -387,6 +407,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/api-rust",
             "data-streams/tutorials/api-rwa-go",
             "data-streams/tutorials/api-rwa-rust",
+            "data-streams/tutorials/api-nav-rust",
+            "data-streams/tutorials/api-nav-go",
           ],
         },
         {
@@ -396,6 +418,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/ws-rust",
             "data-streams/tutorials/ws-rwa-go",
             "data-streams/tutorials/ws-rwa-rust",
+            "data-streams/tutorials/ws-nav-go",
+            "data-streams/tutorials/ws-nav-rust",
           ],
         },
         {

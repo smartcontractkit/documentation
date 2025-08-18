@@ -1,0 +1,67 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schemas"
+metadata:
+  title: "NAV Data Streams Report Schema (v9) | Chainlink Data Streams"
+  description: "Learn about Chainlink NAV Data Streams report schema (v9), including fields, encoding, and examples for integrating NAV data in your applications."
+  keywords: ["Report Schema", "NAV", "Net Asset Value", "v9 Schema", "Data Format", "Report Structure"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3",
+    },
+    {
+      name: "DEX State Price Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3-dex",
+    },
+    {
+      name: "RWA Report Schema (v8)",
+      url: "/data-streams/reference/report-schema-v8",
+    },
+    {
+      name: "NAV Report Schema (v9)",
+      url: "/data-streams/reference/report-schema-v9",
+    },
+    {
+      name: "Backed xStock Report Schema (v10)",
+      url: "/data-streams/reference/report-schema-v10",
+    },
+
+]}
+headerTitle="Available Report Schemas"
+headerDescription="Choose the schema version you want to explore."
+/>
+
+Chainlink NAV Data Streams streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Value                   | Type      | Description                                                                                                                                   |
+| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                   |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                                                    |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                                                      |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                  |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                          |
+| `expiresAt`             | `uint32`  | Expiration date of the report                                                                                                                 |
+| `navPerShare`           | `int192`  | DON consensus NAV Per Share value as reported by the Fund Manager                                                                             |
+| `navDate`               | `uint64`  | Timestamp for the date the publication of NAV Report                                                                                          |
+| `aum`                   | `int192`  | DON consensus Total USD value of Assets Under Management                                                                                      |
+| `ripcord`               | `uint32`  | Whether the provider paused NAV reporting <br/> Possible values: `0` (normal state), `1` (paused state) <br/> [More details](#ripcord-status) |
+
+**Notes:**
+
+##### `ripcord` Status
+
+- 0 (false) - **Data Provider is OK**. This indicates that the Fund’s data provider and data accuracy is reporting as expected.
+- 1 (true) - **Data Provider is flagging a Pause**. This indicates that the Fund’s data provider detected outliers, deviated thresholds, management or operational related pause. **During `ripcord=1`, do not consume any NAV data**.
