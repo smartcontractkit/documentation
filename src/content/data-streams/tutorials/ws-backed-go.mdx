@@ -1,15 +1,15 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Stream and decode V8 reports via WebSocket using the Go SDK"
+title: "Stream and decode v10 reports via WebSocket using the Go SDK"
 metadata:
-  title: "RWA V8 Reports via WebSocket with Go SDK | Chainlink Data Streams"
-  description: "Tutorial on streaming and decoding Real World Assets (RWA) V8 reports using WebSocket connections with the Go SDK for Chainlink Data Streams."
-  keywords: ["WebSocket", "Go SDK", "Real World Assets", "RWA", "V8 reports", "Data Streams", "Real-time data"]
+  title: "Backed Tokenized Asset V10 Reports via WebSocket with Go SDK | Chainlink Data Streams"
+  description: "Tutorial on streaming and decoding Backed Tokenized Asset (BTA) V10 reports using WebSocket connections with the Go SDK for Chainlink Data Streams."
+  keywords: ["WebSocket", "Go SDK", "Backed Tokenized Assets", "V10 reports", "Data Streams", "Real-time data"]
 whatsnext:
   {
-    "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/rwa-streams",
+    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/backed-streams",
   }
 ---
 
@@ -63,7 +63,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk) for Go to subscribe to real-time [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWAs) streams](/data-streams/rwa-streams) via a [WebSocket connection](/data-streams/reference/data-streams-api/interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to subscribe to real-time [V10 reports](/data-streams/reference/report-schema-v10) for [Backed Tokenized Asset streams](/data-streams/backed-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Go project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -118,7 +118,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
       streams "github.com/smartcontractkit/data-streams-sdk/go"
       feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
       report "github.com/smartcontractkit/data-streams-sdk/go/report"
-      v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8" // Import the v8 report schema for RWA streams. For Crypto streams, use the v3 schema.
+      v10 "github.com/smartcontractkit/data-streams-sdk/go/report/v10" // Import the v10 report schema for Backed Tokenized Asset streams.
     )
 
     func main() {
@@ -175,7 +175,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
             cfg.Logger("Raw report data: %+v\n", reportResponse)
 
                 // Decode each report as it comes in
-                decodedReport, decodeErr := report.Decode[v8.Data](reportResponse.FullReport)
+                decodedReport, decodeErr := report.Decode[v10.Data](reportResponse.FullReport)
                 if decodeErr != nil {
                     cfg.Logger("Failed to decode report: %v\n", decodeErr)
                     continue
@@ -183,24 +183,34 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
             // Log the decoded report
             cfg.Logger("\n--- Report Stream ID: %s ---\n" +
-              "------------------------------------------\n" +
-              "Observations Timestamp : %d\n" +
-              "Mid Price        : %s\n" +
-              "Valid From Timestamp   : %d\n" +
-              "Expires At             : %d\n" +
-              "Link Fee               : %s\n" +
-              "Native Fee             : %s\n" +
-              "Market Status          : %d\n" +
-              "------------------------------------------\n",
-              reportResponse.FeedID.String(),
-              decodedReport.Data.ObservationsTimestamp,
-              decodedReport.Data.MidPrice.String(),
-              decodedReport.Data.ValidFromTimestamp,
-              decodedReport.Data.ExpiresAt,
-              decodedReport.Data.LinkFee.String(),
-              decodedReport.Data.NativeFee.String(),
-              decodedReport.Data.MarketStatus,
-            )
+                          "------------------------------------------\n" +
+                          "Valid From Timestamp    : %d\n" +
+                          "Observations Timestamp  : %d\n" +
+                          "Native Fee (wei)        : %s\n" +
+                          "Link Fee (wei)          : %s\n" +
+                          "Expires At              : %d\n" +
+                          "Last Update Timestamp   : %d\n" +
+                          "Price                   : %s\n" +
+                          "Market Status           : %d\n" +
+                          "Current Multiplier      : %s\n" +
+                          "New Multiplier          : %s\n" +
+                          "Activation DateTime     : %d\n" +
+                          "Tokenized Price         : %s\n" +
+                          "------------------------------------------\n",
+                          reportResponse.FeedID.String(),
+                          decodedReport.Data.ValidFromTimestamp,
+                          decodedReport.Data.ObservationsTimestamp,
+                          decodedReport.Data.NativeFee.String(),
+                          decodedReport.Data.LinkFee.String(),
+                          decodedReport.Data.ExpiresAt,
+                          decodedReport.Data.LastUpdateTimestamp,
+                          decodedReport.Data.Price.String(),
+                          decodedReport.Data.MarketStatus,
+                          decodedReport.Data.CurrentMultiplier.String(),
+                          decodedReport.Data.NewMultiplier.String(),
+                          decodedReport.Data.ActivationDateTime,
+                          decodedReport.Data.TokenizedPrice.String(),
+                        )
 
             // Also, log the stream stats
             cfg.Logger("\n--- Stream Stats ---\n" +
@@ -237,9 +247,9 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
      Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-   - `WsURL` is the [WebSocket URL](/data-streams/reference/data-streams-api/interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/interface-ws#domains) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
 
-   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
+   See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
 
 1. For this example, you'll subscribe to an RWA stream. See the [RWA Streams](/data-streams/rwa-streams) page for a complete list of available Real World Assets.
 
@@ -341,7 +351,7 @@ production environment, you should verify the data to ensure its integrity and a
 
 ### Establishing a WebSocket connection and listening for reports
 
-Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
 
 Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
 
