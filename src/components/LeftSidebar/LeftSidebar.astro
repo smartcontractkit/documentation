@@ -78,7 +78,10 @@ const sidebarSections = getSidebarSections(section)
   <ul class={styles.navGroups} data-sticky>
     {
       sidebarSections.map((group) => (
-        <li aria-hidden={section === "global"} class={group.parentSection ? `parent-${group.parentSection}` : ""}>
+        <li
+          style={section === "global" ? { display: "none" } : {}}
+          class={group.parentSection ? `parent-${group.parentSection}` : ""}
+        >
           <details open={shouldExpandTopSection(group.contents, currentPage)}>
             <summary class={styles.navGroupTitle}>{group.section}</summary>
             <ul class={styles.navGroupEntries}>
@@ -114,7 +117,7 @@ const sidebarSections = getSidebarSections(section)
     const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
-        elem.setAttribute("aria-hidden", "false")
+        elem.style.display = "block"
       }
     }
   }

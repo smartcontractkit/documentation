@@ -47,7 +47,7 @@ export const CHAINS: Chain[] = [
     title: "Aptos Data Feeds",
     img: "/assets/chains/aptos.svg",
     networkStatusUrl: "https://explorer.aptoslabs.com/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -56,6 +56,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
         queryString: "aptos-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Aptos Testnet",
@@ -63,6 +64,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://docs.chain.link/files/json/feeds-aptos-testnet.json",
         queryString: "aptos-testnet",
+        tags: ["smartData"],
       },
     ],
   },
@@ -373,7 +375,7 @@ export const CHAINS: Chain[] = [
     title: "Linea Data Feeds",
     img: "/assets/chains/linea.svg",
     networkStatusUrl: "https://linea.statuspage.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -382,6 +384,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
         queryString: "linea-mainnet",
+        tags: ["smartData"],
       },
     ],
   },
@@ -621,7 +624,7 @@ export const CHAINS: Chain[] = [
     title: "Soneium Data Feeds",
     img: "/assets/chains/soneium.svg",
     networkStatusUrl: "https://soneium.blockscout.com",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -630,6 +633,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-soneium-mainnet.json",
         queryString: "soneium-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Soneium Minato Testnet",
@@ -672,7 +676,7 @@ export const CHAINS: Chain[] = [
     title: "Sonic Data Feeds",
     img: "/assets/chains/sonic.svg",
     networkStatusUrl: "",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -681,6 +685,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
         queryString: "sonic-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Sonic Blaze testnet",
@@ -790,7 +795,7 @@ export const CHAINS: Chain[] = [
     title: "ZKsync Data Feeds",
     img: "/assets/chains/zksync.svg",
     networkStatusUrl: "https://explorer.zksync.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -799,6 +804,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
         queryString: "zksync-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "ZKsync Sepolia testnet",
