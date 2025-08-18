@@ -1,15 +1,15 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Fetch and decode V10 reports for Backed assets using the Rust SDK"
+title: "Fetch and decode V10 reports for Backed xStock data using the Rust SDK"
 metadata:
-  title: "Fetch and Decode Backed Asset Data (V10 Schema) with Rust SDK | Chainlink Data Streams"
-  description: "Learn how to use the Rust SDK to fetch and decode Backed asset market data reports with V10 schema from Chainlink Data Streams."
-  keywords: ["Rust SDK", "Backed Assets", "V10 Reports", "API Tutorial", "Data Streams", "Fund Management"]
+  title: "Fetch and Decode Backed xStock Data (V10 Schema) with Rust SDK | Chainlink Data Streams"
+  description: "Learn how to use the Rust SDK to fetch and decode Backed xStock data reports with V10 schema from Chainlink Data Streams."
+  keywords: ["Rust SDK", "Backed xStock", "V10 Reports", "API Tutorial", "Data Streams", "Fund Management"]
 whatsnext:
   {
     "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-backed-rust",
-    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
+    "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
     "Find the list of available Stream IDs": "/data-streams/backed-streams",
   }
 ---
@@ -59,7 +59,7 @@ whatsnext:
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to fetch and decode [V10 reports](/data-streams/reference/report-schema-v10) for [Backed xStock streams](/data-streams/backed-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/rust-sdk) for Rust to fetch and decode [V10 reports](/data-streams/reference/report-schema-v10) for [Backed xStock streams](/data-streams/backed-streams) from the Data Streams Aggregation Network. You'll set up your Rust project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -245,9 +245,9 @@ The API client is initialized in two steps:
    - Sets up the REST API endpoint for data retrieval
    - Configures optional settings like TLS verification
 
-2. [`Client::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L131) creates the HTTP client with your configuration. This client:
+1. [`Client::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L131) creates the HTTP client with your configuration. This client:
    - Handles authentication automatically
-   - Manages HTTP connections efficiently
+   - Manages HTTP connections
    - Implements retry logic for failed requests
 
 ### Fetching reports
@@ -260,7 +260,7 @@ The SDK provides several methods to fetch reports through the REST API:
    - Returns a single report with the latest timestamp
    - Useful for applications that need the most current data
 
-2. Historical report: [`get_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L242) fetches a report at a specific timestamp:
+1. Historical report: [`get_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L242) fetches a report at a specific timestamp:
    - Takes both feed ID and timestamp
    - Returns the report closest to the requested timestamp
    - Helpful for historical analysis or verification
@@ -282,19 +282,19 @@ Reports are decoded in three stages:
    let full_report = hex::decode(&response.report.full_report[2..])?;
    ```
 
-2. Report separation: [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) splits the binary data:
+1. Report separation: [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) splits the binary data:
 
    - Extracts the report context (metadata)
    - Isolates the report blob (actual data)
    - Validates the report format
 
-3. Data extraction: [`ReportDataV9::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v9.rs#L60) parses the report blob into structured data:
-   - NAV per share value
-   - NAV date timestamp
-   - Assets under management total
-   - Ripcord safety flag
-   - Fee information for onchain verification
-   - Timestamp information
+1. Data extraction: [`ReportDataV10::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v10.rs#L74) parses the report blob into structured data:
+   - `price`: Last traded price from the real-world equity market
+   - `market_status`: Status of the real-world equity market (0=Unknown, 1=Closed, 2=Open, 3=Halted)
+   - `current_multiplier`: Currently applied multiplier accounting for past corporate actions
+   - `new_multiplier`: Multiplier to be applied at the activation_date_time (set to 0 if none is scheduled)
+   - `activation_date_time`: When the next corporate action takes effect (set to 0 if none is scheduled)
+   - `tokenized_price`: 24/7 tokenized equity price as traded on supported exchanges (currently always returns 0)
 
 ### Error handling
 
@@ -306,15 +306,15 @@ The example demonstrates Rust's robust error handling:
    - Implements the `Error` trait for proper error propagation
    - Provides detailed error messages for debugging
 
-2. Error propagation:
+1. Error propagation:
 
    - Uses the `?` operator for clean error handling
    - Converts errors between types when needed
    - Bubbles up errors to the main function
 
-3. Input validation:
+1. Input validation:
    - Checks command-line arguments
    - Validates environment variables
    - Verifies feed ID format
 
-The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload and always validate the ripcord status before consuming NAV data.
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload.

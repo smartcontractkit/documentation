@@ -3,14 +3,14 @@ section: dataStreams
 date: Last Modified
 title: "Fetch and decode V10 reports using the Go SDK"
 metadata:
-  title: "Fetch and Decode Backed Tokenized Asset Data with Go SDK | Chainlink Data Streams"
-  description: "Learn how to use the Go SDK to fetch and decode Backed Tokenized Asset market data reports with V10 schema from Chainlink Data Streams."
-  keywords: ["Go SDK", "Golang", "Backed Tokenized Assets", "V10 Reports", "API Tutorial", "Data Streams"]
+  title: "Fetch and Decode Backed xStock Data with Go SDK | Chainlink Data Streams"
+  description: "Learn how to use the Go SDK to fetch and decode Backed xStock market data reports with V10 schema from Chainlink Data Streams."
+  keywords: ["Go SDK", "Golang", "Backed xStocks", "V10 Reports", "API Tutorial", "Data Streams"]
 whatsnext:
   {
-	"Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-backed-go",
-	"Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
-	"Find the list of available Stream IDs": "/data-streams/backed-streams",
+    "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/ws-backed-go",
+    "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
+    "Find the list of available Stream IDs": "/data-streams/backed-streams",
   }
 ---
 
@@ -64,7 +64,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/go-sdk) for Go to fetch and decode [V10 reports](/data-streams/reference/report-schema-v10) for [Backed Tokenized Asset streams](/data-streams/backed-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk) for Go to fetch and decode [V10 reports](/data-streams/reference/report-schema-v10) for [Backed xStock streams](/data-streams/backed-streams) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -76,7 +76,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 ## Tutorial
 
-You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [Backed Tokenized Asset streams](/data-streams/backed-streams), and log their attributes to your terminal.
+You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [Backed xStock streams](/data-streams/backed-streams), and log their attributes to your terminal.
 
 ### Set up your Go project
 
@@ -109,129 +109,119 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
 1. Insert the following code example and save your `single-stream.go` file:
 
-os.Exit(1)
-os.Exit(1)
-defer cancel()
-cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
-os.Exit(1)
-cfg.Logger("Failed to get latest report: %v\n", err)
-os.Exit(1)
-cfg.Logger("Failed to decode report: %v\n", err)
-os.Exit(1)
+   ```go
+   package main
 
-```go
-package main
+   import (
+      "context"
+      "fmt"
+      "os"
+      "time"
 
-import (
-   "context"
-   "fmt"
-   "os"
-   "time"
-
-   streams "github.com/smartcontractkit/data-streams-sdk/go"
-   feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
-   report "github.com/smartcontractkit/data-streams-sdk/go/report"
-   v10 "github.com/smartcontractkit/data-streams-sdk/go/report/v10" // Import the v10 report schema for Backed Tokenized Asset streams.
-)
-
-func main() {
-   // Validate command-line arguments
-   if len(os.Args) < 2 {
-      fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go [FEED_ID]\n")
-      os.Exit(1)
-   }
-   feedIDInput := os.Args[1]
-
-   // Get API credentials from environment variables
-   apiKey := os.Getenv("API_KEY")
-   apiSecret := os.Getenv("API_SECRET")
-   if apiKey == "" || apiSecret == "" {
-      fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
-      os.Exit(1)
-   }
-
-   // Define the configuration for the SDK client
-   cfg := streams.Config{
-      ApiKey:    apiKey,
-      ApiSecret: apiSecret,
-      RestURL:   "https://api.testnet-dataengine.chain.link",
-      Logger:    streams.LogPrintf,
-   }
-
-   // Initialize the SDK client
-   client, err := streams.New(cfg)
-   if err != nil {
-      cfg.Logger("Failed to create client: %v\n", err)
-      os.Exit(1)
-   }
-
-   // Create context with timeout
-   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-   defer cancel()
-
-   // Parse the feed ID
-   var feedID feed.ID
-   if err := feedID.FromString(feedIDInput); err != nil {
-      cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
-      os.Exit(1)
-   }
-
-   // Fetch the latest report
-   reportResponse, err := client.GetLatestReport(ctx, feedID)
-   if err != nil {
-      cfg.Logger("Failed to get latest report: %v\n", err)
-      os.Exit(1)
-   }
-
-   // Log the raw report data
-   cfg.Logger("Raw report data: %+v\n", reportResponse)
-
-   // Decode the report
-   decodedReport, err := report.Decode[v10.Data](reportResponse.FullReport)
-   if err != nil {
-      cfg.Logger("Failed to decode report: %v\n", err)
-      os.Exit(1)
-   }
-
-   // Format and display the decoded report
-   fmt.Printf(
-      "\nDecoded Report for Stream ID %s:\n"+
-         "------------------------------------------\n"+
-         "Valid From Timestamp    : %d\n"+
-         "Observations Timestamp  : %d\n"+
-         "Native Fee (wei)        : %s\n"+
-         "Link Fee (wei)          : %s\n"+
-         "Expires At              : %d\n"+
-         "Last Update Timestamp   : %d\n"+
-         "Price                   : %s\n"+
-         "Market Status           : %d\n"+
-         "Current Multiplier      : %s\n"+
-         "New Multiplier          : %s\n"+
-         "Activation DateTime     : %d\n"+
-         "Tokenized Price         : %s\n"+
-         "------------------------------------------\n",
-      feedIDInput,
-      decodedReport.Data.ValidFromTimestamp,
-      decodedReport.Data.ObservationsTimestamp,
-      decodedReport.Data.NativeFee.String(),
-      decodedReport.Data.LinkFee.String(),
-      decodedReport.Data.ExpiresAt,
-      decodedReport.Data.LastUpdateTimestamp,
-      decodedReport.Data.Price.String(),
-      decodedReport.Data.MarketStatus,
-      decodedReport.Data.CurrentMultiplier.String(),
-      decodedReport.Data.NewMultiplier.String(),
-      decodedReport.Data.ActivationDateTime,
-      decodedReport.Data.TokenizedPrice.String(),
+      streams "github.com/smartcontractkit/data-streams-sdk/go"
+      feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+      report "github.com/smartcontractkit/data-streams-sdk/go/report"
+      v10 "github.com/smartcontractkit/data-streams-sdk/go/report/v10" // Import the v10 report schema for Backed xStock streams.
    )
-}
-```
+
+   func main() {
+      // Validate command-line arguments
+      if len(os.Args) < 2 {
+         fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go [FEED_ID]\n")
+         os.Exit(1)
+      }
+      feedIDInput := os.Args[1]
+
+      // Get API credentials from environment variables
+      apiKey := os.Getenv("API_KEY")
+      apiSecret := os.Getenv("API_SECRET")
+      if apiKey == "" || apiSecret == "" {
+         fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+         os.Exit(1)
+      }
+
+      // Define the configuration for the SDK client
+      cfg := streams.Config{
+         ApiKey:    apiKey,
+         ApiSecret: apiSecret,
+         RestURL:   "https://api.testnet-dataengine.chain.link",
+         Logger:    streams.LogPrintf,
+      }
+
+      // Initialize the SDK client
+      client, err := streams.New(cfg)
+      if err != nil {
+         cfg.Logger("Failed to create client: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Create context with timeout
+      ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+      defer cancel()
+
+      // Parse the feed ID
+      var feedID feed.ID
+      if err := feedID.FromString(feedIDInput); err != nil {
+         cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
+         os.Exit(1)
+      }
+
+      // Fetch the latest report
+      reportResponse, err := client.GetLatestReport(ctx, feedID)
+      if err != nil {
+         cfg.Logger("Failed to get latest report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Log the raw report data
+      cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+      // Decode the report
+      decodedReport, err := report.Decode[v10.Data](reportResponse.FullReport)
+      if err != nil {
+         cfg.Logger("Failed to decode report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Format and display the decoded report
+      fmt.Printf(
+         "\nDecoded Report for Stream ID %s:\n"+
+            "------------------------------------------\n"+
+            "Valid From Timestamp    : %d\n"+
+            "Observations Timestamp  : %d\n"+
+            "Native Fee (wei)        : %s\n"+
+            "Link Fee (wei)          : %s\n"+
+            "Expires At              : %d\n"+
+            "Last Update Timestamp   : %d\n"+
+            "Price                   : %s\n"+
+            "Market Status           : %d\n"+
+            "Current Multiplier      : %s\n"+
+            "New Multiplier          : %s\n"+
+            "Activation DateTime     : %d\n"+
+            "Tokenized Price         : %s\n"+
+            "------------------------------------------\n",
+         feedIDInput,
+         decodedReport.Data.ValidFromTimestamp,
+         decodedReport.Data.ObservationsTimestamp,
+         decodedReport.Data.NativeFee.String(),
+         decodedReport.Data.LinkFee.String(),
+         decodedReport.Data.ExpiresAt,
+         decodedReport.Data.LastUpdateTimestamp,
+         decodedReport.Data.Price.String(),
+         decodedReport.Data.MarketStatus,
+         decodedReport.Data.CurrentMultiplier.String(),
+         decodedReport.Data.NewMultiplier.String(),
+         decodedReport.Data.ActivationDateTime,
+         decodedReport.Data.TokenizedPrice.String(),
+      )
+   }
+   ```
 
 1. Download the required dependencies and update the `go.mod` and `go.sum` files:
 
-```bash
-go mod tidy
-```
+   ```bash
+   go mod tidy
+   ```
 
 1. Set up the SDK client configuration within `single-stream.go` with your API credentials and the REST endpoint:
 
@@ -255,9 +245,9 @@ go mod tidy
 
    - `RestURL` is the REST endpoint to poll for specific reports. See the [Data Streams Interface](/data-streams/reference/data-streams-api/interface-api#domains) page for more information.
 
-   See the [SDK Reference](/data-streams/reference/go-sdk#config-struct) page for more configuration options.
+   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
 
-1. For this example, you will read from a Backed Tokenized Asset stream. See the [Data Streams Backed streams](/data-streams/backed-streams) page for a complete list of available streams.
+1. For this example, you will read from a Backed xStock stream. See the [Data Streams Backed streams](/data-streams/backed-streams) page for a complete list of available streams.
 
    Execute your application. Replace `[STREAM_ID]` with your stream ID.
 
@@ -291,21 +281,21 @@ go mod tidy
 
 The decoded report includes:
 
-| Attribute               | Type      | Description                                                                                                    |
-| ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                    |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                     |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                       |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                   |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                           |
-| `expiresAt`             | `uint32`  | Expiration date of the report                                                                                  |
-| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update                                                                       |
-| `price`                 | `int192`  | Last traded price from the real-world equity market                                                            |
-| `marketStatus`          | `uint32`  | Status of the real-world equity market. Possible values: `0` (Unknown), `1` (Closed), `2` (Open), `3` (Halted) |
-| `currentMultiplier`     | `int192`  | Currently applied multiplier accounting for past corporate actions                                             |
-| `newMultiplier`         | `int192`  | Multiplier to be applied at the activationDateTime                                                             |
-| `activationDateTime`    | `uint32`  | When the next corporate action takes effect (set to `0` if none is scheduled)                                  |
-| `tokenizedPrice`        | `int192`  | 24/7 tokenized equity price as traded on supported exchanges                                                   |
+| Attribute                | Value                   | Description                                                                                                     |
+| ------------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`           | Unique identifier for the Data Streams feed.                                                                    |
+| `Valid From Timestamp`   | `1755282585`            | Earliest timestamp when the price is valid.                                                                     |
+| `Observations Timestamp` | `1755282585`            | Latest timestamp when the price is valid.                                                                       |
+| `Native Fee (wei)`       | `72390983702980`        | Cost to verify report onchain (native token).                                                                   |
+| `Link Fee (wei)`         | `14788098714955797`     | Cost to verify report onchain (LINK).                                                                           |
+| `Expires At`             | `1757874585`            | Expiration date of the report.                                                                                  |
+| `Last Update Timestamp`  | `1755282581729000000`   | Timestamp of the last valid price update.                                                                       |
+| `Price`                  | `329870000000000000000` | Last traded price from the real-world equity market (18 decimals). For readability: `329.87`.                   |
+| `Market Status`          | `2`                     | Status of the real-world equity market. Possible values: `0` (Unknown), `1` (Closed), `2` (Open), `3` (Halted). |
+| `Current Multiplier`     | `1000000000000000000`   | Currently applied multiplier accounting for past corporate actions (18 decimals). For readability: `1.0`.       |
+| `New Multiplier`         | `0`                     | Multiplier to be applied at the activationDateTime.                                                             |
+| `Activation DateTime`    | `0`                     | When the next corporate action takes effect (set to `0` if none is scheduled).                                  |
+| `Tokenized Price`        | `0`                     | 24/7 tokenized equity price as traded on supported exchanges.                                                   |
 
 #### Payload for onchain verification
 
@@ -335,7 +325,7 @@ production environment, you should verify the data to ensure its integrity and a
    	streams "github.com/smartcontractkit/data-streams-sdk/go"
    	feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
    	report "github.com/smartcontractkit/data-streams-sdk/go/report"
-   	v10 "github.com/smartcontractkit/data-streams-sdk/go/report/v10" // Import the v10 report schema for Backed Tokenized Asset streams
+   	v10 "github.com/smartcontractkit/data-streams-sdk/go/report/v10" // Import the v10 report schema for Backed xStock streams
    )
 
    func main() {
@@ -460,7 +450,7 @@ production environment, you should verify the data to ensure its integrity and a
    export API_SECRET="<YOUR_API_SECRET>"
    ```
 
-1. For this example, you will read from two Backed Tokenized Asset streams. Run your application. Replace `[STREAM_ID_1]` and `[STREAM_ID_2]` with your stream IDs.
+1. For this example, you will read from two Backed xStock streams. Run your application. Replace `[STREAM_ID_1]` and `[STREAM_ID_2]` with your stream IDs.
 
    ```bash
    go run multiple-streams.go [STREAM_ID_1] [STREAM_ID_2]
@@ -469,34 +459,40 @@ production environment, you should verify the data to ensure its integrity and a
    Expect to see output similar to the following in your terminal:
 
    ```bash
-   2024-12-14T17:53:30-05:00 Raw report data for Stream ID [STREAM_ID_1]: {"fullReport":"0x...","feedID":"[STREAM_ID_1]","usEquityPrice":123456,"tokenisedPrice":123456,"currentMultiplier":1.0,"marketStatus":"OPEN","stalenessTimestamp":1753551893,"reason":"dividend","activationTimestamp":1753551893,"newMultiplier":1.1}
+      2024-12-14T17:53:30-05:00 Raw report data for Stream ID [STREAM_ID_1]: {"fullReport":"0x...","feedID":"[STREAM_ID_1]","usEquityPrice":123456,"tokenisedPrice":123456,"currentMultiplier":1.0,"marketStatus":"OPEN","stalenessTimestamp":1753551893,"reason":"dividend","activationTimestamp":1753551893,"newMultiplier":1.1}
 
+      Decoded Report for Stream ID [STREAM_ID_1]:
+      ------------------------------------------
+      Valid From Timestamp    : 1755282585
+      Observations Timestamp  : 1755282585
+      Native Fee (wei)        : 72390983702980
+      Link Fee (wei)          : 14788098714955797
+      Expires At              : 1757874585
+      Last Update Timestamp   : 1755282581729000000
+      Price                   : 329870000000000000000
+      Market Status           : 2
+      Current Multiplier      : 1000000000000000000
+      New Multiplier          : 0
+      Activation DateTime     : 0
+      Tokenized Price         : 0
+      ------------------------------------------
+      2024-12-14T17:53:30-05:00 Raw report data for Stream ID [STREAM_ID_2]: {"fullReport":"0x...","feedID":"[STREAM_ID_2]","validFromTimestamp":1755282585,"observationsTimestamp":1755282585,"nativeFee":72390983702980,"linkFee":14788098714955797,"expiresAt":1757874585,"lastUpdateTimestamp":1755282581729000000,"price":329870000000000000000,"marketStatus":2,"currentMultiplier":1000000000000000000,"newMultiplier":0,"activationDateTime":0,"tokenizedPrice":0}
 
-   Decoded Report for Stream ID [STREAM_ID_1]:
-   ------------------------------------------
-   US Equity Price         : 123456
-   Market Status           : OPEN
-   Staleness Timestamp     : 1753551893
-   Tokenised Price         : 123456
-   Current Multiplier      : 1.0
-   Reason                  : dividend
-   Activation Timestamp    : 1753551893
-   New Multiplier          : 1.1
-   ------------------------------------------
-   2024-12-14T17:53:30-05:00 Raw report data for Stream ID [STREAM_ID_2]: {"fullReport":"0x...","feedID":"[STREAM_ID_2]","usEquityPrice":123456,"tokenisedPrice":123456,"currentMultiplier":1.0,"marketStatus":"OPEN","stalenessTimestamp":1753551893,"reason":"dividend","activationTimestamp":1753551893,"newMultiplier":1.1}
-
-
-   Decoded Report for Stream ID [STREAM_ID_2]:
-   ------------------------------------------
-   US Equity Price         : 123456
-   Market Status           : OPEN
-   Staleness Timestamp     : 1753551893
-   Tokenised Price         : 123456
-   Current Multiplier      : 1.0
-   Reason                  : dividend
-   Activation Timestamp    : 1753551893
-   New Multiplier          : 1.1
-   ------------------------------------------
+      Decoded Report for Stream ID [STREAM_ID_2]:
+      ------------------------------------------
+      Valid From Timestamp    : 1755282585
+      Observations Timestamp  : 1755282585
+      Native Fee (wei)        : 72390983702980
+      Link Fee (wei)          : 14788098714955797
+      Expires At              : 1757874585
+      Last Update Timestamp   : 1755282581729000000
+      Price                   : 329870000000000000000
+      Market Status           : 2
+      Current Multiplier      : 1000000000000000000
+      New Multiplier          : 0
+      Activation DateTime     : 0
+      Tokenized Price         : 0
+      ------------------------------------------
    ```
 
    Your application has successfully fetched and decoded data for both streams.
@@ -584,7 +580,7 @@ Reports are decoded in two steps:
    This step:
 
    - Takes the raw `FullReport` bytes from the response
-   - Uses `v10.Data` schema for Backed Tokenized Asset streams (use `v3.Data` for Crypto streams)
+   - Uses `v10.Data` schema for Backed xStock streams (use `v3.Data` for Crypto streams)
    - Validates the format and decodes using Go generics
    - Returns a structured report with typed data
 
