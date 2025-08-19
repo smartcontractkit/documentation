@@ -1,3 +1,4 @@
+import { config } from "dotenv"
 import { defineConfig } from "astro/config"
 import vercel from "@astrojs/vercel"
 import preact from "@astrojs/preact"
@@ -13,6 +14,7 @@ import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
 
+config() // Load .env file
 // Prepare set of redirect source URLs to exclude from sitemap
 // This prevents duplicate entries and ensures only canonical URLs are indexed
 const redirectSources = new Set(

@@ -10,9 +10,12 @@ import {
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
-import { LogLevel, structuredLog, resolveChainOrThrow } from "../ccip/utils.ts"
+import { resolveChainOrThrow } from "@api/ccip/utils.ts"
+import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
+
+export const prerender = false
 
 /**
  * Service class for handling CCIP token data operations
@@ -29,7 +32,7 @@ export class TokenDataService {
   constructor() {
     this.requestId = crypto.randomUUID()
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "TokenDataService initialized",
       requestId: this.requestId,
     })
@@ -48,7 +51,7 @@ export class TokenDataService {
     tokenCanonicalId: string,
     outputKey: OutputKeyType
   ): Promise<{ [chainKey: string]: TokenChainData } | null> {
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Processing token data",
       requestId: this.requestId,
       environment,
@@ -72,7 +75,7 @@ export class TokenDataService {
       })
 
       if (!tokenData || Object.keys(tokenData).length === 0) {
-        structuredLog(LogLevel.WARN, {
+        logger.warn({
           message: "No token data found - skipping token",
           requestId: this.requestId,
           tokenCanonicalId,
@@ -99,7 +102,7 @@ export class TokenDataService {
           // Only process chains where poolAddress exists
           if (!chainData.poolAddress) {
             this.skippedTokensCount++
-            structuredLog(LogLevel.WARN, {
+            logger.warn({
               message: "Chain missing poolAddress - skipping only this chain",
               requestId: this.requestId,
               tokenCanonicalId,
@@ -114,7 +117,7 @@ export class TokenDataService {
           const { chainType } = getChainTypeAndFamily(supportedChain)
 
           if (!numericChainId) {
-            structuredLog(LogLevel.WARN, {
+            logger.warn({
               message: "Failed to get chainId - skipping chain",
               requestId: this.requestId,
               tokenCanonicalId,
@@ -182,7 +185,7 @@ export class TokenDataService {
 
           chainsProcessed.push(chainId)
         } catch (error) {
-          structuredLog(LogLevel.WARN, {
+          logger.warn({
             message: "Error processing chain data for token",
             requestId: this.requestId,
             tokenCanonicalId,
@@ -194,7 +197,7 @@ export class TokenDataService {
 
       // If no chains could be processed for this token, skip the whole token
       if (chainsProcessed.length === 0) {
-        structuredLog(LogLevel.WARN, {
+        logger.warn({
           message: "No valid chains could be processed for token - skipping token",
           requestId: this.requestId,
           tokenCanonicalId,
@@ -215,7 +218,7 @@ export class TokenDataService {
         result[chainId] = chainData
       })
 
-      structuredLog(LogLevel.DEBUG, {
+      logger.debug({
         message: "Token data processing successful",
         requestId: this.requestId,
         tokenCanonicalId,
@@ -224,7 +227,7 @@ export class TokenDataService {
 
       return result
     } catch (error) {
-      structuredLog(LogLevel.ERROR, {
+      logger.error({
         message: "Error processing token data",
         requestId: this.requestId,
         tokenCanonicalId,
@@ -260,7 +263,7 @@ export class TokenDataService {
     filters: TokenFilterType,
     outputKey: OutputKeyType = "chainId"
   ): Promise<TokenServiceResponse> {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Starting token filtering process",
       requestId: this.requestId,
       environment,
@@ -278,7 +281,7 @@ export class TokenDataService {
     })
 
     // Log the total number of tokens from getAllSupportedTokens
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Raw supported tokens count before filtering",
       requestId: this.requestId,
       rawTokenCount: Object.keys(supportedTokens).length,
@@ -288,7 +291,7 @@ export class TokenDataService {
 
     // Process each token by its canonical ID
     const tokenCanonicalIds = Object.keys(supportedTokens)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Retrieved supported tokens",
       requestId: this.requestId,
       totalTokens: tokenCanonicalIds.length,
@@ -342,7 +345,7 @@ export class TokenDataService {
       ignoredTokenCount: this.errors.length,
     }
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Token filtering completed",
       requestId: this.requestId,
       metadata,
