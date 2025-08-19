@@ -194,7 +194,6 @@ In the next section, you will compare these results with those obtained from a l
     ```
 
 1.  Set the following environment variables to deploy contracts on testnets:
-
     - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). **Note:** Your private key is needed to sign any transactions you make such as making requests.
     - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
     - `AVALANCHE_FUJI_RPC_URL`: The RPC URL for Avalanche Fuji testnet. You can sign up for a personal endpoint from [Infura](https://www.infura.io/) or another node provider service.
@@ -285,7 +284,6 @@ To estimate the gas usage of the `ccipReceive` function within your own Foundry 
 1. Inside the `setUp` function, deploy the `MockCCIPRouter` contract, and use its address to deploy your CCIP Sender and CCIP Receiver contracts. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L23).
 
 1. In your test cases:
-
    1. Before transmitting any CCIP messages, use `vm.recordLogs()` to start capturing events. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L39).
 
    1. After sending the CCIP message, use `vm.getRecordedLogs()` to collect the recorded logs. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L47C32-L47C52).
@@ -307,7 +305,6 @@ To estimate the gas usage of the `ccipReceive` function within your own Hardhat 
 1. Create a testing file in your project's `test` directory.
 1. Inside the `deployFixture` function, deploy the `MockCCIPRouter` contract and use its address to deploy your CCIP Sender and CCIP Receiver contracts. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L14).
 1. In your test cases:
-
    1. Send the CCIP message to the `MockCCIPRouter` contract. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L51).
    1. Parse the logs to find the `MsgExecuted(bool,bytes,uint256)` event and extract the gas used. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L59).
 
@@ -452,7 +449,6 @@ These methods provide the most accurate and rapid means to determine the necessa
    ```
 
 1. Set up the following environment variables:
-
    - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
    - `TENDERLY_ACCOUNT_SLUG`: This is one part of your Tenderly API URL. You can [find this value in your Tenderly account](https://docs.tenderly.co/account/projects/account-project-slug).
    - `TENDERLY_PROJECT_SLUG`: This is one part of your Tenderly API URL. You can [find this value in your Tenderly account](https://docs.tenderly.co/account/projects/account-project-slug).
@@ -479,7 +475,6 @@ The scripts are located in the `src` directory. Each script is self-explanatory 
 - `estimateGasTenderly.ts`: This script leverages the Tenderly `simulate` API to estimate the gas usage of the `ccipReceive` function. Similar to the previous script, it simulates sending three CCIP messages to the Receiver contract with different numbers of iterations and estimates the gas usage using the [Tenderly `simulate` API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction).
 
 - `helper.ts`: This script contains helper functions used by the other scripts. The two main functions are:
-
   - `buildTransactionData`: This function constructs a CCIP message for a specified number of iterations and then returns the transaction data.
   - `estimateIntrinsicGas`: Exclusively called by the `estimateGasProvider.ts` script, this function estimates the intrinsic gas of a transaction. The intrinsic gas represents the minimum amount of gas required before executing a transaction. It is determined by the transaction data and the type of transaction. Since this gas is paid by the initiator of the transaction, we use this function to estimate the intrinsic gas and then deduct it from the total gas used to isolate the gas consumed by the `ccipReceive` function.
 

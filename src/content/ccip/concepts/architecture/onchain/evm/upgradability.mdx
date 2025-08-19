@@ -21,12 +21,10 @@ Chainlink Cross‐Chain Interoperability Protocol (CCIP) is designed to evolve i
 Upgradability in CCIP primarily refers to two categories of changes:
 
 1. **Onchain Configuration**
-
    - Many CCIP contracts expose public setter functions that can adjust operational parameters.
    - Since these parameters can be adjusted without requiring the redeployment of an entire contract, it offers a flexible way to help ensure CCIP's security and reliability over time.
 
 2. **Redeploying Contracts and Redirecting References**
-
    - Once a smart contract is deployed, its code cannot be modified. If a new contract version (e.g., OnRamp, OffRamp, or Token Pool) is required, a new updated contract can be deployed, with all existing references updated to point to the new contract address.
    - For example, an OffRamp address might be updated in the Router or a local mapping so that new inbound messages go through the upgraded contract.
    - This approach ensures older versions remain stable while new versions can be phased in.
@@ -36,27 +34,22 @@ Upgradability in CCIP primarily refers to two categories of changes:
 All onchain configuration changes must pass through a Role-Based Access Control Timelock (RBACTimelock) contract. This mechanism ensures that:
 
 1. **Proposals**
-
    - All proposals originate from a ManyChainMultiSig (MCMS), which requires multiple independent signers to sign off.
    - Signers are selected from multiple high-quality Chainlink node operators with a proven, multi-year track record of securing billions in value within the Chainlink Network, as well as from Chainlink Labs.
    - Signers are also spread across multiple different geographic locations globally and may be rotated on a periodic basis to help mitigate potential risks as they arise, such as geographic concentration.
    - Two distinct paths exist for a proposal to succeed:
-
      - **Time-locked review:** Node operators securing CCIP can veto a proposal within a defined review period. If no veto occurs, the update proceeds.
      - **Explicit approval:** A quorum of independent signers (including node operators) actively endorse the proposal, allowing for urgent or time-sensitive fixes.
 
 1. **Review and Veto Window**
-
    - During the timelock review period, CCIP node operators can inspect the onchain proposal (e.g., adjusting a rate limit) and reject it if it appears incorrect, preventing the proposal from being executed.
 
 1. **Execution**
-
    - Once the timelock finishes (with no veto), the proposal transitions to an "executable" state.
    - Any party can call the timelock contract to finalize the proposal (e.g., via a [timelock-worker](https://github.com/smartcontractkit/timelock-worker) script).
    - The timelock then calls the target CCIP contracts with the specified changes.
 
 1. **Public Verifiability**
-
    - Information about the MCMS, including the timelock configuration, signer set, and ongoing timelocked proposals are visible onchain.
    - For instance, the Ethereum mainnet MCMS can be viewed on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract).
    - Anyone can track in-progress proposals, track any node operators vetos, and monitor the final execution status using onchain data.

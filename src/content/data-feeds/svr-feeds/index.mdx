@@ -116,21 +116,17 @@ Chainlink Smart Value Recapture (SVR) extends standard Chainlink Price Feeds wit
 <ClickToZoom src="/images/data-feed/svr/svr-integration-flow.webp" />
 
 1. **Dual Transmission**
-
    - **(1a) Standard Feed (Public Route)**: The Chainlink Data DON (triggered by a heartbeat or deviation threshold) sends a price report to the **Standard Aggregator** via the public mempool—this is the traditional Chainlink flow. If anything goes wrong with the private route, the system can still rely on the standard aggregator's updates.
    - **(1b) SVR Feed (Private Route)**: Simultaneously, the Data DON sends the **same** price report to the **SVR Aggregator** through a private channel (e.g., Flashbots MEV-Share). This private route creates an **auction** for liquidations.
 
 2. **MEV-Share Auction**
-
    - **(2) Liquidation Bid**: In the private channel, searchers see the incoming oracle report and bid to backrun the price update with a liquidation transaction. Builders select the highest bid, bundling that liquidation in the same block. If no bid is placed, the price update can still be published onchain without any bundled liquidation. If not, the fallback in the dual aggregator is triggered.
 
 3. **SVR Update and Liquidation**
-
    - **(3a) SVR Price Report**: The winning bundle is published onchain, and the **SVR Feed** is updated with the new price.
    - **(3b) Liquidation Execution**: In the same block, the **backrunning** transaction can use the freshly updated price to liquidate the undercollateralized position. The oracle-related MEV can thereby be partly recaptured by the DeFi protocol and the Chainlink Network.
 
 4. **Token Price Consumption**
-
    - **(4) DeFi Protocol**: The updated price from the **SVR Feed** is now available to the DeFi protocol (e.g., Aave) for accurate liquidation logic or other price-dependent actions.
 
 **Fail-Safe Fallback Mechanism**  
@@ -204,7 +200,6 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
 
 1. **Bundle and Bid**
-
    - Detect an eligible liquidation (e.g., an undercollateralized Aave position) triggered by the new price update.
    - Submit your liquidation transaction **in the same bundle** as the price update, placing a bid to entice block builders.
 
@@ -339,19 +334,16 @@ To use this price effectively, convert it to the appropriate decimal representat
 Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
 
 - **Bundle Components**: Your bundle must contain two elements in this exact order:
-
   1. The original oracle update transaction (referenced by its hash)
   1. Your liquidation transaction (fully signed transaction bytes)
 
 - **Backrun Position**: MEV-Share only permits backruns, meaning your liquidation transaction must come after the target transaction. This order is enforced by the bundle structure.
 
 - **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
-
   - The gas price of your transaction
   - Any explicit payment you include to the builder
 
 - **Inclusion Parameters**: Specify the target block range for your bundle to be considered
-
   - Typically target the next block plus a small range for redundancy
   - A narrow block range can increase chances of inclusion but risks missing execution
 
@@ -382,12 +374,10 @@ For gas management, simulations, and other advanced usage, see the official [Fla
 #### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
-
    - Integrate with [Flashbots MEV-Share](https://docs.flashbots.net/) to read private transactions.
    - Filter for calls matching function selector `6fadcf72` directed at the correct contract address.
 
 2. **Test Your Bundles**
-
    - Construct atomic bundles combining the price update and your liquidation transaction.
    - Try local simulations or testnet deployments where available.
 
