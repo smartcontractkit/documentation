@@ -12,6 +12,8 @@ metadata:
 
 import { ClickToZoom, Aside } from "@components"
 import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
+import { TestTokenInterface } from "@features/ccip/components/TestTokenInterface"
+import { SolanaWalletProvider } from "@features/ccip/solana/WalletProvider"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 As a best practice, always test your applications thoroughly on testnet before going live on mainnet. When testing token transfers, you must have enough tokens and ensure the [token pools](/ccip/concepts/cross-chain-token/evm/token-pools) have enough funds. Public faucets sometimes limit how many tokens a user can create and token pools might not have enough liquidity. To resolve these issues, CCIP supports two test tokens that you can mint permissionlessly so you don't run out of tokens while testing different scenarios.
@@ -40,9 +42,21 @@ function drip(address to) external {
 
 ### Mint tokens in the documentation
 
-You can use this interface to connect your MetaMask wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the block explorer (Read the [Mint tokens in a block explorer](#mint-tokens-in-a-block-explorer) section).
+You can use these interfaces to connect your wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the block explorer (Read the [Mint tokens in a block explorer](#mint-tokens-in-a-block-explorer) section).
 
-<MintTokenButton client:visible />
+#### EVM Test Tokens
+
+Use this interface to connect your MetaMask wallet and mint tokens on EVM chains:
+
+<TestTokenInterface family="evm" client:visible />
+
+#### Solana Test Tokens
+
+Use this interface to connect your Solana wallet and mint tokens on Solana Devnet:
+
+<SolanaWalletProvider client:only="react">
+  <TestTokenInterface family="svm" client:visible />
+</SolanaWalletProvider>
 
 ### Mint tokens in a block explorer
 
