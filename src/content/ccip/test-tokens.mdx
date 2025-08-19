@@ -1,38 +1,53 @@
 ---
 section: ccip
 date: Last Modified
-title: "Acquire CCIP Test Tokens - CCIP-BnM and CCIP-LnM Faucets"
+title: "Get CCIP Test Tokens - Free Faucets for EVM and Solana"
 metadata:
-  description: "Learn to mint CCIP test tokens (CCIP-BnM and CCIP-LnM) for cross-chain testing. Step-by-step guide for faucet access via documentation or block explorer."
-  excerpt: "CCIP test tokens, CCIP-BnM, CCIP-LnM, test token faucet, testnet tokens, burn and mint tokens, lock and mint tokens, MetaMask integration, token minting"
+  description: "Mint CCIP-BnM and CCIP-LnM test tokens for free on EVM and Solana testnets. Connect your wallet and get tokens for cross-chain testing with CCIP's dedicated faucets."
+  excerpt: "CCIP test tokens, CCIP-BnM, CCIP-LnM, Solana faucet, EVM faucet, testnet tokens, burn mint tokens, lock mint tokens, MetaMask, Phantom wallet, cross-chain testing, wallet connect"
   datePublished: "2023-08-03"
-  lastModified: "2025-05-19"
-  estimatedTime: "10 minutes"
+  lastModified: "2025-08-19"
+  estimatedTime: "5 minutes"
 ---
 
 import { ClickToZoom, Aside } from "@components"
 import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
-import { TestTokenInterface } from "@features/ccip/components/TestTokenInterface"
-import { SolanaWalletProvider } from "@features/ccip/solana/WalletProvider"
+
+import { SVMTestTokensClient } from "@features/ccip/components/faucet"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-As a best practice, always test your applications thoroughly on testnet before going live on mainnet. When testing token transfers, you must have enough tokens and ensure the [token pools](/ccip/concepts/cross-chain-token/evm/token-pools) have enough funds. Public faucets sometimes limit how many tokens a user can create and token pools might not have enough liquidity. To resolve these issues, CCIP supports two test tokens that you can mint permissionlessly so you don't run out of tokens while testing different scenarios.
+CCIP provides test tokens that you can mint for free on testnets. These dedicated faucets help reduce the common problem of running out of tokens during development and testing.
 
-## Tokens
+## Quick Start - Get Tokens Now
 
-Two ERC20 test tokens are currently available on each testnet. You can find the token addresses for each testnet on the [CCIP Directory](/ccip/directory).
+Connect your wallet and mint test tokens directly from this page:
 
-| Name                                             | Decimals                                  | Type                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------ | ----------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <div style="white-space: nowrap;">CCIP-BnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Burn & Mint</div> | These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mint them on the destination chain.                                                                                                                                                                                                                                                                                     |
-| <div style="white-space: nowrap;">CCIP-LnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Lock & Mint</div> | These tokens are only minted on **Ethereum Sepolia**. On other testnet blockchains, the token representation is a wrapped/synthetic asset called _clCCIP-LnM_. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the _CCIP-LnM_ tokens on the source chain and mint the wrapped representation _clCCIP-LnM_ on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation _clCCIP-LnM_. |
+### EVM Chains (MetaMask)
 
-## Mint Test Tokens
+<MintTokenButton client:only="react" />
 
-You can mint both of these tokens using the following function call on the token contract. This function acts like a faucet. Each call mints 10\*\*18 units of a token to the specified address.
+### Solana Devnet
 
-- For _CCIP-BnM_, you can call `drip` on all testnet blockchains.
-- For _CCIP-LnM_, you can call `drip` only on Ethereum Sepolia.
+<SVMTestTokensClient client:only="react" />
+
+## About CCIP Test Tokens
+
+CCIP supports specialized test tokens designed for cross-chain testing. These tokens are available on all CCIP-supported testnets.
+
+| Token        | Type        | Availability                                                       | Description                                                    |
+| ------------ | ----------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| **CCIP-BnM** | Burn & Mint | All testnets                                                       | Burned on source chain, minted on destination chain            |
+| **CCIP-LnM** | Lock & Mint | Ethereum Sepolia (native)<br/>Other chains (wrapped as clCCIP-LnM) | Locked on Ethereum Sepolia, minted as wrapped tokens elsewhere |
+
+**Key Benefits:**
+
+- ✅ **Dedicated faucets** - CCIP-specific tokens designed for testing
+- ✅ **Cross-chain ready** - Designed specifically for CCIP testing
+- ✅ **Pool liquidity** - Token pools are well-funded for testing
+
+## Alternative: Block Explorer Method
+
+If you prefer using block explorers directly, you can call the `drip` function on token contracts:
 
 ```solidity
 function drip(address to) external {
@@ -40,27 +55,7 @@ function drip(address to) external {
 }
 ```
 
-### Mint tokens in the documentation
-
-You can use these interfaces to connect your wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the block explorer (Read the [Mint tokens in a block explorer](#mint-tokens-in-a-block-explorer) section).
-
-#### EVM Test Tokens
-
-Use this interface to connect your MetaMask wallet and mint tokens on EVM chains:
-
-<TestTokenInterface family="evm" client:visible />
-
-#### Solana Test Tokens
-
-Use this interface to connect your Solana wallet and mint tokens on Solana Devnet:
-
-<SolanaWalletProvider client:only="react">
-  <TestTokenInterface family="svm" client:visible />
-</SolanaWalletProvider>
-
-### Mint tokens in a block explorer
-
-Follow these steps to learn how to mint these tokens. The steps explain how to mint _CCIP-BnM_ on _Ethereum Sepolia_:
+### Step-by-Step: Mint CCIP-BnM on Ethereum Sepolia
 
 - Go to the [CCIP Directory](/ccip/directory/testnet).
 - Go to [Ethereum Sepolia section](/ccip/directory/testnet/chain/ethereum-testnet-sepolia). You will find a list of active lanes where the source chain is _Ethereum Sepolia_. You will find the list of supported tokens you can transfer for each lane. You should find _CCIP-BnM_ in the list for each testnet.

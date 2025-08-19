@@ -1,6 +1,8 @@
 import { ChainFamily } from "@config/types.ts"
-import { FamilyAdapter } from "../../types/faucet.ts"
+import { FamilyAdapter } from "@api/ccip/types/faucet.ts"
 import { SvmAdapter } from "./svm.ts"
+
+export const prerender = false
 
 /**
  * Factory for creating family-specific adapters
@@ -18,5 +20,5 @@ export class FaucetAdapterFactory {
 }
 
 // Re-export types and adapters
-export type { FamilyAdapter } from "../../types/faucet.ts"
+export type { FamilyAdapter } from "@api/ccip/types/faucet.ts"
 export { SvmAdapter } from "./svm.ts"

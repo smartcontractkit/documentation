@@ -1,5 +1,15 @@
 import { timingSafeEqual, createHmac } from "node:crypto"
 
+export const prerender = false
+
+/**
+ * Faucet Codec Utilities
+ *
+ * Provides cryptographic primitives for SIWS-based faucet challenges:
+ * - Base64URL encoding/decoding for safe transport
+ * - Timing-safe HMAC creation and verification for metadata protection
+ */
+
 /**
  * Base64URL encoding/decoding utilities
  */
@@ -35,95 +45,4 @@ export function verifyTimingSafeHmac(hmacB64: string, expectedHmac: Buffer): boo
   }
 }
 
-/**
- * Parses a challenge payload string into structured fields
- * @param payloadStr - UTF-8 decoded payload string
- * @returns Parsed challenge fields
- */
-export function parsePayload(payloadStr: string): {
-  issuer: string
-  family: string
-  faucet: string
-  selector: string
-  token: string
-  receiver: string
-  issuedAt: number
-  expiresAt: number
-  jti: string
-  kid: string
-} {
-  const lines = payloadStr.trim().split("\n")
-  const fields: Record<string, string> = {}
-
-  for (const line of lines) {
-    if (line.includes("=")) {
-      const [key, value] = line.split("=", 2)
-      fields[key] = value
-    }
-  }
-
-  // Validate required fields
-  const requiredFields = [
-    "issuer",
-    "family",
-    "faucet",
-    "selector",
-    "token",
-    "receiver",
-    "issuedAt",
-    "expiresAt",
-    "jti",
-    "kid",
-  ]
-
-  for (const field of requiredFields) {
-    if (!fields[field]) {
-      throw new Error(`Missing required field: ${field}`)
-    }
-  }
-
-  return {
-    issuer: fields.issuer,
-    family: fields.family,
-    faucet: fields.faucet,
-    selector: fields.selector,
-    token: fields.token,
-    receiver: fields.receiver,
-    issuedAt: parseInt(fields.issuedAt, 10),
-    expiresAt: parseInt(fields.expiresAt, 10),
-    jti: fields.jti,
-    kid: fields.kid,
-  }
-}
-
-/**
- * Creates a challenge payload string
- * @param fields - Challenge fields
- * @returns UTF-8 encoded payload string
- */
-export function createPayload(fields: {
-  issuer: string
-  family: string
-  faucet: string
-  selector: string
-  token: string
-  receiver: string
-  issuedAt: number
-  expiresAt: number
-  jti: string
-  kid: string
-}): string {
-  return [
-    "FaucetChallengeV1",
-    `issuer=${fields.issuer}`,
-    `family=${fields.family}`,
-    `faucet=${fields.faucet}`,
-    `selector=${fields.selector}`,
-    `token=${fields.token}`,
-    `receiver=${fields.receiver}`,
-    `issuedAt=${fields.issuedAt}`,
-    `expiresAt=${fields.expiresAt}`,
-    `jti=${fields.jti}`,
-    `kid=${fields.kid}`,
-  ].join("\n")
-}
+// JWT-style payload functions removed - now using SIWS text challenges

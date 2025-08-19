@@ -1,10 +1,12 @@
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
-import { resolveChainOrThrow } from "../utils.ts"
+import { resolveChainOrThrow } from "@api/ccip/utils.ts"
 import { getChainTypeAndFamily, getChainId } from "@features/utils/index.ts"
 import { getBnMParams } from "@config/data/ccip/data.ts"
 import { Version } from "@config/data/ccip/types.ts"
-import { SupportedChain } from "~/config/types.ts"
-import { FaucetChainConfig } from "../types/faucet.ts"
+import { SupportedChain } from "@config/types.ts"
+import { FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+
+export const prerender = false
 
 /**
  * Resolves a chain name to faucet configuration

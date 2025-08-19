@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { LogLevel, structuredLog, APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "../../../utils.ts"
+import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "@api/ccip/utils.ts"
+import { logger } from "@api/ccip/logger.ts"
 import { FaucetService } from "../../../../services/faucet-service.ts"
 
 export const prerender = false
@@ -13,7 +14,7 @@ export const GET: APIRoute = async ({ request, params }) => {
   const requestId = crypto.randomUUID()
 
   try {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Processing faucet challenge request",
       requestId,
       chainName: params.chainName,
@@ -39,7 +40,7 @@ export const GET: APIRoute = async ({ request, params }) => {
       })
     }
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Challenge parameters validated",
       requestId,
       tokenPrefix: token.slice(0, 8),
@@ -63,7 +64,7 @@ export const GET: APIRoute = async ({ request, params }) => {
       kid,
     })
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Challenge generated successfully",
       requestId,
       chainName: params.chainName,
@@ -85,7 +86,7 @@ export const GET: APIRoute = async ({ request, params }) => {
       headers: { ...commonHeaders, ...securityHeaders },
     })
   } catch (error) {
-    structuredLog(LogLevel.ERROR, {
+    logger.error({
       message: "Error processing challenge request",
       requestId,
       chainName: params.chainName,

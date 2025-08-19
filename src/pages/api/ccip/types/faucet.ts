@@ -50,7 +50,9 @@ export interface VerifyRequest {
  * Verification response structure
  */
 export interface VerifyResponse {
-  status: "ok"
+  status: "ok" | "error"
+  code?: string
+  message?: string
 }
 
 /**

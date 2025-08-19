@@ -1362,6 +1362,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Tutorials",
       contents: [
         {
+          title: "Acquire Test Tokens",
+          url: "ccip/test-tokens",
+        },
+        {
           title: "EVM",
           url: "ccip/tutorials/evm",
           children: [
@@ -1469,10 +1473,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Optimizing Gas Limit Settings in CCIP Messages",
               url: "ccip/tutorials/evm/ccipreceive-gaslimit",
-            },
-            {
-              title: "Acquire Test Tokens",
-              url: "ccip/test-tokens",
             },
           ],
         },

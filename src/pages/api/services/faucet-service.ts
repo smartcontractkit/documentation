@@ -1,7 +1,9 @@
-import { LogLevel, structuredLog } from "../ccip/utils.ts"
-import { resolveFaucetChain } from "../ccip/faucet/chain-resolver.ts"
-import { FaucetAdapterFactory } from "../ccip/faucet/adapters/index.ts"
-import { ChallengeParams, ChallengeResponse, VerifyRequest, VerifyResponse } from "../ccip/types/faucet.ts"
+import { logger } from "@api/ccip/logger.ts"
+import { resolveFaucetChain } from "@api/ccip/faucet/chain-resolver.ts"
+import { FaucetAdapterFactory } from "@api/ccip/faucet/adapters/index.ts"
+import { ChallengeParams, ChallengeResponse, VerifyRequest, VerifyResponse } from "@api/ccip/types/faucet.ts"
+
+export const prerender = false
 
 /**
  * Service class for handling faucet operations
@@ -12,7 +14,7 @@ export class FaucetService {
 
   constructor() {
     this.requestId = crypto.randomUUID()
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "FaucetService initialized",
       requestId: this.requestId,
     })
@@ -22,7 +24,7 @@ export class FaucetService {
    * Generates a challenge for signature verification
    */
   async generateChallenge(chainName: string, params: ChallengeParams): Promise<ChallengeResponse> {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Generating faucet challenge",
       requestId: this.requestId,
       chainName,
@@ -36,7 +38,7 @@ export class FaucetService {
       throw new Error(`Chain ${chainName} is not supported for faucet operations`)
     }
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Chain configuration resolved",
       requestId: this.requestId,
       chainName,
@@ -54,7 +56,7 @@ export class FaucetService {
         receiver: params.receiver,
       })
     } catch (error) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Address validation failed",
         requestId: this.requestId,
         chainName,
@@ -67,7 +69,7 @@ export class FaucetService {
     try {
       adapter.validateTokenAllowed(params.token, chainConfig.allowedTokens)
     } catch (error) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Token not allowed",
         requestId: this.requestId,
         chainName,
@@ -87,7 +89,7 @@ export class FaucetService {
       kid: params.kid,
     })
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Challenge generated successfully",
       requestId: this.requestId,
       chainName,
@@ -107,7 +109,7 @@ export class FaucetService {
    * Verifies a signed challenge
    */
   async verifySignature(chainName: string, request: VerifyRequest, host: string): Promise<VerifyResponse> {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Verifying faucet signature",
       requestId: this.requestId,
       chainName,
@@ -121,7 +123,7 @@ export class FaucetService {
       throw new Error(`Chain ${chainName} is not supported for faucet operations`)
     }
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Chain resolved for verification",
       requestId: this.requestId,
       chainName,
@@ -148,7 +150,7 @@ export class FaucetService {
     const verificationTime = Date.now() - verificationStart
 
     if (result === "ok") {
-      structuredLog(LogLevel.INFO, {
+      logger.info({
         message: "Signature verification successful",
         requestId: this.requestId,
         chainName,
@@ -158,7 +160,7 @@ export class FaucetService {
       })
 
       // TODO: In future versions, integrate with actual faucet here
-      structuredLog(LogLevel.INFO, {
+      logger.info({
         message: "Signature flow validated - ready for faucet integration",
         requestId: this.requestId,
         nextStep: "integrate_with_faucet_contract",
@@ -166,7 +168,7 @@ export class FaucetService {
 
       return { status: "ok" }
     } else {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Signature verification failed",
         requestId: this.requestId,
         chainName,
@@ -177,7 +179,12 @@ export class FaucetService {
         verificationTimeMs: verificationTime,
       })
 
-      throw new Error(`Verification failed: ${result.message}`)
+      // Return structured error instead of throwing
+      return {
+        status: "error" as const,
+        code: result.code,
+        message: result.message,
+      }
     }
   }
 

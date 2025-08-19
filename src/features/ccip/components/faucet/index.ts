@@ -1,2 +1,2 @@
 // Export faucet components
-export { SVMTestTokens } from "./SVMTestTokens.tsx"
+export { SVMTestTokensClient } from "./SVMTestTokensClient.tsx"

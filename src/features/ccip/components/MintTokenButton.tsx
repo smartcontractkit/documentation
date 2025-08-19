@@ -1,23 +1,11 @@
-/** @jsxImportSource preact */
-import detectEthereumProvider from "@metamask/detect-provider"
+/** @jsxImportSource react */
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState } from "react"
 import { NetworkDropdown } from "./NetworkDropdown.tsx"
-import { InjectedProvider, checkConnection } from "../../utils/getInjectedProvider.ts"
+import { checkConnection } from "../../utils/getInjectedProvider.ts"
+import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
 import "./container.css"
-
-declare global {
-  interface Window {
-    ethereum?:
-      | InjectedProvider
-      | {
-          providers: InjectedProvider[]
-        }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      | any
-  }
-}
 
 interface Caveat {
   type: string
@@ -33,25 +21,81 @@ interface RequestPermissions {
 }
 
 export const MintTokenButton = () => {
+  // ✅ SSR Guard: Return loading state during server-side rendering
+  if (typeof window === "undefined") {
+    return (
+      <div className="mint-component">
+        <p>Loading wallet interface...</p>
+      </div>
+    )
+  }
+
   const [userAddress, setUserAddress] = useState<string>("")
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false)
 
+  // ✅ Use EIP-6963 to get MetaMask specifically
+  const metaMaskProvider = useMetaMaskProvider()
+
   useEffect(() => {
-    if (typeof window.ethereum !== "undefined") {
-      // Listen for changes in the MetaMask provider (e.g., connection changes)
-      window.ethereum.on("accountsChanged", handleAccountsChanged)
+    if (!metaMaskProvider) return
+
+    // ✅ Listen to events on the selected MetaMask provider
+    const handleAccountsChanged = (accounts: string[]) => {
+      console.log("🔄 MetaMask account changed:", {
+        previousAddress: userAddress,
+        newAccounts: accounts,
+        connected: accounts.length > 0,
+        newAddress: accounts.length > 0 ? accounts[0] : "disconnected",
+      })
+
+      setIsWalletConnected(accounts.length > 0)
+      setUserAddress(accounts.length > 0 ? accounts[0] : "")
+
+      if (accounts.length === 0) {
+        console.log("🔌 MetaMask disconnected")
+      } else if (accounts[0] !== userAddress) {
+        console.log("👤 MetaMask account switched:", accounts[0])
+      }
     }
 
+    // ✅ Also listen for connection/disconnection events
+    const handleConnect = (connectInfo: any) => {
+      console.log("🔗 MetaMask connected:", connectInfo)
+    }
+
+    const handleDisconnect = (error: any) => {
+      console.log("🔌 MetaMask disconnected:", error)
+      setIsWalletConnected(false)
+      setUserAddress("")
+    }
+
+    metaMaskProvider.on("accountsChanged", handleAccountsChanged)
+    metaMaskProvider.on("connect", handleConnect)
+    metaMaskProvider.on("disconnect", handleDisconnect)
+
     const getAccount = async () => {
-      if (!window.ethereum) return
-      const account = await checkConnection()
-      if (account) {
-        setUserAddress(account.address)
-        setIsWalletConnected(true)
+      try {
+        const account = await checkConnection()
+        if (account) {
+          setUserAddress(account.address)
+          setIsWalletConnected(true)
+          console.log("MetaMask account connected:", account.address)
+        }
+      } catch (error) {
+        console.log("MetaMask not connected or available")
+        setIsWalletConnected(false)
+        setUserAddress("")
       }
     }
     getAccount()
-  }, [userAddress, isWalletConnected])
+
+    // ✅ Cleanup all event listeners
+    return () => {
+      metaMaskProvider.removeListener?.("accountsChanged", handleAccountsChanged)
+      metaMaskProvider.removeListener?.("connect", handleConnect)
+      metaMaskProvider.removeListener?.("disconnect", handleDisconnect)
+    }
+  }, [metaMaskProvider])
 
   const validateEthApi = (ethereum: MetaMaskInpageProvider) => {
     if (!ethereum || !ethereum.isMetaMask) {
@@ -59,27 +103,26 @@ export const MintTokenButton = () => {
     }
   }
 
-  const handleAccountsChanged = (accounts: string[]) => {
-    // accounts is an array of connected accounts, if empty, the user disconnected
-    setIsWalletConnected(accounts.length > 0)
-    setUserAddress(accounts.length > 0 ? accounts[0] : "")
-  }
-
   const connectToWallet = async () => {
-    const ethereum = (await detectEthereumProvider()) as MetaMaskInpageProvider
-    validateEthApi(ethereum)
-    const accountPermissions = await requestPermissions(ethereum)
+    // ✅ Use EIP-6963 discovered MetaMask provider
+    if (!metaMaskProvider) {
+      alert("MetaMask not found. Please install MetaMask extension for EVM token minting.")
+      return
+    }
+
+    validateEthApi(metaMaskProvider)
+    const accountPermissions = await requestPermissions(metaMaskProvider)
     if (!accountPermissions) {
       throw Error("Something went wrong when connecting MetaMask wallet. Please follow the steps in the popup page.")
     }
-    const addressList = await ethereum
+    const addressList = await metaMaskProvider
       .request({
         method: "eth_requestAccounts",
       })
       .catch((error: Error) => {
         alert(`Something went wrong: ${error.message}`)
       })
-    const currentChainId = await ethereum.request({ method: "eth_chainId" }).catch((error: Error) => {
+    const currentChainId = await metaMaskProvider.request({ method: "eth_chainId" }).catch((error: Error) => {
       alert(`Something went wrong: ${error.message}`)
     })
     if (addressList) {
@@ -106,9 +149,6 @@ export const MintTokenButton = () => {
         accountsPermission = permissions.find(
           (permission: RequestPermissions) => permission.parentCapability === "eth_accounts"
         )
-        if (accountsPermission) {
-          console.log("eth_accounts permission successfully requested!")
-        }
       })
       .catch((error) => {
         if (error.code === 4001) {

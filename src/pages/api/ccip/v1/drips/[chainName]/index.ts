@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { LogLevel, structuredLog, APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "../../../utils.ts"
+import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "@api/ccip/utils.ts"
+import { logger } from "@api/ccip/logger.ts"
 import { FaucetService } from "../../../../services/faucet-service.ts"
 
 export const prerender = false
@@ -14,7 +15,7 @@ export const POST: APIRoute = async ({ request, params }) => {
   const idempotencyKey = request.headers.get("Idempotency-Key") || requestId
 
   try {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Processing faucet verification request",
       requestId,
       chainName: params.chainName,
@@ -35,7 +36,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     const { token, receiver, challenge, receiver_signature: receiverSignature, challenge_hmac: challengeHmac } = body
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Request body parsed",
       requestId,
       hasToken: !!token,
@@ -96,7 +97,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       origin
     )
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Signature verification completed",
       requestId,
       chainName: params.chainName,
@@ -105,7 +106,16 @@ export const POST: APIRoute = async ({ request, params }) => {
       idempotencyKey,
     })
 
-    // 5. Security headers
+    // 5. Handle verification result
+    if (verifyResult.status === "error") {
+      // Return 400 for verification failures (client error, not server error)
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, verifyResult.message || "Verification failed", 400, {
+        code: verifyResult.code || "verification_failed",
+        traceId: requestId,
+      })
+    }
+
+    // 6. Security headers
     const securityHeaders = {
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
       Pragma: "no-cache",
@@ -119,7 +129,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       headers: { ...commonHeaders, ...securityHeaders },
     })
   } catch (error) {
-    structuredLog(LogLevel.ERROR, {
+    logger.error({
       message: "Error processing verification request",
       requestId,
       chainName: params.chainName,

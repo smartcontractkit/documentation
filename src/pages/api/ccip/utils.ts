@@ -11,7 +11,7 @@ export const prerender = false
 // Re-export types from CCIP config
 export type { ChainsConfig, Version }
 export { Environment }
-export type { SelectorsConfig } from "../../../config/data/ccip/selectors.ts"
+export type { SelectorsConfig } from "@config/data/ccip/selectors.ts"
 
 /**
  * Common HTTP headers used across all API responses
@@ -347,55 +347,6 @@ export const loadChainConfiguration = async (
   } catch (error) {
     console.error("Error loading chain configuration:", error)
     throw new CCIPError(500, "Failed to load chain configuration")
-  }
-}
-
-/**
- * Log levels for structured logging
- */
-export enum LogLevel {
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error",
-}
-
-/**
- * Base interface for structured log entries
- */
-interface BaseLogEntry {
-  message: string
-  timestamp: string
-  requestId?: string
-  level: LogLevel
-  [key: string]: unknown
-}
-
-/**
- * Structured logging utility for consistent log format across the API
- * @param level - Log level (debug, info, warn, error)
- * @param entry - Log entry data
- */
-export function structuredLog(level: LogLevel, entry: { message: string } & Omit<BaseLogEntry, "timestamp" | "level">) {
-  const logEntry: BaseLogEntry = {
-    ...entry,
-    level,
-    timestamp: new Date().toISOString(),
-  }
-
-  switch (level) {
-    case LogLevel.DEBUG:
-      console.debug(logEntry)
-      break
-    case LogLevel.INFO:
-      console.info(logEntry)
-      break
-    case LogLevel.WARN:
-      console.warn(logEntry)
-      break
-    case LogLevel.ERROR:
-      console.error(logEntry)
-      break
   }
 }
 
