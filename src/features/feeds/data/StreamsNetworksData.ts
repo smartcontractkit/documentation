@@ -234,15 +234,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
-    network: "Hyperliquid",
+    network: "HyperEVM",
     logoUrl: "/assets/chains/hyperliquid.svg",
     mainnet: {
-      label: "Hyperliquid Mainnet",
+      label: "HyperEVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
     },
     testnet: {
-      label: "Hyperliquid Testnet",
+      label: "HyperEVM Testnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://evm.hyperstats.xyz/address/%s",
     },

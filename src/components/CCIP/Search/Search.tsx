@@ -7,6 +7,7 @@ import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
+import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker.ts"
 
 interface SearchProps {
   chains: {
@@ -43,36 +44,80 @@ interface SearchProps {
 
 function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
   const [isActive, setIsActive] = useState(false)
-  const [networksResults, setNetworksResults] = useState<SearchProps["chains"]>([])
-  const [tokensResults, setTokensResults] = useState<SearchProps["tokens"]>([])
-  const [lanesResults, setLanesResults] = useState<SearchProps["lanes"]>([])
+  const [networksResults, setNetworksResults] = useState<typeof chains>([])
+  const [tokensResults, setTokensResults] = useState<typeof tokens>([])
+  const [lanesResults, setLanesResults] = useState<typeof lanes>([])
   const searchRef = useRef<HTMLDivElement>(null)
+  const workerRef = useRef<Worker | null>(null)
+  const workerReadyRef = useRef(false)
+
+  // Lazily initialize Web Worker on first interaction
+  const ensureWorker = () => {
+    if (workerReadyRef.current || typeof window === "undefined") return
+    workerRef.current = new Worker(new URL("~/workers/data-worker.ts", import.meta.url), { type: "module" })
+    workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      const { networks, tokens: workerTokens, lanes: workerLanes } = event.data
+      setNetworksResults(networks || [])
+      setTokensResults(workerTokens || [])
+      setLanesResults(workerLanes || [])
+    }
+    workerReadyRef.current = true
+  }
 
   useEffect(() => {
-    if (search) {
-      const networks = chains.filter((chain) => chain.name.toLowerCase().includes(search.toLowerCase()))
-      const tokensList = tokens.filter((token) => token.id.toLowerCase().includes(search.toLowerCase()))
-      const lanesList = lanes.filter(
-        (lane) =>
-          (lane.sourceNetwork.name.toLowerCase().includes(search.toLowerCase()) ||
-            lane.destinationNetwork.name.toLowerCase().includes(search.toLowerCase())) &&
-          (lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0) > 0
-      )
-      setNetworksResults(networks)
-      setTokensResults(tokensList)
-      setLanesResults(lanesList)
-      setOpenSearchMenu(true)
-    } else {
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate()
+      }
+    }
+  }, [])
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Filter data using Web Worker
+  useEffect(() => {
+    if (!debouncedSearch) {
       setNetworksResults([])
       setTokensResults([])
       setLanesResults([])
+      return
+    }
+
+    // Ensure worker exists before posting message
+    if (!workerReadyRef.current) ensureWorker()
+    if (workerRef.current) {
+      const message: WorkerMessage = {
+        search: debouncedSearch,
+        data: {
+          chains,
+          tokens,
+          lanes,
+        },
+      }
+      workerRef.current.postMessage(message)
+    }
+  }, [debouncedSearch, chains, tokens, lanes])
+
+  // Handle menu visibility
+  useEffect(() => {
+    if (debouncedSearch) {
+      setOpenSearchMenu(true)
+    } else {
       setOpenSearchMenu(false)
     }
-  }, [search, chains, tokens])
+  }, [debouncedSearch])
 
-  useClickOutside(searchRef, () => setOpenSearchMenu(false))
+  useClickOutside(searchRef, () => setOpenSearchMenu(false), { enabled: openSearchMenu })
 
   const generateExplorerUrl = (lane): ExplorerInfo => {
     const directory = directoryToSupportedChain(lane.sourceNetwork.key)
@@ -98,20 +143,29 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
         })}
         ref={searchRef}
       >
-        <img src="/assets/icons/search.svg" alt="" />
+        <img src="/assets/icons/search.svg" alt="Search icon" />
         <input
           type="search"
           placeholder="Network/Token/Lane"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          onFocus={() => setIsActive(true)}
+          onFocus={() => {
+            setIsActive(true)
+            ensureWorker()
+          }}
           onBlur={() => setIsActive(false)}
+          aria-label="Search networks, tokens, and lanes"
+          aria-describedby={openSearchMenu ? "search-results" : undefined}
         />
         {openSearchMenu && (
           <div
+            id="search-results"
             className={clsx("ccip-hero__search-results", {
               "ccip-hero__search-results--small": small || false,
             })}
+            role="region"
+            aria-live="polite"
+            aria-label="Search results"
           >
             {networksResults.length === 0 && tokensResults.length === 0 && (
               <span className="ccip-hero__search-results__no-result">No results found</span>
@@ -125,7 +179,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                       <a href={`/ccip/directory/${environment}/chain/${network.chain}`}>
                         <img
                           src={network.logo}
-                          alt=""
+                          alt={`${network.name} blockchain logo`}
+                          loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
                             currentTarget.src = fallbackTokenIconUrl
@@ -147,13 +202,14 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             {tokensResults.length > 0 && (
               <>
                 <span className="ccip-hero__search-results__title">Tokens</span>
-                <ul aria-label="Networks">
+                <ul aria-label="Tokens">
                   {tokensResults.map((token) => (
                     <li key={token.id}>
                       <a href={`/ccip/directory/${environment}/token/${token.id}`}>
                         <img
                           src={token.logo}
-                          alt=""
+                          alt={`${token.id} token logo`}
+                          loading="lazy"
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null // prevents looping
                             currentTarget.src = fallbackTokenIconUrl
@@ -175,11 +231,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             {lanesResults.length > 0 && (
               <>
                 <span className="ccip-hero__search-results__title">Lanes</span>
-                <ul aria-label="Networks">
+                <ul aria-label="Lanes">
                   {lanesResults.map((lane) => (
                     <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
-                      <a
-                        role="button"
+                      <button
+                        type="button"
                         onClick={() =>
                           drawerContentStore.set(() => (
                             <LaneDrawer
@@ -194,11 +250,12 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                             />
                           ))
                         }
+                        aria-label={`View lane from ${lane.sourceNetwork.name} to ${lane.destinationNetwork.name}`}
                       >
                         <div className="ccip-hero__search-results__lane-images">
                           <img
                             src={lane.sourceNetwork.logo}
-                            alt=""
+                            alt={`${lane.sourceNetwork.name} source blockchain logo`}
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping
                               currentTarget.src = fallbackTokenIconUrl
@@ -206,7 +263,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                           />
                           <img
                             src={lane.destinationNetwork.logo}
-                            alt=""
+                            alt={`${lane.destinationNetwork.name} destination blockchain logo`}
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping
                               currentTarget.src = fallbackTokenIconUrl
@@ -222,7 +279,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                               : "token"}
                           </span>
                         )}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>

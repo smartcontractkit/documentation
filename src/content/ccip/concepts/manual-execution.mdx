@@ -4,6 +4,12 @@ date: Last Modified
 title: "CCIP Manual Execution"
 metadata:
   description: "Learn why CCIP messages might require manual execution, such as receiver errors or gas issues, and how to trigger it using the CCIP explorer or other methods."
+  image: "/images/ccip/manual-execution.png"
+  excerpt: "ccip manual execution cross-chain message failure ccip explorer receiver errors gas limit issues merkle proof verification ccip troubleshooting failed transactions smart execution offramp contract"
+  datePublished: "2024-02-19T07:34:46Z"
+  lastModified: "2025-07-21T09:01:19Z"
+  difficulty: "intermediate"
+  estimatedTime: "20 minutes"
 whatsnext:
   {
     "Manual execution guide": "/ccip/tutorials/evm/manual-execution",
@@ -39,7 +45,7 @@ The flowchart below displays the process of a cross-chain transaction, detailing
 1. After the committed Merkle root is blessed, the [CCIP Executing DON](/ccip/concepts/architecture/offchain/overview#executing-ocr-process) proceeds with the execution on the destination blockchain.
 1. The execution on the destination blockchain works as follows:
 
-   1. If the message involves token transfers, the tokens are first transferred to the receiver. **Important:** If the combined execution of the required functions (`balanceOf` checks of the the token contract and `releaseOrMint` of the token pool contract) exceeds the default gas limit of **90,000 gas** on the destination blockchain, CCIP execution will fail, and the transaction will become eligible for manual execution. It is highly recommended to design your token pools to stay within this gas limit to avoid execution failure. Read the Token Pools [common requirements](/ccip/concepts/cross-chain-token/evm/token-pools#common-requirements) to learn more.
+   1. If the message involves token transfers, the tokens are first transferred to the receiver. **Important:** If the combined execution of the required functions (`balanceOf` checks of the token contract and `releaseOrMint` of the token pool contract) exceeds the default gas limit of **90,000 gas** on the destination blockchain, CCIP execution will fail, and the transaction will become eligible for manual execution. It is highly recommended to design your token pools to stay within this gas limit to avoid execution failure. Read the Token Pools [common requirements](/ccip/concepts/cross-chain-token/evm/token-pools#common-requirements) to learn more.
 
       - If the receiver is an EOA, then this transaction is considered complete with no further processing.
       - If the receiver is a smart contract, the [ccipReceive](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive) function is invoked after the token transfer. The ccipReceive function processes the CCIP message and any user-specified logic in the receiver contract. The execution of the CCIP message is atomic (all or none). If the ccipReceive function successfully executes, then all aspects of the transaction are complete, and there is no revert. If, however, there is an issue in the receiver execution due to insufficient gas limit or unhandled exceptions, the attempted token transfer will also revert. The transaction then becomes eligible for manual execution.
@@ -121,4 +127,4 @@ If your token pool's combined execution—including the `balanceOf` function cal
 
    This should not happen, but in the unlikely scenario that it does, please submit a support ticket as shown below. Include the CCIP Message ID, your preferred contact details, and a detailed description of the issue you faced. This will help us assist you more effectively.
 
-   ![CCIP manual execution support ticket](/images/ccip/support-manual-exec.gif)
+   ![CCIP manual execution support ticket submission interface showing form fields and submission button](/images/ccip/support-manual-exec.gif)

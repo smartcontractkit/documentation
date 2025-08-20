@@ -195,3 +195,18 @@ export interface Network {
   feeQuoter?: string
   rmnPermeable: boolean
 }
+
+export type DecomConfig = {
+  [chainName: string]: {
+    chainSelector: string
+  }
+}
+
+export interface DecommissionedNetwork {
+  name: string
+  chain: string
+  chainSelector: string
+  logo: string
+  explorer: ExplorerInfo
+  chainType: ChainType
+}

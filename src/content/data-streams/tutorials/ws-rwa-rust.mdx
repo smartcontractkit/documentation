@@ -1,14 +1,14 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Stream and decode V4 reports via WebSocket using the Rust SDK"
+title: "Stream and decode V8 reports via WebSocket using the Rust SDK"
 metadata:
-  title: "RWA V4 Reports via WebSocket with Rust SDK | Chainlink Data Streams"
-  description: "Step-by-step tutorial on streaming and decoding Real World Assets (RWA) V4 reports using WebSocket connections with the Rust SDK."
-  keywords: ["WebSocket", "Rust SDK", "Real World Assets", "RWA", "V4 reports", "Data Streams"]
+  title: "RWA V8 Reports via WebSocket with Rust SDK | Chainlink Data Streams"
+  description: "Step-by-step tutorial on streaming and decoding Real World Assets (RWA) V8 reports using WebSocket connections with the Rust SDK."
+  keywords: ["WebSocket", "Rust SDK", "Real World Assets", "RWA", "V8 reports", "Data Streams"]
 whatsnext:
   {
-    "Learn how to verify your data onchain": "/data-streams/reference/onchain-verification",
+    "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
     "Find the list of available Stream IDs": "/data-streams/rwa-streams",
   }
 ---
@@ -26,8 +26,13 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V4 reports for RWA streams",
+      name: "Go SDK - V8 reports for RWA streams",
       url: "/data-streams/tutorials/ws-rwa-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Go SDK - V9 reports for NAV streams",
+      url: "/data-streams/tutorials/ws-nav-go",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
@@ -36,14 +41,19 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
     {
-      name: "Rust SDK - V4 reports for RWA streams",
+      name: "Rust SDK - V8 reports for RWA streams",
       url: "/data-streams/tutorials/ws-rwa-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "Rust SDK - V9 reports for NAV streams",
+      url: "/data-streams/tutorials/ws-nav-rust",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/rust-sdk) for Rust to subscribe to real-time [V4 reports](/data-streams/reference/report-schema-v4) for [Real World Assets (RWA) streams](/data-streams/rwa-streams) via a [WebSocket connection](/data-streams/reference/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/rust-sdk) for Rust to subscribe to real-time [V8 reports](/data-streams/reference/report-schema-v8) for [Real World Assets (RWA) streams](/data-streams/rwa-streams) via a [WebSocket connection](/data-streams/reference/data-streams-api/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -72,8 +82,8 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    ```toml
    [dependencies]
-   chainlink-data-streams-sdk = "1.0.0"
-   chainlink-data-streams-report = "1.0.0"
+   chainlink-data-streams-sdk = "1.0.3"
+   chainlink-data-streams-report = "1.0.3"
    tokio = { version = "1.4", features = ["full"] }
    hex = "0.4"
    tracing = "0.1"
@@ -86,7 +96,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    ```rust
    use chainlink_data_streams_report::feed_id::ID;
-   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 }; // Import the v4 report schema for RWA streams
+   use chainlink_data_streams_report::report::{ decode_full_report, v8::ReportDataV8 }; // Import the v8 report schema for RWA streams
    use chainlink_data_streams_sdk::config::Config;
    use chainlink_data_streams_sdk::stream::Stream;
    use std::env;
@@ -144,14 +154,14 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
                   // Decode the report
                   let full_report = hex::decode(&response.report.full_report[2..])?;
                   let (_report_context, report_blob) = decode_full_report(&full_report)?;
-                  let report_data = ReportDataV4::decode(&report_blob)?;
+                  let report_data = ReportDataV8::decode(&report_blob)?;
 
                   // Print decoded report details
                   info!(
                      "\n--- Report Stream ID: {} ---\n\
                         ------------------------------------------\n\
                         Observations Timestamp : {}\n\
-                        Benchmark Price       : {}\n\
+                        Mid Price       : {}\n\
                         Valid From Timestamp  : {}\n\
                         Expires At           : {}\n\
                         Link Fee             : {}\n\
@@ -160,7 +170,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
                         ------------------------------------------",
                      response.report.feed_id.to_hex_string(),
                      response.report.observations_timestamp,
-                     report_data.price,
+                     report_data.mid_price,
                      response.report.valid_from_timestamp,
                      report_data.expires_at,
                      report_data.link_fee,
@@ -203,61 +213,61 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    Expect output similar to the following in your terminal:
 
    ```bash
-   2024-12-13T23:37:17.054816Z  INFO my_data_streams_project: WebSocket connection established. Listening for reports...
-   2024-12-13T23:37:17.054876Z  INFO data_streams_sdk::stream::monitor_connection: Received ping: [49]
-   2024-12-13T23:37:17.054896Z  INFO data_streams_sdk::stream::monitor_connection: Responding with pong: [49]
-   2024-12-13T23:37:17.199112Z  INFO data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
-   2024-12-13T23:37:17.199304Z  INFO my_data_streams_project:
-   Raw report data: Report { feed_id: [STREAM_ID], valid_from_timestamp: 1734133037, observations_timestamp: 1734133037, full_report: "0x..." }
+   2025-07-29T12:09:15.617757Z  INFO rust: WebSocket connection established. Listening for reports...
+   2025-07-29T12:09:15.617836Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received ping: [49]
+   2025-07-29T12:09:15.617877Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Responding with pong: [49]
+   2025-07-29T12:09:15.819279Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
+   2025-07-29T12:09:15.819631Z  INFO rust:
+   Raw report data: Report { feed_id: 0x0008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b, valid_from_timestamp: 1753790955, observations_timestamp: 1753790955, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd6900000000000000000000000000000000000000000000000000000000012b199d000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b000000000000000000000000000000000000000000000000000000006888b9eb000000000000000000000000000000000000000000000000000000006888b9eb00000000000000000000000000000000000000000000000000004c12b1c3b739000000000000000000000000000000000000000000000000003ebece93dcc9390000000000000000000000000000000000000000000000000000000068b046eb00000000000000000000000000000000000000000000000018569aaaebd353c000000000000000000000000000000000000000000000000b997fe8cfd63580000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000278154493ef77e0fe1f9baa5ccd9d962c021e9cf6cfd96f748890cf301d46adb4737644538d68a63a0045ce0a61e66b5ebe76d14f8ba5a7a432fb105a479f3aa7000000000000000000000000000000000000000000000000000000000000000266d0176f466e6165c7ddd8f5c31857056fac693d640eec7f088f1b416762249a5ba66e2633513850e016ea385f7a4dc57cdd46ee99513e6710a1a76a5b84f10f" }
 
-   2024-12-13T23:37:17.199585Z  INFO my_data_streams_project:
-   --- Report Stream ID: [STREAM_ID] ---
+   2025-07-29T12:09:15.820629Z  INFO rust:
+   --- Report Stream ID: 0x0008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b ---
    ------------------------------------------
-   Observations Timestamp : 1734133037
-   Benchmark Price       : 636160000000000000
-   Valid From Timestamp  : 1734133037
-   Expires At           : 1734219437
-   Link Fee             : 0
-   Native Fee           : 0
+   Observations Timestamp : 1753790955
+   Mid Price       : 213975000000000000000
+   Valid From Timestamp  : 1753790955
+   Expires At           : 1756382955
+   Link Fee             : 17661243009321273
+   Native Fee           : 83643175515961
    Market Status        : 1
    ------------------------------------------
-   2024-12-13T23:37:17.199633Z  INFO my_data_streams_project:
+   2025-07-29T12:09:15.82085Z  INFO rust:
    --- Stream Stats ---
    StatsSnapshot {
-       accepted: 1,
-       deduplicated: 0,
-       total_received: 1,
-       partial_reconnects: 0,
-       full_reconnects: 0,
-       configured_connections: 1,
-       active_connections: 1,
+      accepted: 1,
+      deduplicated: 0,
+      total_received: 1,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
    }
    --------------------------------------------------------------------------------------------------------------------------------------------
-   2024-12-13T23:37:18.215222Z  INFO data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
-   2024-12-13T23:37:18.21587Z  INFO my_data_streams_project:
-   Raw report data: Report { feed_id: [STREAM_ID], valid_from_timestamp: 1734133038, observations_timestamp: 1734133038, full_report: "0x..." }
+   2025-07-29T12:09:16.504035Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
+   2025-07-29T12:09:16.504224Z  INFO rust:
+   Raw report data: Report { feed_id: 0x0008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b, valid_from_timestamp: 1753790956, observations_timestamp: 1753790956, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd6900000000000000000000000000000000000000000000000000000000012b199f000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b000000000000000000000000000000000000000000000000000000006888b9ec000000000000000000000000000000000000000000000000000000006888b9ec00000000000000000000000000000000000000000000000000004c1461a41510000000000000000000000000000000000000000000000000003ebf36fa53c22f0000000000000000000000000000000000000000000000000000000068b046ec00000000000000000000000000000000000000000000000018569aaaebd353c000000000000000000000000000000000000000000000000b997fe8cfd635800000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002b94b94745322432804bd8be7f5f3f87d29bc554b46fe8effe29df5f45eaf0eaaf1355088c6fe8c9212f194d34b77497a4656797c5bca6c273f7c93a1ca2abd2900000000000000000000000000000000000000000000000000000000000000027c4e7d0a1485bb6eff898613e42b468095161657d7661633e3e2a3713cb6b86f7f925431bbe7700f663e6dfd53fbb10df836bb917b5cd5189ff5c04bc96d60da" }
 
-   2024-12-13T23:37:18.216946Z  INFO my_data_streams_project:
-   --- Report Stream ID: [STREAM_ID] ---
+   2025-07-29T12:09:16.504502Z  INFO rust:
+   --- Report Stream ID: 0x0008b8ad9dc4061d1064033c3abc8a4e3f056e5b61d8533e8190eb96ef3b330b ---
    ------------------------------------------
-   Observations Timestamp : 1734133038
-   Benchmark Price       : 636160000000000000
-   Valid From Timestamp  : 1734133038
-   Expires At           : 1734219438
-   Link Fee             : 0
-   Native Fee           : 0
+   Observations Timestamp : 1753790956
+   Mid Price       : 213975000000000000000
+   Valid From Timestamp  : 1753790956
+   Expires At           : 1756382956
+   Link Fee             : 17661691404993071
+   Native Fee           : 83650421200144
    Market Status        : 1
    ------------------------------------------
-   2024-12-13T23:37:18.21714Z  INFO my_data_streams_project:
+   2025-07-29T12:09:16.504541Z  INFO rust:
    --- Stream Stats ---
    StatsSnapshot {
-       accepted: 2,
-       deduplicated: 0,
-       total_received: 2,
-       partial_reconnects: 0,
-       full_reconnects: 0,
-       configured_connections: 1,
-       active_connections: 1,
+      accepted: 2,
+      deduplicated: 0,
+      total_received: 2,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
    }
 
    [...]
@@ -292,16 +302,16 @@ This will subscribe to both streams.
 
 The decoded report details include:
 
-| Attribute                | Value                | Description                                                                                                                                                                                           |
-| ------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `[STREAM_ID]`        | The unique identifier for the stream.                                                                                                                                                                 |
-| `Observations Timestamp` | `1734133037`         | The timestamp indicating when the data was captured.                                                                                                                                                  |
-| `Benchmark Price`        | `636160000000000000` | The observed price in the report, with 18 decimals. For readability: `0.63616` USD per AUD.                                                                                                           |
-| `Valid From Timestamp`   | `1734133037`         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                               |
-| `Expires At`             | `1734219437`         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                      |
-| `Link Fee`               | `0`                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                         |
-| `Native Fee`             | `0`                  | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees. |
-| `Market Status`          | `1`                  | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). In this case, the market is closed.                                      |
+| Attribute                | Value                   | Description                                                                                                                                                                         |
+| ------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream ID`              | `[STREAM_ID]`           | The unique identifier for the stream.                                                                                                                                               |
+| `Observations Timestamp` | `1753790956`            | The timestamp indicating when the data was captured.                                                                                                                                |
+| `Mid Price`              | `213975000000000000000` | The observed price in the report.                                                                                                                                                   |
+| `Valid From Timestamp`   | `1753790956`            | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                             |
+| `Expires At`             | `1756382956`            | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                    |
+| `Link Fee`               | `17661691404993071`     | The fee to pay in LINK tokens for the onchain verification of the report data. **Note:** This example fee is not indicative of actual fees.                                         |
+| `Native Fee`             | `83650421200144`        | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `1`                     | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). In this case, the market is closed.                    |
 
 #### Payload for onchain verification
 
@@ -334,8 +344,8 @@ As data reports arrive via the WebSocket connection, they are processed in real-
 
 2. Decoding reports: Each report is decoded in two stages:
    - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
-   - [`ReportDataV4::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v4.rs#L57) transforms the report blob into a structured format containing:
-     - The benchmark price (with 18 decimal places)
+   - [`ReportDataV8::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v8.rs#L60) transforms the report blob into a structured format containing:
+     - The mid price
      - Market status (indicating if the market is open, closed, or unknown)
      - Fee information for onchain verification
      - Timestamp information

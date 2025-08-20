@@ -125,8 +125,9 @@ export function ProductNavigation({ path }: Props) {
           <Close
             ref={closeButtonRef}
             className={clsx(styles.closeButton, { [styles.hidden]: productsSlidePosition === "submenu" })}
+            aria-label="Close navigation"
           >
-            <img src="/assets/icons/close-small.svg" />
+            <img src="/assets/icons/close-small.svg" alt="" />
           </Close>
           <BottomBar />
         </Dialog.Content>
